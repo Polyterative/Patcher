@@ -3,7 +3,6 @@ image: node:latest
 cache:
   paths:
     - node_modules/
-    - app/bower_components
 
 deploy_production:
   stage: deploy
@@ -13,5 +12,5 @@ deploy_production:
   script:
     - npm install -g firebase-tools
     - npm install
-    - firebase use --token $FIREBASE_DEPLOY_KEY production
+    - firebase use --token $FIREBASE_DEPLOY_KEY focus-e10e7
     - firebase deploy -m "Pipeline $CI_PIPELINE_ID, build $CI_BUILD_ID" --non-interactive --token $FIREBASE_DEPLOY_KEY
