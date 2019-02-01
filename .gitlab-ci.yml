@@ -13,4 +13,5 @@ deploy_production:
     - npm install -g firebase-tools
     - npm install
     - firebase use --token $FIREBASE_DEPLOY_KEY focus-e10e7
+    - ls
     - firebase deploy -m "Pipeline $CI_PIPELINE_ID, build $CI_BUILD_ID" --non-interactive --token $FIREBASE_DEPLOY_KEY
