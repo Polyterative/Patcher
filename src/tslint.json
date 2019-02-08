@@ -8,12 +8,15 @@
       "camelCase"
     ],
     "component-selector": [
-      true,
+      false,
       "element",
       "app",
       "kebab-case"
     ],
     "import-spacing":     [
+      false
+    ],
+    "no-trailing-whitespace": [
       false
     ]
   }
