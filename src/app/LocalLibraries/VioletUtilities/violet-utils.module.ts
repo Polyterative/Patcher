@@ -5,5 +5,5 @@ import { NgModule } from '@angular/core';
   declarations: [],
   exports:      []
 })
-export class LoggerModule {
+export class VioletUtilsModule {
 }
