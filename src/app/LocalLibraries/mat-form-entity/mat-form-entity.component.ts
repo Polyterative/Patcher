@@ -25,6 +25,7 @@ import {
   takeUntil
 }                            from 'rxjs/operators';
 import { AngularEntityBase } from 'src/app/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { Strings }           from 'src/app/LocalLibraries/VioletUtilities/app-strings';
 import { ConstantsService }  from 'src/app/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from 'src/app/LocalLibraries/VioletUtilities/dimensions.service';
 import { LoggerService }     from 'src/app/LocalLibraries/VioletUtilities/logger/logger.service';
@@ -114,7 +115,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
    *   const voidChar = '';
    *
    *   toReturn =
-   *       toBeChecked.hasError(Strings_app.form.errorCode.min) ? Strings_it.form.error_min : toBeChecked.hasError(Strings_app.form.errorCode.max) ? Strings_it.form.error_max : toBeChecked.hasError(Strings_app.form.errorCode.custom.operation_notInRange) ? Strings_it.form.error_operation_notInRange : toBeChecked.hasError(Strings_app.form.errorCode.custom.staff_notInRange) ? Strings_it.form.error_staff_notInRange : voidChar;
+   *       toBeChecked.hasError(Strings.form.errorCode.min) ? Strings_it.form.error_min : toBeChecked.hasError(Strings.form.errorCode.max) ? Strings_it.form.error_max : toBeChecked.hasError(Strings.form.errorCode.custom.operation_notInRange) ? Strings_it.form.error_operation_notInRange : toBeChecked.hasError(Strings.form.errorCode.custom.staff_notInRange) ? Strings_it.form.error_staff_notInRange : voidChar;
    *
    *   if (toReturn === voidChar) {
    *       toReturn = super.getDefaultErrors(toBeChecked);
@@ -189,8 +190,8 @@ export class MatFormEntityComponent extends AngularEntityBase {
         this.checkOptions();
         
         if (this.disableVoidSelection) {
-          
-          const errorObject = {[Strings_app.form.errorCode.custom.notInOptions]: true};
+  
+          const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => x.value === '' ? errorObject : null; // if void return error
           
@@ -211,7 +212,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
         
         if (this.strictAutocomplete) {
           // const isValueInOptions = this.options.some(y => y.name === this.control.value);
-          const errorObject = {[Strings_app.form.errorCode.custom.notInOptions]: true};
+          const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => {
             const foundSome = this.options.some(y => y.name === x.value);
@@ -238,7 +239,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
         
         if (this.strictAutocomplete) {
           // const isValueInOptions = this.options.some(y => y.name === this.control.value);
-          const errorObject = {[Strings_app.form.errorCode.custom.notInOptions]: true};
+          const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => {
             
