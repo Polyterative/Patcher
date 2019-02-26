@@ -1,0 +1,8 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/theming';
+
+@include mat-core();
+
+@import "./app/GlobalStyles/Styles/commons_customizations";
+@import "./app/GlobalStyles/Styles/commons_structure";
+@import "./app/GlobalStyles/Styles/constants";
