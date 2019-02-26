@@ -1,0 +1,38 @@
+
+#navbar {
+  @include mat-elevation(4);
+  margin-bottom: 1em;
+}
+
+mat-toolbar-row {
+  min-height: 3em;
+  min-width: fit-content;
+}
+
+#title {
+  color: rgba(255, 255, 255, 0.81);
+  padding-right: 2em;
+  //padding-left: 0.5em;
+}
+
+.titleTextBig {
+  font-size: 1.5em;
+}
+
+.titleTextSmall {
+  font-size: 1.5em;
+}
+
+mat-toolbar-row > .subtitle {
+  color: white;
+}
+
+mat-toolbar-row > button {
+  //background-color: rgba(255, 255, 255, 0.15);
+  margin: 0.4em;
+}
+
+
+.toolbarSpacer {
+  flex: 1 1 auto;
+}
