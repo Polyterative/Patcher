@@ -18,6 +18,9 @@
     ],
     "no-trailing-whitespace": [
       false
+    ],
+    "no-implicit-dependencies": [
+      false
     ]
   }
 }
