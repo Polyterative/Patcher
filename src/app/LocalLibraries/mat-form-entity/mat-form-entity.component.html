@@ -42,7 +42,7 @@
       <mat-option *ngFor='let option of options'
                   value='{{option.id}}'
       >
-        {{ {option.nam }}}
+        {{ option.name }}
       </mat-option>
     </mat-select>
 
@@ -57,7 +57,7 @@
       <mat-option *ngFor='let option of options'
                   value='{{option.id}}'
       >
-        {{ {option.nam }}}
+        {{ option.name }}
       </mat-option>
     </mat-select>
 
@@ -71,7 +71,7 @@
                 [removable]="true"
                 [selectable]="true"
       >
-        {{ {chip.nam }}}
+        {{ chip.name }}
         <mat-icon *ngIf="true"
                   matChipRemove
         >cancel
@@ -95,7 +95,7 @@
                 [removable]="!control.disabled"
                 [selectable]="!control.disabled"
       >
-        {{ {chip.nam }}}
+        {{ chip.name }}
         <mat-icon *ngIf="!control.disabled"
                   matChipRemove
         >cancel
@@ -120,7 +120,7 @@
         <mat-option *ngFor='let option of options_filtered|async'
                     value='{{option.name}}'
         >
-          {{ {option.nam }}}
+          {{ option.name }}
         </mat-option>
 
       </mat-autocomplete>
@@ -144,7 +144,7 @@
       <mat-option *ngFor='let option of options_filtered|async'
                   value='{{option.name}}'
       >
-        {{ {option.nam }}}
+        {{ option.name }}
       </mat-option>
 
     </mat-autocomplete>
