@@ -127,16 +127,16 @@ export class MatFormEntityComponent extends AngularEntityBase {
   @Input() errorProvider: (formControl: FormControl) => string;
   //
   // @Input()
-  // public max: number;
+  // public max: number$;
   //
   // @Input()
-  // public min: number;
+  // public min: number$;
   //
   // @Input()
-  // public maxLength: number;
+  // public maxLength: number$;
   //
   // @Input()
-  // public minLength: number;
+  // public minLength: number$;
   readonly separatorKeysCodes: Array<number> = [
     ENTER,
     COMMA
