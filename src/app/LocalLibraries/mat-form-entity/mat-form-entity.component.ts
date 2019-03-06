@@ -43,7 +43,23 @@ import {
 })
 export class MatFormEntityComponent extends AngularEntityBase {
   
-  private findOptionForName: (name: string, options: Array<ISelectable>) => ISelectable = (name: string, options: Array<ISelectable>): ISelectable => options.find(x => x.name === name);
+  @Input()
+  set disabled(value: boolean) {
+    switch (value) {
+      case true:
+        this.control.disable();
+        if (this.ghostControl) {
+          this.ghostControl.disable();
+        }
+        break;
+      case false:
+        this.control.enable();
+        if (this.ghostControl) {
+          this.ghostControl.enable();
+        }
+        break;
+    }
+  }
   
   errors: string;
   
@@ -349,27 +365,11 @@ export class MatFormEntityComponent extends AngularEntityBase {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
   
+  private findOptionForName: (name: string, options: Array<ISelectable>) => ISelectable = (name: string, options: Array<ISelectable>): ISelectable => options.find(x => x.name === name);
+  
   private checkOptions(): void {
     if (!isArray(this.options)) {
       this.Log.error('Options is not array! I\'m a selector, give me the options!');
-    }
-  }
-  
-  @Input()
-  set disabled(value: boolean) {
-    switch (value) {
-      case true:
-        this.control.disable();
-        if (this.ghostControl) {
-          this.ghostControl.disable();
-        }
-        break;
-      case false:
-        this.control.enable();
-        if (this.ghostControl) {
-          this.ghostControl.enable();
-        }
-        break;
     }
   }
 }
