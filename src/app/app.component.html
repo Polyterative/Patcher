@@ -1,16 +1,25 @@
+<!--<ng-container *ngIf="{-->
+<!--             count: count$|async-->
+<!--             } as scope"-->
+<!--&gt;-->
+
 <ng-container *ngIf="{
-             state: state$|async,
-             count: count$|async
-             } as templateLocalOptions"
+               title: title$|async,
+               loading: pageLoading$|async,
+               count: count$|async
+               } as scope"
 >
+
+
   <mat-toolbar color="accent"
 
   >
-    {{ templateLocalOptions.state.pageTitle }}
+    {{ (title$|async).title }}
+    <!--        {{ pageLoading$|async|json }}-->
   </mat-toolbar>
 
-  <div *ngIf='!templateLocalOptions.state.loading'
-       class='content-root-card-short-topMargin'
+  <div
+    class='content-root-card-short-topMargin'
   >
     <lib-flex-row>
       <mat-card class='featureCard'
@@ -77,15 +86,15 @@
     <mat-card fxFlex>
 
       <ng-container>
-        <h3>Count is {{ templateLocalOptions.count.value }}</h3>
+        <h3>Count is {{ scope.count.value }}</h3>
         <div>
-          <button (click)="counterValue.emit(templateLocalOptions.count.value + 1)"
+          <button (click)="counterValue.emit(scope.count.value + 1)"
                   mat-flat-button
-          >Increment (+1)
+          >(+1)
           </button>
-          <button (click)="counterValue.emit(templateLocalOptions.count.value - 1)"
+          <button (click)="counterValue.emit(scope.count.value - 1)"
                   mat-flat-button
-          >Decrement (-1)
+          >(-1)
           </button>
         </div>
       </ng-container>
