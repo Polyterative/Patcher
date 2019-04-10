@@ -43,6 +43,24 @@ import {
 })
 export class MatFormEntityComponent extends AngularEntityBase {
   
+  @Input()
+  set disabled(value: boolean) {
+    switch (value) {
+      case true:
+        this.control.disable();
+        if (this.ghostControl) {
+          this.ghostControl.disable();
+        }
+        break;
+      case false:
+        this.control.enable();
+        if (this.ghostControl) {
+          this.ghostControl.enable();
+        }
+        break;
+    }
+  }
+  
   errors: string;
   
   /**
@@ -127,21 +145,28 @@ export class MatFormEntityComponent extends AngularEntityBase {
   @Input() errorProvider: (formControl: FormControl) => string;
   //
   // @Input()
-  // public max: number;
+  // public max: observable;
   //
   // @Input()
-  // public min: number;
+  // public min: observable;
   //
   // @Input()
-  // public maxLength: number;
+  // public maxLength: observable;
   //
   // @Input()
-  // public minLength: number;
+  // public minLength: observable;
   readonly separatorKeysCodes: Array<number> = [
     ENTER,
     COMMA
     // TAB // add ONLY if you add TAB-to-add  to autocomplete
   ];
+  
+  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
+    hostControl.setValidators(hostValidator ? [
+      hostValidator,
+      newValidator
+    ] : newValidator);
+  }
   
   constructor(
     public Log: LoggerService,
@@ -190,12 +215,12 @@ export class MatFormEntityComponent extends AngularEntityBase {
         this.checkOptions();
         
         if (this.disableVoidSelection) {
-  
+          
           const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => x.value === '' ? errorObject : null; // if void return error
           
-          this.safelyAddValidator(hostControl, hostValidator, myValidator);
+          MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
         }
         
         break;
@@ -221,7 +246,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
             return (foundSome || isVoid && this.autocompleteCanBeVoid) ? null : errorObject;
           };
           
-          this.safelyAddValidator(hostControl, hostValidator, myValidator);
+          MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
         }
         
         break;
@@ -262,14 +287,20 @@ export class MatFormEntityComponent extends AngularEntityBase {
             return (foundAll) || (isVoidWhileCanBe) ? null : errorObject;
           };
           
-          this.safelyAddValidator(hostControl, hostValidator, myValidator);
+          MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
           
         }
         
         break;
     }
     
-    const observable = hostControl.valueChanges.pipe(takeUntil(this.destroyEvent$), startWith(hostControl.value), debounceTime(250), share());
+    const observable = hostControl.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$),
+        startWith(hostControl.value),
+        debounceTime(250),
+        share()
+      );
     
     observable
       .pipe(filter(_ => hostControl.invalid))
@@ -301,7 +332,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     }
   }
   
-  addToMultiComplete($event: MatAutocompleteSelectedEvent) {
+  addToMultiComplete($event: MatAutocompleteSelectedEvent): void {
     const dataCapsule = this.control;
     const nameString = $event.option.value;
     
@@ -325,51 +356,20 @@ export class MatFormEntityComponent extends AngularEntityBase {
   }
   
   removeFromChips(element: ISelectable): void {
-    const dataCapsule = this.control;
-    
     const data: Array<ISelectable> = this.control.value;
-    
     data.splice(data.indexOf(element), 1);
-    
     this.control.patchValue(data);
   }
   
-  cleanMultiComplete($event: MatChipInputEvent) {
+  cleanMultiComplete($event: MatChipInputEvent): void {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
   
-  private safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn) {
-    hostControl.setValidators(hostValidator ? [
-      hostValidator,
-      newValidator
-    ] : newValidator);
-  }
+  private findOptionForName: (name: string, options: Array<ISelectable>) => ISelectable = (name: string, options: Array<ISelectable>): ISelectable => options.find(x => x.name === name);
   
-  private checkOptions() {
+  private checkOptions(): void {
     if (!isArray(this.options)) {
       this.Log.error('Options is not array! I\'m a selector, give me the options!');
-    }
-  }
-  
-  private findOptionForName(name: string, options: Array<ISelectable>) {
-    return options.find(x => x.name === name);
-  }
-  
-  @Input()
-  set disabled(value: boolean) {
-    switch (value) {
-      case true:
-        this.control.disable();
-        if (this.ghostControl) {
-          this.ghostControl.disable();
-        }
-        break;
-      case false:
-        this.control.enable();
-        if (this.ghostControl) {
-          this.ghostControl.enable();
-        }
-        break;
     }
   }
 }
