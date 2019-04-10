@@ -22,6 +22,8 @@
     "@angular/platform-browser":         "~7.2.0",
     "@angular/platform-browser-dynamic": "~7.2.0",
     "@angular/router":                   "~7.2.0",
+    "@ngxs/form-plugin":                 "3.4.1",
+    "@ngxs/router-plugin":               "3.4.1",
     "@ngxs/schematics":                  "0.0.1-alpha.5",
     "@ngxs/store":                       "3.4.1",
     "angular-tslint-rules":              "^1.12.1",
