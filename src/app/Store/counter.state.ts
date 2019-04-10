@@ -1,24 +1,25 @@
-import { Receiver } from '@ngxs-labs/emitter';
+import {
+  EmitterAction,
+  Receiver
+} from '@ngxs-labs/emitter';
 import {
   State,
   StateContext
-}                   from '@ngxs/store';
+} from '@ngxs/store';
 
-@State<number>({
+export interface CounterStateModel {
+  value: number;
+}
+
+@State<CounterStateModel>({
   name:     'counter',
-  defaults: 0
+  defaults: {value: 0}
 })
-
 export class CounterState {
-  @Receiver()
-  static increment({setState, getState}: StateContext<number>) {
-    let state = getState();
-    setState(state + 1);
-  }
   
   @Receiver()
-  static decrement({setState, getState}: StateContext<number>) {
-    let state = getState();
-    setState(state - 1);
+  public static setValue(ctx: StateContext<CounterStateModel>, action: EmitterAction<number>) {
+    ctx.setState({value: action.payload});
   }
+  
 }
