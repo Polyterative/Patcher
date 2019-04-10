@@ -326,10 +326,24 @@
   dependencies:
     tslib "^1.9.0"
 
+"@ngxs/form-plugin@3.4.1":
+  version "3.4.1"
+  resolved "http://192.168.1.231:3000/@ngxs%2fform-plugin/-/form-plugin-3.4.1.tgz#19403fdaf34aca7c23808d473470e280113d444e"
+  integrity sha512-+BFy1FTchs6zseUJMnlZvpNrFrmD5vzswBazU28G9VKdOuFrTQmuXRFmK5Nr4fOdDnZJhOeJ6/5xvPuRN3kmfg==
+  dependencies:
+    tslib "^1.9.0"
+
 "@ngxs/logger-plugin@^3.4.1":
   version "3.4.1"
   resolved "http://192.168.1.231:3000/@ngxs%2flogger-plugin/-/logger-plugin-3.4.1.tgz#afe3c173c151520b75e5c6ee8e6caeabb6ddddab"
   integrity sha512-XYxYcTIsRrMsoAarHAWg3h5MGhmytQ1M2OOWiKZzA541cK8rWVMiPSRA58A0YKrJQRiY5jKF0OmBethK4/QMkA==
+  dependencies:
+    tslib "^1.9.0"
+
+"@ngxs/router-plugin@3.4.1":
+  version "3.4.1"
+  resolved "http://192.168.1.231:3000/@ngxs%2frouter-plugin/-/router-plugin-3.4.1.tgz#02dfc0133fa6c34b9a6a33b8355a6b49b2c2e535"
+  integrity sha512-xmxZyx++5meikwph0oXyFKPp8mHDHBKdels89sykSM4TIRJeqkOcy6m22V5pOPAG2oWDUh+yjSSmAMwGLRaScA==
   dependencies:
     tslib "^1.9.0"
 
