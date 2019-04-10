@@ -11,6 +11,7 @@ import {
 }                               from '@ngxs/logger-plugin';
 import { NgxsModule }           from '@ngxs/store';
 import { NgxsConfig }           from '@ngxs/store/src/symbols';
+import { AppState }             from 'src/app/store/app.state';
 import { CounterState }         from 'src/app/store/counter.state';
 
 export const OPTIONS_CONFIG: Partial<NgxsConfig> = {
@@ -44,10 +45,15 @@ export const LOGGER_CONFIG: NgxsLoggerPluginOptions = {
   disabled: false
 };
 
+const states = [
+  CounterState,
+  AppState
+];
+
 @NgModule({
   imports: [
     CommonModule,
-    NgxsModule.forRoot([CounterState], OPTIONS_CONFIG),
+    NgxsModule.forRoot(states, OPTIONS_CONFIG),
     NgxsReduxDevtoolsPluginModule.forRoot(DEVTOOLS_REDUX_CONFIG),
     NgxsLoggerPluginModule.forRoot(LOGGER_CONFIG),
     NgxsEmitPluginModule.forRoot()
