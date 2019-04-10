@@ -15,7 +15,7 @@ import {
   CounterState,
   CounterStateModel
 }                             from 'src/app/store/counter.state';
-import { AppStateExtendable } from 'src/app/Support/AppStateExtendable';
+import { AppStateExtendable } from 'src/app/support/AppStateExtendable';
 
 @Component({
   selector:        'app-root',
@@ -33,6 +33,10 @@ export class AppComponent extends AppStateExtendable {
   
   constructor(public store: Store) {
     super();
+  
+    // of(4).pipe(debounceTime(2000)).subscribe(_ => {
+    //   this.setTitle$.emit("changed");
+    // });
   }
   
 }
