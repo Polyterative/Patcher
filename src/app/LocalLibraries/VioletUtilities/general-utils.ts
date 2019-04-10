@@ -122,13 +122,13 @@ export class LanguageUtils {
 //         }
 //     };
 //
-//     public static timeDifferenceInMillis(recent: Date, far: Date): number {
+//     public static timeDifferenceInMillis(recent: Date, far: Date): observable {
 //         const from = moment.utc(recent);
 //         const to = moment.utc(far);
 //         return from.diff(to, 'ms', true);
 //     }
 //
-//     public static dateToCentMin(timeResult: number) {
+//     public static dateToCentMin(timeResult: observable) {
 //         return Math.round((timeResult / 600));
 //     }
 //
@@ -147,7 +147,7 @@ export class CommunicationUtils {
     );
   }
   
-  // public static showSnackbar_withAction(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ duration: number) {
+  // public static showSnackbar_withAction(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ duration: observable) {
   //     snackReference.open(
   //         message, /*isFunction(action) ? action : */null, {
   //             duration: duration,
