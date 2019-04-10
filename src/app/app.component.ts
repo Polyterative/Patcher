@@ -1,6 +1,14 @@
-import { Component } from '@angular/core';
-import { Store }     from '@ngxs/store';
-import { AddTodo }   from 'src/app/store/todos/todo/todo.action';
+import { Component }    from '@angular/core';
+import {
+  Emittable,
+  Emitter
+}                       from '@ngxs-labs/emitter';
+import {
+  Select,
+  Store
+}                       from '@ngxs/store';
+import { Observable }   from 'rxjs';
+import { CounterState } from 'src/app/store/counter.state';
 
 @Component({
   selector:    'app-root',
@@ -10,15 +18,18 @@ import { AddTodo }   from 'src/app/store/todos/todo/todo.action';
 export class AppComponent {
   title = 'Focus';
   
-  // addTodo$: EventEmitter=;
+  @Select(CounterState)
+  counter$: Observable<number>;
+  
+  // Use in components to emit asynchronously payload
+  @Emitter(CounterState.increment)
+  increment: Emittable<void>;
+  
+  @Emitter(CounterState.decrement)
+  decrement: Emittable<void>;
   
   constructor(public store: Store) {
   
   }
   
-  click() {
-    this.store.dispatch(new AddTodo('a'));
-    
-    console.log(this.store);
-  }
 }
