@@ -1,79 +1,94 @@
-<mat-toolbar color="accent">
-  Hay
-</mat-toolbar>
+<ng-container *ngIf="{
+             state: state$|async,
+             count: count$|async
+             } as templateLocalOptions"
+>
+  <mat-toolbar color="accent"
 
-<div class='content-root-card-short-topMargin'>
-  <lib-flex-row>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #E64A19'
-    >
-      <mat-card-title>Card one</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa biodiesel
-                        ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                        polaroid aesthetic.
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #00796B'
-    >
-      <mat-card-title>Card one</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa biodiesel
-                        ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                        polaroid aesthetic chicken shabby chic lo-fi tumblr. Beard small batch
-                        listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher. Ugh
-                        chicharrones
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #512DA8'
-    >
-      <mat-card-title>Card two</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa biodiesel
-                        ethical flannel, hot chicken shabby chic lo-fi tumblr. Beard small batch
-                        listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher. Ugh
-                        chicharrones single-origin coffee, intelligentsia pickled fashion axe
-                        mustache
-                        tote bag disrupt pinterest cardigan bitters franzen polaroid aesthetic.
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-  </lib-flex-row>
-</div>
+  >
+    {{ templateLocalOptions.state.pageTitle }}
+  </mat-toolbar>
 
-<lib-flex-row class='content-root-card-short-topMargin'>
-
-  <div fxFlex>
-    <!--  <pre> {{todos$|async}} </pre>-->
+  <div *ngIf='!templateLocalOptions.state.loading'
+       class='content-root-card-short-topMargin'
+  >
+    <lib-flex-row>
+      <mat-card class='featureCard'
+                fxFlex
+                style='background-color: #E64A19'
+      >
+        <mat-card-title>Card one</mat-card-title>
+        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
+        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
+                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
+                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
+                          biodiesel
+                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
+                          polaroid aesthetic.
+                          Mlkshk
+        </mat-card-content>
+      </mat-card>
+      <mat-card class='featureCard'
+                fxFlex
+                style='background-color: #00796B'
+      >
+        <mat-card-title>Card one</mat-card-title>
+        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
+        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
+                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
+                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
+                          biodiesel
+                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
+                          polaroid aesthetic chicken shabby chic lo-fi tumblr. Beard small batch
+                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
+                          Ugh
+                          chicharrones
+                          Mlkshk
+        </mat-card-content>
+      </mat-card>
+      <mat-card class='featureCard'
+                fxFlex
+                style='background-color: #512DA8'
+      >
+        <mat-card-title>Card two</mat-card-title>
+        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
+        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
+                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
+                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
+                          biodiesel
+                          ethical flannel, hot chicken shabby chic lo-fi tumblr. Beard small batch
+                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
+                          Ugh
+                          chicharrones single-origin coffee, intelligentsia pickled fashion axe
+                          mustache
+                          tote bag disrupt pinterest cardigan bitters franzen polaroid aesthetic.
+                          Mlkshk
+        </mat-card-content>
+      </mat-card>
+    </lib-flex-row>
   </div>
 
-  <mat-card fxFlex>
+  <lib-flex-row class='content-root-card-short-topMargin'>
 
-    <ng-container *ngIf="count$ | async as count">
-      <h3>Count is {{ count.value }}</h3>
-      <div>
-        <button (click)="counterValue.emit(count.value + 1)"
-                mat-flat-button
-        >Increment (+1)
-        </button>
-        <button (click)="counterValue.emit(count.value - 1)"
-                mat-flat-button
-        >Decrement (-1)
-        </button>
-      </div>
-    </ng-container>
-  </mat-card>
-</lib-flex-row>
+    <div fxFlex>
+      <!--  <pre> {{todos$|async}} </pre>-->
+    </div>
+
+    <mat-card fxFlex>
+
+      <ng-container>
+        <h3>Count is {{ templateLocalOptions.count.value }}</h3>
+        <div>
+          <button (click)="counterValue.emit(templateLocalOptions.count.value + 1)"
+                  mat-flat-button
+          >Increment (+1)
+          </button>
+          <button (click)="counterValue.emit(templateLocalOptions.count.value - 1)"
+                  mat-flat-button
+          >Decrement (-1)
+          </button>
+        </div>
+      </ng-container>
+    </mat-card>
+  </lib-flex-row>
+</ng-container>
