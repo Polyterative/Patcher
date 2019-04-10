@@ -1,32 +1,34 @@
-import { Component }    from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component
+}                     from '@angular/core';
 import {
   Emittable,
   Emitter
-}                       from '@ngxs-labs/emitter';
+}                     from '@ngxs-labs/emitter';
 import {
   Select,
   Store
-}                       from '@ngxs/store';
-import { Observable }   from 'rxjs';
-import { CounterState } from 'src/app/store/counter.state';
+}                     from '@ngxs/store';
+import { Observable } from 'rxjs';
+import {
+  CounterState,
+  CounterStateModel
+}                     from 'src/app/store/counter.state';
 
 @Component({
-  selector:    'app-root',
-  templateUrl: './app.component.html',
-  styleUrls:   ['./app.component.scss']
+  selector:        'app-root',
+  templateUrl:     './app.component.html',
+  styleUrls:       ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-  title = 'Focus';
   
   @Select(CounterState)
-  counter$: Observable<number>;
+  public count$: Observable<CounterStateModel>;
   
-  // Use in components to emit asynchronously payload
-  @Emitter(CounterState.increment)
-  increment: Emittable<void>;
-  
-  @Emitter(CounterState.decrement)
-  decrement: Emittable<void>;
+  @Emitter(CounterState.setValue)
+  public counterValue: Emittable<number>;
   
   constructor(public store: Store) {
   
