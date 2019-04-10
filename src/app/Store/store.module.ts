@@ -1,3 +1,4 @@
+import { CommonModule }         from '@angular/common';
 import { NgModule }             from '@angular/core';
 import { NgxsEmitPluginModule } from '@ngxs-labs/emitter';
 import {
@@ -45,16 +46,13 @@ export const LOGGER_CONFIG: NgxsLoggerPluginOptions = {
 
 @NgModule({
   imports: [
-    NgxsModule.forRoot([
-      CounterState
-    ], OPTIONS_CONFIG),
+    CommonModule,
+    NgxsModule.forRoot([CounterState], OPTIONS_CONFIG),
     NgxsReduxDevtoolsPluginModule.forRoot(DEVTOOLS_REDUX_CONFIG),
     NgxsLoggerPluginModule.forRoot(LOGGER_CONFIG),
     NgxsEmitPluginModule.forRoot()
   ],
-  exports: [
-    NgxsModule
-  ]
+  exports: [NgxsModule]
 })
 export class LocalStoreModule {
 }
