@@ -55,8 +55,19 @@
 </div>
 
 <lib-flex-row class='content-root-card-short-topMargin'>
-  <button (click)="click()"
+  <ng-container *ngIf="counter$ | async as counter">
+    <h3>Counter is {{ counter }}</h3>
+  </ng-container>
+
+  <button (click)="increment.emit()"
           mat-button
-  >Add todo
+  >Increment
   </button>
+  <button (click)="decrement.emit()"
+          mat-button
+  >Decrement
+  </button>
+  <div fxFlex>
+    <!--  <pre> {{todos$|async}} </pre>-->
+  </div>
 </lib-flex-row>
