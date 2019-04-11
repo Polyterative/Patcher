@@ -13,7 +13,6 @@ import {
 import { Observable }         from 'rxjs';
 import { of }                 from 'rxjs/internal/observable/of';
 import { delay }              from 'rxjs/operators';
-import { PageStatusCases }    from 'src/app/store/app.state';
 import {
   CounterState,
   CounterStateModel
@@ -40,10 +39,9 @@ export class AppComponent extends AppStateExtendable {
     of(4).pipe(delay(3000)).subscribe(_ => {
     
       console.log('a');
-    
-      this.setTitle$.emit(PageStatusCases.IDLE);
+  
+      this.setTitle$.emit('IDLE');
     });
-    
     
   }
   

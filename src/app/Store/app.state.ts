@@ -7,9 +7,7 @@ import {
   StateContext
 } from '@ngxs/store';
 
-export enum PageStatusCases {
-  'LOADING', 'IDLE', 'ERROR'
-}
+export type PageStatusCases = 'LOADING' | 'IDLE' | 'ERROR';
 
 export interface AppStateModel {
   pageStatus: PageStatusCases;
@@ -19,15 +17,15 @@ export interface AppStateModel {
 @State<AppStateModel>({
   name:     'AppState',
   defaults: {
-    pageStatus: PageStatusCases.IDLE,
+    pageStatus: 'IDLE',
     userName:   'default'
   }
 })
 export class AppState {
   
-  @Receiver({payload: PageStatusCases})
-  static setPageStatus(context: StateContext<AppStateModel>, action: EmitterAction<PageStatusCases>) {
-    context.patchState({pageStatus: action.payload});
+  @Receiver({type: '[Global] Current page status'})
+  static setPageStatus({patchState}: StateContext<AppStateModel>, {payload}: EmitterAction<PageStatusCases>): void {
+    patchState({pageStatus: payload});
   }
   
 }
