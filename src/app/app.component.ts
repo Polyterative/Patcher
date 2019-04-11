@@ -11,6 +11,9 @@ import {
   Store
 }                             from '@ngxs/store';
 import { Observable }         from 'rxjs';
+import { of }                 from 'rxjs/internal/observable/of';
+import { delay }              from 'rxjs/operators';
+import { PageStatusCases }    from 'src/app/store/app.state';
 import {
   CounterState,
   CounterStateModel
@@ -34,9 +37,14 @@ export class AppComponent extends AppStateExtendable {
   constructor(public store: Store) {
     super();
   
-    // of(4).pipe(debounceTime(2000)).subscribe(_ => {
-    //   this.setTitle$.emit("changed");
-    // });
+    of(4).pipe(delay(3000)).subscribe(_ => {
+    
+      console.log('a');
+    
+      this.setTitle$.emit(PageStatusCases.IDLE);
+    });
+    
+    
   }
   
 }

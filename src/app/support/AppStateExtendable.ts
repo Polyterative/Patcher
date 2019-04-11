@@ -1,30 +1,24 @@
 import {
   Emittable,
   Emitter
-}                     from '@ngxs-labs/emitter';
-import { Select }     from '@ngxs/store';
-import { Observable } from 'rxjs';
+} from '@ngxs-labs/emitter';
 import {
-  PageLoadingState,
-  PageLoadingStateModel
-}                     from 'src/app/store/App/pageLoading.state';
-import {
-  TitleState,
-  TitleStateModel
-}                     from 'src/app/store/App/title.state';
+  AppState,
+  PageStatusCases
+} from 'src/app/store/app.state';
 
 export class AppStateExtendable {
   
-  @Select(TitleState)
-  title$: Observable<TitleStateModel>;
+  // @Select(TitleState)
+  // title$: Observable<TitleStateModel>;
+  //
+  // @Select(PageLoadingState)
+  // pageLoading$: Observable<PageLoadingStateModel>;
   
-  @Select(PageLoadingState)
-  pageLoading$: Observable<PageLoadingStateModel>;
+  @Emitter(AppState.setPageStatus)
+  setTitle$: Emittable<PageStatusCases>;
   
-  @Emitter(TitleState.setValue)
-  setTitle$: Emittable<TitleStateModel>;
-  
-  @Emitter(PageLoadingState.setValue)
-  setPageLoading$: Emittable<PageLoadingStateModel>;
+  // @Emitter(PageLoadingState.setValue)
+  // setPageLoading$: Emittable<PageLoadingStateModel>;
   
 }
