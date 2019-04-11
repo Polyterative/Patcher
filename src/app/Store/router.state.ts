@@ -1,7 +1,4 @@
-import {
-  Injector,
-  NgZone
-}                      from '@angular/core';
+import { NgZone }      from '@angular/core';
 import { Router }      from '@angular/router';
 import {
   EmitterAction,
@@ -28,24 +25,29 @@ export class RouterState {
   private static router: Router;
   private static ngZone: NgZone;
   
-  constructor(injector: Injector) {
-    RouterState.router = injector.get<Router>(Router);
-    RouterState.ngZone = injector.get<NgZone>(NgZone);
+  constructor(injectedRouter: Router, injectedNgZone: NgZone) {
+    RouterState.router = injectedRouter;
+    RouterState.ngZone = injectedNgZone;
   }
   
-  @Receiver({type: '[Router] Change '})
+  @Receiver({type: '[Router] Change path'})
   static changeRoute({setState}: StateContext<string>, {payload}: EmitterAction<string>): Observable<boolean> {
     
-    // ngZone workaround https://github.com/angular/angular/issues/25837
-    const observable = fromPromise(RouterState.ngZone.run(() => RouterState.router.navigate([payload])))
+    const navigate = () => RouterState.router.navigate([payload]);
+    
+    const observable = fromPromise(
+      RouterState.ngZone.run(navigate)    // ngZone workaround https://github.com/angular/angular/issues/25837
+    )
       .pipe(
-        take(1),
-        filter(navigated => navigated), // only if actually navigated
+        take(1), // one-shot
         share()
       );
     
     // this way it fires even if emitted doesn't subscribes
-    observable.subscribe(_ => setState(payload));
+    observable.pipe(
+      filter(navigated => navigated) // only if actually navigated
+    )
+      .subscribe(_ => setState(payload));
     
     return observable;
   }
