@@ -8,7 +8,7 @@ import {
   StateContext
 } from '@ngxs/store';
 
-export type PageStatusCases = 'LOADING' | 'IDLE' | 'ERROR';
+export type PageStatusCases = 'LOADING' | 'IDLE' | 'ERROR' | 'INITIALIZING';
 
 export interface AppStateModel {
   pageStatus: PageStatusCases;
@@ -19,7 +19,7 @@ export interface AppStateModel {
 @State<AppStateModel>({
   name:     'AppState',
   defaults: {
-    pageStatus: 'IDLE',
+    pageStatus: 'INITIALIZING',
     userName:   'default',
     pageTitle:  'pageName'
   }
@@ -31,17 +31,17 @@ export class AppState {
     return state.pageTitle;
   }
   
-  @Receiver({type: '[Global] Current page status'})
+  @Receiver({type: '[Global] Page status'})
   static setPageStatus({patchState}: StateContext<AppStateModel>, {payload}: EmitterAction<PageStatusCases>): void {
     patchState({pageStatus: payload});
   }
   
-  @Receiver({type: '[Global] Current username '})
+  @Receiver({type: '[Global] Username '})
   static setUsername({patchState}: StateContext<AppStateModel>, {payload}: EmitterAction<string>): void {
     patchState({userName: payload});
   }
   
-  @Receiver({type: '[Global] Current page title '})
+  @Receiver({type: '[Global] Page title '})
   static setPageTitle({patchState}: StateContext<AppStateModel>, {payload}: EmitterAction<string>): void {
     patchState({pageTitle: payload});
   }
