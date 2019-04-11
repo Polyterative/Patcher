@@ -3,8 +3,8 @@ import {
   OnDestroy,
   OnInit
 }                            from '@angular/core';
-import { ConstantsService }  from 'src/app/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService } from 'src/app/LocalLibraries/VioletUtilities/dimensions.service';
+import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
 
 export interface Destructable {
   destroyEvent$: EventEmitter<null>;

@@ -2,27 +2,32 @@ import { NgModule }                from '@angular/core';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { OrangeStructuresModule } from 'src/app/LocalLibraries/OrangeStructures/orange-structures.module';
-import { VioletUtilsModule }      from 'src/app/LocalLibraries/VioletUtilities/violet-utils.module';
-import { MaterialModule }         from 'src/app/material/material.module';
-import { LocalStoreModule }       from 'src/app/store/store.module';
-import { AppRoutingModule }       from './app-routing.module';
-import { AppComponent }           from './app.component';
+import { MaterialModulePack }        from 'src/app/material/material-module-pack.module';
+import { LocalStoreModule }          from 'src/app/store/store.module';
+import { OrangeStructuresModule }    from 'src/app/Utils/LocalLibraries/OrangeStructures/orange-structures.module';
+import { VioletUtilsModule }         from 'src/app/Utils/LocalLibraries/VioletUtilities/violet-utils.module';
+import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.module';
+import { AppRoutingModule }          from './app-routing.module';
+import { AppComponent }              from './app.component';
+import { TodosPageComponent }        from './Pages/Todos/todos-page/todos-page.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    TodosPageComponent
   ],
   imports:      [
     // BASE
     BrowserModule,
     AppRoutingModule,
     // BASIC
-    MaterialModule,
+    MaterialModulePack,
     // LIBS
     OrangeStructuresModule,
     VioletUtilsModule,
     BrowserAnimationsModule,
+    // INTERNAL UTILS
+    PolyUtilsComponentsModule,
     // EXT LIBS
     LocalStoreModule
   ],
