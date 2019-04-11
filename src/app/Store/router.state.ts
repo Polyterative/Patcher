@@ -25,11 +25,6 @@ export class RouterState {
   private static router: Router;
   private static ngZone: NgZone;
   
-  constructor(injectedRouter: Router, injectedNgZone: NgZone) {
-    RouterState.router = injectedRouter;
-    RouterState.ngZone = injectedNgZone;
-  }
-  
   @Receiver({type: '[Router] Change path'})
   static changeRoute({setState}: StateContext<string>, {payload}: EmitterAction<string>): Observable<boolean> {
     
@@ -50,5 +45,10 @@ export class RouterState {
       .subscribe(_ => setState(payload));
     
     return observable;
+  }
+  
+  constructor(injectedRouter: Router, injectedNgZone: NgZone) {
+    RouterState.router = injectedRouter;
+    RouterState.ngZone = injectedNgZone;
   }
 }
