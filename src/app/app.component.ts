@@ -27,11 +27,11 @@ export class AppComponent extends AppStateExtendable {
     of(4)
       .pipe(delay(3000))
       .subscribe(_ => {
-      
-        console.log('a');
-      
-        this.setTitle$.emit('IDLE');
-      
+  
+        // console.log('a');
+        //
+        // this.setTitle$.emit('IDLE');
+       
         this.changeRoute$.emit('todos');
       });
     
