@@ -13,6 +13,7 @@ import { NgxsModule }           from '@ngxs/store';
 import { NgxsConfig }           from '@ngxs/store/src/symbols';
 import { AppState }             from 'src/app/store/app.state';
 import { CounterState }         from 'src/app/store/counter.state';
+import { RouterState }          from 'src/app/store/router.state';
 
 export const OPTIONS_CONFIG: Partial<NgxsConfig> = {
   /**
@@ -47,7 +48,8 @@ export const LOGGER_CONFIG: NgxsLoggerPluginOptions = {
 
 const states = [
   CounterState,
-  AppState
+  AppState,
+  RouterState
 ];
 
 @NgModule({
