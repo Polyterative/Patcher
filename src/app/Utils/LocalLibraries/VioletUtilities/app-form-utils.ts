@@ -1,6 +1,6 @@
 import { FormControl } from '@angular/forms';
-import { Strings }     from 'src/app/LocalLibraries/VioletUtilities/app-strings';
-import { StringsIT }   from 'src/app/LocalLibraries/VioletUtilities/app-strings-it';
+import { Strings }     from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
+import { StringsIT }   from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings-it';
 
 export class AppFormUtils {
   

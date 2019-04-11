@@ -1,0 +1,12 @@
+@import "../../../app.component";
+@import "../../../GlobalStyles/Styles/Components/toolbar";
+
+.color {
+  background-color: #041e41;
+}
+
+.toolbarFab {
+  top: 2.1em;
+  right: 1em;
+  z-index: 1;
+}

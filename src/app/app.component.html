@@ -3,98 +3,103 @@
 <!--             } as scope"-->
 <!--&gt;-->
 
-<ng-container *ngIf="{
-               count: count$|async
-               } as scope"
->
+<!--<ng-container *ngIf="{-->
+<!--               count: count$|async-->
+<!--               } as scope"-->
+<!--&gt;-->
 
 
-  <mat-toolbar color="accent"
+<!--  <mat-toolbar color="accent"-->
 
-  >
-    {{ (pageTitle$|async) }}
-  </mat-toolbar>
+<!--  >-->
+<!--    {{ (pageTitle$|async) }}-->
+<!--  </mat-toolbar>-->
 
-  <div
-    class='content-root-card-short-topMargin'
-  >
-    <lib-flex-row>
-      <mat-card class='featureCard'
-                fxFlex
-                style='background-color: #E64A19'
-      >
-        <mat-card-title>Card one</mat-card-title>
-        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                          biodiesel
-                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                          polaroid aesthetic.
-                          Mlkshk
-        </mat-card-content>
-      </mat-card>
-      <mat-card class='featureCard'
-                fxFlex
-                style='background-color: #00796B'
-      >
-        <mat-card-title>Card one</mat-card-title>
-        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                          biodiesel
-                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                          polaroid aesthetic chicken shabby chic lo-fi tumblr. Beard small batch
-                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
-                          Ugh
-                          chicharrones
-                          Mlkshk
-        </mat-card-content>
-      </mat-card>
-      <mat-card class='featureCard'
-                fxFlex
-                style='background-color: #512DA8'
-      >
-        <mat-card-title>Card two</mat-card-title>
-        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                          biodiesel
-                          ethical flannel, hot chicken shabby chic lo-fi tumblr. Beard small batch
-                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
-                          Ugh
-                          chicharrones single-origin coffee, intelligentsia pickled fashion axe
-                          mustache
-                          tote bag disrupt pinterest cardigan bitters franzen polaroid aesthetic.
-                          Mlkshk
-        </mat-card-content>
-      </mat-card>
-    </lib-flex-row>
-  </div>
+<!--  <div-->
+<!--    class='content-root-card-short-topMargin'-->
+<!--  >-->
+<!--    <lib-flex-row>-->
+<!--      <mat-card class='featureCard'-->
+<!--                fxFlex-->
+<!--                style='background-color: #E64A19'-->
+<!--      >-->
+<!--        <mat-card-title>Card one</mat-card-title>-->
+<!--        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>-->
+<!--        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.-->
+<!--                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY-->
+<!--                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa-->
+<!--                          biodiesel-->
+<!--                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen-->
+<!--                          polaroid aesthetic.-->
+<!--                          Mlkshk-->
+<!--        </mat-card-content>-->
+<!--      </mat-card>-->
+<!--      <mat-card class='featureCard'-->
+<!--                fxFlex-->
+<!--                style='background-color: #00796B'-->
+<!--      >-->
+<!--        <mat-card-title>Card one</mat-card-title>-->
+<!--        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>-->
+<!--        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.-->
+<!--                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY-->
+<!--                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa-->
+<!--                          biodiesel-->
+<!--                          ethical flannel, tote bag disrupt pinterest cardigan bitters franzen-->
+<!--                          polaroid aesthetic chicken shabby chic lo-fi tumblr. Beard small batch-->
+<!--                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.-->
+<!--                          Ugh-->
+<!--                          chicharrones-->
+<!--                          Mlkshk-->
+<!--        </mat-card-content>-->
+<!--      </mat-card>-->
+<!--      <mat-card class='featureCard'-->
+<!--                fxFlex-->
+<!--                style='background-color: #512DA8'-->
+<!--      >-->
+<!--        <mat-card-title>Card two</mat-card-title>-->
+<!--        <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>-->
+<!--        <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.-->
+<!--                          Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY-->
+<!--                          taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa-->
+<!--                          biodiesel-->
+<!--                          ethical flannel, hot chicken shabby chic lo-fi tumblr. Beard small batch-->
+<!--                          listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.-->
+<!--                          Ugh-->
+<!--                          chicharrones single-origin coffee, intelligentsia pickled fashion axe-->
+<!--                          mustache-->
+<!--                          tote bag disrupt pinterest cardigan bitters franzen polaroid aesthetic.-->
+<!--                          Mlkshk-->
+<!--        </mat-card-content>-->
+<!--      </mat-card>-->
+<!--    </lib-flex-row>-->
+<!--  </div>-->
 
-  <lib-flex-row class='content-root-card-short-topMargin'>
+<!--  <lib-flex-row class='content-root-card-short-topMargin'>-->
 
-    <div fxFlex>
-      <!--  <pre> {{todos$|async}} </pre>-->
-    </div>
+<!--    <div fxFlex>-->
+<!--      &lt;!&ndash;  <pre> {{todos$|async}} </pre>&ndash;&gt;-->
+<!--    </div>-->
 
-    <mat-card fxFlex>
+<!--    <mat-card fxFlex>-->
 
-      <ng-container>
-        <h3>Count is {{ scope.count.value }}</h3>
-        <div>
-          <button (click)="counterValue.emit(scope.count.value + 1)"
-                  mat-flat-button
-          >(+1)
-          </button>
-          <button (click)="counterValue.emit(scope.count.value - 1)"
-                  mat-flat-button
-          >(-1)
-          </button>
-        </div>
-      </ng-container>
-    </mat-card>
-  </lib-flex-row>
-</ng-container>
+<!--      <ng-container>-->
+<!--        <h3>Count is {{ scope.count.value }}</h3>-->
+<!--        <div>-->
+<!--          <button (click)="counterValue.emit(scope.count.value + 1)"-->
+<!--                  mat-flat-button-->
+<!--          >(+1)-->
+<!--          </button>-->
+<!--          <button (click)="counterValue.emit(scope.count.value - 1)"-->
+<!--                  mat-flat-button-->
+<!--          >(-1)-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </ng-container>-->
+<!--    </mat-card>-->
+<!--  </lib-flex-row>-->
+<!--</ng-container>-->
+
+<app-toolbar></app-toolbar>
+<app-card-wrapper>
+  <router-outlet></router-outlet>
+</app-card-wrapper>

@@ -53,5 +53,5 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     MatPaginatorModule
   ]
 })
-export class MaterialModule {
+export class MaterialModulePack {
 }

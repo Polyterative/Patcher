@@ -24,11 +24,11 @@ import {
   startWith,
   takeUntil
 }                            from 'rxjs/operators';
-import { AngularEntityBase } from 'src/app/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { Strings }           from 'src/app/LocalLibraries/VioletUtilities/app-strings';
-import { ConstantsService }  from 'src/app/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService } from 'src/app/LocalLibraries/VioletUtilities/dimensions.service';
-import { LoggerService }     from 'src/app/LocalLibraries/VioletUtilities/logger/logger.service';
+import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { Strings }           from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
+import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+import { LoggerService }     from 'src/app/Utils/LocalLibraries/VioletUtilities/logger/logger.service';
 import { isArray }           from 'util';
 import {
   FormTypes,
