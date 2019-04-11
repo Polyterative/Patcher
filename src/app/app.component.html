@@ -4,8 +4,6 @@
 <!--&gt;-->
 
 <ng-container *ngIf="{
-               title: title$|async,
-               loading: pageLoading$|async,
                count: count$|async
                } as scope"
 >
@@ -14,7 +12,6 @@
   <mat-toolbar color="accent"
 
   >
-    {{ (title$|async).title }}
     <!--        {{ pageLoading$|async|json }}-->
   </mat-toolbar>
 
