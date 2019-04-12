@@ -117,7 +117,7 @@
                         [displayWith]='autocomplete_displayFunction'
                         autoActiveFirstOption
       >
-        <mat-option *ngFor='let option of options_filtered|async'
+        <mat-option *ngFor='let option of optionsFiltered|async'
                     value='{{option.name}}'
         >
           {{ option.name }}
@@ -141,7 +141,7 @@
                       [displayWith]='autocomplete_displayFunction'
                       autoActiveFirstOption
     >
-      <mat-option *ngFor='let option of options_filtered|async'
+      <mat-option *ngFor='let option of optionsFiltered|async'
                   value='{{option.name}}'
       >
         {{ option.name }}
@@ -167,8 +167,8 @@
   <mat-label>{{ label }}</mat-label>
   <input [formControl]='control'
          [matDatepicker]='picker'
-         [max]='date_max'
-         [min]='date_min'
+         [max]='dateMax'
+         [min]='dateMin'
          [placeholder]='placeholder'
          matInput
   >
@@ -177,7 +177,7 @@
   >
   </mat-datepicker-toggle>
   <mat-datepicker #picker
-                  [startAt]="date_openAt"
+                  [startAt]="dateOpenPosition"
   ></mat-datepicker>
   <mat-error *ngIf='control.invalid'>{{ errors }}</mat-error>
 </mat-form-field>
