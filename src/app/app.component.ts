@@ -1,11 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component
-}                             from '@angular/core';
-import { Store }              from '@ngxs/store';
-import { of }                 from 'rxjs/internal/observable/of';
-import { delay }              from 'rxjs/operators';
-import { AppStateExtendable } from 'src/app/support/AppStateExtendable';
+} from '@angular/core';
 
 @Component({
   selector:        'app-root',
@@ -13,7 +9,7 @@ import { AppStateExtendable } from 'src/app/support/AppStateExtendable';
   styleUrls:       ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent extends AppStateExtendable {
+export class AppComponent {
   
   // @Select(CounterState)
   // count$: Observable<CounterStateModel>;
@@ -21,20 +17,8 @@ export class AppComponent extends AppStateExtendable {
   // @Emitter(CounterState.setValue)
   // counterValue: Emittable<number>;
   
-  constructor(public store: Store) {
-    super();
+  constructor() {
   
-    of(4)
-      .pipe(delay(3000))
-      .subscribe(_ => {
-  
-        // console.log('a');
-        //
-        // this.setTitle$.emit('IDLE');
-       
-        this.changeRoute$.emit('todos');
-      });
-    
   }
   
 }

@@ -1,9 +1,10 @@
 import { CommonModule }           from '@angular/common';
 import { NgModule }               from '@angular/core';
-import { NgxsModule }             from '@ngxs/store';
-import { MaterialModulePack }     from 'src/app/material/material-module-pack.module';
+import {
+  MatIconModule,
+  MatToolbarModule
+}                                 from '@angular/material';
 import { ToolbarComponent }       from 'src/app/Utils/Components/toolbar/toolbar.component';
-import { ToolbarState }           from 'src/app/Utils/Components/toolbar/toolbar.state';
 import { OrangeStructuresModule } from 'src/app/Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 
 @NgModule({
@@ -11,9 +12,10 @@ import { OrangeStructuresModule } from 'src/app/Utils/LocalLibraries/OrangeStruc
   exports:      [ToolbarComponent],
   imports:      [
     CommonModule,
-    MaterialModulePack,
+    // MaterialModulePack,
     OrangeStructuresModule,
-    NgxsModule.forFeature([ToolbarState])
+    MatToolbarModule,
+    MatIconModule
   ]
 })
 export class ToolbarModule {
