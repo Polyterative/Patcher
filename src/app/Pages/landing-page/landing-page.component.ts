@@ -29,9 +29,8 @@ export class LandingPageComponent implements OnInit {
   constructor(db: AngularFirestore) {
     
     // @ts-ignore
-    this.messages$ = db.collection(this.messagePath)
-      .valueChanges()
-      .pipe(switchMap(x => of(x).pipe(tap(z => {console.log(z); }))
+    this.messages$ = db.collection(this.messagePath).valueChanges()
+      .pipe(switchMap(x => of(x)
           .pipe(concatMap(y => y),
             bufferCount(3),
             bufferCount(Number.MAX_VALUE),
@@ -40,13 +39,8 @@ export class LandingPageComponent implements OnInit {
         )
       )
     ;
-    
-    const message: MessageModel = {
-      content:  'cont',
-      title:    'titolo',
-      when:     new Date(),
-      subtitle: 'sub'
-    };
+  
+    // db.collection(this.messagePath)
     
     // db.collection(this.messagePath)
     //   .add(message);
