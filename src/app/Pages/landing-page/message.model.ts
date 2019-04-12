@@ -2,5 +2,5 @@ export interface MessageModel {
   title: string;
   content: string;
   subtitle: string;
-  when: Date;
+  when: string;
 }

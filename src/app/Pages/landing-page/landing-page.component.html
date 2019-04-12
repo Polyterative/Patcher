@@ -8,7 +8,9 @@
                   style='background-color: #512DA8'
         >
           <mat-card-title>{{ message?.title }}</mat-card-title>
-          <mat-card-subtitle>{{ message?.subtitle }}</mat-card-subtitle>
+          <mat-card-subtitle>
+            {{ message?.subtitle }} | {{ message?.when|date }}
+          </mat-card-subtitle>
           <mat-card-content>{{ message?.content }}</mat-card-content>
         </mat-card>
       </ng-container>
