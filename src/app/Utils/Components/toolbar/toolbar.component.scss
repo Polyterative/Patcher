@@ -1,0 +1,13 @@
+@import "../../../app.component";
+@import "../../../Styles/Components/toolbar";
+
+.color {
+  background-color: #00897B;
+  color: white;
+}
+
+.toolbarFab {
+  top: 2.1em;
+  right: 1em;
+  z-index: 1;
+}

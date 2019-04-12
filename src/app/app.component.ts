@@ -1,21 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component
-}                             from '@angular/core';
-import {
-  Emittable,
-  Emitter
-}                             from '@ngxs-labs/emitter';
-import {
-  Select,
-  Store
-}                             from '@ngxs/store';
-import { Observable }         from 'rxjs';
-import {
-  CounterState,
-  CounterStateModel
-}                             from 'src/app/store/counter.state';
-import { AppStateExtendable } from 'src/app/Support/AppStateExtendable';
+} from '@angular/core';
 
 @Component({
   selector:        'app-root',
@@ -23,16 +9,16 @@ import { AppStateExtendable } from 'src/app/Support/AppStateExtendable';
   styleUrls:       ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent extends AppStateExtendable {
+export class AppComponent {
   
-  @Select(CounterState)
-  count$: Observable<CounterStateModel>;
+  // @Select(CounterState)
+  // count$: Observable<CounterStateModel>;
+  //
+  // @Emitter(CounterState.setValue)
+  // counterValue: Emittable<number>;
   
-  @Emitter(CounterState.setValue)
-  counterValue: Emittable<number>;
+  constructor() {
   
-  constructor(public store: Store) {
-    super();
   }
   
 }
