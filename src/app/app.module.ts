@@ -8,12 +8,10 @@ import { VioletUtilsModule }         from 'src/app/Utils/LocalLibraries/VioletUt
 import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.module';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
-import { TodosPageComponent }        from './Pages/Todos/todos-page/todos-page.component';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    TodosPageComponent
+    AppComponent
   ],
   imports:      [
     // BASE
@@ -26,7 +24,7 @@ import { TodosPageComponent }        from './Pages/Todos/todos-page/todos-page.c
     VioletUtilsModule,
     BrowserAnimationsModule,
     // INTERNAL UTILS
-    PolyUtilsComponentsModule,
+    PolyUtilsComponentsModule
     // EXT LIBS
   ],
   providers:    [],
