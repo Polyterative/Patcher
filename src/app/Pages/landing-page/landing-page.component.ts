@@ -5,10 +5,10 @@ import {
 
 @Component({
   selector:    'app-langing-page',
-  templateUrl: './langing-page.component.html',
-  styleUrls:   ['./langing-page.component.scss']
+  templateUrl: './landing-page.component.html',
+  styleUrls:   ['./landing-page.component.scss']
 })
-export class LangingPageComponent implements OnInit {
+export class LandingPageComponent implements OnInit {
   
   constructor() { }
   
