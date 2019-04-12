@@ -1,19 +1,40 @@
-<lib-flex-column>
-  <ng-container *ngFor='let messageLine of messages$|async'>
-    <lib-flex-row fxFlex>
-      <ng-container *ngFor='let message of messageLine'>
+<lib-flex-row>
+  <lib-flex-column fxFlex='70'>
+    <ng-container *ngFor='let messageLine of messages$|async'>
+      <lib-flex-row fxFlex
+      >
+        <ng-container *ngFor='let message of messageLine'>
 
-        <mat-card class='featureCard'
-                  fxFlex
-                  style='background-color: #512DA8'
-        >
-          <mat-card-title>{{ message?.title }}</mat-card-title>
-          <mat-card-subtitle>
-            {{ message?.subtitle }} | {{ message?.when|date }}
-          </mat-card-subtitle>
-          <mat-card-content>{{ message?.content }}</mat-card-content>
-        </mat-card>
-      </ng-container>
-    </lib-flex-row>
-  </ng-container>
-</lib-flex-column>
+          <mat-card fxFlex
+                    style='background-color: #3a72a8'
+          >
+            <mat-card-title>{{ message?.title }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ message?.subtitle }} | {{ message?.when|date }}
+            </mat-card-subtitle>
+            <mat-card-content>{{ message?.content }}</mat-card-content>
+            <mat-card-actions>
+              <lib-flex-row>
+                <div fxFlex>
+                  <button mat-raised-button>
+                    <mat-icon class="mat-18">delete</mat-icon>
+                  </button>
+                </div>
+              </lib-flex-row>
+            </mat-card-actions>
+          </mat-card>
+        </ng-container>
+      </lib-flex-row>
+    </ng-container>
+  </lib-flex-column>
+  <div fxFlex>
+    <mat-card style='background-color: #00897B'
+    >
+      <mat-card-title>Title</mat-card-title>
+      <mat-card-subtitle>Subtitle</mat-card-subtitle>
+      <mat-card-content>
+        Text content
+      </mat-card-content>
+    </mat-card>
+  </div>
+</lib-flex-row>

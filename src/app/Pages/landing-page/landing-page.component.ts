@@ -10,8 +10,7 @@ import {
 import {
   bufferCount,
   concatMap,
-  switchMap,
-  tap
+  switchMap
 }                           from 'rxjs/operators';
 import { MessageModel }     from 'src/app/Pages/landing-page/message.model';
 
@@ -33,8 +32,7 @@ export class LandingPageComponent implements OnInit {
       .pipe(switchMap(x => of(x)
           .pipe(concatMap(y => y),
             bufferCount(3),
-            bufferCount(Number.MAX_VALUE),
-            tap(z => {console.warn(z); })
+            bufferCount(Number.MAX_VALUE)
           )
         )
       )
