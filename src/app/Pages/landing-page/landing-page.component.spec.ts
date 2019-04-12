@@ -4,21 +4,21 @@ import {
   TestBed
 } from '@angular/core/testing';
 
-import { LangingPageComponent } from 'src/app/Pages/landing-page/langing-page.component';
+import { LandingPageComponent } from 'src/app/Pages/landing-page/landing-page.component';
 
-describe('LangingPageComponent', () => {
-  let component: LangingPageComponent;
-  let fixture: ComponentFixture<LangingPageComponent>;
+describe('LandingPageComponent', () => {
+  let component: LandingPageComponent;
+  let fixture: ComponentFixture<LandingPageComponent>;
   
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [LangingPageComponent]
+      declarations: [LandingPageComponent]
     })
       .compileComponents();
   }));
   
   beforeEach(() => {
-    fixture = TestBed.createComponent(LangingPageComponent);
+    fixture = TestBed.createComponent(LandingPageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

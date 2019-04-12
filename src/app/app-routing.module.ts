@@ -1,11 +1,12 @@
-import { NgModule } from '@angular/core';
+import { NgModule }             from '@angular/core';
 import {
   RouterModule,
   Routes
-}                   from '@angular/router';
+}                               from '@angular/router';
+import { LandingPageComponent } from 'src/app/Pages/landing-page/landing-page.component';
 
 const routes: Routes = [
-  // {path: 'todos', component: TodosPageComponent}
+  {path: 'landing', component: LandingPageComponent}
 ];
 
 @NgModule({

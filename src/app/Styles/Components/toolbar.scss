@@ -1,6 +1,7 @@
+@import '~@angular/material/theming';
 
-#navbar {
-  //@include mat-elevation(4);
+mat-toolbar {
+  @include mat-elevation(4);
   margin-bottom: 1em;
 }
 

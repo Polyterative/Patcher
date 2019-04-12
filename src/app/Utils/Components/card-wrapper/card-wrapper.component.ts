@@ -4,7 +4,7 @@ import { CardWrapperService } from 'src/app/Utils/Components/card-wrapper/card-w
 @Component({
   selector:    'app-card-wrapper',
   templateUrl: './card-wrapper.component.html',
-  styleUrls:   ['./card-wrapper.component.sass']
+  styleUrls:   ['./card-wrapper.component.scss']
 })
 export class CardWrapperComponent {
   
