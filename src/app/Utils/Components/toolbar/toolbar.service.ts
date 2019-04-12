@@ -1,17 +1,23 @@
 import {
   EventEmitter,
   Injectable
-}                          from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+}                            from '@angular/core';
+import { Select }            from '@ngxs/store';
 import {
-  debounceTime,
-  tap
-}                          from 'rxjs/operators';
+  BehaviorSubject,
+  Observable
+}                            from 'rxjs';
+import { tap }               from 'rxjs/internal/operators/tap';
+import { debounceTime }      from 'rxjs/operators';
+import { ToolbarStateModel } from 'src/app/Utils/Components/toolbar/toolbar.state';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ToolbarService {
+  
+  @Select()
+  toolbarState$: Observable<ToolbarStateModel>;
   
   title: BehaviorSubject<string> = new BehaviorSubject('');
   
@@ -23,6 +29,12 @@ export class ToolbarService {
   primaryDisabled$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   primaryAutoDisabled$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   primaryIcon$: BehaviorSubject<ToolbarPrimaryIcon> = new BehaviorSubject(ToolbarPrimaryIcon.ADD);
+  
+  private static completeObservers(observers): void {
+    for (const observer of observers) {
+      observer.complete();
+    }
+  }
   
   constructor() {
     this.backClick$.subscribe(_ => { // defaults on change
@@ -41,12 +53,6 @@ export class ToolbarService {
       this.primaryDisabled$.next(false); // reset to default
     });
     
-  }
-  
-  private static completeObservers(observers): void {
-    for (const observer of observers) {
-      observer.complete();
-    }
   }
 }
 
