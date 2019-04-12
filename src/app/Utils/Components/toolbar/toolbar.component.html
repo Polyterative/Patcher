@@ -3,17 +3,16 @@
 >
   <mat-toolbar-row>
     <lib-flex-row fxFlex='44'>
-      <button (click)='data.backClick$.emit()'
-              *ngIf='((data.title|async).length>0)'
-              fxFlex='10'
-              fxFlexAlign='center'
-              mat-icon-button
+      <div *ngIf='((data.title|async).length>0)'
+           fxFlex='10'
       >
-        <mat-icon class="mat-18"
-
-        >arrow_back
-        </mat-icon>
-      </button>
+        <button (click)='data.backClick$.emit()'
+                fxFlexAlign='center'
+                mat-icon-button
+        >
+          <mat-icon class="mat-18">arrow_back</mat-icon>
+        </button>
+      </div>
       <div *ngIf='!((data.title|async).length>0)'
            fxFlex
            fxFlexAlign='center'
