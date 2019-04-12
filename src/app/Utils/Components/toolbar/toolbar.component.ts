@@ -1,7 +1,4 @@
-import {
-  Component,
-  OnInit
-}                         from '@angular/core';
+import { Component }      from '@angular/core';
 import { Router }         from '@angular/router';
 import { ToolbarService } from 'src/app/Utils/Components/toolbar/toolbar.service';
 
@@ -10,16 +7,9 @@ import { ToolbarService } from 'src/app/Utils/Components/toolbar/toolbar.service
   templateUrl: './toolbar.component.html',
   styleUrls:   ['./toolbar.component.scss']
 })
-export class ToolbarComponent implements OnInit {
+export class ToolbarComponent {
   
-  constructor(public toolbarService: ToolbarService, public router: Router) {
-  }
-  
-  ngOnInit(): void {
-  }
-  
-  navigate(to: string[]): void {
-    this.router.navigate(to);
+  constructor(public data: ToolbarService, public router: Router) {
   }
   
 }
