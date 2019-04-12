@@ -11,9 +11,7 @@ import { debounceTime }    from 'rxjs/operators';
 })
 export class ToolbarService {
   
-  color: '#62ff4a';
-  
-  appTitle = 'My Angular Starter';
+  appTitle = 'Focus';
   
   title: BehaviorSubject<string> = new BehaviorSubject('');
   
