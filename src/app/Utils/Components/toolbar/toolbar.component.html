@@ -20,7 +20,7 @@
       <div *ngIf='!((toolbarService.title|async).length>0)'
            fxFlex
            fxFlexAlign='center'
-      >Plant vitals system
+      >{{(toolbarService.toolbarState$|async)|json}}
       </div>
       <div *ngIf='(toolbarService.title|async).length>0'
            fxFlex

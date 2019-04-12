@@ -3,53 +3,95 @@ import {
   Receiver
 } from '@ngxs-labs/emitter';
 import {
-  Selector,
   State,
   StateContext
 } from '@ngxs/store';
 
-export type ToolbarVisibilityStatusCases = 'VISIBLE' | 'HIDDEN';
-export type ToolbarLoadingStatusCases = 'LOADED' | 'LOADING';
+// export type ToolbarVisibilityStatusCases = 'VISIBLE' | 'HIDDEN';
+// export type ToolbarLoadingStatusCases = 'LOADED' | 'LOADING';
 
-export interface ToolbarStateModel {
-  visibility: ToolbarVisibilityStatusCases;
-  loading: ToolbarLoadingStatusCases;
-  titleText: string;
+export enum ToolbarPrimaryIcon {
+  ADD    = 'add',
+  SEARCH = 'search',
+  SAVE   = 'save'
 }
 
+interface PrimaryButtonModel {
+  primaryVisible: boolean;
+  primaryDisabled: boolean;
+  primaryAutoDisabled: boolean;
+  primaryIcon: ToolbarPrimaryIcon;
+}
+
+export interface ToolbarStateModel extends PrimaryButtonModel {
+  titleText: string;
+  visible: boolean;
+  loading: boolean;
+}
+
+const NAME = 'Toolbar';
+
 @State<ToolbarStateModel>({
-  name:     'ToolbarState',
+  name:     NAME,
   defaults: {
-    visibility: 'VISIBLE',
-    loading:    'LOADED',
-    titleText:  'title'
+    visible:             true,
+    loading:             false,
+    titleText:           'title',
+    primaryVisible:      true,
+    primaryDisabled:     true,
+    primaryAutoDisabled: true,
+    primaryIcon:         ToolbarPrimaryIcon.ADD
+    
   }
 })
 export class ToolbarState {
   
-  @Selector()
-  static titleText(state: ToolbarStateModel): string {
-    return state.titleText;
+  @Receiver({type: `[${ NAME }] Visibility status changing`})
+  static visibilityStatus({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<boolean>): void {
+    patchState({visible: payload});
   }
   
-  @Selector()
-  static visibility(state: ToolbarStateModel): ToolbarVisibilityStatusCases {
-    return state.visibility;
+  @Receiver({type: `[${ NAME }] Loading status changing`})
+  static loadingStatus({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<boolean>): void {
+    patchState({loading: payload});
   }
   
-  @Selector()
-  static loading(state: ToolbarStateModel): ToolbarLoadingStatusCases {
-    return state.loading;
+  @Receiver({type: `[${ NAME }]  Text content changing`})
+  static toolbarText({patchState, dispatch, getState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<string>): void {
+    patchState({titleText: payload});
   }
   
-  @Receiver({type: '[Toolbar] Visibility status'})
-  static setToolbarVisibilityStatus({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<ToolbarVisibilityStatusCases>): void {
-    patchState({visibility: payload});
+  // --------------------------------------------------
+  
+  @Receiver({type: `[${ NAME }] Primary visibility status changing`})
+  static primaryVisible({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<boolean>): void {
+    patchState({primaryVisible: payload});
   }
   
-  @Receiver({type: '[Toolbar] Loading status'})
-  static setToolbarLoadingStatus({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<ToolbarVisibilityStatusCases>): void {
-    patchState({visibility: payload});
+  @Receiver({type: `[${ NAME }] Primary disability status changing`})
+  static primaryDisabled({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<boolean>): void {
+    patchState({primaryDisabled: payload});
   }
   
+  @Receiver({type: `[${ NAME }] Primary auto visibility status changing`})
+  static primaryAutoDisabled({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<boolean>): void {
+    patchState({primaryAutoDisabled: payload});
+  }
+  
+  @Receiver({type: `[${ NAME }] Primary icon changing`})
+  static primaryIcon({patchState}: StateContext<ToolbarStateModel>, {payload}: EmitterAction<ToolbarPrimaryIcon>): void {
+    patchState({primaryIcon: payload});
+  }
+  
+  // --------------------------------------------------
+  
+  @Receiver({type: `[${ NAME }] back Click`})
+  static backClick({patchState}: StateContext<ToolbarStateModel>): void {
+    patchState({primaryVisible: false, primaryIcon: ToolbarPrimaryIcon.ADD});
+  }
+  
+  @Receiver({type: `[${ NAME }] primary Click`})
+  static primaryClick({patchState}: StateContext<ToolbarStateModel>): void {
+    // patchState({primaryAutoDisabled: payload});
+  }
 }
