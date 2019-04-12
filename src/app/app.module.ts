@@ -1,4 +1,6 @@
 import { NgModule }                from '@angular/core';
+import { AngularFireModule }       from '@angular/fire';
+import { AngularFirestoreModule }  from '@angular/fire/firestore';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -7,6 +9,7 @@ import { LandingPageComponent }      from 'src/app/Pages/landing-page/landing-pa
 import { OrangeStructuresModule }    from 'src/app/Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { VioletUtilsModule }         from 'src/app/Utils/LocalLibraries/VioletUtilities/violet-utils.module';
 import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.module';
+import { environment }               from 'src/environments/environment';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
 
@@ -26,9 +29,12 @@ import { AppComponent }              from './app.component';
     VioletUtilsModule,
     BrowserAnimationsModule,
     // INTERNAL UTILS
-    PolyUtilsComponentsModule
+    PolyUtilsComponentsModule,
     // EXT LIBS
-  
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule // imports firebase/firestore, only needed for database features
+    // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
+    // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
   ],
   providers:    [],

@@ -1,56 +1,17 @@
-<lib-flex-row>
-  <lib-flex-row>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #E64A19'
-    >
-      <mat-card-title>Card one</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                        biodiesel
-                        ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                        polaroid aesthetic.
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #00796B'
-    >
-      <mat-card-title>Card one</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                        biodiesel
-                        ethical flannel, tote bag disrupt pinterest cardigan bitters franzen
-                        polaroid aesthetic chicken shabby chic lo-fi tumblr. Beard small batch
-                        listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
-                        Ugh
-                        chicharrones
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-    <mat-card class='featureCard'
-              fxFlex
-              style='background-color: #512DA8'
-    >
-      <mat-card-title>Card two</mat-card-title>
-      <mat-card-subtitle>How a man walked on the moon</mat-card-subtitle>
-      <mat-card-content>Poke fingerstache flannel, tumblr church-key gastropub live-edge lyft.
-                        Tattooed iPhone polaroid dreamcatcher, woke irony keffiyeh meditation DIY
-                        taxidermy tofu pour-over unicorn mlkshk. Four dollar toast quinoa
-                        biodiesel
-                        ethical flannel, hot chicken shabby chic lo-fi tumblr. Beard small batch
-                        listicle humblebrag dreamcatcher, pok pok chambray chicharrones butcher.
-                        Ugh
-                        chicharrones single-origin coffee, intelligentsia pickled fashion axe
-                        mustache
-                        tote bag disrupt pinterest cardigan bitters franzen polaroid aesthetic.
-                        Mlkshk
-      </mat-card-content>
-    </mat-card>
-  </lib-flex-row>
-</lib-flex-row>
+<lib-flex-column>
+  <ng-container *ngFor='let messageLine of messages$|async'>
+    <lib-flex-row fxFlex>
+      <ng-container *ngFor='let message of messageLine'>
+
+        <mat-card class='featureCard'
+                  fxFlex
+                  style='background-color: #512DA8'
+        >
+          <mat-card-title>{{ message?.title }}</mat-card-title>
+          <mat-card-subtitle>{{ message?.subtitle }}</mat-card-subtitle>
+          <mat-card-content>{{ message?.content }}</mat-card-content>
+        </mat-card>
+      </ng-container>
+    </lib-flex-row>
+  </ng-container>
+</lib-flex-column>
