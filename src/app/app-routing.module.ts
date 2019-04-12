@@ -6,7 +6,8 @@ import {
 import { LandingPageComponent } from 'src/app/Pages/landing-page/landing-page.component';
 
 const routes: Routes = [
-  {path: 'landing', component: LandingPageComponent}
+  {path: 'landing', component: LandingPageComponent},
+  {path: '', component: LandingPageComponent}
 ];
 
 @NgModule({
