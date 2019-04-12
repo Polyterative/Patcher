@@ -1,23 +1,17 @@
 import {
   EventEmitter,
   Injectable
-}                            from '@angular/core';
-import { Select }            from '@ngxs/store';
-import {
-  BehaviorSubject,
-  Observable
-}                            from 'rxjs';
-import { tap }               from 'rxjs/internal/operators/tap';
-import { debounceTime }      from 'rxjs/operators';
-import { ToolbarStateModel } from 'src/app/Utils/Components/toolbar/toolbar.state';
+}                          from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { tap }             from 'rxjs/internal/operators/tap';
+import { debounceTime }    from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ToolbarService {
   
-  @Select()
-  toolbarState$: Observable<ToolbarStateModel>;
+  appTitle = 'My Angular Starter';
   
   title: BehaviorSubject<string> = new BehaviorSubject('');
   

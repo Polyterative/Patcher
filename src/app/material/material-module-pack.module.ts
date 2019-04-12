@@ -32,7 +32,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   exports:      [
     BrowserModule,
     BrowserAnimationsModule,
+    // FLEX
     FlexLayoutModule,
+    // MATERIAL
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
