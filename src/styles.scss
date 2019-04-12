@@ -3,6 +3,6 @@
 
 @include mat-core();
 
-@import "./app/GlobalStyles/Styles/commons_customizations";
-@import "./app/GlobalStyles/Styles/commons_structure";
-@import "./app/GlobalStyles/Styles/constants";
+@import "app/Styles/commons_customizations";
+@import "app/Styles/commons_structure";
+@import "app/Styles/constants";
