@@ -1,34 +1,46 @@
-import {
-  Component,
-  OnInit
-}                           from '@angular/core';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { Component }         from '@angular/core';
+import { AngularFirestore }  from '@angular/fire/firestore';
 import {
   Observable,
   of
-}                           from 'rxjs';
+}                            from 'rxjs';
 import {
   bufferCount,
   concatMap,
-  switchMap
-}                           from 'rxjs/operators';
-import { MessageModel }     from 'src/app/Pages/landing-page/message.model';
+  map,
+  switchMap,
+  take
+}                            from 'rxjs/operators';
+import { MessageModel }      from 'src/app/Pages/landing-page/message.model';
+import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+
+interface ServerStatsModel {
+  visits: number;
+  usersConnected: number;
+}
 
 @Component({
   selector:    'app-langing-page',
   templateUrl: './landing-page.component.html',
   styleUrls:   ['./landing-page.component.scss']
 })
-export class LandingPageComponent implements OnInit {
+export class LandingPageComponent extends AngularEntityBase {
   
   private messages$: Observable<MessageModel[][]>;
   
   private messagePath = 'messages';
+  private general = 'general';
   
-  constructor(db: AngularFirestore) {
+  private serverStats$: Observable<ServerStatsModel>;
+  
+  constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService) {
+    super(constants, dimens);
     
     // @ts-ignore
-    this.messages$ = db.collection(this.messagePath).valueChanges()
+    this.messages$ = db.collection(this.messagePath, ref => ref.limit(10))
+      .valueChanges()
       .pipe(switchMap(x => of(x)
           .pipe(concatMap(y => y),
             bufferCount(3),
@@ -37,15 +49,33 @@ export class LandingPageComponent implements OnInit {
         )
       )
     ;
-  
-    // db.collection(this.messagePath)
     
     // db.collection(this.messagePath)
-    //   .add(message);
+    
+    this.serverStats$ = db.collection(this.general, ref => ref.limit(1)).valueChanges().pipe(map((x: any) => x[0]));
+    
+    this.performVisitsOperation(db, value => (value + 1));
+    
+    // this.destroyEvent$.pipe().subscribe(value => {
+    //   console.error('asd')
+    //   this.performVisitsOperation(db, value => (value - 1));
+    // });
     
   }
   
-  ngOnInit() {
+  private performVisitsOperation(db: AngularFirestore, func: (val) => number) {
+    db.collection(this.general)
+      .get()
+      .pipe(take(1))
+      .subscribe(x => {
+        const documentSnapshot = x.docs[0];
+        const oldObj = documentSnapshot.data();
+        
+        oldObj.visits = func(oldObj.visits);
+        
+        db.collection(this.general)
+          .doc(documentSnapshot.id)
+          .update(oldObj);
+      });
   }
-  
 }

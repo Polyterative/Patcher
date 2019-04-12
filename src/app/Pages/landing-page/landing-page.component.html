@@ -36,14 +36,27 @@
       </lib-flex-row>
     </ng-container>
   </lib-flex-column>
-  <div fxFlex>
-    <mat-card style='background-color: #00897B'
-    >
-      <mat-card-title>Add message</mat-card-title>
-      <mat-card-subtitle>/</mat-card-subtitle>
-      <mat-card-content>
-        Your text
-      </mat-card-content>
-    </mat-card>
-  </div>
+  <lib-flex-column fxFlex>
+    <div fxFlex>
+      <mat-card style='background-color: #00897B'
+      >
+        <mat-card-title>Add message</mat-card-title>
+        <mat-card-subtitle>/</mat-card-subtitle>
+        <mat-card-content>
+          Your text
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div fxFlex>
+      <mat-card style='background-color: #00897B'
+      >
+        <mat-card-title>Stats</mat-card-title>
+        <mat-card-content>
+          <!--          Users connected: {{ ((serverStats$|async)?.visits) }}-->
+          Visits: {{ ((serverStats$|async)?.visits) }}
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </lib-flex-column>
 </lib-flex-row>
