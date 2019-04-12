@@ -8,17 +8,26 @@
           <mat-card fxFlex
                     style='background-color: #3a72a8'
           >
-            <mat-card-title>{{ message?.title }}</mat-card-title>
             <mat-card-subtitle>
-              {{ message?.subtitle }} | {{ message?.when|date }}
+              <lib-flex-row>
+                <div fxFlex>
+                  {{ message?.subtitle }}
+                </div>
+                <div fxFlexAlign='end'>
+                  {{ message?.when|date }}
+                </div>
+              </lib-flex-row>
             </mat-card-subtitle>
             <mat-card-content>{{ message?.content }}</mat-card-content>
+            <mat-card-title>
+              <div fxLayoutAlign='end'>{{ message?.title }}</div>
+            </mat-card-title>
             <mat-card-actions>
               <lib-flex-row>
                 <div fxFlex>
-                  <button mat-raised-button>
-                    <mat-icon class="mat-18">delete</mat-icon>
-                  </button>
+                  <!--                  <button mat-raised-button>-->
+                  <!--                    <mat-icon class="mat-18">delete</mat-icon>-->
+                  <!--                  </button>-->
                 </div>
               </lib-flex-row>
             </mat-card-actions>
@@ -30,10 +39,10 @@
   <div fxFlex>
     <mat-card style='background-color: #00897B'
     >
-      <mat-card-title>Title</mat-card-title>
-      <mat-card-subtitle>Subtitle</mat-card-subtitle>
+      <mat-card-title>Add message</mat-card-title>
+      <mat-card-subtitle>/</mat-card-subtitle>
       <mat-card-content>
-        Text content
+        Your text
       </mat-card-content>
     </mat-card>
   </div>
