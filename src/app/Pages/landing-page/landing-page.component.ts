@@ -28,12 +28,12 @@ interface ServerStatsModel {
 })
 export class LandingPageComponent extends AngularEntityBase {
   
-  private messages$: Observable<MessageModel[][]>;
+  public messages$: Observable<MessageModel[][]>;
   
   private messagePath = 'messages';
   private general = 'general';
   
-  private serverStats$: Observable<ServerStatsModel>;
+  public serverStats$: Observable<ServerStatsModel>;
   
   constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService) {
     super(constants, dimens);
