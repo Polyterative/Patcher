@@ -54,7 +54,10 @@ export class MatFormEntityComponent extends AngularEntityBase {
    */
   types = FormTypes;
   
-  @Input() formGroupRoot: IFormLineSetup;
+  @Input() formGroupRoot: IFormLineSetup = {
+    hideRequired: true,
+    floatLabel:   'auto'
+  };
   
   @Input() control: FormControl;
   
@@ -180,7 +183,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     
     const hostControl = this.control;
     const hostValidator: ValidatorFn | null = hostControl.validator;
-  
+    
     // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
     switch (this.type) {
       case FormTypes.TEXT:
@@ -233,7 +236,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
           const myValidator = x => {
             const foundSome = this.options.some(y => y.name === x.value);
             const isVoid = x.value === '';
-  
+            
             // tslint:disable-next-line:no-null-keyword
             return (foundSome || isVoid && this.autocompleteCanBeVoid) ? null : errorObject;
           };
@@ -278,7 +281,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
             
             const isVoid = input.length < 1;
             const isVoidWhileCanBe = this.autocompleteCanBeVoid ? (isVoid) : false;
-  
+            
             // tslint:disable-next-line:no-null-keyword
             return (foundAll) || (isVoidWhileCanBe) ? null : errorObject;
           };
