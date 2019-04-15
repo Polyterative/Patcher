@@ -1,26 +1,26 @@
-import { Component }              from '@angular/core';
-import { AngularFirestore }       from '@angular/fire/firestore';
+import { Component }         from '@angular/core';
+import { AngularFirestore }  from '@angular/fire/firestore';
 import {
+  FormBuilder,
   FormControl,
   FormGroup
-}                                 from '@angular/forms';
+}                            from '@angular/forms';
 import {
   Observable,
   of
-}                                 from 'rxjs';
+}                            from 'rxjs';
 import {
   bufferCount,
   concatMap,
   map,
   switchMap,
   take
-}                                 from 'rxjs/operators';
-import { MessageModel }           from 'src/app/Pages/landing-page/message.model';
-import { FormTypes }              from 'src/app/Utils/LocalLibraries/mat-form-entity/form-element-models';
-import { MatFormEntityComponent } from 'src/app/Utils/LocalLibraries/mat-form-entity/mat-form-entity.component';
-import { AngularEntityBase }      from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { ConstantsService }       from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService }      from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+}                            from 'rxjs/operators';
+import { MessageModel }      from 'src/app/Pages/landing-page/message.model';
+import { FormTypes }         from 'src/app/Utils/LocalLibraries/mat-form-entity/form-element-models';
+import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
 
 interface ServerStatsModel {
   visits: number;
@@ -34,21 +34,21 @@ interface ServerStatsModel {
 })
 export class LandingPageComponent extends AngularEntityBase {
   
-  public messages$: Observable<MessageModel[][]>;
-  
   private messagePath = 'messages';
   private general = 'general';
-  
-  public serverStats$: Observable<ServerStatsModel>;
-  
-  public messageAdder = {
+  messages$: Observable<MessageModel[][]>;
+  serverStats$: Observable<ServerStatsModel>;
+  messageAdder = {
     control:   new FormControl(),
     formGroup: new FormGroup({}),
     type:      FormTypes.TEXT
   };
+  formGroup: FormGroup = this.formBuilder.group({
+    hideRequired: false,
+    floatLabel:   'auto' // can be auto|always|never
+  });
   
-  
-  constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService) {
+  constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService, private formBuilder: FormBuilder) {
     super(constants, dimens);
     
     // @ts-ignore

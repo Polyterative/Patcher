@@ -1,11 +1,14 @@
 <lib-flex-row>
-  <lib-flex-column fxFlex='70'>
+  <lib-flex-column *ngIf='false'
+                   fxFlex='70'
+  >
     <ng-container *ngFor='let messageLine of messages$|async'>
       <lib-flex-row fxFlex
       >
         <ng-container *ngFor='let message of messageLine'>
 
           <mat-card fxFlex
+                    class='darkCard'
                     style='background-color: #3a72a8'
           >
             <mat-card-subtitle>
@@ -38,7 +41,7 @@
   </lib-flex-column>
   <lib-flex-column fxFlex>
     <div fxFlex>
-      <mat-card style='background-color: #00897B'
+      <mat-card
       >
         <mat-card-title>Add message</mat-card-title>
 <!--        <mat-card-subtitle>/</mat-card-subtitle>-->
@@ -46,13 +49,14 @@
           <lib-mat-form-entity [control]='messageAdder.control'
                                placeholder='Your message'
                                [type]='messageAdder.type'
+                               [formGroupRoot]='formGroup'
           ></lib-mat-form-entity>
         </mat-card-content>
       </mat-card>
     </div>
 
     <div fxFlex>
-      <mat-card style='background-color: #00897B'
+      <mat-card
       >
         <mat-card-title>Stats</mat-card-title>
         <mat-card-content>
