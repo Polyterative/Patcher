@@ -27,6 +27,7 @@ import {
   takeUntil
 }                            from 'rxjs/operators';
 import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { AppFormUtils }      from 'src/app/Utils/LocalLibraries/VioletUtilities/app-form-utils';
 import { Strings }           from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
 import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -131,7 +132,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
    *
    * }
    */
-  @Input() errorProvider: (formControl: FormControl) => string;
+  @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getDefaultErrors(x);
   
   //
   // @Input()

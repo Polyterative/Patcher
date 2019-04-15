@@ -1,6 +1,17 @@
-import { NgModule }                from '@angular/core';
+import { registerLocaleData }      from '@angular/common';
+import localeItExtra               from '@angular/common/locales/extra/it';
+import localeIt                    from '@angular/common/locales/it';
+import {
+  InjectionToken,
+  LOCALE_ID,
+  NgModule
+}                                  from '@angular/core';
 import { AngularFireModule }       from '@angular/fire';
 import { AngularFirestoreModule }  from '@angular/fire/firestore';
+import {
+  MAT_DATE_FORMATS,
+  MAT_DATE_LOCALE
+}                                  from '@angular/material';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -14,12 +25,37 @@ import { environment }               from 'src/environments/environment';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
 
+const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
+  provide:  LOCALE_ID,
+  useValue: 'it'
+};
+const localeCode = 'it';
+const matDatepickerLocale: { useValue: string; provide: InjectionToken<string>; } = {
+  provide:  MAT_DATE_LOCALE,
+  useValue: localeCode
+};
+const matDatepickerLocaleIT = {
+  provide:  MAT_DATE_FORMATS,
+  useValue: {
+    parse:   {
+      dateInput: 'DD/MM/YYYY'
+    },
+    display: {
+      dateInput:          'DD/MM/YYYY',
+      monthYearLabel:     'MM YYYY',
+      dateA11yLabel:      'DD/MM/YYYY',
+      monthYearA11yLabel: 'MM YYYY'
+    }
+  }
+};
+
+
 @NgModule({
   declarations: [
     AppComponent,
     LandingPageComponent
   ],
-  imports: [
+  imports:      [
     // BASE
     BrowserModule,
     AppRoutingModule,
@@ -40,8 +76,18 @@ import { AppComponent }              from './app.component';
     // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
   ],
-  providers:    [],
+  providers:    [
+    italianLocale,
+    matDatepickerLocale,
+    matDatepickerLocaleIT
+  ],
   bootstrap:    [AppComponent]
 })
 export class AppModule {
+  
+  constructor() {
+    registerLocaleData(localeIt, localeItExtra);
+  }
+  
+  
 }
