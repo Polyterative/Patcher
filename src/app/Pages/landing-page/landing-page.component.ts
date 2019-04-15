@@ -38,8 +38,6 @@ interface ServerStatsModel {
 export class LandingPageComponent extends AngularEntityBase {
   messages$: Observable<MessageModel[][]>;
   serverStats$: Observable<ServerStatsModel>;
-  private messagePath = 'messages';
-  private general = 'general';
   messageAdder = {
     controls:  {
       content: new FormControl()
@@ -51,6 +49,8 @@ export class LandingPageComponent extends AngularEntityBase {
     type:      FormTypes.TEXT,
     confirm:   new EventEmitter<void>()
   };
+  private messagePath = 'messages';
+  private general = 'general';
   
   constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService, private formBuilder: FormBuilder) {
     super(constants, dimens);
