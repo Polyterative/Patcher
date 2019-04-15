@@ -1,13 +1,14 @@
 <lib-flex-row>
   <lib-flex-column *ngIf='true'
-                   fxFlex='70'
+                   fxFlex.lg='70'
+                   fxFlex.md='70'
   >
     <ng-container *ngFor='let messageLine of messages$|async'>
       <lib-flex-row fxFlex
       >
         <ng-container *ngFor='let message of messageLine'>
 
-          <mat-card fxFlex='33'
+          <mat-card fxFlex
                     class='darkCard'
                     style='background-color: #3a72a8'
           >
