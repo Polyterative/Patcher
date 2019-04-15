@@ -1,20 +1,35 @@
-import { Component }         from '@angular/core';
-import { AngularFirestore }  from '@angular/fire/firestore';
+import {
+  Component,
+  EventEmitter
+}                             from '@angular/core';
+import { AngularFirestore }   from '@angular/fire/firestore';
+import {
+  FormBuilder,
+  FormControl,
+  Validators
+}                             from '@angular/forms';
+import { MatSnackBar }        from '@angular/material';
 import {
   Observable,
   of
-}                            from 'rxjs';
+}                             from 'rxjs';
 import {
   bufferCount,
   concatMap,
+  debounceTime,
+  filter,
   map,
   switchMap,
-  take
-}                            from 'rxjs/operators';
-import { MessageModel }      from 'src/app/Pages/landing-page/message.model';
-import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+  take,
+  takeUntil,
+  tap
+}                             from 'rxjs/operators';
+import { MessageModel }       from 'src/app/Pages/landing-page/message.model';
+import { FormTypes }          from 'src/app/Utils/LocalLibraries/mat-form-entity/form-element-models';
+import { AngularEntityBase }  from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { ConstantsService }   from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+import { CommunicationUtils } from 'src/app/Utils/LocalLibraries/VioletUtilities/general-utils';
 
 interface ServerStatsModel {
   visits: number;
@@ -27,19 +42,46 @@ interface ServerStatsModel {
   styleUrls:   ['./landing-page.component.scss']
 })
 export class LandingPageComponent extends AngularEntityBase {
-  
-  public messages$: Observable<MessageModel[][]>;
-  
+  messages$: Observable<MessageModel[][]>;
+  serverStats$: Observable<ServerStatsModel>;
+  messageAdder = {
+    controls:  {
+      content: new FormControl('', Validators.compose([
+        Validators.maxLength(144),
+        Validators.minLength(5),
+        Validators.required
+      ]))
+    },
+    formGroup: this.formBuilder.group({
+      hideRequired: false,
+      floatLabel:   'always' // can be auto|always|never
+    }),
+    type:      FormTypes.TEXT,
+    confirm:   new EventEmitter<void>()
+  };
   private messagePath = 'messages';
   private general = 'general';
   
-  public serverStats$: Observable<ServerStatsModel>;
+  // const genericDeleteErrorHandler = catchError(_ => {
+  //     this.pageState.state$.next(PageState.ERROR);
+  //     this.Log.error(_.toString());
+  //     CommunicationUtils.showSnackbar(
+  //       this.snackbar,
+  //       `Errore cancellazione`,
+  //       10000
+  //     );
+  //     return EMPTY; // stop flow
+  //   }
+  // );
+  //
   
-  constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService) {
+  // errorProvider = (formControl: FormControl) => LocalFormUtils.getPossibleErrors(formControl)
+  
+  constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService, private formBuilder: FormBuilder, public snackbar: MatSnackBar) {
     super(constants, dimens);
     
     // @ts-ignore
-    this.messages$ = db.collection(this.messagePath, ref => ref.limit(10))
+    this.messages$ = db.collection(this.messagePath, ref => ref.limit(10).orderBy('when', 'desc'))
       .valueChanges()
       .pipe(switchMap(x => of(x)
           .pipe(concatMap(y => y),
@@ -56,11 +98,46 @@ export class LandingPageComponent extends AngularEntityBase {
     
     this.performVisitsOperation(db, value => (value + 1));
     
-    // this.destroyEvent$.pipe().subscribe(value => {
-    //   console.error('asd')
-    //   this.performVisitsOperation(db, value => (value - 1));
-    // });
+    this.setupForm(db);
     
+  }
+  
+  private setupForm(db: AngularFirestore) {
+    
+    this.messageAdder.formGroup.addControl('content', this.messageAdder.controls.content);
+    
+    this.messageAdder.confirm
+      .pipe(
+        map(_ => this.messageAdder.controls.content.value),
+        tap(_ => this.messageAdder.controls.content.reset())
+      )
+      .subscribe(x => {
+        
+        const message: MessageModel = {
+          content:  x,
+          title:    'T',
+          when:     new Date().toUTCString(),
+          subtitle: 'Anonimo'
+        };
+        
+        db.collection(this.messagePath)
+          .add(message);
+  
+        CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
+        
+      });
+  
+    this.messageAdder.controls.content.valueChanges
+      .pipe(
+        debounceTime(2000),
+        map(_ => this.messageAdder.controls.content),
+        filter(x => x.value !== null),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        x.markAsTouched({onlySelf: true});
+        x.updateValueAndValidity();
+      });
   }
   
   private performVisitsOperation(db: AngularFirestore, func: (val) => number) {

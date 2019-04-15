@@ -1,18 +1,21 @@
-mat-card-title {
-  font-weight: lighter !important;
-  letter-spacing: 0.1em !important;
-  font-size: xx-large !important;
-  color: rgba(255, 255, 255, 0.97) !important;
+.darkCard {
+  > mat-card-title {
+    font-weight: lighter !important;
+    letter-spacing: 0.1em !important;
+    font-size: xx-large !important;
+    color: rgba(255, 255, 255, 0.97) !important;
 
-}
+  }
 
-mat-card-subtitle {
-  color: rgba(255, 255, 255, 0.71) !important;
-  font-variant: small-caps;
-  //font-style: italic;
-}
+  > mat-card-subtitle {
+    color: rgba(255, 255, 255, 0.71) !important;
+    font-variant: small-caps;
+    //font-style: italic;
+  }
 
-mat-card-content {
-  color: rgba(249, 249, 249, 0.98);
-  //font-variant: small-caps;
+  > mat-card-content {
+    color: rgba(249, 249, 249, 0.98);
+    //font-variant: small-caps;
+  }
+
 }

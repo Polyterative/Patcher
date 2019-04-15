@@ -1,11 +1,15 @@
 <lib-flex-row>
-  <lib-flex-column fxFlex='70'>
+  <lib-flex-column *ngIf='true'
+                   fxFlex.lg='70'
+                   fxFlex.md='70'
+  >
     <ng-container *ngFor='let messageLine of messages$|async'>
       <lib-flex-row fxFlex
       >
         <ng-container *ngFor='let message of messageLine'>
 
           <mat-card fxFlex
+                    class='darkCard'
                     style='background-color: #3a72a8'
           >
             <mat-card-subtitle>
@@ -18,9 +22,9 @@
                 </div>
               </lib-flex-row>
             </mat-card-subtitle>
-            <mat-card-content>{{ message?.content }}</mat-card-content>
+            <!--            <mat-card-content>{{ message?.content }}</mat-card-content>-->
             <mat-card-title>
-              <div fxLayoutAlign='end'>{{ message?.title }}</div>
+              <div fxLayoutAlign='end'>{{ message?.content }}</div>
             </mat-card-title>
             <mat-card-actions>
               <lib-flex-row>
@@ -38,23 +42,41 @@
   </lib-flex-column>
   <lib-flex-column fxFlex>
     <div fxFlex>
-      <mat-card style='background-color: #00897B'
+      <mat-card
       >
-        <mat-card-title>Add message</mat-card-title>
-        <mat-card-subtitle>/</mat-card-subtitle>
+        <mat-card-title>Aggiungi messaggio</mat-card-title>
+        <!--        <mat-card-subtitle>/</mat-card-subtitle>-->
         <mat-card-content>
-          Your text
+          <lib-flex-row>
+            <lib-mat-form-entity [control]='messageAdder.controls.content'
+                                 fxFlex
+                                 [formGroupRoot]='messageAdder.formGroup'
+                                 [type]='messageAdder.type'
+                                 placeholder='Tuo messaggio'
+            ></lib-mat-form-entity>
+            <div fxFlex
+                 fxLayoutAlign='center center '
+            >
+              <button (click)="messageAdder.confirm.emit()"
+                      [disabled]='!(messageAdder.formGroup.valid)'
+                      mat-flat-button
+              >Conferma
+              </button>
+            </div>
+          </lib-flex-row>
         </mat-card-content>
       </mat-card>
     </div>
 
     <div fxFlex>
-      <mat-card style='background-color: #00897B'
+      <mat-card
       >
-        <mat-card-title>Stats</mat-card-title>
+        <mat-card-title>Statistiche</mat-card-title>
         <mat-card-content>
           <!--          Users connected: {{ ((serverStats$|async)?.visits) }}-->
-          Visits: {{ ((serverStats$|async)?.visits) }}
+          <div fxFlex>
+            Visite: {{ ((serverStats$|async)?.visits) }}
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
