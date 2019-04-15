@@ -139,10 +139,10 @@ export class CommunicationUtils {
   /**
    * Add with public SnackBar: MatSnackBar
    */
-  static showSnackbar(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ duration: number) {
+  static showSnackbar(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ durationInMillis?: number) {
     snackReference.open(
       message, /*isFunction(action) ? action : */null, {
-        duration
+        duration: durationInMillis ? durationInMillis : 2000
       }
     );
   }
