@@ -7,7 +7,9 @@ import {
   Input
 }                            from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
+  FormGroup,
   ValidatorFn
 }                            from '@angular/forms';
 import {
@@ -25,6 +27,7 @@ import {
   takeUntil
 }                            from 'rxjs/operators';
 import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { AppFormUtils }      from 'src/app/Utils/LocalLibraries/VioletUtilities/app-form-utils';
 import { Strings }           from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
 import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -32,7 +35,6 @@ import { LoggerService }     from 'src/app/Utils/LocalLibraries/VioletUtilities/
 import { isArray }           from 'util';
 import {
   FormTypes,
-  IFormLineSetup,
   ISelectable
 }                            from './form-element-models';
 
@@ -54,7 +56,10 @@ export class MatFormEntityComponent extends AngularEntityBase {
    */
   types = FormTypes;
   
-  @Input() formGroupRoot: IFormLineSetup;
+  @Input() formGroupRoot: FormGroup = this.formBuilder.group({
+    hideRequired: false,
+    floatLabel:   'auto' // can be auto|always|never
+  });
   
   @Input() control: FormControl;
   
@@ -127,7 +132,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
    *
    * }
    */
-  @Input() errorProvider: (formControl: FormControl) => string;
+  @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getDefaultErrors(x);
   
   //
   // @Input()
@@ -158,7 +163,8 @@ export class MatFormEntityComponent extends AngularEntityBase {
   constructor(
     public Log: LoggerService,
     public Dimens: DimensionsService,
-    public Constants: ConstantsService
+    public Constants: ConstantsService,
+    private formBuilder: FormBuilder
   ) {
     super(Constants, Dimens);
     
@@ -180,7 +186,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     
     const hostControl = this.control;
     const hostValidator: ValidatorFn | null = hostControl.validator;
-  
+    
     // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
     switch (this.type) {
       case FormTypes.TEXT:
@@ -233,7 +239,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
           const myValidator = x => {
             const foundSome = this.options.some(y => y.name === x.value);
             const isVoid = x.value === '';
-  
+            
             // tslint:disable-next-line:no-null-keyword
             return (foundSome || isVoid && this.autocompleteCanBeVoid) ? null : errorObject;
           };
@@ -278,7 +284,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
             
             const isVoid = input.length < 1;
             const isVoidWhileCanBe = this.autocompleteCanBeVoid ? (isVoid) : false;
-  
+            
             // tslint:disable-next-line:no-null-keyword
             return (foundAll) || (isVoidWhileCanBe) ? null : errorObject;
           };

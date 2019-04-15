@@ -7,12 +7,12 @@ import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/
 import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
 
 export interface Destructable {
-  destroyEvent$: EventEmitter<null>;
+  destroyEvent$: EventEmitter<void>;
 }
 
 export abstract class AngularEntityBase implements OnInit, OnDestroy, Destructable {
   
-  destroyEvent$: EventEmitter<null> = new EventEmitter<null>();
+  destroyEvent$: EventEmitter<void> = new EventEmitter<void>();
   
   protected constructor(
     public constants: ConstantsService,
