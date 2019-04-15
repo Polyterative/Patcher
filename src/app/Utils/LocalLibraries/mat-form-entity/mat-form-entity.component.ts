@@ -7,7 +7,9 @@ import {
   Input
 }                            from '@angular/core';
 import {
+  FormBuilder,
   FormControl,
+  FormGroup,
   ValidatorFn
 }                            from '@angular/forms';
 import {
@@ -32,7 +34,6 @@ import { LoggerService }     from 'src/app/Utils/LocalLibraries/VioletUtilities/
 import { isArray }           from 'util';
 import {
   FormTypes,
-  IFormLineSetup,
   ISelectable
 }                            from './form-element-models';
 
@@ -54,10 +55,10 @@ export class MatFormEntityComponent extends AngularEntityBase {
    */
   types = FormTypes;
   
-  @Input() formGroupRoot: IFormLineSetup = {
-    hideRequired: true,
-    floatLabel:   'auto'
-  };
+  @Input() formGroupRoot: FormGroup = this.formBuilder.group({
+    hideRequired: false,
+    floatLabel:   'auto' // can be auto|always|never
+  });
   
   @Input() control: FormControl;
   
@@ -161,7 +162,8 @@ export class MatFormEntityComponent extends AngularEntityBase {
   constructor(
     public Log: LoggerService,
     public Dimens: DimensionsService,
-    public Constants: ConstantsService
+    public Constants: ConstantsService,
+    private formBuilder: FormBuilder
   ) {
     super(Constants, Dimens);
     
