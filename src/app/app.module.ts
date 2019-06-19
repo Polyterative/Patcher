@@ -11,7 +11,7 @@ import { AngularFirestoreModule }  from '@angular/fire/firestore';
 import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE
-}                                  from '@angular/material';
+}                                  from '@angular/material/core';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
