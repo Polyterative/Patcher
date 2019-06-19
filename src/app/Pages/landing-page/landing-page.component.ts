@@ -8,7 +8,7 @@ import {
   FormControl,
   Validators
 }                             from '@angular/forms';
-import { MatSnackBar }        from '@angular/material';
+import { MatSnackBar }        from '@angular/material/snack-bar';
 import {
   Observable,
   of
@@ -122,11 +122,11 @@ export class LandingPageComponent extends AngularEntityBase {
         
         db.collection(this.messagePath)
           .add(message);
-  
+        
         CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
         
       });
-  
+    
     this.messageAdder.controls.content.valueChanges
       .pipe(
         debounceTime(2000),
