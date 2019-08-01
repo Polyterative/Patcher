@@ -4,21 +4,21 @@ import {
   TestBed
 } from '@angular/core/testing';
 
-import { BlogPostComponent } from './blog-post.component';
+import { BlogViewComponent } from './blog-view.component';
 
-describe('BlogPostComponent', () => {
-  let component: BlogPostComponent;
-  let fixture: ComponentFixture<BlogPostComponent>;
+describe('BlogViewComponent', () => {
+  let component: BlogViewComponent;
+  let fixture: ComponentFixture<BlogViewComponent>;
   
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [BlogPostComponent]
+      declarations: [BlogViewComponent]
     })
       .compileComponents();
   }));
   
   beforeEach(() => {
-    fixture = TestBed.createComponent(BlogPostComponent);
+    fixture = TestBed.createComponent(BlogViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
