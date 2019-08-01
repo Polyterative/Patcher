@@ -17,7 +17,7 @@ import { BlogViewModule } from './blog-view/blog-view.module';
     BlogPostModule,
     RouterModule.forChild([
       {path: '', pathMatch: 'full', loadChildren: './blog-view/blog-view.module#BlogViewModule'},
-      {path: 'post', loadChildren: './blog-post/blog-post-view.module#BlogPostModule'}
+      {path: 'post', loadChildren: './blog-post/blog-post.module#BlogPostModule'}
     ]),
     HttpClientModule,
     MarkdownModule.forRoot({loader: HttpClient})
