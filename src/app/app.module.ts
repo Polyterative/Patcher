@@ -50,7 +50,6 @@ const matDatepickerLocaleIT = {
   }
 };
 
-
 @NgModule({
   declarations: [
     AppComponent,
