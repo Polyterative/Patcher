@@ -4892,7 +4892,7 @@ neo-async@^2.5.0, neo-async@^2.6.0:
   resolved "http://192.168.1.231:4874/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-ngx-markdown@^8.1.0:
+ngx-markdown@~8.1.0:
   version "8.1.0"
   resolved "http://192.168.1.231:4874/ngx-markdown/-/ngx-markdown-8.1.0.tgz#ce25f00063e6d0504dd2db12e0112517678a704a"
   integrity sha512-baEQJlcl9AD+V9UR1QBOBaWwCNzB6iSpFGQI/RQb3fuQPzE/+Um80/AgLSHPo+Vth4ZsaiyMoAXp7Oz+SlFR8Q==
