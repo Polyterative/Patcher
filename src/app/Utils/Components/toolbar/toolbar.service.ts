@@ -11,7 +11,7 @@ import { debounceTime }    from 'rxjs/operators';
 })
 export class ToolbarService {
   
-  appTitle = 'Focus';
+  toolbarTitle = 'Focus';
   
   title: BehaviorSubject<string> = new BehaviorSubject('');
   
