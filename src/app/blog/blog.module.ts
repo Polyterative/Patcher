@@ -2,7 +2,7 @@ import { CommonModule }   from '@angular/common';
 import {
   HttpClient,
   HttpClientModule
-} from '@angular/common/http';
+}                         from '@angular/common/http';
 import { NgModule }       from '@angular/core';
 import { RouterModule }   from '@angular/router';
 import { MarkdownModule } from 'ngx-markdown';
@@ -20,7 +20,7 @@ import { BlogViewModule } from './blog-view/blog-view.module';
       {path: 'post', loadChildren: './blog-post/blog-post-view.module#BlogPostModule'}
     ]),
     HttpClientModule,
-    MarkdownModule.forRoot({loader:HttpClient})
+    MarkdownModule.forRoot({loader: HttpClient})
   ]
 })
 export class BlogModule {}
