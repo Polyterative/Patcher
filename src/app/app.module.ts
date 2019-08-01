@@ -24,6 +24,7 @@ import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.m
 import { environment }               from 'src/environments/environment';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
+import { BlogModule }                from './blog/blog.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  LOCALE_ID,
@@ -70,11 +71,12 @@ const matDatepickerLocaleIT = {
     // EXT LIBS
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
-    MatFormEntityModule
+    MatFormEntityModule,
     // imports firebase/firestore, only needed for database features
     // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
     // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
+    BlogModule
   ],
   providers:    [
     italianLocale,
