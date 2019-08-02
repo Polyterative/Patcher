@@ -11,7 +11,7 @@ import { debounceTime }    from 'rxjs/operators';
 })
 export class ToolbarService {
   
-  appTitle = 'Focus';
+  toolbarTitle = 'Focus';
   
   title: BehaviorSubject<string> = new BehaviorSubject('');
   
@@ -23,12 +23,6 @@ export class ToolbarService {
   primaryDisabled$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   primaryAutoDisabled$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   primaryIcon$: BehaviorSubject<ToolbarPrimaryIcon> = new BehaviorSubject(ToolbarPrimaryIcon.ADD);
-  
-  private static completeObservers(observers): void {
-    for (const observer of observers) {
-      observer.complete();
-    }
-  }
   
   constructor() {
     this.backClick$.subscribe(_ => { // defaults on change
@@ -47,6 +41,12 @@ export class ToolbarService {
       this.primaryDisabled$.next(false); // reset to default
     });
     
+  }
+  
+  private static completeObservers(observers): void {
+    for (const observer of observers) {
+      observer.complete();
+    }
   }
 }
 

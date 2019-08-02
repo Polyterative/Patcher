@@ -8,7 +8,7 @@ deploy_production:
   stage: deploy
   environment: Production
   only:
-    - master
+    - tags
   script:
     - npm install -g firebase-tools
     - npm install
