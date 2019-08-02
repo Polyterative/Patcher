@@ -1,7 +1,7 @@
 import { NgModule }            from '@angular/core';
 import { FlexLayoutModule }    from '@angular/flex-layout';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatListModule } from '@angular/material/list';
+import { MatDividerModule }    from '@angular/material/divider';
+import { MatListModule }       from '@angular/material/list';
 import { FlexColumnComponent } from './flex-column/flex-column.component';
 import { FlexRowComponent }    from './flex-row/flex-row.component';
 import { SpacerComponent }     from './spacer/spacer.component';
