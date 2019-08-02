@@ -11,9 +11,7 @@ import { debounceTime }    from 'rxjs/operators';
 })
 export class ToolbarService {
   
-  toolbarTitle = 'Focus';
-  
-  title: BehaviorSubject<string> = new BehaviorSubject('');
+  title: BehaviorSubject<string> = new BehaviorSubject('change me');
   
   backClick$: EventEmitter<void> = new EventEmitter<void>();
   primaryClick$: EventEmitter<void> = new EventEmitter<void>();

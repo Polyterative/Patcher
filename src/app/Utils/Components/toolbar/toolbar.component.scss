@@ -1,9 +1,9 @@
-@import "../../../app.component";
+@import "~src/app/app.component";
 @import "../../../Styles/Components/toolbar";
 
 .color {
-  background-color: #00897B;
-  color: white;
+  background-color: #5E35B1;
+  color: rgba(255, 255, 255, 0.91);
 }
 
 .toolbarFab {
