@@ -20,6 +20,7 @@ import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
 import { BlogModule }                from './blog/blog.module';
 import { MaterialModulePack }        from './material/material-module-pack.module';
+import { HomeModule }                from './Pages/home/home.module';
 import { LandingPageComponent }      from './Pages/landing-page/landing-page.component';
 import { MatFormEntityModule }       from './Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
 import { OrangeStructuresModule }    from './Utils/LocalLibraries/OrangeStructures/orange-structures.module';
@@ -52,8 +53,7 @@ const matDatepickerLocaleIT = {
 
 @NgModule({
   declarations: [
-    AppComponent,
-    LandingPageComponent
+    AppComponent
   ],
   imports:      [
     // BASE
@@ -75,7 +75,8 @@ const matDatepickerLocaleIT = {
     // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
     // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
-    BlogModule
+    BlogModule,
+    HomeModule
   ],
   providers:    [
     italianLocale,
