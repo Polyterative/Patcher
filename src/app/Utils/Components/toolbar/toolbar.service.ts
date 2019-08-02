@@ -24,12 +24,6 @@ export class ToolbarService {
   primaryAutoDisabled$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   primaryIcon$: BehaviorSubject<ToolbarPrimaryIcon> = new BehaviorSubject(ToolbarPrimaryIcon.ADD);
   
-  private static completeObservers(observers): void {
-    for (const observer of observers) {
-      observer.complete();
-    }
-  }
-  
   constructor() {
     this.backClick$.subscribe(_ => { // defaults on change
       this.primaryVisible$.next(false);
@@ -47,6 +41,12 @@ export class ToolbarService {
       this.primaryDisabled$.next(false); // reset to default
     });
     
+  }
+  
+  private static completeObservers(observers): void {
+    for (const observer of observers) {
+      observer.complete();
+    }
   }
 }
 

@@ -22,12 +22,12 @@
            fxFlexAlign='center'
       >{{ data.title|async }}</div>
     </lib-flex-row>
-
-
+    
+    
     <!--    <div fxFlex>-->
     <!--        company logo svg-->
     <!--    </div>-->
-
+    
     <div *ngIf='data.primaryVisible$|async'
          fxFlex='3'
     >
@@ -40,7 +40,7 @@
         <mat-icon class="mat-18">{{data.primaryIcon$|async}}</mat-icon>
       </button>
     </div>
-
+  
   </mat-toolbar-row>
 </mat-toolbar>
 
