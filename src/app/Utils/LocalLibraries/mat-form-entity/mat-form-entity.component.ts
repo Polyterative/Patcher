@@ -1,42 +1,40 @@
 import {
   COMMA,
   ENTER
-}                            from '@angular/cdk/keycodes';
+}                                       from '@angular/cdk/keycodes';
 import {
   Component,
   Input
-}                            from '@angular/core';
+}                                       from '@angular/core';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
   ValidatorFn
-}                            from '@angular/forms';
-import {
-  MatAutocompleteSelectedEvent,
-  MatChipInputEvent,
-  MatFormFieldAppearance,
-  TooltipPosition
-}                            from '@angular/material';
-import { BehaviorSubject }   from 'rxjs';
+}                                       from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatChipInputEvent }            from '@angular/material/chips';
+import { MatFormFieldAppearance }       from '@angular/material/form-field';
+import { TooltipPosition }              from '@angular/material/tooltip';
+import { BehaviorSubject }              from 'rxjs';
 import {
   debounceTime,
   filter,
   share,
   startWith,
   takeUntil
-}                            from 'rxjs/operators';
-import { AngularEntityBase } from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { AppFormUtils }      from 'src/app/Utils/LocalLibraries/VioletUtilities/app-form-utils';
-import { Strings }           from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
-import { ConstantsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService } from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
-import { LoggerService }     from 'src/app/Utils/LocalLibraries/VioletUtilities/logger/logger.service';
-import { isArray }           from 'util';
+}                                       from 'rxjs/operators';
+import { AngularEntityBase }            from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { AppFormUtils }                 from 'src/app/Utils/LocalLibraries/VioletUtilities/app-form-utils';
+import { Strings }                      from 'src/app/Utils/LocalLibraries/VioletUtilities/app-strings';
+import { ConstantsService }             from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService }            from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
+import { LoggerService }                from 'src/app/Utils/LocalLibraries/VioletUtilities/logger/logger.service';
+import { isArray }                      from 'util';
 import {
   FormTypes,
   ISelectable
-}                            from './form-element-models';
+}                                       from './form-element-models';
 
 @Component({
   selector:    'lib-mat-form-entity',
@@ -153,13 +151,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
     // TAB // add ONLY if you add TAB-to-add  to autocomplete
   ];
   
-  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
-    hostControl.setValidators(hostValidator ? [
-      hostValidator,
-      newValidator
-    ] : newValidator);
-  }
-  
   constructor(
     public Log: LoggerService,
     public Dimens: DimensionsService,
@@ -168,6 +159,13 @@ export class MatFormEntityComponent extends AngularEntityBase {
   ) {
     super(Constants, Dimens);
     
+  }
+  
+  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
+    hostControl.setValidators(hostValidator ? [
+      hostValidator,
+      newValidator
+    ] : newValidator);
   }
   
   /**
@@ -367,6 +365,12 @@ export class MatFormEntityComponent extends AngularEntityBase {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
   
+  private checkOptions(): void {
+    if (!isArray(this.options)) {
+      this.Log.error('Options is not array! I\'m a selector, give me the options!');
+    }
+  }
+  
   @Input()
   set disabled(value: boolean) {
     // tslint:disable-next-line:switch-default
@@ -383,12 +387,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
           this.ghostControl.enable();
         }
         break;
-    }
-  }
-  
-  private checkOptions(): void {
-    if (!isArray(this.options)) {
-      this.Log.error('Options is not array! I\'m a selector, give me the options!');
     }
   }
 }

@@ -18,7 +18,7 @@
               matInput
     ></textarea>
   </ng-container>
-
+  
   <ng-container *ngIf='(type===types.TEXT)||(type===types.NUMBER)||(type===types.TIME)'>
     <input [autocomplete]='!disableBrowserAutocomplete'
            [formControl]='control'
@@ -27,9 +27,9 @@
            matInput
            style='height: 15.333px'
     />
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf='(type===types.SELECT)&&options'>
     <mat-select [formControl]='control'
                 [placeholder]='placeholder'
@@ -45,9 +45,9 @@
         {{ option.name }}
       </mat-option>
     </mat-select>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf='(type===types.MULTISELECT)&&options'>
     <mat-select [formControl]='control'
                 [placeholder]='placeholder'
@@ -60,10 +60,10 @@
         {{ option.name }}
       </mat-option>
     </mat-select>
-
+  
   </ng-container>
-
-
+  
+  
   <ng-container *ngIf='(type===types.MULTI_TEXT)'>
     <mat-chip-list #chipList>
       <mat-chip (removed)="removeFromChips(chip)"
@@ -84,9 +84,9 @@
              [placeholder]="placeholder"
       >
     </mat-chip-list>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf='(type===types.MULTICOMPLETE)'>
     <mat-chip-list #chipList>
       <mat-chip (removed)="removeFromChips(chip)"
@@ -111,7 +111,7 @@
              [placeholder]='placeholder'
              matInput
       />
-
+      
       <mat-autocomplete #autocomplete='matAutocomplete'
                         (optionSelected)='addToMultiComplete($event)'
                         [displayWith]='autocomplete_displayFunction'
@@ -122,21 +122,21 @@
         >
           {{ option.name }}
         </mat-option>
-
+      
       </mat-autocomplete>
     </mat-chip-list>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf='(type===types.AUTOCOMPLETE)&&options'>
-
+    
     <input [formControl]='control'
            [matAutocomplete]='autocomplete'
            [placeholder]='placeholder'
            matInput
            type='text'
     />
-
+    
     <mat-autocomplete #autocomplete='matAutocomplete'
                       [displayWith]='autocomplete_displayFunction'
                       autoActiveFirstOption
@@ -146,11 +146,11 @@
       >
         {{ option.name }}
       </mat-option>
-
+    
     </mat-autocomplete>
   </ng-container>
   <mat-error *ngIf='control.invalid'>{{ errors }}</mat-error>
-
+  
   <!--<mat-hint *ngIf='control.invalid'>{{errors}}</mat-hint>-->
 
 </mat-form-field>

@@ -8,7 +8,7 @@ import {
   FormControl,
   Validators
 }                             from '@angular/forms';
-import { MatSnackBar }        from '@angular/material';
+import { MatSnackBar }        from '@angular/material/snack-bar';
 import {
   Observable,
   of
@@ -24,12 +24,12 @@ import {
   takeUntil,
   tap
 }                             from 'rxjs/operators';
-import { MessageModel }       from 'src/app/Pages/landing-page/message.model';
-import { FormTypes }          from 'src/app/Utils/LocalLibraries/mat-form-entity/form-element-models';
-import { AngularEntityBase }  from 'src/app/Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { ConstantsService }   from 'src/app/Utils/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService }  from 'src/app/Utils/LocalLibraries/VioletUtilities/dimensions.service';
-import { CommunicationUtils } from 'src/app/Utils/LocalLibraries/VioletUtilities/general-utils';
+import { MessageModel }       from './message.model';
+import { FormTypes }          from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
+import { AngularEntityBase }  from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { ConstantsService }   from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService }  from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
+import { CommunicationUtils } from '../../Utils/LocalLibraries/VioletUtilities/general-utils';
 
 interface ServerStatsModel {
   visits: number;
@@ -42,6 +42,8 @@ interface ServerStatsModel {
   styleUrls:   ['./landing-page.component.scss']
 })
 export class LandingPageComponent extends AngularEntityBase {
+  private messagePath = 'messages';
+  private general = 'general';
   messages$: Observable<MessageModel[][]>;
   serverStats$: Observable<ServerStatsModel>;
   messageAdder = {
@@ -59,8 +61,6 @@ export class LandingPageComponent extends AngularEntityBase {
     type:      FormTypes.TEXT,
     confirm:   new EventEmitter<void>()
   };
-  private messagePath = 'messages';
-  private general = 'general';
   
   // const genericDeleteErrorHandler = catchError(_ => {
   //     this.pageState.state$.next(PageState.ERROR);
@@ -122,11 +122,11 @@ export class LandingPageComponent extends AngularEntityBase {
         
         db.collection(this.messagePath)
           .add(message);
-  
+        
         CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
         
       });
-  
+    
     this.messageAdder.controls.content.valueChanges
       .pipe(
         debounceTime(2000),

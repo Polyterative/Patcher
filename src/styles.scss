@@ -1,9 +1,12 @@
-/* You can add global styles to this file, and also import other style files */
-@import '~@angular/material/theming';
+//body {
+//  font-family: Roboto, "Helvetica Neue", sans-serif;
+//}
 
-@include mat-core();
+html, body {
+  height: 100%;
+}
 
-@import "app/Styles/commons_customizations";
-@import "app/Styles/commons_structure";
-@import "app/Styles/constants";
-@import "app/Styles/Components/cards";
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}

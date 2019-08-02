@@ -11,7 +11,7 @@ import { AngularFirestoreModule }  from '@angular/fire/firestore';
 import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE
-}                                  from '@angular/material';
+}                                  from '@angular/material/core';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -24,6 +24,7 @@ import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.m
 import { environment }               from 'src/environments/environment';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
+import { BlogModule }                from './blog/blog.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  LOCALE_ID,
@@ -49,7 +50,6 @@ const matDatepickerLocaleIT = {
   }
 };
 
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -70,11 +70,12 @@ const matDatepickerLocaleIT = {
     // EXT LIBS
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
-    MatFormEntityModule
+    MatFormEntityModule,
     // imports firebase/firestore, only needed for database features
     // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
     // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
+    BlogModule
   ],
   providers:    [
     italianLocale,
