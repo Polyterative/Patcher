@@ -178,7 +178,7 @@
   resolved "http://192.168.1.231:4874/@angular%2ffire/-/fire-5.1.3.tgz#2dbe29e1ab9535830b0f22aa804c690f9b7bce37"
   integrity sha512-s9tdSDS0ZLWKax5atMSxpJWehQ59bKgbzy8uZJVo1vyJw/eshBduuCZbETBj6RmwWhKgrBfgS2odNwKxArE25w==
 
-"@angular/flex-layout@8.0.0-beta.26":
+"@angular/flex-layout@~8.0.0-beta.26":
   version "8.0.0-beta.26"
   resolved "http://192.168.1.231:4874/@angular%2fflex-layout/-/flex-layout-8.0.0-beta.26.tgz#05807e4daeb7c70da5653b681f8e8c0da87d133e"
   integrity sha512-lXDLlMSNQhidW0grvisIsj/3gqLuYyN2MvABuRYybnFTc233sXGZuOAaulqq663LA0/DP/GNcz6a+A4ZAAlmPA==
