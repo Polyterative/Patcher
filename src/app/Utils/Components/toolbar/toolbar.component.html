@@ -2,43 +2,13 @@
              class='color'
 >
   <mat-toolbar-row>
-    <lib-flex-row fxFlex='50'>
-<!--      <div *ngIf='((data.title|async).length>0)'-->
-<!--           fxFlex='5'-->
-<!--      >-->
-<!--        <button (click)='data.backClick$.emit()'-->
-<!--                fxFlexAlign='center'-->
-<!--                mat-icon-button-->
-<!--        >-->
-<!--          <mat-icon class="mat-18">arrow_back</mat-icon>-->
-<!--        </button>-->
-<!--      </div>-->
-      <div *ngIf='(data.title|async).length>0'
-           fxFlex
-           fxFlexAlign='center'
-           class='title'
-      >{{ data.title|async }}</div>
-    </lib-flex-row>
-    
-    
-    <!--    <div fxFlex>-->
-    <!--        company logo svg-->
-    <!--    </div>-->
-    
-<!--    <div *ngIf='data.primaryVisible$|async'-->
-<!--         fxFlex='3'-->
-<!--    >-->
-<!--      <button (click)='data.primaryClick$.emit()'-->
-<!--              [disabled]='(data.primaryDisabled$|async)||(data.primaryAutoDisabled$|async)'-->
-<!--              class="toolbarFab"-->
-<!--              color="accent"-->
-<!--              mat-fab-->
-<!--      >-->
-<!--        <mat-icon class="mat-18">{{data.primaryIcon$|async}}</mat-icon>-->
-<!--      </button>-->
-<!--    </div>-->
+    <div *ngIf='(data.title|async).length>0'
+         fxFlex
+         fxFlexAlign='center center'
+         class='title'
+    >{{ data.title|async }}</div>
+    <div fxFlex='grow'></div>
   
   </mat-toolbar-row>
-<!--  <mat-toolbar-row></mat-toolbar-row>-->
 </mat-toolbar>
 
