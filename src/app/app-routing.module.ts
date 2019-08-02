@@ -3,7 +3,7 @@ import {
   RouterModule,
   Routes
 }                               from '@angular/router';
-import { LandingPageComponent } from 'src/app/Pages/landing-page/landing-page.component';
+import { LandingPageComponent } from './Pages/landing-page/landing-page.component';
 
 const routes: Routes = [
   {path: 'landing', component: LandingPageComponent},
