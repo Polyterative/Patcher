@@ -14,17 +14,18 @@ import {
 }                                  from '@angular/material/core';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { environment }             from '../environments/environment';
 
-import { MaterialModulePack }        from 'src/app/material/material-module-pack.module';
-import { LandingPageComponent }      from 'src/app/Pages/landing-page/landing-page.component';
-import { MatFormEntityModule }       from 'src/app/Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
-import { OrangeStructuresModule }    from 'src/app/Utils/LocalLibraries/OrangeStructures/orange-structures.module';
-import { VioletUtilsModule }         from 'src/app/Utils/LocalLibraries/VioletUtilities/violet-utils.module';
-import { PolyUtilsComponentsModule } from 'src/app/Utils/poly-utils-components.module';
-import { environment }               from 'src/environments/environment';
 import { AppRoutingModule }          from './app-routing.module';
 import { AppComponent }              from './app.component';
 import { BlogModule }                from './blog/blog.module';
+import { MaterialModulePack }        from './material/material-module-pack.module';
+import { HomeModule }                from './Pages/home/home.module';
+import { LandingPageComponent }      from './Pages/landing-page/landing-page.component';
+import { MatFormEntityModule }       from './Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
+import { OrangeStructuresModule }    from './Utils/LocalLibraries/OrangeStructures/orange-structures.module';
+import { VioletUtilsModule }         from './Utils/LocalLibraries/VioletUtilities/violet-utils.module';
+import { PolyUtilsComponentsModule } from './Utils/poly-utils-components.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  LOCALE_ID,
@@ -52,8 +53,7 @@ const matDatepickerLocaleIT = {
 
 @NgModule({
   declarations: [
-    AppComponent,
-    LandingPageComponent
+    AppComponent
   ],
   imports:      [
     // BASE
@@ -75,7 +75,8 @@ const matDatepickerLocaleIT = {
     // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
     // AngularFireStorageModule // imports firebase/storage only needed for storage features
     // APP LOCAL COMPONENTS
-    BlogModule
+    BlogModule,
+    HomeModule
   ],
   providers:    [
     italianLocale,
