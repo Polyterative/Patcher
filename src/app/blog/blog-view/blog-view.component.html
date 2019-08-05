@@ -1,55 +1,83 @@
 <!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
-<lib-flex-column fxFlex
->
-<!--  <div fxFlex >-->
-<!--    <mat-card style='margin-bottom: 4em'-->
-<!--    >-->
-<!--      <lib-flex-column>-->
-<!--        <mat-card-title fxFlex-->
-<!--                        style='font-size: xx-large'-->
-<!--        >-->
-<!--          Posts-->
-<!--        </mat-card-title>-->
-<!--        &lt;!&ndash;      <mat-card-subtitle>&ndash;&gt;-->
-<!--        &lt;!&ndash;      </mat-card-subtitle>&ndash;&gt;-->
-<!--        &lt;!&ndash;      <lib-spacer fxFlex></lib-spacer>&ndash;&gt;-->
-<!--        &lt;!&ndash;      <mat-card-content fxFlex>&ndash;&gt;-->
-<!--        &lt;!&ndash;      </mat-card-content>&ndash;&gt;-->
-<!--      </lib-flex-column>-->
-<!--    </mat-card>-->
-<!--  </div>-->
-  <ng-container *ngFor='let message of messages$|async'>
-    
-    <mat-card fxFlex
+<lib-flex-row>
+  
+  <div fxFlex='30'>
+    <mat-card class='darkCard'
     >
-      <lib-flex-column>
-        <mat-card-title fxFlex>
-          {{ message?.title }}
+      <lib-flex-column gap='1em'>
+        <mat-card-title fxFlex
+        >
+          Posts
         </mat-card-title>
-        <mat-card-subtitle>
-          <lib-flex-row>
-            <div fxFlex>
-              {{ message?.subtitle }}
-            </div>
-            <!--            <div fxFlex>-->
-            <!--              |-->
-            <!--            </div>-->
-            <div fxFlex='grow'></div>
-            <lib-flex-row fxFlex='35'>
-              <div fxFlex>
-                Created: {{ message?.created }}
-              </div>
-              <div fxFlex>
-                Last edit: {{ message?.created }}
-              </div>
-            </lib-flex-row>
-          </lib-flex-row>
-        </mat-card-subtitle>
+        <!--      <mat-card-subtitle>-->
+        <!--      </mat-card-subtitle>-->
         <lib-spacer fxFlex></lib-spacer>
         <mat-card-content fxFlex>
-          <div fxLayoutAlign='start'>{{ message?.content }}</div>
+          The blog itself
         </mat-card-content>
       </lib-flex-column>
     </mat-card>
-  </ng-container>
-</lib-flex-column>
+  </div>
+  <lib-flex-column fxFlex
+  >
+    <!--  <div fxFlex >-->
+    <!--    <mat-card style='margin-bottom: 4em'-->
+    <!--    >-->
+    <!--      <lib-flex-column>-->
+    <!--        <mat-card-title fxFlex-->
+    <!--                        style='font-size: xx-large'-->
+    <!--        >-->
+    <!--          Posts-->
+    <!--        </mat-card-title>-->
+    <!--        &lt;!&ndash;      <mat-card-subtitle>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      </mat-card-subtitle>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      <lib-spacer fxFlex></lib-spacer>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      <mat-card-content fxFlex>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      </mat-card-content>&ndash;&gt;-->
+    <!--      </lib-flex-column>-->
+    <!--    </mat-card>-->
+    <!--  </div>-->
+    <ng-container *ngFor='let message of messages$|async'>
+      
+      <mat-card fxFlex
+      >
+        <lib-flex-column gap='1em'>
+          <mat-card-title fxFlex>
+            {{ message?.title }}
+          </mat-card-title>
+          <mat-card-subtitle>
+            <lib-flex-row>
+              <div fxFlex>
+                {{ message?.subtitle }}
+              </div>
+              <!--            <div fxFlex>-->
+              <!--              |-->
+              <!--            </div>-->
+              <div fxFlex='grow'></div>
+              <lib-flex-row fxFlex='35'>
+                <div fxFlex>
+                  Created {{ message?.created }}
+                </div>
+                <div fxFlex>
+                  Edited {{ message?.created }}
+                </div>
+              </lib-flex-row>
+            </lib-flex-row>
+          </mat-card-subtitle>
+          <lib-spacer fxFlex></lib-spacer>
+          <mat-card-content fxFlex>
+            <lib-flex-row>
+              <div fxFlex='grow'>
+                <div fxLayoutAlign='start'>{{ message?.content }}</div>
+              </div>
+                <button fxFlex='25' mat-flat-button
+                        color="primary"
+                >Read
+                </button>
+            </lib-flex-row>
+          </mat-card-content>
+        </lib-flex-column>
+      </mat-card>
+    </ng-container>
+  </lib-flex-column>
+</lib-flex-row>
