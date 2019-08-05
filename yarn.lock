@@ -107,10 +107,10 @@
   dependencies:
     tslib "^1.9.0"
 
-"@angular/cdk@8.1.2":
-  version "8.1.2"
-  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-8.1.2.tgz#6e2c2451554b0a9d752e7f5bde593be4c7d51520"
-  integrity sha512-jzPT1mMfGaA2xjnkMh1kd0uyWI7pz58/7BWBijLtSLKM9+HkhrnqXIHesKNE7EwpapzuPBtkGm3MGl661goIvA==
+"@angular/cdk@8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@angular/cdk/-/cdk-8.0.2.tgz#599b7fd06caed8cbea41f8f7874ddcea5dfc99ce"
+  integrity sha512-Tv9M0vuTp7Ogk7mRiEpzBG9x5289FXe+WH0VKqN4zTzF/taTgGEuJBLDcFrwQMW0mFpGP7acVOiopgH+nClytg==
   dependencies:
     tslib "^1.7.1"
   optionalDependencies:
@@ -196,10 +196,10 @@
   resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-8.2.0.tgz#98c3d01807a08750b85bcc8bcfface06e2f55b6e"
   integrity sha512-fv+BF4Fgy/JASi3lpfwxDFsByWfpsASr5wt2zFMozHSb0ZsJ22OpyvdnjPfEaAOLDV0qcXIZEZ6O+NjRq2qurQ==
 
-"@angular/material@8.1.2":
-  version "8.1.2"
-  resolved "https://registry.yarnpkg.com/@angular/material/-/material-8.1.2.tgz#0d8b00def93e337f8bc5a6db1e94531894f17229"
-  integrity sha512-c/EYufDPTClr7F2ZFv7KSaPpA/b/Bq+89oU5/AioNzx3KIZWBB24U/GaIsh3NI75mPTeVdJDhXhCcrE5WbsZnQ==
+"@angular/material@8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@angular/material/-/material-8.0.2.tgz#c648e0f52d94b37e3dddfd879223202aa0d11587"
+  integrity sha512-Q6YxX7zLsfI1kv0dSJSENSyCuwq7GdHjHzOGeogGfjQRvX3N/ty/z8YfwhQFzZ3XtIysbhuGcpAUWazgWeIKgw==
   dependencies:
     tslib "^1.7.1"
 
@@ -894,10 +894,10 @@ amdefine@>=0.0.4:
   resolved "http://192.168.1.231:4874/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-angular-tslint-rules@1.14.5:
-  version "1.14.5"
-  resolved "https://registry.yarnpkg.com/angular-tslint-rules/-/angular-tslint-rules-1.14.5.tgz#070aeaa338fbfaabd6a3ce5b53b27b20099ab6da"
-  integrity sha512-Cu7xAkrVMq55CAffo/+CdH/J5GuOZ4pVD7HP2FteiVRD0KPjlY0rhefAwdDdefBmpIz7UIQnaUIz7yBFVMP06Q==
+angular-tslint-rules@1.18.0:
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/angular-tslint-rules/-/angular-tslint-rules-1.18.0.tgz#99356849e2a31e55574c1238535035473e8877a5"
+  integrity sha512-QKEoypsbLCGaM3rCtU/tgO53ogAMOBUHxX0jg/dJ53wKOWP1KCGGckiEGiPcUeay/R9iWLbmXKvziJsH7WAceA==
 
 ansi-colors@^3.0.0:
   version "3.2.4"
@@ -4222,10 +4222,10 @@ karma-chrome-launcher@3.0.0:
   dependencies:
     which "^1.2.1"
 
-karma-coverage-istanbul-reporter@2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/karma-coverage-istanbul-reporter/-/karma-coverage-istanbul-reporter-2.1.0.tgz#5f1bcc13c5e14ee1d91821ee8946861674f54c75"
-  integrity sha512-UH0mXPJFJyK5uiK7EkwGtQ8f30lCBAfqRResnZ4pzLJ04SOp4SPlYkmwbbZ6iVJ6sQFVzlDUXlntBEsLRdgZpg==
+karma-coverage-istanbul-reporter@2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/karma-coverage-istanbul-reporter/-/karma-coverage-istanbul-reporter-2.0.6.tgz#7b6e9c88781447bb87aa6ac24bf74b93e558adc3"
+  integrity sha512-WFh77RI8bMIKdOvI/1/IBmgnM+Q7NOLhnwG91QJrM8lW+CIXCjTzhhUsT/svLvAkLmR10uWY4RyYbHMLkTglvg==
   dependencies:
     istanbul-api "^2.1.6"
     minimatch "^3.0.4"
