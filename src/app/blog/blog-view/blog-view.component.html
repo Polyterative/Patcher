@@ -1,21 +1,23 @@
 <!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
 <lib-flex-row xs='column'>
   
-  <div fxFlex='30' fxFlex.xs='100'>
+  <div fxFlex='30'
+       fxFlex.xs='100'
+  >
     <mat-card
     >
-<!--      <lib-flex-column gap='1em'>-->
-        <mat-card-title fxFlex
-        >
-          Posts
-        </mat-card-title>
-        <!--      <mat-card-subtitle>-->
-        <!--      </mat-card-subtitle>-->
-<!--        <lib-spacer fxFlex></lib-spacer>-->
-<!--        <mat-card-content fxFlex>-->
-<!--          The blog itself-->
-<!--        </mat-card-content>-->
-<!--      </lib-flex-column>-->
+      <!--      <lib-flex-column gap='1em'>-->
+      <mat-card-title fxFlex
+      >
+        Posts
+      </mat-card-title>
+      <!--      <mat-card-subtitle>-->
+      <!--      </mat-card-subtitle>-->
+      <!--        <lib-spacer fxFlex></lib-spacer>-->
+      <!--        <mat-card-content fxFlex>-->
+      <!--          The blog itself-->
+      <!--        </mat-card-content>-->
+      <!--      </lib-flex-column>-->
     </mat-card>
   </div>
   <lib-flex-column fxFlex
@@ -46,7 +48,7 @@
             {{ message?.title }}
           </mat-card-title>
           <mat-card-subtitle>
-            <lib-flex-row sm='column'>
+            <lib-flex-row xs='column'>
               <div fxFlex>
                 {{ message?.subtitle }}
               </div>
@@ -54,7 +56,9 @@
               <!--              |-->
               <!--            </div>-->
               <div fxFlex='grow'></div>
-              <lib-flex-row fxFlex='35'>
+              <lib-flex-row fxFlex='35'
+                            fxFlex.xs='100'
+              >
                 <div fxFlex>
                   Created {{ message?.created }}
                 </div>
@@ -70,10 +74,11 @@
               <div fxFlex='grow'>
                 <div fxLayoutAlign='start'>{{ message?.content }}</div>
               </div>
-                <button fxFlex='25' mat-flat-button
-                        color="primary"
-                >Read
-                </button>
+              <button fxFlex='25'
+                      mat-flat-button
+                      color="primary"
+              >Read
+              </button>
             </lib-flex-row>
           </mat-card-content>
         </lib-flex-column>
