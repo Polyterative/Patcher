@@ -1,4 +1,5 @@
-<markdown [src]="'./assets/blog/blog.md'"></markdown>
+<!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->3
+<h1>Blog view</h1>
 <lib-flex-row>
   <lib-flex-column *ngIf='true'
                    fxFlex.lg='70'
@@ -16,13 +17,13 @@
               {{ message?.subtitle }}
             </div>
             <div fxFlexAlign='end'>
-              {{ message?.when|date }}
+              {{ message?.created|date }}
             </div>
           </lib-flex-row>
         </mat-card-subtitle>
         <!--            <mat-card-content>{{ message?.content }}</mat-card-content>-->
         <mat-card-title>
-          <div fxLayoutAlign='end'>{{ message?.content }}</div>
+          <div fxLayoutAlign='end'>{{ message?.content|json }}</div>
         </mat-card-title>
         <mat-card-actions>
           <lib-flex-row>

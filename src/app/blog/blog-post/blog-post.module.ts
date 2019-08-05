@@ -11,10 +11,6 @@ import { BlogPostComponent }      from './blog-post.component';
   declarations: [BlogPostComponent],
   imports: [
     CommonModule,
-    RouterModule.forChild([
-      {path: '', component: BlogPostComponent},
-      {path: ':id', component: BlogPostComponent, pathMatch: 'full'}
-    ]),
     // ComponentsModule,
     MarkdownModule.forChild(),
     OrangeStructuresModule,
