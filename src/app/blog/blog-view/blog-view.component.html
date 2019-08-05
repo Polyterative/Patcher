@@ -15,14 +15,18 @@
             <div fxFlex>
               {{ message?.subtitle }}
             </div>
-            <div fxFlex='grow'>
-            </div>
-            <div fxFlex>
-              Created: {{ message?.created }}
-            </div>
-            <div fxFlex>
-              Last edit: {{ message?.created }}
-            </div>
+            <!--            <div fxFlex>-->
+            <!--              |-->
+            <!--            </div>-->
+            <div fxFlex='grow'></div>
+            <lib-flex-row fxFlex='35'>
+              <div fxFlex>
+                Created: {{ message?.created }}
+              </div>
+              <div fxFlex>
+                Last edit: {{ message?.created }}
+              </div>
+            </lib-flex-row>
           </lib-flex-row>
         </mat-card-subtitle>
         <mat-card-content fxFlex>
