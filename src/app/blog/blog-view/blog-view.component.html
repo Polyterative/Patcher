@@ -1,21 +1,21 @@
 <!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
-<lib-flex-row>
+<lib-flex-row xs='column'>
   
-  <div fxFlex='30'>
-    <mat-card class='darkCard'
+  <div fxFlex='30' fxFlex.xs='100'>
+    <mat-card
     >
-      <lib-flex-column gap='1em'>
+<!--      <lib-flex-column gap='1em'>-->
         <mat-card-title fxFlex
         >
           Posts
         </mat-card-title>
         <!--      <mat-card-subtitle>-->
         <!--      </mat-card-subtitle>-->
-        <lib-spacer fxFlex></lib-spacer>
-        <mat-card-content fxFlex>
-          The blog itself
-        </mat-card-content>
-      </lib-flex-column>
+<!--        <lib-spacer fxFlex></lib-spacer>-->
+<!--        <mat-card-content fxFlex>-->
+<!--          The blog itself-->
+<!--        </mat-card-content>-->
+<!--      </lib-flex-column>-->
     </mat-card>
   </div>
   <lib-flex-column fxFlex
@@ -46,7 +46,7 @@
             {{ message?.title }}
           </mat-card-title>
           <mat-card-subtitle>
-            <lib-flex-row>
+            <lib-flex-row sm='column'>
               <div fxFlex>
                 {{ message?.subtitle }}
               </div>
