@@ -1,3 +1,16 @@
 <div [ngClass]='{"content-root-card":(service.shouldWrap$|async)}'>
   <ng-content></ng-content>
+  
+  <div style='padding-top: 4em'>
+    <mat-card style='padding-bottom: 0em!important;background-color: #313131;color: white'>
+      <lib-flex-row gap='0em'>
+        <div fxFlex></div>
+        <mat-card-content fxFlexAlign='center center '>
+          Made with ❤ by Polyterative
+        </mat-card-content>
+        <div fxFlex></div>
+      </lib-flex-row>
+    </mat-card>
+  </div>
 </div>
+
