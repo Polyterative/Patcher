@@ -1,7 +1,23 @@
 <!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
 <lib-flex-column fxFlex
 >
-  <h1 fxFlex>Blog home</h1>
+<!--  <div fxFlex >-->
+<!--    <mat-card style='margin-bottom: 4em'-->
+<!--    >-->
+<!--      <lib-flex-column>-->
+<!--        <mat-card-title fxFlex-->
+<!--                        style='font-size: xx-large'-->
+<!--        >-->
+<!--          Posts-->
+<!--        </mat-card-title>-->
+<!--        &lt;!&ndash;      <mat-card-subtitle>&ndash;&gt;-->
+<!--        &lt;!&ndash;      </mat-card-subtitle>&ndash;&gt;-->
+<!--        &lt;!&ndash;      <lib-spacer fxFlex></lib-spacer>&ndash;&gt;-->
+<!--        &lt;!&ndash;      <mat-card-content fxFlex>&ndash;&gt;-->
+<!--        &lt;!&ndash;      </mat-card-content>&ndash;&gt;-->
+<!--      </lib-flex-column>-->
+<!--    </mat-card>-->
+<!--  </div>-->
   <ng-container *ngFor='let message of messages$|async'>
     
     <mat-card fxFlex
@@ -29,6 +45,7 @@
             </lib-flex-row>
           </lib-flex-row>
         </mat-card-subtitle>
+        <lib-spacer fxFlex></lib-spacer>
         <mat-card-content fxFlex>
           <div fxLayoutAlign='start'>{{ message?.content }}</div>
         </mat-card-content>
