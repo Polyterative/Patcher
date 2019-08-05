@@ -917,10 +917,10 @@ amdefine@>=0.0.4:
   resolved "http://192.168.1.231:4874/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-angular-tslint-rules@1.14.5:
-  version "1.14.5"
-  resolved "https://registry.yarnpkg.com/angular-tslint-rules/-/angular-tslint-rules-1.14.5.tgz#070aeaa338fbfaabd6a3ce5b53b27b20099ab6da"
-  integrity sha512-Cu7xAkrVMq55CAffo/+CdH/J5GuOZ4pVD7HP2FteiVRD0KPjlY0rhefAwdDdefBmpIz7UIQnaUIz7yBFVMP06Q==
+angular-tslint-rules@1.18.0:
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/angular-tslint-rules/-/angular-tslint-rules-1.18.0.tgz#99356849e2a31e55574c1238535035473e8877a5"
+  integrity sha512-QKEoypsbLCGaM3rCtU/tgO53ogAMOBUHxX0jg/dJ53wKOWP1KCGGckiEGiPcUeay/R9iWLbmXKvziJsH7WAceA==
 
 ansi-colors@4.1.1:
   version "4.1.1"
