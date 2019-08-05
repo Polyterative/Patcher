@@ -1,33 +1,31 @@
 <!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
-<h1>Blog home</h1>
-<lib-flex-row>
-  <lib-flex-column
-  >
-    <ng-container *ngFor='let message of messages$|async'>
-      
-      <mat-card fxFlex
-      >
-        <lib-flex-column>
-          <mat-card-title fxFlex>
-            {{ message?.title }}
-          </mat-card-title>
-          <mat-card-subtitle>
-            <lib-flex-row>
-              <div fxFlex>
-                {{ message?.subtitle }}
-              </div>
-              <div fxFlex='grow'>
-              </div>
-              <div fxFlex>
-                {{ message?.created }}
-              </div>
-            </lib-flex-row>
-          </mat-card-subtitle>
-          <mat-card-content fxFlex>
-            <div fxLayoutAlign='start'>{{ message?.content }}</div>
-          </mat-card-content>
-        </lib-flex-column>
-      </mat-card>
-    </ng-container>
-  </lib-flex-column>
-</lib-flex-row>
+<lib-flex-column fxFlex
+>
+  <h1 fxFlex>Blog home</h1>
+  <ng-container *ngFor='let message of messages$|async'>
+    
+    <mat-card fxFlex
+    >
+      <lib-flex-column>
+        <mat-card-title fxFlex>
+          {{ message?.title }}
+        </mat-card-title>
+        <mat-card-subtitle>
+          <lib-flex-row>
+            <div fxFlex>
+              {{ message?.subtitle }}
+            </div>
+            <div fxFlex='grow'>
+            </div>
+            <div fxFlex>
+              {{ message?.created }}
+            </div>
+          </lib-flex-row>
+        </mat-card-subtitle>
+        <mat-card-content fxFlex>
+          <div fxLayoutAlign='start'>{{ message?.content }}</div>
+        </mat-card-content>
+      </lib-flex-column>
+    </mat-card>
+  </ng-container>
+</lib-flex-column>
