@@ -14,10 +14,11 @@ enum Category {
   'Productivity'
 }
 
-interface BlogPostModel {
+export interface BlogPostModel {
   title: string;
   subtitle: string;
   content: string;
+  id: number;
   created: DateTime;
   updated: DateTime;
   category: Category;
@@ -43,9 +44,17 @@ export class BlogViewComponent extends AngularEntityBase {
     super(constants, dimens);
     
     // @ts-ignore
-    this.messages$ = db.collection(this.blogPostPath, ref => ref.limit(10).orderBy('when', 'desc'))
+    this.messages$ = db.collection(
+      this.blogPostPath,
+      ref => ref.limit(10)
+        .orderBy('created', 'desc')
+    )
       .valueChanges()
     ;
+    
+    this.messages$.subscribe(x => {
+      console.error(x);
+    });
   }
   
 }

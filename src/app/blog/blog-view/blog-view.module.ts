@@ -11,9 +11,6 @@ import { BlogViewComponent }      from './blog-view.component';
   declarations: [BlogViewComponent],
   imports: [
     CommonModule,
-    RouterModule.forChild([
-      {path: '', component: BlogViewComponent}
-    ]),
     // ComponentsModule,
     MarkdownModule.forChild(),
     OrangeStructuresModule,
