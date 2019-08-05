@@ -1,10 +1,11 @@
-import { NgModule }            from '@angular/core';
-import { FlexLayoutModule }    from '@angular/flex-layout';
-import { MatDividerModule }    from '@angular/material/divider';
-import { MatListModule }       from '@angular/material/list';
-import { FlexColumnComponent } from './flex-column/flex-column.component';
-import { FlexRowComponent }    from './flex-row/flex-row.component';
-import { SpacerComponent }     from './spacer/spacer.component';
+import { NgModule }             from '@angular/core';
+import { FlexLayoutModule }     from '@angular/flex-layout';
+import { MatDividerModule }     from '@angular/material/divider';
+import { MatListModule }        from '@angular/material/list';
+import { FlexColumnComponent }  from './flex/flex-column/flex-column.component';
+import { FlexRowWrapComponent } from './flex/flex-row-wrap/flex-row-wrap.component';
+import { FlexRowComponent }     from './flex/flex-row/flex-row.component';
+import { SpacerComponent }      from './spacer/spacer.component';
 
 @NgModule({
   imports:      [
@@ -15,12 +16,14 @@ import { SpacerComponent }     from './spacer/spacer.component';
   declarations: [
     SpacerComponent,
     FlexRowComponent,
-    FlexColumnComponent
+    FlexColumnComponent,
+    FlexRowWrapComponent
   ],
   exports:      [
     SpacerComponent,
     FlexRowComponent,
-    FlexColumnComponent
+    FlexColumnComponent,
+    FlexRowWrapComponent
   ]
 })
 export class OrangeStructuresModule {
