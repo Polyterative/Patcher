@@ -1,1 +1,39 @@
 <markdown [src]="'./assets/blog/blog.md'"></markdown>
+<lib-flex-row>
+  <lib-flex-column *ngIf='true'
+                   fxFlex.lg='70'
+                   fxFlex.md='70'
+  >
+    <ng-container *ngFor='let message of messages$|async'>
+      
+      <mat-card fxFlex
+                class='darkCard'
+                style='background-color: #3a72a8'
+      >
+        <mat-card-subtitle>
+          <lib-flex-row>
+            <div fxFlex>
+              {{ message?.subtitle }}
+            </div>
+            <div fxFlexAlign='end'>
+              {{ message?.when|date }}
+            </div>
+          </lib-flex-row>
+        </mat-card-subtitle>
+        <!--            <mat-card-content>{{ message?.content }}</mat-card-content>-->
+        <mat-card-title>
+          <div fxLayoutAlign='end'>{{ message?.content }}</div>
+        </mat-card-title>
+        <mat-card-actions>
+          <lib-flex-row>
+            <div fxFlex>
+              <!--                  <button mat-raised-button>-->
+              <!--                    <mat-icon class="mat-18">delete</mat-icon>-->
+              <!--                  </button>-->
+            </div>
+          </lib-flex-row>
+        </mat-card-actions>
+      </mat-card>
+    </ng-container>
+  </lib-flex-column>
+</lib-flex-row>
