@@ -1,39 +1,32 @@
-<!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->3
-<h1>Blog view</h1>
+<!--<markdown [src]="'./assets/blog/blog.md'"></markdown>-->
+<h1>Blog home</h1>
 <lib-flex-row>
-  <lib-flex-column *ngIf='true'
-                   fxFlex.lg='70'
-                   fxFlex.md='70'
+  <lib-flex-column
   >
     <ng-container *ngFor='let message of messages$|async'>
       
       <mat-card fxFlex
-                class='darkCard'
-                style='background-color: #3a72a8'
       >
-        <mat-card-subtitle>
-          <lib-flex-row>
-            <div fxFlex>
-              {{ message?.subtitle }}
-            </div>
-            <div fxFlexAlign='end'>
-              {{ message?.created|date }}
-            </div>
-          </lib-flex-row>
-        </mat-card-subtitle>
-        <!--            <mat-card-content>{{ message?.content }}</mat-card-content>-->
-        <mat-card-title>
-          <div fxLayoutAlign='end'>{{ message?.content|json }}</div>
-        </mat-card-title>
-        <mat-card-actions>
-          <lib-flex-row>
-            <div fxFlex>
-              <!--                  <button mat-raised-button>-->
-              <!--                    <mat-icon class="mat-18">delete</mat-icon>-->
-              <!--                  </button>-->
-            </div>
-          </lib-flex-row>
-        </mat-card-actions>
+        <lib-flex-column>
+          <mat-card-title fxFlex>
+            {{ message?.title }}
+          </mat-card-title>
+          <mat-card-subtitle>
+            <lib-flex-row>
+              <div fxFlex>
+                {{ message?.subtitle }}
+              </div>
+              <div fxFlex='grow'>
+              </div>
+              <div fxFlex>
+                {{ message?.created }}
+              </div>
+            </lib-flex-row>
+          </mat-card-subtitle>
+          <mat-card-content fxFlex>
+            <div fxLayoutAlign='start'>{{ message?.content }}</div>
+          </mat-card-content>
+        </lib-flex-column>
       </mat-card>
     </ng-container>
   </lib-flex-column>
