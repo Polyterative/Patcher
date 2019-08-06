@@ -1,5 +1,4 @@
-<mat-card fxFlex
-          *ngIf='post'
+<mat-card *ngIf='post'
 >
   <lib-flex-column gap='1em'>
     <mat-card-title fxFlex>
@@ -12,15 +11,17 @@
         <div fxFlex>
           {{ post?.subtitle }}
         </div>
-        <div fxFlex='grow'></div>
-        <lib-flex-row fxFlex='35'
-                      fxFlex.xs='100'
-                      fxFlex.sm='100'
+        <lib-flex-row
+          fxFlex.xs='100'
+          fxFlex.sm='100'
         >
-          <div fxFlex>
+          <div fxFlex.xs='100'
+               fxFlex.sm='100'
+          >
             Posted: {{ post?.created|date }}
           </div>
-          <div fxFlex
+          <div fxFlex.xs='100'
+               fxFlex.sm='100'
                style='text-align: end'
           >
             Edited: {{ post?.created|date }}
