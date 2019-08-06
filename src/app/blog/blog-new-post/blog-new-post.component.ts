@@ -1,22 +1,17 @@
 import {
-  Component,
-  OnInit,
   ChangeDetectionStrategy,
+  Component,
   EventEmitter
 }                             from '@angular/core';
 import { AngularFirestore }   from '@angular/fire/firestore';
 import {
-  FormBuilder,
   FormControl,
   Validators
 }                             from '@angular/forms';
 import { MatSnackBar }        from '@angular/material';
 import { ActivatedRoute }     from '@angular/router';
 import { DateTime }           from 'luxon';
-import {
-  map,
-  tap
-}                             from 'rxjs/operators';
+import { map }                from 'rxjs/operators';
 import { FormTypes }          from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
 import { AngularEntityBase }  from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }   from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
@@ -67,13 +62,11 @@ export class BlogNewPostComponent extends AngularEntityBase {
             id:       3
           };
           
-          
           return message;
         })
         // tap(_ => this.controls.content.reset())
       )
       .subscribe(x => {
-        
         
         db.collection(this.blogPostPath).add(x);
         
@@ -82,6 +75,5 @@ export class BlogNewPostComponent extends AngularEntityBase {
       });
     
   }
-  
   
 }
