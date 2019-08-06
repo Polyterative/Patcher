@@ -26,16 +26,13 @@ import { BlogPostModel }      from '../blog-view/blog-view.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BlogNewPostComponent extends AngularEntityBase {
-  
   controls = {
     title:    new FormControl('', Validators.compose([Validators.required])),
     subtitle: new FormControl('', Validators.compose([Validators.required])),
     category: new FormControl('', Validators.compose([Validators.required])),
     content:  new FormControl('', Validators.compose([Validators.required]))
   };
-  
   formTypes = FormTypes;
-  
   confirm = new EventEmitter<void>();
   
   private blogPostPath = 'blogPosts';

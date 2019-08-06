@@ -12,7 +12,7 @@ import { BlogPostComponent }      from './blog-post.component';
 
 @NgModule({
   declarations: [BlogPostComponent],
-  imports: [
+  imports:      [
     CommonModule,
     // ComponentsModule,
     MarkdownModule.forChild(),

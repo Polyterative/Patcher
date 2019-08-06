@@ -5,14 +5,14 @@ import {
   MatButtonModule,
   MatCardModule,
   MatProgressBarModule
-} from '@angular/material';
+}                                 from '@angular/material';
 import { MarkdownModule }         from 'ngx-markdown';
 import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { BlogViewComponent }      from './blog-view.component';
 
 @NgModule({
   declarations: [BlogViewComponent],
-  imports: [
+  imports:      [
     CommonModule,
     // ComponentsModule,
     MarkdownModule.forChild(),

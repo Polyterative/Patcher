@@ -14,7 +14,7 @@ import { BlogNewPostComponent }   from './blog-new-post.component';
 @NgModule({
   declarations: [BlogNewPostComponent],
   exports:      [BlogNewPostComponent],
-  imports: [
+  imports:      [
     CommonModule,
     MarkdownModule.forChild(),
     MatCardModule,

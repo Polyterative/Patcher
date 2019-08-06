@@ -8,8 +8,8 @@ import { LandingPageComponent }   from './landing-page.component';
 
 @NgModule({
   declarations: [LandingPageComponent],
-  exports: [LandingPageComponent],
-  imports: [
+  exports:      [LandingPageComponent],
+  imports:      [
     CommonModule,
     OrangeStructuresModule,
     MatCardModule,
@@ -17,4 +17,4 @@ import { LandingPageComponent }   from './landing-page.component';
     MatFormEntityModule
   ]
 })
-export class LangingPageModule { }
+export class LangingPageModule {}
