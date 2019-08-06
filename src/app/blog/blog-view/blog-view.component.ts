@@ -3,7 +3,11 @@ import { AngularFirestore }  from '@angular/fire/firestore';
 import { FormBuilder }       from '@angular/forms';
 import { MatSnackBar }       from '@angular/material';
 import { DateTime }          from 'luxon';
-import { Observable }        from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable
+}                            from 'rxjs';
+import { debounceTime }      from 'rxjs/operators';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -31,7 +35,7 @@ export interface BlogPostModel {
 })
 export class BlogViewComponent extends AngularEntityBase {
   
-  messages$: Observable<BlogPostModel[]>;
+  messages$: BehaviorSubject<BlogPostModel[]> = new BehaviorSubject<BlogPostModel[]>([]);
   private blogPostPath = 'blogPosts';
   
   constructor(
@@ -44,12 +48,16 @@ export class BlogViewComponent extends AngularEntityBase {
     super(constants, dimens);
     
     // @ts-ignore
-    this.messages$ = db.collection(
+    db.collection(
       this.blogPostPath,
       ref => ref.limit(10)
-        .orderBy('created', 'desc')
+        .orderBy('id', 'desc')
     )
       .valueChanges()
+      .pipe(
+        debounceTime(250)
+      )
+      .subscribe(this.messages$)
     ;
     
     this.messages$.subscribe(x => {

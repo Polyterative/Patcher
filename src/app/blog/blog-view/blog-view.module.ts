@@ -3,7 +3,8 @@ import { NgModule }               from '@angular/core';
 import { FlexLayoutModule }       from '@angular/flex-layout';
 import {
   MatButtonModule,
-  MatCardModule
+  MatCardModule,
+  MatProgressBarModule
 } from '@angular/material';
 import { RouterModule }           from '@angular/router';
 import { MarkdownModule }         from 'ngx-markdown';
@@ -19,7 +20,8 @@ import { BlogViewComponent }      from './blog-view.component';
     OrangeStructuresModule,
     FlexLayoutModule,
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
+    MatProgressBarModule
   ]
 })
 export class BlogViewModule {}
