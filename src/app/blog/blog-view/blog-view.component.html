@@ -1,4 +1,6 @@
-<lib-flex-row xs='column'>
+<lib-flex-row xs='column'
+              sm='column'
+>
   
   <div fxFlex='30'
        fxFlex.xs='100'
@@ -17,25 +19,25 @@
   >
     
     <div fxFlex
-         *ngIf='(messages$|async).length===0;'
+         *ngIf='(posts$|async).length===0;'
     >
       <mat-progress-bar mode="indeterminate"
       ></mat-progress-bar>
     </div>
-    <ng-container *ngFor='let message of messages$|async'>
+    <ng-container *ngFor='let post of posts$|async'>
       
       <mat-card fxFlex
       >
         <lib-flex-column gap='1em'>
           <mat-card-title fxFlex>
-            {{ message?.title }}
+            {{ post?.title }}
           </mat-card-title>
           <mat-card-subtitle>
             <lib-flex-row xs='column'
                           sm='column'
             >
               <div fxFlex>
-                {{ message?.subtitle }}
+                {{ post?.subtitle }}
               </div>
               <div fxFlex='grow'></div>
               <lib-flex-row fxFlex='35'
@@ -43,12 +45,12 @@
                             fxFlex.sm='100'
               >
                 <div fxFlex>
-                  Posted: {{ message.created|date }}
+                  Posted: {{ post.created|date }}
                 </div>
                 <div fxFlex
                      style='text-align: end'
                 >
-                  Edited: {{ message.created|date }}
+                  Edited: {{ post.created|date }}
                 </div>
               </lib-flex-row>
             </lib-flex-row>
@@ -62,7 +64,7 @@
               <button fxFlex='25'
                       mat-flat-button
                       color="primary"
-                      (click)='routing.routeTo(["post",message?.id.toString()])'
+                      (click)='routing.routeTo(["post",post?.id.toString()])'
               >More
               </button>
             </lib-flex-row>
