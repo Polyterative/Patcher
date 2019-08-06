@@ -8,22 +8,7 @@ import { RoutingService }    from '../../Services/routing.service';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
-
-enum Category {
-  'Music',
-  'Code',
-  'Productivity'
-}
-
-export interface BlogPostModel {
-  title: string;
-  subtitle: string;
-  content: string;
-  id: number;
-  created: string;
-  updated: string;
-  category: Category;
-}
+import { BlogPostModel }     from '../blog-models';
 
 @Component({
   selector:    'app-blog-view',
