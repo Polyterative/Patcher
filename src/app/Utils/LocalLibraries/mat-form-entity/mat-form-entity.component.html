@@ -1,7 +1,7 @@
 <mat-form-field *ngIf='!(type===types.DATE)'
                 [appearance]='formFieldAppearenceType'
-                [floatLabel]='formGroupRoot.floatLabel'
-                [hideRequiredMarker]='formGroupRoot.hideRequired'
+                [floatLabel]='styleOptions.floatLabel'
+                [hideRequiredMarker]='styleOptions.hideRequired'
                 [matTooltipPosition]='tooltipPosition'
                 [matTooltip]='tooltip'
                 fxFlexFill
@@ -151,15 +151,15 @@
   </ng-container>
   <mat-error *ngIf='control.invalid'>{{ errors }}</mat-error>
   
-  <!--<mat-hint *ngIf='control.invalid'>{{errors}}</mat-hint>-->
+  <!--<mat-hint *ngIf='controlRequired.invalid'>{{errors}}</mat-hint>-->
 
 </mat-form-field>
 
 
 <mat-form-field *ngIf='(type===types.DATE)'
                 [appearance]='formFieldAppearenceType'
-                [floatLabel]='formGroupRoot.floatLabel'
-                [hideRequiredMarker]='formGroupRoot.hideRequired'
+                [floatLabel]='styleOptions.floatLabel'
+                [hideRequiredMarker]='styleOptions.hideRequired'
                 [matTooltipPosition]='tooltipPosition'
                 [matTooltip]='tooltip'
                 fxFlexFill

@@ -268,7 +268,7 @@ export class BlogPostComponent extends AngularEntityBase {
               public dimens: DimensionsService,
               private formBuilder: FormBuilder,
               public snackbar: MatSnackBar) {
-    super(constants, dimens);
+    super();
   
     this.route.params
       .pipe(

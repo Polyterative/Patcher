@@ -1,118 +1,134 @@
 import {
   COMMA,
   ENTER
-}                                       from '@angular/cdk/keycodes';
+}                            from '@angular/cdk/keycodes';
 import {
   Component,
   Input
-}                                       from '@angular/core';
+}                            from '@angular/core';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
   ValidatorFn
-}                                       from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatChipInputEvent }      from '@angular/material/chips';
-import { MatFormFieldAppearance } from '@angular/material/form-field';
-import { TooltipPosition }        from '@angular/material/tooltip';
-import { BehaviorSubject }        from 'rxjs';
+}                            from '@angular/forms';
+import {
+  MatAutocompleteSelectedEvent,
+  MatChipInputEvent,
+  MatFormFieldAppearance,
+  TooltipPosition
+}                            from '@angular/material';
+import { BehaviorSubject }   from 'rxjs';
+import { isArray }           from 'rxjs/internal-compatibility';
 import {
   debounceTime,
   filter,
   share,
   startWith,
   takeUntil
-}                                 from 'rxjs/operators';
-import { isArray }                from 'util';
-import { AngularEntityBase }      from '../OrangeStructures/base/angularEntityBase';
-import { AppFormUtils }           from '../VioletUtilities/app-form-utils';
-import { Strings }                from '../VioletUtilities/app-strings';
-import { ConstantsService }       from '../VioletUtilities/constants.service';
-import { DimensionsService }      from '../VioletUtilities/dimensions.service';
-import { LoggerService }          from '../VioletUtilities/logger/logger.service';
+}                            from 'rxjs/operators';
+import { AngularEntityBase } from '../OrangeStructures/base/angularEntityBase';
+import { AppFormUtils }      from '../VioletUtilities/app-form-utils';
+import { Strings }           from '../VioletUtilities/app-strings';
+import { LoggerService }     from '../VioletUtilities/logger/logger.service';
 import {
   FormTypes,
-  ISelectable
-}                                 from './form-element-models';
+  Selectable
+}                            from './form-element-models';
 
 @Component({
   selector:    'lib-mat-form-entity',
   templateUrl: './mat-form-entity.component.html',
   styleUrls:   ['./mat-form-entity.component.scss']
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatFormEntityComponent extends AngularEntityBase {
   
-  private findOptionForName: (name: string, options: Array<ISelectable>) => ISelectable = (name: string, options: Array<ISelectable>): ISelectable => {
-    return options.find(x => x.name === name);
-  };
-  
   errors: string;
-  
   /**
    * Types reference, do not use from outside
    */
   types = FormTypes;
-  
-  @Input() formGroupRoot: FormGroup = this.formBuilder.group({
+  @Input() formGroupRoot: FormGroup = this.formBuilder.group({});
+  @Input() styleOptions = {
     hideRequired: false,
     floatLabel:   'auto' // can be auto|always|never
-  });
-  
+  };
   @Input() control: FormControl;
-  
   // internal, DO NOT USE
   ghostControl: FormControl;
-  
   @Input() textTransformFunction: (x: string) => string;
-  
   /**
    * The Angular Material tooltip provides a text label that is displayed when the user hovers over or longpresses an element.
    */
   @Input() tooltip = '';
-  
   @Input() formFieldAppearenceType: MatFormFieldAppearance = 'standard';
-  
   @Input() disableBrowserAutocomplete = false;
-  
   /**
    * In autocomplete mode Validate input basing on options, INVALID if not found
    */
   @Input() strictAutocomplete = true;
-  
   /**
    * In autocomplete mode Validate input basing on options, INVALID if not found
    */
   @Input() multiChipCompleteAllowDuplicates = false;
-  
   /**
    * Allow autocomplete mode to return a VALID state when value is a void string
    */
   @Input() autocompleteCanBeVoid = false;
-  
   @Input() disableVoidSelection = false;
-  
   /**
    * In autocomplete mode, allows case insensitive search
    */
   @Input() autocompleteCaseSensitiveComparison = false;
   @Input() dateMin?: Date;
-  
   @Input() dateMax?: Date;
-  
   @Input() dateOpenPosition?: Date;
-  
   @Input() tooltipPosition?: TooltipPosition = 'below';
   /**
    * Options, necessary when using FormTypes.SELECT or FormTypes.AUTOCOMPLETE
    */
-  @Input() options: Array<ISelectable>;
+  @Input() options: Array<Selectable>;
   // @Input()
-  optionsFiltered: BehaviorSubject<Array<ISelectable>> = new BehaviorSubject<Array<ISelectable>>([]);
+  optionsFiltered: BehaviorSubject<Array<Selectable>> = new BehaviorSubject<Array<Selectable>>([]);
   @Input() placeholder: string;
   @Input() label: string;
   @Input() type: FormTypes = FormTypes.TEXT;
   @Input() default = false;
+  readonly separatorKeysCodes: Array<number> = [
+    ENTER,
+    COMMA
+    // TAB // add ONLY if you add TAB-to-add  to autocomplete
+  ];
+  
+  //
+  // @Input()
+  // public max: observable;
+  //
+  // @Input()
+  // public min: observable;
+  //
+  // @Input()
+  // public maxLength: observable;
+  //
+  // @Input()
+  // public minLength: observable;
+  
+  constructor(
+    public Log: LoggerService,
+    private formBuilder: FormBuilder
+  ) {
+    super();
+    
+  }
+  
+  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
+    hostControl.setValidators(hostValidator ? [
+      hostValidator,
+      newValidator
+    ] : newValidator);
+  }
+  
   /**
    *   You can use something like
    *   public getElementsErrors(toBeChecked: FormControl): string {
@@ -132,42 +148,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
    */
   @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getDefaultErrors(x);
   
-  //
-  // @Input()
-  // public max: observable;
-  //
-  // @Input()
-  // public min: observable;
-  //
-  // @Input()
-  // public maxLength: observable;
-  //
-  // @Input()
-  // public minLength: observable;
-  
-  readonly separatorKeysCodes: Array<number> = [
-    ENTER,
-    COMMA
-    // TAB // add ONLY if you add TAB-to-add  to autocomplete
-  ];
-  
-  constructor(
-    public Log: LoggerService,
-    public Dimens: DimensionsService,
-    public Constants: ConstantsService,
-    private formBuilder: FormBuilder
-  ) {
-    super(Constants, Dimens);
-    
-  }
-  
-  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
-    hostControl.setValidators(hostValidator ? [
-      hostValidator,
-      newValidator
-    ] : newValidator);
-  }
-  
   /**
    * DO NOT STATICIZE, USED IN HTML
    * @param entry
@@ -180,8 +160,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
   }
   
   ngOnInit(): void {
-    super.ngOnInit();
-    
     const hostControl = this.control;
     const hostValidator: ValidatorFn | null = hostControl.validator;
     
@@ -225,13 +203,12 @@ export class MatFormEntityComponent extends AngularEntityBase {
             debounceTime(250),
             filter(value => isArray(this.options))
           )
-          .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt => {
-            return this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-              .includes(input.toLowerCase());
-          })));
+          .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
+            this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
+              .includes(input.toLowerCase()))));
         
         if (this.strictAutocomplete) {
-          // const isValueInOptions = this.options.some(y => y.name === this.control.value);
+          // const isValueInOptions = this.options.some(y => y.name === this.controlRequired.value);
           const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => {
@@ -256,17 +233,16 @@ export class MatFormEntityComponent extends AngularEntityBase {
             debounceTime(250),
             filter(() => isArray(this.options))
           )
-          .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt => {
-            return this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase().includes(input.toLowerCase());
-          })));
+          .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
+            this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase().includes(input.toLowerCase()))));
         
         if (this.strictAutocomplete) {
-          // const isValueInOptions = this.options.some(y => y.name === this.control.value);
+          // const isValueInOptions = this.options.some(y => y.name === this.controlRequired.value);
           const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
           
           const myValidator = x => {
             
-            const input: Array<ISelectable> = x.value;
+            const input: Array<Selectable> = x.value;
             
             let foundAll = false;
             
@@ -319,7 +295,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     
     // Add our thing
     if ((value || '').trim()) {
-      const toAdd: ISelectable = ({name: value.trim(), id: 1});
+      const toAdd: Selectable = ({name: value.trim(), id: 1});
       dataCapsule.patchValue([
         ...dataCapsule.value,
         toAdd
@@ -341,7 +317,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
       const isAlreadyPresent = this.findOptionForName(nameString, this.control.value);
       
       if (!isAlreadyPresent || isAlreadyPresent && this.multiChipCompleteAllowDuplicates) {
-        const toAdd: ISelectable = this.findOptionForName(nameString, this.options);
+        const toAdd: Selectable = this.findOptionForName(nameString, this.options);
         
         dataCapsule.patchValue([
           ...dataCapsule.value,
@@ -355,8 +331,8 @@ export class MatFormEntityComponent extends AngularEntityBase {
     this.ghostControl.patchValue('');
   }
   
-  removeFromChips(element: ISelectable): void {
-    const data: Array<ISelectable> = this.control.value;
+  removeFromChips(element: Selectable): void {
+    const data: Array<Selectable> = this.control.value;
     data.splice(data.indexOf(element), 1);
     this.control.patchValue(data);
   }
@@ -364,6 +340,10 @@ export class MatFormEntityComponent extends AngularEntityBase {
   cleanMultiComplete($event: MatChipInputEvent): void {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
+  
+  private findOptionForName: (name: string, options: Array<Selectable>) => Selectable =
+            (name: string, options: Array<Selectable>): Selectable =>
+              options.find(x => x.name === name);
   
   private checkOptions(): void {
     if (!isArray(this.options)) {
