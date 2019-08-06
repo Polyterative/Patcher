@@ -10,32 +10,36 @@
          class='title'
     >{{ data.title|async }}</div>
     <div fxFlex>
-      <a mat-icon-button
-         href="/"
+      <button mat-icon-button
+              (click)='routing.routeTo([""])'
       >
         <mat-icon class="mat-18">home</mat-icon>
-      </a>
-      <a href="/blog"
-         mat-button
+      </button>
+      <button (click)='routing.routeTo(["blog"])'
+              mat-button
       >
         Blog
-      </a>
-      <a href="/blog"
-         disabled
-         mat-button
-      >Music</a>
-      <a href="/blog"
-         disabled
-         mat-button
-      >Code</a>
-      <a href="/blog"
-         disabled
-         mat-button
-      >Photography</a>
-      <a href="/blog"
-         disabled
-         mat-button
-      >Ideas</a>
+      </button>
+      <button (click)='routing.routeTo(["blog"])'
+              disabled
+              mat-button
+      >Music
+      </button>
+      <button (click)='routing.routeTo(["blog"])'
+              disabled
+              mat-button
+      >Code
+      </button>
+      <button (click)='routing.routeTo(["blog"])'
+              disabled
+              mat-button
+      >Photography
+      </button>
+      <button (click)='routing.routeTo(["blog"])'
+              disabled
+              mat-button
+      >Ideas
+      </button>
     </div>
     <div fxFlex='grow'></div>
   

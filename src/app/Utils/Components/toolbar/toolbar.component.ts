@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component
 }                         from '@angular/core';
-import { Router }         from '@angular/router';
 import { ToolbarService } from 'src/app/Utils/Components/toolbar/toolbar.service';
+import { RoutingService } from '../../../Services/routing.service';
 
 @Component({
   selector:        'app-toolbar',
@@ -13,7 +13,7 @@ import { ToolbarService } from 'src/app/Utils/Components/toolbar/toolbar.service
 })
 export class ToolbarComponent {
   
-  constructor(public data: ToolbarService, public router: Router) {
+  constructor(public data: ToolbarService, private routing: RoutingService) {
   }
   
 }
