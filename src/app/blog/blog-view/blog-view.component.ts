@@ -27,8 +27,8 @@ export interface BlogPostModel {
   subtitle: string;
   content: string;
   id: number;
-  created: DateTime;
-  updated: DateTime;
+  created: string;
+  updated: string;
   category: Category;
 }
 
