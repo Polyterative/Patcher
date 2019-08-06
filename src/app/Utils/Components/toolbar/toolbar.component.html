@@ -6,6 +6,7 @@
          style='padding-right: 1em'
          fxFlex
          fxFlexAlign='center center'
+         fxHide.xs='true'
          class='title'
     >{{ data.title|async }}</div>
     <div fxFlex='grow'></div>
@@ -34,6 +35,13 @@
       >Ideas</a>
     </div>
     <div fxFlex='grow'></div>
+    <div *ngIf='(data.title|async).length>0'
+         style='padding-left: 1em;opacity: 0'
+         fxFlex
+         fxFlexAlign='center center'
+         fxHide.xs='true'
+         class='title'
+    >{{ data.title|async }}</div>
   
   </mat-toolbar-row>
 </mat-toolbar>
