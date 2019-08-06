@@ -5,7 +5,7 @@
                 fxFlex.xs='100'
                 fxFlex.sm='100'
   >
-    <div fxFlex='50'>
+    <div fxFlex='grow'>
       <mat-card style='background-color: #3a72a8;color: white'
       >
         <mat-card-title
@@ -13,9 +13,6 @@
           New post
         </mat-card-title>
       </mat-card>
-    </div>
-    <div fxFlex='grow'
-    >
     </div>
     <div fxFlex>
       <button mat-flat-button
@@ -79,18 +76,6 @@
             <!--              |-->
             <!--            </div>-->
             <div fxFlex='grow'></div>
-            <lib-flex-row fxFlex='35'
-                          fxFlex.xs='100'
-            >
-              <div fxFlex>
-                Created
-              </div>
-              <div fxFlex
-                   style='text-align: end'
-              >
-                Edited
-              </div>
-            </lib-flex-row>
           </lib-flex-row>
         </mat-card-subtitle>
         <lib-spacer fxFlex></lib-spacer>
