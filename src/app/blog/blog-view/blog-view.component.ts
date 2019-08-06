@@ -3,7 +3,6 @@ import { AngularFirestore }  from '@angular/fire/firestore';
 import { FormBuilder }       from '@angular/forms';
 import { MatSnackBar }       from '@angular/material';
 import { BehaviorSubject }   from 'rxjs';
-import { debounceTime }      from 'rxjs/operators';
 import { RoutingService }    from '../../Services/routing.service';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
@@ -37,9 +36,6 @@ export class BlogViewComponent extends AngularEntityBase {
         .orderBy('id', 'desc')
     )
       .valueChanges()
-      .pipe(
-        debounceTime(250)
-      )
       .subscribe(this.messages$)
     ;
     
