@@ -3,6 +3,7 @@
 >
   <mat-toolbar-row>
     <div *ngIf='(data.title|async).length>0'
+         style='padding-right: 1em'
          fxFlex
          fxFlexAlign='center center'
          class='title'
@@ -10,17 +11,29 @@
     <div fxFlex='grow'></div>
     <div fxFlex>
       <a mat-icon-button
-         href="/blog"
-      >
-        <mat-icon class="mat-18">book</mat-icon>
-      </a>
-      <a mat-icon-button
          href="/"
       >
         <mat-icon class="mat-18">home</mat-icon>
       </a>
-      
+      <a href="/blog"
+         mat-button
+      >
+        Blog
+      </a>
+      <a href="/blog"
+         mat-button
+      >Music</a>
+      <a href="/blog"
+         mat-button
+      >Code</a>
+      <a href="/blog"
+         mat-button
+      >Photography</a>
+      <a href="/blog"
+         mat-button
+      >Ideas</a>
     </div>
+    <div fxFlex='grow'></div>
   
   </mat-toolbar-row>
 </mat-toolbar>
