@@ -37,20 +37,18 @@
               <div fxFlex>
                 {{ message?.subtitle }}
               </div>
-              <!--            <div fxFlex>-->
-              <!--              |-->
-              <!--            </div>-->
               <div fxFlex='grow'></div>
               <lib-flex-row fxFlex='35'
                             fxFlex.xs='100'
+                            fxFlex.sm='100'
               >
                 <div fxFlex>
-                  Created {{ message?.created }}
+                  Posted: {{ message.created|date }}
                 </div>
                 <div fxFlex
                      style='text-align: end'
                 >
-                  Edited {{ message?.created }}
+                  Edited: {{ message.created|date }}
                 </div>
               </lib-flex-row>
             </lib-flex-row>

@@ -12,20 +12,18 @@
         <div fxFlex>
           {{ post?.subtitle }}
         </div>
-        <!--            <div fxFlex>-->
-        <!--              |-->
-        <!--            </div>-->
         <div fxFlex='grow'></div>
         <lib-flex-row fxFlex='35'
                       fxFlex.xs='100'
+                      fxFlex.sm='100'
         >
           <div fxFlex>
-            Created {{ post?.created }}
+            Posted: {{ post?.created|date }}
           </div>
           <div fxFlex
                style='text-align: end'
           >
-            Edited {{ post?.created }}
+            Edited: {{ post?.created|date }}
           </div>
         </lib-flex-row>
       </lib-flex-row>
