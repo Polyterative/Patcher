@@ -39,18 +39,22 @@
               <div fxFlex>
                 {{ post?.subtitle }}
               </div>
-              <div fxFlex='grow'></div>
-              <lib-flex-row fxFlex='35'
-                            fxFlex.xs='100'
-                            fxFlex.sm='100'
+              <lib-flex-row
+                xs='column'
+                sm='column'
+                fxFlex.xs='100'
+                fxFlex.sm='100'
               >
-                <div fxFlex>
-                  Posted: {{ post.created|date }}
+                <div fxFlex.xs='100'
+                     fxFlex.sm='100'
+                >
+                  Posted: {{ post?.created|date }}
                 </div>
-                <div fxFlex
+                <div fxFlex.xs='100'
+                     fxFlex.sm='100'
                      style='text-align: end'
                 >
-                  Edited: {{ post.created|date }}
+                  Edited: {{ post?.created|date }}
                 </div>
               </lib-flex-row>
             </lib-flex-row>
