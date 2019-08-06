@@ -1,28 +1,54 @@
-<h1>Blog post</h1>
-<lib-flex-row>
-  <!--  <lib-flex-column fxFlex='20'>-->
-  <!--    <div fxFlex>-->
-  <!--      <mat-card>-->
-  <!--      -->
-  <!--      </mat-card>-->
-  <!--    </div>-->
-  <!--  </lib-flex-column>-->
-  <lib-flex-column fxFlex>
-    <div fxFlex>
-      <mat-card>
-        <lib-flex-column>
-          <markdown [src]="post"></markdown>
-        </lib-flex-column>
-      </mat-card>
-    </div>
+<!--{{post$|async|json}}-->
+
+<!--<mat-card>-->
+<!--  <mat-card-content *ngIf='(post$|async)'>-->
+<!--    <markdown [data]="(post$|async).content" ngPreserveWhitespaces></markdown>-->
+<!--  </mat-card-content>-->
+<!--</mat-card>-->
+
+
+<mat-card fxFlex
+>
+  <lib-flex-column gap='1em'>
+    <mat-card-title fxFlex>
+      {{ (post$|async)?.title }}
+    </mat-card-title>
+    <mat-card-subtitle>
+      <lib-flex-row xs='column'
+                    sm='column'
+      >
+        <div fxFlex>
+          {{ (post$|async)?.subtitle }}
+        </div>
+        <!--            <div fxFlex>-->
+        <!--              |-->
+        <!--            </div>-->
+        <div fxFlex='grow'></div>
+        <lib-flex-row fxFlex='35'
+                      fxFlex.xs='100'
+        >
+          <div fxFlex>
+            Created {{ (post$|async)?.created }}
+          </div>
+          <div fxFlex
+               style='text-align: end'
+          >
+            Edited {{ (post$|async)?.created }}
+          </div>
+        </lib-flex-row>
+      </lib-flex-row>
+    </mat-card-subtitle>
+    <lib-spacer fxFlex></lib-spacer>
+    <mat-card-content fxFlex>
+      <markdown [data]="(post$|async).content"
+                ngPreserveWhitespaces
+      ></markdown>
+    </mat-card-content>
   </lib-flex-column>
-  <!--  <lib-flex-column fxFlex='20'>-->
-  <!--    <div fxFlex>-->
-  <!--      <mat-card>-->
-  <!--      -->
-  <!--      </mat-card>-->
-  <!--    </div>-->
-  <!--  </lib-flex-column>-->
+</mat-card>
 
-
-</lib-flex-row>
+<!--<mat-card>-->
+<!--  <mat-card-content>-->
+<!--    <markdown [data]="test" ngPreserveWhitespaces></markdown>-->
+<!--  </mat-card-content>-->
+<!--</mat-card>-->

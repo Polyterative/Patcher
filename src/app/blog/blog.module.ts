@@ -19,7 +19,7 @@ import { BlogViewModule }    from './blog-view/blog-view.module';
     BlogPostModule,
     RouterModule.forChild([
       {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
-      {path: 'post:id', component: BlogPostComponent}
+      {path: 'post/:id', component: BlogPostComponent}
     ]),
     HttpClientModule,
     MarkdownModule.forRoot({loader: HttpClient})
