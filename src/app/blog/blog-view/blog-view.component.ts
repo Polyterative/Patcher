@@ -2,6 +2,10 @@ import { Component }         from '@angular/core';
 import { AngularFirestore }  from '@angular/fire/firestore';
 import { FormBuilder }       from '@angular/forms';
 import { MatSnackBar }       from '@angular/material';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 import { DateTime }          from 'luxon';
 import {
   BehaviorSubject,
@@ -39,6 +43,7 @@ export class BlogViewComponent extends AngularEntityBase {
   private blogPostPath = 'blogPosts';
   
   constructor(
+    private route: Router,
     db: AngularFirestore,
     public constants: ConstantsService,
     public dimens: DimensionsService,
@@ -65,4 +70,7 @@ export class BlogViewComponent extends AngularEntityBase {
     });
   }
   
+  routeTo(id: number) {
+    this.route.navigate(['post',id]);
+  }
 }
