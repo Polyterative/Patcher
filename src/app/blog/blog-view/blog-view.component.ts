@@ -2,16 +2,9 @@ import { Component }         from '@angular/core';
 import { AngularFirestore }  from '@angular/fire/firestore';
 import { FormBuilder }       from '@angular/forms';
 import { MatSnackBar }       from '@angular/material';
-import {
-  ActivatedRoute,
-  Router
-} from '@angular/router';
-import { DateTime }          from 'luxon';
-import {
-  BehaviorSubject,
-  Observable
-}                            from 'rxjs';
+import { BehaviorSubject }   from 'rxjs';
 import { debounceTime }      from 'rxjs/operators';
+import { RoutingService }    from '../../Services/routing.service';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -43,7 +36,7 @@ export class BlogViewComponent extends AngularEntityBase {
   private blogPostPath = 'blogPosts';
   
   constructor(
-    private route: Router,
+    private routing: RoutingService,
     db: AngularFirestore,
     public constants: ConstantsService,
     public dimens: DimensionsService,
@@ -70,7 +63,4 @@ export class BlogViewComponent extends AngularEntityBase {
     });
   }
   
-  routeTo(id: number) {
-    this.route.navigate(['post',id]);
-  }
 }

@@ -84,12 +84,12 @@
           <mat-card-content fxFlex>
             <lib-flex-row>
               <div fxFlex='grow'>
-<!--                <div fxLayoutAlign='start'>{{ message?.content }}</div>-->
+                <!--                <div fxLayoutAlign='start'>{{ message?.content }}</div>-->
               </div>
               <button fxFlex='25'
                       mat-flat-button
                       color="primary"
-                      (click)='routeTo(message?.id)'
+                      (click)='routing.routeTo(["post",message?.id.toString()])'
               >More
               </button>
             </lib-flex-row>
