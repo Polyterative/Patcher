@@ -21,7 +21,6 @@ import { AppComponent }              from './app.component';
 import { BlogModule }                from './blog/blog.module';
 import { MaterialModulePack }        from './material/material-module-pack.module';
 import { HomeModule }                from './Pages/home/home.module';
-import { LandingPageComponent }      from './Pages/landing-page/landing-page.component';
 import { MatFormEntityModule }       from './Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
 import { OrangeStructuresModule }    from './Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { VioletUtilsModule }         from './Utils/LocalLibraries/VioletUtilities/violet-utils.module';
@@ -69,6 +68,7 @@ const matDatepickerLocaleIT = {
     PolyUtilsComponentsModule,
     // EXT LIBS
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule.enablePersistence(),
     AngularFirestoreModule,
     MatFormEntityModule,
     // imports firebase/firestore, only needed for database features
@@ -90,6 +90,5 @@ export class AppModule {
   constructor() {
     registerLocaleData(localeIt, localeItExtra);
   }
-  
   
 }
