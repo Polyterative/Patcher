@@ -17,7 +17,8 @@
     >
       <button fxFlex
               mat-flat-button
-              color="primary"
+              color="accent"
+              (click)='confirm.emit()'
       >Submit
       </button>
     </div>
@@ -54,12 +55,6 @@
                                    label='content'
               ></lib-mat-form-entity>
             </div>
-            <!--            <button fxFlex='25'-->
-            <!--                    mat-flat-button-->
-            <!--                    color="primary"-->
-            <!--                    (click)='routeTo(message?.id)'-->
-            <!--            >More-->
-            <!--            </button>-->
           </lib-flex-row>
         </mat-card-content>
       </lib-flex-column>
