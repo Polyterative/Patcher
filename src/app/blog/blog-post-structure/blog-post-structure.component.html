@@ -5,29 +5,25 @@
       {{ post?.title }}
     </mat-card-title>
     <mat-card-subtitle>
-      <lib-flex-row xs='column'
-                    sm='column'
+      <lib-flex-column
       >
         <div fxFlex>
           {{ post?.subtitle }}
         </div>
         <lib-flex-row
-          fxFlex.xs='100'
-          fxFlex.sm='100'
+          fxFlex='100'
         >
-          <div fxFlex.xs='100'
-               fxFlex.sm='100'
+          <div fxFlex='100'
           >
             Posted: {{ post?.created|date }}
           </div>
-          <div fxFlex.xs='100'
-               fxFlex.sm='100'
+          <div fxFlex='100'
                style='text-align: end'
           >
             Edited: {{ post?.created|date }}
           </div>
         </lib-flex-row>
-      </lib-flex-row>
+      </lib-flex-column>
     </mat-card-subtitle>
     <lib-spacer fxFlex></lib-spacer>
     <mat-card-content fxFlex>
