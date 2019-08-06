@@ -7,7 +7,7 @@ import { HomeComponent }          from './home.component';
 
 @NgModule({
   declarations: [HomeComponent],
-  imports: [
+  imports:      [
     CommonModule,
     OrangeStructuresModule,
     FlexLayoutModule,

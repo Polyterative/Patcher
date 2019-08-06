@@ -44,6 +44,9 @@ import {
 })
 export class MatFormEntityComponent extends AngularEntityBase {
   
+  private findOptionForName: (name: string, options: Array<Selectable>) => Selectable =
+            (name: string, options: Array<Selectable>): Selectable =>
+              options.find(x => x.name === name);
   errors: string;
   /**
    * Types reference, do not use from outside
@@ -95,11 +98,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
   @Input() label: string;
   @Input() type: FormTypes = FormTypes.TEXT;
   @Input() default = false;
-  readonly separatorKeysCodes: Array<number> = [
-    ENTER,
-    COMMA
-    // TAB // add ONLY if you add TAB-to-add  to autocomplete
-  ];
   
   //
   // @Input()
@@ -113,22 +111,11 @@ export class MatFormEntityComponent extends AngularEntityBase {
   //
   // @Input()
   // public minLength: observable;
-  
-  constructor(
-    public Log: LoggerService,
-    private formBuilder: FormBuilder
-  ) {
-    super();
-    
-  }
-  
-  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
-    hostControl.setValidators(hostValidator ? [
-      hostValidator,
-      newValidator
-    ] : newValidator);
-  }
-  
+  readonly separatorKeysCodes: Array<number> = [
+    ENTER,
+    COMMA
+    // TAB // add ONLY if you add TAB-to-add  to autocomplete
+  ];
   /**
    *   You can use something like
    *   public getElementsErrors(toBeChecked: FormControl): string {
@@ -147,6 +134,21 @@ export class MatFormEntityComponent extends AngularEntityBase {
    * }
    */
   @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getDefaultErrors(x);
+  
+  constructor(
+    public Log: LoggerService,
+    private formBuilder: FormBuilder
+  ) {
+    super();
+    
+  }
+  
+  private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
+    hostControl.setValidators(hostValidator ? [
+      hostValidator,
+      newValidator
+    ] : newValidator);
+  }
   
   /**
    * DO NOT STATICIZE, USED IN HTML
@@ -340,10 +342,6 @@ export class MatFormEntityComponent extends AngularEntityBase {
   cleanMultiComplete($event: MatChipInputEvent): void {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
-  
-  private findOptionForName: (name: string, options: Array<Selectable>) => Selectable =
-            (name: string, options: Array<Selectable>): Selectable =>
-              options.find(x => x.name === name);
   
   private checkOptions(): void {
     if (!isArray(this.options)) {

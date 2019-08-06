@@ -1,7 +1,6 @@
 import {
   EventEmitter,
-  OnDestroy,
-  OnInit
+  OnDestroy
 } from '@angular/core';
 
 export interface Destructable {

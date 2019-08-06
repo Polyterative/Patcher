@@ -31,8 +31,8 @@ export interface BlogPostModel {
   styleUrls:   ['./blog-view.component.scss']
 })
 export class BlogViewComponent extends AngularEntityBase {
-  
   messages$: BehaviorSubject<BlogPostModel[]> = new BehaviorSubject<BlogPostModel[]>([]);
+  
   private blogPostPath = 'blogPosts';
   
   constructor(

@@ -19,8 +19,8 @@ import { BlogPostModel }     from '../blog-view/blog-view.component';
   styleUrls:   ['./blog-post.component.scss']
 })
 export class BlogPostComponent extends AngularEntityBase {
-  
   post$: BehaviorSubject<BlogPostModel | undefined> = new BehaviorSubject<BlogPostModel>(undefined);
+  
   private blogPostPath = 'blogPosts';
   
   constructor(private route: ActivatedRoute,

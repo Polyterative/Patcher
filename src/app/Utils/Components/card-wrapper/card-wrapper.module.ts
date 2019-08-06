@@ -11,7 +11,7 @@ import { OrangeStructuresModule } from '../../LocalLibraries/OrangeStructures/or
 @NgModule({
   declarations: [CardWrapperComponent],
   exports:      [CardWrapperComponent],
-  imports: [
+  imports:      [
     CommonModule,
     MatExpansionModule,
     MatCardModule,
