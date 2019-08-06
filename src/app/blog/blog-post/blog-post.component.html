@@ -4,43 +4,4 @@
   <mat-progress-bar mode="indeterminate"
   ></mat-progress-bar>
 </div>
-<mat-card fxFlex
-          *ngIf='(post$|async)'
->
-  <lib-flex-column gap='1em'>
-    <mat-card-title fxFlex>
-      {{ (post$|async)?.title }}
-    </mat-card-title>
-    <mat-card-subtitle>
-      <lib-flex-row xs='column'
-                    sm='column'
-      >
-        <div fxFlex>
-          {{ (post$|async)?.subtitle }}
-        </div>
-        <!--            <div fxFlex>-->
-        <!--              |-->
-        <!--            </div>-->
-        <div fxFlex='grow'></div>
-        <lib-flex-row fxFlex='35'
-                      fxFlex.xs='100'
-        >
-          <div fxFlex>
-            Created {{ (post$|async)?.created }}
-          </div>
-          <div fxFlex
-               style='text-align: end'
-          >
-            Edited {{ (post$|async)?.created }}
-          </div>
-        </lib-flex-row>
-      </lib-flex-row>
-    </mat-card-subtitle>
-    <lib-spacer fxFlex></lib-spacer>
-    <mat-card-content fxFlex>
-      <markdown [data]="(post$|async).content"
-                ngPreserveWhitespaces
-      ></markdown>
-    </mat-card-content>
-  </lib-flex-column>
-</mat-card>
+<app-blog-post-structure [post]='post$|async'></app-blog-post-structure>
