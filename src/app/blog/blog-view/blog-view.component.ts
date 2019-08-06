@@ -50,7 +50,7 @@ export class BlogViewComponent extends AngularEntityBase {
     private formBuilder: FormBuilder,
     public snackbar: MatSnackBar
   ) {
-    super(constants, dimens);
+    super();
     
     // @ts-ignore
     db.collection(

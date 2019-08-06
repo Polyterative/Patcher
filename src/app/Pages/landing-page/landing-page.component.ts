@@ -78,7 +78,7 @@ export class LandingPageComponent extends AngularEntityBase {
   // errorProvider = (formControl: FormControl) => LocalFormUtils.getPossibleErrors(formControl)
   
   constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService, private formBuilder: FormBuilder, public snackbar: MatSnackBar) {
-    super(constants, dimens);
+    super();
     
     // @ts-ignore
     this.messages$ = db.collection(this.messagePath, ref => ref.limit(10).orderBy('when', 'desc'))

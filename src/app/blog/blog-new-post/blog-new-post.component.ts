@@ -24,7 +24,7 @@ export class BlogNewPostComponent extends AngularEntityBase {
               public constants: ConstantsService,
               public dimens: DimensionsService,
               public snackbar: MatSnackBar) {
-    super(constants, dimens);
+    super();
     
   }
   

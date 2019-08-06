@@ -1,7 +1,4 @@
-// export class FormElementModels {
-// }
-
-export interface IFormLineSetup {
+export interface FormLineSetup {
   hideRequired: boolean;
   floatLabel: 'auto' | 'always' | 'never';
 }
@@ -26,7 +23,7 @@ export enum MatFormAppearences {
   OUTLINE  = 'outline'
 }
 
-export interface ISelectable {
+export interface Selectable {
   id: number;
   name: string;
 }
