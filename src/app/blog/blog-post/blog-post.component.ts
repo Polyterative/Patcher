@@ -6,8 +6,7 @@ import { ActivatedRoute }    from '@angular/router';
 import { BehaviorSubject }   from 'rxjs';
 import {
   map,
-  switchMap,
-  tap
+  switchMap
 }                            from 'rxjs/operators';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
@@ -34,7 +33,6 @@ export class BlogPostComponent extends AngularEntityBase {
   
     this.route.params
       .pipe(
-        tap(x => console.warn(x)),
         switchMap(x =>
           this.db.collection(
             this.blogPostPath,
@@ -43,16 +41,10 @@ export class BlogPostComponent extends AngularEntityBase {
           )
             .get()
         ),
-        map(x => x.docs[0].data()),
-        // tap(x => console.warn(x))
+        map(x => x.docs[0].data())
       )
       .subscribe(this.post$);
   
-    this.post$.subscribe(a => console.log(a));
-  
-  }
-  
-  ngOnInit() {
   }
   
 }

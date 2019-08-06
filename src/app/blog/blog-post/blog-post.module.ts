@@ -3,8 +3,9 @@ import { NgModule }               from '@angular/core';
 import { FlexLayoutModule }       from '@angular/flex-layout';
 import {
   MatButtonModule,
-  MatCardModule
-} from '@angular/material';
+  MatCardModule,
+  MatProgressBarModule
+}                                 from '@angular/material';
 import { MarkdownModule }         from 'ngx-markdown';
 import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { BlogPostComponent }      from './blog-post.component';
@@ -18,7 +19,8 @@ import { BlogPostComponent }      from './blog-post.component';
     OrangeStructuresModule,
     MatCardModule,
     FlexLayoutModule,
-    MatButtonModule
+    MatButtonModule,
+    MatProgressBarModule
   ]
 })
 export class BlogPostModule {}
