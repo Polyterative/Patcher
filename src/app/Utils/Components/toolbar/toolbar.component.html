@@ -4,12 +4,11 @@
   <mat-toolbar-row>
     <div *ngIf='(data.title|async).length>0'
          style='padding-right: 1em'
-         fxFlex
+         fxFlex='grow'
          fxFlexAlign='center center'
          fxHide.xs='true'
          class='title'
     >{{ data.title|async }}</div>
-    <div fxFlex='grow'></div>
     <div fxFlex>
       <a mat-icon-button
          href="/"
@@ -22,26 +21,23 @@
         Blog
       </a>
       <a href="/blog"
+         disabled
          mat-button
       >Music</a>
       <a href="/blog"
+         disabled
          mat-button
       >Code</a>
       <a href="/blog"
+         disabled
          mat-button
       >Photography</a>
       <a href="/blog"
+         disabled
          mat-button
       >Ideas</a>
     </div>
     <div fxFlex='grow'></div>
-    <div *ngIf='(data.title|async).length>0'
-         style='padding-left: 1em;opacity: 0'
-         fxFlex
-         fxFlexAlign='center center'
-         fxHide.xs='true'
-         class='title'
-    >{{ data.title|async }}</div>
   
   </mat-toolbar-row>
 </mat-toolbar>
