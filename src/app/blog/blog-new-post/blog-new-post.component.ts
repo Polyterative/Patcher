@@ -4,9 +4,14 @@ import {
   ChangeDetectionStrategy
 }                            from '@angular/core';
 import { AngularFirestore }  from '@angular/fire/firestore';
-import { FormBuilder }       from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  Validators
+}                            from '@angular/forms';
 import { MatSnackBar }       from '@angular/material';
 import { ActivatedRoute }    from '@angular/router';
+import { FormTypes }         from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -18,6 +23,16 @@ import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/di
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BlogNewPostComponent extends AngularEntityBase {
+  
+  controls = {
+    title:    new FormControl('', Validators.compose([Validators.required])),
+    subtitle: new FormControl('', Validators.compose([Validators.required])),
+    category: new FormControl('', Validators.compose([Validators.required])),
+    content:  new FormControl('', Validators.compose([Validators.required]))
+  };
+  
+  formTypes = FormTypes;
+  
   
   constructor(private route: ActivatedRoute,
               private db: AngularFirestore,

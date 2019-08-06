@@ -7,6 +7,7 @@ import {
   MatProgressBarModule
 }                                 from '@angular/material';
 import { MarkdownModule }         from 'ngx-markdown';
+import { MatFormEntityModule }    from '../../Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
 import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { BlogNewPostComponent }   from './blog-new-post.component';
 
@@ -20,7 +21,8 @@ import { BlogNewPostComponent }   from './blog-new-post.component';
     OrangeStructuresModule,
     MatProgressBarModule,
     MatButtonModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MatFormEntityModule
   ]
 })
 export class BlogNewPostModule {}
