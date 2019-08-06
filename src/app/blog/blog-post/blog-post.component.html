@@ -1,13 +1,11 @@
-<!--{{post$|async|json}}-->
-
-<!--<mat-card>-->
-<!--  <mat-card-content *ngIf='(post$|async)'>-->
-<!--    <markdown [data]="(post$|async).content" ngPreserveWhitespaces></markdown>-->
-<!--  </mat-card-content>-->
-<!--</mat-card>-->
-
-
+<div fxFlex
+     *ngIf='!(post$|async)'
+>
+  <mat-progress-bar mode="indeterminate"
+  ></mat-progress-bar>
+</div>
 <mat-card fxFlex
+          *ngIf='(post$|async)'
 >
   <lib-flex-column gap='1em'>
     <mat-card-title fxFlex>
@@ -46,9 +44,3 @@
     </mat-card-content>
   </lib-flex-column>
 </mat-card>
-
-<!--<mat-card>-->
-<!--  <mat-card-content>-->
-<!--    <markdown [data]="test" ngPreserveWhitespaces></markdown>-->
-<!--  </mat-card-content>-->
-<!--</mat-card>-->
