@@ -6,7 +6,6 @@ import {
   MatCardModule,
   MatProgressBarModule
 } from '@angular/material';
-import { RouterModule }           from '@angular/router';
 import { MarkdownModule }         from 'ngx-markdown';
 import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
 import { BlogViewComponent }      from './blog-view.component';
