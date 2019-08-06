@@ -11,7 +11,7 @@ import {
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
-import { BlogPostModel }     from '../blog-view/blog-view.component';
+import { BlogPostModel }     from '../blog-models';
 
 @Component({
   selector:    'app-blog-post',
