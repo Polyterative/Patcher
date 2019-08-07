@@ -1,37 +1,5 @@
 <lib-flex-row>
   <lib-flex-column fxFlex>
-    <div fxFlex>
-      <mat-card>
-        <lib-flex-column>
-          <mat-card-title fxFlex>Hello, I'm Vlady Yakovenko</mat-card-title>
-          <mat-card-content fxFlex>
-            Working on this right now
-          </mat-card-content>
-        </lib-flex-column>
-      </mat-card>
-    </div>
-    <div fxFlex>
-      <mat-card>
-        <lib-flex-column>
-          <mat-card-title fxFlex>Test 0</mat-card-title>
-          <mat-card-subtitle fxFlex>Subtitle here</mat-card-subtitle>
-          <mat-card-content fxFlex>
-            Occupy mumblecore DIY, unicorn try-hard listicle put a bird on it cornhole hell of prism
-            vice. Mlkshk flannel tacos brunch hell of. Semiotics master cleanse locavore raclette
-            bespoke tattooed. 3 wolf moon brooklyn air plant shoreditch gluten-free, vice
-            chicharrones
-            photo booth palo santo taiyaki. Kombucha godard semiotics af raclette lomo.
-          </mat-card-content>
-        </lib-flex-column>
-      </mat-card>
-    </div>
-  
-    <app-blog-post-structure fxFlex
-                             [noDates]='true'
-                             [noSpacer]='true'
-                             [post]='post'
-    ></app-blog-post-structure>
+    <app-page-retriever pageSlug='me-myself'></app-page-retriever>
   </lib-flex-column>
-
-
 </lib-flex-row>

@@ -5,7 +5,7 @@ export enum Category {
   'productivity'
 }
 
-export interface BlogPostModel {
+export interface BlogEntryModel {
   title: string;
   subtitle: string;
   content: string;
@@ -13,4 +13,5 @@ export interface BlogPostModel {
   updated: string;
   slug: string;
   category: Category;
+  public: boolean;
 }
