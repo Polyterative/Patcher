@@ -30,7 +30,7 @@ export class FirebaseService {
     return this.firestore.collection(
       path,
       ref => ref.limit(1)
-        .where('id', '==', parseInt(id, 10))
+        .where('id', '==', id)
     )
       .get()
       .pipe(map(x => x.docs[0].data()));

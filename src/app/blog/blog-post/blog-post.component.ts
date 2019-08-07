@@ -27,7 +27,7 @@ export class BlogPostComponent extends AngularEntityBase {
     super();
   
     this.route.params
-      .pipe(switchMap(x => dataservice.getBlogPost(x.id)))
+      .pipe(switchMap(x => dataservice.getBlogPost(parseInt(x.id, 10))))
       .subscribe(this.post$);
   
   }
