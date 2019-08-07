@@ -6,8 +6,8 @@ import { map }              from 'rxjs/operators';
   providedIn: 'root'
 })
 export class FirebaseService {
-  private pagesPath = 'pages';
-  private blogPostPath = 'blogPosts';
+  public pagesPath = 'pages';
+  public blogPostPath = 'blogPosts';
   
   constructor(
     private firestore: AngularFirestore
@@ -43,5 +43,9 @@ export class FirebaseService {
         .orderBy('id', 'desc')
     )
       .valueChanges();
+  }
+  
+  public add(path: string, data): void {
+    this.firestore.collection(path).add(data);
   }
 }

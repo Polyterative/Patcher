@@ -22,7 +22,7 @@ import { BlogViewModule }       from './blog-view/blog-view.module';
     BlogNewPostModule,
     RouterModule.forChild([
       {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
-      {path: 'blog/new', component: BlogNewPostComponent, pathMatch: 'full'},
+      {path: 'new', component: BlogNewPostComponent, pathMatch: 'full'},
       {path: 'post/:id', component: BlogPostComponent}
     ]),
     HttpClientModule,

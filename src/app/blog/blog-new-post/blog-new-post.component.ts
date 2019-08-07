@@ -3,7 +3,6 @@ import {
   Component,
   EventEmitter
 }                             from '@angular/core';
-import { AngularFirestore }   from '@angular/fire/firestore';
 import {
   FormControl,
   Validators
@@ -12,7 +11,11 @@ import { MatSnackBar }        from '@angular/material';
 import { ActivatedRoute }     from '@angular/router';
 import { DateTime }           from 'luxon';
 import { map }                from 'rxjs/operators';
-import { FormTypes }          from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
+import { FirebaseService }    from '../../Services/firebase.service';
+import {
+  FormTypes,
+  Selectable
+}                             from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
 import { AngularEntityBase }  from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }   from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService }  from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
@@ -40,6 +43,7 @@ export class BlogNewPostComponent extends AngularEntityBase {
       Validators.minLength(5)
     ])),
     category: new FormControl('', Validators.compose([Validators.required])),
+    kind:     new FormControl('', Validators.compose([Validators.required])),
     content:  new FormControl('', Validators.compose([
       Validators.required,
       Validators.minLength(5)
@@ -47,11 +51,15 @@ export class BlogNewPostComponent extends AngularEntityBase {
   };
   formTypes = FormTypes;
   confirm = new EventEmitter<void>();
+  kindOptions: Selectable[] = [
+    {id: 0, name: 'Page'},
+    {id: 1, name: 'Post'}
+  ];
   
   private blogPostPath = 'blogPosts';
   
   constructor(private route: ActivatedRoute,
-              private db: AngularFirestore,
+              private dataservice: FirebaseService,
               public constants: ConstantsService,
               public dimens: DimensionsService,
               public snackbar: MatSnackBar) {
@@ -77,8 +85,13 @@ export class BlogNewPostComponent extends AngularEntityBase {
         // tap(_ => this.controls.content.reset())
       )
       .subscribe(x => {
-        
-        db.collection(this.blogPostPath).add(x);
+  
+        // tslint:disable-next-line:triple-equals
+        const path = this.controls.kind.value == 1 ? this.dataservice.blogPostPath : this.dataservice.pagesPath;
+  
+        console.error(path);
+  
+        dataservice.add(path, x);
         
         CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
         
