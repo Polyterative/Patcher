@@ -1,14 +1,15 @@
-import { CommonModule }           from '@angular/common';
-import { NgModule }               from '@angular/core';
-import { FlexLayoutModule }       from '@angular/flex-layout';
+import { CommonModule }            from '@angular/common';
+import { NgModule }                from '@angular/core';
+import { FlexLayoutModule }        from '@angular/flex-layout';
 import {
   MatButtonModule,
   MatCardModule,
   MatProgressBarModule
-}                                 from '@angular/material';
-import { MarkdownModule }         from 'ngx-markdown';
-import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
-import { BlogViewComponent }      from './blog-view.component';
+}                                  from '@angular/material';
+import { MarkdownModule }          from 'ngx-markdown';
+import { OrangeStructuresModule }  from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
+import { BlogPostStructureModule } from '../blog-post-structure/blog-post-structure.module';
+import { BlogViewComponent }       from './blog-view.component';
 
 @NgModule({
   declarations: [BlogViewComponent],
@@ -20,7 +21,8 @@ import { BlogViewComponent }      from './blog-view.component';
     FlexLayoutModule,
     MatCardModule,
     MatButtonModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    BlogPostStructureModule
   ]
 })
 export class BlogViewModule {}
