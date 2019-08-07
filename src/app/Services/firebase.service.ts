@@ -31,15 +31,19 @@ export class FirebaseService {
       path,
       ref => ref.limit(1)
         .where('slug', '==', slug)
+        .where('public', '==', true)
     )
       .get()
-      .pipe(map(x => x.docs[0].data()));
+      .pipe(
+        map(x => x.docs[0].data())
+      );
   }
   
   private getBlogList(limit?: number) {
     return this.firestore.collection(
       this.blogPostPath,
       ref => ref.limit(limit ? limit : 999)
+        .where('public', '==', true)
         .orderBy('created', 'desc')
     )
       .valueChanges();

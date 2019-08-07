@@ -8,7 +8,7 @@ import { FirebaseService }   from '../../Services/firebase.service';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
-import { BlogPostModel }     from '../blog-models';
+import { BlogEntryModel }    from '../blog-models';
 
 @Component({
   selector:    'app-blog-post',
@@ -16,7 +16,7 @@ import { BlogPostModel }     from '../blog-models';
   styleUrls:   ['./blog-post.component.scss']
 })
 export class BlogPostComponent extends AngularEntityBase {
-  post$: BehaviorSubject<BlogPostModel | undefined> = new BehaviorSubject<BlogPostModel>(undefined);
+  post$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
   
   constructor(private route: ActivatedRoute,
               private dataservice: FirebaseService,

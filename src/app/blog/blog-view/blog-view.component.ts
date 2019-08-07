@@ -7,7 +7,7 @@ import { RoutingService }    from '../../Services/routing.service';
 import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
-import { BlogPostModel }     from '../blog-models';
+import { BlogEntryModel }    from '../blog-models';
 
 @Component({
   selector:    'app-blog-view',
@@ -15,7 +15,7 @@ import { BlogPostModel }     from '../blog-models';
   styleUrls:   ['./blog-view.component.scss']
 })
 export class BlogViewComponent extends AngularEntityBase {
-  posts$: BehaviorSubject<BlogPostModel[]> = new BehaviorSubject<BlogPostModel[]>([]);
+  posts$: BehaviorSubject<BlogEntryModel[]> = new BehaviorSubject<BlogEntryModel[]>([]);
   
   private blogPostPath = 'blogPosts';
   

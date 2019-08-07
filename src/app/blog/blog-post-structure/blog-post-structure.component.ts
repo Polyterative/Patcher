@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-}                        from '@angular/core';
-import { BlogPostModel } from '../blog-models';
+}                         from '@angular/core';
+import { BlogEntryModel } from '../blog-models';
 
 @Component({
   selector:        'app-blog-post-structure',
@@ -13,7 +13,7 @@ import { BlogPostModel } from '../blog-models';
 })
 export class BlogPostStructureComponent {
   @Input()
-  post: BlogPostModel;
+  post: BlogEntryModel;
   
   @Input()
   noSubtitle = false;

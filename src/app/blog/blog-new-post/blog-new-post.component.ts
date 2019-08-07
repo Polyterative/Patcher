@@ -20,7 +20,7 @@ import { AngularEntityBase }  from '../../Utils/LocalLibraries/OrangeStructures/
 import { ConstantsService }   from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
 import { DimensionsService }  from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
 import { CommunicationUtils } from '../../Utils/LocalLibraries/VioletUtilities/general-utils';
-import { BlogPostModel }      from '../blog-models';
+import { BlogEntryModel }     from '../blog-models';
 
 @Component({
   selector:        'app-blog-new-post',
@@ -69,7 +69,8 @@ export class BlogNewPostComponent extends AngularEntityBase {
       .pipe(
         map(() => {
           const dateTime = DateTime.local();
-          const message: BlogPostModel = {
+          const message: BlogEntryModel = {
+            public:   false,
             content:  this.controls.content.value,
             title:    this.controls.title.value,
             subtitle: this.controls.subtitle.value,
