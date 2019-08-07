@@ -14,23 +14,23 @@ export class FirebaseService {
   ) {
   }
   
-  getPage(id) {
-    return this.getSingleWithId(this.pagesPath, id);
+  getPage(slug) {
+    return this.getSingleWithSlug(this.pagesPath, slug);
   }
   
-  getBlogPost(id) {
-    return this.getSingleWithId(this.blogPostPath, id);
+  getBlogPost(slug) {
+    return this.getSingleWithSlug(this.blogPostPath, slug);
   }
   
   getBlogPosts(limit?: number) {
     return this.getBlogList(limit);
   }
   
-  private getSingleWithId(path: string, id: number) {
+  private getSingleWithSlug(path: string, slug: number) {
     return this.firestore.collection(
       path,
       ref => ref.limit(1)
-        .where('id', '==', id)
+        .where('slug', '==', slug)
     )
       .get()
       .pipe(map(x => x.docs[0].data()));
@@ -40,7 +40,7 @@ export class FirebaseService {
     return this.firestore.collection(
       this.blogPostPath,
       ref => ref.limit(limit ? limit : 999)
-        .orderBy('id', 'desc')
+        .orderBy('created', 'desc')
     )
       .valueChanges();
   }

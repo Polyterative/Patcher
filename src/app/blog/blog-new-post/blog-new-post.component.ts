@@ -76,8 +76,7 @@ export class BlogNewPostComponent extends AngularEntityBase {
             category: this.controls.category.value,
             slug:     this.controls.slug.value,
             created:  dateTime.toISO(),
-            updated:  dateTime.toISO(),
-            id:       3
+            updated:  dateTime.toISO()
           };
           
           return message;
@@ -88,8 +87,6 @@ export class BlogNewPostComponent extends AngularEntityBase {
   
         // tslint:disable-next-line:triple-equals
         const path = this.controls.kind.value == 1 ? this.dataservice.blogPostPath : this.dataservice.pagesPath;
-  
-        console.error(path);
   
         dataservice.add(path, x);
         
