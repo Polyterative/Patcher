@@ -15,4 +15,16 @@ export class BlogPostStructureComponent {
   @Input()
   post: BlogPostModel;
   
+  @Input()
+  noSubtitle = false;
+  
+  @Input()
+  noDates = false;
+  
+  @Input()
+  noContent = false;
+  
+  @Input()
+  noSpacer = false;
+  
 }
