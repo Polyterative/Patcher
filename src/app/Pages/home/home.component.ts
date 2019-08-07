@@ -21,7 +21,6 @@ export class HomeComponent {
     category: Category.generic,
     slug:     'this.controls.slug.value',
     created:  'dateTime.toISO()',
-    updated:  'dateTime.toISO()',
-    id:       0
+    updated:  'dateTime.toISO()'
   };
 }
