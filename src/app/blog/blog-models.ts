@@ -11,5 +11,6 @@ export interface BlogPostModel {
   id: number;
   created: string;
   updated: string;
+  slug: string;
   category: Category;
 }

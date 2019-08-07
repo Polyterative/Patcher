@@ -1,9 +1,10 @@
-<div fxFlex
-     *ngIf='!(post$|async)'
->
-  <mat-progress-bar mode="indeterminate"
-  ></mat-progress-bar>
-</div>
-<app-blog-post-structure fxFlex
-                         [post]='post$|async'
-></app-blog-post-structure>
+<lib-flex-column>
+  <div fxFlexFill>
+    <mat-progress-bar *ngIf='!(post$|async)'
+                      mode="indeterminate"
+    ></mat-progress-bar>
+  </div>
+  <app-blog-post-structure fxFlex
+                           [post]='post$|async'
+  ></app-blog-post-structure>
+</lib-flex-column>
