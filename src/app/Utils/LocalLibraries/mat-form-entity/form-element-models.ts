@@ -24,6 +24,6 @@ export enum MatFormAppearences {
 }
 
 export interface Selectable {
-  id: number;
+  id: string;
   name: string;
 }
