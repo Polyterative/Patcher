@@ -1,11 +1,4 @@
 <lib-flex-row>
-  <!--  <lib-flex-column fxFlex='20'>-->
-  <!--    <div fxFlex>-->
-  <!--      <mat-card>-->
-  <!--      -->
-  <!--      </mat-card>-->
-  <!--    </div>-->
-  <!--  </lib-flex-column>-->
   <lib-flex-column fxFlex>
     <div fxFlex>
       <mat-card>
@@ -32,14 +25,13 @@
         </lib-flex-column>
       </mat-card>
     </div>
+  
+    <app-blog-post-structure fxFlex
+                             [noDates]='true'
+                             [noSpacer]='true'
+                             [post]='post'
+    ></app-blog-post-structure>
   </lib-flex-column>
-  <!--  <lib-flex-column fxFlex='20'>-->
-  <!--    <div fxFlex>-->
-  <!--      <mat-card>-->
-  <!--      -->
-  <!--      </mat-card>-->
-  <!--    </div>-->
-  <!--  </lib-flex-column>-->
 
 
 </lib-flex-row>

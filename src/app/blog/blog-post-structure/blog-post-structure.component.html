@@ -4,14 +4,14 @@
     <mat-card-title fxFlex>
       {{ post?.title }}
     </mat-card-title>
-    <mat-card-subtitle>
+    <mat-card-subtitle *ngIf='!noSubtitle'>
       <lib-flex-column
       >
         <div fxFlex>
           {{ post?.subtitle }}
         </div>
-        <lib-flex-row
-          fxFlex='100'
+        <lib-flex-row *ngIf='!noDates'
+                      fxFlex='100'
         >
           <div fxFlex='100'
           >
@@ -25,8 +25,12 @@
         </lib-flex-row>
       </lib-flex-column>
     </mat-card-subtitle>
-    <lib-spacer fxFlex></lib-spacer>
-    <mat-card-content fxFlex>
+    <lib-spacer fxFlex
+                *ngIf='!noSpacer'
+    ></lib-spacer>
+    <mat-card-content fxFlex
+                      *ngIf='!noContent'
+    >
       <markdown [data]="post.content"
                 ngPreserveWhitespaces
       ></markdown>
