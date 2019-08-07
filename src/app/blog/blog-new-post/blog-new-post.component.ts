@@ -27,10 +27,23 @@ import { BlogPostModel }      from '../blog-models';
 })
 export class BlogNewPostComponent extends AngularEntityBase {
   controls = {
-    title:    new FormControl('', Validators.compose([Validators.required])),
-    subtitle: new FormControl('', Validators.compose([Validators.required])),
+    title:    new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(5)
+    ])),
+    subtitle: new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(5)
+    ])),
+    slug:     new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(5)
+    ])),
     category: new FormControl('', Validators.compose([Validators.required])),
-    content:  new FormControl('', Validators.compose([Validators.required]))
+    content:  new FormControl('', Validators.compose([
+      Validators.required,
+      Validators.minLength(5)
+    ]))
   };
   formTypes = FormTypes;
   confirm = new EventEmitter<void>();
@@ -46,14 +59,14 @@ export class BlogNewPostComponent extends AngularEntityBase {
     
     this.confirm
       .pipe(
-        map(_ => {
-          
+        map(() => {
           const dateTime = DateTime.local();
           const message: BlogPostModel = {
             content:  this.controls.content.value,
             title:    this.controls.title.value,
             subtitle: this.controls.subtitle.value,
             category: this.controls.category.value,
+            slug:     this.controls.slug.value,
             created:  dateTime.toISO(),
             updated:  dateTime.toISO(),
             id:       3
