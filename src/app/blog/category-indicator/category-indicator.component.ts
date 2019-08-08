@@ -1,7 +1,13 @@
 import {
   ChangeDetectionStrategy,
-  Component
+  Component,
+  Input
 } from '@angular/core';
+import {
+  Category,
+  CategoryColors,
+  CategoryNames
+} from '../blog-models';
 
 @Component({
   selector:        'app-category-indicator',
@@ -10,5 +16,11 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryIndicatorComponent {
-
+  
+  @Input()
+  category: Category;
+  
+  palette = CategoryColors;
+  
+  labels = CategoryNames;
 }
