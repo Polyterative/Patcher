@@ -2,13 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-}                         from '@angular/core';
-import { environment }    from '../../../environments/environment';
-import { RoutingService } from '../../Services/routing.service';
+}                          from '@angular/core';
+import { environment }     from '../../../environments/environment';
+import { FirebaseService } from '../../Services/firebase.service';
+import { RoutingService }  from '../../Services/routing.service';
 import {
   BlogEntryModel,
   CategoryColors
-}                         from '../blog-models';
+}                          from '../blog-models';
 
 @Component({
   selector:        'app-blog-post-structure',
@@ -35,6 +36,6 @@ export class BlogPostStructureComponent {
   palette = CategoryColors;
   development = !environment.production;
   
-  constructor(private routing: RoutingService) {
+  constructor(private routing: RoutingService, public dataservice: FirebaseService) {
   }
 }

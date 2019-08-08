@@ -1,6 +1,10 @@
 import { Injectable }       from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { map }              from 'rxjs/operators';
+import {
+  map,
+  mergeMap,
+  take
+}                           from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -51,5 +55,16 @@ export class FirebaseService {
   
   public add(path: string, data): void {
     this.firestore.collection(path).add(data);
+  }
+  
+  
+  deletePost(slug: string) {
+    this.firestore.collection(
+      this.blogPostPath,
+      ref => ref.limit(1).where('slug', '==', slug)
+    )
+      .get()
+      .pipe(mergeMap(x => x.docs), take(1))
+      .subscribe(x => x.ref.delete());
   }
 }
