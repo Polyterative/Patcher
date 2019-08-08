@@ -15,4 +15,9 @@ export class RoutingService {
     this.router.navigate(paths);
   }
   
+  openInNewTab(fullPath: string) {
+    const win = window.open(fullPath, '_blank');
+    win.focus();
+  }
+  
 }

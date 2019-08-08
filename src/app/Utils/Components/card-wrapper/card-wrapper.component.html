@@ -6,7 +6,15 @@
       <lib-flex-row gap='0em'>
         <div fxFlex></div>
         <mat-card-content fxFlexAlign='center center '>
-          Made with ❤ by Polyterative
+  
+          <ng-container *ngFor='let link of links'>
+            <button (click)='routing.openInNewTab(link.url)'
+                    mat-button
+            >
+              {{link.label}}
+            </button>
+  
+          </ng-container>
         </mat-card-content>
         <div fxFlex></div>
       </lib-flex-row>
