@@ -4,6 +4,7 @@ import { FlexLayoutModule }           from '@angular/flex-layout';
 import { MatCardModule }              from '@angular/material';
 import { MarkdownModule }             from 'ngx-markdown';
 import { OrangeStructuresModule }     from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
+import { CategoryIndicatorModule }    from '../category-indicator/category-indicator.module';
 import { BlogPostStructureComponent } from './blog-post-structure.component';
 
 
@@ -14,7 +15,8 @@ import { BlogPostStructureComponent } from './blog-post-structure.component';
     MatCardModule,
     OrangeStructuresModule,
     FlexLayoutModule,
-    MarkdownModule.forChild()
+    MarkdownModule.forChild(),
+    CategoryIndicatorModule
   ],
   exports:      [BlogPostStructureComponent]
 })
