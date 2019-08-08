@@ -2,13 +2,17 @@
           class='cardHover'
 >
   <lib-flex-column gap='1em'>
-    <lib-flex-row fxFlex>
+    <lib-flex-row xs='column'
+                  fxFlex
+                  gap='0.5em'
+    >
       <mat-card-title fxFlex='grow'
                       style='font-size: xx-large'
       >
         {{ post?.title }}
       </mat-card-title>
       <app-category-indicator fxFlex
+                              fxLayoutAlign.xs='end end'
                               fxLayoutAlign='center center'
                               [category]='post.category'
       ></app-category-indicator>
