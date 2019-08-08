@@ -29,4 +29,5 @@ export interface BlogEntryModel {
   slug: string;
   category: Category;
   public: boolean;
+  image?: string;
 }
