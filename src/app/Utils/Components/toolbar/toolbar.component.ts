@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component
 }                         from '@angular/core';
-import { ToolbarService } from 'src/app/Utils/Components/toolbar/toolbar.service';
 import { RoutingService } from '../../../Services/routing.service';
+import { ToolbarService } from './toolbar.service';
 
 @Component({
   selector:        'app-toolbar',

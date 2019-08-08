@@ -3,27 +3,34 @@
 >
   
   <lib-flex-column gap='1em'>
+    <mat-card-title fxFlex
+                    style='font-size: xx-large;'
+    >
+      {{ post?.title }}
+    </mat-card-title>
     <lib-flex-row xs='column'
                   fxFlex
                   gap='0.5em'
     >
-      <mat-card-title fxFlex='grow'
-                      style='font-size: xx-large'
-      >
-        {{ post?.title }}
-      </mat-card-title>
-      <app-category-indicator fxFlex
-                              fxLayoutAlign.xs='end end'
-                              fxLayoutAlign='center center'
-                              [category]='post.category'
-      ></app-category-indicator>
+
     </lib-flex-row>
     <mat-card-subtitle *ngIf='!noSubtitle'>
       <lib-flex-column
       >
-        <div fxFlex>
-          {{ post?.subtitle }}
-        </div>
+        <lib-flex-row fxFlex
+                      xs='column'
+        >
+          <div fxFlex='grow'>
+            {{ post?.subtitle }}
+          </div>
+          <div fxFlex
+               fxLayoutAlign.xs='end'
+               fxLayoutAlign='start'
+          >
+            <app-category-indicator [category]='post.category'
+            ></app-category-indicator>
+          </div>
+        </lib-flex-row>
         <lib-flex-row *ngIf='!noDates'
                       fxFlex='100'
         >
