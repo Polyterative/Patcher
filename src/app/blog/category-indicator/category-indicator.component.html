@@ -1,3 +1,5 @@
-<div style='padding: 0.5em;background-color: #154b18;color: white;border-radius: 4px'>
-  <ng-content></ng-content>
+<div style='padding: 0.5em;color: white;border-radius: 4px;'
+     [ngStyle]='{"background-color":palette[category]}'
+>
+  {{labels[category]}}
 </div>

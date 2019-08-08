@@ -11,7 +11,7 @@
       <div fxFlex
            fxLayoutAlign='center center'
       >
-        <app-category-indicator>Yolo</app-category-indicator>
+        <app-category-indicator [category]='post.category'></app-category-indicator>
       </div>
     </lib-flex-row>
     <mat-card-subtitle *ngIf='!noSubtitle'>

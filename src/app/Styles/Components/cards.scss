@@ -25,7 +25,7 @@
 
 .cardHover {
   &:hover {
-    @include mat-elevation(3);
+    @include mat-elevation(2);
     //cursor: pointer;
     //transition: 100ms;
   }
