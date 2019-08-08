@@ -1,8 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  Input
 } from '@angular/core';
+import {
+  Category,
+  CategoryColors
+} from '../blog-models';
 
 @Component({
   selector:        'app-blog-category-line',
@@ -10,12 +14,9 @@ import {
   styleUrls:       ['./blog-category-line.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BlogCategoryLineComponent implements OnInit {
+export class BlogCategoryLineComponent {
+  @Input()
+  category: Category;
   
-  constructor() {
-  }
-  
-  ngOnInit() {
-  }
-  
+  palette = CategoryColors;
 }
