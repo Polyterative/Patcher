@@ -2,8 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component
 }                             from '@angular/core';
-import { CardWrapperService } from 'src/app/Utils/Components/card-wrapper/card-wrapper.service';
 import { RoutingService }     from '../../../Services/routing.service';
+import { CardWrapperService } from './card-wrapper.service';
 
 @Component({
   selector:        'app-card-wrapper',
