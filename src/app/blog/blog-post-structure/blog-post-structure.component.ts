@@ -2,11 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-} from '@angular/core';
+}                         from '@angular/core';
+import { environment }    from '../../../environments/environment';
+import { RoutingService } from '../../Services/routing.service';
 import {
   BlogEntryModel,
   CategoryColors
-} from '../blog-models';
+}                         from '../blog-models';
 
 @Component({
   selector:        'app-blog-post-structure',
@@ -31,5 +33,8 @@ export class BlogPostStructureComponent {
   noSpacer = false;
   
   palette = CategoryColors;
+  development = !environment.production;
   
+  constructor(private routing: RoutingService) {
+  }
 }
