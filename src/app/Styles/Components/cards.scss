@@ -1,3 +1,5 @@
+@import '~@angular/material/theming';
+
 .darkCard {
   > mat-card-title {
     font-weight: lighter !important;
@@ -17,5 +19,17 @@
     color: rgba(249, 249, 249, 0.98);
     //font-variant: small-caps;
   }
+
+}
+
+
+.cardHover {
+  &:hover {
+    @include mat-elevation(2);
+    //cursor: pointer;
+    //transition: 100ms;
+  }
+
+  transition: 100ms;
 
 }

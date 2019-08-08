@@ -297,7 +297,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     
     // Add our thing
     if ((value || '').trim()) {
-      const toAdd: Selectable = ({name: value.trim(), id: 1});
+      const toAdd: Selectable = ({name: value.trim(), id: ''});
       dataCapsule.patchValue([
         ...dataCapsule.value,
         toAdd

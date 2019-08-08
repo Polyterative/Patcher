@@ -2,6 +2,7 @@ import { CommonModule }           from '@angular/common';
 import { NgModule }               from '@angular/core';
 import { FlexModule }             from '@angular/flex-layout';
 import {
+  MatButtonModule,
   MatCardModule,
   MatExpansionModule
 }                                 from '@angular/material';
@@ -16,7 +17,8 @@ import { OrangeStructuresModule } from '../../LocalLibraries/OrangeStructures/or
     MatExpansionModule,
     MatCardModule,
     FlexModule,
-    OrangeStructuresModule
+    OrangeStructuresModule,
+    MatButtonModule
   ]
 })
 export class CardWrapperModule {

@@ -17,8 +17,4 @@ export class AppComponent {
   // @Emitter(CounterState.setValue)
   // counterValue: Emittable<number>;
   
-  constructor() {
-  
-  }
-  
 }
