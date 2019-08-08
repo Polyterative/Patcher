@@ -1,6 +1,7 @@
 <mat-card *ngIf='post'
           class='cardHover'
 >
+  
   <lib-flex-column gap='1em'>
     <lib-flex-row xs='column'
                   fxFlex
@@ -38,6 +39,12 @@
         </lib-flex-row>
       </lib-flex-column>
     </mat-card-subtitle>
+    <!--    <app-image-container fxFlex-->
+    <!--                         *ngIf='post.image'-->
+    <!--                         [image]='post.image'-->
+    <!--                         [alt]="post.title"-->
+    <!--                         style='padding-top: 0.5em'-->
+    <!--    ></app-image-container>-->
     <lib-spacer fxFlex
                 *ngIf='!noSpacer'
     ></lib-spacer>
