@@ -9,7 +9,9 @@
       >
         <mat-card-title
         >
-          New element
+          <ng-container *ngIf='isEditing'>Edit</ng-container>
+          <ng-container *ngIf='!isEditing'>New</ng-container>
+          element
         </mat-card-title>
       </mat-card>
     </div>
@@ -40,11 +42,12 @@
                                  [control]='controls.subtitle'
                                  [type]='formTypes.TEXT'
                                  label='Subtitle'
-              ></lib-mat-form-entity>
+            ></lib-mat-form-entity>
             <lib-mat-form-entity fxFlex
                                  [control]='controls.slug'
                                  [type]='formTypes.TEXT'
                                  label='Slug'
+                                 [disabled]='isEditing'
             ></lib-mat-form-entity>
             <lib-mat-form-entity fxFlex
                                  [control]='controls.kind'
@@ -62,7 +65,7 @@
                                  [control]='controls.content'
                                  [type]='formTypes.AREA'
                                  label='Content'
-              ></lib-mat-form-entity>
+            ></lib-mat-form-entity>
           </lib-flex-row>
         </mat-card-content>
       </lib-flex-column>

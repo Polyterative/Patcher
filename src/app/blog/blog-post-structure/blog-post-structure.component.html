@@ -8,6 +8,15 @@
       <div style='font-size: xx-large;'>
         {{ post?.title }}
       </div>
+      <button *ngIf='development'
+              fxFlex
+              fxLayoutAlign='end'
+              mat-icon-button
+              color='primary'
+              (click)='routing.routeTo(["edit",post.slug])'
+      >
+        <mat-icon class="mat-18">edit</mat-icon>
+      </button>
     </mat-card-title>
     <lib-flex-row xs='column'
                   fxFlex
