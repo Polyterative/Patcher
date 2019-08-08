@@ -23,10 +23,13 @@
 }
 
 
-.clickableCard {
+.cardHover {
   &:hover {
     @include mat-elevation(3);
-    cursor: pointer;
-    transition: 100ms;
+    //cursor: pointer;
+    //transition: 100ms;
   }
+
+  transition: 100ms;
+
 }

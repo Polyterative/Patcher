@@ -26,11 +26,21 @@
     <ng-container *ngFor='let post of posts$|async'>
   
       <app-blog-post-structure [noContent]='true'
-                               [noSpacer]='true'
                                [post]='post'
-                               (click)='routing.routeTo(["post",post?.slug.toString()])'
-                               class='clickableCard'
-      ></app-blog-post-structure>
+      >
+        <mat-card-content fxFlex>
+          <lib-flex-row>
+            <div fxFlex='grow'>
+            </div>
+            <button fxFlex='25'
+                    mat-flat-button
+                    color="primary"
+                    (click)='routing.routeTo(["post",post?.slug.toString()])'
+            >More
+            </button>
+          </lib-flex-row>
+        </mat-card-content>
+      </app-blog-post-structure>
     </ng-container>
   </lib-flex-column>
 </lib-flex-row>

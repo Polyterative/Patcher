@@ -1,7 +1,10 @@
 <mat-card *ngIf='post'
+          class='cardHover'
 >
   <lib-flex-column gap='1em'>
-    <mat-card-title fxFlex>
+    <mat-card-title fxFlex
+                    style='font-size: xx-large'
+    >
       {{ post?.title }}
     </mat-card-title>
     <mat-card-subtitle *ngIf='!noSubtitle'>
