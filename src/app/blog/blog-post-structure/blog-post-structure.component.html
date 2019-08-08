@@ -8,11 +8,10 @@
       >
         {{ post?.title }}
       </mat-card-title>
-      <div fxFlex
-           fxLayoutAlign='center center'
-      >
-        <app-category-indicator [category]='post.category'></app-category-indicator>
-      </div>
+      <app-category-indicator fxFlex
+                              fxLayoutAlign='center center'
+                              [category]='post.category'
+      ></app-category-indicator>
     </lib-flex-row>
     <mat-card-subtitle *ngIf='!noSubtitle'>
       <lib-flex-column
