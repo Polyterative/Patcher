@@ -2,8 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input
-}                         from '@angular/core';
-import { BlogEntryModel } from '../blog-models';
+} from '@angular/core';
+import {
+  BlogEntryModel,
+  CategoryColors
+} from '../blog-models';
 
 @Component({
   selector:        'app-blog-post-structure',
@@ -26,5 +29,7 @@ export class BlogPostStructureComponent {
   
   @Input()
   noSpacer = false;
+  
+  palette = CategoryColors;
   
 }
