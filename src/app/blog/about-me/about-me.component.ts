@@ -11,6 +11,13 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutMeComponent implements OnInit {
+  words = [
+    'developer',
+    'music producer',
+    'photographer',
+    'thinker',
+    'human'
+  ];
   
   constructor() {
   }

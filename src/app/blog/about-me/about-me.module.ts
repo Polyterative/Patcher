@@ -1,5 +1,6 @@
 import { CommonModule }      from '@angular/common';
 import { NgModule }          from '@angular/core';
+import { MatCardModule }     from '@angular/material';
 import { WordSwapperModule } from '../word-swapper/word-swapper.module';
 import { AboutMeComponent }  from './about-me.component';
 
@@ -8,7 +9,8 @@ import { AboutMeComponent }  from './about-me.component';
   declarations: [AboutMeComponent],
   imports:      [
     CommonModule,
-    WordSwapperModule
+    WordSwapperModule,
+    MatCardModule
   ],
   exports:      [AboutMeComponent]
 })
