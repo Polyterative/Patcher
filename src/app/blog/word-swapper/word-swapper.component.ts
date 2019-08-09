@@ -1,8 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnInit
-} from '@angular/core';
+}                            from '@angular/core';
+import { BehaviorSubject }   from 'rxjs';
+import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
 
 @Component({
   selector:        'app-word-swapper',
@@ -10,12 +13,21 @@ import {
   styleUrls:       ['./word-swapper.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WordSwapperComponent implements OnInit {
+export class WordSwapperComponent extends AngularEntityBase implements OnInit {
+  
+  @Input()
+  words: string[];
+  
+  curr: BehaviorSubject<string> = new BehaviorSubject('');
+  
   
   constructor() {
+    super();
   }
   
-  ngOnInit() {
+  ngOnInit(): void {
+    console.warn(this.words);
   }
+  
   
 }

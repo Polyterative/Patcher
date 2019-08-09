@@ -6,6 +6,8 @@ import {
 import { NgModule }             from '@angular/core';
 import { RouterModule }         from '@angular/router';
 import { MarkdownModule }       from 'ngx-markdown';
+import { AboutMeComponent }     from './about-me/about-me.component';
+import { AboutMeModule }        from './about-me/about-me.module';
 import { BlogNewPostComponent } from './blog-new-post/blog-new-post.component';
 import { BlogNewPostModule }    from './blog-new-post/blog-new-post.module';
 import { BlogPostComponent }    from './blog-post/blog-post.component';
@@ -20,9 +22,11 @@ import { BlogViewModule }       from './blog-view/blog-view.module';
     BlogViewModule,
     BlogPostModule,
     BlogNewPostModule,
+    AboutMeModule,
     RouterModule.forChild([
       {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
       {path: 'new', component: BlogNewPostComponent, pathMatch: 'full'},
+      {path: 'about', component: AboutMeComponent, pathMatch: 'full'},
       {path: 'edit/:slug', component: BlogNewPostComponent, pathMatch: 'full'},
       {path: 'post/:slug', component: BlogPostComponent}
     ]),
