@@ -1,12 +1,31 @@
-<mat-card>
-  <mat-card-title>
-    <div style='transition: width 500ms;'>Hello!
-                                          I'm a 23 y/o
-      <app-word-swapper [words]='words'></app-word-swapper>
-    
-    </div>
-    based in bologna, Italy.
-    
-    I have a wide range of interests.
-  </mat-card-title>
-</mat-card>
+<lib-flex-column>
+  <div fxFlex='45'>
+    <mat-card>
+      <mat-card-title>
+        <div> I'm a 23 y/o
+          <app-word-swapper [words]='words'></app-word-swapper>
+        </div>
+        with a wide range of interests including
+      </mat-card-title>
+      <mat-card-subtitle>physics,
+                         astronomy,
+                         math,
+                         philosophy,
+                         finance,
+                         style,
+                         product design,
+                         typography
+                         personal development,
+                         mbti,
+                         productivity,
+                         electronic music,
+                         cinema,
+                         photography,
+                         videography,
+                         hardware,
+                         automation,
+                         programming languages
+      </mat-card-subtitle>
+    </mat-card>
+  </div>
+</lib-flex-column>
