@@ -12,13 +12,6 @@ import { CardWrapperService } from '../../Utils/Components/card-wrapper/card-wra
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutMeComponent implements OnInit {
-  words = [
-    'developer',
-    'music producer',
-    'photographer',
-    'thinker',
-    'human'
-  ];
   
   constructor(
     public wrapperService: CardWrapperService

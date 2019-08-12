@@ -1,5 +1,103 @@
-<lib-flex-row>
-  <lib-flex-column fxFlex>
-    <app-page-retriever pageSlug='me-myself'></app-page-retriever>
-  </lib-flex-column>
-</lib-flex-row>
+<lib-flex-column gap='10em'>
+  <div fxFlex='100'
+       fxLayoutAlign='center center'
+       fxFlex.sm='100'
+       fxFlex.xs='100'
+  >
+    <mat-card>
+      <mat-card-title fxFlex>
+        Hello, welcome to my blog!
+      </mat-card-title>
+    </mat-card>
+  </div>
+  
+  <div fxFlex='65'
+       fxFlex.sm='100'
+       fxFlex.xs='100'
+  >
+    <mat-card>
+      <lib-flex-column>
+        <mat-card-title fxFlex>
+          <div> I'm a 23 y/o
+            <app-word-swapper [words]='words'></app-word-swapper>
+          </div>
+          with a wide range of interests
+        </mat-card-title>
+        <mat-card-subtitle fxFlex>physics,
+                                  astronomy,
+                                  math,
+                                  philosophy,
+                                  finance,
+                                  style,
+                                  product design,
+                                  typography,
+                                  minimalism,
+                                  personal development,
+                                  mbti,
+                                  productivity,
+                                  music,
+                                  synthesizers,
+                                  cinema,
+                                  photography,
+                                  videography,
+                                  programming languages,
+                                  UX ang UI design,
+                                  automation,
+                                  computer hardware,
+                                  mechanical keyboards
+        </mat-card-subtitle>
+        <mat-card-content fxFlex>
+        </mat-card-content>
+      </lib-flex-column>
+    </mat-card>
+  </div>
+  
+  <div fxFlex='35'
+       fxFlexAlign='end'
+       fxFlex.sm='100'
+       fxFlex.xs='100'
+  >
+    <mat-card>
+      <lib-flex-column>
+        <mat-card-title fxFlex>
+          If you like any of this stuff take a look around
+        </mat-card-title>
+      </lib-flex-column>
+    </mat-card>
+  </div>
+  
+  <div fxFlex='35'
+       fxFlex.sm='100'
+       fxFlex.xs='100'
+  >
+    <mat-card>
+      <mat-card-title>
+        This blog is the only thing in my life living with no schedule
+      </mat-card-title>
+    </mat-card>
+  </div>
+  
+  <div fxFlex='35'
+       fxFlexAlign='end'
+       fxFlex.sm='100'
+       fxFlex.xs='100'
+  >
+    <mat-card>
+      <lib-flex-column>
+        <mat-card-title fxFlex>
+          It's my playground, a place to share hyper-specific, niche content
+        </mat-card-title>
+      </lib-flex-column>
+    </mat-card>
+  </div>
+  
+  <mat-card fxFlex
+            fxFlexAlign='center'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+  >
+    <mat-card-title>
+      I hope you'll learn something
+    </mat-card-title>
+  </mat-card>
+</lib-flex-column>

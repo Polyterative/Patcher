@@ -10,4 +10,12 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
+  words = [
+    '👩‍💻 developer',
+    '🎸 guitar player',
+    '📸 photographer',
+    '🎹 electronic music producer',
+    '👽 human'
+  ];
+  
 }
