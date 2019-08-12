@@ -1,7 +1,10 @@
 import { CommonModule }            from '@angular/common';
 import { NgModule }                from '@angular/core';
 import { FlexLayoutModule }        from '@angular/flex-layout';
-import { MatCardModule }           from '@angular/material';
+import {
+  MatButtonModule,
+  MatCardModule
+}                                  from '@angular/material';
 import { BlogPostStructureModule } from '../../blog/blog-post-structure/blog-post-structure.module';
 import { PageRetrieverModule }     from '../../blog/page-retriever/page-retriever.module';
 import { WordSwapperModule }       from '../../blog/word-swapper/word-swapper.module';
@@ -17,7 +20,8 @@ import { HomeComponent }           from './home.component';
     MatCardModule,
     BlogPostStructureModule,
     PageRetrieverModule,
-    WordSwapperModule
+    WordSwapperModule,
+    MatButtonModule
   ],
   exports:      [HomeComponent]
 })
