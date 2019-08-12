@@ -2,7 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit
-} from '@angular/core';
+}                             from '@angular/core';
+import { CardWrapperService } from '../../Utils/Components/card-wrapper/card-wrapper.service';
 
 @Component({
   selector:        'app-about-me',
@@ -19,7 +20,11 @@ export class AboutMeComponent implements OnInit {
     'human'
   ];
   
-  constructor() {
+  constructor(
+    public wrapperService: CardWrapperService
+  ) {
+    
+    // wrapperService.shouldWrap$.next(false);
   }
   
   ngOnInit() {

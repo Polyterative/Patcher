@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  Input
 } from '@angular/core';
 
 @Component({
@@ -10,12 +10,8 @@ import {
   styleUrls:       ['./flat-box.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FlatBoxComponent implements OnInit {
-  
-  constructor() {
-  }
-  
-  ngOnInit() {
-  }
+export class FlatBoxComponent {
+  @Input()
+  bgcolor: string;
   
 }

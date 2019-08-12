@@ -40,7 +40,7 @@ export class WordSwapperComponent extends AngularEntityBase implements OnInit {
   ngOnInit(): void {
     this.reset.pipe(
       takeUntil(this.destroyEvent$),
-      switchMap(x => timer(0, 500).pipe(takeUntil(this.reset))),
+      switchMap(x => timer(0, 1000).pipe(takeUntil(this.reset))),
       tap(x => {
         if (this.words[x] === undefined) {
           this.reset.emit();
