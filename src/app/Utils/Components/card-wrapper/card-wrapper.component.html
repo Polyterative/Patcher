@@ -2,20 +2,18 @@
   <ng-content></ng-content>
   
   <div style='padding-top: 4em'>
-    <mat-card style='padding-bottom: 0em!important;background-color: #313131;color: white'>
-      <lib-flex-row gap='0em'>
+    <mat-card style='background-color: #313131;color: white'>
+      <lib-flex-row xs='column'
+                    gap='0em'
+      >
         <div fxFlex></div>
-        <mat-card-content fxFlexAlign='center center '>
-  
-          <ng-container *ngFor='let link of links'>
-            <button (click)='routing.openInNewTab(link.url)'
-                    mat-button
-            >
-              {{link.label}}
-            </button>
-  
-          </ng-container>
-        </mat-card-content>
+        <ng-container *ngFor='let link of links'>
+          <button (click)='routing.openInNewTab(link.url)'
+                  mat-button
+          >
+            {{link.label}}
+          </button>
+        </ng-container>
         <div fxFlex></div>
       </lib-flex-row>
     </mat-card>
