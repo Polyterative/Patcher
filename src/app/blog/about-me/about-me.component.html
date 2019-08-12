@@ -1,38 +1,5 @@
-<lib-flex-column>
-  <div fxFlex='45'
-       fxFlex.sm='100'
-       fxFlex.xs='100'
-  >
-    <mat-card>
-      <mat-card-title>
-        <div> I'm a 23 y/o
-          <app-word-swapper [words]='words'></app-word-swapper>
-        </div>
-        with a wide range of interests including
-      </mat-card-title>
-      <mat-card-subtitle>physics,
-                         astronomy,
-                         math,
-                         philosophy,
-                         finance,
-                         style,
-                         product design,
-                         typography,
-                         minimalism,
-                         personal development,
-                         mbti,
-                         productivity,
-                         music,
-                         synthesizers,
-                         cinema,
-                         photography,
-                         videography,
-                         programming languages,
-                         UX ang UI design,
-                         automation,
-                         computer hardware,
-                         mechanical keyboards
-      </mat-card-subtitle>
-    </mat-card>
-  </div>
-</lib-flex-column>
+<lib-flex-row>
+  <lib-flex-column fxFlex>
+    <app-page-retriever pageSlug='about-me'></app-page-retriever>
+  </lib-flex-column>
+</lib-flex-row>
