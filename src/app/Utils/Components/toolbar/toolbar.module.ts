@@ -4,6 +4,7 @@ import {
   ExtendedModule,
   FlexModule
 }                                 from '@angular/flex-layout';
+import { MatTooltipModule }       from '@angular/material';
 import { MatButtonModule }        from '@angular/material/button';
 import { MatIconModule }          from '@angular/material/icon';
 import { MatToolbarModule }       from '@angular/material/toolbar';
@@ -22,7 +23,8 @@ import { ToolbarComponent }       from './toolbar.component';
     MatToolbarModule,
     MatIconModule,
     MatButtonModule,
-    ExtendedModule
+    ExtendedModule,
+    MatTooltipModule
   ]
 })
 export class ToolbarModule {
