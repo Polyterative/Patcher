@@ -17,8 +17,6 @@ import { BlogEntryModel }    from '../blog-models';
 export class BlogViewComponent extends AngularEntityBase {
   posts$: BehaviorSubject<BlogEntryModel[]> = new BehaviorSubject<BlogEntryModel[]>([]);
   
-  private blogPostPath = 'blogPosts';
-  
   constructor(
     private routing: RoutingService,
     private dataservice: FirebaseService,

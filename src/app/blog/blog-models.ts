@@ -6,10 +6,10 @@ export enum Category {
 }
 
 export const CategoryColors = {
-  [Category.generic]:      '#4d5a4e',
-  [Category.music]:        '#2c5a42',
-  [Category.code]:         '#1a4a5a',
-  [Category.productivity]: '#5a3727'
+  [Category.generic]:      'rgb(116,135,117)',
+  [Category.music]:        'rgb(58,119,88)',
+  [Category.code]:         'rgb(38,107,130)',
+  [Category.productivity]: 'rgb(136,83,59)'
 };
 
 export const CategoryNames = {
@@ -30,4 +30,10 @@ export interface BlogEntryModel {
   category: Category;
   public: boolean;
   image?: string;
+}
+
+
+export interface InstagramLinkModel {
+  title: string;
+  path: string
 }
