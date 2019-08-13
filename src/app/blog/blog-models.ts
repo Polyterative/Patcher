@@ -31,3 +31,9 @@ export interface BlogEntryModel {
   public: boolean;
   image?: string;
 }
+
+
+export interface InstagramLinkModel {
+  title: string;
+  path: string
+}
