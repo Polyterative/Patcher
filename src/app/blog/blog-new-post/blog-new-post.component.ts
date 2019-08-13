@@ -2,24 +2,30 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter
-}                            from '@angular/core';
+}                             from '@angular/core';
 import {
   FormControl,
   Validators
-}                            from '@angular/forms';
-import { MatSnackBar }       from '@angular/material';
-import { ActivatedRoute }    from '@angular/router';
-import { DateTime }          from 'luxon';
-import { BehaviorSubject }   from 'rxjs';
-import { map }               from 'rxjs/operators';
-import { FirebaseService }   from '../../Services/firebase.service';
+}                             from '@angular/forms';
+import { MatSnackBar }        from '@angular/material';
+import { ActivatedRoute }     from '@angular/router';
+import { DateTime }           from 'luxon';
+import { BehaviorSubject }    from 'rxjs';
+import {
+  filter,
+  map,
+  switchMap,
+  take,
+  takeUntil
+}                             from 'rxjs/operators';
+import { FirebaseService }    from '../../Services/firebase.service';
 import {
   FormTypes,
   Selectable
-}                            from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
-import { AngularEntityBase } from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
-import { ConstantsService }  from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
-import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
+}                             from '../../Utils/LocalLibraries/mat-form-entity/form-element-models';
+import { AngularEntityBase }  from '../../Utils/LocalLibraries/OrangeStructures/base/angularEntityBase';
+import { ConstantsService }   from '../../Utils/LocalLibraries/VioletUtilities/constants.service';
+import { DimensionsService }  from '../../Utils/LocalLibraries/VioletUtilities/dimensions.service';
 import { CommunicationUtils } from '../../Utils/LocalLibraries/VioletUtilities/general-utils';
 import { BlogEntryModel }     from '../blog-models';
 
@@ -44,6 +50,8 @@ export class BlogNewPostComponent extends AngularEntityBase {
       Validators.minLength(5)
     ])),
     category: new FormControl('', Validators.compose([Validators.required])),
+    created:  new FormControl('', Validators.compose([Validators.required])),
+    updated:  new FormControl('', Validators.compose([Validators.required])),
     kind:     new FormControl('', Validators.compose([Validators.required])),
     content:  new FormControl('', Validators.compose([
       Validators.required,
@@ -61,8 +69,9 @@ export class BlogNewPostComponent extends AngularEntityBase {
     {id: '0', name: 'Page'},
     {id: '1', name: 'Post'}
   ];
+  isEditing = false;
   
-  private blogPostPath = 'blogPosts';
+  // post$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
   
   constructor(private route: ActivatedRoute,
               private dataservice: FirebaseService,
@@ -70,20 +79,46 @@ export class BlogNewPostComponent extends AngularEntityBase {
               public dimens: DimensionsService,
               public snackbar: MatSnackBar) {
     super();
+  
+    this.route.params
+      .pipe(
+        map(x => x.slug),
+        filter(x => x),
+        take(1),
+        switchMap(x => dataservice.getBlogPost(x))
+      )
+      .subscribe((x: BlogEntryModel) => {
+        this.isEditing = true;
+        this.controls.slug.patchValue(x.slug);
+        this.controls.title.patchValue(x.title);
+        this.controls.subtitle.patchValue(x.subtitle);
+        this.controls.kind.patchValue('1');
+        this.controls.content.patchValue(x.content);
+        this.controls.created.patchValue(x.created);
+        this.controls.updated.patchValue(x.updated);
+      });
     
     this.confirm
       .pipe(
+        takeUntil(this.destroyEvent$),
         map(() => {
-          const dateTime = DateTime.local();
+          const dateTime = DateTime.local().toISO();
+  
+          this.controls.updated.patchValue(dateTime);
+  
+          if (!this.isEditing) {
+            this.controls.created.patchValue(dateTime);
+          }
+          
           const message: BlogEntryModel = {
-            public:   false,
+            public:   true,
             content:  this.controls.content.value,
             title:    this.controls.title.value,
             subtitle: this.controls.subtitle.value,
             category: this.controls.category.value,
             slug:     this.controls.slug.value,
-            created:  dateTime.toISO(),
-            updated:  dateTime.toISO()
+            created:  this.controls.created.value,
+            updated:  this.controls.updated.value
           };
           
           return message;
