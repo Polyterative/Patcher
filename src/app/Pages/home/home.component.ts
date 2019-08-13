@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component
-} from '@angular/core';
+}                          from '@angular/core';
+import { FirebaseService } from '../../Services/firebase.service';
+import { RoutingService }  from '../../Services/routing.service';
 
 @Component({
   selector:        'app-home',
@@ -18,4 +20,9 @@ export class HomeComponent {
     '👽 human'
   ];
   
+  constructor(
+    private routing: RoutingService,
+    private dataservice: FirebaseService
+  ) {
+  }
 }
