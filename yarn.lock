@@ -150,10 +150,10 @@
   dependencies:
     tslib "^1.9.0"
 
-"@angular/compiler-cli@8.2.2":
-  version "8.2.2"
-  resolved "https://registry.yarnpkg.com/@angular/compiler-cli/-/compiler-cli-8.2.2.tgz#0b66157233ca2581e6b478a42150bea992230c8b"
-  integrity sha512-lEfWykViorBom4iWeZusoH4yAFkalyys/k9sI2qiTSVaH6TyowXbnfTMGfFQXKFydxI9sE86cCPoaRcR6fQcKQ==
+"@angular/compiler-cli@8.2.0":
+  version "8.2.0"
+  resolved "http://192.168.1.231:4874/@angular%2fcompiler-cli/-/compiler-cli-8.2.0.tgz#1d18113a3ec58208d428d290728bbda7225cf7a2"
+  integrity sha512-wwR/01DIAazynICQA7ge7tmXSTgY0rLn3vB9kF30mpg4IdytLqY4ExtfThxvbG8w+wnEGxzYLkpXkp5CQUD/Fw==
   dependencies:
     canonical-path "1.0.0"
     chokidar "^2.1.1"
@@ -199,10 +199,10 @@
   dependencies:
     tslib "^1.9.0"
 
-"@angular/language-service@8.2.2":
-  version "8.2.2"
-  resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-8.2.2.tgz#38bda29260850e78132e89a4c370cbaf118c3062"
-  integrity sha512-tQ44UDKXaeEZlYx5+8RT8gfTvIo1wWdH8iP+EVIv9zOoHV1rm+FkmkDCRVy7HnDMIhIrCZaQti6oCuT0u4+S8Q==
+"@angular/language-service@8.2.0":
+  version "8.2.0"
+  resolved "http://192.168.1.231:4874/@angular%2flanguage-service/-/language-service-8.2.0.tgz#98c3d01807a08750b85bcc8bcfface06e2f55b6e"
+  integrity sha512-fv+BF4Fgy/JASi3lpfwxDFsByWfpsASr5wt2zFMozHSb0ZsJ22OpyvdnjPfEaAOLDV0qcXIZEZ6O+NjRq2qurQ==
 
 "@angular/material@8.1.2":
   version "8.1.2"
