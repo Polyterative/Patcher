@@ -21,8 +21,8 @@ export class HomeComponent {
   ];
   
   constructor(
-    private routing: RoutingService,
-    private dataservice: FirebaseService
+    public routing: RoutingService,
+    public dataservice: FirebaseService
   ) {
   }
 }
