@@ -14,9 +14,10 @@ import { CardWrapperService } from './card-wrapper.service';
 export class CardWrapperComponent {
   
   links: MyURL[] = [
-    {label: 'Github', url: 'https://github.com/Polyterative'},
     {label: 'Soundcloud', url: 'https://soundcloud.com/polyterative'},
+    {label: 'Spotify', url: 'https://open.spotify.com/artist/1Z8s4xLHCLIf8LAZP6BBj4?si=KQ7TY4soToCkBqT7F50TZA'},
     {label: 'Instagram', url: 'http://instagram.com/polyterative/'},
+    {label: 'Github', url: 'https://github.com/Polyterative'},
     {label: 'LinkedIn', url: 'https://www.linkedin.com/in/vlady-yakovenko-13833870/'}
   ];
   
