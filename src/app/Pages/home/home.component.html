@@ -1,5 +1,108 @@
-<lib-flex-row>
-  <lib-flex-column fxFlex>
-    <app-page-retriever pageSlug='me-myself'></app-page-retriever>
-  </lib-flex-column>
-</lib-flex-row>
+<lib-flex-column gap='6em'>
+  <mat-card fxFlex
+            style='background-color: #00796B'
+  >
+    <mat-card-title fxFlex
+                    fxLayoutAlign='center center'
+    >
+      Hello, and welcome!
+    </mat-card-title>
+  </mat-card>
+  
+  <mat-card fxFlex='65'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+            fxFlexAlign='start'
+            style='background-color: #3a72a8;'
+  >
+    <lib-flex-column>
+      <mat-card-title fxFlex>
+        <div> I'm a 23 y/o
+          <app-word-swapper [words]='words'></app-word-swapper>
+        </div>
+        with a wide range of interests
+      </mat-card-title>
+      <mat-card-subtitle fxFlex>physics /
+                                astronomy /
+                                math /
+                                philosophy /
+                                finance /
+                                style /
+                                product design /
+                                typography /
+                                minimalism /
+                                personal development /
+                                MBTI /
+                                productivity /
+                                music /
+                                synthesizers /
+                                cinema /
+                                photography /
+                                videography /
+                                programming /
+                                UX ang UI design /
+                                automation /
+                                computer hardware /
+                                mechanical keyboards
+      </mat-card-subtitle>
+      <mat-card-content fxFlex>
+      </mat-card-content>
+    </lib-flex-column>
+  </mat-card>
+  
+  <mat-card fxFlex='35'
+            fxFlexAlign='end'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+            style='background-color: #7B1FA2;'
+  >
+    <lib-flex-column>
+      <mat-card-subtitle fxFlex>
+        If you like any of this stuff take a look around
+      </mat-card-subtitle>
+    </lib-flex-column>
+  </mat-card>
+  
+  <mat-card fxFlex='35'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+            fxFlexAlign='start'
+            style='background-color: #7B1FA2;'
+  >
+    <mat-card-subtitle>
+      This blog is the only thing in my life living with no schedule
+    </mat-card-subtitle>
+  </mat-card>
+  
+  <mat-card fxFlex='35'
+            fxFlexAlign='end'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+            style='background-color: #7B1FA2;'
+  >
+    <lib-flex-column>
+      <mat-card-subtitle fxFlex>
+        It's my playground, a place to share hyper-specific, niche content
+      </mat-card-subtitle>
+    </lib-flex-column>
+  </mat-card>
+  
+  <mat-card fxFlex
+            fxFlexAlign='center'
+            fxFlex.sm='100'
+            fxFlex.xs='100'
+            style='background-color: #512DA8;'
+  >
+    <mat-card-subtitle>
+      I hope you'll learn something
+    </mat-card-subtitle>
+  </mat-card>
+  
+  <a fxFlex='100'
+     fxFlex.sm='100'
+     fxFlex.xs='100'
+     (click)='routing.routeTo(["blog"])'
+     mat-flat-button
+     color='accent'
+  >Browse articles</a>
+</lib-flex-column>

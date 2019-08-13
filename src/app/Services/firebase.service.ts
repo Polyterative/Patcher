@@ -1,13 +1,18 @@
 import { Injectable }       from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { map }              from 'rxjs/operators';
+import {
+  map,
+  mergeMap,
+  take
+}                           from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  public pagesPath = 'pages';
-  public blogPostPath = 'blogPosts';
+  pagesPath = 'pages';
+  blogPostPath = 'blogPosts';
+  instaPath = 'insta-links';
   
   constructor(
     private firestore: AngularFirestore
@@ -24,6 +29,20 @@ export class FirebaseService {
   
   getBlogPosts(limit?: number) {
     return this.getBlogList(limit);
+  }
+  
+  add(path: string, data): void {
+    this.firestore.collection(path).add(data);
+  }
+  
+  deletePost(slug: string) {
+    this.firestore.collection(
+      this.blogPostPath,
+      ref => ref.limit(1).where('slug', '==', slug)
+    )
+      .get()
+      .pipe(mergeMap(x => x.docs), take(1))
+      .subscribe(x => x.ref.delete());
   }
   
   private getSingleWithSlug(path: string, slug: number) {
@@ -49,7 +68,11 @@ export class FirebaseService {
       .valueChanges();
   }
   
-  public add(path: string, data): void {
-    this.firestore.collection(path).add(data);
+  public getInstagramList(limit?: number) {
+    return this.firestore.collection(
+      this.instaPath,
+      ref => ref.limit(limit ? limit : 999)
+    )
+      .valueChanges();
   }
 }

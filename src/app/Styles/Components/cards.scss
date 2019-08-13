@@ -1,5 +1,9 @@
 @import '~@angular/material/theming';
 
+mat-card {
+  //color: rgba(255, 255, 255, 0.93);
+}
+
 .darkCard {
   > mat-card-title {
     font-weight: lighter !important;
