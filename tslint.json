@@ -9,7 +9,8 @@
         // override tslint rules here
         "import-spacing":          false,
         "component-selector":      false,
-        "prefer-inline-decorator": false
+        "prefer-inline-decorator": false,
+        "typedef":                 false
     }
     //    "rules": {
     //    "arrow-return-shorthand": true,
