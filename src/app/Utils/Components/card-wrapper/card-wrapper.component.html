@@ -1,22 +1,22 @@
 <div [ngClass]='{"content-root-card":(service.shouldWrap$|async)}'>
-  <ng-content></ng-content>
-  
-  <div style='padding-top: 4em'>
-    <mat-card style='background-color: #313131;color: white'>
-      <lib-flex-row xs='column'
-                    gap='0em'
-      >
-        <div fxFlex></div>
-        <ng-container *ngFor='let link of links'>
-          <button (click)='routing.openInNewTab(link.url)'
-                  mat-button
-          >
-            {{link.label}}
-          </button>
-        </ng-container>
-        <div fxFlex></div>
-      </lib-flex-row>
-    </mat-card>
-  </div>
+    <ng-content></ng-content>
+    
+    <div style='padding-top: 4em'>
+        <mat-card style='background-color: #313131;color: white'>
+            <lib-flex-row xs='column'
+                          gap='0em'
+            >
+                <div fxFlex></div>
+                <ng-container *ngFor='let link of links'>
+                    <button (click)='routing.openInNewTab(link.url)'
+                            mat-button
+                    >
+                        {{link.label}}
+                    </button>
+                </ng-container>
+                <div fxFlex></div>
+            </lib-flex-row>
+        </mat-card>
+    </div>
 </div>
 

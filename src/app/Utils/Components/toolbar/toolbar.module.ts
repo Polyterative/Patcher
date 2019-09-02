@@ -1,8 +1,8 @@
 import { CommonModule }           from '@angular/common';
 import { NgModule }               from '@angular/core';
 import {
-  ExtendedModule,
-  FlexModule
+    ExtendedModule,
+    FlexModule
 }                                 from '@angular/flex-layout';
 import { MatTooltipModule }       from '@angular/material';
 import { MatButtonModule }        from '@angular/material/button';
@@ -12,20 +12,20 @@ import { OrangeStructuresModule } from '../../LocalLibraries/OrangeStructures/or
 import { ToolbarComponent }       from './toolbar.component';
 
 @NgModule({
-  declarations: [ToolbarComponent],
-  exports:      [ToolbarComponent],
-  imports:      [
-    CommonModule,
-    // MaterialModulePack,
-    OrangeStructuresModule,
-    FlexModule,
-    OrangeStructuresModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
-    ExtendedModule,
-    MatTooltipModule
-  ]
+    declarations: [ToolbarComponent],
+    exports:      [ToolbarComponent],
+    imports:      [
+        CommonModule,
+        // MaterialModulePack,
+        OrangeStructuresModule,
+        FlexModule,
+        OrangeStructuresModule,
+        MatToolbarModule,
+        MatIconModule,
+        MatButtonModule,
+        ExtendedModule,
+        MatTooltipModule
+    ]
 })
 export class ToolbarModule {
 }

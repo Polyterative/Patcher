@@ -1,39 +1,39 @@
 <mat-toolbar *ngIf='data.toolbarVisible$|async'
              class='color'
 >
-  <mat-toolbar-row>
-    <div *ngIf='(data.title|async).length>0'
-         style='padding-right: 1em'
-         fxFlex='grow'
-         fxFlexAlign='center center'
-         fxHide.xs='true'
-         class='title'
-    >{{ data.title|async }}</div>
-    <div fxFlex>
-      <button mat-icon-button
-              (click)='routing.routeTo([""])'
-      >
-        <mat-icon class="mat-18">home</mat-icon>
-      </button>
-      <button (click)='routing.routeTo(["blog"])'
-              mat-button
-      >
-        Blog
-      </button>
-      <button (click)='routing.routeTo(["about"])'
-              mat-button
-      >
-        About
-      </button>
-      <button mat-button
-              style='color: rgba(49,49,49,0.35)'
-              matTooltip='Soon™'
-      >
-        Work
-      </button>
-    </div>
-    <div fxFlex='grow'></div>
-  
-  </mat-toolbar-row>
+    <mat-toolbar-row>
+        <div *ngIf='(data.title|async).length>0'
+             style='padding-right: 1em'
+             fxFlex='grow'
+             fxFlexAlign='center center'
+             fxHide.xs='true'
+             class='title'
+        >{{ data.title|async }}</div>
+        <div fxFlex>
+            <button mat-icon-button
+                    (click)='routing.routeTo([""])'
+            >
+                <mat-icon class="mat-18">home</mat-icon>
+            </button>
+            <button (click)='routing.routeTo(["blog"])'
+                    mat-button
+            >
+                Blog
+            </button>
+            <button (click)='routing.routeTo(["about"])'
+                    mat-button
+            >
+                About
+            </button>
+            <button mat-button
+                    style='color: rgba(49,49,49,0.35)'
+                    matTooltip='Soon™'
+            >
+                Work
+            </button>
+        </div>
+        <div fxFlex='grow'></div>
+    
+    </mat-toolbar-row>
 </mat-toolbar>
 

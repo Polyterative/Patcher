@@ -1,86 +1,86 @@
 <mat-card *ngIf='post'
           class='cardHover'
 >
-  
-  <lib-flex-column gap='16px'>
-    <mat-card-title fxFlex
-    >
-      <div style='font-size: xx-large;'>
-        {{ post?.title }}
-      </div>
-      <div fxFlex
-           *ngIf='development'
-           fxLayoutAlign='end'
-      >
-        <button
-          mat-icon-button
-          color='primary'
-          (click)='routing.routeTo(["edit",post.slug])'
+    
+    <lib-flex-column gap='16px'>
+        <mat-card-title fxFlex
         >
-          <mat-icon class="mat-18">edit</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          color='primary'
-          (click)='dataservice.deletePost(post.slug)'
+            <div style='font-size: xx-large;'>
+                {{ post?.title }}
+            </div>
+            <div fxFlex
+                 *ngIf='development'
+                 fxLayoutAlign='end'
+            >
+                <button
+                        mat-icon-button
+                        color='primary'
+                        (click)='routing.routeTo(["edit",post.slug])'
+                >
+                    <mat-icon class="mat-18">edit</mat-icon>
+                </button>
+                <button
+                        mat-icon-button
+                        color='primary'
+                        (click)='dataservice.deletePost(post.slug)'
+                >
+                    <mat-icon class="mat-18">delete</mat-icon>
+                </button>
+            </div>
+        </mat-card-title>
+        <lib-flex-row xs='column'
+                      fxFlex
+                      gap='8px'
         >
-          <mat-icon class="mat-18">delete</mat-icon>
-        </button>
-      </div>
-    </mat-card-title>
-    <lib-flex-row xs='column'
-                  fxFlex
-                  gap='8px'
-    >
-    </lib-flex-row>
-    <mat-card-subtitle *ngIf='!noSubtitle'>
-      <lib-flex-column
-      >
-        <lib-flex-row fxFlex
-                      xs='column'
-        >
-          <div fxFlex='grow'>
-            {{ post?.subtitle }}
-          </div>
-          <div fxFlex
-               fxLayoutAlign.xs='end'
-               fxLayoutAlign='start'
-          >
-            <app-category-indicator [category]='post.category'
-            ></app-category-indicator>
-          </div>
         </lib-flex-row>
-        <lib-flex-row *ngIf='!noDates'
-                      fxFlex='100'
+        <mat-card-subtitle *ngIf='!noSubtitle'>
+            <lib-flex-column
+            >
+                <lib-flex-row fxFlex
+                              xs='column'
+                >
+                    <div fxFlex='grow'>
+                        {{ post?.subtitle }}
+                    </div>
+                    <div fxFlex
+                         fxLayoutAlign.xs='end'
+                         fxLayoutAlign='start'
+                    >
+                        <app-category-indicator [category]='post.category'
+                        ></app-category-indicator>
+                    </div>
+                </lib-flex-row>
+                <lib-flex-row *ngIf='!noDates'
+                              fxFlex='100'
+                >
+                    <div fxFlex='100'
+                    >
+                        Posted: {{ post?.created|date }}
+                    </div>
+                    <div fxFlex='100'
+                         style='text-align: end'
+                    >
+                        Edited: {{ post?.created|date }}
+                    </div>
+                </lib-flex-row>
+            </lib-flex-column>
+        </mat-card-subtitle>
+        <!--    <app-image-container fxFlex-->
+        <!--                         *ngIf='post.image'-->
+        <!--                         [image]='post.image'-->
+        <!--                         [alt]="post.title"-->
+        <!--                         style='padding-top: 0.5em'-->
+        <!--    ></app-image-container>-->
+        <lib-spacer fxFlex
+                    *ngIf='!noSpacer'
+        ></lib-spacer>
+        <mat-card-content fxFlex
+                          *ngIf='!noContent'
         >
-          <div fxFlex='100'
-          >
-            Posted: {{ post?.created|date }}
-          </div>
-          <div fxFlex='100'
-               style='text-align: end'
-          >
-            Edited: {{ post?.created|date }}
-          </div>
-        </lib-flex-row>
-      </lib-flex-column>
-    </mat-card-subtitle>
-    <!--    <app-image-container fxFlex-->
-    <!--                         *ngIf='post.image'-->
-    <!--                         [image]='post.image'-->
-    <!--                         [alt]="post.title"-->
-    <!--                         style='padding-top: 0.5em'-->
-    <!--    ></app-image-container>-->
-    <lib-spacer fxFlex
-                *ngIf='!noSpacer'
-    ></lib-spacer>
-    <mat-card-content fxFlex
-                      *ngIf='!noContent'
-    >
-      <markdown [data]="post.content"
-                ngPreserveWhitespaces
-      ></markdown>
-    </mat-card-content>
-    <ng-content></ng-content>
-  </lib-flex-column>
+            <markdown [data]="post.content"
+                      ngPreserveWhitespaces
+            ></markdown>
+        </mat-card-content>
+        <ng-content></ng-content>
+    </lib-flex-column>
 </mat-card>

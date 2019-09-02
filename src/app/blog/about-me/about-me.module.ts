@@ -10,16 +10,16 @@ import { AboutMeComponent }       from './about-me.component';
 
 
 @NgModule({
-  declarations: [AboutMeComponent],
-  imports:      [
-    CommonModule,
-    WordSwapperModule,
-    MatCardModule,
-    FlatBoxModule,
-    OrangeStructuresModule,
-    FlexLayoutModule,
-    PageRetrieverModule
-  ],
-  exports:      [AboutMeComponent]
+    declarations: [AboutMeComponent],
+    imports:      [
+        CommonModule,
+        WordSwapperModule,
+        MatCardModule,
+        FlatBoxModule,
+        OrangeStructuresModule,
+        FlexLayoutModule,
+        PageRetrieverModule
+    ],
+    exports:      [AboutMeComponent]
 })
 export class AboutMeModule {}
