@@ -7,14 +7,14 @@ import { OrangeStructuresModule } from '../../Utils/LocalLibraries/OrangeStructu
 import { LandingPageComponent }   from './landing-page.component';
 
 @NgModule({
-  declarations: [LandingPageComponent],
-  exports:      [LandingPageComponent],
-  imports:      [
-    CommonModule,
-    OrangeStructuresModule,
-    MatCardModule,
-    FlexLayoutModule,
-    MatFormEntityModule
-  ]
+    declarations: [LandingPageComponent],
+    exports:      [LandingPageComponent],
+    imports:      [
+        CommonModule,
+        OrangeStructuresModule,
+        MatCardModule,
+        FlexLayoutModule,
+        MatFormEntityModule
+    ]
 })
 export class LangingPageModule {}

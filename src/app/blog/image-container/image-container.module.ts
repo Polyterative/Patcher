@@ -5,11 +5,11 @@ import { ImageContainerComponent } from './image-container.component';
 
 
 @NgModule({
-  declarations: [ImageContainerComponent],
-  imports:      [
-    CommonModule,
-    MatCardModule
-  ],
-  exports:      [ImageContainerComponent]
+    declarations: [ImageContainerComponent],
+    imports:      [
+        CommonModule,
+        MatCardModule
+    ],
+    exports:      [ImageContainerComponent]
 })
 export class ImageContainerModule {}

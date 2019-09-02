@@ -23,35 +23,35 @@ import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
-  imports:      [
-    CommonModule
-  ],
-  declarations: [],
-  exports:      [
-    BrowserModule,
-    BrowserAnimationsModule,
-    // FLEX
-    FlexLayoutModule,
-    // MATERIAL
-    MatButtonModule,
-    MatCardModule,
-    MatChipsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatExpansionModule,
-    MatProgressBarModule,
-    MatRadioModule,
-    MatSlideToggleModule,
-    MatTabsModule,
-    MatSnackBarModule,
-    MatIconModule,
-    MatInputModule,
-    MatListModule,
-    MatMenuModule,
-    MatTableModule,
-    MatToolbarModule,
-    MatPaginatorModule
-  ]
+    imports:      [
+        CommonModule
+    ],
+    declarations: [],
+    exports:      [
+        BrowserModule,
+        BrowserAnimationsModule,
+        // FLEX
+        FlexLayoutModule,
+        // MATERIAL
+        MatButtonModule,
+        MatCardModule,
+        MatChipsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatExpansionModule,
+        MatProgressBarModule,
+        MatRadioModule,
+        MatSlideToggleModule,
+        MatTabsModule,
+        MatSnackBarModule,
+        MatIconModule,
+        MatInputModule,
+        MatListModule,
+        MatMenuModule,
+        MatTableModule,
+        MatToolbarModule,
+        MatPaginatorModule
+    ]
 })
 export class MaterialModulePack {
 }

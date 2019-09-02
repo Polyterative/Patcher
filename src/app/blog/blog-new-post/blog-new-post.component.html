@@ -1,99 +1,99 @@
 <lib-flex-column xs='column'>
-  
-  <lib-flex-row fxFlex='100'
-                fxFlex.xs='100'
-                fxFlex.sm='100'
-  >
-    <div fxFlex='grow'>
-      <mat-card style='background-color: #3a72a8;color: white'
-      >
-        <mat-card-title
-        >
-          <ng-container *ngIf='isEditing'>Edit</ng-container>
-          <ng-container *ngIf='!isEditing'>New</ng-container>
-          element
-        </mat-card-title>
-      </mat-card>
-    </div>
-    <div fxFlex>
-      <button mat-fab
-              color="primary"
-              (click)='confirm.emit()'
-      >Send
-      </button>
-    </div>
-  </lib-flex-row>
-  <lib-flex-row fxFlex
-  >
-    <mat-card fxFlex
-    >
-      <lib-flex-column gap='0em'>
-        <mat-card-content fxFlex>
-          <lib-mat-form-entity [control]='controls.title'
-                               [type]='formTypes.TEXT'
-                               label='Title'
-          ></lib-mat-form-entity>
-        </mat-card-content>
-        <mat-card-content>
-          <lib-flex-row xs='column'
-                        sm='column'
-          >
-            <lib-mat-form-entity fxFlex='grow'
-                                 [control]='controls.subtitle'
-                                 [type]='formTypes.TEXT'
-                                 label='Subtitle'
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity fxFlex
-                                 [control]='controls.slug'
-                                 [type]='formTypes.TEXT'
-                                 label='Slug'
-                                 [disabled]='isEditing'
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity fxFlex
-                                 [control]='controls.kind'
-                                 [type]='formTypes.SELECT'
-                                 [options]='kindOptions'
-                                 [disableVoidSelection]='true'
-                                 label='Kind'
-            ></lib-mat-form-entity>
-          </lib-flex-row>
-        </mat-card-content>
-        <lib-spacer fxFlex></lib-spacer>
-        <mat-card-content fxFlex>
-          <lib-flex-row>
-            <lib-mat-form-entity fxFlex='grow'
-                                 [control]='controls.content'
-                                 [type]='formTypes.AREA'
-                                 label='Content'
-            ></lib-mat-form-entity>
-          </lib-flex-row>
-        </mat-card-content>
-      </lib-flex-column>
-    </mat-card>
     
-    <mat-card fxFlex
+    <lib-flex-row fxFlex='100'
+                  fxFlex.xs='100'
+                  fxFlex.sm='100'
     >
-      <lib-flex-column gap='1em'>
-        <mat-card-title fxFlex>
-          {{ controls.title.value }}
-        </mat-card-title>
-        <mat-card-subtitle>
-          <lib-flex-row xs='column'
-                        sm='column'
-          >
-            <div fxFlex='grow'>
-              {{ controls.subtitle.value }}
-            </div>
-            <div fxFlex></div>
-          </lib-flex-row>
-        </mat-card-subtitle>
-        <lib-spacer fxFlex></lib-spacer>
-        <mat-card-content fxFlex>
-          <markdown [data]="controls.content.value"
-                    ngPreserveWhitespaces
-          ></markdown>
-        </mat-card-content>
-      </lib-flex-column>
-    </mat-card>
-  </lib-flex-row>
+        <div fxFlex='grow'>
+            <mat-card style='background-color: #3a72a8;color: white'
+            >
+                <mat-card-title
+                >
+                    <ng-container *ngIf='isEditing'>Edit</ng-container>
+                    <ng-container *ngIf='!isEditing'>New</ng-container>
+                    element
+                </mat-card-title>
+            </mat-card>
+        </div>
+        <div fxFlex>
+            <button mat-fab
+                    color="primary"
+                    (click)='confirm.emit()'
+            >Send
+            </button>
+        </div>
+    </lib-flex-row>
+    <lib-flex-row fxFlex
+    >
+        <mat-card fxFlex
+        >
+            <lib-flex-column gap='0em'>
+                <mat-card-content fxFlex>
+                    <lib-mat-form-entity [control]='controls.title'
+                                         [type]='formTypes.TEXT'
+                                         label='Title'
+                    ></lib-mat-form-entity>
+                </mat-card-content>
+                <mat-card-content>
+                    <lib-flex-row xs='column'
+                                  sm='column'
+                    >
+                        <lib-mat-form-entity fxFlex='grow'
+                                             [control]='controls.subtitle'
+                                             [type]='formTypes.TEXT'
+                                             label='Subtitle'
+                        ></lib-mat-form-entity>
+                        <lib-mat-form-entity fxFlex
+                                             [control]='controls.slug'
+                                             [type]='formTypes.TEXT'
+                                             label='Slug'
+                                             [disabled]='isEditing'
+                        ></lib-mat-form-entity>
+                        <lib-mat-form-entity fxFlex
+                                             [control]='controls.kind'
+                                             [type]='formTypes.SELECT'
+                                             [options]='kindOptions'
+                                             [disableVoidSelection]='true'
+                                             label='Kind'
+                        ></lib-mat-form-entity>
+                    </lib-flex-row>
+                </mat-card-content>
+                <lib-spacer fxFlex></lib-spacer>
+                <mat-card-content fxFlex>
+                    <lib-flex-row>
+                        <lib-mat-form-entity fxFlex='grow'
+                                             [control]='controls.content'
+                                             [type]='formTypes.AREA'
+                                             label='Content'
+                        ></lib-mat-form-entity>
+                    </lib-flex-row>
+                </mat-card-content>
+            </lib-flex-column>
+        </mat-card>
+        
+        <mat-card fxFlex
+        >
+            <lib-flex-column gap='1em'>
+                <mat-card-title fxFlex>
+                    {{ controls.title.value }}
+                </mat-card-title>
+                <mat-card-subtitle>
+                    <lib-flex-row xs='column'
+                                  sm='column'
+                    >
+                        <div fxFlex='grow'>
+                            {{ controls.subtitle.value }}
+                        </div>
+                        <div fxFlex></div>
+                    </lib-flex-row>
+                </mat-card-subtitle>
+                <lib-spacer fxFlex></lib-spacer>
+                <mat-card-content fxFlex>
+                    <markdown [data]="controls.content.value"
+                              ngPreserveWhitespaces
+                    ></markdown>
+                </mat-card-content>
+            </lib-flex-column>
+        </mat-card>
+    </lib-flex-row>
 </lib-flex-column>

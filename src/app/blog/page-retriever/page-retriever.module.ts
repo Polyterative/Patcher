@@ -8,14 +8,14 @@ import { PageRetrieverComponent }  from './page-retriever.component';
 
 
 @NgModule({
-  declarations: [PageRetrieverComponent],
-  imports:      [
-    CommonModule,
-    MatProgressBarModule,
-    BlogPostStructureModule,
-    FlexLayoutModule,
-    OrangeStructuresModule
-  ],
-  exports:      [PageRetrieverComponent]
+    declarations: [PageRetrieverComponent],
+    imports:      [
+        CommonModule,
+        MatProgressBarModule,
+        BlogPostStructureModule,
+        FlexLayoutModule,
+        OrangeStructuresModule
+    ],
+    exports:      [PageRetrieverComponent]
 })
 export class PageRetrieverModule {}

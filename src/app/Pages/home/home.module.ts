@@ -2,8 +2,8 @@ import { CommonModule }            from '@angular/common';
 import { NgModule }                from '@angular/core';
 import { FlexLayoutModule }        from '@angular/flex-layout';
 import {
-  MatButtonModule,
-  MatCardModule
+    MatButtonModule,
+    MatCardModule
 }                                  from '@angular/material';
 import { BlogPostStructureModule } from '../../blog/blog-post-structure/blog-post-structure.module';
 import { PageRetrieverModule }     from '../../blog/page-retriever/page-retriever.module';
@@ -12,17 +12,17 @@ import { OrangeStructuresModule }  from '../../Utils/LocalLibraries/OrangeStruct
 import { HomeComponent }           from './home.component';
 
 @NgModule({
-  declarations: [HomeComponent],
-  imports:      [
-    CommonModule,
-    OrangeStructuresModule,
-    FlexLayoutModule,
-    MatCardModule,
-    BlogPostStructureModule,
-    PageRetrieverModule,
-    WordSwapperModule,
-    MatButtonModule
-  ],
-  exports:      [HomeComponent]
+    declarations: [HomeComponent],
+    imports:      [
+        CommonModule,
+        OrangeStructuresModule,
+        FlexLayoutModule,
+        MatCardModule,
+        BlogPostStructureModule,
+        PageRetrieverModule,
+        WordSwapperModule,
+        MatButtonModule
+    ],
+    exports:      [HomeComponent]
 })
 export class HomeModule {}

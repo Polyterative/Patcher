@@ -10,25 +10,25 @@ import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/di
 import { BlogEntryModel }    from '../blog-models';
 
 @Component({
-  selector:    'app-blog-view',
-  templateUrl: './blog-view.component.html',
-  styleUrls:   ['./blog-view.component.scss']
+    selector:    'app-blog-view',
+    templateUrl: './blog-view.component.html',
+    styleUrls:   ['./blog-view.component.scss']
 })
 export class BlogViewComponent extends AngularEntityBase {
-  posts$: BehaviorSubject<BlogEntryModel[]> = new BehaviorSubject<BlogEntryModel[]>([]);
-  
-  constructor(
-    private routing: RoutingService,
-    private dataservice: FirebaseService,
-    public constants: ConstantsService,
-    public dimens: DimensionsService,
-    private formBuilder: FormBuilder,
-    public snackbar: MatSnackBar
-  ) {
-    super();
-    
-    // @ts-ignore
-    dataservice.getBlogPosts(10).subscribe(this.posts$);
-  }
-  
+    posts$: BehaviorSubject<Array<BlogEntryModel>> = new BehaviorSubject<Array<BlogEntryModel>>([]);
+
+    constructor(
+      private routing: RoutingService,
+      private dataservice: FirebaseService,
+      public constants: ConstantsService,
+      public dimens: DimensionsService,
+      private formBuilder: FormBuilder,
+      public snackbar: MatSnackBar
+    ) {
+        super();
+
+        // @ts-ignore
+        dataservice.getBlogPosts(10).subscribe(this.posts$);
+    }
+
 }

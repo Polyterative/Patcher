@@ -2,10 +2,10 @@ import { Injectable }      from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class CardWrapperService {
-  
-  shouldWrap$ = new BehaviorSubject<boolean>(true);
-  
+
+    shouldWrap$ = new BehaviorSubject<boolean>(true);
+
 }

@@ -1,7 +1,7 @@
 import { CommonModule }             from '@angular/common';
 import {
-  HttpClient,
-  HttpClientModule
+    HttpClient,
+    HttpClientModule
 }                                   from '@angular/common/http';
 import { NgModule }                 from '@angular/core';
 import { RouterModule }             from '@angular/router';
@@ -18,24 +18,24 @@ import { InstagramRouterComponent } from './instagram-router/instagram-router.co
 import { InstagramRouterModule }    from './instagram-router/instagram-router.module';
 
 @NgModule({
-  declarations: [],
-  imports:      [
-    CommonModule,
-    BlogViewModule,
-    BlogPostModule,
-    BlogNewPostModule,
-    AboutMeModule,
-    InstagramRouterModule,
-    RouterModule.forChild([
-      {path: 'insta', component: InstagramRouterComponent, pathMatch: 'full'},
-      {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
-      {path: 'new', component: BlogNewPostComponent, pathMatch: 'full'},
-      {path: 'about', component: AboutMeComponent, pathMatch: 'full'},
-      {path: 'edit/:slug', component: BlogNewPostComponent, pathMatch: 'full'},
-      {path: 'post/:slug', component: BlogPostComponent}
-    ]),
-    HttpClientModule,
-    MarkdownModule.forRoot({loader: HttpClient})
-  ]
+    declarations: [],
+    imports:      [
+        CommonModule,
+        BlogViewModule,
+        BlogPostModule,
+        BlogNewPostModule,
+        AboutMeModule,
+        InstagramRouterModule,
+        RouterModule.forChild([
+            {path: 'insta', component: InstagramRouterComponent, pathMatch: 'full'},
+            {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
+            {path: 'new', component: BlogNewPostComponent, pathMatch: 'full'},
+            {path: 'about', component: AboutMeComponent, pathMatch: 'full'},
+            {path: 'edit/:slug', component: BlogNewPostComponent, pathMatch: 'full'},
+            {path: 'post/:slug', component: BlogPostComponent}
+        ]),
+        HttpClientModule,
+        MarkdownModule.forRoot({loader: HttpClient})
+    ]
 })
 export class BlogModule {}
