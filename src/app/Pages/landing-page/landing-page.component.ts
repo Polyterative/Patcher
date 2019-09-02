@@ -42,9 +42,7 @@ interface ServerStatsModel {
     styleUrls:   ['./landing-page.component.scss']
 })
 export class LandingPageComponent extends AngularEntityBase {
-    private messagePath = 'messages';
-    private general = 'general';
-    messages$: Observable<MessageModel[][]>;
+    messages$: Observable<Array<Array<MessageModel>>>;
     serverStats$: Observable<ServerStatsModel>;
     messageAdder = {
         controls:  {
@@ -61,6 +59,8 @@ export class LandingPageComponent extends AngularEntityBase {
         type:      FormTypes.TEXT,
         confirm:   new EventEmitter<void>()
     };
+    private messagePath = 'messages';
+    private general = 'general';
 
     // const genericDeleteErrorHandler = catchError(_ => {
     //     this.pageState.state$.next(PageState.ERROR);
