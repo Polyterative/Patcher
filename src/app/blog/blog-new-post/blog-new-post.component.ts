@@ -143,10 +143,10 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
                     const slug = this.controls.slug.value;
                     
                     const editChain = dataservice.editPost(path, slug, data)
-                        .pipe(map(x => 'Aggiornato'));
+                        .pipe(map(_ => 'Aggiornato'));
                     
                     const addChain = dataservice.add(data, path)
-                        .pipe(map(x => 'Aggiunto'));
+                        .pipe(map(_ => 'Aggiunto'));
                     
                     return isEditing ? editChain : addChain;
                 })
