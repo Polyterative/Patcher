@@ -10,7 +10,8 @@
         "import-spacing":          false,
         "component-selector":      false,
         "prefer-inline-decorator": false,
-        "typedef":                 false
+        "typedef":                 false,
+        "no-trailing-whitespace":  false
     }
     //    "rules": {
     //    "arrow-return-shorthand": true,
