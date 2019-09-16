@@ -16,11 +16,11 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoryIndicatorComponent {
-
+    
     @Input()
     category: Category;
-
+    
     palette = CategoryColors;
-
+    
     labels = CategoryNames;
 }

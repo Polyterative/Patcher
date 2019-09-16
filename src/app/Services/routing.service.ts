@@ -5,19 +5,19 @@ import { Router }     from '@angular/router';
     providedIn: 'root'
 })
 export class RoutingService {
-
+    
     constructor(
-      private router: Router
+        private router: Router
     ) {
     }
-
+    
     routeTo(paths: string[]) {
         this.router.navigate(paths);
     }
-
+    
     openInNewTab(fullPath: string) {
         const win = window.open(fullPath, '_blank');
         win.focus();
     }
-
+    
 }

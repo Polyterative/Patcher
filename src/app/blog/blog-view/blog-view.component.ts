@@ -16,19 +16,19 @@ import { BlogEntryModel }    from '../blog-models';
 })
 export class BlogViewComponent extends AngularEntityBase {
     posts$: BehaviorSubject<Array<BlogEntryModel>> = new BehaviorSubject<Array<BlogEntryModel>>([]);
-
+    
     constructor(
-      private routing: RoutingService,
-      private dataservice: FirebaseService,
-      public constants: ConstantsService,
-      public dimens: DimensionsService,
-      private formBuilder: FormBuilder,
-      public snackbar: MatSnackBar
+        private routing: RoutingService,
+        private dataservice: FirebaseService,
+        public constants: ConstantsService,
+        public dimens: DimensionsService,
+        private formBuilder: FormBuilder,
+        public snackbar: MatSnackBar
     ) {
         super();
-
+        
         // @ts-ignore
         dataservice.getBlogPosts(10).subscribe(this.posts$);
     }
-
+    
 }

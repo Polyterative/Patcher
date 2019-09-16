@@ -26,24 +26,24 @@ export class AngularUtils {
     static sanitizeURL(url: string, sanitizer: DomSanitizer): SafeUrl {
         return sanitizer.bypassSecurityTrustUrl(url);
     }
-
+    
 }
 
 export class ObservableUtils {
-
+    
     /**
      * @deprecated Use new paradigm
      * Automatically paramsHolder.eventunsubscribes passed params if they're not null
      */
     static autoUnsubscribe(...subs: Array<Subscription>) {
         subs.forEach(currSub => {
-
+    
             if (currSub) {
                 currSub.unsubscribe();
             }
         });
     }
-
+    
 }
 
 export class RouterUtils {
@@ -57,16 +57,16 @@ export class RouterUtils {
             LanguageUtils.executeIfExists(isInPage ? paramsHolder.toDo : paramsHolder.toDoIfNot);
         }
     }
-
+    
 }
 
 export class ThreadingUtils {
     static runInNewThread_simple(toExecute: () => void) {
         setTimeout(
-          args => {
-              toExecute();
-          },
-          0
+            args => {
+                toExecute();
+            },
+            0
         );
     }
 }
@@ -80,12 +80,12 @@ export interface SpecificPageActor {
      * Should have no '/', pass a raw string like 'Raccolta_dati' in 'http://localhost:4200/Raccolta_dati'
      */
     desiredPageURL: string;
-
+    
     /**
      * Callback for actions to perform if we are in the specified page
      */
     toDo?(): void;
-
+    
     /**
      * Callback for actions to perform if we ARE NOT in the specified page
      */
@@ -101,7 +101,7 @@ export class LanguageUtils {
         // noinspection TsLint
         isFunction(callback) && callback();
     }
-
+    
     static getLastElementOfArray<T>(array: Array<T>): T | undefined {
         return array[array.length - 1];
     }
@@ -135,18 +135,18 @@ export class LanguageUtils {
 // }
 
 export class CommunicationUtils {
-
+    
     /**
      * Add with public SnackBar: MatSnackBar
      */
     static showSnackbar(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ durationInMillis?: number) {
         snackReference.open(
-          message, /*isFunction(action) ? action : */null, {
-              duration: durationInMillis ? durationInMillis : 2000
-          }
+            message, /*isFunction(action) ? action : */null, {
+                duration: durationInMillis ? durationInMillis : 2000
+            }
         );
     }
-
+    
     // public static showSnackbar_withAction(snackReference: MatSnackBar, message: string, /*action?: () => void,*/ duration: observable) {
     //     snackReference.open(
     //         message, /*isFunction(action) ? action : */null, {
@@ -161,7 +161,7 @@ export class CalculusUtils {
     static PercentageOfNumber(total: number, value: number) {
         return 100 * value / total;
     }
-
+    
     /**
      * 100 * subTotal / total
      * @param total
@@ -183,23 +183,23 @@ export const genericRetryStrategy = ({
                                          scalingDuration = 1000,
                                          excludedStatusCodes = []
                                      }: GenericRetrySettings = {}) => (attempts: Observable<any>) =>
-  attempts.pipe(
-    mergeMap((error, i) => {
-        const retryAttempt = i + 1;
-        // if maximum number of retries have been met
-        // or response is a status code we don't wish to retry, throw error
-        if (
-          retryAttempt > maxRetryAttempts ||
-          excludedStatusCodes.find(e => e === error.status)
-        ) {
-            return _throw(error);
-        }
-        console.log(
-          `Attempt ${ retryAttempt }: retrying in ${ retryAttempt *
-                                                     scalingDuration }ms`
-        );
-        // retry after 1s, 2s, etc...
-        return timer(retryAttempt * scalingDuration);
-    }),
-    finalize(() => console.log('We are done!'))
-  );
+    attempts.pipe(
+        mergeMap((error, i) => {
+            const retryAttempt = i + 1;
+            // if maximum number of retries have been met
+            // or response is a status code we don't wish to retry, throw error
+            if (
+                retryAttempt > maxRetryAttempts ||
+                excludedStatusCodes.find(e => e === error.status)
+            ) {
+                return _throw(error);
+            }
+            console.log(
+                `Attempt ${ retryAttempt }: retrying in ${ retryAttempt *
+                                                           scalingDuration }ms`
+            );
+            // retry after 1s, 2s, etc...
+            return timer(retryAttempt * scalingDuration);
+        }),
+        finalize(() => console.log('We are done!'))
+    );

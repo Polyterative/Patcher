@@ -15,5 +15,5 @@ export class ImageContainerComponent {
     image: string;
     @Input()
     alt: string;
-
+    
 }

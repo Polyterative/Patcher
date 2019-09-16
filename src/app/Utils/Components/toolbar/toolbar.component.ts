@@ -12,8 +12,8 @@ import { ToolbarService } from './toolbar.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ToolbarComponent {
-
+    
     constructor(public data: ToolbarService, private routing: RoutingService) {
     }
-
+    
 }

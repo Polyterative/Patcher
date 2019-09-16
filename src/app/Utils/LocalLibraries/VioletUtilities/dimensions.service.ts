@@ -9,5 +9,5 @@ export class DimensionsService {
     readonly flexGap = '1em';
     readonly flexGapMoreABit = '1.3em';
     readonly flexGapMore = '1.5em';
-
+    
 }

@@ -10,5 +10,5 @@ import { FlexBase } from '../flex-base';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlexRowComponent extends FlexBase {
-
+    
 }

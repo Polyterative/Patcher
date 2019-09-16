@@ -10,7 +10,7 @@ export type FlexTypeBasic = FlexKeyRow | FlexKeyColumn | FlexKeyRowWrap;
 export type FlexTypeExtended = FlexKeyRow | FlexKeyColumn | FlexKeyCenter | FlexKeyLeft | FlexKeyRight;
 
 export class FlexBase {
-
+    
     @Input() gap = '1em';
     @Input() md: FlexTypeBasic;
     @Input() sm: FlexTypeBasic;
@@ -18,5 +18,5 @@ export class FlexBase {
     @Input() mdAlign: FlexTypeExtended;
     @Input() smAlign: FlexTypeExtended;
     @Input() xsAlign: FlexTypeExtended;
-
+    
 }

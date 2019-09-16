@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
     providedIn: 'root'
 })
 export class CardWrapperService {
-
+    
     shouldWrap$ = new BehaviorSubject<boolean>(true);
-
+    
 }

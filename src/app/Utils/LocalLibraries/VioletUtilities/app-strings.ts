@@ -6,7 +6,7 @@ export class Strings {
             required:  'required',
             minlength: 'minlength',
             maxlength: 'maxlength',
-
+    
             custom: {
                 notInOptions:         'notInOptions',
                 operation_notInRange: 'operation_notInRange',

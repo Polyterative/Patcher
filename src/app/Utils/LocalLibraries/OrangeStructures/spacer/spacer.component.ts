@@ -9,11 +9,11 @@ import {
     styleUrls:   ['./spacer.component.scss']
 })
 export class SpacerComponent {
-
+    
     @Input()
     inset: boolean = false;
-
+    
     @Input()
     vertical: boolean = false;
-
+    
 }

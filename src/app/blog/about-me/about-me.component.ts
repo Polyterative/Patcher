@@ -12,15 +12,15 @@ import { CardWrapperService } from '../../Utils/Components/card-wrapper/card-wra
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AboutMeComponent implements OnInit {
-
+    
     constructor(
-      public wrapperService: CardWrapperService
+        public wrapperService: CardWrapperService
     ) {
-
+        
         // wrapperService.shouldWrap$.next(false);
     }
-
+    
     ngOnInit() {
     }
-
+    
 }

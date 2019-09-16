@@ -20,22 +20,22 @@ import {
 export class BlogPostStructureComponent {
     @Input()
     post: BlogEntryModel;
-
+    
     @Input()
     noSubtitle = false;
-
+    
     @Input()
     noDates = false;
-
+    
     @Input()
     noContent = false;
-
+    
     @Input()
     noSpacer = false;
-
+    
     palette = CategoryColors;
     development = !environment.production;
-
+    
     constructor(private routing: RoutingService, public dataservice: FirebaseService) {
     }
 }

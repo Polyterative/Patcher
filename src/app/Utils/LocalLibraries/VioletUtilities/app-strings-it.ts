@@ -9,7 +9,7 @@ export class StringsIT {
         error_staff_notInRange:     'L\'operatrice inserita non è valida',
         error_notInOptions:         'Valore non presente tra le opzioni'
     };
-
+    
     static readonly general = {
         info_data_loading: 'Dati in caricamento...'
     };

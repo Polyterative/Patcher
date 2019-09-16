@@ -86,9 +86,9 @@ const matDatepickerLocaleIT = {
     bootstrap:    [AppComponent]
 })
 export class AppModule {
-
+    
     constructor() {
         registerLocaleData(localeIt, localeItExtra);
     }
-
+    
 }
