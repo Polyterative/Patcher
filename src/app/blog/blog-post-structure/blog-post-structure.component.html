@@ -55,12 +55,12 @@
                 >
                     <div fxFlex='100'
                     >
-                        Posted: {{ post?.created|date }}
+                        Posted: {{ post?.created|date: 'dd/MM/yyyy' }}
                     </div>
                     <div fxFlex='100'
                          style='text-align: end'
                     >
-                        Edited: {{ post?.updated|date }}
+                        Edited: {{ post?.updated|date: 'dd/MM/yyyy' }}
                     </div>
                 </lib-flex-row>
             </lib-flex-column>
