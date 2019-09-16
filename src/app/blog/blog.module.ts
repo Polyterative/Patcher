@@ -8,7 +8,7 @@ import { RouterModule }             from '@angular/router';
 import { MarkdownModule }           from 'ngx-markdown';
 import { AboutMeComponent }         from './about-me/about-me.component';
 import { AboutMeModule }            from './about-me/about-me.module';
-import { BlogNewPostComponent }     from './blog-new-post/blog-new-post.component';
+import { BlogNewEditPostComponent } from './blog-new-post/blog-new-edit-post.component';
 import { BlogNewPostModule }        from './blog-new-post/blog-new-post.module';
 import { BlogPostComponent }        from './blog-post/blog-post.component';
 import { BlogPostModule }           from './blog-post/blog-post.module';
@@ -29,9 +29,9 @@ import { InstagramRouterModule }    from './instagram-router/instagram-router.mo
         RouterModule.forChild([
             {path: 'insta', component: InstagramRouterComponent, pathMatch: 'full'},
             {path: 'blog', component: BlogViewComponent, pathMatch: 'full'},
-            {path: 'new', component: BlogNewPostComponent, pathMatch: 'full'},
+            {path: 'new', component: BlogNewEditPostComponent, pathMatch: 'full'},
             {path: 'about', component: AboutMeComponent, pathMatch: 'full'},
-            {path: 'edit/:slug', component: BlogNewPostComponent, pathMatch: 'full'},
+            {path: 'edit/:slug', component: BlogNewEditPostComponent, pathMatch: 'full'},
             {path: 'post/:slug', component: BlogPostComponent}
         ]),
         HttpClientModule,
