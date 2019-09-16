@@ -21,10 +21,10 @@ import { BlogEntryModel }    from '../blog-models';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageRetrieverComponent extends AngularEntityBase implements OnInit {
+    page$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
 
     @Input()
     private pageSlug: string;
-    page$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
 
     constructor(private route: ActivatedRoute,
                 private dataservice: FirebaseService,
@@ -37,9 +37,10 @@ export class PageRetrieverComponent extends AngularEntityBase implements OnInit 
     }
 
     ngOnInit(): void {
-
-        console.warn(this.pageSlug);
-        this.dataservice.getPage(this.pageSlug).subscribe(this.page$);
+    
+        this.dataservice
+            .getPage(this.pageSlug)
+            .subscribe(this.page$);
     }
 
 }
