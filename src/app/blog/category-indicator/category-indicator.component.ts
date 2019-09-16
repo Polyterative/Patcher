@@ -5,8 +5,8 @@ import {
 } from '@angular/core';
 import {
     Category,
-    CategoryColors,
-    CategoryNames
+    CATEGORY_COLORS,
+    CATEGORY_NAMES
 } from '../blog-models';
 
 @Component({
@@ -20,7 +20,7 @@ export class CategoryIndicatorComponent {
     @Input()
     category: Category;
     
-    palette = CategoryColors;
+    palette = CATEGORY_COLORS;
     
-    labels = CategoryNames;
+    labels = CATEGORY_NAMES;
 }

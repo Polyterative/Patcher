@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import {
     Category,
-    CategoryColors
+    CATEGORY_COLORS
 } from '../blog-models';
 
 @Component({
@@ -18,5 +18,5 @@ export class BlogCategoryLineComponent {
     @Input()
     category: Category;
     
-    palette = CategoryColors;
+    palette = CATEGORY_COLORS;
 }
