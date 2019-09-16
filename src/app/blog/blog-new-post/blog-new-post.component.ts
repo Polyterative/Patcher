@@ -16,7 +16,8 @@ import {
     map,
     switchMap,
     take,
-    takeUntil
+    takeUntil,
+    withLatestFrom
 }                             from 'rxjs/operators';
 import { FirebaseService }    from '../../Services/firebase.service';
 import {
@@ -69,7 +70,7 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
         {id: '0', name: 'Page'},
         {id: '1', name: 'Post'}
     ];
-    isEditing = false;
+    isEditing: BehaviorSubject<boolean> = new BehaviorSubject(false);
     
     // post$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
     
@@ -88,7 +89,7 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
                 switchMap(x => dataservice.getBlogPost(x))
             )
             .subscribe((x: BlogEntryModel) => {
-                this.isEditing = true;
+                this.isEditing.next(true);
                 this.controls.slug.patchValue(x.slug);
                 this.controls.title.patchValue(x.title);
                 this.controls.subtitle.patchValue(x.subtitle);
@@ -103,13 +104,13 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
                 takeUntil(this.destroyEvent$),
                 map(() => {
                     const dateTime = DateTime.local().toISO();
-    
+                    
                     this.controls.updated.patchValue(dateTime);
-    
+                    
                     if (!this.isEditing) {
                         this.controls.created.patchValue(dateTime);
                     }
-    
+                    
                     const message: BlogEntryModel = {
                         public:   true,
                         content:  this.controls.content.value,
@@ -120,26 +121,29 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
                         created:  this.controls.created.value,
                         updated:  this.controls.updated.value
                     };
-    
+                    
                     return message;
                 }),
+                withLatestFrom(this.isEditing),
                 map(x => [
-                    x,
+                    x[0],
                     // tslint:disable-next-line:triple-equals
-                    this.controls.kind.value == '1' ? this.dataservice.blogPostPath : this.dataservice.pagesPath
+                    this.controls.kind.value == '1' ? this.dataservice.blogPostPath : this.dataservice.pagesPath,
+                    x[1]
                 ]),
-                switchMap((x: [BlogEntryModel, string]) => {
+                switchMap((x: [BlogEntryModel, string, boolean]) => {
                     const path = x[0];
                     const data = x[1];
-        
+                    const isEditing = x[2];
+                    
                     const slug = this.controls.slug.value;
-        
-                    return this.isEditing ? dataservice.editPost(path, slug, data) : dataservice.add(data, path);
+                    
+                    return isEditing ? dataservice.editPost(path, slug, data) : dataservice.add(data, path);
                 })
                 // tap(_ => this.controls.content.reset())
             )
             .subscribe(x => {
-    
+                
                 CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
             });
         
