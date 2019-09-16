@@ -22,10 +22,10 @@ import { BlogEntryModel }    from '../blog-models';
 })
 export class PageRetrieverComponent extends AngularEntityBase implements OnInit {
     page$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
-
+    
     @Input()
     private pageSlug: string;
-
+    
     constructor(private route: ActivatedRoute,
                 private dataservice: FirebaseService,
                 public constants: ConstantsService,
@@ -33,14 +33,14 @@ export class PageRetrieverComponent extends AngularEntityBase implements OnInit 
                 private formBuilder: FormBuilder,
                 public snackbar: MatSnackBar) {
         super();
-
+        
     }
-
-    ngOnInit(): void {
     
+    ngOnInit(): void {
+        
         this.dataservice
             .getPage(this.pageSlug)
             .subscribe(this.page$);
     }
-
+    
 }

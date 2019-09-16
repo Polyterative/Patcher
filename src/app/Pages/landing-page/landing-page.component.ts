@@ -61,7 +61,7 @@ export class LandingPageComponent extends AngularEntityBase {
     };
     private messagePath = 'messages';
     private general = 'general';
-
+    
     // const genericDeleteErrorHandler = catchError(_ => {
     //     this.pageState.state$.next(PageState.ERROR);
     //     this.Log.error(_.toString());
@@ -74,85 +74,85 @@ export class LandingPageComponent extends AngularEntityBase {
     //   }
     // );
     //
-
+    
     // errorProvider = (formControl: FormControl) => LocalFormUtils.getPossibleErrors(formControl)
-
+    
     constructor(db: AngularFirestore, public constants: ConstantsService, public dimens: DimensionsService, private formBuilder: FormBuilder, public snackbar: MatSnackBar) {
         super();
-
+        
         // @ts-ignore
         this.messages$ = db.collection(this.messagePath, ref => ref.limit(10).orderBy('when', 'desc'))
-          .valueChanges()
-          .pipe(switchMap(x => of(x)
-            .pipe(concatMap(y => y),
-              bufferCount(3),
-              bufferCount(Number.MAX_VALUE)
+            .valueChanges()
+            .pipe(switchMap(x => of(x)
+                    .pipe(concatMap(y => y),
+                        bufferCount(3),
+                        bufferCount(Number.MAX_VALUE)
+                    )
+                )
             )
-            )
-          )
         ;
-
+        
         // db.collection(this.messagePath)
-
+        
         this.serverStats$ = db.collection(this.general, ref => ref.limit(1)).valueChanges().pipe(map((x: any) => x[0]));
-
+        
         this.performVisitsOperation(db, value => (value + 1));
-
+        
         this.setupForm(db);
-
+        
     }
-
+    
     private setupForm(db: AngularFirestore) {
-
+        
         this.messageAdder.formGroup.addControl('content', this.messageAdder.controls.content);
-
+        
         this.messageAdder.confirm
-          .pipe(
-            map(_ => this.messageAdder.controls.content.value),
-            tap(_ => this.messageAdder.controls.content.reset())
-          )
-          .subscribe(x => {
-
-              const message: MessageModel = {
-                  content:  x,
-                  title:    'T',
-                  when:     new Date().toUTCString(),
-                  subtitle: 'Anonimo'
-              };
-
-              db.collection(this.messagePath)
-                .add(message);
-
-              CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
-
-          });
-
+            .pipe(
+                map(_ => this.messageAdder.controls.content.value),
+                tap(_ => this.messageAdder.controls.content.reset())
+            )
+            .subscribe(x => {
+                
+                const message: MessageModel = {
+                    content:  x,
+                    title:    'T',
+                    when:     new Date().toUTCString(),
+                    subtitle: 'Anonimo'
+                };
+                
+                db.collection(this.messagePath)
+                    .add(message);
+                
+                CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
+                
+            });
+        
         this.messageAdder.controls.content.valueChanges
-          .pipe(
-            debounceTime(2000),
-            map(_ => this.messageAdder.controls.content),
-            filter(x => x.value !== null),
-            takeUntil(this.destroyEvent$)
-          )
-          .subscribe(x => {
-              x.markAsTouched({onlySelf: true});
-              x.updateValueAndValidity();
-          });
+            .pipe(
+                debounceTime(2000),
+                map(_ => this.messageAdder.controls.content),
+                filter(x => x.value !== null),
+                takeUntil(this.destroyEvent$)
+            )
+            .subscribe(x => {
+                x.markAsTouched({onlySelf: true});
+                x.updateValueAndValidity();
+            });
     }
-
+    
     private performVisitsOperation(db: AngularFirestore, func: (val) => number) {
         db.collection(this.general)
-          .get()
-          .pipe(take(1))
-          .subscribe(x => {
-              const documentSnapshot = x.docs[0];
-              const oldObj = documentSnapshot.data();
-
-              oldObj.visits = func(oldObj.visits);
-
-              db.collection(this.general)
-                .doc(documentSnapshot.id)
-                .update(oldObj);
-          });
+            .get()
+            .pipe(take(1))
+            .subscribe(x => {
+                const documentSnapshot = x.docs[0];
+                const oldObj = documentSnapshot.data();
+        
+                oldObj.visits = func(oldObj.visits);
+        
+                db.collection(this.general)
+                    .doc(documentSnapshot.id)
+                    .update(oldObj);
+            });
     }
 }

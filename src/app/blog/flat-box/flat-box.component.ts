@@ -13,5 +13,5 @@ import {
 export class FlatBoxComponent {
     @Input()
     bgcolor: string;
-
+    
 }

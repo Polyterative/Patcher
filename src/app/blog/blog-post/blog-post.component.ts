@@ -17,7 +17,7 @@ import { BlogEntryModel }    from '../blog-models';
 })
 export class BlogPostComponent extends AngularEntityBase {
     post$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
-
+    
     constructor(private route: ActivatedRoute,
                 private dataservice: FirebaseService,
                 public constants: ConstantsService,
@@ -25,11 +25,11 @@ export class BlogPostComponent extends AngularEntityBase {
                 private formBuilder: FormBuilder,
                 public snackbar: MatSnackBar) {
         super();
-
+        
         this.route.params
-          .pipe(switchMap(x => dataservice.getBlogPost(x.slug)))
-          .subscribe(this.post$);
-
+            .pipe(switchMap(x => dataservice.getBlogPost(x.slug)))
+            .subscribe(this.post$);
+        
     }
-
+    
 }

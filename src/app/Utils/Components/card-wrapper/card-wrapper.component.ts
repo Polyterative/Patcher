@@ -12,7 +12,7 @@ import { CardWrapperService } from './card-wrapper.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CardWrapperComponent {
-
+    
     links: MyURL[] = [
         {label: 'Soundcloud', url: 'https://soundcloud.com/polyterative'},
         {label: 'Spotify', url: 'https://open.spotify.com/artist/1Z8s4xLHCLIf8LAZP6BBj4?si=KQ7TY4soToCkBqT7F50TZA'},
@@ -20,12 +20,12 @@ export class CardWrapperComponent {
         {label: 'Github', url: 'https://github.com/Polyterative'},
         {label: 'LinkedIn', url: 'https://www.linkedin.com/in/vlady-yakovenko-13833870/'}
     ];
-
+    
     constructor(
-      public service: CardWrapperService,
-      public routing: RoutingService
+        public service: CardWrapperService,
+        public routing: RoutingService
     ) {
-
+        
     }
 }
 

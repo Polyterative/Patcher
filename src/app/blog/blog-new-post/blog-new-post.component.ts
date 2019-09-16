@@ -103,13 +103,13 @@ export class BlogNewPostComponent extends AngularEntityBase {
                 takeUntil(this.destroyEvent$),
                 map(() => {
                     const dateTime = DateTime.local().toISO();
-            
+    
                     this.controls.updated.patchValue(dateTime);
-            
+    
                     if (!this.isEditing) {
                         this.controls.created.patchValue(dateTime);
                     }
-            
+    
                     const message: BlogEntryModel = {
                         public:   true,
                         content:  this.controls.content.value,
@@ -120,7 +120,7 @@ export class BlogNewPostComponent extends AngularEntityBase {
                         created:  this.controls.created.value,
                         updated:  this.controls.updated.value
                     };
-            
+    
                     return message;
                 })
                 // tap(_ => this.controls.content.reset())
@@ -128,7 +128,7 @@ export class BlogNewPostComponent extends AngularEntityBase {
             .subscribe(x => {
                 // tslint:disable-next-line:triple-equals
                 const path = this.controls.kind.value == '1' ? this.dataservice.blogPostPath : this.dataservice.pagesPath;
-        
+    
                 dataservice.add(path, x);
                 CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
             });

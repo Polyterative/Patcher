@@ -17,6 +17,6 @@ import {
 export class BlogCategoryLineComponent {
     @Input()
     category: Category;
-
+    
     palette = CategoryColors;
 }

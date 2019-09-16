@@ -10,11 +10,11 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-
+    
     // @Select(CounterState)
     // count$: Observable<CounterStateModel>;
     //
     // @Emitter(CounterState.setValue)
     // counterValue: Emittable<number>;
-
+    
 }

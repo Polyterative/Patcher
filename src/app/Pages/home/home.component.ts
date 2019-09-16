@@ -19,10 +19,10 @@ export class HomeComponent {
         '🎹 electronic music producer',
         '👽 human'
     ];
-
+    
     constructor(
-      public routing: RoutingService,
-      public dataservice: FirebaseService
+        public routing: RoutingService,
+        public dataservice: FirebaseService
     ) {
     }
 }

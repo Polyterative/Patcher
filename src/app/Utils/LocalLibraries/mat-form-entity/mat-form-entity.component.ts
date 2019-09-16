@@ -43,10 +43,10 @@ import {
     // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatFormEntityComponent extends AngularEntityBase {
-
+    
     private findOptionForName: (name: string, options: Array<Selectable>) => Selectable =
-              (name: string, options: Array<Selectable>): Selectable =>
-                options.find(x => x.name === name);
+                (name: string, options: Array<Selectable>): Selectable =>
+                    options.find(x => x.name === name);
     errors: string;
     /**
      * Types reference, do not use from outside
@@ -98,7 +98,7 @@ export class MatFormEntityComponent extends AngularEntityBase {
     @Input() label: string;
     @Input() type: FormTypes = FormTypes.TEXT;
     @Input() default = false;
-
+    
     //
     // @Input()
     // public max: observable;
@@ -134,22 +134,22 @@ export class MatFormEntityComponent extends AngularEntityBase {
      * }
      */
     @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getDefaultErrors(x);
-
+    
     constructor(
-      public Log: LoggerService,
-      private formBuilder: FormBuilder
+        public Log: LoggerService,
+        private formBuilder: FormBuilder
     ) {
         super();
-
+        
     }
-
+    
     private static safelyAddValidator(hostControl: FormControl, hostValidator: ValidatorFn | null, newValidator: ValidatorFn): void {
         hostControl.setValidators(hostValidator ? [
             hostValidator,
             newValidator
         ] : newValidator);
     }
-
+    
     /**
      * DO NOT STATICIZE, USED IN HTML
      * @param entry
@@ -160,24 +160,24 @@ export class MatFormEntityComponent extends AngularEntityBase {
         // option click => displayfunction => output
         return entry || '';
     }
-
+    
     ngOnInit(): void {
         const hostControl = this.control;
         const hostValidator: ValidatorFn | null = hostControl.validator;
-
+        
         // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
         switch (this.type) {
             case FormTypes.TEXT:
                 if (this.textTransformFunction) {
                     hostControl.valueChanges.pipe(filter(x => x.length > 0), takeUntil(this.destroyEvent$)).subscribe(x => {
                         const result = this.textTransformFunction(x);
-
+    
                         if (x !== result) { // prevent loop
                             this.control.patchValue(result);
                         }
                     });
                 }
-
+    
                 break;
             case FormTypes.NUMBER:
                 break;
@@ -185,69 +185,69 @@ export class MatFormEntityComponent extends AngularEntityBase {
                 break;
             case FormTypes.SELECT:
                 this.checkOptions();
-
+    
                 if (this.disableVoidSelection) {
-
+        
                     const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
-
+        
                     const myValidator = x => x.value === '' ? errorObject : null; // if void return error
-
+        
                     MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
                 }
-
+    
                 break;
             case FormTypes.AUTOCOMPLETE:
                 this.checkOptions();
                 hostControl.valueChanges
-                  .pipe(
-                    takeUntil(this.destroyEvent$),
-                    startWith(''),
-                    debounceTime(250),
-                    filter(value => isArray(this.options))
-                  )
-                  .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
-                    this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                      .includes(input.toLowerCase()))));
-
+                    .pipe(
+                        takeUntil(this.destroyEvent$),
+                        startWith(''),
+                        debounceTime(250),
+                        filter(value => isArray(this.options))
+                    )
+                    .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
+                        this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
+                            .includes(input.toLowerCase()))));
+                
                 if (this.strictAutocomplete) {
                     // const isValueInOptions = this.options.some(y => y.name === this.controlRequired.value);
                     const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
-
+    
                     const myValidator = x => {
                         const foundSome = this.options.some(y => y.name === x.value);
                         const isVoid = x.value === '';
-
+        
                         // tslint:disable-next-line:no-null-keyword
                         return (foundSome || isVoid && this.autocompleteCanBeVoid) ? null : errorObject;
                     };
-
+    
                     MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
                 }
-
+    
                 break;
             case FormTypes.MULTICOMPLETE:
                 this.checkOptions();
                 this.ghostControl = new FormControl('');
                 this.ghostControl.valueChanges
-                  .pipe(
-                    takeUntil(this.destroyEvent$),
-                    startWith(''),
-                    debounceTime(250),
-                    filter(() => isArray(this.options))
-                  )
-                  .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
-                    this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase().includes(input.toLowerCase()))));
-
+                    .pipe(
+                        takeUntil(this.destroyEvent$),
+                        startWith(''),
+                        debounceTime(250),
+                        filter(() => isArray(this.options))
+                    )
+                    .subscribe((input: string) => this.optionsFiltered.next(this.options.filter(opt =>
+                        this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase().includes(input.toLowerCase()))));
+                
                 if (this.strictAutocomplete) {
                     // const isValueInOptions = this.options.some(y => y.name === this.controlRequired.value);
                     const errorObject = {[Strings.form.errorCode.custom.notInOptions]: true};
-
+    
                     const myValidator = x => {
-
+        
                         const input: Array<Selectable> = x.value;
-
+        
                         let foundAll = false;
-
+        
                         for (const currInputOption of input) {
                             const isIncluded = this.options.some(option => option.id === currInputOption.id && option.name === currInputOption.name);
                             if (isIncluded) {
@@ -257,44 +257,44 @@ export class MatFormEntityComponent extends AngularEntityBase {
                                 break;
                             }
                         }
-
+        
                         const isVoid = input.length < 1;
                         const isVoidWhileCanBe = this.autocompleteCanBeVoid ? (isVoid) : false;
-
+        
                         // tslint:disable-next-line:no-null-keyword
                         return (foundAll) || (isVoidWhileCanBe) ? null : errorObject;
                     };
-
+    
                     MatFormEntityComponent.safelyAddValidator(hostControl, hostValidator, myValidator);
-
+    
                 }
-
+    
                 break;
         }
-
+        
         const observable = hostControl.valueChanges
-          .pipe(
-            takeUntil(this.destroyEvent$),
-            startWith(hostControl.value),
-            debounceTime(250),
-            share()
-          );
-
+            .pipe(
+                takeUntil(this.destroyEvent$),
+                startWith(hostControl.value),
+                debounceTime(250),
+                share()
+            );
+        
         observable
-          .pipe(filter(_ => hostControl.invalid))
-          .subscribe(_ => this.errors = this.errorProvider(hostControl));
-
+            .pipe(filter(_ => hostControl.invalid))
+            .subscribe(_ => this.errors = this.errorProvider(hostControl));
+        
         observable
-          .pipe(filter(_ => hostControl.valid))
-          .subscribe(_ => this.errors = '');
-
+            .pipe(filter(_ => hostControl.valid))
+            .subscribe(_ => this.errors = '');
+        
     }
-
+    
     addToMultiText($event: MatChipInputEvent): void {
         const dataCapsule = this.control;
         const input = $event.input;
         const value = $event.value;
-
+        
         // Add our thing
         if ((value || '').trim()) {
             const toAdd: Selectable = ({name: value.trim(), id: ''});
@@ -303,52 +303,52 @@ export class MatFormEntityComponent extends AngularEntityBase {
                 toAdd
             ]);
         }
-
+        
         // Reset the input value
         if (input) {
             input.value = '';
         }
     }
-
+    
     addToMultiComplete($event: MatAutocompleteSelectedEvent): void {
         const dataCapsule = this.control;
         const nameString = $event.option.value;
-
+        
         // Add our thing
         if ((nameString || '').trim()) {
             const isAlreadyPresent = this.findOptionForName(nameString, this.control.value);
-
+    
             if (!isAlreadyPresent || isAlreadyPresent && this.multiChipCompleteAllowDuplicates) {
                 const toAdd: Selectable = this.findOptionForName(nameString, this.options);
-
+        
                 dataCapsule.patchValue([
                     ...dataCapsule.value,
                     toAdd
                 ]);
             }
-
+    
         }
-
+        
         // Reset the input value, useful for resetting the debounce + filtered options smootly, LEAVE THIS HERE
         this.ghostControl.patchValue('');
     }
-
+    
     removeFromChips(element: Selectable): void {
         const data: Array<Selectable> = this.control.value;
         data.splice(data.indexOf(element), 1);
         this.control.patchValue(data);
     }
-
+    
     cleanMultiComplete($event: MatChipInputEvent): void {
         $event.input.value = ''; // enough for self-cleanig of the internalForm
     }
-
+    
     private checkOptions(): void {
         if (!isArray(this.options)) {
             this.Log.error('Options is not array! I\'m a selector, give me the options!');
         }
     }
-
+    
     @Input()
     set disabled(value: boolean) {
         // tslint:disable-next-line:switch-default

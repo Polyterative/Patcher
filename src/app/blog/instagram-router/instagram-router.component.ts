@@ -20,19 +20,19 @@ import { InstagramLinkModel } from '../blog-models';
 })
 export class InstagramRouterComponent extends AngularEntityBase {
     links: BehaviorSubject<InstagramLinkModel[]> = new BehaviorSubject<InstagramLinkModel[]>([]);
-
+    
     constructor(
-      private routing: RoutingService,
-      private dataservice: FirebaseService,
-      public constants: ConstantsService,
-      public dimens: DimensionsService,
-      private formBuilder: FormBuilder,
-      public snackbar: MatSnackBar
+        private routing: RoutingService,
+        private dataservice: FirebaseService,
+        public constants: ConstantsService,
+        public dimens: DimensionsService,
+        private formBuilder: FormBuilder,
+        public snackbar: MatSnackBar
     ) {
         super();
-
+        
         // @ts-ignore
         dataservice.getInstagramList().subscribe(this.links);
     }
-
+    
 }
