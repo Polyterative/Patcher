@@ -31,12 +31,12 @@ import { CommunicationUtils } from '../../Utils/LocalLibraries/VioletUtilities/g
 import { BlogEntryModel }     from '../blog-models';
 
 @Component({
-    selector:        'app-blog-new-post',
-    templateUrl:     './blog-new-post.component.html',
-    styleUrls:       ['./blog-new-post.component.scss'],
+    selector:        'app-blog-new-edit-post',
+    templateUrl:     './blog-new-edit-post.component.html',
+    styleUrls:       ['./blog-new-edit-post.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename this
+export class BlogNewEditPostComponent extends AngularEntityBase {  // TODO rename this
     controls = {
         title:    new FormControl('', Validators.compose([
             Validators.required,
