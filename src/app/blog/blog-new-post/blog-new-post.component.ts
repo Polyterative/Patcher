@@ -102,12 +102,14 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
         this.confirm
             .pipe(
                 takeUntil(this.destroyEvent$),
-                map(() => {
+                withLatestFrom(this.isEditing),
+                map(x => {
                     const dateTime = DateTime.local().toISO();
+                    const isEditing = x[1];
                     
                     this.controls.updated.patchValue(dateTime);
                     
-                    if (!this.isEditing) {
+                    if (!isEditing) {
                         this.controls.created.patchValue(dateTime);
                     }
                     
@@ -122,9 +124,11 @@ export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename th
                         updated:  this.controls.updated.value
                     };
                     
-                    return message;
+                    return [
+                        message,
+                        isEditing
+                    ];
                 }),
-                withLatestFrom(this.isEditing),
                 map(x => [
                     x[0],
                     // tslint:disable-next-line:triple-equals
