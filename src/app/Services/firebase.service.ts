@@ -44,8 +44,8 @@ export class FirebaseService {
           .pipe(mergeMap(x => x.docs), take(1))
           .subscribe(x => x.ref.delete());
     }
-
-    public getInstagramList(limit?: number) {
+    
+    getInstagramList(limit?: number) {
         return this.firestore.collection(
           this.instaPath,
           ref => ref.limit(limit ? limit : 999)

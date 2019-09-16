@@ -60,12 +60,12 @@ export class BlogNewPostComponent extends AngularEntityBase {
     };
 
     edit = {
-        postOptions: new BehaviorSubject<Selectable[]>([])
+        postOptions: new BehaviorSubject<Array<Selectable>>([])
     };
 
     formTypes = FormTypes;
     confirm = new EventEmitter<void>();
-    kindOptions: Selectable[] = [
+    kindOptions: Array<Selectable> = [
         {id: '0', name: 'Page'},
         {id: '1', name: 'Post'}
     ];
@@ -132,8 +132,10 @@ export class BlogNewPostComponent extends AngularEntityBase {
               dataservice.add(path, x);
               CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
           });
-
-        dataservice.getBlogPosts().pipe(map(x => x.map((y: BlogEntryModel) => ({id: y.slug, name: y.title})))).subscribe(this.edit.postOptions);
+    
+        dataservice.getBlogPosts()
+            .pipe(map(x => x.map((y: BlogEntryModel) => ({id: y.slug, name: y.title}))))
+            .subscribe(this.edit.postOptions);
 
     }
 
