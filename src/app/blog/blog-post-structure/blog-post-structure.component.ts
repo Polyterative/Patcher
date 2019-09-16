@@ -8,7 +8,7 @@ import { FirebaseService } from '../../Services/firebase.service';
 import { RoutingService }  from '../../Services/routing.service';
 import {
     BlogEntryModel,
-    CategoryColors
+    CATEGORY_COLORS
 }                          from '../blog-models';
 
 @Component({
@@ -33,7 +33,7 @@ export class BlogPostStructureComponent {
     @Input()
     noSpacer = false;
     
-    palette = CategoryColors;
+    palette = CATEGORY_COLORS;
     development = !environment.production;
     
     constructor(private routing: RoutingService, public dataservice: FirebaseService) {

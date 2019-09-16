@@ -35,7 +35,7 @@ import { BlogEntryModel }     from '../blog-models';
     styleUrls:       ['./blog-new-post.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BlogNewPostComponent extends AngularEntityBase {
+export class BlogNewPostComponent extends AngularEntityBase {  // TODO rename this
     controls = {
         title:    new FormControl('', Validators.compose([
             Validators.required,
@@ -122,14 +122,24 @@ export class BlogNewPostComponent extends AngularEntityBase {
                     };
     
                     return message;
+                }),
+                map(x => [
+                    x,
+                    // tslint:disable-next-line:triple-equals
+                    this.controls.kind.value == '1' ? this.dataservice.blogPostPath : this.dataservice.pagesPath
+                ]),
+                switchMap((x: [BlogEntryModel, string]) => {
+                    const path = x[0];
+                    const data = x[1];
+        
+                    const slug = this.controls.slug.value;
+        
+                    return this.isEditing ? dataservice.editPost(path, slug, data) : dataservice.add(data, path);
                 })
                 // tap(_ => this.controls.content.reset())
             )
             .subscribe(x => {
-                // tslint:disable-next-line:triple-equals
-                const path = this.controls.kind.value == '1' ? this.dataservice.blogPostPath : this.dataservice.pagesPath;
     
-                dataservice.add(path, x);
                 CommunicationUtils.showSnackbar(this.snackbar, 'Aggiunto');
             });
         

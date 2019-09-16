@@ -1,10 +1,16 @@
 import { Injectable }       from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
+import * as firebase        from 'firebase';
+import { OperatorFunction } from 'rxjs';
+import { fromPromise }      from 'rxjs/internal-compatibility';
 import {
+    filter,
     map,
     mergeMap,
+    switchMap,
     take
 }                           from 'rxjs/operators';
+import { BlogEntryModel }   from '../blog/blog-models';
 
 @Injectable({
     providedIn: 'root'
@@ -14,28 +20,31 @@ export class FirebaseService {
     blogPostPath = 'blogPosts';
     instaPath = 'insta-links';
     
+    private mapToData: OperatorFunction<firebase.firestore.QueryDocumentSnapshot, firebase.firestore.DocumentData> = map(x => x.data());
+    
     constructor(
         private firestore: AngularFirestore
     ) {
     }
     
     getPage(slug) {
-        return this.getSingleWithSlug(this.pagesPath, slug);
+        return this.getSingleWithSlug(this.pagesPath, slug).pipe(this.mapToData);
+        
     }
     
     getBlogPost(slug) {
-        return this.getSingleWithSlug(this.blogPostPath, slug);
+        return this.getSingleWithSlug(this.blogPostPath, slug).pipe(this.mapToData);
     }
     
     getBlogPosts(limit?: number) {
         return this.getBlogList(limit);
     }
     
-    add(path: string, data): void {
-        this.firestore.collection(path).add(data);
+    add(path: string, data) {
+        return fromPromise(this.firestore.collection(path).add(data));
     }
     
-    deletePost(slug: string) {
+    deleteBlogPost(slug: string) {
         this.firestore.collection(
             this.blogPostPath,
             ref => ref.limit(1).where('slug', '==', slug)
@@ -53,7 +62,18 @@ export class FirebaseService {
             .valueChanges();
     }
     
-    private getSingleWithSlug(path: string, slug: number) {
+    editPost(newData: BlogEntryModel, slug, path: string) {
+        return this.getSingleWithSlug(path, slug)
+            .pipe(
+                filter(x => x && x.exists),
+                map(x => x.id),
+                map(x => this.firestore.collection(path).doc(x)),
+                switchMap(x => x.update(newData))
+            );
+        
+    }
+    
+    private getSingleWithSlug(path: string, slug) {
         return this.firestore.collection(
             path,
             ref => ref.limit(1)
@@ -61,9 +81,10 @@ export class FirebaseService {
                 .where('public', '==', true)
         )
             .get()
-            .pipe(
-                map(x => x.docs[0].data())
-            );
+            .pipe(map(x => x.docs[0]));
+        // .pipe(
+        //     map(x => x.docs[0].data())
+        // );
     }
     
     private getBlogList(limit?: number) {
@@ -75,4 +96,5 @@ export class FirebaseService {
         )
             .valueChanges();
     }
+    
 }
