@@ -82,9 +82,6 @@ export class FirebaseService {
         )
             .get()
             .pipe(map(x => x.docs[0]));
-        // .pipe(
-        //     map(x => x.docs[0].data())
-        // );
     }
     
     private getBlogList(limit?: number) {
