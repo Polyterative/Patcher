@@ -20,9 +20,7 @@
     "import-spacing":           [
       false
     ],
-    "no-trailing-whitespace":   [
-      false
-    ],
+      "no-trailing-whitespace": false,
     "no-implicit-dependencies": [
       false
     ],
