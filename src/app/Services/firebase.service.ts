@@ -38,7 +38,7 @@ export class FirebaseService {
     
     login() {
         const auth$ = fromPromise(this.auth.auth.signInWithPopup(new GoogleAuthProvider()));
-        auth$.pipe(filter(x => x), tap(x => console.log(x))).subscribe(this.user$);
+        auth$.pipe(filter(x => !(!x)), tap(x => console.log(x))).subscribe(this.user$);
     }
     
     logout() {
