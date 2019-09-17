@@ -1,16 +1,23 @@
 import { Injectable }       from '@angular/core';
+import { AngularFireAuth }  from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
 import * as firebase        from 'firebase';
-import { OperatorFunction } from 'rxjs';
+import {
+    OperatorFunction,
+    Subject
+}                           from 'rxjs';
 import { fromPromise }      from 'rxjs/internal-compatibility';
 import {
     filter,
     map,
     mergeMap,
     switchMap,
-    take
+    take,
+    tap
 }                           from 'rxjs/operators';
 import { BlogEntryModel }   from '../blog/blog-models';
+import GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+import UserCredential = firebase.auth.UserCredential;
 
 @Injectable({
     providedIn: 'root'
@@ -19,12 +26,23 @@ export class FirebaseService {
     pagesPath = 'pages';
     blogPostPath = 'blogPosts';
     instaPath = 'insta-links';
+    user$: Subject<UserCredential> = new Subject();
     
     private mapToData: OperatorFunction<firebase.firestore.QueryDocumentSnapshot, firebase.firestore.DocumentData> = map(x => x.data());
     
     constructor(
-        private firestore: AngularFirestore
+        private store: AngularFirestore,
+        private auth: AngularFireAuth
     ) {
+    }
+    
+    login() {
+        const auth$ = fromPromise(this.auth.auth.signInWithPopup(new GoogleAuthProvider()));
+        auth$.pipe(filter(x => x), tap(x => console.log(x))).subscribe(this.user$);
+    }
+    
+    logout() {
+        return fromPromise(this.auth.auth.signOut());
     }
     
     getPage(slug) {
@@ -41,11 +59,11 @@ export class FirebaseService {
     }
     
     add(path: string, data) {
-        return fromPromise(this.firestore.collection(path).add(data));
+        return fromPromise(this.store.collection(path).add(data));
     }
     
     deleteBlogPost(slug: string) {
-        this.firestore.collection(
+        this.store.collection(
             this.blogPostPath,
             ref => ref.limit(1).where('slug', '==', slug)
         )
@@ -55,7 +73,7 @@ export class FirebaseService {
     }
     
     getInstagramList(limit?: number) {
-        return this.firestore.collection(
+        return this.store.collection(
             this.instaPath,
             ref => ref.limit(limit ? limit : 999)
         )
@@ -67,14 +85,14 @@ export class FirebaseService {
             .pipe(
                 filter(x => x && x.exists),
                 map(x => x.id),
-                map(x => this.firestore.collection(path).doc(x)),
+                map(x => this.store.collection(path).doc(x)),
                 switchMap(x => x.update(newData))
             );
         
     }
     
     private getSingleWithSlug(path: string, slug) {
-        return this.firestore.collection(
+        return this.store.collection(
             path,
             ref => ref.limit(1)
                 .where('slug', '==', slug)
@@ -85,7 +103,7 @@ export class FirebaseService {
     }
     
     private getBlogList(limit?: number) {
-        return this.firestore.collection(
+        return this.store.collection(
             this.blogPostPath,
             ref => ref.limit(limit ? limit : 999)
                 .where('public', '==', true)

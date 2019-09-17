@@ -7,6 +7,7 @@ import {
     NgModule
 }                                  from '@angular/core';
 import { AngularFireModule }       from '@angular/fire';
+import { AngularFireAuthModule }   from '@angular/fire/auth';
 import { AngularFirestoreModule }  from '@angular/fire/firestore';
 import {
     MAT_DATE_FORMATS,
@@ -70,6 +71,7 @@ const matDatepickerLocaleIT = {
         AngularFireModule.initializeApp(environment.firebase),
         AngularFirestoreModule.enablePersistence(),
         AngularFirestoreModule,
+        AngularFireAuthModule,
         MatFormEntityModule,
         // imports firebase/firestore, only needed for database features
         // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
