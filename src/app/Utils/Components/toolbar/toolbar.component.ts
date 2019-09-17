@@ -1,9 +1,10 @@
 import {
     ChangeDetectionStrategy,
     Component
-}                         from '@angular/core';
-import { RoutingService } from '../../../Services/routing.service';
-import { ToolbarService } from './toolbar.service';
+}                          from '@angular/core';
+import { FirebaseService } from '../../../Services/firebase.service';
+import { RoutingService }  from '../../../Services/routing.service';
+import { ToolbarService }  from './toolbar.service';
 
 @Component({
     selector:        'app-toolbar',
@@ -13,7 +14,11 @@ import { ToolbarService } from './toolbar.service';
 })
 export class ToolbarComponent {
     
-    constructor(public data: ToolbarService, private routing: RoutingService) {
+    constructor(
+        public data: ToolbarService,
+        private routing: RoutingService,
+        public firebase: FirebaseService
+    ) {
     }
     
 }

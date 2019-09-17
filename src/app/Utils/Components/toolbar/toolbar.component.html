@@ -33,7 +33,19 @@
             </button>
         </div>
         <div fxFlex='grow'></div>
-    
+        <ng-container *ngIf='{user:(firebase.user$|async)} as bag'>
+            <ng-container *ngIf='!bag.user else name'>
+                <button (click)='firebase.login()'
+                        mat-button
+                >
+                    Login
+                </button>
+            </ng-container>
+            <ng-template #name
+            >
+                <div fxFlex>{{bag.user.user.displayName}}</div>
+            </ng-template>
+        </ng-container>
     </mat-toolbar-row>
 </mat-toolbar>
 
