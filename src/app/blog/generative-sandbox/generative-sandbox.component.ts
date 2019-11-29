@@ -5,6 +5,10 @@ import {
 }              from '@angular/core';
 import * as p5 from 'p5';
 import 'p5/lib/addons/p5.sound';
+import {
+    BehaviorSubject,
+    interval
+}              from 'rxjs';
 
 @Component({
     selector:        'app-generative-sandbox',
@@ -13,6 +17,8 @@ import 'p5/lib/addons/p5.sound';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GenerativeSandboxComponent implements OnInit {
+    
+    color = new BehaviorSubject('#2a2a2a');
     
     private toggle = true;
     private p5: p5;
@@ -25,6 +31,22 @@ export class GenerativeSandboxComponent implements OnInit {
     ngOnInit() {
         console.log('analog-init');
         this.createCanvas();
+        
+        interval(1000)
+            .subscribe(x => {
+                this.color.next('#5a3a20');
+            });
+        
+        interval(3000)
+            .subscribe(x => {
+                this.color.next('#2a2a5a');
+            });
+        
+        
+        interval(2000)
+            .subscribe(x => {
+                this.color.next('#2d5a44');
+            });
     }
     
     ngOnDestroy(): void {
@@ -32,8 +54,9 @@ export class GenerativeSandboxComponent implements OnInit {
         console.log('analog-destroy');
     }
     
-    private onWindowResize =e => {
-        this.p5.resizeCanvas(this.p5.windowWidth - 50, this.p5.windowHeight - 50);
+    private canvasPadding = 50;
+    private onWindowResize = e => {
+        this.p5.resizeCanvas(this.p5.windowWidth - this.canvasPadding, this.p5.windowHeight - this.canvasPadding);
     };
     
     private createCanvas = () => {
@@ -59,68 +82,71 @@ export class GenerativeSandboxComponent implements OnInit {
             y: 0
         };
         p.draw = () => {
-            
-            p.background('#2a2a2a');
-            p.center.x = p.width / 2;
-            p.center.y = p.height / 2;
-            
-            const hr = p.hour();
-            const mn = p.minute();
-            const sc = p.second();
-            const ms = p.millis();
-            
-            p.push();
-            
-            p.translate(p.center.x, p.center.y);
-            p.rotate(-90);
-            
-            p.strokeWeight(8);
-            p.noFill();
-            
-            // dail
-            p.stroke(175);
-            p.arc(0, 0, 210, 210, 0, 360);
-            
-            // second
-            const sc_end = p.map(sc % 60, 0, 60, 0, 360);
-            
-            p.push();
-            p.rotate(sc_end);
-            p.stroke(255, 0, 0);
-            p.line(0, 0, 90, 0);
-            p.pop();
-            
-            // minute
-            const mn_end = p.map(mn % 60, 0, 60, 0, 360);
-            p.push();
-            p.rotate(mn_end);
-            p.stroke(0, 230, 0);
-            p.line(0, 0, 70, 0);
-            p.pop();
-            
-            // hour
-            const hr_end = p.map(hr % 12, 0, 12, 0, 360);
-            p.push();
-            p.rotate(hr_end);
-            p.stroke(0, 0, 230);
-            p.line(0, 0, 50, 0);
-            p.pop();
-            
-            // center
-            p.fill(255);
-            p.noStroke();
-            p.ellipse(0, 0, 8, 8);
-            
-            p.pop();
-            
-            const clock = hr + ':' + mn + ':' + sc;
-            p.fill(255);
-            p.noStroke();
-            p.textSize(14);
-            p.text(clock, 100, 50);
-            
+            this.draw(p);
         };
         
     };
     
+    private draw(p: any) {
+        p.background(this.color.value);
+        p.center.x = p.width / 2;
+        p.center.y = p.height / 2;
+        
+        const hr = p.hour();
+        const mn = p.minute();
+        const sc = p.second();
+        const ms = p.millis();
+        
+        p.push();
+        
+        p.translate(p.center.x, p.center.y);
+        p.rotate(-90);
+        
+        p.strokeWeight(8);
+        p.noFill();
+        
+        // p.arc(0, 0, 210, 210, 0, 360);
+        
+        // dail
+        p.stroke(175);
+        p.arc(0, 0, 210, 210, 0, 360);
+        
+        // second
+        const sc_end = p.map(sc % 60, 0, 60, 0, 360);
+        
+        p.push();
+        p.rotate(sc_end);
+        p.stroke(255, 0, 0);
+        p.line(0, 0, 90, 0);
+        p.pop();
+        
+        // minute
+        const mn_end = p.map(mn % 60, 0, 60, 0, 360);
+        p.push();
+        p.rotate(mn_end);
+        p.stroke(0, 230, 0);
+        p.line(0, 0, 70, 0);
+        p.pop();
+        
+        // hour
+        const hr_end = p.map(hr % 12, 0, 12, 0, 360);
+        p.push();
+        p.rotate(hr_end);
+        p.stroke(0, 0, 230);
+        p.line(0, 0, 50, 0);
+        p.pop();
+        
+        // center
+        p.fill(255);
+        p.noStroke();
+        p.ellipse(0, 0, 8, 8);
+        
+        p.pop();
+        
+        // const clock = hr + ':' + mn + ':' + sc;
+        // p.fill(255);
+        // p.noStroke();
+        // p.textSize(25);
+        // p.text(clock, 100, 50);
+    }
 }
