@@ -9,7 +9,7 @@
                 {{ post?.title }}
             </div>
             <div fxFlex
-                 *ngIf='development'
+                 *ngIf='firebase.user$|async'
                  fxLayoutAlign='end'
             >
                 <button
@@ -22,7 +22,7 @@
                 <button
                     mat-icon-button
                     color='primary'
-                    (click)='dataservice.deleteBlogPost(post.slug)'
+                    (click)='firebase.deleteBlogPost(post.slug)'
                 >
                     <mat-icon class="mat-18">delete</mat-icon>
                 </button>
