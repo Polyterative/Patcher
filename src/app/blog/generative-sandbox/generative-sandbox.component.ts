@@ -14,7 +14,6 @@ import 'p5/lib/addons/p5.sound';
 })
 export class GenerativeSandboxComponent implements OnInit {
     
-    
     private toggle = true;
     private p5: p5;
     
@@ -33,7 +32,7 @@ export class GenerativeSandboxComponent implements OnInit {
         console.log('analog-destroy');
     }
     
-    private onWindowResize = (e) => {
+    private onWindowResize =e => {
         this.p5.resizeCanvas(this.p5.windowWidth - 50, this.p5.windowHeight - 50);
     };
     
@@ -65,10 +64,10 @@ export class GenerativeSandboxComponent implements OnInit {
             p.center.x = p.width / 2;
             p.center.y = p.height / 2;
             
-            let hr = p.hour();
-            let mn = p.minute();
-            let sc = p.second();
-            let ms = p.millis();
+            const hr = p.hour();
+            const mn = p.minute();
+            const sc = p.second();
+            const ms = p.millis();
             
             p.push();
             
@@ -82,9 +81,8 @@ export class GenerativeSandboxComponent implements OnInit {
             p.stroke(175);
             p.arc(0, 0, 210, 210, 0, 360);
             
-            
             // second
-            let sc_end = p.map(sc % 60, 0, 60, 0, 360);
+            const sc_end = p.map(sc % 60, 0, 60, 0, 360);
             
             p.push();
             p.rotate(sc_end);
@@ -92,24 +90,21 @@ export class GenerativeSandboxComponent implements OnInit {
             p.line(0, 0, 90, 0);
             p.pop();
             
-            
             // minute
-            let mn_end = p.map(mn % 60, 0, 60, 0, 360);
+            const mn_end = p.map(mn % 60, 0, 60, 0, 360);
             p.push();
             p.rotate(mn_end);
             p.stroke(0, 230, 0);
             p.line(0, 0, 70, 0);
             p.pop();
             
-            
             // hour
-            let hr_end = p.map(hr % 12, 0, 12, 0, 360);
+            const hr_end = p.map(hr % 12, 0, 12, 0, 360);
             p.push();
             p.rotate(hr_end);
             p.stroke(0, 0, 230);
             p.line(0, 0, 50, 0);
             p.pop();
-            
             
             // center
             p.fill(255);
@@ -118,13 +113,11 @@ export class GenerativeSandboxComponent implements OnInit {
             
             p.pop();
             
-            
-            let clock = hr + ':' + mn + ':' + sc;
+            const clock = hr + ':' + mn + ':' + sc;
             p.fill(255);
             p.noStroke();
             p.textSize(14);
             p.text(clock, 100, 50);
-            
             
         };
         
