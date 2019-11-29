@@ -21,7 +21,6 @@
         "@angular/forms":                    "8.2.14",
         "@angular/material":                 "8.2.3",
         "@angular/platform-browser":         "8.2.14",
-        
         "@angular/platform-browser-dynamic": "8.2.14",
         "@angular/router":                   "8.2.14",
         "@types/luxon":                      "1.15.2",
@@ -33,6 +32,8 @@
         "ngx-markdown":                      "8.1.0",
         "rxjs":                              "6.5.3",
         "tslib":                             "1.10.0",
+        "p5":                                "^0.10.2",
+        "p5-":                                "^0.10.2",
         "zone.js":                           "~0.9.1"
     },
     "devDependencies": {
@@ -43,6 +44,7 @@
         "@types/jasmine":                   "3.4.0",
         "@types/jasminewd2":                "2.0.6",
         "@types/node":                      "12.7.5",
+        "@types/p5":                        "^0.9.0",
         "codelyzer":                        "5.1.0",
         "jasmine-core":                     "3.4.0",
         "jasmine-spec-reporter":            "4.2.1",
