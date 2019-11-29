@@ -92,10 +92,10 @@ export class GenerativeSandboxComponent implements OnInit {
         p.center.x = p.width / 2;
         p.center.y = p.height / 2;
         
-        const hr = p.hour();
-        const mn = p.minute();
-        const sc = p.second();
-        const ms = p.millis();
+        const hour = p.hour();
+        const minute = p.minute();
+        const second = p.second();
+        const millis = p.millis();
         
         p.push();
         
@@ -112,7 +112,7 @@ export class GenerativeSandboxComponent implements OnInit {
         p.arc(0, 0, 210, 210, 0, 360);
         
         // second
-        const sc_end = p.map(sc % 60, 0, 60, 0, 360);
+        const sc_end = p.map(second % 60, 0, 60, 0, 360);
         
         p.push();
         p.rotate(sc_end);
@@ -121,7 +121,7 @@ export class GenerativeSandboxComponent implements OnInit {
         p.pop();
         
         // minute
-        const mn_end = p.map(mn % 60, 0, 60, 0, 360);
+        const mn_end = p.map(minute % 60, 0, 60, 0, 360);
         p.push();
         p.rotate(mn_end);
         p.stroke(0, 230, 0);
@@ -129,7 +129,7 @@ export class GenerativeSandboxComponent implements OnInit {
         p.pop();
         
         // hour
-        const hr_end = p.map(hr % 12, 0, 12, 0, 360);
+        const hr_end = p.map(hour % 12, 0, 12, 0, 360);
         p.push();
         p.rotate(hr_end);
         p.stroke(0, 0, 230);
@@ -137,13 +137,13 @@ export class GenerativeSandboxComponent implements OnInit {
         p.pop();
         
         // center
-        p.fill(255);
+        p.fill('#b3b3b3');
         p.noStroke();
         p.ellipse(0, 0, 8, 8);
         
         p.pop();
         
-        // const clock = hr + ':' + mn + ':' + sc;
+        // const clock = hour + ':' + minute + ':' + second;
         // p.fill(255);
         // p.noStroke();
         // p.textSize(25);
