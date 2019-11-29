@@ -36,6 +36,9 @@ export class BlogPostStructureComponent {
     palette = CATEGORY_COLORS;
     development = !environment.production;
     
-    constructor(private routing: RoutingService, public dataservice: FirebaseService) {
+    constructor(
+        private routing: RoutingService,
+        public firebase: FirebaseService
+    ) {
     }
 }
