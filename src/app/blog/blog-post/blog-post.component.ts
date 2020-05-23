@@ -1,6 +1,6 @@
 import { Component }         from '@angular/core';
 import { FormBuilder }       from '@angular/forms';
-import { MatSnackBar }       from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute }    from '@angular/router';
 import { BehaviorSubject }   from 'rxjs';
 import { switchMap }         from 'rxjs/operators';

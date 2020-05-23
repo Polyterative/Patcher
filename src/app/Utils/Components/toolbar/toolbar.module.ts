@@ -4,7 +4,7 @@ import {
     ExtendedModule,
     FlexModule
 }                                 from '@angular/flex-layout';
-import { MatTooltipModule }       from '@angular/material';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule }        from '@angular/material/button';
 import { MatIconModule }          from '@angular/material/icon';
 import { MatToolbarModule }       from '@angular/material/toolbar';
