@@ -23,15 +23,15 @@
         "@angular/platform-browser":         "^9.1.9",
         "@angular/platform-browser-dynamic": "^9.1.9",
         "@angular/router":                   "^9.1.9",
-        "@types/luxon":                      "^1.15.2",
-        "angular-tslint-rules":              "^1.18.0",
-        "core-js":                           "^3.2.1",
-        "firebase":                          "^6.6.1",
-        "luxon":                             "^1.17.3",
-        "ngx-markdown":                      "^8.2.1",
+        "@types/luxon":                      "^1.24.0",
+        "angular-tslint-rules":              "^1.20.4",
+        "core-js":                           "^3.6.5",
+        "firebase":                          "^7.14.5",
+        "luxon":                             "^1.24.1",
+        "ngx-markdown":                      "^9.1.1",
         "rxjs":                              "^6.5.3",
-        "tslib":                             "^1.10.0",
-        "zone.js":                           "~0.10.2"
+        "tslib":                             "^2.0.0",
+        "zone.js":                           "~0.10.3"
     },
     "devDependencies": {
         "@angular-devkit/build-angular":    "~0.901.7",
