@@ -4,15 +4,15 @@ import { CardWrapperModule } from './Components/card-wrapper/card-wrapper.module
 import { ToolbarModule }     from './Components/toolbar/toolbar.module';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    ToolbarModule,
-    CardWrapperModule
-  ],
-  exports: [
-    ToolbarModule,
-    CardWrapperModule
-  ]
+    imports: [
+        CommonModule,
+        ToolbarModule,
+        CardWrapperModule
+    ],
+    exports: [
+        ToolbarModule,
+        CardWrapperModule
+    ]
 })
 export class PolyUtilsComponentsModule {
 }

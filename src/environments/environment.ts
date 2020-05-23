@@ -6,8 +6,8 @@ import { EnvironmentModel } from 'src/environments/environment.model';
 import { firebaseConfig }   from 'src/environments/firebase';
 
 export const environment: EnvironmentModel = {
-  production: false,
-  firebase:   firebaseConfig
+    production: false,
+    firebase:   firebaseConfig
 };
 
 /*

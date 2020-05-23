@@ -1,11 +1,11 @@
 import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
+    ChangeDetectionStrategy,
+    Component,
+    Input,
+    OnInit
 }                            from '@angular/core';
 import { FormBuilder }       from '@angular/forms';
-import { MatSnackBar }       from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute }    from '@angular/router';
 import { BehaviorSubject }   from 'rxjs';
 import { FirebaseService }   from '../../Services/firebase.service';
@@ -15,32 +15,32 @@ import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/di
 import { BlogEntryModel }    from '../blog-models';
 
 @Component({
-  selector:        'app-page-retriever',
-  templateUrl:     './page-retriever.component.html',
-  styleUrls:       ['./page-retriever.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector:        'app-page-retriever',
+    templateUrl:     './page-retriever.component.html',
+    styleUrls:       ['./page-retriever.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageRetrieverComponent extends AngularEntityBase implements OnInit {
-  
-  page$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
-  
-  @Input()
-  private pageSlug: string;
-  
-  constructor(private route: ActivatedRoute,
-              private dataservice: FirebaseService,
-              public constants: ConstantsService,
-              public dimens: DimensionsService,
-              private formBuilder: FormBuilder,
-              public snackbar: MatSnackBar) {
-    super();
+    page$: BehaviorSubject<BlogEntryModel | undefined> = new BehaviorSubject<BlogEntryModel>(undefined);
     
-  }
-  
-  ngOnInit(): void {
+    @Input()
+    private pageSlug: string;
     
-    console.warn(this.pageSlug);
-    this.dataservice.getPage(this.pageSlug).subscribe(this.page$);
-  }
-  
+    constructor(private route: ActivatedRoute,
+                private dataservice: FirebaseService,
+                public constants: ConstantsService,
+                public dimens: DimensionsService,
+                private formBuilder: FormBuilder,
+                public snackbar: MatSnackBar) {
+        super();
+        
+    }
+    
+    ngOnInit(): void {
+        
+        this.dataservice
+            .getPage(this.pageSlug)
+            .subscribe(this.page$);
+    }
+    
 }

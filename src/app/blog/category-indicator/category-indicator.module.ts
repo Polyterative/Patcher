@@ -4,10 +4,10 @@ import { CategoryIndicatorComponent } from './category-indicator.component';
 
 
 @NgModule({
-  declarations: [CategoryIndicatorComponent],
-  imports:      [
-    CommonModule
-  ],
-  exports:      [CategoryIndicatorComponent]
+    declarations: [CategoryIndicatorComponent],
+    imports:      [
+        CommonModule
+    ],
+    exports:      [CategoryIndicatorComponent]
 })
 export class CategoryIndicatorModule {}

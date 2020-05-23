@@ -8,23 +8,23 @@ import { FlexRowComponent }     from './flex/flex-row/flex-row.component';
 import { SpacerComponent }      from './spacer/spacer.component';
 
 @NgModule({
-  imports:      [
-    MatListModule,
-    MatDividerModule,
-    FlexLayoutModule
-  ],
-  declarations: [
-    SpacerComponent,
-    FlexRowComponent,
-    FlexColumnComponent,
-    FlexRowWrapComponent
-  ],
-  exports:      [
-    SpacerComponent,
-    FlexRowComponent,
-    FlexColumnComponent,
-    FlexRowWrapComponent
-  ]
+    imports:      [
+        MatListModule,
+        MatDividerModule,
+        FlexLayoutModule
+    ],
+    declarations: [
+        SpacerComponent,
+        FlexRowComponent,
+        FlexColumnComponent,
+        FlexRowWrapComponent
+    ],
+    exports:      [
+        SpacerComponent,
+        FlexRowComponent,
+        FlexColumnComponent,
+        FlexRowWrapComponent
+    ]
 })
 export class OrangeStructuresModule {
 }

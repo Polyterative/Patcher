@@ -4,10 +4,10 @@ import { FlatBoxComponent } from './flat-box.component';
 
 
 @NgModule({
-  declarations: [FlatBoxComponent],
-  imports:      [
-    CommonModule
-  ],
-  exports:      [FlatBoxComponent]
+    declarations: [FlatBoxComponent],
+    imports:      [
+        CommonModule
+    ],
+    exports:      [FlatBoxComponent]
 })
 export class FlatBoxModule {}
