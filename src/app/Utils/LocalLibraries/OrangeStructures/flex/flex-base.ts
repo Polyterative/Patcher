@@ -1,4 +1,4 @@
-import { Input } from '@angular/core';
+import { Directive, Input } from '@angular/core';
 
 export type FlexKeyRow = 'row';
 export type FlexKeyRowWrap = 'row wrap';
@@ -9,14 +9,15 @@ export type FlexKeyRight = 'right';
 export type FlexTypeBasic = FlexKeyRow | FlexKeyColumn | FlexKeyRowWrap;
 export type FlexTypeExtended = FlexKeyRow | FlexKeyColumn | FlexKeyCenter | FlexKeyLeft | FlexKeyRight;
 
+@Directive()
 export class FlexBase {
-  
-  @Input() gap = '1em';
-  @Input() md: FlexTypeBasic;
-  @Input() sm: FlexTypeBasic;
-  @Input() xs: FlexTypeBasic;
-  @Input() mdAlign: FlexTypeExtended;
-  @Input() smAlign: FlexTypeExtended;
-  @Input() xsAlign: FlexTypeExtended;
-  
+    
+    @Input() gap = '1em';
+    @Input() md: FlexTypeBasic;
+    @Input() sm: FlexTypeBasic;
+    @Input() xs: FlexTypeBasic;
+    @Input() mdAlign: FlexTypeExtended;
+    @Input() smAlign: FlexTypeExtended;
+    @Input() xsAlign: FlexTypeExtended;
+    
 }

@@ -13,12 +13,12 @@
           "style":           "scss",
           "changeDetection": "OnPush",
           "export":          true,
-          "spec":            false,
+          "skipTests":            true,
           "flat":            true,
           "skipImport":      false
         },
         "@schematics/angular:service":   {
-          "spec":      false,
+          "skipTests":      true,
           "skipTests": true
         },
         "@schematics/angular:module":    {
@@ -29,6 +29,7 @@
         "build":        {
           "builder":        "@angular-devkit/build-angular:browser",
           "options":        {
+            "aot": true,
             "outputPath": "dist/Focus",
             "index":      "src/index.html",
             "main":       "src/main.ts",
@@ -68,6 +69,10 @@
                   "type":           "initial",
                   "maximumWarning": "2mb",
                   "maximumError":   "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             }
