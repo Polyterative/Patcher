@@ -1,11 +1,9 @@
 import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
-import {
-    MatButtonModule,
-    MatCardModule,
-    MatProgressBarModule
-}                                   from '@angular/material';
+import { MatButtonModule }          from '@angular/material/button';
+import { MatCardModule }            from '@angular/material/card';
+import { MatProgressBarModule }     from '@angular/material/progress-bar';
 import { MarkdownModule }           from 'ngx-markdown';
 import { MatFormEntityModule }      from '../../Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
 import { OrangeStructuresModule }   from '../../Utils/LocalLibraries/OrangeStructures/orange-structures.module';
