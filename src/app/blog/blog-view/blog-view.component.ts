@@ -1,6 +1,6 @@
 import { Component }         from '@angular/core';
 import { FormBuilder }       from '@angular/forms';
-import { MatSnackBar }       from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject }   from 'rxjs';
 import { FirebaseService }   from '../../Services/firebase.service';
 import { RoutingService }    from '../../Services/routing.service';

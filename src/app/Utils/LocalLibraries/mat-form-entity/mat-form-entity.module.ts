@@ -5,19 +5,17 @@ import {
     FormsModule,
     ReactiveFormsModule
 }                                 from '@angular/forms';
-import {
-    MatAutocompleteModule,
-    MatButtonModule,
-    MatChipsModule,
-    MatDatepickerModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatNativeDateModule,
-    MatSelectModule,
-    MatTooltipModule
-}                                 from '@angular/material';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { LoggerService }          from '../VioletUtilities/logger/logger.service';
 import { MatFormEntityComponent } from './mat-form-entity.component';
 

@@ -12,12 +12,10 @@ import {
     FormGroup,
     ValidatorFn
 }                            from '@angular/forms';
-import {
-    MatAutocompleteSelectedEvent,
-    MatChipInputEvent,
-    MatFormFieldAppearance,
-    TooltipPosition
-}                            from '@angular/material';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { MatFormFieldAppearance } from '@angular/material/form-field';
+import { TooltipPosition } from '@angular/material/tooltip';
 import { BehaviorSubject }   from 'rxjs';
 import { isArray }           from 'rxjs/internal-compatibility';
 import {

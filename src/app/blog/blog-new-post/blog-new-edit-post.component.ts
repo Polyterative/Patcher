@@ -7,7 +7,7 @@ import {
     FormControl,
     Validators
 }                             from '@angular/forms';
-import { MatSnackBar }        from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute }     from '@angular/router';
 import { DateTime }           from 'luxon';
 import { BehaviorSubject }    from 'rxjs';
