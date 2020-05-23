@@ -1,6 +1,6 @@
 import { Component }         from '@angular/core';
 import { FormBuilder }       from '@angular/forms';
-import { MatSnackBar }       from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject }   from 'rxjs';
 import { FirebaseService }   from '../../Services/firebase.service';
 import { RoutingService }    from '../../Services/routing.service';
@@ -10,25 +10,25 @@ import { DimensionsService } from '../../Utils/LocalLibraries/VioletUtilities/di
 import { BlogEntryModel }    from '../blog-models';
 
 @Component({
-  selector:    'app-blog-view',
-  templateUrl: './blog-view.component.html',
-  styleUrls:   ['./blog-view.component.scss']
+    selector:    'app-blog-view',
+    templateUrl: './blog-view.component.html',
+    styleUrls:   ['./blog-view.component.scss']
 })
 export class BlogViewComponent extends AngularEntityBase {
-  posts$: BehaviorSubject<BlogEntryModel[]> = new BehaviorSubject<BlogEntryModel[]>([]);
-  
-  constructor(
-    private routing: RoutingService,
-    private dataservice: FirebaseService,
-    public constants: ConstantsService,
-    public dimens: DimensionsService,
-    private formBuilder: FormBuilder,
-    public snackbar: MatSnackBar
-  ) {
-    super();
+    posts$: BehaviorSubject<Array<BlogEntryModel>> = new BehaviorSubject<Array<BlogEntryModel>>([]);
     
-    // @ts-ignore
-    dataservice.getBlogPosts(10).subscribe(this.posts$);
-  }
-  
+    constructor(
+        private routing: RoutingService,
+        private dataservice: FirebaseService,
+        public constants: ConstantsService,
+        public dimens: DimensionsService,
+        private formBuilder: FormBuilder,
+        public snackbar: MatSnackBar
+    ) {
+        super();
+        
+        // @ts-ignore
+        dataservice.getBlogPosts(10).subscribe(this.posts$);
+    }
+    
 }

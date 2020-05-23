@@ -1,46 +1,46 @@
 <lib-flex-row xs='column'
               sm='column'
 >
-  
-  <div fxFlex='30'
-       fxFlex.xs='100'
-       fxFlex.sm='100'
-  >
-    <mat-card style='background-color: #3a72a8;color: white'
-    >
-      <mat-card-title fxFlex
-      >
-        Posts
-      </mat-card-title>
-    </mat-card>
-  </div>
-  <lib-flex-column fxFlex
-  >
     
-    <div fxFlex
-         *ngIf='(posts$|async).length===0;'
+    <div fxFlex='30'
+         fxFlex.xs='100'
+         fxFlex.sm='100'
     >
-      <mat-progress-bar mode="indeterminate"
-      ></mat-progress-bar>
+        <mat-card style='background-color: #3a72a8;color: white'
+        >
+            <mat-card-title fxFlex
+            >
+                Posts
+            </mat-card-title>
+        </mat-card>
     </div>
-    <ng-container *ngFor='let post of posts$|async'>
-  
-      <app-blog-post-structure [noContent]='true'
-                               [post]='post'
-      >
-        <mat-card-content fxFlex>
-          <lib-flex-row>
-            <div fxFlex='grow'>
-            </div>
-            <button fxFlex='25'
-                    mat-flat-button
-                    color="primary"
-                    (click)='routing.routeTo(["post",post?.slug.toString()])'
-            >More
-            </button>
-          </lib-flex-row>
-        </mat-card-content>
-      </app-blog-post-structure>
-    </ng-container>
-  </lib-flex-column>
+    <lib-flex-column fxFlex
+    >
+        
+        <div fxFlex
+             *ngIf='(posts$|async).length===0;'
+        >
+            <mat-progress-bar mode="indeterminate"
+            ></mat-progress-bar>
+        </div>
+        <ng-container *ngFor='let post of posts$|async'>
+            
+            <app-blog-post-structure [noContent]='true'
+                                     [post]='post'
+            >
+                <mat-card-content fxFlex>
+                    <lib-flex-row>
+                        <div fxFlex='grow'>
+                        </div>
+                        <button fxFlex='25'
+                                mat-flat-button
+                                color="primary"
+                                (click)='routing.routeTo(["post",post?.slug.toString()])'
+                        >More
+                        </button>
+                    </lib-flex-row>
+                </mat-card-content>
+            </app-blog-post-structure>
+        </ng-container>
+    </lib-flex-column>
 </lib-flex-row>
