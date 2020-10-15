@@ -1,21 +1,26 @@
 import {
+    Component,
     EventEmitter,
     OnDestroy
-} from '@angular/core';
+}                        from '@angular/core';
+import { ReplaySubject } from 'rxjs';
 
 export interface Destructable {
-    destroyEvent$: EventEmitter<void>;
+    destroyEvent$: ReplaySubject<void>;
 }
 
+@Component({
+    template: ''
+})
 export abstract class AngularEntityBase implements OnDestroy, Destructable {
     
-    destroyEvent$: EventEmitter<void> = new EventEmitter<void>();
+    destroyEvent$: ReplaySubject<void> = new ReplaySubject<void>();
     
     protected constructor() {
     }
     
     ngOnDestroy(): void {
-        this.destroyEvent$.emit();
+        this.destroyEvent$.next();
         this.destroyEvent$.complete();
         
     }
