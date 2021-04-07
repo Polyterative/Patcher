@@ -16,7 +16,11 @@
              fxLayout="column"
         >
             <ng-container *ngFor="let item of (dataService.generated$|async).connections">
-                <div>{{item.from}} => {{item.to}}</div>
+                <div>
+                    {{item.from.name}} {{item.from.outs[item.fromId].name}} 
+                    => 
+                    {{item.to.name}} {{item.to.outs[item.toId]?.name}}
+                </div>
             </ng-container>
         </div>
     </ng-container>

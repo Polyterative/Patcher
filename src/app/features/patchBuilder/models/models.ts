@@ -16,7 +16,7 @@ export interface Manufacturer {
 }
 
 export interface CV {
-    title: string;
+    name: string;
     description?: string;
     min?: number;
     max?: number;
@@ -24,8 +24,10 @@ export interface CV {
 }
 
 export interface Connection {
-    from: string;
-    to: string;
+    from: EuroModule;
+    fromId: number;
+    to: EuroModule;
+    toId: number;
 }
 
 export interface Patch {
@@ -51,37 +53,37 @@ export const modules: EuroModule[] = [
         ],
         outs:         [
             {
-                title: 'Output'
+                name: 'Output'
             }
         ],
         ins:          [
             {
-                title:  'Pitch',
+                name:   'Pitch',
                 isVOCT: true
             },
             {
-                title: 'Spread'
+                name: 'Spread'
             },
             {
-                title: 'Attack'
+                name: 'Attack'
             },
             {
-                title: 'S/L/M'
+                name: 'S/L/M'
             },
             {
-                title: 'B/A/T'
+                name: 'B/A/T'
             },
             {
-                title: 'Morph'
+                name: 'Morph'
             },
             {
-                title: 'Decay'
+                name: 'Decay'
             },
             {
-                title: 'Trig'
+                name: 'Trig'
             },
             {
-                title: 'OUT'
+                name: 'OUT'
             }
         ]
     },
@@ -92,27 +94,27 @@ export const modules: EuroModule[] = [
         
         outs: [
             {
-                title: 'Output'
+                name: 'Output'
             }
         ],
         ins:  [
             {
-                title: 'Resonance'
+                name: 'Resonance'
             },
             {
-                title: 'FM'
+                name: 'FM'
             },
             {
-                title: 'Input'
+                name: 'Input'
             },
             {
-                title: 'V-oct'
+                name: 'V-oct'
             },
             {
-                title: 'Balance'
+                name: 'Balance'
             },
             {
-                title: 'Span'
+                name: 'Span'
             }
         ]
     },
@@ -123,36 +125,36 @@ export const modules: EuroModule[] = [
         
         outs: [
             {
-                title: '1'
+                name: '1'
             },
             {
-                title: '2'
+                name: '2'
             },
             {
-                title: '3'
+                name: '3'
             },
             {
-                title: '4'
+                name: '4'
             },
             {
-                title: '5'
+                name: '5'
             },
             {
-                title: '6'
+                name: '6'
             },
             {
-                title: '7'
+                name: '7'
             },
             {
-                title: '8'
+                name: '8'
             }
         ],
         ins:  [
             {
-                title: 'Clock/CV'
+                name: 'Clock/CV'
             },
             {
-                title: 'Reset/Hold'
+                name: 'Reset/Hold'
             }
         ]
     }
