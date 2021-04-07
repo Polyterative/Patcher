@@ -12,10 +12,11 @@ import {
 }                             from '@angular/material/core';
 import { BrowserModule }      from '@angular/platform-browser';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent }     from './app.component';
-import { BackboneModule }   from './features/backbone/backbone.module';
-import { ToolbarModule }    from './features/backbone/toolbar/toolbar.module';
+import { AppRoutingModule }   from './app-routing.module';
+import { AppComponent }       from './app.component';
+import { BackboneModule }     from './features/backbone/backbone.module';
+import { ToolbarModule }      from './features/backbone/toolbar/toolbar.module';
+import { PatchBuilderModule } from './features/patchBuilder/patch-builder.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -45,11 +46,12 @@ const matDatepickerLocaleIT = {
     declarations: [
         AppComponent
     ],
-    imports: [
+    imports:      [
         BrowserModule,
         AppRoutingModule,
         BackboneModule,
-        ToolbarModule
+        ToolbarModule,
+        PatchBuilderModule
     ],
     providers:    [
         italianLocale,
