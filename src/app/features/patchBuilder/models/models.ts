@@ -1,5 +1,5 @@
 export interface Module {
-    names: string,
+    name: string,
     manufacturer: Manufacturer;
     ins: CV[];
     outs: CV[];
@@ -11,7 +11,7 @@ export interface Manufacturer {
 
 export interface CV {
     title: string;
-    description: string;
-    min: number;
-    max: number;
+    description?: string;
+    min?: number;
+    max?: number;
 }
