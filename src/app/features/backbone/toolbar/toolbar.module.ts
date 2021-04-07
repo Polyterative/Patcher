@@ -9,8 +9,8 @@ import { MatIconModule }       from '@angular/material/icon';
 import { MatMenuModule }       from '@angular/material/menu';
 import { MatToolbarModule }    from '@angular/material/toolbar';
 import { RouterModule }        from '@angular/router';
-import { BrandLogoModule }     from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
-import { ScreenWrapperModule } from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { BrandLogoModule }     from '../../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
+import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ToolbarComponent }    from './toolbar.component';
 import { ToolbarService }      from './toolbar.service';
 
