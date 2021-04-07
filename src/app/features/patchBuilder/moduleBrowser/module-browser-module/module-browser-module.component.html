@@ -2,7 +2,7 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-    <div fxFlex="auto"
+    <div fxFlex="5rem"
          fxLayout="column"
     >
         <mat-card-title>{{data.name}}</mat-card-title>
@@ -11,7 +11,9 @@
     <div fxFlex="auto"
          fxLayout="column"
     >
-        <mat-card-subtitle>{{data.ins.length}} INs:</mat-card-subtitle>
+        <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{data.ins.length}}
+            INs:
+        </mat-card-subtitle>
         <div fxFlex="auto"
              fxLayout="row wrap"
              fxLayoutGap="1rem"
@@ -27,8 +29,11 @@
     </div>
     <div fxFlex="auto"
          fxLayout="column"
+    
     >
-        <mat-card-subtitle>{{data.outs.length}} OUTs:</mat-card-subtitle>
+        <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{data.outs.length}}
+            OUTs:
+        </mat-card-subtitle>
         <div fxFlex="auto"
              fxLayout="row wrap"
              fxLayoutGap="1rem"
