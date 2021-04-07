@@ -5,11 +5,11 @@ import { MatButtonModule }       from '@angular/material/button';
 import { MatCardModule }         from '@angular/material/card';
 import { MatToolbarModule }      from '@angular/material/toolbar';
 import { RouterModule }          from '@angular/router';
-import { EmptyStateModule }      from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
-import { ListLinkRouterModule }  from '../../shared-interproject/components/@smart/list-link-router/list-link-router.module';
-import { UserDataHandlerModule } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
-import { HeroLinkModule }        from '../../shared-interproject/components/@visual/hero-link/hero-link.module';
-import { ScreenWrapperModule }   from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { EmptyStateModule }      from '../../../shared-interproject/components/@smart/empty-state/empty-state.module';
+import { ListLinkRouterModule }  from '../../../shared-interproject/components/@smart/list-link-router/list-link-router.module';
+import { UserDataHandlerModule } from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
+import { HeroLinkModule }        from '../../../shared-interproject/components/@visual/hero-link/hero-link.module';
+import { ScreenWrapperModule }   from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { HomeComponent }         from './home.component';
 
 @NgModule({
