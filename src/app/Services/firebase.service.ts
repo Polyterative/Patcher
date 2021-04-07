@@ -5,24 +5,13 @@ import {
 import { AngularFireAuth }  from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
 import * as firebase        from 'firebase';
-import { User }             from 'firebase';
-import {
-    concat,
-    OperatorFunction,
-    ReplaySubject
-}                           from 'rxjs';
+import { OperatorFunction } from 'rxjs';
 import { fromPromise }      from 'rxjs/internal-compatibility';
 import {
-    filter,
     map,
     mergeMap,
-    switchMap,
     take
 }                           from 'rxjs/operators';
-import { BlogEntryModel }   from '../blog/blog-models';
-import AuthPersistence = firebase.auth.Auth.Persistence;
-import GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
-import UserCredential = firebase.auth.UserCredential;
 
 @Injectable({
     providedIn: 'root'
@@ -31,7 +20,7 @@ export class FirebaseService {
     pagesPath = 'pages';
     blogPostPath = 'blogPosts';
     instaPath = 'insta-links';
-    user$: ReplaySubject<UserCredential | User> = new ReplaySubject();
+    // user$: ReplaySubject<UserCredential | User> = new ReplaySubject();
     
     login$ = new EventEmitter<void>();
     logout$ = new EventEmitter<void>();
@@ -45,13 +34,13 @@ export class FirebaseService {
         
         // external outlet
         this.login$.subscribe(x => {
-            this.firebaseLogin();
+            // this.firebaseLogin();
         });
         
         // external outlet
         this.logout$
             .subscribe(x => {
-                this.user$.next(undefined);
+                // this.user$.next(undefined);
                 
                 this.firebaseLogout();
             });
@@ -109,33 +98,33 @@ export class FirebaseService {
             .valueChanges();
     }
     
-    editPost(newData: BlogEntryModel, slug, path: string) {
-        return this.getSingleWithSlug(path, slug)
-            .pipe(
-                filter(x => x && x.exists),
-                map(x => x.id),
-                map(x => this.fireStore.collection(path)
-                    .doc(x)),
-                switchMap(x => x.update(newData))
-            );
-        
-    }
+    // editPost(newData: BlogEntryModel, slug, path: string) {
+    //     return this.getSingleWithSlug(path, slug)
+    //         .pipe(
+    //             filter(x => x && x.exists),
+    //             map(x => x.id),
+    //             map(x => this.fireStore.collection(path)
+    //                 .doc(x)),
+    //             switchMap(x => x.update(newData))
+    //         );
+    //    
+    // }
     
-    private firebaseLogin() {
-        const persistence$ = fromPromise(this.fireAuth.auth.setPersistence(AuthPersistence.LOCAL))
-            .pipe(take(1));
-        const auth$ = fromPromise(this.fireAuth.auth.signInWithPopup(new GoogleAuthProvider()));
-        
-        concat(
-            persistence$.pipe(map(() => undefined)),
-            auth$
-        )
-            .pipe(
-                // filter(x => !!x),
-                // tap(x => console.log(x))
-            )
-            .subscribe(this.user$);
-    }
+    // private firebaseLogin() {
+    //     const persistence$ = fromPromise(this.fireAuth.auth.setPersistence(AuthPersistence.LOCAL))
+    //         .pipe(take(1));
+    //     const auth$ = fromPromise(this.fireAuth.auth.signInWithPopup(new GoogleAuthProvider()));
+    //    
+    //     concat(
+    //         persistence$.pipe(map(() => undefined)),
+    //         auth$
+    //     )
+    //         .pipe(
+    //             // filter(x => !!x),
+    //             // tap(x => console.log(x))
+    //         )
+    //         .subscribe(this.user$);
+    // }
     
     private firebaseLogout() {
         return fromPromise(this.fireAuth.auth.signOut());

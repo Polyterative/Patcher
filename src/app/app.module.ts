@@ -1,31 +1,19 @@
-import { registerLocaleData }      from '@angular/common';
-import localeItExtra               from '@angular/common/locales/extra/it';
-import localeIt                    from '@angular/common/locales/it';
+import { registerLocaleData } from '@angular/common';
+import localeItExtra          from '@angular/common/locales/extra/it';
+import localeIt               from '@angular/common/locales/it';
 import {
     InjectionToken,
     LOCALE_ID,
     NgModule
-}                                  from '@angular/core';
-import { AngularFireModule }       from '@angular/fire';
-import { AngularFireAuthModule }   from '@angular/fire/auth';
-import { AngularFirestoreModule }  from '@angular/fire/firestore';
+}                             from '@angular/core';
 import {
     MAT_DATE_FORMATS,
     MAT_DATE_LOCALE
-}                                  from '@angular/material/core';
-import { BrowserModule }           from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { environment }             from '../environments/environment';
+}                             from '@angular/material/core';
+import { BrowserModule }      from '@angular/platform-browser';
 
-import { AppRoutingModule }          from './app-routing.module';
-import { AppComponent }              from './app.component';
-import { BlogModule }                from './blog/blog.module';
-import { MaterialModulePack }        from './material/material-module-pack.module';
-import { HomeModule }                from './Pages/home/home.module';
-import { MatFormEntityModule }       from './Utils/LocalLibraries/mat-form-entity/mat-form-entity.module';
-import { OrangeStructuresModule }    from './Utils/LocalLibraries/OrangeStructures/orange-structures.module';
-import { VioletUtilsModule }         from './Utils/LocalLibraries/VioletUtilities/violet-utils.module';
-import { PolyUtilsComponentsModule } from './Utils/poly-utils-components.module';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent }     from './app.component';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -56,29 +44,8 @@ const matDatepickerLocaleIT = {
         AppComponent
     ],
     imports:      [
-        // BASE
         BrowserModule,
-        AppRoutingModule,
-        // BASIC
-        MaterialModulePack,
-        // LIBS
-        OrangeStructuresModule,
-        VioletUtilsModule,
-        BrowserAnimationsModule,
-        // INTERNAL UTILS
-        PolyUtilsComponentsModule,
-        // EXT LIBS
-        AngularFireModule.initializeApp(environment.firebase),
-        AngularFirestoreModule.enablePersistence(),
-        AngularFirestoreModule,
-        AngularFireAuthModule,
-        MatFormEntityModule,
-        // imports firebase/firestore, only needed for database features
-        // AngularFireAuthModule, // imports firebase/auth, only needed for auth features,
-        // AngularFireStorageModule // imports firebase/storage only needed for storage features
-        // APP LOCAL COMPONENTS
-        BlogModule,
-        HomeModule
+        AppRoutingModule
     ],
     providers:    [
         italianLocale,
