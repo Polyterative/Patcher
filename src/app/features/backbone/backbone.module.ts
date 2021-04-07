@@ -1,12 +1,14 @@
-import { NgModule }      from '@angular/core';
-import { HomeModule }    from './home/home.module';
-import { ToolbarModule } from './toolbar/toolbar.module';
+import { NgModule }          from '@angular/core';
+import { FeedbackBoxModule } from './feedback-box/feedback-box.module';
+import { HomeModule }        from './home/home.module';
+import { ToolbarModule }     from './toolbar/toolbar.module';
 
 @NgModule({
     declarations: [],
     imports:      [
         HomeModule,
-        ToolbarModule
+        ToolbarModule,
+        FeedbackBoxModule
     ]
 })
 export class BackboneModule {}

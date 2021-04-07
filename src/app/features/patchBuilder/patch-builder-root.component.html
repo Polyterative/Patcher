@@ -1,41 +1,43 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
-><h1>patch-builder</h1>
-    
-    <app-module-browser-root></app-module-browser-root>
+<lib-screen-wrapper>
     <div fxFlex="auto"
-         fxLayout="row"
+         fxLayout="column"
          fxLayoutGap="1rem"
-    >
-        <app-brand-primary-button
-            (click$)="dataService.generate$.next(1)"
-        >Generate 1
-        </app-brand-primary-button>
+    ><h1>patch-builder</h1>
         
-        <app-brand-primary-button
-            (click$)="dataService.generate$.next(5)"
-        >Generate 5
-        </app-brand-primary-button>
-        
-        <app-brand-primary-button
-            (click$)="dataService.generate$.next(25)"
-        >Generate 25
-        </app-brand-primary-button>
-    </div>
-    
-    <ng-container *ngIf="dataService.generated$|async">
-        
+        <app-module-browser-root></app-module-browser-root>
         <div fxFlex="auto"
-             fxLayout="column"
+             fxLayout="row"
+             fxLayoutGap="1rem"
         >
-            <ng-container *ngFor="let item of (dataService.generated$|async).connections">
-                <div>
-                    {{item.from.name}} {{item.from.outs[item.fromId].name}}
-                    =>
-                    {{item.to.name}} {{item.to.ins[item.toId]?.name}}
-                </div>
-            </ng-container>
+            <app-brand-primary-button
+                (click$)="dataService.generate$.next(1)"
+            >Generate 1
+            </app-brand-primary-button>
+            
+            <app-brand-primary-button
+                (click$)="dataService.generate$.next(5)"
+            >Generate 5
+            </app-brand-primary-button>
+            
+            <app-brand-primary-button
+                (click$)="dataService.generate$.next(25)"
+            >Generate 25
+            </app-brand-primary-button>
         </div>
-    </ng-container>
-</div>
+        
+        <ng-container *ngIf="dataService.generated$|async">
+            
+            <div fxFlex="auto"
+                 fxLayout="column"
+            >
+                <ng-container *ngFor="let item of (dataService.generated$|async).connections">
+                    <div>
+                        {{item.from.name}} {{item.from.outs[item.fromId].name}}
+                        =>
+                        {{item.to.name}} {{item.to.ins[item.toId]?.name}}
+                    </div>
+                </ng-container>
+            </div>
+        </ng-container>
+    </div>
+</lib-screen-wrapper>
