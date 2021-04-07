@@ -3,6 +3,7 @@ import { NgModule }                  from '@angular/core';
 import { FlexLayoutModule }          from '@angular/flex-layout';
 import { RouterModule }              from '@angular/router';
 import { BrandPrimaryButtonModule }  from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { ScreenWrapperModule }       from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ModuleBrowserModule }       from './moduleBrowser/module-browser.module';
 import { PatchBuilderDataService }   from './patch-builder-data.service';
 import { PatchBuilderRootComponent } from './patch-builder-root.component';
@@ -13,7 +14,7 @@ import { PatchBuilderRootComponent } from './patch-builder-root.component';
         PatchBuilderRootComponent
     ],
     providers:    [PatchBuilderDataService],
-    imports:      [
+    imports: [
         CommonModule,
         RouterModule.forRoot([
             {
@@ -24,7 +25,8 @@ import { PatchBuilderRootComponent } from './patch-builder-root.component';
         ]),
         ModuleBrowserModule,
         FlexLayoutModule,
-        BrandPrimaryButtonModule
+        BrandPrimaryButtonModule,
+        ScreenWrapperModule
     ],
     exports:      [
         PatchBuilderRootComponent

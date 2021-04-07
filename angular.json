@@ -14,14 +14,14 @@
                     "changeDetection": "OnPush",
                     "export":          true,
                     "skipTests":       true,
-                    "flat":            false,
+                    "flat":            true,
                     "skipImport":      false
                 },
                 "@schematics/angular:service":   {
                     "skipTests": true
                 },
                 "@schematics/angular:module":    {
-                    "flat": true
+                    "flat": false
                 }
             },
             "architect":   {

@@ -16,6 +16,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule }   from './app-routing.module';
 import { AppComponent }       from './app.component';
 import { BackboneModule }     from './features/backbone/backbone.module';
+import { FeedbackBoxModule }  from './features/backbone/feedback-box/feedback-box.module';
 import { ToolbarModule }      from './features/backbone/toolbar/toolbar.module';
 import { PatchBuilderModule } from './features/patchBuilder/patch-builder.module';
 
@@ -47,13 +48,14 @@ const matDatepickerLocaleIT = {
     declarations: [
         AppComponent
     ],
-    imports:      [
+    imports: [
         BrowserModule,
         BrowserAnimationsModule,
         AppRoutingModule,
         BackboneModule,
         ToolbarModule,
-        PatchBuilderModule
+        PatchBuilderModule,
+        FeedbackBoxModule
     ],
     providers:    [
         italianLocale,
