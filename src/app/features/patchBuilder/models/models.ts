@@ -4,7 +4,7 @@ interface SwitchPosition {
 
 export interface EuroModule {
     name: string;
-    manufacturer?: Manufacturer;
+    manufacturer: Manufacturer;
     ins: CV[];
     outs: CV[];
     hp: number;
@@ -12,7 +12,7 @@ export interface EuroModule {
 }
 
 export interface Manufacturer {
-    names: string;
+    name: string;
 }
 
 export interface CV {
@@ -25,9 +25,10 @@ export interface CV {
 
 export const modules: EuroModule[] = [
     {
-        name:     'Basimilus Iteritas Alter',
-        hp:       12,
-        switches: [
+        name:         'Basimilus Iteritas Alter',
+        hp:           12,
+        manufacturer: {name: 'Noise Engineering'},
+        switches:     [
             [
                 'skin',
                 'liquid',
@@ -39,12 +40,12 @@ export const modules: EuroModule[] = [
                 'treble'
             ]
         ],
-        outs:     [
+        outs:         [
             {
                 title: 'Output'
             }
         ],
-        ins:      [
+        ins:          [
             {
                 title:  'Pitch',
                 isVOCT: true
@@ -76,8 +77,10 @@ export const modules: EuroModule[] = [
         ]
     },
     {
-        name: 'Belgrad',
-        hp:   14,
+        name:         'Belgrad',
+        hp:           14,
+        manufacturer: {name: 'XAOC'},
+        
         outs: [
             {
                 title: 'Output'
@@ -105,8 +108,10 @@ export const modules: EuroModule[] = [
         ]
     },
     {
-        name: 'Voltage Block',
-        hp:   20,
+        name:         'Voltage Block',
+        hp:           20,
+        manufacturer: {name: 'Malekko Heavy Industry'},
+        
         outs: [
             {
                 title: '1'
