@@ -1,0 +1,61 @@
+<div fxLayout="column " fxLayoutGap="1rem"
+     *ngIf="linksData.links.length>0"
+>
+  <ng-container *ngFor="let group of linksData.links">
+    <div fxFlex="auto">
+      <mat-card class="depadding"
+
+      >
+        <mat-nav-list class="depadding"
+        >
+          <ng-container *ngFor="let cardLink of group">
+
+            <ng-container *ngIf="{
+                        disabled:(cardLink.disabled?(cardLink.disabled|async):false),
+                        hidden:(cardLink.hidden?(cardLink.hidden|async):false)
+                        } as bag"
+            >
+              <ng-container *ngIf="isRelative(cardLink); else absolute">
+                <a mat-list-item
+                   class="depadding option"
+                   (click)="bag.disabled?doNothing():linksData.click$.emit(cardLink)"
+                   [routerLink]="(!bag.disabled)?cardLink.route:null"
+                   [routerLinkActive]="(!bag.disabled)?'selected':''"
+                   [ngClass]='{"disabled":bag.disabled}'
+                   [disableRipple]="bag.disabled"
+                   *ngIf="!bag.hidden">
+                  <span matLine
+                        *ngIf="cardLink.label"
+                        fxLayoutAlign="baseline"
+                        >{{ cardLink.label }}</span>
+                  <mat-icon *ngIf="cardLink.icon"
+                            fxLayoutAlign="baseline"
+                            >{{cardLink.icon}}</mat-icon>
+                </a>
+              </ng-container>
+              <ng-template #absolute>
+                <a mat-list-item
+                   class="depadding option"
+                   [href]="cardLink.route"
+                   [ngClass]='{"disabled":bag.disabled}'
+                   [disableRipple]="bag.disabled"
+                   *ngIf="!bag.hidden">
+                  <span matLine
+                        *ngIf="cardLink.label"
+                        fxLayoutAlign="baseline"
+                        >{{ cardLink.label }}</span>
+                  <mat-icon *ngIf="cardLink.icon"
+                            fxLayoutAlign="baseline"
+                            >{{cardLink.icon}}</mat-icon>
+                </a>
+              </ng-template>
+
+            </ng-container>
+
+          </ng-container>
+        </mat-nav-list>
+      </mat-card>
+    </div>
+  </ng-container>
+
+</div>

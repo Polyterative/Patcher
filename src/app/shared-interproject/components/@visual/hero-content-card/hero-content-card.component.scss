@@ -1,0 +1,128 @@
+@import "~src/app/style/brand-resources.scss";
+@import '~@angular/material/theming';
+
+mat-card {
+  padding: 0
+}
+
+@mixin darkBG {
+  color: white;
+}
+
+@mixin unselectable {
+  user-select: none;
+}
+
+
+@mixin vertical-text {
+  writing-mode:     vertical-rl;
+  text-orientation: sideways;
+  //text-orientation: mixed;
+}
+
+.root {
+
+  & > * {
+    @include unselectable
+  }
+}
+
+.pad {
+  padding: 1rem;
+}
+
+.side {
+  //@include darkBG;
+  //background-color:           rgb(123, 138, 156);
+  border:                     0.1rem solid $brand-tertiary;
+  padding:                    0.5rem;
+  border-bottom-right-radius: 4px;
+  //border-top-right-radius:    4px;
+}
+
+.content {
+  background-color:           $brand-tertiary;
+  //@include unselectable;
+  //border-top-right-radius: 4px;
+  //border-top-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius:  4px;
+  //@include mat-elevation(0);
+  transition:                 all 125ms cubic-bezier(0.0, 0.0, 0.2, 1)
+}
+
+.title {
+  //@include unselectable;
+  padding: 1rem 1rem 1.25rem;
+  //border-left-width: 0.5rem;
+  //border-left-style: solid;
+  //border-left-color: #768597;
+  //border-right-width: 0.5rem;
+  //border-right-style: solid;
+  //border-right-color: #768597;
+  //border-left-width: 0.5rem;
+  //border-left-style: solid;
+  //border-left-color: transparentize(#768597, 0.75);
+  //border-radius: .25rem;
+  //border-top-color: transparentize(lighten(#041E50,20%),.5);
+  //background-color: darken(white, 5%);
+  //font-size:      2rem;
+  //text-transform: uppercase;
+}
+
+.vertical {
+  @include vertical-text;
+}
+
+.description {
+  //@include unselectable;
+  font-size:  small;
+  text-align: end;
+  //border: 0.1rem solid white;
+  //padding: 1rem;
+  //background-color: white;
+  //color: $brand-primary;
+}
+
+
+.supporting-top {
+  @include darkBG;
+  background-color: #6B7A66;
+  //transition: all 225ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.supporting-bottom {
+  @include darkBG;
+  background-color: $brand-secondary;
+  //padding:          0.2rem;
+  //transition: all 225ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.line {
+  @include darkBG;
+  background-color: #ADBAC2;
+  padding:          0.2rem;
+  //margin-top: 2rem;
+  //margin-bottom:    2rem;
+}
+
+.titleIcon {
+  padding: 1rem;
+}
+
+.brandBorder {
+  border: 0.1rem solid white;
+}
+
+
+.container {
+  border-color:     transparentize(#768597, 0.75);
+  border-top-width: 0.5rem;
+  border-top-style: solid;
+  //border-right-width: 0.5rem;
+  //border-right-style: solid;
+  //border-left-width:  0.5rem;
+  //border-left-style: solid;
+  //border-bottom-width: 0.5rem;
+  //border-bottom-style: solid;
+}

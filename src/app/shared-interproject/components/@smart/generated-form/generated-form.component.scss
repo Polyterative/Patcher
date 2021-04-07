@@ -1,0 +1,30 @@
+.contentRow {
+  border-top-width:  0.2rem;
+  border-top-style:  solid;
+  border-top-color:  #FFFFFF;
+  //border-right-width: 0.2rem;
+  //border-right-style: solid;
+  //border-right-color: #FFFFFF;
+  border-left-width: 0.2rem;
+  border-left-style: solid;
+  border-left-color: #FFFFFF;
+  //border-bottom-width: 0.2rem;
+  //border-bottom-style: solid;
+  //border-bottom-color: #FFFFFF;
+
+
+  padding:           1rem
+}
+
+
+.contentLine {
+  padding: 0.2rem;
+  border:  0.2rem solid rgba(255, 255, 255, 0);
+
+  &.changed {
+    //background-color: rgba(192, 125, 255, 0.15);
+    border-right-width: 0.2rem;
+    border-right-style: solid;
+    border-right-color: #FFA76D;
+  }
+}

@@ -1,0 +1,21 @@
+<div class="value-showcase"
+     [fxLayout]="valueBelow ? 'column' : 'row'"
+     fxLayoutGap="0.2rem"
+>
+  <div fxFlex="grow"
+       class="label"
+  >{{ label }}</div>
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayoutAlign="end"
+  >
+    <div fxFlex="auto"
+         [class]="bigText ? 'value' : null"
+    >
+      <div *ngIf="pushToEnd"
+           fxFlex="grow"
+      ></div>
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

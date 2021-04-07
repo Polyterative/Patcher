@@ -1,0 +1,22 @@
+<div class="value-showcase"
+     [fxLayout]="valueBelow ? 'column' : 'row'"
+     [fxLayoutAlign]="pushToEnd?'space-between':''"
+     fxLayoutGap=".4rem"
+>
+  <div fxFlex="auto"
+       class="label"
+  >{{ label }}</div>
+  <div fxFlex="auto"
+       fxLayout="row"
+
+  >
+    <div fxFlex="auto"
+         [fxLayoutAlign]="pushToEnd?'end':undefined"
+         [class]="bigText ? 'value' : null"
+    >
+      <div [class]="monospace ? 'monospace' : null">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+</div>

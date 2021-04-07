@@ -1,0 +1,83 @@
+@import "~src/app/style/brand-resources.scss";
+
+
+.button {
+  //font-weight: bolder;
+  text-transform:   uppercase;
+  //font-weight: bolder;
+  //letter-spacing: 0.06rem;
+  //color: white;
+  background-color: white;
+  color:            $brand-primary;
+  border:           0.2rem solid $brand-primary;
+  border-radius:    0;
+
+  transition:       125ms;
+
+  &:hover {
+    background-color: $brand-secondary !important;
+    color:            white !important;
+    //border:           0.2rem solid white !important;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+  }
+
+  &.error {
+    //background-color: $brand-secondary !important;
+    color:  rgba(255, 255, 255, 0.81) !important;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    border: 0.2rem solid $brand-error !important;
+    cursor: not-allowed;
+  }
+
+
+  &.warning {
+    background-color: $brand-warning-background;
+    color:            $brand-warning;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    border:           0.2rem solid $brand-warning;
+    //cursor:           ;
+  }
+
+  &.positive {
+    background-color: $brand-positive-background;
+    color:            $brand-positive;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    border:           0.2rem solid $brand-positive;
+    //cursor:           not-allowed;
+  }
+
+  &.negative {
+    background-color: $brand-negative-background;
+    color:            $brand-negative;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    border:           0.2rem solid $brand-negative;
+    //cursor:           not-allowed;
+  }
+
+
+  &.light {
+    //background-color: white;
+    color:            $brand-secondary;
+    border:           0.2rem solid $brand-secondary;
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    //border:           0.2rem solid $brand-secondary;
+    //cursor:           not-allowed;
+  }
+
+
+  &.disabled {
+    background-color: lighten($brand-secondary, 20%);
+    color:            rgba(255, 255, 255, 0.81);
+    //border: 0.2rem solid rgba(4, 30, 80, 0);
+    //border:           0.2rem solid $brand-secondary;
+    border:           0.2rem solid white;
+    cursor:           not-allowed;
+  }
+
+
+}

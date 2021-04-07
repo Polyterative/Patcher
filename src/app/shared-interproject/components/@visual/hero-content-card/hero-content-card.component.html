@@ -1,0 +1,43 @@
+<div fxLayout="column" class="container"
+>
+  <mat-card-title fxFlex="grow"
+                  fxLayoutAlign="start center"
+                  class="title"
+  >{{title}}</mat-card-title>
+
+<!--  <div fxFlex="auto"-->
+<!--       *ngIf="description.length>0"-->
+<!--       fxLayoutAlign="end end"-->
+<!--  >-->
+<!--    <mat-card-subtitle *ngIf="description"-->
+<!--                       class="description pad"-->
+<!--    >{{description}}</mat-card-subtitle>-->
+<!--  </div>-->
+
+  <div class="content"
+       [@fadeInOut]
+  >
+    <div fxLayout="column "
+         fxLayoutGap="0"
+    >
+      <div fxFlex="auto"
+           class="supporting-top"
+           *ngIf="top"
+      >
+        <ng-content select=".TOP"></ng-content>
+      </div>
+      <div fxFlex="auto"
+           class="pad"
+      >
+        <ng-content></ng-content>
+      </div>
+      <div fxFlex="auto"
+           class="supporting-bottom"
+           *ngIf="bottom"
+      >
+        <ng-content select=".BOTTOM"></ng-content>
+      </div>
+    </div>
+  </div>
+
+</div>
