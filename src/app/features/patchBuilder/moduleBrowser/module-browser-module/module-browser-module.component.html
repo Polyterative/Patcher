@@ -16,7 +16,7 @@
         <mat-chip-list>
             <ng-container *ngFor="let item of data.ins">
                 <mat-chip cdkDrag>
-                    {{item.title}}
+                    {{item.name}}
                 </mat-chip>
             </ng-container>
         </mat-chip-list>
@@ -29,7 +29,7 @@
         <mat-chip-list>
             <ng-container *ngFor="let item of data.outs">
                 <mat-chip>
-                    {{item.title}}
+                    {{item.name}}
                 </mat-chip>
             </ng-container>
         </mat-chip-list>

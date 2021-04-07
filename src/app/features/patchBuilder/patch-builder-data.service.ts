@@ -24,24 +24,22 @@ export class PatchBuilderDataService {
                 const A: EuroModule = modules[this.randomIntFromInterval(modules.length - 1)];
                 const B: EuroModule = modules[this.randomIntFromInterval(modules.length - 1)];
                 
-                let Aouts = A.outs;
-                const Aid: number = this.randomIntFromInterval(Aouts.length - 1);
-                
-                let bINs = B.ins;
-                const bID: number = this.randomIntFromInterval(bINs.length - 1);
-                
+                const Aid: number = this.randomIntFromInterval(A.outs.length - 1);
+                const bID: number = this.randomIntFromInterval(B.ins.length - 1);
                 
                 toReturn.push({
-                    from: `${ A.name } ${ Aouts[Aid]?.title }`,
-                    to:   `${ B.name } ${ bINs[bID]?.title }`
+                    from:   A,
+                    fromId: Aid,
+                    to:     B,
+                    toId:   bID
                 });
                 
-                console.log([
-                    A,
-                    B,
-                    Aid,
-                    bID
-                ]);
+                // console.log([
+                //     A,
+                //     B,
+                //     Aid,
+                //     bID
+                // ]);
                 // debugger
                 
             }
