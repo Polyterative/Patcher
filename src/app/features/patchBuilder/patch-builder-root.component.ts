@@ -14,10 +14,11 @@ import { PatchBuilderDataService } from './patch-builder-data.service';
 export class PatchBuilderRootComponent implements OnInit {
     
     constructor(
-      public dataService: PatchBuilderDataService
+        public dataService: PatchBuilderDataService
     ) { }
     
     ngOnInit(): void {
+        this.dataService.generate$.next();
     }
     
 }
