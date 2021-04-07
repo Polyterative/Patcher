@@ -1,0 +1,52 @@
+﻿<mat-toolbar
+  style="background-color: #041E50"
+  color="primary"
+  id="navbar"
+>
+  <mat-toolbar-row>
+    <lib-screen-wrapper fxFlex="grow">
+      <div fxFlex="auto"
+           fxLayout="row"
+           fxLayoutGap="1rem"
+      >
+        <div fxFlex="auto" fxLayoutAlign="center center"
+
+        >
+          {{service.state.title|async}}
+        </div>
+        <div fxFlex="grow"></div>
+        <div class="buttons"
+             fxLayout="row"
+             fxLayoutGap="4rem"
+        >
+          <div fxFlex="auto"
+               fxLayout="row"
+               fxLayoutGap="1rem"
+          >
+            <button mat-icon-button
+                    routerLink="home"
+                    routerLinkActive="selectedLink"
+            >
+              <mat-icon>home</mat-icon>
+            </button>
+
+          </div>
+          <div class="buttons"
+               fxLayout="row"
+               fxLayoutGap="1rem"
+          >
+            <button mat-icon-button
+                    routerLink="user/login"
+                    routerLinkActive="selectedLink"
+            >
+              <mat-icon>person</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div fxFlex="grow"></div>
+        <app-brand-logo></app-brand-logo>
+      </div>
+    </lib-screen-wrapper>
+  </mat-toolbar-row>
+</mat-toolbar>
+
