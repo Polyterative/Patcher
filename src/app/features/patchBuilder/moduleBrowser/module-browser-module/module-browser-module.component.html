@@ -1,1 +1,24 @@
-<p>module-browser-module works!</p>
+<mat-card fxFlex="16rem"
+          fxLayout="column"
+          fxLayoutGap="1rem"
+>
+    <mat-card-title>{{data.name}}</mat-card-title>
+    <mat-card-subtitle>{{data.ins.length}} INs:</mat-card-subtitle>
+    <div fxFlex="auto"
+         fxLayout="row wrap"
+         fxLayoutGap="1rem"
+    >
+        <ng-container *ngFor="let item of data.ins">
+            <div>{{item.title}}</div>
+        </ng-container>
+    </div>
+    <mat-card-subtitle>{{data.outs.length}} OUTs:</mat-card-subtitle>
+    <div fxFlex="auto"
+         fxLayout="row wrap"
+         fxLayoutGap="1rem"
+    >
+        <ng-container *ngFor="let item of data.outs">
+            <div>{{item.title}}</div>
+        </ng-container>
+    </div>
+</mat-card>
