@@ -2,7 +2,12 @@
           fxLayout="column"
           fxLayoutGap="1rem"
 >
-    <mat-card-title>{{data.name}}</mat-card-title>
+    <div fxFlex="auto"
+         fxLayout="column"
+    >
+        <mat-card-title>{{data.name}}</mat-card-title>
+        <mat-card-subtitle> {{data.manufacturer.name}}</mat-card-subtitle>
+    </div>
     <mat-card-subtitle>{{data.ins.length}} INs:</mat-card-subtitle>
     <div fxFlex="auto"
          fxLayout="row wrap"
