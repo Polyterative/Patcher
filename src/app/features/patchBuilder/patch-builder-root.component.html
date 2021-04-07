@@ -4,4 +4,8 @@
 ><h1>patch-builder</h1>
     
     <app-module-browser-root></app-module-browser-root>
+    <app-brand-primary-button fxFlex="auto"
+                              (click$)="dataService.generate$.next()"
+    >Generate
+    </app-brand-primary-button>
 </div>

@@ -23,6 +23,15 @@ export interface CV {
     isVOCT?: boolean;
 }
 
+export interface Connection {
+    from: string;
+    to: string;
+}
+
+export interface Patch {
+    connections: Connection[];
+}
+
 export const modules: EuroModule[] = [
     {
         name:         'Basimilus Iteritas Alter',
