@@ -4,7 +4,7 @@
          fxLayoutGap="1rem"
     >
         <app-module-browser-root></app-module-browser-root>
-        <h1>patch-builder</h1>
+        <h3>patch-builder</h3>
         <div fxFlex="auto"
              fxLayout="row"
              fxLayoutGap="1rem"
@@ -13,12 +13,12 @@
                 (click$)="dataService.generate$.next(1)"
             >Generate 1
             </app-brand-primary-button>
-    
+            
             <app-brand-primary-button
                 (click$)="dataService.generate$.next(5)"
             >Generate 5
             </app-brand-primary-button>
-    
+            
             <app-brand-primary-button
                 (click$)="dataService.generate$.next(25)"
             >Generate 25
