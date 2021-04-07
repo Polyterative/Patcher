@@ -1,0 +1,36 @@
+
+.darkCard_KO {
+    @extend .transition;
+    background-color: #c34628 !important;
+}
+
+.darkCard_NE {
+    @extend .transition;
+    background-color: #c37c2d !important;
+}
+
+.darkCard_NEUTRAL {
+    @extend .transition;
+    background-color: #818181;
+}
+
+.darkCard_OK {
+    @extend .transition;
+    background-color: #1daf81 !important;
+}
+
+.transition {
+    transition: background-color 225ms linear;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.46);
+    font-size: medium;
+    letter-spacing: 0.2em;
+    font-variant: all-small-caps;
+}
+
+.subtitle_onWhite {
+    @extend .subtitle;
+    color: rgba(0, 0, 0, 0.46);
+}
