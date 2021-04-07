@@ -1,17 +1,20 @@
-import { CommonModule }               from '@angular/common';
-import { NgModule }                   from '@angular/core';
-import { ModuleBrowserRootComponent } from './module-browser-root/module-browser-root.component';
+import { CommonModule }                 from '@angular/common';
+import { NgModule }                     from '@angular/core';
+import { ModuleBrowserModuleComponent } from './module-browser-module/module-browser-module.component';
+import { ModuleBrowserRootComponent }   from './module-browser-root/module-browser-root.component';
 
 
 @NgModule({
   declarations: [
-    ModuleBrowserRootComponent
+    ModuleBrowserRootComponent,
+    ModuleBrowserModuleComponent
   ],
   imports: [
     CommonModule
   ],
   exports: [
-    ModuleBrowserRootComponent
+    ModuleBrowserRootComponent,
+    ModuleBrowserModuleComponent
   ]
 })
 export class ModuleBrowserModule { }
