@@ -1,1 +1,16 @@
-<p>module-browser-root works!</p>
+<app-hero-content-card title="module-browser">
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+        <div fxFlex="auto"
+             fxLayout="row"
+             fxLayoutGap="1rem"
+        >
+            
+            <ng-container *ngFor="let item of items">
+                <app-module-browser-module [data]="item"></app-module-browser-module>
+            </ng-container>
+        </div>
+    </div>
+</app-hero-content-card>
