@@ -1,10 +1,11 @@
 export interface FirebaseModel {
     apiKey: string;
     authDomain: string;
-    databaseURL: string;
+    // databaseURL: string;
     projectId: string;
     storageBucket: string;
     messagingSenderId: string;
+    measurementId: string;
     appId: string;
 }
 
