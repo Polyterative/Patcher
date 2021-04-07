@@ -14,7 +14,8 @@ import { BrowserModule }      from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent }     from './app.component';
-import { BackboneModule }   from './features/backbone.module';
+import { BackboneModule }   from './features/backbone/backbone.module';
+import { ToolbarModule }    from './features/backbone/toolbar/toolbar.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -44,10 +45,11 @@ const matDatepickerLocaleIT = {
     declarations: [
         AppComponent
     ],
-    imports:      [
+    imports: [
         BrowserModule,
         AppRoutingModule,
-        BackboneModule
+        BackboneModule,
+        ToolbarModule
     ],
     providers:    [
         italianLocale,

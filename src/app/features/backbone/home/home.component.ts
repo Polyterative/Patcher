@@ -7,7 +7,7 @@ import { Subject } from 'rxjs';
 import {
     CardLinkDataModel,
     cleanCardlinkModelObject
-}                  from '../../shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+}                  from '../../../shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
 
 @Component({
     selector:    'app-home',
