@@ -83,7 +83,7 @@ export const modules: EuroModule[] = [
                 name: 'Trig'
             },
             {
-                name: 'OUT'
+                name: 'Output'
             }
         ]
     },
