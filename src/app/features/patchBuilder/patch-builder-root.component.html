@@ -8,4 +8,16 @@
                               (click$)="dataService.generate$.next()"
     >Generate
     </app-brand-primary-button>
+    
+    
+    <ng-container *ngIf="dataService.generated$|async">
+        
+        <div fxFlex="auto"
+             fxLayout="column"
+        >
+            <ng-container *ngFor="let item of (dataService.generated$|async).connections">
+                <div>{{item.from}} => {{item.to}}</div>
+            </ng-container>
+        </div>
+    </ng-container>
 </div>
