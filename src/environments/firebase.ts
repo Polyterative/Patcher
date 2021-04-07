@@ -9,11 +9,11 @@ export interface FirebaseModel {
 }
 
 export const firebaseConfig: FirebaseModel = {
-    apiKey:            'AIzaSyDybIV2Od5rrTQnlyYKYsjEbu9n6gdE3Nk',
-    authDomain:        'focus-e10e7.firebaseapp.com',
-    databaseURL:       'https://focus-e10e7.firebaseio.com',
-    projectId:         'focus-e10e7',
-    storageBucket:     'focus-e10e7.appspot.com',
-    messagingSenderId: '891782944209',
-    appId:             '1:891782944209:web:1313c1c1408cce60'
+    apiKey:            'AIzaSyBWYGQEVwqo0hRXwPLKlgTqbDcfvrEAFkU',
+    authDomain:        'patcher-89a29.firebaseapp.com',
+    projectId:         'patcher-89a29',
+    storageBucket:     'patcher-89a29.appspot.com',
+    messagingSenderId: '38746458636',
+    appId:             '1:38746458636:web:9a86a30f295622292a3c29',
+    measurementId:     'G-S2PQFV8C7F'
 };
