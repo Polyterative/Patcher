@@ -5,6 +5,7 @@ import { FlexLayoutModule }             from '@angular/flex-layout';
 import { MatCardModule }                from '@angular/material/card';
 import { MatChipsModule }               from '@angular/material/chips';
 import { HeroContentCardModule }        from '../../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { LabelValueShowcaseModule }     from '../../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { ModuleBrowserDataService }     from './module-browser-data.service';
 import { ModuleBrowserModuleComponent } from './module-browser-module/module-browser-module.component';
 import { ModuleBrowserRootComponent }   from './module-browser-root/module-browser-root.component';
@@ -16,13 +17,14 @@ import { ModuleBrowserRootComponent }   from './module-browser-root/module-brows
         ModuleBrowserModuleComponent
     ],
     providers:    [ModuleBrowserDataService],
-    imports:      [
+    imports: [
         CommonModule,
         FlexLayoutModule,
         MatCardModule,
         HeroContentCardModule,
         MatChipsModule,
-        DragDropModule
+        DragDropModule,
+        LabelValueShowcaseModule
     ],
     exports:      [
         ModuleBrowserRootComponent,
