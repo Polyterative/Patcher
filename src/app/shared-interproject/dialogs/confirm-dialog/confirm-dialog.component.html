@@ -1,0 +1,49 @@
+﻿<!--<div style='min-width:350px '>-->
+<div fxLayout="column "
+     fxLayoutGap="0.2em"
+>
+  <div fxFlex="auto"><h1 mat-dialog-title>{{title}}</h1></div>
+  <div fxFlex="auto"
+       *ngIf="description"
+  >
+    <mat-dialog-content>
+      {{description}}
+    </mat-dialog-content>
+  </div>
+</div>
+
+<mat-dialog-actions>
+  <div fxFlexFill
+       fxLayoutGap="1em"
+       fxLayoutGap.sm="0.5em"
+       fxLayoutGap.xs="0.5em"
+       fxLayout.sm="column"
+       fxLayout.xs="column"
+       fxLayout="row"
+  >
+    <div fxFlex="grow"
+         fxFlex.xs="0"
+         fxFlex.sm="0"
+    ></div>
+    <div fxFlex="auto">
+      <button fxFlex="auto"
+              mat-flat-button
+              autofocus
+              [mat-dialog-close]="{answer:false}"
+              [disabled]="negative&&negative.disabled?negative.disabled:false"
+      >{{negative && negative.label ? negative.label : "No"}}
+      </button>
+    </div>
+    <div fxFlex="auto">
+      <button fxFlex="auto"
+              mat-flat-button
+              color="primary"
+              [mat-dialog-close]="{answer:true}"
+              [disabled]="positive&&positive.disabled?positive.disabled:false"
+      >{{positive && positive.label ? positive.label : "Si"}}
+      </button>
+    </div>
+  </div>
+</mat-dialog-actions>
+<!--</div>-->
+<!--&lt;!&ndash;&ndash;&gt;-->

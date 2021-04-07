@@ -1,0 +1,17 @@
+//@import "../../app.component";
+
+.label {
+  color:          rgba(0, 0, 0, 0.66);
+  letter-spacing: 0.3em;
+  font-size:      medium;
+  font-variant:   all-small-caps;
+
+  //padding:   1rem
+}
+
+.value {
+  font-size:   xx-large;
+  //font-weight: 500;
+  font-weight: 100;
+  color:       rgba(0, 0, 0, 0.79);
+}

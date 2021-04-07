@@ -1,0 +1,337 @@
+<mat-form-field *ngIf="!(type===types.DATE)"
+                [appearance]="formFieldAppearenceType"
+                [floatLabel]="styleOptions.floatLabel"
+                [hideRequiredMarker]="styleOptions.hideRequired"
+                [matTooltipPosition]="tooltipPosition"
+                [matTooltip]="tooltip"
+                fxFlexFill
+>
+  <mat-label>{{ label }}</mat-label>
+
+  <!--  <ng-container *ngIf="type===types.OKKO">-->
+  <!--    <div fxFlex="grow"-->
+  <!--         fxLayout="row"-->
+  <!--         fxLayoutGap=".5rem"-->
+  <!--    >-->
+  <!--      <button mat-stroked-button-->
+  <!--              color="primary"-->
+  <!--              (click)="control.patchValue(true)"-->
+  <!--      >OK-->
+  <!--      </button>-->
+  <!--      <button mat-stroked-button-->
+  <!--              color="primary"-->
+  <!--              (click)="control.patchValue(false)"-->
+  <!--      >KO-->
+  <!--      </button>-->
+  <!--    </div>-->
+  <!--  </ng-container>-->
+
+  <ng-container *ngIf="type===types.AREA">
+    <!--<mat-label>{{placeholder}}</mat-label>-->
+    <textarea #autosize="cdkTextareaAutosize"
+              [formControl]="control"
+              [placeholder]="placeholder"
+              cdkAutosizeMinRows="2"
+              cdkTextareaAutosize
+              matInput
+    ></textarea>
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.TEXT)||(type===types.NUMBER)||(type===types.TIME)">
+    <input [autocomplete]="!disableBrowserAutocomplete"
+           [formControl]="control"
+           [placeholder]="placeholder"
+           [type]="type"
+           matInput
+           style="height: 15.333px"
+    />
+
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.SELECT)">
+    <mat-select [formControl]="control"
+                [placeholder]="placeholder"
+                [compareWith]="compareFunctionStrictObject"
+                fxFlex="auto"
+    >
+      <ng-container *ngIf="!disableVoidSelection">
+        <mat-option>/</mat-option>
+        <!--VOID OPTION-->
+      </ng-container>
+      <mat-option *ngFor="let option of (options$|async)"
+                  [value]="option"
+                  [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
+                  matTooltipPosition="left"
+      >
+        {{ option.name }}
+      </mat-option>
+    </mat-select>
+
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.MULTISELECT_GROUPED)">
+    <mat-select [formControl]="control"
+                [placeholder]="placeholder"
+                [compareWith]="compareFunctionStrictObject"
+                fxFlex="auto"
+                multiple
+    >
+      <mat-optgroup *ngFor="let group of (options$|async)"
+                    [label]="group.name"
+      >
+        <ng-container *ngIf="group.options">
+          <mat-option *ngFor="let option of group.options"
+                      [value]="option"
+                      [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
+                      matTooltipPosition="left"
+          >
+            {{ option.name }}
+          </mat-option>
+        </ng-container>
+      </mat-optgroup>
+
+
+    </mat-select>
+
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.MULTISELECT)">
+    <mat-select [formControl]="control"
+                [placeholder]="placeholder"
+                [compareWith]="compareFunctionStrictObject"
+                fxFlex="auto"
+                multiple
+    >
+      <mat-option *ngFor="let option of (options$|async)"
+                  [value]="option"
+                  [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
+                  matTooltipPosition="left"
+      >
+        {{ option.name }}
+      </mat-option>
+    </mat-select>
+
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.MULTI_TEXT)">
+    <mat-chip-list #chipList>
+      <mat-chip (removed)="removeFromChips(chip)"
+                *ngFor="let chip of control.value"
+                [removable]="true"
+                [selectable]="true"
+      >
+        {{ chip.name }}
+        <mat-icon *ngIf="true"
+                  matChipRemove
+        >cancel
+        </mat-icon>
+      </mat-chip>
+      <input (matChipInputTokenEnd)="addToMultiText($event)"
+             [matChipInputAddOnBlur]="true"
+             [matChipInputFor]="chipList"
+             [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+             [placeholder]="placeholder"
+      >
+    </mat-chip-list>
+
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE)">
+    <mat-chip-list #chipList>
+
+      <ng-container *ngFor="let chip of control.value">
+        <mat-chip (removed)="removeFromChips(chip)"
+                  [removable]="!control.disabled"
+                  [selectable]="!control.disabled"
+        >
+          {{ chip.name }}
+          <mat-icon *ngIf="!control.disabled"
+                    matChipRemove
+          >cancel
+          </mat-icon>
+        </mat-chip>
+      </ng-container>
+      <input (matChipInputTokenEnd)="cleanMultiComplete($event)"
+             [formControl]="ghostControl"
+             [matAutocomplete]="autocomplete"
+             [matChipInputAddOnBlur]="true"
+             [matChipInputFor]="chipList"
+             [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+             [placeholder]="placeholder"
+             matInput
+      />
+    </mat-chip-list>
+    <mat-autocomplete #autocomplete="matAutocomplete"
+                      (optionSelected)="addToMultiComplete($event)"
+                      [displayWith]="autocomplete_displayFunction"
+                      autoActiveFirstOption
+    >
+      <mat-option *ngFor="let option of optionsFiltered|async"
+                  [value]="option"
+      >
+        {{ option.name }}
+      </mat-option>
+
+    </mat-autocomplete>
+
+  </ng-container>
+  <ng-container>
+    <!--  <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE_GROUPED)">-->
+    <!--    <mat-chip-list #chipList>-->
+    <!--      <mat-chip (removed)="removeFromChips(chip)"-->
+    <!--                *ngFor="let chip of control.value"-->
+    <!--                [removable]="!control.disabled"-->
+    <!--                [selectable]="!control.disabled"-->
+    <!--      >-->
+    <!--        {{ chip.name }}-->
+    <!--        <mat-icon *ngIf="!control.disabled"-->
+    <!--                  matChipRemove-->
+    <!--        >cancel-->
+    <!--        </mat-icon>-->
+    <!--      </mat-chip>-->
+    <!--      <input (matChipInputTokenEnd)="cleanMultiComplete($event)"-->
+    <!--             [formControl]="ghostControl"-->
+    <!--             [matAutocomplete]="autocomplete"-->
+    <!--             [matChipInputAddOnBlur]="true"-->
+    <!--             [matChipInputFor]="chipList"-->
+    <!--             [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"-->
+    <!--             [placeholder]="placeholder"-->
+    <!--             matInput-->
+    <!--      />-->
+
+    <!--      <mat-autocomplete #autocomplete="matAutocomplete"-->
+    <!--                        (optionSelected)="addToMultiComplete($event)"-->
+    <!--                        [displayWith]="autocomplete_displayFunction"-->
+    <!--                        autoActiveFirstOption-->
+    <!--      >-->
+    <!--        <mat-optgroup *ngFor="let group of optionsFiltered|async"-->
+    <!--                      [label]="group.name"-->
+    <!--        >-->
+    <!--          <ng-container *ngIf="group.options">-->
+    <!--            <mat-option *ngFor="let option of group.options"-->
+    <!--                        [value]="option"-->
+    <!--                        [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"-->
+    <!--                        matTooltipPosition="left"-->
+    <!--            >-->
+    <!--              {{ option.name }}-->
+    <!--            </mat-option>-->
+    <!--          </ng-container>-->
+    <!--        </mat-optgroup>-->
+
+    <!--      </mat-autocomplete>-->
+    <!--    </mat-chip-list>-->
+
+    <!--  </ng-container>-->
+  </ng-container>
+  <ng-container *ngIf="(type===types.AUTOCOMPLETE)">
+
+    <input [formControl]="control"
+           [matAutocomplete]="autocomplete"
+           [placeholder]="placeholder"
+           matInput
+           type="text"
+    />
+
+    <mat-autocomplete #autocomplete="matAutocomplete"
+                      [displayWith]="autocomplete_displayFunction"
+                      autoActiveFirstOption
+    >
+      <mat-option *ngFor="let option of optionsFiltered|async"
+                  [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
+                  matTooltipPosition="left"
+                  [value]="option"
+      >
+        {{ option.name }}
+      </mat-option>
+
+    </mat-autocomplete>
+  </ng-container>
+
+  <ng-container *ngIf="(type===types.AUTOCOMPLETE_GROUPED)">
+
+    <input [formControl]="control"
+           [matAutocomplete]="autocomplete"
+           [placeholder]="placeholder"
+           matInput
+           type="text"
+    />
+
+    <mat-autocomplete #autocomplete="matAutocomplete"
+                      [displayWith]="autocomplete_displayFunction"
+                      [autoActiveFirstOption]="!disableVoidSelection"
+    >
+      <mat-optgroup *ngFor="let group of optionsFiltered|async"
+                    [label]="group.name"
+      >
+        <ng-container *ngIf="group.options">
+          <mat-option *ngFor="let option of group.options"
+                      [value]="option"
+                      [matTooltip]="option.name.length>optionsTooltipMinLength?option.name:undefined"
+                      matTooltipPosition="left"
+          >
+            {{ option.name }}
+          </mat-option>
+        </ng-container>
+      </mat-optgroup>
+
+    </mat-autocomplete>
+  </ng-container>
+
+  <mat-error *ngIf="(invalid$|async)">{{ (errors$|async) }}</mat-error>
+
+  <mat-hint *ngIf="hint">{{ hint }}</mat-hint>
+  <mat-label *ngIf="warning"
+             style="color: #A5490B!important; padding-left:1rem"
+  >{{ warning }}</mat-label>
+
+  <ng-container *ngIf="type===types.AUTOCOMPLETE_MULTIPLE">
+    <mat-hint *ngIf="(invalid$|async)"
+              style="color: red; padding-top: 1rem"
+    >{{ ((errors$|async)) }}</mat-hint>
+  </ng-container>
+  <!--  <mat-hint *ngIf='control.invalid$'>{{errors}}</mat-hint>-->
+  <button mat-button
+          *ngIf="(!disableVoidSelection)&&(!disableClearButton)&&
+          ((type===types.TEXT)
+          ||(type===types.AREA)
+          ||(type===types.NUMBER)
+          ||(type===types.AUTOCOMPLETE)
+          ||(type===types.AUTOCOMPLETE_GROUPED))
+          &&(!control.disabled)
+"
+          [disabled]="control.value==''||control.value==null||control.value==undefined"
+          matSuffix
+          mat-icon-button
+          (click)="control.patchValue('')"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
+
+<mat-form-field *ngIf="(type===types.DATE)"
+                [appearance]="formFieldAppearenceType"
+                [floatLabel]="styleOptions.floatLabel"
+                [hideRequiredMarker]="styleOptions.hideRequired"
+                [matTooltipPosition]="tooltipPosition"
+                [matTooltip]="tooltip"
+                fxFlexFill
+>
+  <mat-label>{{ label }}</mat-label>
+  <input matInput
+         [formControl]="control"
+         [matDatepicker]="picker"
+         [max]="dateMax"
+         [min]="dateMin"
+         [placeholder]="placeholder"
+  >
+  <mat-datepicker-toggle matSuffix
+                         [for]="$any(picker)"
+  >
+    <mat-icon matDatepickerToggleIcon>keyboard_arrow_down</mat-icon>
+  </mat-datepicker-toggle>
+  <mat-datepicker #picker
+                  [startAt]="dateOpenPosition"
+  ></mat-datepicker>
+  <mat-error *ngIf="(invalid$|async)">{{ ((errors$|async)) }}</mat-error>
+
+</mat-form-field>

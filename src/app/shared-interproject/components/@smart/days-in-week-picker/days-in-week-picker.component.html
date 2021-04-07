@@ -1,0 +1,13 @@
+<div class="btn-group btn-group-toggle"
+     [formGroup]="checkboxGroupForm"
+>
+  <label class="btn-primary"
+         ngbButtonLabel
+         *ngFor="let day of days"
+  >
+    <input type="checkbox"
+           [formControlName]="day.id"
+           ngbButton
+    >{{day.name}}
+  </label>
+</div>

@@ -1,0 +1,46 @@
+<lib-screen-wrapper gravity="center"
+                    maxSize="100rem"
+>
+  <div fxLayout="row"
+       fxLayoutGap="1rem"
+  >
+    <div fxLayout="column"
+         fxLayoutGap="1rem"
+         fxFlex.gt-lg="15rem"
+         class="sidebar"
+    >
+      <div>
+        <router-outlet name="user"></router-outlet>
+      </div>
+      <div>
+        <router-outlet name="sidebar"></router-outlet>
+      </div>
+    </div>
+    <div fxFlex="auto"
+         class="content"
+    >
+      <ng-container *ngIf="title else content ">
+
+        <div fxFlex="auto"
+             fxLayout="column"
+             fxLayoutGap=".5rem"
+        >
+          <mat-toolbar fxFlex="4rem"
+                       style="background-color: #778698"
+                       color="primary"
+                       id="navbar"
+          >
+            <mat-toolbar-row>{{title}}</mat-toolbar-row>
+          </mat-toolbar>
+
+          <router-outlet></router-outlet>
+        </div>
+
+      </ng-container>
+
+      <ng-template #content>
+        <router-outlet></router-outlet>
+      </ng-template>
+    </div>
+  </div>
+</lib-screen-wrapper>
