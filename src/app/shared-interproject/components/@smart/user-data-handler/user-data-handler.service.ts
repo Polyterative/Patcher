@@ -1,18 +1,14 @@
-import { HttpClient }       from '@angular/common/http';
-import { Injectable }       from '@angular/core';
-import { Router }           from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Router }     from '@angular/router';
 import {
     ReplaySubject,
     Subject
-}                           from 'rxjs';
+}                     from 'rxjs';
 import {
-    distinctUntilChanged,
     filter,
     map
-}                           from 'rxjs/operators';
-import { AuthorizeService } from '../../../../features/admin/api-authorization/authorize.service';
-// import UserAPI = User.UserAPI;
-// import UserModel = User.UserModel;
+}                     from 'rxjs/operators';
 
 interface UserModel {
   username: string;
@@ -30,12 +26,8 @@ export class UserDataHandlerService {
   constructor(
     public router: Router,
     public httpClient: HttpClient,
-    public authorize: AuthorizeService
   ) {
 
-    authorize.getUser()
-             .pipe(distinctUntilChanged())
-             .subscribe(value => this.store.user$.next({username: value?.name || ''}));
     // let api = new UserAPI(httpClient);
 
     // api.get()
@@ -53,7 +45,6 @@ export class UserDataHandlerService {
     this.logoff$
         .pipe(map(x => undefined))
         .subscribe(value => {
-          this.authorize.signOut(null);
 
           this.store.user$.next(value);
         });

@@ -13,13 +13,15 @@ import { ScreenWrapperModule }   from '../../shared-interproject/components/@vis
 import { HomeComponent }         from './home.component';
 
 @NgModule({
-  declarations: [HomeComponent],
-  exports:      [HomeComponent],
-    imports: [
+    declarations: [HomeComponent],
+    exports:      [HomeComponent],
+    imports:      [
         CommonModule,
         FlexLayoutModule,
         MatButtonModule,
         MatCardModule,
+        MatToolbarModule,
+        // EmptyStateModule,
         RouterModule.forRoot([
             {
                 path:       '',
@@ -31,13 +33,10 @@ import { HomeComponent }         from './home.component';
                 component: HomeComponent
             }
         ]),
-        // EmptyStateModule,
-        MatCardModule,
         ScreenWrapperModule,
         ListLinkRouterModule,
         HeroLinkModule,
         UserDataHandlerModule,
-        MatToolbarModule,
         EmptyStateModule
     ]
 })
