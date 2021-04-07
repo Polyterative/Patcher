@@ -1,18 +1,19 @@
-interface SwitchPosition {
-    name: string,
-}
-
 export interface EuroModule {
     name: string;
     manufacturer: Manufacturer;
     ins: CV[];
     outs: CV[];
     hp: number;
-    switches?: string[][];
+    switches?: Switch[];
 }
 
 export interface Manufacturer {
     name: string;
+}
+
+export interface Switch {
+    name: string;
+    positions: string[];
 }
 
 export interface CV {
@@ -36,20 +37,78 @@ export interface Patch {
 
 export const modules: EuroModule[] = [
     {
+        name:         'Waver',
+        hp:           12,
+        manufacturer: {name: 'Bastl x Casper'},
+        switches:     [
+            {
+                name:      '!',
+                positions: [
+                    'ON',
+                    'OFF'
+                ]
+            },
+            {
+                name:      'B PASS',
+                positions: [
+                    'ON',
+                    'OFF'
+                ]
+            }
+        ],
+        outs:         [
+            {
+                name: 'Shape'
+            },
+            {
+                name: 'Mix'
+            }
+        ],
+        ins:          [
+            {
+                name: 'Break CV'
+            },
+            {
+                name: 'A IN'
+            },
+            {
+                name: 'B IN'
+            },
+            {
+                name: 'C IN'
+            },
+            {
+                name: 'A CV'
+            },
+            {
+                name: 'Shape CV'
+            },
+            {
+                name: 'C CV'
+            }
+        ]
+    },
+    {
         name:         'Basimilus Iteritas Alter',
         hp:           12,
         manufacturer: {name: 'Noise Engineering'},
         switches:     [
-            [
-                'skin',
-                'liquid',
-                'metal'
-            ],
-            [
-                'basso',
-                'alto',
-                'treble'
-            ]
+            {
+                name:      'Algo',
+                positions: [
+                    'skin',
+                    'liquid',
+                    'metal'
+                ]
+            },
+            {
+                name:      'Tone',
+                positions: [
+                    'basso',
+                    'alto',
+                    'treble'
+                ]
+            }
         ],
         outs:         [
             {
@@ -81,9 +140,6 @@ export const modules: EuroModule[] = [
             },
             {
                 name: 'Trig'
-            },
-            {
-                name: 'Output'
             }
         ]
     },
