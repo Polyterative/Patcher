@@ -1,16 +1,17 @@
-import { registerLocaleData } from '@angular/common';
-import localeItExtra          from '@angular/common/locales/extra/it';
-import localeIt               from '@angular/common/locales/it';
+import { registerLocaleData }      from '@angular/common';
+import localeItExtra               from '@angular/common/locales/extra/it';
+import localeIt                    from '@angular/common/locales/it';
 import {
     InjectionToken,
     LOCALE_ID,
     NgModule
-}                             from '@angular/core';
+}                                  from '@angular/core';
 import {
     MAT_DATE_FORMATS,
     MAT_DATE_LOCALE
-}                             from '@angular/material/core';
-import { BrowserModule }      from '@angular/platform-browser';
+}                                  from '@angular/material/core';
+import { BrowserModule }           from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule }   from './app-routing.module';
 import { AppComponent }       from './app.component';
@@ -48,6 +49,7 @@ const matDatepickerLocaleIT = {
     ],
     imports:      [
         BrowserModule,
+        BrowserAnimationsModule,
         AppRoutingModule,
         BackboneModule,
         ToolbarModule,
