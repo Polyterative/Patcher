@@ -66,9 +66,6 @@ export const modules: EuroModule[] = [
         ],
         ins:          [
             {
-                name: 'Break CV'
-            },
-            {
                 name: 'A IN'
             },
             {
@@ -76,6 +73,9 @@ export const modules: EuroModule[] = [
             },
             {
                 name: 'C IN'
+            },
+            {
+                name: 'Break CV'
             },
             {
                 name: 'A CV'
