@@ -1,0 +1,53 @@
+<mat-card>
+  <div fxLayout="row"
+       fxLayoutGap="1rem"
+  >
+    <ng-container *ngIf="name; else noUser">
+      <!--            <div fxFlex='2rem'-->
+      <!--                 fxLayoutAlign='top'-->
+      <!--                 [ngStyle]='{"background-image": "url("+ backgroundImagePath + ")"}'-->
+      <!--                 class='bg'-->
+      <!--            >-->
+      <!--                -->
+      <!--            </div>-->
+
+      <div fxLayout="column "
+           fxFlex="grow"
+           fxLayoutGap="1rem"
+
+      >
+        <div fxLayout="row"
+             fxFlex="auto"
+             fxLayoutGap="1rem"
+
+        >
+          <div fxFlex="auto"
+               style="font-size: 2rem; margin-right: 1rem"
+          >👤
+          </div>
+          <div fxFlex="grow"
+               class="name"
+               fxLayoutAlign="start"
+          >
+            {{ name }}
+          </div>
+        </div>
+        <div fxFlex="auto"
+             fxLayoutAlign="end"
+             *ngIf="!hideLogoff"
+        >
+          <button mat-stroked-button  (click)="logoff$.emit()">Esci</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noUser>
+      <div fxFlexFill>
+        <app-brand-primary-button innerFlex="grow" (click$)="login$.emit()"
+        >
+          Effettua il login
+        </app-brand-primary-button>
+      </div>
+    </ng-template>
+  </div>
+</mat-card>

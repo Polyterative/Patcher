@@ -1,0 +1,22 @@
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap=".5rem"
+     [matTooltip]="description"
+     matTooltipPosition="above"
+     class="item"
+>
+  <div fxFlex="auto"
+       fxLayoutAlign="center center"
+  >
+    <mat-icon *ngIf="icon">
+      <ng-container *ngIf="(!iconOff)||(data|async)">{{icon}}</ng-container>
+      <ng-container *ngIf="iconOff&&(!(data|async))">{{iconOff}}</ng-container>
+    </mat-icon>
+<!--    <ng-content></ng-content>-->
+  </div>
+  <mat-slide-toggle [checked]="data|async"
+                    (change)="data.next($event.checked)"
+                    [disabled]="disabled"
+  >
+  </mat-slide-toggle>
+</div>

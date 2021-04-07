@@ -1,0 +1,35 @@
+@import "~src/app/style/brand-resources.scss";
+
+
+.depadding {
+  padding: 0
+}
+
+.option {
+  //background-color: $brand-tertiary;
+  //color: white;
+  //margin-bottom: 0.2em;
+  border-radius: 4px !important;
+
+
+  &.selected {
+    background-color: $brand-secondary !important;
+    color:            white !important;
+  }
+
+  &.disabled {
+    //background-color: $brand-secondary !important;
+    opacity: 0.3;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0);
+      cursor:           not-allowed;
+    }
+  }
+
+  &:hover {
+    background-color: $brand-tertiary;
+  }
+
+  transition:    125ms;
+}

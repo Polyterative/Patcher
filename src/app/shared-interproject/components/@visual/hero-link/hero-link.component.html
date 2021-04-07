@@ -1,0 +1,42 @@
+<mat-card>
+  <div fxLayout="column"
+       fxLayoutGap="0.2em"
+  >
+    <div fxFlex="auto"
+         class="mat-display-1"
+    >{{label}}</div>
+    <div fxFlex="auto"
+         fxLayoutAlign="end"
+         style="padding-right:2rem; padding-bottom:2rem"
+    >
+      <mat-icon style="font-size:4rem"
+                [ngStyle]="{color:iconColor}"
+      >
+        {{icon}}
+      </mat-icon>
+    </div>
+    <mat-dialog-content>
+      <div fxFlex="auto"
+           fxLayout="column"
+           fxLayoutGap="2rem"
+           style="padding-bottom: 1rem"
+      ></div>
+
+    </mat-dialog-content>
+
+  </div>
+  <mat-dialog-actions>
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="2rem"
+    >
+      <button mat-stroked-button
+              fxFlex="grow"
+              [routerLink]="!disabled?link:null"
+              [disabled]="disabled"
+      >Apri
+      </button>
+
+    </div>
+  </mat-dialog-actions>
+</mat-card>
