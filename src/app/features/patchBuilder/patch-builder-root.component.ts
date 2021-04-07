@@ -18,7 +18,7 @@ export class PatchBuilderRootComponent implements OnInit {
     ) { }
     
     ngOnInit(): void {
-        this.dataService.generate$.next();
+        this.dataService.generate$.next(10);
     }
     
 }

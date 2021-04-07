@@ -9,7 +9,11 @@
         >
             
             <ng-container *ngFor="let item of items">
-                <app-module-browser-module [data]="item"></app-module-browser-module>
+                <div fxFlex="16rem">
+                    <mat-card>
+                        <app-module-browser-module [data]="item"></app-module-browser-module>
+                    </mat-card>
+                </div>
             </ng-container>
         </div>
     </div>

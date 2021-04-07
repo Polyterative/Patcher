@@ -1,6 +1,6 @@
-<mat-card fxFlex="16rem"
-          fxLayout="column"
-          fxLayoutGap="1rem"
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
 >
     <div fxFlex="auto"
          fxLayout="column"
@@ -8,30 +8,62 @@
         <mat-card-title>{{data.name}}</mat-card-title>
         <mat-card-subtitle> {{data.manufacturer.name}}</mat-card-subtitle>
     </div>
-    <mat-card-subtitle>{{data.ins.length}} INs:</mat-card-subtitle>
     <div fxFlex="auto"
-         fxLayout="row wrap"
-         fxLayoutGap="1rem"
+         fxLayout="column"
     >
-        <mat-chip-list>
-            <ng-container *ngFor="let item of data.ins">
-                <mat-chip cdkDrag>
-                    {{item.name}}
-                </mat-chip>
-            </ng-container>
-        </mat-chip-list>
+        <mat-card-subtitle>{{data.ins.length}} INs:</mat-card-subtitle>
+        <div fxFlex="auto"
+             fxLayout="row wrap"
+             fxLayoutGap="1rem"
+        >
+            <mat-chip-list>
+                <ng-container *ngFor="let item of data.ins">
+                    <mat-chip cdkDrag>
+                        {{item.name}}
+                    </mat-chip>
+                </ng-container>
+            </mat-chip-list>
+        </div>
     </div>
-    <mat-card-subtitle>{{data.outs.length}} OUTs:</mat-card-subtitle>
     <div fxFlex="auto"
-         fxLayout="row wrap"
-         fxLayoutGap="1rem"
+         fxLayout="column"
     >
-        <mat-chip-list>
-            <ng-container *ngFor="let item of data.outs">
-                <mat-chip>
-                    {{item.name}}
-                </mat-chip>
-            </ng-container>
-        </mat-chip-list>
+        <mat-card-subtitle>{{data.outs.length}} OUTs:</mat-card-subtitle>
+        <div fxFlex="auto"
+             fxLayout="row wrap"
+             fxLayoutGap="1rem"
+        >
+            <mat-chip-list>
+                <ng-container *ngFor="let item of data.outs">
+                    <mat-chip>
+                        {{item.name}}
+                    </mat-chip>
+                </ng-container>
+            </mat-chip-list>
+        </div>
     </div>
-</mat-card>
+    <ng-container *ngIf="data.switches">
+        <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
+        <div fxFlex="auto"
+             fxLayout="row wrap"
+             fxLayoutGap="1rem"
+        >
+            <mat-chip-list>
+                <ng-container *ngFor="let item of data.switches">
+                    <mat-chip>
+                        <div fxFlex="auto"
+                             fxLayout="row"
+                             fxLayoutGap=".25rem"
+                        >
+                            <ng-container *ngFor="let item of item">
+                                <div>
+                                    {{item}}
+                                </div>
+                            </ng-container>
+                        </div>
+                    </mat-chip>
+                </ng-container>
+            </mat-chip-list>
+        </div>
+    </ng-container>
+</div>
