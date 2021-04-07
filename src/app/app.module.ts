@@ -14,6 +14,7 @@ import { BrowserModule }      from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent }     from './app.component';
+import { HomeModule }       from './features/home/home.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -45,7 +46,8 @@ const matDatepickerLocaleIT = {
     ],
     imports:      [
         BrowserModule,
-        AppRoutingModule
+        AppRoutingModule,
+        HomeModule
     ],
     providers:    [
         italianLocale,
