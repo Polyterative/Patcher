@@ -1,0 +1,95 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" data-name="Layer 1"
+     height="708.57" id="7114f287-f455-48fa-b22d-74c46c20e1b4" viewBox="0 0 880 708.57"
+     width="880" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient gradientUnits="userSpaceOnUse" id="f3037a3a-ca9c-44ad-820d-2abf4b00aaf0" x1="440" x2="440"
+                        y1="126.86">
+            <stop offset="0" stop-color="gray" stop-opacity="0.25"/>
+            <stop offset="0.54" stop-color="gray" stop-opacity="0.12"/>
+            <stop offset="1" stop-color="gray" stop-opacity="0.1"/>
+        </linearGradient>
+        <linearGradient gradientUnits="userSpaceOnUse" id="a70f8c99-35f5-49a6-8b7d-4f5214e4d387" x1="87.3" x2="87.3"
+                        y1="109.38" y2="20.06">
+            <stop offset="0" stop-color="#b3b3b3" stop-opacity="0.25"/>
+            <stop offset="0.54" stop-color="#b3b3b3" stop-opacity="0.1"/>
+            <stop offset="1" stop-color="#b3b3b3" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="4fd672ca-49a1-4acc-8871-0fd2bc3af50b" x1="255.5" x2="255.5" y1="42.07"
+                        y2="30.42" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="527de121-8fb9-4e9a-bfeb-6bf3b12ddf98" x1="292.17" x2="292.17" y1="69.25"
+                        y2="57.6" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="76703a65-20bd-40ee-b936-a2314b4e65bc" x1="440" x2="440" y1="321.14"
+                        y2="194.29" xlink:href="#f3037a3a-ca9c-44ad-820d-2abf4b00aaf0"/>
+        <linearGradient id="7e06630c-c107-466d-ba5a-d39eb4869e22" x1="87.3" x2="87.3" y1="303.67"
+                        y2="214.35" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="64024240-2bee-44a2-98f2-c3338fae8d96" x1="255.5" x2="255.5" y1="236.36"
+                        y2="224.71" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="df6f1b6e-a3ce-456d-88f8-a973e60fd6c1" x1="292.17" x2="292.17"
+                        y1="263.54" y2="251.89" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="7d6446ca-5878-45bd-af0f-8e2754606c00" x1="440" x2="440" y1="514.29"
+                        y2="387.43" xlink:href="#f3037a3a-ca9c-44ad-820d-2abf4b00aaf0"/>
+        <linearGradient id="f86c7a62-0867-4bdc-be80-f22c48d46d50" x1="87.3" x2="87.3" y1="496.81"
+                        y2="407.49" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="34d7a9d4-14f7-4477-9569-e99019787794" x1="255.5" x2="255.5" y1="429.5"
+                        y2="417.85" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="d49810fe-7d94-46b3-98b2-9fba8eecb6ae" x1="292.17" x2="292.17"
+                        y1="456.68" y2="445.03" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="2744f56f-2e61-4887-afdf-980f321917da" x1="440" x2="440" y1="708.57"
+                        y2="581.71" xlink:href="#f3037a3a-ca9c-44ad-820d-2abf4b00aaf0"/>
+        <linearGradient id="695e60e5-3aad-46fe-856e-ca0324095340" x1="87.3" x2="87.3" y1="691.1"
+                        y2="601.78" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="3817817f-905c-4d93-a739-792a114f5d6c" x1="255.5" x2="255.5" y1="623.78"
+                        y2="612.13" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+        <linearGradient id="dc613b25-7b46-43c8-b008-a384c95d9aa8" x1="292.17" x2="292.17"
+                        y1="650.97" y2="639.32" xlink:href="#a70f8c99-35f5-49a6-8b7d-4f5214e4d387"/>
+    </defs>
+    <rect fill="url(#f3037a3a-ca9c-44ad-820d-2abf4b00aaf0)" height="126.86" rx="18.52" ry="18.52"
+          width="880"/>
+    <rect fill="url(#a70f8c99-35f5-49a6-8b7d-4f5214e4d387)" height="89.32" rx="8.35" ry="8.35" width="91.96" x="41.32"
+          y="20.06"/>
+    <rect fill="url(#4fd672ca-49a1-4acc-8871-0fd2bc3af50b)" height="11.65" width="176.93" x="167.04"
+          y="30.42"/>
+    <rect fill="url(#527de121-8fb9-4e9a-bfeb-6bf3b12ddf98)" height="11.65" width="250.26" x="167.04"
+          y="57.6"/>
+    <rect fill="url(#76703a65-20bd-40ee-b936-a2314b4e65bc)" height="126.86" rx="18.52" ry="18.52" width="880"
+          y="194.29"/>
+    <rect fill="url(#7e06630c-c107-466d-ba5a-d39eb4869e22)" height="89.32" rx="8.35" ry="8.35" width="91.96" x="41.32"
+          y="214.35"/>
+    <rect fill="url(#64024240-2bee-44a2-98f2-c3338fae8d96)" height="11.65" width="176.93" x="167.04"
+          y="224.71"/>
+    <rect fill="url(#df6f1b6e-a3ce-456d-88f8-a973e60fd6c1)" height="11.65" width="250.26" x="167.04"
+          y="251.89"/>
+    <rect fill="url(#7d6446ca-5878-45bd-af0f-8e2754606c00)" height="126.86" rx="18.52" ry="18.52" width="880"
+          y="387.43"/>
+    <rect fill="url(#f86c7a62-0867-4bdc-be80-f22c48d46d50)" height="89.32" rx="8.35" ry="8.35" width="91.96" x="41.32"
+          y="407.49"/>
+    <rect fill="url(#34d7a9d4-14f7-4477-9569-e99019787794)" height="11.65" width="176.93" x="167.04"
+          y="417.85"/>
+    <rect fill="url(#d49810fe-7d94-46b3-98b2-9fba8eecb6ae)" height="11.65" width="250.26" x="167.04"
+          y="445.03"/>
+    <rect fill="url(#2744f56f-2e61-4887-afdf-980f321917da)" height="126.86" rx="18.52" ry="18.52" width="880"
+          y="581.71"/>
+    <rect fill="url(#695e60e5-3aad-46fe-856e-ca0324095340)" height="89.32" rx="8.35" ry="8.35" width="91.96" x="41.32"
+          y="601.78"/>
+    <rect fill="url(#3817817f-905c-4d93-a739-792a114f5d6c)" height="11.65" width="176.93" x="167.04"
+          y="612.13"/>
+    <rect fill="url(#dc613b25-7b46-43c8-b008-a384c95d9aa8)" height="11.65" width="250.26" x="167.04"
+          y="639.32"/>
+    <rect fill="#fff" height="112" rx="18.52" ry="18.52" width="864" x="8" y="4.57"/>
+    <rect fill="#7b8a9c" height="78.86" rx="8.35" ry="8.35" width="90.29" x="48.57" y="22.29"/>
+    <rect fill="#bdbdbd" height="10.29" width="173.71" x="172" y="31.43"/>
+    <rect fill="#e0e0e0" height="10.29" width="245.71" x="172" y="55.43"/>
+    <rect fill="#fff" height="112" rx="18.52" ry="18.52" width="864" x="8" y="198.86"/>
+    <rect fill="#7b8a9c" height="78.86" rx="8.35" ry="8.35" width="90.29" x="48.57" y="216.57"/>
+    <rect fill="#bdbdbd" height="10.29" width="173.71" x="172" y="225.71"/>
+    <rect fill="#64ffda" height="10.29" width="245.71" x="172" y="249.71"/>
+    <rect fill="#fff" height="112" rx="18.52" ry="18.52" width="864" x="8" y="393.14"/>
+    <rect fill="#7b8a9c" height="78.86" rx="8.35" ry="8.35" width="90.29" x="48.57" y="410.86"/>
+    <rect fill="#bdbdbd" height="10.29" width="173.71" x="172" y="420"/>
+    <rect fill="#e0e0e0" height="10.29" width="245.71" x="172" y="444"/>
+    <rect fill="#fff" height="112" rx="18.52" ry="18.52" width="864" x="8" y="587.43"/>
+    <rect fill="#7b8a9c" height="78.86" rx="8.35" ry="8.35" width="90.29" x="48.57" y="605.14"/>
+    <rect fill="#bdbdbd" height="10.29" width="173.71" x="172" y="614.29"/>
+    <rect fill="#64ffda" height="10.29" width="245.71" x="172" y="638.29"/>
+    <title>Posts</title>
+</svg>
