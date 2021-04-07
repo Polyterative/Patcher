@@ -1,15 +1,4 @@
-//@import "./Styles/colors";
-//@import "./Styles/constants";
-//@import "./Styles/commons_customizations";
-
-html, body {
-    height: 100%;
-}
-
-mat-card {
-    font-family: 'Roboto Mono', monospace;
-}
-
-mat-card-content {
-    //padding-top: 1em;
+.main {
+    padding:          1rem;
+    background-color: rgba(72, 90, 124, 0.05);
 }
