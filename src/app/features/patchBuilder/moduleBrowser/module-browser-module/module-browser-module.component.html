@@ -8,17 +8,25 @@
          fxLayout="row wrap"
          fxLayoutGap="1rem"
     >
-        <ng-container *ngFor="let item of data.ins">
-            <div>{{item.title}}</div>
-        </ng-container>
+        <mat-chip-list>
+            <ng-container *ngFor="let item of data.ins">
+                <mat-chip cdkDrag>
+                    {{item.title}}
+                </mat-chip>
+            </ng-container>
+        </mat-chip-list>
     </div>
     <mat-card-subtitle>{{data.outs.length}} OUTs:</mat-card-subtitle>
     <div fxFlex="auto"
          fxLayout="row wrap"
          fxLayoutGap="1rem"
     >
-        <ng-container *ngFor="let item of data.outs">
-            <div>{{item.title}}</div>
-        </ng-container>
+        <mat-chip-list>
+            <ng-container *ngFor="let item of data.outs">
+                <mat-chip>
+                    {{item.title}}
+                </mat-chip>
+            </ng-container>
+        </mat-chip-list>
     </div>
 </mat-card>

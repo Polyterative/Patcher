@@ -1,12 +1,18 @@
-export interface EuroModule {
+interface SwitchPosition {
     name: string,
+}
+
+export interface EuroModule {
+    name: string;
     manufacturer?: Manufacturer;
     ins: CV[];
     outs: CV[];
+    hp: number;
+    switches?: string[][];
 }
 
 export interface Manufacturer {
-    names: string,
+    names: string;
 }
 
 export interface CV {
@@ -14,11 +20,64 @@ export interface CV {
     description?: string;
     min?: number;
     max?: number;
+    isVOCT?: boolean;
 }
 
 export const modules: EuroModule[] = [
     {
+        name:     'Basimilus Iteritas Alter',
+        hp:       12,
+        switches: [
+            [
+                'skin',
+                'liquid',
+                'metal'
+            ],
+            [
+                'basso',
+                'alto',
+                'treble'
+            ]
+        ],
+        outs:     [
+            {
+                title: 'Output'
+            }
+        ],
+        ins:      [
+            {
+                title:  'Pitch',
+                isVOCT: true
+            },
+            {
+                title: 'Spread'
+            },
+            {
+                title: 'Attack'
+            },
+            {
+                title: 'S/L/M'
+            },
+            {
+                title: 'B/A/T'
+            },
+            {
+                title: 'Morph'
+            },
+            {
+                title: 'Decay'
+            },
+            {
+                title: 'Trig'
+            },
+            {
+                title: 'OUT'
+            }
+        ]
+    },
+    {
         name: 'Belgrad',
+        hp:   14,
         outs: [
             {
                 title: 'Output'
@@ -47,6 +106,7 @@ export const modules: EuroModule[] = [
     },
     {
         name: 'Voltage Block',
+        hp:   20,
         outs: [
             {
                 title: '1'
