@@ -50,18 +50,7 @@
         >
             <mat-chip-list>
                 <ng-container *ngFor="let item of data.switches">
-                    <mat-chip>
-                        <div fxFlex="auto"
-                             fxLayout="row"
-                             fxLayoutGap=".25rem"
-                        >
-                            <ng-container *ngFor="let item of item">
-                                <div>
-                                    {{item}}
-                                </div>
-                            </ng-container>
-                        </div>
-                    </mat-chip>
+                    <mat-chip>{{item.name}}</mat-chip>
                 </ng-container>
             </mat-chip-list>
         </div>
