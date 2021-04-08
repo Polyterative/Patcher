@@ -1,6 +1,6 @@
 export interface EuroModule {
     name: string;
-    manufacturer: Manufacturer;
+    mkr: Manufacturer;
     ins: CV[];
     outs: CV[];
     hp: number;
@@ -37,10 +37,10 @@ export interface Patch {
 
 export const modules: EuroModule[] = [
     {
-        name:         'Waver',
-        hp:           12,
-        manufacturer: {name: 'Bastl x Casper'},
-        switches:     [
+        name:     'Waver',
+        hp:       12,
+        mkr:      {name: 'Bastl x Casper'},
+        switches: [
             {
                 name:      '!',
                 positions: [
@@ -89,10 +89,10 @@ export const modules: EuroModule[] = [
         ]
     },
     {
-        name:         'Basimilus Iteritas Alter',
-        hp:           12,
-        manufacturer: {name: 'Noise Engineering'},
-        switches:     [
+        name:     'Basimilus Iteritas Alter',
+        hp:       12,
+        mkr:      {name: 'Noise Engineering'},
+        switches: [
             {
                 name:      'Algo',
                 positions: [
@@ -144,9 +144,9 @@ export const modules: EuroModule[] = [
         ]
     },
     {
-        name:         'Belgrad',
-        hp:           14,
-        manufacturer: {name: 'XAOC'},
+        name: 'Belgrad',
+        hp:   14,
+        mkr:  {name: 'XAOC'},
         
         outs: [
             {
@@ -175,9 +175,9 @@ export const modules: EuroModule[] = [
         ]
     },
     {
-        name:         'Voltage Block',
-        hp:           20,
-        manufacturer: {name: 'Malekko Heavy Industry'},
+        name: 'Voltage Block',
+        hp:   20,
+        mkr:  {name: 'Malekko Heavy Industry'},
         
         outs: [
             {
@@ -212,6 +212,8 @@ export const modules: EuroModule[] = [
             {
                 name: 'Reset/Hold'
             }
-        ]
+        ],
+        
     }
 ];
+
