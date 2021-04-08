@@ -1,15 +1,26 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
+<div
+    fxLayout="column"
+    fxLayoutGap="1rem"
 >
-    <div fxFlex="5rem"
+    <div fxFlex="auto"
          fxLayout="column"
     >
         <mat-card-title>{{data.name}}</mat-card-title>
-        <mat-card-subtitle> {{data.mkr.name}}</mat-card-subtitle>
+        <div fxFlex="auto"
+             fxLayout="row"
+             fxLayoutGap="1rem"
+        
+        >
+            <mat-card-subtitle fxFlex="grow"> {{data.mkr.name}}</mat-card-subtitle>
+            <mat-card-subtitle fxFlex="3rem"
+                               fxLayoutAlign="center end"
+            >{{data.hp}} HP
+            </mat-card-subtitle>
+        </div>
     </div>
     <div fxFlex="auto"
          fxLayout="column"
+         *ngIf="data.ins"
     >
         <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{data.ins.length}}
             INs:
@@ -29,7 +40,7 @@
     </div>
     <div fxFlex="auto"
          fxLayout="column"
-    
+         *ngIf="data.outs"
     >
         <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{data.outs.length}}
             OUTs:
