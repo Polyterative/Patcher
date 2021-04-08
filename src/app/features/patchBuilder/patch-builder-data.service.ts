@@ -89,13 +89,13 @@ export class PatchBuilderDataService {
             if (xaElement.manufacturer.includes(xaElement.name)) {
                 
                 xaz.push({
-                    name:         xaElement.name.trim(),
-                    mkr: xaElement.manufacturer.substr(xaElement.name.length)
-                                  .trim(),
-                    // ins:[],
-                    // outs:[],
-                    // switches:[],
-                    hp: parseInt(xaElement.hp)
+                    name:        xaElement.name.trim(),
+                    description: xaElement.description,
+                    mkr: {
+                        name: xaElement.manufacturer.substr(xaElement.name.length)
+                                       .trim()
+                    },
+                    hp:  parseInt(xaElement.hp)
                     
                 } as EuroModule);
             }
