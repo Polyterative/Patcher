@@ -7,11 +7,11 @@ import { MatButtonModule }                            from '@angular/material/bu
 import { MatCardModule }                              from '@angular/material/card';
 import { MatChipsModule }                             from '@angular/material/chips';
 import { MatIconModule }                              from '@angular/material/icon';
+import { MatTooltipModule }                           from '@angular/material/tooltip';
 import { RouterModule }                               from '@angular/router';
 import { HeroContentCardModule }                      from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule }                   from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { PatchBuilderRootComponent }                  from '../patchBuilder/patch-builder-root.component';
 import { ModuleBrowserDataService }                   from './module-browser-data.service';
 import { ModuleBrowserModuleDetailViewRootComponent } from './module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
 import { ModuleBrowserModuleComponent }               from './module-browser-module/module-browser-module.component';
@@ -49,7 +49,8 @@ import { ModuleBrowserRootComponent }                 from './module-browser-roo
         ScrollingModule,
         ScreenWrapperModule,
         MatIconModule,
-        MatButtonModule
+        MatButtonModule,
+        MatTooltipModule
     ],
     exports:      [
         ModuleBrowserRootComponent,

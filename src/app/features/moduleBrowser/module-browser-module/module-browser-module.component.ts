@@ -14,6 +14,7 @@ import { EuroModule } from '../../../models/models';
 })
 export class ModuleBrowserModuleComponent implements OnInit {
     @Input() data: EuroModule;
+    @Input() showAll = false;
     
     ngOnInit(): void {
     }
