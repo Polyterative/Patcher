@@ -3,24 +3,42 @@
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-        <app-module-browser-root></app-module-browser-root>
+        <!--        <mat-accordion>-->
+        <!--            <mat-expansion-panel [expanded]="true">-->
+        <!--                <mat-expansion-panel-header>-->
+        <!--                    <mat-panel-title>-->
+        <!--                        module-browser-->
+        <!--                    </mat-panel-title>-->
+        <!--                    &lt;!&ndash;                    <mat-panel-description>&ndash;&gt;-->
+        <!--                    &lt;!&ndash;                        Type your name and age&ndash;&gt;-->
+        <!--                    &lt;!&ndash;                        <mat-icon>account_circle</mat-icon>&ndash;&gt;-->
+        <!--                    &lt;!&ndash;                    </mat-panel-description>&ndash;&gt;-->
+        <!--                </mat-expansion-panel-header>-->
+        <!--                <app-module-browser-root></app-module-browser-root>-->
+        <!--            -->
+        <!--            </mat-expansion-panel>-->
+        <!--        -->
+        <!--        </mat-accordion>-->
+        
+<!--        <app-module-browser-root></app-module-browser-root>-->
+        
         <h3>patch-builder</h3>
         <div fxFlex="auto"
              fxLayout="row"
              fxLayoutGap="1rem"
         >
             <app-brand-primary-button
-                (click$)="dataService.generate$.next(1)"
+                    (click$)="dataService.generate$.next(1)"
             >Generate 1
             </app-brand-primary-button>
             
             <app-brand-primary-button
-                (click$)="dataService.generate$.next(5)"
+                    (click$)="dataService.generate$.next(5)"
             >Generate 5
             </app-brand-primary-button>
             
             <app-brand-primary-button
-                (click$)="dataService.generate$.next(25)"
+                    (click$)="dataService.generate$.next(25)"
             >Generate 25
             </app-brand-primary-button>
         </div>
