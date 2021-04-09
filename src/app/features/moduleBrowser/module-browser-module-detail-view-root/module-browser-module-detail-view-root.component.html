@@ -1,3 +1,21 @@
-    <mat-card>
-        <app-module-browser-module [data]="modules[0]"></app-module-browser-module>
-    </mat-card>
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+    >
+        <div fxFlex="auto"
+             fxLayoutAlign="center"
+        >
+            <div fxFlex="40rem">
+                <mat-card>
+                    <app-module-browser-module [data]="modules[0]"
+                                               [showAll]="true"
+                    ></app-module-browser-module>
+                </mat-card>
+            </div>
+        </div>
+    </div>
+</div>
