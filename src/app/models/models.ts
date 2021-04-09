@@ -6,6 +6,7 @@ export interface EuroModule {
     ins?: CV[];
     outs?: CV[];
     switches?: Switch[];
+    manualURL?: string;
 }
 
 export interface Manufacturer {
@@ -38,9 +39,9 @@ export interface Patch {
 
 export const modules: EuroModule[] = [
     {
-        name: 'Maths',
-        mkr:  {name: 'Make Noise'},
-        ins:  [
+        name:      'Maths',
+        mkr:       {name: 'Make Noise'},
+        ins:       [
             {
                 name: 'Signal Input',
                 min:  -10,
@@ -57,7 +58,8 @@ export const modules: EuroModule[] = [
                 max:  8
             }
         ],
-        hp:   12
+        hp:        12,
+        manualURL: 'http://www.makenoisemusic.com/content/manuals/MATHSmanual2013.pdf'
     },
     {
         name: 'Plaits',
