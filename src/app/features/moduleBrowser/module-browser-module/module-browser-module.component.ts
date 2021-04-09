@@ -4,7 +4,7 @@ import {
     Input,
     OnInit
 }                     from '@angular/core';
-import { EuroModule } from '../../models/models';
+import { EuroModule } from '../../patchBuilder/models/models';
 
 @Component({
     selector:        'app-module-browser-module',
