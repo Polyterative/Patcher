@@ -13,12 +13,13 @@ import {
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { AppRoutingModule }   from './app-routing.module';
-import { AppComponent }       from './app.component';
-import { BackboneModule }     from './features/backbone/backbone.module';
-import { FeedbackBoxModule }  from './features/backbone/feedback-box/feedback-box.module';
-import { ToolbarModule }      from './features/backbone/toolbar/toolbar.module';
-import { PatchBuilderModule } from './features/patchBuilder/patch-builder.module';
+import { AppRoutingModule }    from './app-routing.module';
+import { AppComponent }        from './app.component';
+import { BackboneModule }      from './features/backbone/backbone.module';
+import { FeedbackBoxModule }   from './features/backbone/feedback-box/feedback-box.module';
+import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module';
+import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
+import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -48,13 +49,14 @@ const matDatepickerLocaleIT = {
     declarations: [
         AppComponent
     ],
-    imports: [
+    imports:      [
         BrowserModule,
         BrowserAnimationsModule,
         AppRoutingModule,
         BackboneModule,
         ToolbarModule,
         PatchBuilderModule,
+        ModuleBrowserModule,
         FeedbackBoxModule
     ],
     providers:    [
