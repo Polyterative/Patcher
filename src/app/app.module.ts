@@ -12,12 +12,13 @@ import {
 }                                  from '@angular/material/core';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule }            from '@angular/router';
 
-import { AppRoutingModule }    from './app-routing.module';
 import { AppComponent }        from './app.component';
 import { BackboneModule }      from './features/backbone/backbone.module';
 import { FeedbackBoxModule }   from './features/backbone/feedback-box/feedback-box.module';
 import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module';
+import { BackendModule }       from './features/backend/backend.module';
 import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
 import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
@@ -52,8 +53,9 @@ const matDatepickerLocaleIT = {
     ],
     imports: [
         BrowserModule,
+        RouterModule,
         BrowserAnimationsModule,
-        AppRoutingModule,
+        BackendModule,
         BackboneModule,
         ToolbarModule,
         PatchBuilderModule,

@@ -9,8 +9,41 @@ export interface EuroModule {
     manualURL?: string;
 }
 
+export interface DBEuroModule {
+    name: string;
+    manufacturerId: string;
+    hp: number;
+    description?: string;
+    ins: string;
+    outs: string;
+    switches: string;
+    manualURL: string;
+    created: string;
+    updated: string;
+    public: boolean;
+    additional: string;
+}
+
+export interface LocalEuroModule extends DBEuroModule {
+    id: string;
+}
+
+export interface LocalManufacturer extends DBManufacturer {
+    id: string;
+}
+
+export interface DBManufacturer {
+    name: string;
+    url?: string;
+    logo?: string;
+    admin?: string;
+}
+
 export interface Manufacturer {
     name: string;
+    url?: string;
+    logo?: string;
+    admin?: string;
 }
 
 export interface Switch {
@@ -27,9 +60,9 @@ export interface CV {
 }
 
 export interface Connection {
-    from: EuroModule;
+    from: LocalEuroModule;
     fromId: number;
-    to: EuroModule;
+    to: LocalEuroModule;
     toId: number;
 }
 

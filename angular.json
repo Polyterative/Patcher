@@ -17,8 +17,9 @@
                     "flat":            false,
                     "skipImport":      false
                 },
-                "@schematics/angular:service":   {
-                    "skipTests": true
+                "@schematics/angular:service": {
+                    "skipTests": true,
+                    "flat":      true
                 },
                 "@schematics/angular:module":    {
                     "flat": false

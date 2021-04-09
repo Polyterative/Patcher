@@ -1,9 +1,10 @@
 <div fxFlex="auto"
      fxLayout="column"
      fxLayoutGap="1rem"
+     *ngIf="data"
 >
     <div fxFlex="auto"
-         fxLayout="row"
+         fxLayout="column"
          fxLayoutGap="1rem"
     >
         <div fxFlex="auto"
@@ -11,7 +12,7 @@
         >
             <div fxFlex="40rem">
                 <mat-card>
-                    <app-module-browser-module [data]="modules[0]"
+                    <app-module-browser-module [data]="data"
                                                [showAll]="true"
                     ></app-module-browser-module>
                 </mat-card>

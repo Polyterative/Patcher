@@ -1,6 +1,6 @@
 import { EuroModule } from './models';
 
-const allmodules = [
+export const allmodules = [
     {
         name:         'Plaits',
         manufacturer: 'Plaits Mutable instruments',
@@ -28765,13 +28765,6 @@ const allmodules = [
         hp:           '55'
     },
     {
-        name:         '6 HP Noise Utility',
-        manufacturer: '24dB LPF',
-        desc:         '24dB LPF MFOS',
-        price:        'Four Pole 24dB/Oct With VC Resonance Low Pass Filter',
-        hp:           '9'
-    },
-    {
         name:         '10 HP Filter',
         manufacturer: 'Analog Bass Drum black panel',
         desc:         'Analog Bass Drum black panel ph modular',
@@ -32846,13 +32839,6 @@ const allmodules = [
         hp:           '3 HP Utility'
     },
     {
-        name:         ' ',
-        manufacturer: 'M-145 5-ch Mixer ',
-        desc:         'M-145 5-ch Mixer Ladik',
-        price:        '5-ch Mixer with inverted output',
-        hp:           '40'
-    },
-    {
         name:         '4 HP Mixer Utility Attenuator',
         manufacturer: '???-1? black',
         desc:         '???-1? black Paratek',
@@ -33887,13 +33873,6 @@ const allmodules = [
         desc:         '5-10 black Paratek',
         price:        '4 channel CV signal scaler',
         hp:           '65'
-    },
-    {
-        name:         '2 HP Utility',
-        manufacturer: ' ',
-        desc:         '24dB LPF',
-        price:        '24dB LPF Volt-a-tone',
-        hp:           '24dB low pass filter based on the AS3320 chip'
     },
     {
         name:         '92',
@@ -34960,7 +34939,7 @@ const allmodules = [
         hp:           '10 HP Filter Oscillator'
     }
 ];
-const zmodules: EuroModule[] = [
+export const zmodules: EuroModule[] = [
     
     {
         name: 'A-134-1',
@@ -35251,11 +35230,6 @@ const zmodules: EuroModule[] = [
         name: 'MA35 VCF / A',
         mkr:  {name: 'Manhattan Analog'},
         hp:   12
-    },
-    {
-        name: 'Maths v2 (Grayscale black panel)',
-        mkr:  {name: 'Grayscale'},
-        hp:   null
     },
     {
         name: 'BD',
@@ -35969,7 +35943,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Entropy2',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   3
     },
     {
@@ -36004,7 +35978,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Attenumixer',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   4
     },
     {
@@ -36148,11 +36122,6 @@ const zmodules: EuroModule[] = [
         hp:   28
     },
     {
-        name: 'Maths Black Grayscale with Blue Knobs (Panel)',
-        mkr:  {name: 'Grayscale'},
-        hp:   null
-    },
-    {
         name: 'trig31',
         mkr:  {name: 'vpme.de'},
         hp:   28
@@ -36263,11 +36232,6 @@ const zmodules: EuroModule[] = [
         hp:   14
     },
     {
-        name: 'Peaks',
-        mkr:  {name: 'Oscillosaurus'},
-        hp:   null
-    },
-    {
         name: 'Graphic Sequencer',
         mkr:  {name: 'STG Soundlabs'},
         hp:   8
@@ -36374,7 +36338,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Skew Fade LFO',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   3
     },
     {
@@ -36556,11 +36520,6 @@ const zmodules: EuroModule[] = [
         name: 'PM Mutes Expander (Black)',
         mkr:  {name: 'WMD'},
         hp:   6
-    },
-    {
-        name: 'Castle 000 ADC',
-        mkr:  {name: 'LZX Industries'},
-        hp:   null
     },
     {
         name: 'VCA Matrix (System +5V)',
@@ -37249,7 +37208,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Entropy Expander',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   3
     },
     {
@@ -37639,7 +37598,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Hilbert curve fractal blank panel',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   3
     },
     {
@@ -37839,7 +37798,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Hilbert curve fractal blank panel',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   6
     },
     {
@@ -38074,7 +38033,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'Skew Fade LFO(B/W)',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   3
     },
     {
@@ -38424,7 +38383,7 @@ const zmodules: EuroModule[] = [
     },
     {
         name: 'SVF(Soulless)',
-        mkr:  {name: 'Z?ob'},
+        mkr:  {name: 'Zlob'},
         hp:   4
     },
     {
@@ -40353,11 +40312,6 @@ const zmodules: EuroModule[] = [
         hp:   3
     },
     {
-        name: '',
-        mkr:  {name: '-145 5-ch Mixer'},
-        hp:   40
-    },
-    {
         name: 'RING MOD',
         mkr:  {name: 'Volt-a-tone'},
         hp:   6
@@ -40476,11 +40430,6 @@ const zmodules: EuroModule[] = [
         name: '5-10 black',
         mkr:  {name: 'Paratek'},
         hp:   6
-    },
-    {
-        name: '',
-        mkr:  {name: '4dB LPF'},
-        hp:   2
     },
     {
         name: 'Rim Shot',

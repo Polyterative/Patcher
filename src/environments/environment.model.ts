@@ -1,6 +1,10 @@
-import { FirebaseModel } from 'src/environments/firebase';
+import { FirebaseOptions } from '@angular/fire';
 
 export interface EnvironmentModel {
-    production: boolean,
-    firebase: FirebaseModel
+    production: boolean;
+    supabase: {
+        url: string
+        key: string
+    }
+    firebase: FirebaseOptions;
 }
