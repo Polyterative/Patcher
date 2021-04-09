@@ -30,16 +30,14 @@ import { ModuleBrowserRootComponent }                 from './module-browser-roo
         RouterModule.forRoot([
             {
                 path:      'browser',
-                component: ModuleBrowserRootComponent,
-                children:  [
-                    {
-                        path:      'details/:id',
-                        pathMatch: 'full',
-                        component: ModuleBrowserModuleDetailViewRootComponent
-                        // children:  []
-                    }
-                ]
+                component: ModuleBrowserRootComponent
                 // pathMatch: 'full'
+            },
+            {
+                path:      'details/:id',
+                pathMatch: 'full',
+                component: ModuleBrowserModuleDetailViewRootComponent
+                // children:  []
             }
         ]),
         FlexLayoutModule,

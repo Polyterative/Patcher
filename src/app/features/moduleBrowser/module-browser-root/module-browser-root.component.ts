@@ -3,7 +3,7 @@ import {
     Component,
     OnInit
 }                  from '@angular/core';
-import { modules } from '../../patchBuilder/models/models';
+import { modules } from '../../../models/models';
 
 @Component({
     selector:        'app-module-browser-root',
