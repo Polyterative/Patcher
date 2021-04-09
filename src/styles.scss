@@ -1,15 +1,17 @@
+@import "./src/app/style/commons_customizations";
+@import "./src/app/style/tools";
 //body {
 //  font-family: Roboto, "Helvetica Neue", sans-serif;
 //}
 
 html, body {
-    height: 100%;
-    font-family: 'Roboto Mono', monospace;
+  height:      100%;
+  font-family: 'Roboto Mono', monospace;
 
 }
 
 body {
-    margin: 0;
-    //filter: grayscale(50%);
-    transition-duration: 225ms;
+  margin:              0;
+  //filter: grayscale(50%);
+  transition-duration: 225ms;
 }
