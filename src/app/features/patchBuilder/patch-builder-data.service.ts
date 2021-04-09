@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import {
     BehaviorSubject,
     Subject
-}                     from 'rxjs';
+} from 'rxjs';
 import {
     Connection,
     EuroModule,
     modules,
     Patch
-}                     from './models/models';
+} from '../../models/models';
 
 @Injectable()
 export class PatchBuilderDataService {
