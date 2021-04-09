@@ -1,15 +1,7 @@
-export interface FirebaseModel {
-    apiKey: string;
-    authDomain: string;
-    // databaseURL: string;
-    projectId: string;
-    storageBucket: string;
-    messagingSenderId: string;
-    measurementId: string;
-    appId: string;
-}
+import { FirebaseOptions } from '@angular/fire';
 
-export const firebaseConfig: FirebaseModel = {
+
+export const firebaseConfig: FirebaseOptions = {
     apiKey:            'AIzaSyBWYGQEVwqo0hRXwPLKlgTqbDcfvrEAFkU',
     authDomain:        'patcher-89a29.firebaseapp.com',
     projectId:         'patcher-89a29',

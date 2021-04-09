@@ -2,8 +2,8 @@ import {
     ChangeDetectionStrategy,
     Component,
     OnInit
-}                  from '@angular/core';
-import { modules } from '../../../models/models';
+}                                   from '@angular/core';
+import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
     selector:        'app-module-browser-root',
@@ -12,9 +12,8 @@ import { modules } from '../../../models/models';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserRootComponent implements OnInit {
-    items = modules;
     
-    constructor() { }
+    constructor(public dataService: ModuleBrowserDataService) { }
     
     ngOnInit(): void {
     }

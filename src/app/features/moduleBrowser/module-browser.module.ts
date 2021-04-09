@@ -6,9 +6,11 @@ import { FlexLayoutModule }                           from '@angular/flex-layout
 import { MatButtonModule }                            from '@angular/material/button';
 import { MatCardModule }                              from '@angular/material/card';
 import { MatChipsModule }                             from '@angular/material/chips';
+import { MatDividerModule }                           from '@angular/material/divider';
 import { MatIconModule }                              from '@angular/material/icon';
 import { MatTooltipModule }                           from '@angular/material/tooltip';
 import { RouterModule }                               from '@angular/router';
+import { BrandPrimaryButtonModule }                   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }                      from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule }                   from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
@@ -25,7 +27,7 @@ import { ModuleBrowserRootComponent }                 from './module-browser-roo
         ModuleBrowserModuleDetailViewRootComponent
     ],
     providers:    [ModuleBrowserDataService],
-    imports:      [
+    imports: [
         CommonModule,
         RouterModule.forRoot([
             {
@@ -50,7 +52,9 @@ import { ModuleBrowserRootComponent }                 from './module-browser-roo
         ScreenWrapperModule,
         MatIconModule,
         MatButtonModule,
-        MatTooltipModule
+        MatTooltipModule,
+        MatDividerModule,
+        BrandPrimaryButtonModule
     ],
     exports:      [
         ModuleBrowserRootComponent,
