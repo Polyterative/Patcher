@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import {
     BehaviorSubject,
     Subject
-} from 'rxjs';
+}                     from 'rxjs';
 import {
     Connection,
     EuroModule,
     modules,
     Patch
-} from '../../models/models';
+}                     from '../../models/models';
 
 @Injectable()
 export class PatchBuilderDataService {
@@ -23,13 +23,13 @@ export class PatchBuilderDataService {
                 const usableINs: EuroModule[] = modules.filter(module => module.ins && module.ins.length > 0);
                 
                 for (let i = 0; i < x; i++) {
-                    
-                    const A: EuroModule = usableINs[this.randomIntFromInterval(usableINs.length - 1)];
-                    const B: EuroModule = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
-                    
+    
+                    const A: EuroModule = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
+                    const B: EuroModule = usableINs[this.randomIntFromInterval(usableINs.length - 1)];
+    
                     const Aid: number = this.randomIntFromInterval(A.outs.length - 1);
                     const bID: number = this.randomIntFromInterval(B.ins.length - 1);
-                    
+    
                     const item: { toId: number; from: EuroModule; to: EuroModule; fromId: number } = {
                         from:   A,
                         fromId: Aid,
