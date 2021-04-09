@@ -1,7 +1,8 @@
 .box {
     display:   flex;
     flex-wrap: wrap;
-    //margin:-10px;
+    max-height: 60rem;
+    overflow-x: auto;
 }
 
 .box > * {
