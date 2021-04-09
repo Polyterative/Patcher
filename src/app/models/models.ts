@@ -38,8 +38,33 @@ export interface Patch {
 
 export const modules: EuroModule[] = [
     {
+        name: 'Maths',
+        mkr:  {name: 'Make Noise'},
+        ins:  [
+            {
+                name: 'Signal Input',
+                min:  -10,
+                max:  10
+            },
+            {
+                name: 'Trigger Input',
+                min:  -10,
+                max:  10
+            },
+            {
+                name: 'Rise CV Input',
+                min:  -8,
+                max:  8
+            }
+        ],
+        hp:   12
+    },
+    {
         name: 'Plaits',
         mkr:  {name: 'Mutable instruments'},
+        ins:  [
+            {name: 'A'}
+        ],
         hp:   12
     },
     {
@@ -460,8 +485,5 @@ export const modules: EuroModule[] = [
         name: 'VCO',
         mkr:  {name: '2hp'},
         hp:   2
-    },
+    }
 ];
-
-
-
