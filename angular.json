@@ -14,7 +14,7 @@
                     "changeDetection": "OnPush",
                     "export":          true,
                     "skipTests":       true,
-                    "flat":            true,
+                    "flat":            false,
                     "skipImport":      false
                 },
                 "@schematics/angular:service":   {

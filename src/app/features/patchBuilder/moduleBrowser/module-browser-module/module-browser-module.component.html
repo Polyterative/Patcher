@@ -1,6 +1,6 @@
 <div
-    fxLayout="column"
-    fxLayoutGap="1rem"
+        fxLayout="column"
+        fxLayoutGap="1rem"
 >
     <div fxFlex="auto"
          fxLayout="column"
@@ -18,57 +18,70 @@
             </mat-card-subtitle>
         </div>
     </div>
-    <div fxFlex="auto"
-         fxLayout="column"
-         *ngIf="data.ins"
-    >
-        <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{data.ins.length}}
-            INs:
-        </mat-card-subtitle>
+    <ng-container *ngIf="false">
         <div fxFlex="auto"
-             fxLayout="row wrap"
-             fxLayoutGap="1rem"
+             fxLayout="column"
+             *ngIf="data.ins"
         >
-            <mat-chip-list>
-                <ng-container *ngFor="let item of data.ins">
-                    <mat-chip cdkDrag>
-                        {{item.name}}
-                    </mat-chip>
-                </ng-container>
-            </mat-chip-list>
+            <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{data.ins.length}}
+                INs:
+            </mat-card-subtitle>
+            <div fxFlex="auto"
+                 fxLayout="row wrap"
+                 fxLayoutGap="1rem"
+            >
+                <mat-chip-list>
+                    <ng-container *ngFor="let item of data.ins">
+                        <mat-chip cdkDrag>
+                            {{item.name}}
+                        </mat-chip>
+                    </ng-container>
+                </mat-chip-list>
+            </div>
         </div>
-    </div>
-    <div fxFlex="auto"
-         fxLayout="column"
-         *ngIf="data.outs"
-    >
-        <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{data.outs.length}}
-            OUTs:
-        </mat-card-subtitle>
         <div fxFlex="auto"
-             fxLayout="row wrap"
-             fxLayoutGap="1rem"
+             fxLayout="column"
+             *ngIf="data.outs"
         >
-            <mat-chip-list>
-                <ng-container *ngFor="let item of data.outs">
-                    <mat-chip>
-                        {{item.name}}
-                    </mat-chip>
-                </ng-container>
-            </mat-chip-list>
+            <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{data.outs.length}}
+                OUTs:
+            </mat-card-subtitle>
+            <div fxFlex="auto"
+                 fxLayout="row wrap"
+                 fxLayoutGap="1rem"
+            >
+                <mat-chip-list>
+                    <ng-container *ngFor="let item of data.outs">
+                        <mat-chip>
+                            {{item.name}}
+                        </mat-chip>
+                    </ng-container>
+                </mat-chip-list>
+            </div>
         </div>
-    </div>
-    <ng-container *ngIf="data.switches">
-        <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
-        <div fxFlex="auto"
-             fxLayout="row wrap"
-             fxLayoutGap="1rem"
-        >
-            <mat-chip-list>
-                <ng-container *ngFor="let item of data.switches">
-                    <mat-chip>{{item.name}}</mat-chip>
-                </ng-container>
-            </mat-chip-list>
-        </div>
+        <ng-container *ngIf="data.switches">
+            <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
+            <div fxFlex="auto"
+                 fxLayout="row wrap"
+                 fxLayoutGap="1rem"
+            >
+                <mat-chip-list>
+                    <ng-container *ngFor="let item of data.switches">
+                        <mat-chip>{{item.name}}</mat-chip>
+                    </ng-container>
+                </mat-chip-list>
+            </div>
+        </ng-container>
     </ng-container>
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+    >
+        <div fxFlex="grow"></div>
+        <button mat-icon-button
+                [routerLink]="['details','0']"
+        >
+            <mat-icon>search</mat-icon>
+        </button>
+    </div>
 </div>
