@@ -20,6 +20,7 @@ import { FeedbackBoxModule }   from './features/backbone/feedback-box/feedback-b
 import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module';
 import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
 import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
+import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
     provide:  LOCALE_ID,
@@ -49,7 +50,7 @@ const matDatepickerLocaleIT = {
     declarations: [
         AppComponent
     ],
-    imports:      [
+    imports: [
         BrowserModule,
         BrowserAnimationsModule,
         AppRoutingModule,
@@ -57,7 +58,8 @@ const matDatepickerLocaleIT = {
         ToolbarModule,
         PatchBuilderModule,
         ModuleBrowserModule,
-        FeedbackBoxModule
+        FeedbackBoxModule,
+        ScreenWrapperModule
     ],
     providers:    [
         italianLocale,
