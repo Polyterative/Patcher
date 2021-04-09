@@ -1,13 +1,15 @@
-<app-hero-content-card title="module-browser">
-    <div fxFlex="auto"
-         class="box"
-    >
-        <ng-container *ngFor="let item of items">
-            <div>
-                <mat-card>
-                    <app-module-browser-module [data]="item"></app-module-browser-module>
-                </mat-card>
-            </div>
-        </ng-container>
-    </div>
-</app-hero-content-card>
+<lib-screen-wrapper>
+    <app-hero-content-card title="module-browser">
+        <div fxFlex="auto"
+             class="box"
+        >
+            <ng-container *ngFor="let item of items">
+                <div>
+                    <mat-card>
+                        <app-module-browser-module [data]="item"></app-module-browser-module>
+                    </mat-card>
+                </div>
+            </ng-container>
+        </div>
+    </app-hero-content-card>
+</lib-screen-wrapper>
