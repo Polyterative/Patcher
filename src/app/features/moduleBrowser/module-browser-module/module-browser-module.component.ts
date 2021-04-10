@@ -4,12 +4,7 @@ import {
     Input,
     OnInit
 }                                   from '@angular/core';
-import { Observable }               from 'rxjs';
-import { share }                    from 'rxjs/operators';
-import {
-    LocalEuroModule,
-    LocalManufacturer
-}                                   from '../../../models/models';
+import { DBEuroModule }             from '../../../models/models';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
@@ -19,18 +14,11 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleComponent implements OnInit {
-    @Input() data: LocalEuroModule;
-    @Input() showAll = false;
-    
-    manufacturer$: Observable<LocalManufacturer>;
+    @Input() data: DBEuroModule;
     
     constructor(public dataService: ModuleBrowserDataService) {}
     
     ngOnInit(): void {
-        // @ts-ignore
-        this.manufacturer$ = this.dataService.storage.getManifacturerWithId(this.data.manufacturerId)
-                                 .pipe(share());
-    
     }
     
 }

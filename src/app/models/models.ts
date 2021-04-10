@@ -9,30 +9,34 @@ export interface EuroModule {
     manualURL?: string;
 }
 
-export interface DBEuroModule {
-    name: string;
-    manufacturerId: string;
-    hp: number;
-    description?: string;
+export interface DBEuroModule extends MinimalEuroModule {
     ins: string;
     outs: string;
     switches: string;
     manualURL: string;
-    created: string;
-    updated: string;
-    public: boolean;
     additional: string;
 }
 
-export interface LocalEuroModule extends DBEuroModule {
-    id: string;
+interface MinimalManufacturer {
+    name: string;
+    id: number;
+    logo?: string;
 }
 
-export interface LocalManufacturer extends DBManufacturer {
-    id: string;
+export interface MinimalEuroModule {
+    id: number;
+    name: string;
+    description?: string;
+    hp: number;
+    public: boolean;
+    manufacturer: MinimalManufacturer;
+    created: string;
+    updated: string;
 }
+
 
 export interface DBManufacturer {
+    id: number;
     name: string;
     url?: string;
     logo?: string;
@@ -60,9 +64,9 @@ export interface CV {
 }
 
 export interface Connection {
-    from: LocalEuroModule;
+    from: DBEuroModule;
     fromId: number;
-    to: LocalEuroModule;
+    to: DBEuroModule;
     toId: number;
 }
 
