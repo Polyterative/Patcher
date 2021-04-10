@@ -1,0 +1,58 @@
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+     *ngIf="ins.length>0"
+>
+    <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{ins.length}}
+        INs:
+    </mat-card-subtitle>
+    <div fxFlex="auto"
+         fxLayout="row wrap"
+         fxLayoutGap="1rem"
+    >
+        <mat-chip-list>
+            <ng-container *ngFor="let item of ins">
+                <!--                            <mat-chip cdkDrag-->
+                <!--                                      [matTooltip]="item.min+'V => '+item.max+'V'"-->
+                <!--                            >-->
+                <!--                                {{item.name}}-->
+                <!--                            </mat-chip>-->
+            </ng-container>
+        </mat-chip-list>
+    </div>
+</div>
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+
+     *ngIf="outs.length>0"
+>
+    <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{data.outs.length}}
+        OUTs:
+    </mat-card-subtitle>
+    <div fxFlex="auto"
+         fxLayout="row wrap"
+         fxLayoutGap="1rem"
+    >
+        <mat-chip-list>
+            <ng-container *ngFor="let item of outs">
+                <!--                            <mat-chip>-->
+                <!--                                {{item.name}}-->
+                <!--                            </mat-chip>-->
+            </ng-container>
+        </mat-chip-list>
+    </div>
+</div>
+<ng-container *ngIf="switches.length>0">
+    <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
+    <div fxFlex="auto"
+         fxLayout="row wrap"
+         fxLayoutGap="1rem"
+    >
+        <mat-chip-list>
+            <ng-container *ngFor="let item of switches">
+                <!--                            <mat-chip>{{item.name}}</mat-chip>-->
+            </ng-container>
+        </mat-chip-list>
+    </div>
+</ng-container>

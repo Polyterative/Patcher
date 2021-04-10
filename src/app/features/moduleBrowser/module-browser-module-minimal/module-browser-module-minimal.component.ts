@@ -4,17 +4,17 @@ import {
     Input,
     OnInit
 }                                   from '@angular/core';
-import { DBEuroModule }             from '../../../models/models';
+import { MinimalEuroModule }        from '../../../models/models';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
-    selector:        'app-module-browser-module',
-    templateUrl:     './module-browser-module.component.html',
-    styleUrls:       ['./module-browser-module.component.scss'],
+    selector:        'app-module-browser-module-minimal',
+    templateUrl:     './module-browser-module-minimal.component.html',
+    styleUrls:       ['./module-browser-module-minimal.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModuleBrowserModuleComponent implements OnInit {
-    @Input() data: DBEuroModule;
+export class ModuleBrowserModuleMinimalComponent implements OnInit {
+    @Input() data: MinimalEuroModule;
     
     constructor(public dataService: ModuleBrowserDataService) {}
     
