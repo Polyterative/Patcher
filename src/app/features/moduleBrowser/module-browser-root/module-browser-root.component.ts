@@ -16,6 +16,7 @@ export class ModuleBrowserRootComponent implements OnInit {
     constructor(public dataService: ModuleBrowserDataService) { }
     
     ngOnInit(): void {
+        this.dataService.updateData$.next();
     }
     
 }

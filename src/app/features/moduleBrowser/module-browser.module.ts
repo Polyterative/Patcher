@@ -16,15 +16,19 @@ import { LabelValueShowcaseModule }                   from '../../shared-interpr
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ModuleBrowserDataService }                   from './module-browser-data.service';
 import { ModuleBrowserModuleDetailViewRootComponent } from './module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
+import { ModuleBrowserModuleMinimalComponent }        from './module-browser-module-minimal/module-browser-module-minimal.component';
 import { ModuleBrowserModuleComponent }               from './module-browser-module/module-browser-module.component';
 import { ModuleBrowserRootComponent }                 from './module-browser-root/module-browser-root.component';
+import { ModuleDetailsComponent }                     from './module-details/module-details.component';
 
 
 @NgModule({
     declarations: [
         ModuleBrowserRootComponent,
         ModuleBrowserModuleComponent,
-        ModuleBrowserModuleDetailViewRootComponent
+        ModuleBrowserModuleDetailViewRootComponent,
+        ModuleBrowserModuleMinimalComponent,
+        ModuleDetailsComponent
     ],
     providers:    [ModuleBrowserDataService],
     imports: [
@@ -59,7 +63,9 @@ import { ModuleBrowserRootComponent }                 from './module-browser-roo
     exports:      [
         ModuleBrowserRootComponent,
         ModuleBrowserModuleComponent,
-        ModuleBrowserModuleDetailViewRootComponent
+        ModuleBrowserModuleDetailViewRootComponent,
+        ModuleBrowserModuleMinimalComponent,
+        ModuleDetailsComponent
     ]
 })
 export class ModuleBrowserModule {}

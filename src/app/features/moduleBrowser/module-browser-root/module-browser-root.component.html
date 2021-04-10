@@ -2,13 +2,13 @@
     <div fxFlex="auto"
          class="box"
     >
-        <ng-container *ngFor="let item of dataService.storage.allModules$|async">
+        <ng-container *ngFor="let item of dataService.modules$|async">
             <div>
                 <mat-card>
-                    <app-module-browser-module [data]="item"></app-module-browser-module>
+                    <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
                 </mat-card>
             </div>
         </ng-container>
     </div>
 </app-hero-content-card>
-<!--<pre>{{(dataService.storage.allModules$|async)|json}}</pre>-->
+<pre>{{(dataService.modules$|async)|json}}</pre>
