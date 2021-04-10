@@ -1,20 +1,24 @@
-import { Injectable }          from '@angular/core';
-import { FirebaseService }     from '../backend/firebase.service';
-import { LocalStorageService } from '../backend/local-storage.service';
-import { SupabaseService }     from '../backend/supabase.service';
+import { Injectable }        from '@angular/core';
+import {
+    BehaviorSubject,
+    Subject
+}                            from 'rxjs';
+import { switchMap }         from 'rxjs/operators';
+import { MinimalEuroModule } from '../../models/models';
+import { SupabaseService }   from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService {
-    // modules$: Observable<DBEuroModule[]>;
+    modules$ = new BehaviorSubject<MinimalEuroModule[]>([]);
+    updateData$ = new Subject();
     
     constructor(
-      private api: FirebaseService,
-      public storage: LocalStorageService,
+      // public storage: LocalStorageService,
       public backend: SupabaseService
     ) {
-        // @ts-ignore
         
-        // this.modules$ = api.get.euromodulesPublic();
+        this.updateData$.pipe(switchMap(x => this.backend.get.euromodulesMinimal()))
+            .subscribe(x => this.modules$.next(x.data));
     }
     
 }

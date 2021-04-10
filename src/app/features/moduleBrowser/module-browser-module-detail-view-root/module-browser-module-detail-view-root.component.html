@@ -1,7 +1,7 @@
 <div fxFlex="auto"
      fxLayout="column"
      fxLayoutGap="1rem"
-     *ngIf="data"
+     *ngIf="data$|async"
 >
     <div fxFlex="auto"
          fxLayout="column"
@@ -12,11 +12,12 @@
         >
             <div fxFlex="40rem">
                 <mat-card>
-                    <app-module-browser-module [data]="data"
+                    <app-module-browser-module [data]="(data$|async)"
                                                [showAll]="true"
                     ></app-module-browser-module>
                 </mat-card>
             </div>
         </div>
     </div>
+    <pre>{{data$|async|json}}</pre>
 </div>

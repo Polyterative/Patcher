@@ -1,0 +1,37 @@
+<div class="flow col"
+>
+    <div class="flow col"
+    >
+        <mat-card-title>{{data.name}}</mat-card-title>
+        <div class="flow row spaceBetween"
+             fxLayoutGap="1rem"
+        >
+            <div>
+                <mat-card-subtitle
+                >
+                    {{data.manufacturer.name}}
+
+                </mat-card-subtitle>
+            </div>
+            <div style="font-size: small"
+                 fxLayoutAlign="center center"
+            >
+                {{data.hp}} HP
+            </div>
+        </div>
+    </div>
+    <ng-content></ng-content>
+    <mat-divider [inset]="true"
+                 style="margin-top:.5rem"
+    ></mat-divider>
+    <div class="auto"
+         fxLayoutAlign="end"
+    >
+        <button
+                mat-icon-button
+                [routerLink]="['/','details',data.id]"
+        >
+            <mat-icon>search</mat-icon>
+        </button>
+    </div>
+</div>
