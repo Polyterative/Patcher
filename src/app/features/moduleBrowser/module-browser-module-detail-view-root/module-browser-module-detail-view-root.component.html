@@ -12,17 +12,29 @@
         >
             <div fxFlex="40rem">
                 <app-hero-content-card>
-                    <app-auto-loading-indicator [updateData$]="updateData$"
-                                                [data$]="data$"
-                    ></app-auto-loading-indicator>
-                    <ng-container *ngIf="data$|async"
+                    <div fxFlex="auto"
+                         fxLayout="column"
+                         fxLayoutGap="1rem"
                     >
-                        <app-module-browser-module [data]="(data$|async)"
-                        ></app-module-browser-module>
-                    </ng-container>
+                        <div>
+                            <mat-card>
+                                <app-auto-loading-indicator [updateData$]="updateData$"
+                                                            [data$]="data$"
+                                ></app-auto-loading-indicator>
+                                <ng-container *ngIf="data$|async"
+                                >
+                                    <app-module-browser-module [data]="(data$|async)"
+                                    ></app-module-browser-module>
+                                </ng-container>
+                            </mat-card>
+                        </div>
+                        <app-module-editor [data]="(data$|async)"></app-module-editor>
+                    </div>
                 </app-hero-content-card>
             </div>
         </div>
     </div>
-    <pre>{{data$|async|json}}</pre>
+    <app-dev-only-window>
+        {{data$|async|json}}
+    </app-dev-only-window>
 </div>
