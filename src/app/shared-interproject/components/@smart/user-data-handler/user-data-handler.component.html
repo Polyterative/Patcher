@@ -17,7 +17,11 @@
     <!--    -->
     <ng-template #noData>
         <mat-card>
-            <app-brand-primary-button>Login</app-brand-primary-button>
+            <app-brand-primary-button fxFlex="grow"
+                                      innerFlex="grow"
+                                      [disabled]="true"
+            >Login
+            </app-brand-primary-button>
         </mat-card>
     </ng-template>
 </div>

@@ -7,6 +7,7 @@ import {
     NgModule
 }                                  from '@angular/core';
 import { FlexLayoutModule }        from '@angular/flex-layout';
+import { MatCardModule }           from '@angular/material/card';
 import {
     MAT_DATE_FORMATS,
     MAT_DATE_LOCALE
@@ -67,7 +68,8 @@ const matDatepickerLocaleIT = {
         BackboneModule,
         PageHeaderModule,
         MatToolbarModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        MatCardModule
         //keep as last (for routes)
     ],
     providers:    [
