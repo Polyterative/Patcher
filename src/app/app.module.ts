@@ -6,6 +6,7 @@ import {
     LOCALE_ID,
     NgModule
 }                                  from '@angular/core';
+import { FlexLayoutModule }        from '@angular/flex-layout';
 import {
     MAT_DATE_FORMATS,
     MAT_DATE_LOCALE
@@ -65,7 +66,8 @@ const matDatepickerLocaleIT = {
         ScreenWrapperModule,
         BackboneModule,
         PageHeaderModule,
-        MatToolbarModule
+        MatToolbarModule,
+        FlexLayoutModule
         //keep as last (for routes)
     ],
     providers:    [
