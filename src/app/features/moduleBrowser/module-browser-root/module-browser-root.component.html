@@ -1,8 +1,22 @@
-<app-hero-content-card title="module-browser">
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+    <app-page-header title="module-browser"></app-page-header>
+    <app-module-browser-filters></app-module-browser-filters>
+    <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
+                   [pageSizeOptions]="[10,25,50,100]"
+                   [length]="dataService.serversideAdditionalData.itemsCount$|async"
+                   (page)="dataService.onPageEvent($event)"
+                   showFirstLastButtons
+    ></mat-paginator>
+    <app-auto-loading-indicator [data$]="dataService.data$"
+                                [updateData$]="dataService.updateData$"
+    ></app-auto-loading-indicator>
     <div fxFlex="auto"
          class="box"
     >
-        <ng-container *ngFor="let item of dataService.modules$|async">
+        <ng-container *ngFor="let item of dataService.data$|async">
             <div>
                 <mat-card>
                     <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
@@ -10,5 +24,5 @@
             </div>
         </ng-container>
     </div>
-</app-hero-content-card>
-<pre>{{(dataService.modules$|async)|json}}</pre>
+</div>
+<!--<pre>{{(dataService.modules$|async)|json}}</pre>-->
