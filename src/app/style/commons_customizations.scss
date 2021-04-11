@@ -23,6 +23,9 @@ body {
   top: 11px !important; // was 23 = 48/2-1
 }
 
+.mat-form-field-appearance-standard .mat-form-field-flex {
+  padding-top: 0 !important;
+}
 
 mat-action-row {
   margin-top: 1em;

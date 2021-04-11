@@ -2,9 +2,7 @@
 import { FormControl }  from '@angular/forms';
 import { AppFormUtils } from './app-form-utils';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class AppStateService {
 
   /*

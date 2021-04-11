@@ -1,10 +1,9 @@
 import {
-    AbstractControl,
-    FormControl,
-    ValidationErrors
-}                   from '@angular/forms';
-import { isNumber } from 'lodash-es';
-import { Strings }  from '../../../app-form-utils';
+  AbstractControl,
+  FormControl,
+  ValidationErrors
+}                  from '@angular/forms';
+import { Strings } from '../../../app-form-utils';
 
 export interface FormLineSetup {
   hideRequired: boolean;
@@ -41,7 +40,7 @@ export namespace CustomValidators {
   }
 
   function onlyNumbers(control: AbstractControl): ValidationErrors | null {
-    return !isNumber(control.value) ? {[Strings.form.errorCode.custom.numberNot]: true} : null;
+    return !(typeof control.value === 'number') ? {[Strings.form.errorCode.custom.numberNot]: true} : null;
   }
 
   function onlyPositiveAndInteger(control: AbstractControl): ValidationErrors | null {
