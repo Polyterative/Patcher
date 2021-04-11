@@ -1,16 +1,36 @@
 {
-    "hosting": {
-        "public":   "dist/Patcher",
-        "ignore":   [
-            "firebase.json",
-            "**/.*",
-            "**/node_modules/**"
-        ],
-        "rewrites": [
-            {
-                "source":      "**",
-                "destination": "/index.html"
-            }
+  "hosting": {
+    "public":   "dist/Patcher",
+    "ignore":   [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source":      "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers":  [
+      {
+        "source":  "**/*.@eot|otf|ttf|ttc|woff|font.css",
+        "headers": [
+          {
+            "key":   "Access-Control-Allow-Origin",
+            "value": "*"
+          }
         ]
-    }
+      },
+      {
+        "source":  "**/*.@jpg|jpeg|png|gif|svg)",
+        "headers": [
+          {
+            "key":   "Cache-Control",
+            "value": "max-age=31536"
+          }
+        ]
+      }
+    ]
+  }
 }
