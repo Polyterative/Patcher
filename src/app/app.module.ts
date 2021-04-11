@@ -10,6 +10,7 @@ import {
     MAT_DATE_FORMATS,
     MAT_DATE_LOCALE
 }                                  from '@angular/material/core';
+import { MatToolbarModule }        from '@angular/material/toolbar';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule }            from '@angular/router';
@@ -21,6 +22,7 @@ import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module'
 import { BackendModule }       from './features/backend/backend.module';
 import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
 import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
+import { PageHeaderModule }    from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
@@ -56,12 +58,15 @@ const matDatepickerLocaleIT = {
         RouterModule,
         BrowserAnimationsModule,
         BackendModule,
-        BackboneModule,
         ToolbarModule,
         PatchBuilderModule,
         ModuleBrowserModule,
         FeedbackBoxModule,
-        ScreenWrapperModule
+        ScreenWrapperModule,
+        BackboneModule,
+        PageHeaderModule,
+        MatToolbarModule
+        //keep as last (for routes)
     ],
     providers:    [
         italianLocale,

@@ -50,7 +50,7 @@ export class SupabaseService {
         .pipe(map(value => value.data.length)),
         euromodulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
           this.supabase.from(this.paths.euromodules)
-              .select(`id,name,hp,public, manufacturer:manufacturerId(name,id,logo)`)
+              .select(`id,name,hp,description,public, manufacturer:manufacturerId(name,id,logo)`)
           // .textSearch('name', name)
               .range(from, to)
               .order(orderBy ? orderBy : 'name')

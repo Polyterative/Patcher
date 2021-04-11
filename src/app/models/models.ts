@@ -15,6 +15,9 @@ export interface DBEuroModule extends MinimalEuroModule {
     switches: string;
     manualURL: string;
     additional: string;
+    oneU: boolean;
+    isComplete: boolean;
+    isDIY: boolean;
 }
 
 interface MinimalManufacturer {

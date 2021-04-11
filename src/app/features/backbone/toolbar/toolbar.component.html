@@ -20,40 +20,7 @@
                      fxLayout="row"
                      fxLayoutGap="1rem"
                 >
-                    <div fxFlex="auto"
-                         fxLayout="row"
-                         fxLayoutGap="1rem"
-                    >
-                        <button mat-icon-button
-                                routerLink="home"
-                                routerLinkActive="selectedLink"
-                        >
-                            <mat-icon>home</mat-icon>
-                        </button>
-                    
-                    </div>
-                    <div class="buttons"
-                         fxLayout="row"
-                         fxLayoutGap="1rem"
-                    >
-                        <button mat-icon-button
-                                routerLink="browser"
-                                routerLinkActive="selectedLink"
-                        >
-                            <mat-icon>list</mat-icon>
-                        </button>
-                    </div>
-                    <div class="buttons"
-                         fxLayout="row"
-                         fxLayoutGap="1rem"
-                    >
-                        <button mat-icon-button
-                                routerLink="builder"
-                                routerLinkActive="selectedLink"
-                        >
-                            <mat-icon>build</mat-icon>
-                        </button>
-                    </div>
+                    <app-route-clickable-link-list [data$]="data$"></app-route-clickable-link-list>
                 </div>
                 <div fxFlex="grow"></div>
                 <app-brand-logo></app-brand-logo>

@@ -14,6 +14,7 @@ import { MatToolbarModule }                           from '@angular/material/to
 import { MatTooltipModule }                           from '@angular/material/tooltip';
 import { RouterModule }                               from '@angular/router';
 import { AutoLoadingIndicatorModule }                 from '../../shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
+import { DevOnlyWindowModule }                        from '../../shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule }                        from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule }                   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }                      from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -27,6 +28,7 @@ import { ModuleBrowserModuleMinimalComponent }        from './module-browser-mod
 import { ModuleBrowserModuleComponent }               from './module-browser-module/module-browser-module.component';
 import { ModuleBrowserRootComponent }                 from './module-browser-root/module-browser-root.component';
 import { ModuleDetailsComponent }                     from './module-details/module-details.component';
+import { ModuleEditorComponent }                      from './module-editor/module-editor.component';
 
 
 @NgModule({
@@ -36,7 +38,8 @@ import { ModuleDetailsComponent }                     from './module-details/mod
         ModuleBrowserModuleDetailViewRootComponent,
         ModuleBrowserModuleMinimalComponent,
         ModuleDetailsComponent,
-        ModuleBrowserFiltersComponent
+        ModuleBrowserFiltersComponent,
+        ModuleEditorComponent
     ],
     providers:    [ModuleBrowserDataService],
     imports: [
@@ -72,7 +75,8 @@ import { ModuleDetailsComponent }                     from './module-details/mod
         AutoLoadingIndicatorModule,
         MatFormEntityModule,
         MatToolbarModule,
-        PageHeaderModule
+        PageHeaderModule,
+        DevOnlyWindowModule
     ],
     exports:      [
         ModuleBrowserRootComponent,
@@ -80,7 +84,8 @@ import { ModuleDetailsComponent }                     from './module-details/mod
         ModuleBrowserModuleDetailViewRootComponent,
         ModuleBrowserModuleMinimalComponent,
         ModuleDetailsComponent,
-        ModuleBrowserFiltersComponent
+        ModuleBrowserFiltersComponent,
+        ModuleEditorComponent
     ]
 })
 export class ModuleBrowserModule {}

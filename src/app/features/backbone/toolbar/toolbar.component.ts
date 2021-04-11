@@ -1,20 +1,42 @@
 ﻿import {
     ChangeDetectionStrategy,
     Component
-}                         from '@angular/core';
-import { Router }         from '@angular/router';
-import { ToolbarService } from './toolbar.service';
+}                             from '@angular/core';
+import { Router }             from '@angular/router';
+import { BehaviorSubject }    from 'rxjs';
+import { RouteClickableLink } from '../../../shared-interproject/components/@smart/route-clickable-link/route-clickable-link/route-clickable-link.component';
+import { ToolbarService }     from './toolbar.service';
 
 @Component({
-  selector:        'app-toolbar',
-  templateUrl:     './toolbar.component.html',
-  styleUrls:       ['./toolbar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
-
+    selector:        'app-toolbar',
+    templateUrl:     './toolbar.component.html',
+    styleUrls:       ['./toolbar.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
+    
 })
 export class ToolbarComponent {
-
-  constructor(public service: ToolbarService, public router: Router) {
-  }
-
+    public readonly data$ = new BehaviorSubject<RouteClickableLink[]>([
+        {
+            label:    'home',
+            route:    'home',
+            icon:     'home',
+            disabled: false
+        },
+        {
+            label:    'Browser',
+            route:    'browser',
+            icon:     'list',
+            disabled: false
+        },
+        {
+            label:    'Patch builder',
+            route:    'builder',
+            icon:     'build',
+            disabled: false
+        }
+    ]);
+    
+    constructor(public service: ToolbarService, public router: Router) {
+    }
+    
 }
