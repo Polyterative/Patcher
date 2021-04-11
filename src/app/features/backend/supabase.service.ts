@@ -5,6 +5,7 @@ import {
 import { createClient }  from '@supabase/supabase-js';
 import { ReplaySubject } from 'rxjs';
 import { fromPromise }   from 'rxjs/internal-compatibility';
+import { map }           from 'rxjs/operators';
 import { environment }   from '../../../environments/environment';
 import {
     DBEuroModule,
@@ -42,22 +43,31 @@ export class SupabaseService {
               .select(`${ columns }, manufacturer:manufacturerId(name,id,logo)`)
               .range(from, to)
         ),
-        euromodulesMinimal: (from = 0, to: number = this.defaultPag) => fromPromise(
+        euromodulesCount:   () => fromPromise(
+          this.supabase.from(this.paths.euromodules)
+              .select(`id`)
+        )
+        .pipe(map(value => value.data.length)),
+        euromodulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
           this.supabase.from(this.paths.euromodules)
               .select(`id,name,hp,public, manufacturer:manufacturerId(name,id,logo)`)
+          // .textSearch('name', name)
               .range(from, to)
+              .order(orderBy ? orderBy : 'name')
         ),
         euromoduleWithId:   (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
           this.supabase.from(this.paths.euromodules)
               .select(`${ columns }, manufacturer:manufacturerId(name)`)
               .range(from, to)
               .filter('id', 'eq', id)
+              .single()
         ),
         manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
           this.supabase.from(this.paths.manufacturers)
               .select(columns)
               .range(from, to)
               .filter('id', 'eq', id)
+              .single()
         ),
         manufacturers:      (from = 0, to = this.defaultPag, columns = '*') => fromPromise(
           this.supabase.from(this.paths.manufacturers)

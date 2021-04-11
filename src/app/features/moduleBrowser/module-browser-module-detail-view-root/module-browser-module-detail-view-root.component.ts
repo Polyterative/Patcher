@@ -3,7 +3,10 @@ import {
     OnInit
 }                                   from '@angular/core';
 import { ActivatedRoute }           from '@angular/router';
-import { ReplaySubject }            from 'rxjs';
+import {
+    BehaviorSubject,
+    Subject
+}                                   from 'rxjs';
 import {
     filter,
     map,
@@ -20,7 +23,8 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
     // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
-    data$ = new ReplaySubject<DBEuroModule>();
+    data$ = new BehaviorSubject<DBEuroModule | undefined>(undefined);
+    updateData$ = new Subject<number>();
     
     constructor(
       public dataService: ModuleBrowserDataService,
@@ -28,13 +32,22 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
       public route: ActivatedRoute
     ) {
     
+        this.updateData$
+            .pipe(switchMap(x => dataService.backend.get.euromoduleWithId(x)))
+            .subscribe(x => this.data$.next(x.data));
+    
         this.route.params
             .pipe(
-              map(x => (x && x.id ? x.id : '')),
-              filter(value => value.length > 0),
-              switchMap(x => dataService.backend.get.euromoduleWithId(x))
+              map(x => (x && x.id && parseInt(x.id) ? parseInt(x.id) : 0)),
+              filter(x => x > 0)
             )
-            .subscribe(x => this.data$.next(x.data[0]));
+            .subscribe(data => {
+                // debugger
+                this.updateData$.next(data);
+            });
+        //
+        // dataService.backend.get.euromoduleWithId(72)
+        //            .subscribe(value => console.log(value));
     }
     
     ngOnInit(): void {

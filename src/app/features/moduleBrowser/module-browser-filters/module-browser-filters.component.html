@@ -1,0 +1,23 @@
+<div fxFlex="auto"
+     fxLayout="row"
+     fxLayoutGap="1rem"
+>
+    <lib-mat-form-entity [errorProvider]="appState.globalUtils.errorProvider"
+                         [control]="dataService.fields.search.control"
+                         [type]="dataService.formTypes.TEXT"
+                         label="Search..."
+    ></lib-mat-form-entity>
+    
+    <lib-mat-form-entity [errorProvider]="appState.globalUtils.errorProvider"
+                         [control]="dataService.fields.order.control"
+                         [options$]="dataService.fields.order.options$"
+                         [type]="dataService.formTypes.SELECT"
+                         [disableVoidSelection]="true"
+                         label="Order by"
+    ></lib-mat-form-entity>
+    
+    <div fxFlex="grow"></div>
+    <app-brand-primary-button [routerLink]="['..','add']"
+    >Add a module
+    </app-brand-primary-button>
+</div>
