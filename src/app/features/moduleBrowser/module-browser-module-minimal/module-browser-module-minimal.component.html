@@ -1,4 +1,4 @@
-<div class="flow col"
+<div class="flow col parent"
 >
     <div class="flow col"
     >
@@ -20,15 +20,32 @@
             </div>
         </div>
     </div>
+    <div class="flow row spaceBetween"
+         fxLayoutGap="1rem"
+         *ngIf="data.description.length>0"
+    >
+        <div>
+            {{data.description}}
+        </div>
+    </div>
     <ng-content></ng-content>
     <mat-divider [inset]="true"
                  style="margin-top:.5rem"
     ></mat-divider>
-    <div class="auto"
+    <div class="flow row buttons"
          fxLayoutAlign="end"
     >
-        <button
-                mat-icon-button
+        <button mat-icon-button
+                disabled
+        >
+            <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button
+                disabled
+        >
+            <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button
                 [routerLink]="['/','details',data.id]"
         >
             <mat-icon>search</mat-icon>

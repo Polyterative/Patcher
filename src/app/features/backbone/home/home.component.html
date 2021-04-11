@@ -1,48 +1,37 @@
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
-  >
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
     <mat-toolbar
-      style="background-color: #778698"
-      color="primary"
-      id="navbar"
+            style="background-color: #778698"
+            color="primary"
+            id="navbar"
     >
-      <mat-toolbar-row>Home</mat-toolbar-row>
+        <mat-toolbar-row>Home</mat-toolbar-row>
     </mat-toolbar>
-
-
+    
+    
     <div fxFlex="auto"
          fxLayout="row"
          fxLayoutGap="1rem"
     >
-      <div fxFlex="16rem"
-           fxLayout="column"
-           fxLayoutGap="2rem"
-      >
-<!--        <lib-user-data-handler></lib-user-data-handler>-->
-        <app-list-link-router [linksData]="linksData"></app-list-link-router>
-      </div>
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayoutGap="1rem"
-      >
-
-<!--        <lib-hero-link fxFlex="16rem"-->
-<!--                       fxFlex.lt-md="grow"-->
-<!--                       label="Csus"-->
-<!--                       icon="rule"-->
-<!--                       [iconColor]="iconColor"-->
-<!--                       link="../csus/list"-->
-<!--                       style="padding-bottom: 1rem"-->
-<!--        >-->
-<!--        </lib-hero-link>-->
-      </div>
-
-      <!--      undraw_Analytics_re_dkf8.svg-->
+        <div fxFlex="16rem"
+             fxLayout="column"
+             fxLayoutGap="2rem"
+        >
+            <app-list-link-router [linksData]="linksData"></app-list-link-router>
+        </div>
+        <div fxFlex="auto"
+             fxLayout="row wrap"
+             fxLayoutGap="1rem"
+        >
+        
+        </div>
+    
     </div>
-
+    
     <app-empty-state style="padding-top: 8rem"
                      backgroundImage="assets/undraw_coming_home_52ir.svg"
     ></app-empty-state>
 
-  </div>
+</div>
