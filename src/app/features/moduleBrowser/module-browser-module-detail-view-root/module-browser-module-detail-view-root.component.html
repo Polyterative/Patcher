@@ -1,17 +1,16 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
->
+<app-hero-content-card title="Module details">
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-        <app-page-header title="Module details"></app-page-header>
         <div fxFlex="auto"
-             fxLayoutAlign="center"
+             fxLayout="column"
+             fxLayoutGap="1rem"
         >
-            <div fxFlex="40rem">
-                <app-hero-content-card>
+            <div fxFlex="auto"
+                 fxLayoutAlign="center"
+            >
+                <div fxFlex="40rem">
                     <div fxFlex="auto"
                          fxLayout="column"
                          fxLayoutGap="1rem"
@@ -30,11 +29,11 @@
                         </div>
                         <app-module-editor [data]="(data$|async)"></app-module-editor>
                     </div>
-                </app-hero-content-card>
+                </div>
             </div>
         </div>
+        <app-dev-only-window>
+            {{data$|async|json}}
+        </app-dev-only-window>
     </div>
-    <app-dev-only-window>
-        {{data$|async|json}}
-    </app-dev-only-window>
-</div>
+</app-hero-content-card>
