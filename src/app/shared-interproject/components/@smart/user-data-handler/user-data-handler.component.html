@@ -2,24 +2,22 @@
      fxLayoutGap="1rem"
      *ngIf="{user:service.store.user$|async} as bag"
 >
-  <div fxFlex="auto"
-       *ngIf="bag.user; else progressBar"
-  >
-    <app-user-avatar
-      [name]="bag.user.username"
-      [hideLogoff]="false"
-      (logoff$)="service.logoff$.next()"
-      (login$)="service.login$.next()"
-    ></app-user-avatar>
-  </div>
-
-  <!--    {{bag.user|json}}-->
-  <!--    -->
-  <ng-template #progressBar>
-    <mat-card>
-      <mat-card-subtitle>Ottengo informazioni di login...
-      </mat-card-subtitle>
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    </mat-card>
-  </ng-template>
+    <div fxFlex="auto"
+         *ngIf="bag.user; else noData"
+    >
+        <app-user-avatar
+                [name]="bag.user.username"
+                [hideLogoff]="false"
+                (logoff$)="service.logoff$.next()"
+                (login$)="service.login$.next()"
+        ></app-user-avatar>
+    </div>
+    
+    <!--    {{bag.user|json}}-->
+    <!--    -->
+    <ng-template #noData>
+        <mat-card>
+            <app-brand-primary-button>Login</app-brand-primary-button>
+        </mat-card>
+    </ng-template>
 </div>

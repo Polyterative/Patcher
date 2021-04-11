@@ -1,28 +1,29 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
->
-    <app-page-header title="module-browser"></app-page-header>
-    <app-module-browser-filters></app-module-browser-filters>
-    <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
-                   [pageSizeOptions]="[10,25,50,100]"
-                   [length]="dataService.serversideAdditionalData.itemsCount$|async"
-                   (page)="dataService.onPageEvent($event)"
-                   showFirstLastButtons
-    ></mat-paginator>
-    <app-auto-loading-indicator [data$]="dataService.data$"
-                                [updateData$]="dataService.updateData$"
-    ></app-auto-loading-indicator>
+<app-hero-content-card title="Modules">
     <div fxFlex="auto"
-         class="box"
+         fxLayout="column"
+         fxLayoutGap="1rem"
     >
-        <ng-container *ngFor="let item of dataService.data$|async">
-            <div>
-                <mat-card>
-                    <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
-                </mat-card>
-            </div>
-        </ng-container>
+        <app-module-browser-filters></app-module-browser-filters>
+        <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
+                       [pageSizeOptions]="[10,25,50,100]"
+                       [length]="dataService.serversideAdditionalData.itemsCount$|async"
+                       (page)="dataService.onPageEvent($event)"
+                       showFirstLastButtons
+        ></mat-paginator>
+        <app-auto-loading-indicator [data$]="dataService.data$"
+                                    [updateData$]="dataService.updateData$"
+        ></app-auto-loading-indicator>
+        <div fxFlex="auto"
+             class="box"
+        >
+            <ng-container *ngFor="let item of dataService.data$|async">
+                <div>
+                    <mat-card>
+                        <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
+                    </mat-card>
+                </div>
+            </ng-container>
+        </div>
     </div>
-</div>
-<!--<pre>{{(dataService.modules$|async)|json}}</pre>-->
+    <!--<pre>{{(dataService.modules$|async)|json}}</pre>-->
+</app-hero-content-card>

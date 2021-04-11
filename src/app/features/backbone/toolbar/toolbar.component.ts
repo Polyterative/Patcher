@@ -24,7 +24,7 @@ export class ToolbarComponent {
         },
         {
             label:    'Browser',
-            route:    'browser',
+            route:    '/modules/browser',
             icon:     'list',
             disabled: false
         },
