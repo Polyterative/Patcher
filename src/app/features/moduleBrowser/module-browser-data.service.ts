@@ -107,6 +107,14 @@ export class ModuleBrowserDataService implements OnDestroy {
                 {
                     id:   'manufacturerId',
                     name: 'Manufacturer'
+                },
+                {
+                    id:   'created',
+                    name: 'Created'
+                },
+                {
+                    id:   'updated',
+                    name: 'Updated'
                 }
             ])
                       .pipe(
