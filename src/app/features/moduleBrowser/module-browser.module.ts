@@ -19,6 +19,7 @@ import { MatFormEntityModule }                        from '../../shared-interpr
 import { UserDataHandlerComponent }                   from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule }                   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }                      from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }                          from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { LabelValueShowcaseModule }                   from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { PageHeaderModule }                           from '../../shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
@@ -45,56 +46,57 @@ import { ModuleEditorComponent }                      from './module-editor/modu
         ModuleEditorComponent
     ],
     providers:    [ModuleBrowserDataService],
-    imports:      [
-        CommonModule,
-        RouterModule.forChild([
-            generateSaturnRoutes(
-              'modules',
-              [
-                  {
-                      path:      'browser',
-                      component: ModuleBrowserRootComponent
-                      // canActivate: [LocalAuthGuardService],
-                  },
-                  {
-                      path:      'details/:id',
-                      pathMatch: 'full',
-                      component: ModuleBrowserModuleDetailViewRootComponent
-                      // children:  []
-                  },
-                  {
-                      path:      '',
-                      component: CommonSidebarComponent,
-                      outlet:    'sidebar'
-                  },
-                  {
-                      path:      '',
-                      component: UserDataHandlerComponent,
-                      outlet:    'user'
-                  }
-              ], 'module-browser')
-        ]),
-        FlexLayoutModule,
-        MatCardModule,
-        HeroContentCardModule,
-        MatChipsModule,
-        DragDropModule,
-        LabelValueShowcaseModule,
-        ScrollingModule,
-        ScreenWrapperModule,
-        MatIconModule,
-        MatSnackBarModule,
-        MatButtonModule,
-        MatTooltipModule,
-        MatDividerModule,
-        MatPaginatorModule,
-        BrandPrimaryButtonModule,
-        AutoLoadingIndicatorModule,
-        MatFormEntityModule,
-        MatToolbarModule,
-        PageHeaderModule,
-        DevOnlyWindowModule
-    ],
+  imports: [
+    CommonModule,
+    RouterModule.forChild([
+      generateSaturnRoutes(
+        'modules',
+        [
+          {
+            path:      'browser',
+            component: ModuleBrowserRootComponent
+            // canActivate: [LocalAuthGuardService],
+          },
+          {
+            path:      'details/:id',
+            pathMatch: 'full',
+            component: ModuleBrowserModuleDetailViewRootComponent
+            // children:  []
+          },
+          {
+            path:      '',
+            component: CommonSidebarComponent,
+            outlet:    'sidebar'
+          },
+          {
+            path:      '',
+            component: UserDataHandlerComponent,
+            outlet:    'user'
+          }
+        ], 'module-browser')
+    ]),
+    FlexLayoutModule,
+    MatCardModule,
+    HeroContentCardModule,
+    MatChipsModule,
+    DragDropModule,
+    LabelValueShowcaseModule,
+    ScrollingModule,
+    ScreenWrapperModule,
+    MatIconModule,
+    MatSnackBarModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatDividerModule,
+    MatPaginatorModule,
+    BrandPrimaryButtonModule,
+    AutoLoadingIndicatorModule,
+    MatFormEntityModule,
+    MatToolbarModule,
+    PageHeaderModule,
+    DevOnlyWindowModule,
+    HeroInfoBoxModule
+  ],
     exports:      [
         ModuleBrowserRootComponent,
         ModuleBrowserModuleComponent,
