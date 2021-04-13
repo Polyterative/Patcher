@@ -49,7 +49,7 @@
             <ng-container *ngFor="let item of (dataService.generated$|async).connections">
                 <div>
                     {{item.from.name}} {{item.from.outs[item.fromId].name}}
-                    =>
+                    →
                     {{item.to.name}} {{item.to.ins[item.toId]?.name}}
                 </div>
             </ng-container>

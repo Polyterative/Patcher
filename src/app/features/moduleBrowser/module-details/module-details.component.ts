@@ -1,10 +1,13 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    Input,
-    OnInit
-}                       from '@angular/core';
-import { DBEuroModule } from '../../../models/models';
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  CV,
+  DBEuroModule
+} from '../../../models/models';
 
 @Component({
     selector:        'app-module-details',
@@ -15,13 +18,16 @@ import { DBEuroModule } from '../../../models/models';
 export class ModuleDetailsComponent implements OnInit {
     @Input() data: DBEuroModule;
     
-    ins = [];
+    ins: CV[] = [];
+    outs: CV[] = [];
     switches = [];
-    outs = [];
     
     constructor() { }
     
     ngOnInit(): void {
+        
+        this.ins = JSON.parse(this.data.ins);
+        this.outs = JSON.parse(this.data.outs);
     }
     
 }
