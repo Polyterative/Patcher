@@ -47,22 +47,21 @@ export class Strings {
 
 export class StringsIT {
   static readonly form = {
-    error_required:                 'Il campo non può essere vuoto',
-    error_minLength:                'Lunghezza sotto il minimo',
-    error_maxLength:                'Lunghezza sopra il massimo',
-    error_max:                      'Valore sopra il massimo',
-    error_min:                      'Valore sotto il minimo',
-    error_lessThanOneElement:       'È richiesto almeno un elemento',
-    error_codeNotValid:             'Il codice inserito non è valido',
-    error_notInOptions:             'Valore non presente tra le opzioni',
-    error_numberNot:                'Il valore inserito non è un numero',
-    error_numberNotInteger:         'Il numero inserito non è un intero',
-    error_numberNotPositiveInteger: 'Il numero inserito non è un intero positivo',
-    error_numberBiggerThanInterval: 'Il numero inserito è maggiore dell\'intervallo'
+    error_required: 'The field cannot be empty',
+    error_minLength: 'Length below minimum',
+    error_maxLength: 'Length over maximum',
+    error_max: 'Value above the maximum',
+    error_min: 'Value below minimum',
+    error_lessThanOneElement: 'At least one element is required',
+    error_codeNotValid: 'The code entered is invalid',
+    error_notInOptions: 'Value not present in options',
+    error_numberNot: 'The entered value is not a number',
+    error_numberNotInteger: 'The number entered is not an integer',
+    error_numberNotPositiveInteger: 'The number entered is not a positive integer',
+    error_numberBiggerThanInterval: 'The number entered is greater than the interval'
   };
 
   static readonly general = {
     info_data_loading: 'Dati in caricamento...'
   };
 }
-

@@ -1,0 +1,26 @@
+@import "~src/app/style/brand-resources.scss";
+@import '~@angular/material/theming';
+
+.container {
+  border-color:      transparentize(#768597, 0.75);
+  padding:           0.5rem;
+  border-top-width:  0.5rem;
+  //border-right-width:  0.5rem;
+  border-left-width: 0.5rem;
+  //border-bottom-width: 0.5rem;
+  //border-top-style:    dashed;
+  //border-right-style:  dashed;
+  border-left-style: solid;
+  //border-bottom-style: dashed;
+  background-color:  white;
+}
+
+.text {
+  word-break: break-word;
+  color:      transparentize(#768597, 0.2);
+  //font-size: 0.75rem
+}
+
+.mat-card-subtitle {
+  margin: 0 !important;
+}

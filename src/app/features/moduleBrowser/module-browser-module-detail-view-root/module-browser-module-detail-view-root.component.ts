@@ -1,18 +1,13 @@
 import {
-    Component,
-    OnInit
+  Component,
+  OnInit
 }                                   from '@angular/core';
 import { ActivatedRoute }           from '@angular/router';
 import {
-    BehaviorSubject,
-    Subject
-}                                   from 'rxjs';
-import {
-    filter,
-    map,
-    switchMap
+  filter,
+  map,
+  switchMap
 }                                   from 'rxjs/operators';
-import { DBEuroModule }             from '../../../models/models';
 import { FirebaseService }          from '../../backend/firebase.service';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
@@ -23,19 +18,17 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
     // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
-    data$ = new BehaviorSubject<DBEuroModule | undefined>(undefined);
-    updateData$ = new Subject<number>();
     
     constructor(
       public dataService: ModuleBrowserDataService,
       public api: FirebaseService,
       public route: ActivatedRoute
     ) {
-    
-        this.updateData$
+        
+        this.dataService.updateSingleData$
             .pipe(switchMap(x => dataService.backend.get.euromoduleWithId(x)))
-            .subscribe(x => this.data$.next(x.data));
-    
+            .subscribe(x => this.dataService.singleData$.next(x.data));
+        
         this.route.params
             .pipe(
               map(x => (x && x.id && parseInt(x.id) ? parseInt(x.id) : 0)),
@@ -43,8 +36,9 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
             )
             .subscribe(data => {
                 // debugger
-                this.updateData$.next(data);
+                this.dataService.updateSingleData$.next(data);
             });
+        
         //
         // dataService.backend.get.euromoduleWithId(72)
         //            .subscribe(value => console.log(value));
