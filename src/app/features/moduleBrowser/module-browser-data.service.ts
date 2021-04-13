@@ -1,35 +1,41 @@
 import {
-    Injectable,
-    OnDestroy
-}                            from '@angular/core';
+  Injectable,
+  OnDestroy
+}                          from '@angular/core';
 import {
-    FormControl,
-    Validators
-}                            from '@angular/forms';
-import { PageEvent }         from '@angular/material/paginator';
-import { MatSnackBar }       from '@angular/material/snack-bar';
+  FormControl,
+  Validators
+}                          from '@angular/forms';
+import { PageEvent }       from '@angular/material/paginator';
+import { MatSnackBar }     from '@angular/material/snack-bar';
 import {
-    BehaviorSubject,
-    combineLatest,
-    Subject
-}                            from 'rxjs';
-import { of }                from 'rxjs/internal/observable/of';
+  BehaviorSubject,
+  combineLatest,
+  ReplaySubject,
+  Subject
+}                          from 'rxjs';
+import { of }              from 'rxjs/internal/observable/of';
 import {
-    distinctUntilChanged,
-    startWith,
-    switchMap,
-    takeUntil,
-    withLatestFrom
-}                            from 'rxjs/operators';
-import { MinimalEuroModule } from '../../models/models';
-import { FormTypes }         from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }   from '../../shared-interproject/SharedConstants';
-import { SupabaseService }   from '../backend/supabase.service';
+  distinctUntilChanged,
+  startWith,
+  switchMap,
+  takeUntil,
+  withLatestFrom
+}                          from 'rxjs/operators';
+import {
+  DBEuroModule,
+  MinimalEuroModule
+}                          from '../../models/models';
+import { FormTypes }       from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants } from '../../shared-interproject/SharedConstants';
+import { SupabaseService } from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
     data$ = new BehaviorSubject<MinimalEuroModule[]>([]);
     updateData$ = new Subject();
+  singleData$ = new BehaviorSubject<DBEuroModule | undefined>(undefined);
+  updateSingleData$ = new ReplaySubject<number>();
     ////
     serversideTableRequestData = {
         skip$:   new BehaviorSubject<number>(0),

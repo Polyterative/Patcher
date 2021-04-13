@@ -1,6 +1,6 @@
 import {
-    EventEmitter,
-    Injectable
+  EventEmitter,
+  Injectable
 }                        from '@angular/core';
 import { createClient }  from '@supabase/supabase-js';
 import { ReplaySubject } from 'rxjs';
@@ -8,8 +8,8 @@ import { fromPromise }   from 'rxjs/internal-compatibility';
 import { map }           from 'rxjs/operators';
 import { environment }   from '../../../environments/environment';
 import {
-    DBEuroModule,
-    DBManufacturer
+  DBEuroModule,
+  DBManufacturer
 }                        from '../../models/models';
 
 @Injectable()
@@ -86,7 +86,18 @@ export class SupabaseService {
               .delete()
               .range(from, to)
         )
+    };
     
+    update = {
+        euromodule: (data: DBEuroModule) => {
+            data.manufacturer = undefined;
+            return fromPromise(
+              this.supabase.from(this.paths.euromodules)
+                  .update(data)
+                  .eq('id', data.id)
+                  .single()
+            );
+        }
     };
     
     // import = {

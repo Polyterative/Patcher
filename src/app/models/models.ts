@@ -60,10 +60,11 @@ export interface Switch {
 
 export interface CV {
     name: string;
-    description?: string;
+    desc?: string;
     min?: number;
     max?: number;
     isVOCT?: boolean;
+    isDCC?: boolean;
 }
 
 export interface Connection {
