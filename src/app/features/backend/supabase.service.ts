@@ -1,16 +1,18 @@
 import {
   EventEmitter,
   Injectable
-}                        from '@angular/core';
-import { createClient }  from '@supabase/supabase-js';
-import { ReplaySubject } from 'rxjs';
-import { fromPromise }   from 'rxjs/internal-compatibility';
-import { map }           from 'rxjs/operators';
-import { environment }   from '../../../environments/environment';
+}                          from '@angular/core';
+import { MatSnackBar }     from '@angular/material/snack-bar';
+import { createClient }    from '@supabase/supabase-js';
+import { ReplaySubject }   from 'rxjs';
+import { fromPromise }     from 'rxjs/internal-compatibility';
+import { map }             from 'rxjs/operators';
+import { environment }     from '../../../environments/environment';
 import {
   DBManufacturer,
   DbModule
-}                        from '../../models/models';
+}                          from '../../models/models';
+import { SharedConstants } from '../../shared-interproject/SharedConstants';
 
 @Injectable()
 export class SupabaseService {
@@ -26,16 +28,19 @@ export class SupabaseService {
   };
   
   add = {
-    modules:       (data: DbModule[]) => fromPromise(
+    modules: (data: DbModule[]) => fromPromise(
       this.supabase
           .from(this.paths.euromodules)
           .insert(data)
-    ),
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     manufacturers: (data: DBManufacturer[]) => fromPromise(
       this.supabase
           .from(this.paths.manufacturers)
           .insert(data)
     )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
     modulesFull:        (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
@@ -47,45 +52,51 @@ export class SupabaseService {
       this.supabase.from(this.paths.euromodules)
           .select(`id`)
     )
-      .pipe(map(value => value.data.length)),
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar), map(value => value.data.length)),
     modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.euromodules)
           .select(`id,name,hp,description,public, manufacturer:manufacturerId(name,id,logo)`)
         // .textSearch('name', name)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
-    ),
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.euromodules)
           .select(`${ columns }, manufacturer:manufacturerId(name)`)
           .range(from, to)
           .filter('id', 'eq', id)
           .single()
-    ),
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.manufacturers)
           .select(columns)
           .range(from, to)
           .filter('id', 'eq', id)
           .single()
-    ),
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     manufacturers:      (from = 0, to = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.manufacturers)
           .select(columns)
           .range(from, to)
     )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
   };
   delete = {
     modules:       (from = 0, to: number = this.defaultPag) => fromPromise(
       this.supabase.from(this.paths.euromodules)
           .delete()
           .range(from, to)
-    ),
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     manufacturers: (from = 0, to = this.defaultPag) => fromPromise(
       this.supabase.from(this.paths.manufacturers)
           .delete()
           .range(from, to)
     )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
   };
   
   update = {
@@ -168,7 +179,7 @@ export class SupabaseService {
   private defaultPag = 20;
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
-  constructor() {
+  constructor(public snackBar: MatSnackBar) {
     console.clear();
     
   }

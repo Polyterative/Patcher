@@ -36,17 +36,17 @@ import { ModuleEditorComponent }                      from './module-editor/modu
 
 
 @NgModule({
-    declarations: [
-        ModuleBrowserRootComponent,
-        ModuleBrowserModuleComponent,
-        ModuleBrowserModuleDetailViewRootComponent,
-        ModuleBrowserModuleMinimalComponent,
-        ModuleDetailsComponent,
-        ModuleBrowserFiltersComponent,
-        ModuleEditorComponent
-    ],
-    providers:    [ModuleBrowserDataService],
-  imports: [
+  declarations: [
+    ModuleBrowserRootComponent,
+    ModuleBrowserModuleComponent,
+    ModuleBrowserModuleDetailViewRootComponent,
+    ModuleBrowserModuleMinimalComponent,
+    ModuleDetailsComponent,
+    ModuleBrowserFiltersComponent,
+    ModuleEditorComponent
+  ],
+  providers:    [ModuleBrowserDataService],
+  imports:      [
     CommonModule,
     RouterModule.forChild([
       generateSaturnRoutes(
@@ -97,14 +97,14 @@ import { ModuleEditorComponent }                      from './module-editor/modu
     DevOnlyWindowModule,
     HeroInfoBoxModule
   ],
-    exports:      [
-        ModuleBrowserRootComponent,
-        ModuleBrowserModuleComponent,
-        ModuleBrowserModuleDetailViewRootComponent,
-        ModuleBrowserModuleMinimalComponent,
-        ModuleDetailsComponent,
-        ModuleBrowserFiltersComponent,
-        ModuleEditorComponent
-    ]
+  exports:      [
+    ModuleBrowserRootComponent,
+    ModuleBrowserModuleComponent,
+    ModuleBrowserModuleDetailViewRootComponent,
+    ModuleBrowserModuleMinimalComponent,
+    ModuleDetailsComponent,
+    ModuleBrowserFiltersComponent,
+    ModuleEditorComponent
+  ]
 })
 export class ModuleBrowserModule {}

@@ -3,48 +3,52 @@ import {
   OnInit
 }                                   from '@angular/core';
 import { ActivatedRoute }           from '@angular/router';
+import { Subject }                  from 'rxjs';
 import {
   filter,
   map,
-  switchMap
+  take
 }                                   from 'rxjs/operators';
 import { FirebaseService }          from '../../backend/firebase.service';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
-    selector:    'app-module-browser-module-detail-view-root',
-    templateUrl: './module-browser-module-detail-view-root.component.html',
-    styleUrls:   ['./module-browser-module-detail-view-root.component.scss']
-    // changeDetection: ChangeDetectionStrategy.OnPush
+  selector:    'app-module-browser-module-detail-view-root',
+  templateUrl: './module-browser-module-detail-view-root.component.html',
+  styleUrls:   ['./module-browser-module-detail-view-root.component.scss']
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
-    
-    constructor(
-      public dataService: ModuleBrowserDataService,
-      public api: FirebaseService,
-      public route: ActivatedRoute
-    ) {
-        
-        this.dataService.updateSingleData$
-            .pipe(switchMap(x => dataService.backend.get.moduleWithId(x)))
-            .subscribe(x => this.dataService.singleData$.next(x.data));
-        
-        this.route.params
-            .pipe(
-              map(x => (x && x.id && parseInt(x.id) ? parseInt(x.id) : 0)),
-              filter(x => x > 0)
-            )
-            .subscribe(data => {
-                // debugger
-                this.dataService.updateSingleData$.next(data);
-            });
   
-      //
-      // dataService.backend.get.moduleWithId(72)
-      //            .subscribe(value => console.log(value));
-    }
+  protected destroyEvent$: Subject<void> = new Subject();
+  
+  constructor(
+    public dataService: ModuleBrowserDataService,
+    public api: FirebaseService,
+    public route: ActivatedRoute
+  ) {
     
-    ngOnInit(): void {
-    }
+  }
+  
+  ngOnInit(): void {
     
+    this.route.params
+        .pipe(
+          map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
+          filter(x => x > 0),
+          take(1)
+        )
+        .subscribe(data => {
+          // debugger
+          this.dataService.updateSingleData$.next(data);
+        });
+  }
+  
+  ngOnDestroy(): void {
+    this.dataService.singleData$.next(undefined);
+    this.destroyEvent$.next();
+    this.destroyEvent$.complete();
+    
+  }
+  
 }
