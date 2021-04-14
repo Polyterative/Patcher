@@ -37,7 +37,6 @@ export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
     )
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(x => this.dataLoading$.next(x));
-    // .subscribe(x => console.log(x));
   }
   
   ngOnDestroy(): void {

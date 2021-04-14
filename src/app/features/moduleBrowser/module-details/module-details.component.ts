@@ -25,9 +25,10 @@ export class ModuleDetailsComponent implements OnInit {
   constructor() { }
   
   ngOnInit(): void {
-    
-    this.ins = JSON.parse(this.data.ins);
-    this.outs = JSON.parse(this.data.outs);
+  
+    if (this.data.ins && JSON.parse(this.data.ins)) { this.ins = JSON.parse(this.data.ins);}
+    if (this.data.outs && JSON.parse(this.data.outs)) { this.outs = JSON.parse(this.data.outs);}
+  
   }
   
 }

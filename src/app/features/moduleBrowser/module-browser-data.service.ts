@@ -11,6 +11,7 @@ import { MatSnackBar }     from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
+  ReplaySubject,
   Subject
 }                          from 'rxjs';
 import { of }              from 'rxjs/internal/observable/of';
@@ -33,8 +34,9 @@ import { SupabaseService } from '../backend/supabase.service';
 export class ModuleBrowserDataService implements OnDestroy {
   data$ = new BehaviorSubject<MinimalModule[]>([]);
   updateData$ = new Subject();
+  editPanelOpen$ = new BehaviorSubject<boolean>(false);
   singleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
-  updateSingleData$ = new Subject<number>();
+  updateSingleData$ = new ReplaySubject<number>();
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),

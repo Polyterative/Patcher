@@ -14,27 +14,27 @@ data:(dataService.singleData$|async)
         <div fxFlex="auto"
              fxLayoutAlign="center"
         >
-          <div fxFlex="40rem">
-            <div fxFlex="auto"
-                 fxLayout="column"
-                 fxLayoutGap="1rem"
-            >
-              <div>
-                <mat-card>
-                  <app-auto-loading-indicator [updateData$]="dataService.updateSingleData$"
-                                              [data$]="dataService.singleData$"
-                  ></app-auto-loading-indicator>
-                  <ng-container *ngIf="bag.data"
-                  >
-                    <app-module-browser-module [data]="(bag.data)"
-                    ></app-module-browser-module>
-                  </ng-container>
-                </mat-card>
-              </div>
-              <app-module-editor *ngIf="bag.data"
-                                 [data]="(bag.data)"
-              ></app-module-editor>
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            <div>
+              <mat-card>
+                <app-auto-loading-indicator [updateData$]="dataService.updateSingleData$"
+                                            [data$]="dataService.singleData$"
+                ></app-auto-loading-indicator>
+                <ng-container *ngIf="bag.data"
+                >
+                  <app-module-browser-module [data]="(bag.data)"
+                  ></app-module-browser-module>
+                </ng-container>
+              </mat-card>
             </div>
+            <mat-card *ngIf="bag.data&&dataService.editPanelOpen$|async">
+              <app-module-editor
+                [data]="(bag.data)"
+              ></app-module-editor>
+            </mat-card>
           </div>
         </div>
       </div>

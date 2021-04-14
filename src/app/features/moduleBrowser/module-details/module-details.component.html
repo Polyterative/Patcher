@@ -2,15 +2,14 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <div class="flow row spaceBetween"
+  <div fxFlex="auto"
+       fxLayout="row"
        fxLayoutGap="1rem"
+       fxLayoutAlign="start"
   >
-    <div>
-      <mat-card-subtitle
-      >
-        {{data.oneU ? '1U' : '3U'}} - {{data.created|date}} - {{data.updated|date}}
-      </mat-card-subtitle>
-    </div>
+    <mat-card-subtitle infoBox
+                       infoText="Created/Updated"
+    >{{data.created|date}} - {{data.updated|date}}</mat-card-subtitle>
   </div>
   <div fxFlex="auto"
        fxLayout="column"
@@ -26,9 +25,9 @@
     >
       <mat-chip-list>
         <ng-container *ngFor="let item of ins">
-          <mat-chip cdkDrag
-                    infoBox
-                    [infoText]="item.min+'V → '+item.max+'V'"
+          <mat-chip
+            infoBox
+            [infoText]="item.min+'V → '+item.max+'V'"
           >
             {{item.name}}
           </mat-chip>
@@ -50,9 +49,9 @@
     >
       <mat-chip-list>
         <ng-container *ngFor="let item of outs">
-          <mat-chip cdkDrag
-                    infoBox
-                    [infoText]="item.min&&item.max?(item.min+'V → '+item.max+'V'):'V ranges unknown'"
+          <mat-chip
+            infoBox
+            [infoText]="item.min&&item.max?(item.min+'V → '+item.max+'V'):'V ranges unknown'"
           >
             {{item.name}}
           </mat-chip>

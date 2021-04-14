@@ -6,7 +6,10 @@ import { MatSnackBar }     from '@angular/material/snack-bar';
 import { createClient }    from '@supabase/supabase-js';
 import { ReplaySubject }   from 'rxjs';
 import { fromPromise }     from 'rxjs/internal-compatibility';
-import { map }             from 'rxjs/operators';
+import {
+  map,
+  tap
+}                          from 'rxjs/operators';
 import { environment }     from '../../../environments/environment';
 import {
   DBManufacturer,
@@ -16,11 +19,6 @@ import { SharedConstants } from '../../shared-interproject/SharedConstants';
 
 @Injectable()
 export class SupabaseService {
-  
-  private paths = {
-    euromodules:   'modules',
-    manufacturers: 'manufacturers'
-  };
   user = {
     user$:   new ReplaySubject(),
     login$:  new EventEmitter<void>(),
@@ -30,7 +28,7 @@ export class SupabaseService {
   add = {
     modules: (data: DbModule[]) => fromPromise(
       this.supabase
-          .from(this.paths.euromodules)
+          .from(this.paths.modules)
           .insert(data)
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
@@ -44,25 +42,25 @@ export class SupabaseService {
   };
   get = {
     modulesFull:        (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
-      this.supabase.from(this.paths.euromodules)
+      this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name,id,logo)`)
           .range(from, to)
     ),
     modulesCount:       () => fromPromise(
-      this.supabase.from(this.paths.euromodules)
-          .select(`id`)
+      this.supabase.from(this.paths.modules)
+          .select('id')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar), map(value => value.data.length)),
     modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
-      this.supabase.from(this.paths.euromodules)
-          .select(`id,name,hp,description,public, manufacturer:manufacturerId(name,id,logo)`)
+      this.supabase.from(this.paths.modules)
+          .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)')
         // .textSearch('name', name)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
-      this.supabase.from(this.paths.euromodules)
+      this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name)`)
           .range(from, to)
           .filter('id', 'eq', id)
@@ -86,7 +84,7 @@ export class SupabaseService {
   };
   delete = {
     modules:       (from = 0, to: number = this.defaultPag) => fromPromise(
-      this.supabase.from(this.paths.euromodules)
+      this.supabase.from(this.paths.modules)
           .delete()
           .range(from, to)
     )
@@ -103,12 +101,18 @@ export class SupabaseService {
     module: (data: DbModule) => {
       data.manufacturer = undefined;
       return fromPromise(
-        this.supabase.from(this.paths.euromodules)
+        this.supabase.from(this.paths.modules)
             .update(data)
             .eq('id', data.id)
             .single()
-      );
+      )
+        .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     }
+  };
+  
+  private paths = {
+    modules:       'modules',
+    manufacturers: 'manufacturers'
   };
   
   // import = {
