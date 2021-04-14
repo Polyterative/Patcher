@@ -1,10 +1,10 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    Input,
-    OnInit
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
 }                                   from '@angular/core';
-import { DBEuroModule }             from '../../../models/models';
+import { DbModule }                 from '../../../models/models';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
@@ -14,7 +14,7 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleComponent implements OnInit {
-    @Input() data: DBEuroModule;
+  @Input() data: DbModule;
     
     constructor(public dataService: ModuleBrowserDataService) {}
     

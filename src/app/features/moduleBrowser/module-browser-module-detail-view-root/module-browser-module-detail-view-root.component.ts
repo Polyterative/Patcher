@@ -26,7 +26,7 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
     ) {
         
         this.dataService.updateSingleData$
-            .pipe(switchMap(x => dataService.backend.get.euromoduleWithId(x)))
+            .pipe(switchMap(x => dataService.backend.get.moduleWithId(x)))
             .subscribe(x => this.dataService.singleData$.next(x.data));
         
         this.route.params
@@ -38,10 +38,10 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
                 // debugger
                 this.dataService.updateSingleData$.next(data);
             });
-        
-        //
-        // dataService.backend.get.euromoduleWithId(72)
-        //            .subscribe(value => console.log(value));
+  
+      //
+      // dataService.backend.get.moduleWithId(72)
+      //            .subscribe(value => console.log(value));
     }
     
     ngOnInit(): void {

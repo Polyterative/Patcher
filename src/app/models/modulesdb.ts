@@ -1,4 +1,4 @@
-import { EuroModule } from './models';
+import { Module } from './models';
 
 export const allmodules = [
     {
@@ -34929,27 +34929,27 @@ export const allmodules = [
         manufacturer: 'EQ Joy Shock Electronix',
         desc:         '6-Band Equalizer',
         price:        '135',
-        hp:           '13 HP Equalizer'
+      hp:             '13 HP Equalizer'
     },
     {
-        name:         '3320 Low-Pass Filter (LPF) Classic Edition',
-        manufacturer: '3320 Low-Pass Filter (LPF) Classic Edition Wavefonix',
-        desc:         'Four-Pole 24dB/Octave LPF with CEM3320 Architecture',
-        price:        '122',
-        hp:           '10 HP Filter Oscillator'
+      name:         '3320 Low-Pass Filter (LPF) Classic Edition',
+      manufacturer: '3320 Low-Pass Filter (LPF) Classic Edition Wavefonix',
+      desc:         'Four-Pole 24dB/Octave LPF with CEM3320 Architecture',
+      price:        '122',
+      hp:           '10 HP Filter Oscillator'
     }
 ];
-export const zmodules: EuroModule[] = [
-    
-    {
-        name: 'A-134-1',
-        mkr:  {name: 'Doepfer'},
-        hp:   8
-    },
-    {
-        name: 'TOMS909',
-        mkr:  {name: 'Tiptop Audio'},
-        hp:   16
+export const zmodules: Module[] = [
+  
+  {
+    name: 'A-134-1',
+    mkr:  {name: 'Doepfer'},
+    hp:   8
+  },
+  {
+    name: 'TOMS909',
+    mkr:  {name: 'Tiptop Audio'},
+    hp:   16
     },
     {
         name: 'Fusion VCO2',

@@ -23,8 +23,8 @@ import {
   withLatestFrom
 }                          from 'rxjs/operators';
 import {
-  DBEuroModule,
-  MinimalEuroModule
+  DbModule,
+  MinimalModule
 }                          from '../../models/models';
 import { FormTypes }       from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
@@ -32,9 +32,9 @@ import { SupabaseService } from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
-    data$ = new BehaviorSubject<MinimalEuroModule[]>([]);
-    updateData$ = new Subject();
-  singleData$ = new BehaviorSubject<DBEuroModule | undefined>(undefined);
+  data$ = new BehaviorSubject<MinimalModule[]>([]);
+  updateData$ = new Subject();
+  singleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
   updateSingleData$ = new ReplaySubject<number>();
     ////
     serversideTableRequestData = {
@@ -140,7 +140,7 @@ export class ModuleBrowserDataService implements OnDestroy {
             .pipe(
               // skip(1),
               distinctUntilChanged(),
-              switchMap(([a, b, c]) => this.backend.get.euromodulesCount()
+              switchMap(([a, b, c]) => this.backend.get.modulesCount()
                                            .pipe(SharedConstants.errorHandlerOperation(snackBar))),
               distinctUntilChanged()
             )
@@ -152,8 +152,8 @@ export class ModuleBrowserDataService implements OnDestroy {
               withLatestFrom(this.serversideDataPackage$),
               switchMap(([z, [skip, take, filter, sort]]) => {
                   let sortColumnName: string = sort[0] ? sort[0] : null, sortDirection = sort[1];
-                  return this.backend.get.euromodulesMinimal(skip, skip + take, filter, sortColumnName)
-                             .pipe(SharedConstants.errorHandlerOperation(snackBar));
+                return this.backend.get.modulesMinimal(skip, skip + take, filter, sortColumnName)
+                           .pipe(SharedConstants.errorHandlerOperation(snackBar));
               }),
               takeUntil(this.destroyEvent$)
             )
@@ -166,8 +166,8 @@ export class ModuleBrowserDataService implements OnDestroy {
                 this.onFilterEvent(x);
                 // this.updateData$.next();
             });
-        // this.updateData$.pipe(switchMap(x => this.backend.get.euromodulesMinimal()))
-        //     .subscribe(x => this.data$.next(x.data));
+      // this.updateData$.pipe(switchMap(x => this.backend.get.modulesMinimal()))
+      //     .subscribe(x => this.data$.next(x.data));
     }
     
     paginatorToFistPage$ = new Subject();
