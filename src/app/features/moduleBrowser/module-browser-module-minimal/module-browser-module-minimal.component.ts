@@ -1,10 +1,10 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    Input,
-    OnInit
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
 }                                   from '@angular/core';
-import { MinimalEuroModule }        from '../../../models/models';
+import { MinimalModule }            from '../../../models/models';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
@@ -14,7 +14,7 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserModuleMinimalComponent implements OnInit {
-    @Input() data: MinimalEuroModule;
+  @Input() data: MinimalModule;
     
     constructor(public dataService: ModuleBrowserDataService) {}
     

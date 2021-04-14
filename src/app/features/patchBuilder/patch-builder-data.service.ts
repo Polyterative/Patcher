@@ -1,12 +1,12 @@
 import { Injectable }               from '@angular/core';
 import {
-    BehaviorSubject,
-    Subject
+  BehaviorSubject,
+  Subject
 }                                   from 'rxjs';
 import { withLatestFrom }           from 'rxjs/operators';
 import {
-    Connection,
-    Patch
+  Connection,
+  Patch
 }                                   from '../../models/models';
 import { ModuleBrowserDataService } from '../moduleBrowser/module-browser-data.service';
 
@@ -81,9 +81,9 @@ export class PatchBuilderDataService {
     //     // console.log('after');
     //     // console.log(xa.length);
     //     // console.log(xa);
-    //
-    //     const xaz: EuroModule[] = [];
-    //     for (const xaElement of xa) {
+  //
+  //     const xaz: Module[] = [];
+  //     for (const xaElement of xa) {
     //
     //         if (xaElement.manufacturer.includes(xaElement.name)) {
     //
@@ -95,9 +95,9 @@ export class PatchBuilderDataService {
     //                                    .trim()
     //                 },
     //                 hp:          parseInt(xaElement.hp)
-    //
-    //             } as EuroModule);
-    //         }
+  //
+  //             } as Module);
+  //         }
     //
     //
     //     }

@@ -1,23 +1,23 @@
-export interface EuroModule {
-    name: string;
-    description?: string;
-    mkr: Manufacturer;
-    hp: number;
-    ins?: CV[];
-    outs?: CV[];
-    switches?: Switch[];
-    manualURL?: string;
+export interface Module {
+  name: string;
+  description?: string;
+  mkr: Manufacturer;
+  hp: number;
+  ins?: CV[];
+  outs?: CV[];
+  switches?: Switch[];
+  manualURL?: string;
 }
 
-export interface DBEuroModule extends MinimalEuroModule {
-    ins: string;
-    outs: string;
-    switches: string;
-    manualURL: string;
-    additional: string;
-    oneU: boolean;
-    isComplete: boolean;
-    isDIY: boolean;
+export interface DbModule extends MinimalModule {
+  ins: string;
+  outs: string;
+  switches: string;
+  manualURL: string;
+  additional: string;
+  oneU: boolean;
+  isComplete: boolean;
+  isDIY: boolean;
 }
 
 interface MinimalManufacturer {
@@ -26,15 +26,15 @@ interface MinimalManufacturer {
     logo?: string;
 }
 
-export interface MinimalEuroModule {
-    id: number;
-    name: string;
-    description?: string;
-    hp: number;
-    public: boolean;
-    manufacturer: MinimalManufacturer;
-    created: string;
-    updated: string;
+export interface MinimalModule {
+  id: number;
+  name: string;
+  description?: string;
+  hp: number;
+  public: boolean;
+  manufacturer: MinimalManufacturer;
+  created: string;
+  updated: string;
 }
 
 
@@ -68,27 +68,27 @@ export interface CV {
 }
 
 export interface Connection {
-    from: DBEuroModule;
-    fromId: number;
-    to: DBEuroModule;
-    toId: number;
+  from: DbModule;
+  fromId: number;
+  to: DbModule;
+  toId: number;
 }
 
 export interface Patch {
     connections: Connection[];
 }
 
-export const modules: EuroModule[] = [
-    {
-        name:      'Maths',
-        mkr:       {name: 'Make Noise'},
-        ins:       [
-            {
-                name: 'Signal Input',
-                min:  -10,
-                max:  10
-            },
-            {
+export const modules: Module[] = [
+  {
+    name: 'Maths',
+    mkr:  {name: 'Make Noise'},
+    ins:  [
+      {
+        name: 'Signal Input',
+        min:  -10,
+        max:  10
+      },
+      {
                 name: 'Trigger Input',
                 min:  -10,
                 max:  10

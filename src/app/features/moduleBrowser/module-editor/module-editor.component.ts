@@ -21,7 +21,7 @@ import {
 }                                   from 'rxjs/operators';
 import {
   CV,
-  DBEuroModule
+  DbModule
 }                                   from '../../../models/models';
 import { FormTypes }                from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
@@ -39,8 +39,8 @@ interface FormCV {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleEditorComponent implements OnInit {
-  @Input() data: DBEuroModule;
-  public readonly save$ = new Subject();
+  @Input() data: DbModule;
+  readonly save$ = new Subject();
   
   addIN$ = new Subject<[string, number, number]>();
   addOUT$ = new Subject<[string, number, number]>();
@@ -54,7 +54,6 @@ export class ModuleEditorComponent implements OnInit {
   formGroupA = this.formBuilder.group({});
   formGroupB = this.formBuilder.group({});
   formGroupC = this.formBuilder.group({});
-  
   
   private validatorsNum: ValidatorFn = Validators.compose([
     // Validators.required,
@@ -73,10 +72,9 @@ export class ModuleEditorComponent implements OnInit {
     public dataService: ModuleBrowserDataService
   ) {
     
-    
     this.addIN$
         .subscribe(([name, min, max]) => {
-          let x = [
+          const x = [
             ...this.INs$.value,
             this.createCV(name, min, max)
           ];
@@ -89,16 +87,14 @@ export class ModuleEditorComponent implements OnInit {
             this.formGroupA.addControl(`b${ i.toString() }`, a.b);
           });
       
-      
         });
     this.addOUT$
         .subscribe(([name, min, max]) => {
-          let x: any[] = [
+          const x: any[] = [
             ...this.OUTs$.value,
             this.createCV(name, min, max)
           ];
           this.OUTs$.next(x);
-      
       
           this.formGroupB = this.formBuilder.group({});
           x.forEach((a, i) => {
@@ -115,12 +111,27 @@ export class ModuleEditorComponent implements OnInit {
         ins:  JSON.stringify(this.formCVToCV(this.INs$.value)),
         outs: JSON.stringify(this.formCVToCV(this.OUTs$.value))
       })),
-      switchMap((x) => this.dataService.backend.update.euromodule(x)),
+      switchMap(x => this.dataService.backend.update.module(x)),
       withLatestFrom(this.dataService.updateSingleData$)
     )
         .subscribe(([x, a]) => this.dataService.updateSingleData$.next(a));
+  
+  }
+  
+  ngOnInit(): void {
     
-    
+    const ins: CV[] = JSON.parse(this.data.ins);
+    ins.forEach(x => this.addIN$.next([
+      x.name,
+      x.min,
+      x.max
+    ]));
+    const outs: CV[] = JSON.parse(this.data.outs);
+    outs.forEach(x => this.addOUT$.next([
+      x.name,
+      x.min,
+      x.max
+    ]));
   }
   
   private createCV(name, min, max): { a: FormControl; b: FormControl; name: FormControl } {
@@ -132,7 +143,7 @@ export class ModuleEditorComponent implements OnInit {
   }
   
   private formCVToCV(formCVS: FormCV[]): CV[] {
-    let x: { min: any; max: any; name: any }[] = formCVS.map((formCV) => ({
+    const x: { min: any; max: any; name: any }[] = formCVS.map(formCV => ({
       name: formCV.name.value,
       // description?: string;
       min: formCV.a.value,
@@ -141,22 +152,6 @@ export class ModuleEditorComponent implements OnInit {
     }));
     
     return x;
-  }
-  
-  ngOnInit(): void {
-    
-    let ins: CV[] = JSON.parse(this.data.ins);
-    ins.forEach(x => this.addIN$.next([
-      x.name,
-      x.min,
-      x.max
-    ]));
-    let outs: CV[] = JSON.parse(this.data.outs);
-    outs.forEach(x => this.addOUT$.next([
-      x.name,
-      x.min,
-      x.max
-    ]));
   }
   
 }

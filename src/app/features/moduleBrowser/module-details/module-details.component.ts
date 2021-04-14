@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import {
   CV,
-  DBEuroModule
+  DbModule
 } from '../../../models/models';
 
 @Component({
@@ -16,7 +16,7 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleDetailsComponent implements OnInit {
-    @Input() data: DBEuroModule;
+  @Input() data: DbModule;
     
     ins: CV[] = [];
     outs: CV[] = [];
