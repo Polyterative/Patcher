@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 }                                   from '@angular/core';
 import {
@@ -17,6 +18,7 @@ import {
 import {
   map,
   switchMap,
+  takeUntil,
   withLatestFrom
 }                                   from 'rxjs/operators';
 import {
@@ -38,7 +40,7 @@ interface FormCV {
   styleUrls:       ['./module-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModuleEditorComponent implements OnInit {
+export class ModuleEditorComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   readonly save$ = new Subject();
   
@@ -54,6 +56,8 @@ export class ModuleEditorComponent implements OnInit {
   formGroupA = this.formBuilder.group({});
   formGroupB = this.formBuilder.group({});
   formGroupC = this.formBuilder.group({});
+  
+  protected destroyEvent$: Subject<void> = new Subject();
   
   private validatorsNum: ValidatorFn = Validators.compose([
     // Validators.required,
@@ -71,8 +75,8 @@ export class ModuleEditorComponent implements OnInit {
     public formBuilder: FormBuilder,
     public dataService: ModuleBrowserDataService
   ) {
-    
-    this.addIN$
+  
+    this.addIN$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(([name, min, max]) => {
           const x = [
             ...this.INs$.value,
@@ -88,7 +92,7 @@ export class ModuleEditorComponent implements OnInit {
           });
       
         });
-    this.addOUT$
+    this.addOUT$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(([name, min, max]) => {
           const x: any[] = [
             ...this.OUTs$.value,
@@ -112,10 +116,16 @@ export class ModuleEditorComponent implements OnInit {
         outs: JSON.stringify(this.formCVToCV(this.OUTs$.value))
       })),
       switchMap(x => this.dataService.backend.update.module(x)),
-      withLatestFrom(this.dataService.updateSingleData$)
+      withLatestFrom(this.dataService.updateSingleData$),
+      takeUntil(this.destroyEvent$)
     )
         .subscribe(([x, a]) => this.dataService.updateSingleData$.next(a));
   
+  }
+  
+  ngOnDestroy(): void {
+    this.destroyEvent$.next();
+    this.destroyEvent$.complete();
   }
   
   ngOnInit(): void {

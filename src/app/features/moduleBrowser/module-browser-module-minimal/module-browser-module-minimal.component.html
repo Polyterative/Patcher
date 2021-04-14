@@ -1,54 +1,54 @@
 <div class="flow col parent"
 >
-    <div class="flow col"
-    >
-        <mat-card-title>{{data.name}}</mat-card-title>
-        <div class="flow row spaceBetween"
-             fxLayoutGap="1rem"
-        >
-            <div>
-                <mat-card-subtitle
-                >
-                    {{data.manufacturer.name}}
-
-                </mat-card-subtitle>
-            </div>
-            <div style="font-size: small"
-                 fxLayoutAlign="center center"
-            >
-                {{data.hp}} HP
-            </div>
-        </div>
-    </div>
+  <div class="flow col"
+  >
+    <mat-card-title>{{data.name}}</mat-card-title>
     <div class="flow row spaceBetween"
          fxLayoutGap="1rem"
-         *ngIf="data.description.length>0"
     >
-        <div>
-            {{data.description}}
-        </div>
+      <div>
+        <mat-card-subtitle
+        >
+          {{data.manufacturer.name}}
+        
+        </mat-card-subtitle>
+      </div>
+      <div style="font-size: small"
+           fxLayoutAlign="center center"
+      >
+        {{data.hp}} HP
+      </div>
     </div>
-    <ng-content></ng-content>
-    <mat-divider [inset]="true"
-                 style="margin-top:.5rem"
-    ></mat-divider>
-    <div class="flow row buttons"
-         fxLayoutAlign="end"
+  </div>
+  <div class="flow row spaceBetween"
+       fxLayoutGap="1rem"
+       *ngIf="data.description.length>0"
+  >
+    <div>
+      {{data.description}}
+    </div>
+  </div>
+  <ng-content></ng-content>
+  <mat-divider [inset]="true"
+               style="margin-top:.5rem"
+  ></mat-divider>
+  <div class="flow row buttons"
+       fxLayoutAlign="end"
+  >
+    <button mat-icon-button
+            disabled
     >
-        <button mat-icon-button
-                disabled
-        >
-            <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button
-                disabled
-        >
-            <mat-icon>add</mat-icon>
-        </button>
-        <button mat-icon-button
-                [routerLink]="['/modules/details',data.id]"
-        >
-            <mat-icon>search</mat-icon>
-        </button>
-    </div>
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button
+            disabled
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+    <button mat-icon-button
+            [routerLink]="['/modules/details',data.id]"
+    >
+      <mat-icon>search</mat-icon>
+    </button>
+  </div>
 </div>
