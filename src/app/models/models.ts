@@ -15,7 +15,6 @@ export interface DbModule extends MinimalModule {
   switches: string;
   manualURL: string;
   additional: string;
-  oneU: boolean;
   isComplete: boolean;
   isDIY: boolean;
 }
@@ -33,6 +32,7 @@ export interface MinimalModule {
   hp: number;
   public: boolean;
   manufacturer: MinimalManufacturer;
+  standard: number;
   created: string;
   updated: string;
 }

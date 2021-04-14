@@ -112,8 +112,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.save$.pipe(
       map(() => ({
         ...this.data,
-        ins:  JSON.stringify(this.formCVToCV(this.INs$.value)),
-        outs: JSON.stringify(this.formCVToCV(this.OUTs$.value))
+        ins:  this.serialize(this.formCVToCV(this.INs$.value)),
+        outs: this.serialize(this.formCVToCV(this.OUTs$.value))
       })),
       switchMap(x => this.dataService.backend.update.module(x)),
       withLatestFrom(this.dataService.updateSingleData$),
@@ -121,6 +121,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     )
         .subscribe(([x, a]) => this.dataService.updateSingleData$.next(a));
   
+  }
+  
+  private serialize(cvs: CV[]): string {
+    return JSON.stringify(cvs);
   }
   
   ngOnDestroy(): void {
