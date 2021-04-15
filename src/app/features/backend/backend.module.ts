@@ -3,8 +3,6 @@ import { NgModule }                   from '@angular/core';
 import { AngularFireModule }          from '@angular/fire';
 import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
 import { AngularFireAuth }            from '@angular/fire/auth';
-import { AngularFireDatabaseModule }  from '@angular/fire/database';
-import { AngularFirestoreModule }     from '@angular/fire/firestore';
 import { FlexLayoutModule }           from '@angular/flex-layout';
 import { RouterModule }               from '@angular/router';
 import { LuxonModule }                from 'luxon-angular';
@@ -38,8 +36,6 @@ import { SupabaseService }            from './supabase.service';
             }
         ]),
         AngularFireModule.initializeApp(environment.firebase),
-        AngularFirestoreModule,
-        AngularFireDatabaseModule,
         AngularFireAnalyticsModule,
         FlexLayoutModule,
         BrandPrimaryButtonModule

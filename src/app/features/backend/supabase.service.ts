@@ -206,7 +206,7 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   constructor(public snackBar: MatSnackBar) {
-    console.clear();
+    // console.clear();
     
   }
   
