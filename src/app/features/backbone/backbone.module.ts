@@ -5,28 +5,28 @@ import { AppStateService }        from '../../shared-interproject/app-state.serv
 import { UserDataHandlerService } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
 import { HeroInfoBoxModule }      from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { HeroInfoBoxService }     from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.service';
-import { NotFoundModule }         from './404/not-found.module';
 import { CommonSidebarComponent } from './common-sidebar/common-sidebar.component';
 import { FeedbackBoxModule }      from './feedback-box/feedback-box.module';
 import { FooterComponent }        from './footer/footer.component';
 import { HomeModule }             from './home/home.module';
+import { LoginModule }            from './login/login.module';
 import { ToolbarModule }          from './toolbar/toolbar.module';
 
 @NgModule({
-  providers:    [
+  providers: [
     AppStateService,
     UserDataHandlerService,
     HeroInfoBoxService
   ],
-  imports:      [
+  imports:   [
     HttpClientModule,
     HomeModule,
     ToolbarModule,
     FeedbackBoxModule,
-    NotFoundModule,
     FlexLayoutModule,
+    LoginModule,
     HeroInfoBoxModule
-    //keep as last (for routes)
+    // NotFoundModule//keep as last (for routes)
   ],
   declarations: [
     CommonSidebarComponent,
