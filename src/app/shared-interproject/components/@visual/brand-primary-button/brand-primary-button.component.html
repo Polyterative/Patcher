@@ -1,12 +1,12 @@
 <!--<div>-->
 <button mat-raised-button
         [fxFlex]="innerFlex"
-
+        [routerLink]="routerLink"
         [class]="'button'+' '+theme"
         [disabled]="disabled||error"
         [ngClass]='{"disabled": disabled, "error": error }'
         (click)="disabled?doNothing():click$.emit()"
 >
-    <ng-content></ng-content>
+  <ng-content></ng-content>
 </button>
 <!--</div>-->

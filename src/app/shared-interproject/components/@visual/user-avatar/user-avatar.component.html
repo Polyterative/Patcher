@@ -36,7 +36,10 @@
              fxLayoutAlign="end"
              *ngIf="!hideLogoff"
         >
-          <button mat-stroked-button  (click)="logoff$.emit()">Esci</button>
+          <button mat-stroked-button
+                  (click)="logoff$.emit()"
+          >Logoff
+          </button>
         </div>
       </div>
     </ng-container>

@@ -11,7 +11,7 @@ import { UserDataHandlerService } from './user-data-handler.service';
 })
 export class UserDataHandlerComponent {
 
-  constructor(public service: UserDataHandlerService) {
+  constructor(public userDataHandlerService: UserDataHandlerService) {
   }
 
 }

@@ -1,9 +1,9 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    EventEmitter,
-    Input,
-    Output
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output
 } from '@angular/core';
 
 /**
@@ -18,10 +18,11 @@ import {
 export class BrandPrimaryButtonComponent {
   @Input() disabled: boolean = false;
   @Input() error: boolean = false;
-  @Input() theme: 'primary' | 'warning' | 'positive' | 'negative'| 'light' = 'primary';
+  @Input() theme: 'primary' | 'warning' | 'positive' | 'negative' | 'light' = 'primary';
   @Output() click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
-
+  @Input() routerLink: string | any[] = undefined;
+  
   doNothing() {
     //do not delete this
   }
