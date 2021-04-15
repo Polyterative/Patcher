@@ -1,16 +1,16 @@
 <div fxLayout="column"
      fxLayoutGap="1rem"
-     *ngIf="{user:service.store.user$|async} as bag"
+     *ngIf="{user:userDataHandlerService.store.user$|async} as bag"
 >
     <div fxFlex="auto"
          *ngIf="bag.user; else noData"
     >
-        <app-user-avatar
-                [name]="bag.user.username"
-                [hideLogoff]="false"
-                (logoff$)="service.logoff$.next()"
-                (login$)="service.login$.next()"
-        ></app-user-avatar>
+      <app-user-avatar
+        [name]="bag.user.username"
+        [hideLogoff]="false"
+        (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
+        (login$)="userDataHandlerService.loginButtonClick$.next()"
+      ></app-user-avatar>
     </div>
     
     <!--    {{bag.user|json}}-->
@@ -19,7 +19,7 @@
         <mat-card>
             <app-brand-primary-button fxFlex="grow"
                                       innerFlex="grow"
-                                      [disabled]="true"
+                                      (click$)="userDataHandlerService.loginButtonClick$.next()"
             >Login
             </app-brand-primary-button>
         </mat-card>
