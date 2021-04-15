@@ -115,6 +115,28 @@ export class SupabaseService {
     manufacturers: 'manufacturers'
   };
   
+  login(email: string, password: string) {
+    return fromPromise(this.supabase.auth.signIn({
+      email,
+      password
+    }));
+  }
+  
+  signup(email: string, password: string) {
+    return fromPromise(this.supabase.auth.signUp({
+      email,
+      password
+    }));
+  }
+  
+  getUser() {
+    return this.supabase.auth.user();
+  }
+  
+  logoff() {
+    return this.supabase.auth.signOut();
+  }
+  
   // import = {
   //     manufacturers: (): void => {
   //         let items = zmodules.map(x => x.mkr)

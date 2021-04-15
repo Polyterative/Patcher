@@ -1,0 +1,27 @@
+<div fxFlex="auto"
+     fxLayout="column"
+>
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.user.type"
+                       [control]="dataService.fields.user.control"
+                       [label]="dataService.fields.user.label"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.password.type"
+                       [control]="dataService.fields.password.control"
+                       [label]="dataService.fields.password.label"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  
+  <app-brand-primary-button style="padding-top: 1rem"
+                            [error]="dataService.fields.user.control.invalid||dataService.fields.password.control.invalid"
+                            innerFlex="auto"
+                            theme="positive"
+                            (click$)="dataService.mailLoginClick$.next()"
+  >Log in
+  </app-brand-primary-button>
+</div>
