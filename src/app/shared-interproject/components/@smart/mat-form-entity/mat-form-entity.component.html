@@ -7,7 +7,7 @@
                 fxFlexFill
 >
   <mat-label>{{ label }}</mat-label>
-
+  
   <!--  <ng-container *ngIf="type===types.OKKO">-->
   <!--    <div fxFlex="grow"-->
   <!--         fxLayout="row"-->
@@ -25,7 +25,7 @@
   <!--      </button>-->
   <!--    </div>-->
   <!--  </ng-container>-->
-
+  
   <ng-container *ngIf="type===types.AREA">
     <!--<mat-label>{{placeholder}}</mat-label>-->
     <textarea #autosize="cdkTextareaAutosize"
@@ -36,7 +36,7 @@
               matInput
     ></textarea>
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.TEXT)||(type===types.NUMBER)||(type===types.TIME)">
     <input [autocomplete]="!disableBrowserAutocomplete"
            [formControl]="control"
@@ -45,9 +45,30 @@
            matInput
            style="height: 15.333px"
     />
-
+  
   </ng-container>
-
+  <!--  -->
+  <ng-container *ngIf="(type===types.EMAIL)">
+    <input [autocomplete]="!disableBrowserAutocomplete"
+           [formControl]="control"
+           [placeholder]="placeholder"
+           type="email"
+           matInput
+           style="height: 15.333px"
+    />
+  </ng-container>
+  
+  <ng-container *ngIf="(type===types.PASSWORD)">
+    <input [autocomplete]="!disableBrowserAutocomplete"
+           [formControl]="control"
+           [placeholder]="placeholder"
+           [type]="hidePassword ? 'password' : 'text'"
+           matInput
+           style="height: 15.333px"
+    />
+  
+  </ng-container>
+  
   <ng-container *ngIf="(type===types.SELECT)">
     <mat-select [formControl]="control"
                 [placeholder]="placeholder"
@@ -66,9 +87,9 @@
         {{ option.name }}
       </mat-option>
     </mat-select>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.MULTISELECT_GROUPED)">
     <mat-select [formControl]="control"
                 [placeholder]="placeholder"
@@ -92,9 +113,9 @@
 
 
     </mat-select>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.MULTISELECT)">
     <mat-select [formControl]="control"
                 [placeholder]="placeholder"
@@ -110,9 +131,9 @@
         {{ option.name }}
       </mat-option>
     </mat-select>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.MULTI_TEXT)">
     <mat-chip-list #chipList>
       <mat-chip (removed)="removeFromChips(chip)"
@@ -133,12 +154,12 @@
              [placeholder]="placeholder"
       >
     </mat-chip-list>
-
+  
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE)">
     <mat-chip-list #chipList>
-
+  
       <ng-container *ngFor="let chip of control.value">
         <mat-chip (removed)="removeFromChips(chip)"
                   [removable]="!control.disabled"
@@ -173,7 +194,7 @@
       </mat-option>
 
     </mat-autocomplete>
-
+  
   </ng-container>
   <ng-container>
     <!--  <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE_GROUPED)">-->
@@ -224,14 +245,14 @@
     <!--  </ng-container>-->
   </ng-container>
   <ng-container *ngIf="(type===types.AUTOCOMPLETE)">
-
+  
     <input [formControl]="control"
            [matAutocomplete]="autocomplete"
            [placeholder]="placeholder"
            matInput
            type="text"
     />
-
+  
     <mat-autocomplete #autocomplete="matAutocomplete"
                       [displayWith]="autocomplete_displayFunction"
                       autoActiveFirstOption
@@ -243,19 +264,19 @@
       >
         {{ option.name }}
       </mat-option>
-
+  
     </mat-autocomplete>
   </ng-container>
-
+  
   <ng-container *ngIf="(type===types.AUTOCOMPLETE_GROUPED)">
-
+    
     <input [formControl]="control"
            [matAutocomplete]="autocomplete"
            [placeholder]="placeholder"
            matInput
            type="text"
     />
-
+    
     <mat-autocomplete #autocomplete="matAutocomplete"
                       [displayWith]="autocomplete_displayFunction"
                       [autoActiveFirstOption]="!disableVoidSelection"
@@ -273,17 +294,17 @@
           </mat-option>
         </ng-container>
       </mat-optgroup>
-
+    
     </mat-autocomplete>
   </ng-container>
-
+  
   <mat-error *ngIf="(invalid$|async)">{{ (errors$|async) }}</mat-error>
-
+  
   <mat-hint *ngIf="hint">{{ hint }}</mat-hint>
   <mat-label *ngIf="warning"
              style="color: #A5490B!important; padding-left:1rem"
   >{{ warning }}</mat-label>
-
+  
   <ng-container *ngIf="type===types.AUTOCOMPLETE_MULTIPLE">
     <mat-hint *ngIf="(invalid$|async)"
               style="color: red; padding-top: 1rem"
@@ -305,6 +326,17 @@
           (click)="control.patchValue('')"
   >
     <mat-icon>close</mat-icon>
+  </button>
+  
+  <button *ngIf="type===types.PASSWORD"
+          mat-icon-button
+          matSuffix
+          (click)="hidePassword = !hidePassword"
+          [matTooltip]="'Hide/Show password'"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hidePassword"
+  >
+    <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
   </button>
 </mat-form-field>
 

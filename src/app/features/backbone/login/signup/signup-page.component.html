@@ -1,1 +1,35 @@
-<p>signup-page works!</p>
+<lib-screen-wrapper maxSize="26rem"
+                    [force]="true"
+                    style="margin-bottom:16rem"
+>
+  <div style="padding-top: 4rem">
+    <app-empty-state
+      backgroundImage="assets/undraw_access.svg"
+    ></app-empty-state>
+  </div>
+  <app-hero-content-card title="Sign up"
+  >
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-signup-email fxFlex="auto"></app-signup-email>
+  
+  
+      <app-brand-primary-button *ngIf="false"
+                                style="padding-top: 1rem"
+                                innerFlex="auto"
+                                theme="positive"
+                                (click$)="dataService.googleSignClick$.next()"
+      >Google Sign up
+      </app-brand-primary-button>
+  
+      <mat-card-subtitle fxLayoutAlign="center"
+                         routerLink="/auth/login"
+                         style="cursor: pointer"
+      >Login instead?
+      </mat-card-subtitle>
+    </div>
+  </app-hero-content-card>
+
+</lib-screen-wrapper>
