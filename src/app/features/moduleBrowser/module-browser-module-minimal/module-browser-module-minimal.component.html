@@ -22,7 +22,9 @@
        *ngIf="data.description.length>0"
   >
     <div>
-      {{data.description}}
+      <app-restricted-entity [disabled]="true">
+        <div>{{data.description}}</div>
+      </app-restricted-entity>
     </div>
   </div>
   <ng-content></ng-content>

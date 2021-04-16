@@ -5,6 +5,7 @@ import {
   OnInit
 }                                   from '@angular/core';
 import { MinimalModule }            from '../../../models/models';
+import { UserManagementService }    from '../../backbone/login/user-management.service';
 import { ModuleBrowserDataService } from '../module-browser-data.service';
 
 @Component({
@@ -16,7 +17,10 @@ import { ModuleBrowserDataService } from '../module-browser-data.service';
 export class ModuleBrowserModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;
   
-  constructor(public dataService: ModuleBrowserDataService) {}
+  constructor(
+    public userManagerService: UserManagementService,
+    public dataService: ModuleBrowserDataService
+  ) {}
   
   ngOnInit(): void {
   }
