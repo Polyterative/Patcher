@@ -1,35 +1,35 @@
 import {
   Injectable,
   OnDestroy
-}                                           from '@angular/core';
+}                                from '@angular/core';
 import {
   FormControl,
   Validators
-}                                           from '@angular/forms';
-import { PageEvent }                        from '@angular/material/paginator';
-import { MatSnackBar }                      from '@angular/material/snack-bar';
+}                                from '@angular/forms';
+import { PageEvent }             from '@angular/material/paginator';
+import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
   ReplaySubject,
   Subject
-}                                           from 'rxjs';
-import { of }                               from 'rxjs/internal/observable/of';
+}                                from 'rxjs';
+import { of }                    from 'rxjs/internal/observable/of';
 import {
   distinctUntilChanged,
   startWith,
   switchMap,
   takeUntil,
   withLatestFrom
-}                                           from 'rxjs/operators';
+}                                from 'rxjs/operators';
 import {
   DbModule,
   MinimalModule
-}                                           from '../../models/models';
-import { FormTypes }                        from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }                  from '../../shared-interproject/SharedConstants';
-import { UserManagementIntegrationService } from '../backbone/login/user-management-integration.service';
-import { SupabaseService }                  from '../backend/supabase.service';
+}                                from '../../models/models';
+import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants }       from '../../shared-interproject/SharedConstants';
+import { UserManagementService } from '../backbone/login/user-management.service';
+import { SupabaseService }       from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
@@ -134,7 +134,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   }
   
   constructor(
-    private userService: UserManagementIntegrationService,
+    private userService: UserManagementService,
     private snackBar: MatSnackBar,
     public backend: SupabaseService
   ) {

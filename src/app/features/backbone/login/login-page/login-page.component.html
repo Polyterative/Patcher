@@ -3,29 +3,26 @@
                     style="margin-bottom:16rem"
 >
   <div style="padding-top: 4rem">
+  
+    <!--    <app-empty-state-->
+    <!--      backgroundImage="assets/undraw_login.svg"-->
+    <!--    ></app-empty-state>-->
     <app-empty-state
-      backgroundImage="assets/undraw_coming_home_52ir.svg"
+      [backgroundImage]="dataService.loginImage$|async"
     ></app-empty-state>
   </div>
   <app-hero-content-card title="Login"
   >
     <div fxFlex="auto"
          fxLayout="column"
-         fxLayoutGap=".01rem"
-         class=".TOP"
+         fxLayoutGap="1rem"
     >
       <app-login-email fxFlex="auto"></app-login-email>
-  
-      <div fxFlex="auto">
-        <app-brand-primary-button style="padding-top: 1rem"
-                                  innerFlex="auto"
-                                  theme="positive"
-                                  [error]="dataService.fields.user.control.invalid||dataService.fields.password.control.invalid"
-                                  (click$)="dataService.mailSignClick$.next()"
-        >Sign up
-        </app-brand-primary-button>
-      </div>
-
+      <mat-card-subtitle fxLayoutAlign="center"
+                         routerLink="/auth/signup"
+                         style="cursor: pointer"
+      >Sign up instead?
+      </mat-card-subtitle>
     </div>
   
   

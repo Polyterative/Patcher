@@ -1,16 +1,18 @@
-import { NgModule }                         from '@angular/core';
-import { RouterModule }                     from '@angular/router';
-import { LoginPageComponent }               from './login-page/login-page.component';
-import { LoginPageModule }                  from './login-page/login-page.module';
-import { SignupPageComponent }              from './signup/signup-page.component';
-import { UserManagementIntegrationService } from './user-management-integration.service';
+import { NgModule }              from '@angular/core';
+import { RouterModule }          from '@angular/router';
+import { LoginPageComponent }    from './login-page/login-page.component';
+import { LoginPageModule }       from './login-page/login-page.module';
+import { SignupPageComponent }   from './signup/signup-page.component';
+import { SignupPageModule }      from './signup/signup-page.module';
+import { UserManagementService } from './user-management.service';
 
 
 @NgModule({
   declarations: [],
-  providers:    [UserManagementIntegrationService],
+  providers:    [UserManagementService],
   imports:      [
     LoginPageModule,
+    SignupPageModule,
     RouterModule.forRoot([
       {
         path:     'auth',

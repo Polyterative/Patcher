@@ -13,17 +13,27 @@
                      fxLayoutAlign="center center"
                 
                 >
-                    {{service.state.title|async}}
+                  {{service.state.title|async}}
                 </div>
-                <div fxFlex="grow"></div>
-                <div class="buttons"
-                     fxLayout="row"
-                     fxLayoutGap="1rem"
+              <div fxFlex="grow"></div>
+              <div class="buttons"
+                   fxLayout="row"
+                   fxLayoutGap="1rem"
+              >
+                <app-route-clickable-link-list [data$]="data$"></app-route-clickable-link-list>
+              </div>
+              <div fxFlex="grow"></div>
+              <div fxFlex="auto"
+                   fxLayout="row"
+                   fxLayoutGap="1rem"
+              >
+                <button mat-icon-button
+                        aria-label="Example icon button with a vertical three dot icon"
                 >
-                    <app-route-clickable-link-list [data$]="data$"></app-route-clickable-link-list>
-                </div>
-                <div fxFlex="grow"></div>
-                <app-brand-logo></app-brand-logo>
+                  <mat-icon>user</mat-icon>
+                </button>
+              </div>
+              <app-brand-logo></app-brand-logo>
             </div>
         </lib-screen-wrapper>
     </mat-toolbar-row>

@@ -1,55 +1,55 @@
 import {
-    COMMA,
-    ENTER
+  COMMA,
+  ENTER
 }                                       from '@angular/cdk/keycodes';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input
 }                                       from '@angular/core';
 import {
-    AbstractControl,
-    AsyncValidatorFn,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    ValidationErrors,
-    ValidatorFn
+  AbstractControl,
+  AsyncValidatorFn,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn
 }                                       from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent }            from '@angular/material/chips';
 import {
-    FloatLabelType,
-    MatFormFieldAppearance
+  FloatLabelType,
+  MatFormFieldAppearance
 }                                       from '@angular/material/form-field';
 import { TooltipPosition }              from '@angular/material/tooltip';
 import {
-    BehaviorSubject,
-    merge,
-    NEVER,
-    Observable,
-    of
+  BehaviorSubject,
+  merge,
+  NEVER,
+  Observable,
+  of
 }                                       from 'rxjs';
 import {
-    debounceTime,
-    filter,
-    map,
-    takeUntil,
-    tap,
-    withLatestFrom
+  debounceTime,
+  filter,
+  map,
+  takeUntil,
+  tap,
+  withLatestFrom
 }                                       from 'rxjs/operators';
 import {
-    AppFormUtils,
-    Strings
+  AppFormUtils,
+  Strings
 }                                       from '../../../app-form-utils';
 import {
-    findOptionForId,
-    flatOptionGroupToArray,
-    FormTypes,
-    ISelectable,
-    isOption
+  findOptionForId,
+  flatOptionGroupToArray,
+  FormTypes,
+  ISelectable,
+  isOption
 }                                       from './form-element-models';
 
 export interface IMatFormEntityConfig {
@@ -76,20 +76,14 @@ export interface IMatFormEntityConfig {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatFormEntityComponent {
-
+  
   protected destroyEvent$: EventEmitter<void> = new EventEmitter();
-
-  ngOnDestroy(): void {
-    this.destroyEvent$.emit();
-    this.destroyEvent$.complete();
-
-  }
-
+  
   @Input()
   dataPack?: IMatFormEntityConfig;
-
-  invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  //keep this a bsubject otherwise you will have template errors
-  errors$: BehaviorSubject<string> = new BehaviorSubject('');       //keep this a bsubject otherwise you will have template errors
+  
+  invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
+  errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
   /**
    * Types reference, do not use from outside
    */
@@ -146,14 +140,11 @@ export class MatFormEntityComponent {
   @Input() options$?: Observable<ISelectable[]>;
   // @Input()
   optionsFiltered: BehaviorSubject<Array<ISelectable>> = new BehaviorSubject<Array<ISelectable>>([]);
-  @Input() placeholder: string = '';
-  @Input() label: string = 'Descrizione';
+  @Input() placeholder = '';
+  @Input() label = 'Descrizione';
   @Input() type: FormTypes = FormTypes.TEXT;
   @Input() default = false;
-
-
-  private errorObjectNotInOptions = {[Strings.form.errorCode.custom.notInOptions]: true};
-
+  
   //
   // @Input()
   // public max: observable;
@@ -171,6 +162,15 @@ export class MatFormEntityComponent {
     COMMA
     // TAB // add ONLY if you add TAB-to-add  to autocomplete
   ];
+  
+  private errorObjectNotInOptions = {[Strings.form.errorCode.custom.notInOptions]: true};
+  
+  ngOnDestroy(): void {
+    this.destroyEvent$.emit();
+    this.destroyEvent$.complete();
+    
+  }
+  
   /**
    *   You can use something like
    *   public getElementsErrors(toBeChecked: FormControl): string {
@@ -196,24 +196,6 @@ export class MatFormEntityComponent {
   ) {
   }
 
-  private safelyAddValidator(newValidator: ValidatorFn): void {
-    const hostValidator: ValidatorFn | null = this.control.validator;
-
-    this.control.setValidators(hostValidator ? [
-      hostValidator,
-      newValidator
-    ] : [newValidator]);
-  }
-
-  private safelyAddAsyncValidator(newValidator: AsyncValidatorFn): void {
-    const hostAsyncValidator: AsyncValidatorFn | null = this.control.asyncValidator;
-
-    this.control.setAsyncValidators(hostAsyncValidator ? [
-      hostAsyncValidator,
-      newValidator
-    ] : [newValidator]);
-  }
-
   /**
    * DO NOT STATICIZE, USED IN HTML
    * @param entry
@@ -224,7 +206,6 @@ export class MatFormEntityComponent {
     // option click => displayfunction => output
     return entry && entry.name || '';
   }
-
 
   ngOnInit(): void {
     if (this.dataPack) {
@@ -243,20 +224,22 @@ export class MatFormEntityComponent {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.invalid$.next(data));
-
-
+  
     merge(this.control.valueChanges, this.options$ ? this.options$ : NEVER)
       .pipe(
         map(_ => this.errorProvider(this.control)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(errors => this.errors$.next(errors));
-
-    const hostControl = this.control; //alias
-
-
+  
+    const hostControl = this.control; // alias
+  
     // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
     switch (this.type) {
+      case FormTypes.EMAIL:
+        break;
+      case FormTypes.PASSWORD:
+        break;
       case FormTypes.TEXT:
         if (this.textTransformFunction) {
           hostControl.valueChanges
@@ -266,7 +249,7 @@ export class MatFormEntityComponent {
                      )
                      .subscribe(x => {
                        const result = this.textTransformFunction(x);
-
+          
                        if (x !== result) { // prevent loop
                          this.control.patchValue(result);
                        }
@@ -275,11 +258,11 @@ export class MatFormEntityComponent {
         break;
       case FormTypes.SELECT:
         this.checkOptions();
-
+      
         if (this.disableVoidSelection) {
           this.safelyAddValidator((x: FormControl) => x.value === '' ? this.errorObjectNotInOptions : null);
         }
-
+      
         break;
       case FormTypes.MULTISELECT_GROUPED:
         this.checkOptions();
@@ -300,12 +283,12 @@ export class MatFormEntityComponent {
             takeUntil(this.destroyEvent$)
           )
           .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-
-            let allOptions: Array<ISelectable> = this.getOptionsGroupedCopy(options);
+  
+            const allOptions: Array<ISelectable> = this.getOptionsGroupedCopy(options);
             let remainingOptions: ISelectable[] = [];
 
             if (input) {
-              if (isOption(input)) { //lib-injected object (good)
+              if (isOption(input)) { // lib-injected object (good)
                 remainingOptions = allOptions.map((group, groupId) => {
                   group.options = allOptions[groupId].options
                                                      .map((x => x))
@@ -314,8 +297,8 @@ export class MatFormEntityComponent {
                                                                                                                                      .includes(input.name.toLowerCase()));
                   return group;
                 });
-              } else if (typeof input === 'string') { //usertext (invalid until obj)
-
+              } else if (typeof input === 'string') { // usertext (invalid until obj)
+    
                 remainingOptions = allOptions.map((group, groupId) => {
                   group.options = allOptions[groupId].options
                                                      .map((x => x))
@@ -324,22 +307,21 @@ export class MatFormEntityComponent {
                                                                                                                                 .includes(input.toLowerCase()));
                   return group;
                 });
-
-
-                //in my original idea this piece of code replaced the inserted string with the found object
+    
+                // in my original idea this piece of code replaced the inserted string with the found object
                 // but this causes some usage problems, so I decided to keep it simple and not apply this automatism
                 // let flattenedOptions: ISelectable[] = this.flatOptionGroupToArray(this.options);
-
+    
                 // let optionForInput: ISelectable | undefined = this.findOptionForName(input.toLowerCase()
                 //                                                                           .trim(),
                 //   flattenedOptions
                 // );
                 // if (optionForInput) {hostControl.patchValue(optionForInput);}
               }
-
-              //filter out void groups
+  
+              // filter out void groups
               remainingOptions = remainingOptions.filter(x => x.options && x.options.length > 0);
-            } else { remainingOptions = allOptions;}
+            } else { remainingOptions = allOptions; }
 
             this.optionsFiltered.next(remainingOptions);
           });
@@ -347,14 +329,13 @@ export class MatFormEntityComponent {
         if (this.strictAutocomplete) {
 
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-
-            let input$ = of(control.value);
+  
+            const input$ = of(control.value);
 
             return input$// I would like to update even if options change in the future
               .pipe(
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
-
 
                     if (options.length == 0) {
                       return null;
@@ -391,8 +372,8 @@ export class MatFormEntityComponent {
             takeUntil(this.destroyEvent$)
           )
           .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-
-            let allOptions: Array<ISelectable> = options;
+  
+            const allOptions: Array<ISelectable> = options;
             let remainingOptions: ISelectable[];
 
             if (isOption(input)) {
@@ -415,8 +396,8 @@ export class MatFormEntityComponent {
         if (this.strictAutocomplete) {
 
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-
-            let input$ = of(control.value);
+  
+            const input$ = of(control.value);
 
             return input$// I would like to update even if options change in the future
               .pipe(
@@ -470,7 +451,7 @@ export class MatFormEntityComponent {
           .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
 
             if (typeof input === 'string') {
-              let filtered: ISelectable[] = options.filter(opt =>
+              const filtered: ISelectable[] = options.filter(opt =>
                 this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
                                                                                          .includes(input.toLowerCase()));
 
@@ -483,8 +464,8 @@ export class MatFormEntityComponent {
         if (this.strictAutocomplete) {
 
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-
-            let input$ = of(control.value);
+  
+            const input$ = of(control.value);
 
             return input$// I would like to update even if options change in the future
               .pipe(
@@ -511,7 +492,6 @@ export class MatFormEntityComponent {
                     // tslint:disable-next-line:no-null-keyword
                     return (foundAll) || (isVoidWhileCanBe) ? null : this.errorObjectNotInOptions;
 
-
                   }
                 )
               );
@@ -524,24 +504,11 @@ export class MatFormEntityComponent {
         break;
     }
 
-
   }
 
   compareFunctionStrictObject(o1: ISelectable, o2: ISelectable) {
     return (o1.name == o2.name && o1.id == o2.id);
   }
-
-  // fixed this way because otherwise it caused immutability issues and object by reference passes
-  // This is a quick way to make a deep copy of the array and content
-  private getOptionsGroupedCopy(options: ISelectable[]): { name: string; options: ISelectable[]; disabled?: boolean; id: string }[] {
-    return [
-      ...options.map((option: ISelectable) => ({
-        ...option,
-        options: [...option.options]
-      }))
-    ];
-  }
-
 
   addToMultiText($event: MatChipInputEvent): void {
     const dataCapsule = this.control;
@@ -597,18 +564,6 @@ export class MatFormEntityComponent {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
 
-  private checkOptions(): void {
-    // console.warn([
-    //   this.label,
-    //   this.options
-    // ]);
-
-    if (this.options$ == undefined) {
-      console.error('Options is not observable! I\'m a selector, give me the options!');
-      console.error(this.options$);
-    }
-  }
-
   @Input()
   set disabled(value: boolean) {
     // tslint:disable-next-line:switch-default
@@ -625,6 +580,48 @@ export class MatFormEntityComponent {
           this.ghostControl.enable();
         }
         break;
+    }
+  }
+  
+  private safelyAddValidator(newValidator: ValidatorFn): void {
+    const hostValidator: ValidatorFn | null = this.control.validator;
+    
+    this.control.setValidators(hostValidator ? [
+      hostValidator,
+      newValidator
+    ] : [newValidator]);
+  }
+  
+  private safelyAddAsyncValidator(newValidator: AsyncValidatorFn): void {
+    const hostAsyncValidator: AsyncValidatorFn | null = this.control.asyncValidator;
+    
+    this.control.setAsyncValidators(hostAsyncValidator ? [
+      hostAsyncValidator,
+      newValidator
+    ] : [newValidator]);
+  }
+  
+  hidePassword: boolean = true;
+  // fixed this way because otherwise it caused immutability issues and object by reference passes
+  // This is a quick way to make a deep copy of the array and content
+  private getOptionsGroupedCopy(options: ISelectable[]): { name: string; options: ISelectable[]; disabled?: boolean; id: string }[] {
+    return [
+      ...options.map((option: ISelectable) => ({
+        ...option,
+        options: [...option.options]
+      }))
+    ];
+  }
+  
+  private checkOptions(): void {
+    // console.warn([
+    //   this.label,
+    //   this.options
+    // ]);
+    
+    if (this.options$ == undefined) {
+      console.error('Options is not observable! I\'m a selector, give me the options!');
+      console.error(this.options$);
     }
   }
 }

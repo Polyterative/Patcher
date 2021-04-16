@@ -1,0 +1,14 @@
+<ng-container *ngIf="disabled; else normal">
+  <!--  <div *matTooltip="'AAAAAAAAAAA'">-->
+  <div fxFlex="auto"
+       fxLayout="column"
+  >
+    AAAAAAAAAAAAAAAAA
+    <ng-content></ng-content>
+  </div>
+  <!--  </div>-->
+</ng-container>
+<ng-template #normal>
+  <ng-content>
+  </ng-content>
+</ng-template>

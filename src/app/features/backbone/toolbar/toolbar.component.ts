@@ -1,6 +1,6 @@
 ﻿import {
-    ChangeDetectionStrategy,
-    Component
+  ChangeDetectionStrategy,
+  Component
 }                             from '@angular/core';
 import { Router }             from '@angular/router';
 import { BehaviorSubject }    from 'rxjs';
@@ -28,12 +28,12 @@ export class ToolbarComponent {
             icon:     'list',
             disabled: false
         },
-        {
-            label:    'Patch builder',
-            route:    'builder',
-            icon:     'build',
-            disabled: false
-        }
+      {
+        label:    'Patch builder',
+        route:    'builder/new',
+        icon:     'build',
+        disabled: false
+      }
     ]);
     
     constructor(public service: ToolbarService, public router: Router) {

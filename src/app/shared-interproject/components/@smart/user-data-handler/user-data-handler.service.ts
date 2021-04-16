@@ -5,10 +5,7 @@ import {
   ReplaySubject,
   Subject
 }                     from 'rxjs';
-import {
-  filter,
-  map
-}                     from 'rxjs/operators';
+import { map }        from 'rxjs/operators';
 
 interface UserModel {
   username: string | undefined;
@@ -18,6 +15,7 @@ interface UserModel {
 export class UserDataHandlerService {
   logoffButtonClick$ = new Subject<void>();
   loginButtonClick$ = new Subject<void>();
+  signupButtonClick$ = new Subject<void>();
   
   readonly store = {
     user$: new ReplaySubject<UserModel>()
@@ -29,7 +27,7 @@ export class UserDataHandlerService {
   ) {
     
     // let api = new UserAPI(httpClient);
-    
+  
     // api.get()
     //    .pipe(
     //      // map(value => value)
@@ -38,17 +36,16 @@ export class UserDataHandlerService {
     //      filter(x => !!x)
     //    )
     //    .subscribe(this.store.user$);
-    
-    this.store.user$.pipe(filter(x => !!x))
-        .subscribe(x => console.log(`Got User: ${ x.username }`));
-    
+  
+    // this.store.user$.pipe(filter(x => !!x))
+    //     .subscribe(x => console.log(`Got User: ${ x.username }`));
+  
     this.logoffButtonClick$
         .pipe(map(x => undefined))
         .subscribe(value => {
-  
           this.store.user$.next(value);
         });
-    
+  
     this.loginButtonClick$
         .pipe()
         .subscribe(x => {
@@ -61,7 +58,20 @@ export class UserDataHandlerService {
             ]
           );
         });
-    
+  
+    this.signupButtonClick$
+        .pipe()
+        .subscribe(x => {
+          router.navigate(
+            [
+              '/auth',
+              'signup'
+              // 'Account',
+              // 'Login'
+            ]
+          );
+        });
+  
   }
   
 }

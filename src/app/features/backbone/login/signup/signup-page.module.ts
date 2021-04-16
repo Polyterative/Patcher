@@ -2,34 +2,42 @@ import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatCardModule }            from '@angular/material/card';
+import { MatFormFieldModule }       from '@angular/material/form-field';
 import { RouterModule }             from '@angular/router';
 import { EmptyStateModule }         from '../../../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { MatFormEntityModule }      from '../../../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from '../../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }    from '../../../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule }      from '../../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { LoginEmailModule }         from './login-email/login-email.module';
-import { LoginPageComponent }       from './login-page.component';
+import { LoginEmailModule }         from '../login-page/login-email/login-email.module';
+import { SignupEmailComponent }     from './signup-email/signup-email.component';
+import { SignupGoogleComponent }    from './signup-google/signup-google.component';
+import { SignupPageComponent }      from './signup-page.component';
 
 
 @NgModule({
   declarations: [
-    LoginPageComponent
+    SignupPageComponent,
+    SignupEmailComponent,
+    SignupGoogleComponent
   ],
   imports:      [
     CommonModule,
-    MatFormEntityModule,
     BrandPrimaryButtonModule,
+    LoginEmailModule,
+    HeroContentCardModule,
     EmptyStateModule,
     ScreenWrapperModule,
-    HeroContentCardModule,
     FlexLayoutModule,
-    LoginEmailModule,
-    RouterModule,
-    MatCardModule
+    MatFormEntityModule,
+    MatFormFieldModule,
+    MatCardModule,
+    RouterModule
   ],
   exports:      [
-    LoginPageComponent
+    SignupPageComponent,
+    SignupEmailComponent,
+    SignupGoogleComponent
   ]
 })
-export class LoginPageModule {}
+export class SignupPageModule {}
