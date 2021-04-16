@@ -3,13 +3,14 @@ import { MatSnackBar }            from '@angular/material/snack-bar';
 import { Router }                 from '@angular/router';
 import { User }                   from '@supabase/supabase-js';
 import { BehaviorSubject }        from 'rxjs';
+import { fromPromise }            from 'rxjs/internal-compatibility';
 import { tap }                    from 'rxjs/operators';
 import { UserDataHandlerService } from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
 import { SharedConstants }        from '../../../shared-interproject/SharedConstants';
 import { SupabaseService }        from '../../backend/supabase.service';
 
 @Injectable()
-export class UserManagementIntegrationService {
+export class UserManagementService {
   user$ = new BehaviorSubject<User | undefined>(undefined);
   
   constructor(
@@ -20,38 +21,48 @@ export class UserManagementIntegrationService {
   ) {
     
     this.user$.subscribe(x => {
-      
+  
       if (x) {
         this.userBoxService.store.user$.next({username: x.email});
       } else {
         this.userBoxService.store.user$.next({username: undefined});
       }
     });
-    
-    this.checkUserInCookies();
-    
-    userBoxService.logoffButtonClick$.subscribe(x => {
-      
-      this.user$.next(undefined);
-      this.backend.logoff();
-      this.router.navigate(['/modules/browser']);
-      SharedConstants.successLogout(this.snackBar);
-    });
-  }
   
-  private checkUserInCookies(): void {
-    let user: User = this.backend.getUser();
-    if (user && user.role === 'authenticated') {
-      this.user$.next(user);
-    }
+    this.checkUserInCookies();
+  
+    userBoxService.logoffButtonClick$.subscribe(x => {
+      this.logoff();
+    });
   }
   
   login(email: string, password: string) {
     return this.backend.login(email, password)
-               .pipe(tap(x => {!x.error ? this.user$.next(x.user) : ''; }));
+               .pipe(tap(x => {if (!x.error) {this.user$.next(x.user); } }));
   }
   
   signup(email: string, password: string) {
     return this.backend.signup(email, password);
+  }
+  
+  signupGoogle() {
+    return this.backend.signupGoogle();
+  }
+  
+  logoff(): void {
+    this.userBoxService.store.user$.next(undefined);
+    this.user$.next(undefined);
+    fromPromise(this.backend.logoff())
+      .subscribe(x => {
+        this.router.navigate(['/modules/browser']);
+        SharedConstants.successLogout(this.snackBar);
+      });
+  }
+  
+  private checkUserInCookies(): void {
+    const user: User = this.backend.getUser();
+    if (user && user.role === 'authenticated') {
+      this.user$.next(user);
+    }
   }
 }

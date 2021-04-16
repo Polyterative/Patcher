@@ -6,8 +6,10 @@ import { MatSnackBar }     from '@angular/material/snack-bar';
 import { createClient }    from '@supabase/supabase-js';
 import { ReplaySubject }   from 'rxjs';
 import { fromPromise }     from 'rxjs/internal-compatibility';
+import { of }              from 'rxjs/internal/observable/of';
 import {
   map,
+  switchMap,
   tap
 }                          from 'rxjs/operators';
 import { environment }     from '../../../environments/environment';
@@ -80,6 +82,13 @@ export class SupabaseService {
           .select(columns)
           .range(from, to)
     )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
+    userWithId:         (id: string, columns = '*') => fromPromise(
+      this.supabase.from(this.paths.modules)
+          .select(columns)
+          .filter('id', 'eq', id)
+          .single()
+    )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
   };
   delete = {
@@ -112,13 +121,27 @@ export class SupabaseService {
   
   private paths = {
     modules:       'modules',
-    manufacturers: 'manufacturers'
+    manufacturers: 'manufacturers',
+    profiles:      'profiles'
   };
   
   login(email: string, password: string) {
     return fromPromise(this.supabase.auth.signIn({
       email,
       password
+    }))
+      .pipe(switchMap(x =>
+        !x.error ? fromPromise(
+          this.supabase
+              .from(this.paths.profiles)
+              .update({confirmed: true})
+        )
+          .pipe(map(z => x)) : of(x)));
+  }
+  
+  signupGoogle() {
+    return fromPromise(this.supabase.auth.signIn({
+      provider: 'google'
     }));
   }
   
@@ -136,71 +159,6 @@ export class SupabaseService {
   logoff() {
     return this.supabase.auth.signOut();
   }
-  
-  // import = {
-  //     manufacturers: (): void => {
-  //         let items = zmodules.map(x => x.mkr)
-  //                             .sort((a, b) => a.name.localeCompare(b.name));
-  //
-  //         items = items.filter((a, index) => {
-  //             const s = JSON.stringify(a);
-  //             return index === items.findIndex(obj =>
-  //                    JSON.stringify(obj) === s);
-  //         });
-  //
-  //         console.log(items);
-  //
-  //         debugger;
-  //
-  //         this.add.manufacturers(items)
-  //             .subscribe(value => console.log(value));
-  //
-  //     },
-  //     modules:       (): void => {
-  //         // let modules = zmodules.slice(45, allmodules.length - 1);
-  //         const modules = zmodules.slice(0, 1000);
-  //
-  //         this.get.manufacturers(0, 99999, '*')
-  //             .pipe(map(x => x.data))
-  //             .subscribe(manifacturers => {
-  //                 const toadd: DbModule[] = [];
-  //
-  //                 modules.forEach(module => {
-  //
-  //                     const found = manifacturers.find(a => a.name == module.mkr.name);
-  //                     if (module.hp != undefined) {
-  //                         toadd.push(
-  //                           {
-  //                               name:           module.name,
-  //                               manufacturerId: found ? found.id : '',
-  //                               hp:             module.hp,
-  //                               description:    '',
-  //                               ins:            JSON.stringify([]),
-  //                               outs:           JSON.stringify([]),
-  //                               switches:       JSON.stringify([]),
-  //                               manualURL:      '',
-  //                               created:        new Date().toISOString(),
-  //                               updated:        new Date().toISOString(),
-  //                               public:         false,
-  //                               additional:     JSON.stringify({})
-  //                           }
-  //                         );
-  //                     }
-  //
-  //                 });
-  //                 console.log(toadd);
-  //
-  //                 debugger;
-  //
-  //                 this.add.modules(toadd)
-  //                     .subscribe(value => console.log(value));
-  //
-  //             });
-  //
-  //         // this.add.modules();
-  //
-  //     }
-  // };
   
   private defaultPag = 20;
   private supabase = createClient(environment.supabase.url, environment.supabase.key);

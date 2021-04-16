@@ -15,6 +15,7 @@ export enum FormTypes {
   TEXT                  = 'text',
   MULTI_TEXT            = 'multi_text',
   TIME                  = 'time',
+  EMAIL                 = 'email',
   PASSWORD              = 'password',
   NUMBER                = 'number',
   AREA                  = 'area',
@@ -24,19 +25,18 @@ export enum FormTypes {
   MULTISELECT_GROUPED   = 'multiselect_group',
   AUTOCOMPLETE          = 'autocomplete',
   AUTOCOMPLETE_GROUPED  = 'autocomplete_group',
-  AUTOCOMPLETE_MULTIPLE = 'autocomplete_multiple',
+  AUTOCOMPLETE_MULTIPLE = 'autocomplete_multiple'
   // AUTOCOMPLETE_MULTIPLE_GROUPED = 'autocomplete_multiple_group' //to finish
 }
 
-
 export namespace CustomValidators {
   export function onlyIntegers(control: AbstractControl): ValidationErrors {
-    let valid: boolean = Number.isInteger(Number.parseFloat(control.value));
+    const valid: boolean = Number.isInteger(Number.parseFloat(control.value));
     return valid ? null : {[Strings.form.errorCode.custom.numberNotInteger]: true};
   }
   
   export function atLeastOneObject(control: AbstractControl): ValidationErrors {
-    let valid: boolean = control.value && control.value.length > 0;
+    const valid: boolean = control.value && control.value.length > 0;
     return valid ? null : {[Strings.form.errorCode.custom.lessThanOneElement]: true};
   }
   
@@ -61,10 +61,9 @@ export enum MatFormAppearences {
 export interface ISelectable {
   id: string;
   name: string;
-  options?: ISelectable[]
+  options?: ISelectable[];
   disabled?: boolean;
 }
-
 
 export function isOption(value: any): value is ISelectable {
   // console.warn(value) //useful for debug
@@ -72,10 +71,10 @@ export function isOption(value: any): value is ISelectable {
 }
 
 export function findAndApplyOptionForIdInGroup(id: string, control: FormControl, options: ISelectable[]): void {
-  let flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
+  const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
   
-  let optionForInput: ISelectable | undefined = findOptionForId(id, flattenedOptions);
-  if (optionForInput) {control.patchValue(optionForInput);}
+  const optionForInput: ISelectable | undefined = findOptionForId(id, flattenedOptions);
+  if (optionForInput) {control.patchValue(optionForInput); }
   
 }
 
@@ -89,10 +88,9 @@ export function findAndApplyOptionForIdInGroup(id: string, control: FormControl,
 export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], control: FormControl, options: ISelectable[]): void {
   // debugger
   
+  const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
   
-  let flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
-  
-  let optionForInput: ISelectable[] = input.map(item => flattenedOptions.find(value => value.id == item.id && value.name == item.name));
+  const optionForInput: ISelectable[] = input.map(item => flattenedOptions.find(value => value.id == item.id && value.name == item.name));
   
   if (optionForInput) {
     control.patchValue(optionForInput);
@@ -101,29 +99,27 @@ export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], c
 }
 
 export function findAndApplyOptionForId(id: string, control: FormControl, options: ISelectable[]): void {
-  let optionForInput: ISelectable | undefined = findOptionForId(id, options);
+  const optionForInput: ISelectable | undefined = findOptionForId(id, options);
   
-  if (optionForInput) {control.patchValue(optionForInput);}
+  if (optionForInput) {control.patchValue(optionForInput); }
   
 }
-
 
 export function findAndApplyOptionForName(id: string, control: FormControl, options: ISelectable[]): void {
-  let optionForInput: ISelectable | undefined = findOptionForName(id, options);
-  if (optionForInput) {control.patchValue(optionForInput);}
+  const optionForInput: ISelectable | undefined = findOptionForName(id, options);
+  if (optionForInput) {control.patchValue(optionForInput); }
   
 }
-
 
 export function getCleanedValue(control: FormControl): string | ISelectable {
   return isOption(control.value) ? control.value : control.value.toString() as string;
 }
 
-export function getCleanedValueId(control: FormControl, defaultVal: string = ''): string {
+export function getCleanedValueId(control: FormControl, defaultVal = ''): string {
   return isOption(control.value) ? control.value.id : defaultVal;
 }
 
-export function getCleanedValueName(control: FormControl, defaultVal: string = ''): string {
+export function getCleanedValueName(control: FormControl, defaultVal = ''): string {
   return isOption(control.value) ? control.value.name : defaultVal;
 }
 

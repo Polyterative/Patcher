@@ -2,26 +2,27 @@
      fxLayoutGap="1rem"
      *ngIf="{user:userDataHandlerService.store.user$|async} as bag"
 >
-    <div fxFlex="auto"
-         *ngIf="bag.user; else noData"
-    >
-      <app-user-avatar
-        [name]="bag.user.username"
-        [hideLogoff]="false"
-        (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
-        (login$)="userDataHandlerService.loginButtonClick$.next()"
-      ></app-user-avatar>
-    </div>
-    
-    <!--    {{bag.user|json}}-->
-    <!--    -->
-    <ng-template #noData>
-        <mat-card>
-            <app-brand-primary-button fxFlex="grow"
-                                      innerFlex="grow"
-                                      (click$)="userDataHandlerService.loginButtonClick$.next()"
-            >Login
-            </app-brand-primary-button>
-        </mat-card>
-    </ng-template>
+  <div fxFlex="auto"
+       *ngIf="bag.user; else noData"
+  >
+    <app-user-avatar
+      [name]="bag.user.username"
+      [hideLogoff]="false"
+      (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
+      (login$)="userDataHandlerService.loginButtonClick$.next()"
+      (signup$)="userDataHandlerService.signupButtonClick$.next()"
+    ></app-user-avatar>
+  </div>
+  
+  <!--    {{bag.user|json}}-->
+  <!--    -->
+  <ng-template #noData>
+    <mat-card>
+      <app-brand-primary-button fxFlex="grow"
+                                innerFlex="grow"
+                                (click$)="userDataHandlerService.loginButtonClick$.next()"
+      >Login/Signup
+      </app-brand-primary-button>
+    </mat-card>
+  </ng-template>
 </div>

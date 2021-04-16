@@ -1,0 +1,41 @@
+<div fxFlex="auto"
+     fxLayout="column"
+>
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.user.type"
+                       [control]="dataService.fields.user.control"
+                       [label]="dataService.fields.user.label"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.password.type"
+                       [control]="dataService.fields.password.control"
+                       [label]="dataService.fields.password.label"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.passwordAgain.type"
+                       [control]="dataService.fields.passwordAgain.control"
+                       [label]="dataService.fields.passwordAgain.label"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  
+  <mat-error *ngIf="dataService.fields.password.control.value!=''&&
+dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value
+"
+  >Repeated password should be the same as original password
+  </mat-error>
+  
+  <app-brand-primary-button style="padding-top: 1rem"
+                            innerFlex="auto"
+                            theme="positive"
+                            [error]="(dataService.fields.user.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value!=''&&
+dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value)"
+                            (click$)="dataService.mailSignClick$.next()"
+  >Sign up
+  </app-brand-primary-button>
+</div>
