@@ -37,7 +37,7 @@ export class ToolbarComponent {
     {
       label:    'My profile',
       route:    'user/area',
-      icon:     'person',
+      icon:     'manage_accounts',
       disabled: false
     }
   ]);
