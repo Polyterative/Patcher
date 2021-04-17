@@ -2,15 +2,15 @@ import { registerLocaleData }      from '@angular/common';
 import localeItExtra               from '@angular/common/locales/extra/it';
 import localeIt                    from '@angular/common/locales/it';
 import {
-    InjectionToken,
-    LOCALE_ID,
-    NgModule
+  InjectionToken,
+  LOCALE_ID,
+  NgModule
 }                                  from '@angular/core';
 import { FlexLayoutModule }        from '@angular/flex-layout';
 import { MatCardModule }           from '@angular/material/card';
 import {
-    MAT_DATE_FORMATS,
-    MAT_DATE_LOCALE
+  MAT_DATE_FORMATS,
+  MAT_DATE_LOCALE
 }                                  from '@angular/material/core';
 import { MatToolbarModule }        from '@angular/material/toolbar';
 import { BrowserModule }           from '@angular/platform-browser';
@@ -24,65 +24,67 @@ import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module'
 import { BackendModule }       from './features/backend/backend.module';
 import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
 import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
+import { UserAreaModule }      from './features/user-area/user-area.module';
 import { PageHeaderModule }    from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
-    provide:  LOCALE_ID,
-    useValue: 'it'
+  provide:  LOCALE_ID,
+  useValue: 'it'
 };
 const localeCode = 'it';
 const matDatepickerLocale: { useValue: string; provide: InjectionToken<string>; } = {
-    provide:  MAT_DATE_LOCALE,
-    useValue: localeCode
+  provide:  MAT_DATE_LOCALE,
+  useValue: localeCode
 };
 const matDatepickerLocaleIT = {
-    provide:  MAT_DATE_FORMATS,
-    useValue: {
-        parse:   {
-            dateInput: 'DD/MM/YYYY'
-        },
-        display: {
-            dateInput:          'DD/MM/YYYY',
-            monthYearLabel:     'MM YYYY',
-            dateA11yLabel:      'DD/MM/YYYY',
-            monthYearA11yLabel: 'MM YYYY'
-        }
+  provide:  MAT_DATE_FORMATS,
+  useValue: {
+    parse:   {
+      dateInput: 'DD/MM/YYYY'
+    },
+    display: {
+      dateInput:          'DD/MM/YYYY',
+      monthYearLabel:     'MM YYYY',
+      dateA11yLabel:      'DD/MM/YYYY',
+      monthYearA11yLabel: 'MM YYYY'
     }
+  }
 };
 
 @NgModule({
-    declarations: [
-        AppComponent
-    ],
-    imports: [
-        BrowserModule,
-        RouterModule,
-        BrowserAnimationsModule,
-        BackendModule,
-        ToolbarModule,
-        PatchBuilderModule,
-        ModuleBrowserModule,
-        FeedbackBoxModule,
-        ScreenWrapperModule,
-        BackboneModule,
-        PageHeaderModule,
-        MatToolbarModule,
-        FlexLayoutModule,
-        MatCardModule
-        //keep as last (for routes)
-    ],
-    providers:    [
-        italianLocale,
-        matDatepickerLocale,
-        matDatepickerLocaleIT
-    ],
-    bootstrap:    [AppComponent]
+  declarations: [
+    AppComponent
+  ],
+  imports:      [
+    BrowserModule,
+    RouterModule,
+    BrowserAnimationsModule,
+    BackendModule,
+    ToolbarModule,
+    PatchBuilderModule,
+    ModuleBrowserModule,
+    UserAreaModule,
+    FeedbackBoxModule,
+    ScreenWrapperModule,
+    BackboneModule,
+    PageHeaderModule,
+    MatToolbarModule,
+    FlexLayoutModule,
+    MatCardModule
+    //keep as last (for routes)
+  ],
+  providers:    [
+    italianLocale,
+    matDatepickerLocale,
+    matDatepickerLocaleIT
+  ],
+  bootstrap:    [AppComponent]
 })
 export class AppModule {
-    
-    constructor() {
-        registerLocaleData(localeIt, localeItExtra);
-    }
-    
+  
+  constructor() {
+    registerLocaleData(localeIt, localeItExtra);
+  }
+  
 }

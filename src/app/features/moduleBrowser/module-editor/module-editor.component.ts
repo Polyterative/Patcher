@@ -116,10 +116,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         outs: this.serialize(this.formCVToCV(this.OUTs$.value))
       })),
       switchMap(x => this.dataService.backend.update.module(x)),
-      withLatestFrom(this.dataService.updateSingleData$),
+      withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
-        .subscribe(([x, a]) => this.dataService.updateSingleData$.next(a));
+        .subscribe(([x, a]) => this.dataService.updateSingleModuleData$.next(a));
   
   }
   

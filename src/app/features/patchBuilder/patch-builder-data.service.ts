@@ -16,7 +16,7 @@ export class PatchBuilderDataService {
     generated$ = new BehaviorSubject<Patch | undefined>(undefined);
     
     constructor(allmodules: ModuleBrowserDataService) {
-        this.generate$.pipe(withLatestFrom(allmodules.data$))
+        this.generate$.pipe(withLatestFrom(allmodules.modulesList$))
             .subscribe(([x, modules]) => {
                   const toReturn: Connection[] = [];
       

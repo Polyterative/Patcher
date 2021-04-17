@@ -24,7 +24,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
-    this.dataService.updateData$.next();
+    this.dataService.updateModulesList$.next();
     
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))

@@ -10,13 +10,13 @@
                    (page)="dataService.onPageEvent($event)"
                    showFirstLastButtons
     ></mat-paginator>
-    <app-auto-loading-indicator [data$]="dataService.data$"
-                                [updateData$]="dataService.updateData$"
+    <app-auto-loading-indicator [data$]="dataService.modulesList$"
+                                [updateData$]="dataService.updateModulesList$"
     ></app-auto-loading-indicator>
     <div fxFlex="auto"
          class="box"
     >
-      <ng-container *ngFor="let item of dataService.data$|async">
+      <ng-container *ngFor="let item of dataService.modulesList$|async">
         <div>
           <mat-card>
             <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
