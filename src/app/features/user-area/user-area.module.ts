@@ -1,15 +1,18 @@
 import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
+import { MatCardModule }            from '@angular/material/card';
 import { MatExpansionModule }       from '@angular/material/expansion';
 import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
 import { UserDataHandlerComponent } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { HeroContentCardModule }    from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule }      from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { generateSaturnRoutes }     from '../../shared-interproject/routing-layouts/saturn/saturn.module';
 import { CommonSidebarComponent }   from '../backbone/common-sidebar/common-sidebar.component';
 import { UserAuthGuard }            from '../backbone/login/user-auth-guard.service';
+import { ModuleBrowserModule }      from '../moduleBrowser/module-browser.module';
 import { UserAreaRootComponent }    from './user-area-root/user-area-root.component';
 import { UserModulesComponent }     from './user-modules/user-modules.component';
 
@@ -49,7 +52,10 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
     BrandPrimaryButtonModule,
     ScreenWrapperModule,
     MatExpansionModule,
-    MatIconModule
+    MatIconModule,
+    MatCardModule,
+    ModuleBrowserModule,
+    HeroContentCardModule
   ],
   exports:      [
     UserAreaRootComponent,

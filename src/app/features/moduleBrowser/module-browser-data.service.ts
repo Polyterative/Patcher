@@ -2,15 +2,13 @@ import {
   Injectable,
   OnDestroy
 }                                from '@angular/core';
-import {
-  FormControl,
-  Validators
-}                                from '@angular/forms';
+import { FormControl }           from '@angular/forms';
 import { PageEvent }             from '@angular/material/paginator';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
+  merge,
   ReplaySubject,
   Subject
 }                                from 'rxjs';
@@ -27,15 +25,16 @@ import {
   MinimalModule
 }                                from '../../models/models';
 import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }       from '../../shared-interproject/SharedConstants';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
   modulesList$ = new BehaviorSubject<MinimalModule[]>([]);
+  userModulesList$ = new BehaviorSubject<DbModule[]>([]);
   updateModulesList$ = new Subject();
   addModuleToCollection$ = new Subject<number>();
+  removeModuleFromCollection$ = new Subject<number>();
   moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   singleModuleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
   updateSingleModuleData$ = new ReplaySubject<number>();
@@ -61,9 +60,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       label:   'search',
       code:    'search',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
-        Validators.required
-      ])),
+      control: new FormControl(''),
       type:    FormTypes.TEXT
     
     },
@@ -74,9 +71,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       control:  new FormControl({
         id:   'name',
         name: 'Name'
-      }, Validators.compose([
-        Validators.required
-      ])),
+      }),
       type:     FormTypes.SELECT,
       options$: of([
         {
@@ -124,6 +119,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   onFilterEvent(userText: string) {
     this.serversideTableRequestData.skip$.next(0);
     this.serversideTableRequestData.filter$.next(userText);
+    this.updateModulesList$.next();
   }
   
   onSortEvent(column: string, direction = 'asc'): void {
@@ -140,32 +136,38 @@ export class ModuleBrowserDataService implements OnDestroy {
     public backend: SupabaseService
   ) {
   
+    merge(this.userService.user$, this.updateSingleModuleData$)
+      .pipe(
+        switchMap(x => this.userService.user$),
+        switchMap(x => !!x ? this.backend.get.userModules() : of([])),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        this.userModulesList$.next(x);
+      });
+  
     this.updateSingleModuleData$
-        .pipe(switchMap(x => this.backend.get.moduleWithId(x)))
+        .pipe(switchMap(x => this.backend.get.moduleWithId(x)), takeUntil(this.destroyEvent$))
         .subscribe(x => this.singleModuleData$.next(x.data));
   
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, 'asc'));
-  
-    this.serversideDataPackage$
-        .pipe(
-          // skip(1),
-          distinctUntilChanged(),
-          switchMap(([a, b, c]) => this.backend.get.modulesCount()),
-          distinctUntilChanged()
-        )
-        .subscribe(x => this.serversideAdditionalData.itemsCount$.next(x));
   
     this.updateModulesList$
         .pipe(
           withLatestFrom(this.serversideDataPackage$),
           switchMap(([z, [skip, take, filter, sort]]) => {
-            const sortColumnName: string = sort[0] ? sort[0] : null, sortDirection = sort[1];
-            return this.backend.get.modulesMinimal(skip, skip + take, filter, sortColumnName)
-                       .pipe(SharedConstants.errorHandlerOperation(snackBar));
+            const sortColumnName: string = sort[0] ? sort[0] : null;
+            const sortDirection = sort[1];
+  
+            return this.backend.get.modulesMinimal(skip, skip + take, filter, sortColumnName);
           }),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(x => this.modulesList$.next(x.data));
+        .subscribe(x => {
+          this.serversideAdditionalData.itemsCount$.next(x.count);
+          this.modulesList$.next(x.data);
+  
+        });
   
     this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => {
@@ -174,15 +176,28 @@ export class ModuleBrowserDataService implements OnDestroy {
           // this.updateData$.next();
         });
   
-  
     this.addModuleToCollection$
         .pipe(
           switchMap(x => this.backend.add.userModule(x)),
-          withLatestFrom(this.updateSingleModuleData$)
+          withLatestFrom(this.updateSingleModuleData$, this.updateModulesList$),
+          takeUntil(this.destroyEvent$)
         )
-        .subscribe(([a, b]) => {
+        .subscribe(([a, b, c]) => {
           snackBar.open('Added', undefined, {duration: 1000});
           this.updateSingleModuleData$.next(b);
+          this.updateModulesList$.next(c);
+        });
+  
+    this.removeModuleFromCollection$
+        .pipe(
+          switchMap(x => this.backend.delete.userModule(x)),
+          withLatestFrom(this.updateSingleModuleData$, this.updateModulesList$),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(([a, b, c]) => {
+          snackBar.open('Removed', undefined, {duration: 1000});
+          this.updateSingleModuleData$.next(b);
+          this.updateModulesList$.next(c);
         });
   }
   
