@@ -1,0 +1,11 @@
+<div fxFlex="auto"
+     class="box"
+>
+  <ng-container *ngFor="let item of data$|async">
+    <div>
+      <mat-card>
+        <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
+      </mat-card>
+    </div>
+  </ng-container>
+</div>
