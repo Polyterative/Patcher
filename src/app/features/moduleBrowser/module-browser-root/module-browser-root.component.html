@@ -13,17 +13,8 @@
     <app-auto-loading-indicator [data$]="dataService.modulesList$"
                                 [updateData$]="dataService.updateModulesList$"
     ></app-auto-loading-indicator>
-    <div fxFlex="auto"
-         class="box"
-    >
-      <ng-container *ngFor="let item of dataService.modulesList$|async">
-        <div>
-          <mat-card>
-            <app-module-browser-module-minimal [data]="item"></app-module-browser-module-minimal>
-          </mat-card>
-        </div>
-      </ng-container>
-    </div>
+  
+    <app-module-list [data$]="dataService.modulesList$"></app-module-list>
   </div>
   <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
 </app-hero-content-card>

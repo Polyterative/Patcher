@@ -1,1 +1,35 @@
-<p>user-modules works!</p>
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <app-hero-content-card fxFlex="auto"
+                         title="My modules"
+  >
+    <app-module-list [data$]="userModules$"
+                     *ngIf="(userModules$|async).length>0 else noM"
+    ></app-module-list>
+  
+  </app-hero-content-card>
+  <app-hero-content-card fxFlex="auto"
+                         title="My patches"
+  >
+    <div *ngIf="(userPatches$|async).length>0 else noP"></div>
+  </app-hero-content-card>
+</div>
+
+<ng-template #noM>
+  <div fxFlex="auto">
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any modules
+                                                     to your collection yet.
+                                                     Try adding some!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
+<ng-template #noP>
+  <div fxFlex="auto">
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any patches
+                                                     yet
+                                                     Try adding some!
+    </mat-card-subtitle>
+  </div>
+</ng-template>

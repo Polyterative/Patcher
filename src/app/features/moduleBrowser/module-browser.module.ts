@@ -34,6 +34,7 @@ import { ModuleBrowserModuleComponent }               from './module-browser-mod
 import { ModuleBrowserRootComponent }                 from './module-browser-root/module-browser-root.component';
 import { ModuleDetailsComponent }                     from './module-details/module-details.component';
 import { ModuleEditorComponent }                      from './module-editor/module-editor.component';
+import { ModuleListComponent }                        from './module-list/module-list.component';
 
 
 @NgModule({
@@ -44,7 +45,8 @@ import { ModuleEditorComponent }                      from './module-editor/modu
     ModuleBrowserModuleMinimalComponent,
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
-    ModuleEditorComponent
+    ModuleEditorComponent,
+    ModuleListComponent
   ],
   providers:    [ModuleBrowserDataService],
   imports: [
@@ -104,7 +106,8 @@ import { ModuleEditorComponent }                      from './module-editor/modu
     ModuleBrowserModuleMinimalComponent,
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
-    ModuleEditorComponent
+    ModuleEditorComponent,
+    ModuleListComponent
   ]
 })
 export class ModuleBrowserModule {}

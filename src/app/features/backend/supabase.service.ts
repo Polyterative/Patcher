@@ -4,7 +4,10 @@ import {
 }                          from '@angular/core';
 import { MatSnackBar }     from '@angular/material/snack-bar';
 import { createClient }    from '@supabase/supabase-js';
-import { ReplaySubject }   from 'rxjs';
+import {
+  ReplaySubject,
+  throwError
+}                          from 'rxjs';
 import { fromPromise }     from 'rxjs/internal-compatibility';
 import { of }              from 'rxjs/internal/observable/of';
 import {
@@ -36,42 +39,48 @@ export class SupabaseService {
             profileid: this.getUser().id
           })
     )
-      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
     modules: (data: DbModule[]) => fromPromise(
       this.supabase
           .from(this.paths.modules)
           .insert(data)
     )
-      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
     manufacturers: (data: DBManufacturer[]) => fromPromise(
       this.supabase
           .from(this.paths.manufacturers)
           .insert(data)
     )
-      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    modulesFull:        (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    userModules:    () => fromPromise(
+      this.supabase.from(this.paths.user_modules)
+          .select('module:moduleid(*, manufacturer:manufacturerId(name,id,logo))')
+          .filter('profileid', 'eq', this.getUser().id)
+    )
+      .pipe(map((value => value.data.map(y => y.module)))),
+    modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name,id,logo)`)
           .range(from, to)
     ),
-    modulesCount:       () => fromPromise(
+    modulesCount:   () => fromPromise(
       this.supabase.from(this.paths.modules)
           .select('id')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar), map(value => value.data.length)),
-    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+    modulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.modules)
-          .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)')
-        // .textSearch('name', name)
+          .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
+          .ilike('name', `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
-    moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    moduleWithId:   (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name)`)
           .range(from, to)
@@ -102,6 +111,12 @@ export class SupabaseService {
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
   };
   delete = {
+    userModule:    (id: number) => fromPromise(
+      this.supabase.from(this.paths.user_modules)
+          .delete()
+          .filter('profileid', 'eq', this.getUser().id)
+          .filter('moduleid', 'eq', id)
+    ),
     modules:       (from = 0, to: number = this.defaultPag) => fromPromise(
       this.supabase.from(this.paths.modules)
           .delete()
@@ -135,6 +150,9 @@ export class SupabaseService {
     user_modules:  'user_modules',
     profiles:      'profiles'
   };
+  
+  private defaultPag = 20;
+  private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   login(email: string, password: string) {
     return fromPromise(this.supabase.auth.signIn({
@@ -170,9 +188,6 @@ export class SupabaseService {
   logoff() {
     return this.supabase.auth.signOut();
   }
-  
-  private defaultPag = 20;
-  private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   constructor(public snackBar: MatSnackBar) {
     // console.clear();

@@ -3,11 +3,7 @@ import {
   BehaviorSubject,
   Subject
 }                                   from 'rxjs';
-import { withLatestFrom }           from 'rxjs/operators';
-import {
-  Connection,
-  Patch
-}                                   from '../../models/models';
+import { Patch }                    from '../../models/models';
 import { ModuleBrowserDataService } from '../moduleBrowser/module-browser-data.service';
 
 @Injectable()
@@ -16,34 +12,34 @@ export class PatchBuilderDataService {
     generated$ = new BehaviorSubject<Patch | undefined>(undefined);
     
     constructor(allmodules: ModuleBrowserDataService) {
-        this.generate$.pipe(withLatestFrom(allmodules.modulesList$))
-            .subscribe(([x, modules]) => {
-                  const toReturn: Connection[] = [];
-      
-                  // const usableOUTs = modules.filter(module => module.outs && module.outs.length > 0);
-                  // const usableINs = modules.filter(module => module.ins && module.ins.length > 0);
-      
-                  // for (let i = 0; i < x; i++) {
-                  //
-                  //     const A = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
-                  //     const B = usableINs[this.randomIntFromInterval(usableINs.length - 1)];
-                  //
-                  //       const Aid: number = this.randomIntFromInterval(A.outs.length - 1);
-                  //       const bID: number = this.randomIntFromInterval(B.ins.length - 1);
-                  //
-                  //       const item = {
-                  //           from:   A,
-                  //           fromId: Aid,
-                  //           to:     B,
-                  //           toId:   bID
-                  //       };
-                  //       toReturn.push(item);
-                  //
-                  //   }
-      
-                  this.generated$.next({connections: toReturn});
-              }
-            );
+      // this.generate$.pipe(withLatestFrom(allmodules.modulesList$))
+      //     .subscribe(([x, modules]) => {
+      //           const toReturn: Connection[] = [];
+      //
+      //           // const usableOUTs = modules.filter(module => module.outs && module.outs.length > 0);
+      //           // const usableINs = modules.filter(module => module.ins && module.ins.length > 0);
+      //
+      //           // for (let i = 0; i < x; i++) {
+      //           //
+      //           //     const A = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
+      //           //     const B = usableINs[this.randomIntFromInterval(usableINs.length - 1)];
+      //           //
+      //           //       const Aid: number = this.randomIntFromInterval(A.outs.length - 1);
+      //           //       const bID: number = this.randomIntFromInterval(B.ins.length - 1);
+      //           //
+      //           //       const item = {
+      //           //           from:   A,
+      //           //           fromId: Aid,
+      //           //           to:     B,
+      //           //           toId:   bID
+      //           //       };
+      //           //       toReturn.push(item);
+      //           //
+      //           //   }
+      //
+      //           this.generated$.next({connections: toReturn});
+      //       }
+      //     );
     }
     
     randomIntFromInterval(max, min = 0) { // min and max included 

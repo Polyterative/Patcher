@@ -18,13 +18,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule }            from '@angular/router';
 
 import { AppComponent }        from './app.component';
+import { AppFeaturesModule }   from './features/app-features.module';
 import { BackboneModule }      from './features/backbone/backbone.module';
 import { FeedbackBoxModule }   from './features/backbone/feedback-box/feedback-box.module';
+import { UserAuthGuard }       from './features/backbone/login/user-auth-guard.service';
 import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module';
-import { BackendModule }       from './features/backend/backend.module';
-import { ModuleBrowserModule } from './features/moduleBrowser/module-browser.module';
-import { PatchBuilderModule }  from './features/patchBuilder/patch-builder.module';
-import { UserAreaModule }      from './features/user-area/user-area.module';
 import { PageHeaderModule }    from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 
@@ -56,28 +54,26 @@ const matDatepickerLocaleIT = {
   declarations: [
     AppComponent
   ],
-  imports:      [
+  imports: [
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
-    BackendModule,
     ToolbarModule,
-    PatchBuilderModule,
-    ModuleBrowserModule,
-    UserAreaModule,
+    AppFeaturesModule,
     FeedbackBoxModule,
     ScreenWrapperModule,
-    BackboneModule,
+    BackboneModule,//keep as last (for routes)
     PageHeaderModule,
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule
-    //keep as last (for routes)
+
   ],
-  providers:    [
+  providers: [
     italianLocale,
     matDatepickerLocale,
-    matDatepickerLocaleIT
+    matDatepickerLocaleIT,
+    UserAuthGuard
   ],
   bootstrap:    [AppComponent]
 })

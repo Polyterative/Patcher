@@ -23,7 +23,7 @@ export class ToolbarComponent {
       disabled: false
     },
     {
-      label:    'Browser',
+      label:    'Modules',
       route:    '/modules/browser',
       icon:     'list',
       disabled: false

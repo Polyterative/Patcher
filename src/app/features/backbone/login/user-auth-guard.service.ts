@@ -9,7 +9,7 @@ import {
 import { fromPromise }           from 'rxjs/internal-compatibility';
 import { UserManagementService } from './user-management.service';
 
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class UserAuthGuard implements CanActivate {
   constructor(
     private snackBar: MatSnackBar,
@@ -22,10 +22,9 @@ export class UserAuthGuard implements CanActivate {
   ) {
     const user = this.authenticationService.user$.value;
     if (user) {return true; }
+  
     fromPromise(this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}))
-      .subscribe(value => {
-        this.snackBar.open('You need to login to use this feature');
-      });
+      .subscribe(value => this.snackBar.open('⚠ You need to login to use this feature', undefined, {duration: 2000}));
     
     return false;
   }

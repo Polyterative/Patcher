@@ -1,5 +1,7 @@
 <ng-container *ngIf="{
-  user:(userManagerService.user$|async)
+  user:(userManagerService.user$|async),
+  isInCollection:(isInCollection$|async),
+  singleModuleData:(dataService.singleModuleData$|async)
   } as bag"
 >
   <div class="flow col parent"
@@ -36,24 +38,36 @@
                  style="margin-top:.5rem"
     ></mat-divider>
     <div class="flow row buttons"
-         fxLayoutAlign="end"
     >
-      <button mat-icon-button
-              matTooltip="Add to your collection"
-              *ngIf="(dataService.singleModuleData$|async)"
-              [disabled]="!bag.user"
-              (click)="dataService.addModuleToCollection$.next(data.id)"
-      >
-        <mat-icon>add</mat-icon>
-      </button>
+      <ng-container *ngIf="!bag.isInCollection">
+        <button mat-icon-button
+                matTooltip="Add to your collection"
+                *ngIf="(bag.singleModuleData)"
+                [disabled]="!bag.user"
+                (click)="dataService.addModuleToCollection$.next(data.id)"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="bag.isInCollection">
+        <button mat-icon-button
+                matTooltip="Remove from your collection"
+                *ngIf="(bag.singleModuleData)"
+                [disabled]="!bag.user"
+                (click)="dataService.removeModuleFromCollection$.next(data.id)"
+        >
+          <mat-icon>eject</mat-icon>
+        </button>
+      </ng-container>
       <button mat-icon-button
               matTooltip="Edit"
-              *ngIf="(dataService.singleModuleData$|async)"
+              *ngIf="(bag.singleModuleData)"
               [disabled]="!bag.user"
               (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
       >
         <mat-icon>edit</mat-icon>
       </button>
+      <div fxFlex="grow"></div>
       <button mat-icon-button
               matTooltip="Show details"
               [routerLink]="['/modules/details',data.id]"

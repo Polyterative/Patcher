@@ -1,0 +1,17 @@
+[debug] [2021-04-17T17:54:03.231Z] ----------------------------------------------------------------------
+[debug] [2021-04-17T17:54:03.232Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\vlady\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2021-04-17T17:54:03.232Z] CLI Version:   9.9.0
+[debug] [2021-04-17T17:54:03.233Z] Platform:      win32
+[debug] [2021-04-17T17:54:03.233Z] Node Version:  v14.15.4
+[debug] [2021-04-17T17:54:03.233Z] Time:          Sat Apr 17 2021 19:54:03 GMT+0200 (Ora legale dell’Europa centrale)
+[debug] [2021-04-17T17:54:03.234Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2021-04-17T17:54:03.239Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2021-04-17T17:54:03.239Z] > authorizing via signed-in user (vlacker1996@gmail.com)
+[debug] [2021-04-17T17:54:03.239Z] [iam] checking project patcher-89a29 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2021-04-17T17:54:03.241Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/patcher-89a29:testIamPermissions  
+ {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2021-04-17T17:54:04.128Z] <<< HTTP RESPONSE 200 {"content-type":"application/json; charset=UTF-8","vary":"X-Origin, Referer, Origin,Accept-Encoding","date":"Sat, 17 Apr 2021 17:54:04 GMT","server":"ESF","cache-control":"private","x-xss-protection":"0","x-frame-options":"SAMEORIGIN","x-content-type-options":"nosniff","server-timing":"gfet4t7; dur=667","alt-svc":"h3-29=\":443\"; ma=2592000,h3-T051=\":443\"; ma=2592000,h3-Q050=\":443\"; ma=2592000,h3-Q046=\":443\"; ma=2592000,h3-Q043=\":443\"; ma=2592000,quic=\":443\"; ma=2592000; v=\"46,43\"","accept-ranges":"none","transfer-encoding":"chunked"}
+[debug] [2021-04-17T17:54:04.130Z] > refreshing access token with scopes: []
+[debug] [2021-04-17T17:54:04.130Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
