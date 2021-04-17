@@ -40,12 +40,12 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
         )
         .subscribe(data => {
           // debugger
-          this.dataService.updateSingleData$.next(data);
+          this.dataService.updateSingleModuleData$.next(data);
         });
   }
   
   ngOnDestroy(): void {
-    this.dataService.singleData$.next(undefined);
+    this.dataService.singleModuleData$.next(undefined);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     
