@@ -28,6 +28,16 @@ export class SupabaseService {
   };
   
   add = {
+    userModule: (moduleId: number) => fromPromise(
+      this.supabase
+          .from(this.paths.user_modules)
+          .insert({
+            moduleid:  moduleId,
+            profileid: this.getUser().id
+          })
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     modules: (data: DbModule[]) => fromPromise(
       this.supabase
           .from(this.paths.modules)
@@ -122,6 +132,7 @@ export class SupabaseService {
   private paths = {
     modules:       'modules',
     manufacturers: 'manufacturers',
+    user_modules:  'user_modules',
     profiles:      'profiles'
   };
   

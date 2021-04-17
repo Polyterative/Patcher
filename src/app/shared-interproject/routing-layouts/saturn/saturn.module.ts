@@ -3,9 +3,9 @@ import { NgModule }            from '@angular/core';
 import { FlexLayoutModule }    from '@angular/flex-layout';
 import { MatToolbarModule }    from '@angular/material/toolbar';
 import {
-    Route,
-    RouterModule,
-    Routes
+  Route,
+  RouterModule,
+  Routes
 }                              from '@angular/router';
 import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
 import { SaturnComponent }     from './saturn.component';
@@ -30,14 +30,14 @@ export class SaturnModule {}
  * @param routes The routes to add.
  * @param title Overhead title
  */
-export function generateSaturnRoutes(parentPrefix: string, routes: Routes, title?: string): Route {
-
+export function generateSaturnRoutes(parentPrefix: string, routes: Routes, title?: string, canActivate: any[] = []): Route {
+  
   return {
-    path:      parentPrefix,
-    component: SaturnComponent,
-    children:  routes,
-    data:      title ? {title: title} : undefined
-    // canActivate: [AuthGuard],
+    path:        parentPrefix,
+    component:   SaturnComponent,
+    children:    routes,
+    data:        title ? {title: title} : undefined,
+    canActivate: canActivate
     // Reuse Component instance when navigating between child views
     // data:      {reuse: true}
   };

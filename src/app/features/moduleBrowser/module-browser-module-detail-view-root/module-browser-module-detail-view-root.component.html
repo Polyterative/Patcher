@@ -1,5 +1,5 @@
 <ng-container *ngIf="{
-data:(dataService.singleData$|async)
+data:(dataService.singleModuleData$|async)
 } as bag"
 >
   <app-hero-content-card title="Module details">
@@ -20,8 +20,8 @@ data:(dataService.singleData$|async)
           >
             <div>
               <mat-card>
-                <app-auto-loading-indicator [updateData$]="dataService.updateSingleData$"
-                                            [data$]="dataService.singleData$"
+                <app-auto-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                            [data$]="dataService.singleModuleData$"
                 ></app-auto-loading-indicator>
                 <ng-container *ngIf="bag.data"
                 >
@@ -30,7 +30,7 @@ data:(dataService.singleData$|async)
                 </ng-container>
               </mat-card>
             </div>
-            <mat-card *ngIf="bag.data&&dataService.editPanelOpen$|async">
+            <mat-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
               <app-module-editor
                 [data]="(bag.data)"
               ></app-module-editor>

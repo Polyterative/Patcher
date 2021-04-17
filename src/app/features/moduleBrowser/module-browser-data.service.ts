@@ -33,11 +33,12 @@ import { SupabaseService }       from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
-  data$ = new BehaviorSubject<MinimalModule[]>([]);
-  updateData$ = new Subject();
-  editPanelOpen$ = new BehaviorSubject<boolean>(false);
-  singleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
-  updateSingleData$ = new ReplaySubject<number>();
+  modulesList$ = new BehaviorSubject<MinimalModule[]>([]);
+  updateModulesList$ = new Subject();
+  addModuleToCollection$ = new Subject<number>();
+  moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  singleModuleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
+  updateSingleModuleData$ = new ReplaySubject<number>();
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
@@ -117,7 +118,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
     this.serversideTableRequestData.skip$.next(($event.pageIndex) * $event.pageSize);
-    this.updateData$.next();
+    this.updateModulesList$.next();
   }
   
   onFilterEvent(userText: string) {
@@ -130,7 +131,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       column,
       direction
     ]);
-    this.updateData$.next();
+    this.updateModulesList$.next();
   }
   
   constructor(
@@ -139,9 +140,9 @@ export class ModuleBrowserDataService implements OnDestroy {
     public backend: SupabaseService
   ) {
   
-    this.updateSingleData$
+    this.updateSingleModuleData$
         .pipe(switchMap(x => this.backend.get.moduleWithId(x)))
-        .subscribe(x => this.singleData$.next(x.data));
+        .subscribe(x => this.singleModuleData$.next(x.data));
   
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, 'asc'));
   
@@ -154,7 +155,7 @@ export class ModuleBrowserDataService implements OnDestroy {
         )
         .subscribe(x => this.serversideAdditionalData.itemsCount$.next(x));
   
-    this.updateData$
+    this.updateModulesList$
         .pipe(
           withLatestFrom(this.serversideDataPackage$),
           switchMap(([z, [skip, take, filter, sort]]) => {
@@ -164,7 +165,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           }),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(x => this.data$.next(x.data));
+        .subscribe(x => this.modulesList$.next(x.data));
   
     this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => {
@@ -172,8 +173,17 @@ export class ModuleBrowserDataService implements OnDestroy {
           this.onFilterEvent(x);
           // this.updateData$.next();
         });
-    // this.updateData$.pipe(switchMap(x => this.backend.get.modulesMinimal()))
-    //     .subscribe(x => this.data$.next(x.data));
+  
+  
+    this.addModuleToCollection$
+        .pipe(
+          switchMap(x => this.backend.add.userModule(x)),
+          withLatestFrom(this.updateSingleModuleData$)
+        )
+        .subscribe(([a, b]) => {
+          snackBar.open('Added', undefined, {duration: 1000});
+          this.updateSingleModuleData$.next(b);
+        });
   }
   
   ngOnDestroy(): void {
