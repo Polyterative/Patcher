@@ -1,0 +1,6 @@
+<mat-chip infoBox
+          (click)="click$.next(data)"
+          [infoText]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
+>
+  {{data.name}}
+</mat-chip>
