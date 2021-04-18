@@ -11,54 +11,7 @@
                        infoText="Created/Updated"
     >{{data.created|date}} - {{data.updated|date}}</mat-card-subtitle>
   </div>
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
-       *ngIf="ins.length>0"
-  >
-    <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{ins.length}}
-      INs:
-    </mat-card-subtitle>
-    <div fxFlex="auto"
-         fxLayout="row wrap"
-         fxLayoutGap="1rem"
-    >
-      <mat-chip-list>
-        <ng-container *ngFor="let item of ins">
-          <mat-chip
-            infoBox
-            [infoText]="item.min+'V → '+item.max+'V'"
-          >
-            {{item.name}}
-          </mat-chip>
-        </ng-container>
-      </mat-chip-list>
-    </div>
-  </div>
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
-       *ngIf="outs.length>0"
-  >
-    <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{outs.length}}
-      OUTs:
-    </mat-card-subtitle>
-    <div fxFlex="auto"
-         fxLayout="row wrap"
-         fxLayoutGap="1rem"
-    >
-      <mat-chip-list>
-        <ng-container *ngFor="let item of outs">
-          <mat-chip
-            infoBox
-            [infoText]="item.min&&item.max?(item.min+'V → '+item.max+'V'):'V ranges unknown'"
-          >
-            {{item.name}}
-          </mat-chip>
-        </ng-container>
-      </mat-chip-list>
-    </div>
-  </div>
+  <app-module-cvs [data]="data"></app-module-cvs>
   <ng-container *ngIf="switches.length>0">
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div fxFlex="auto"

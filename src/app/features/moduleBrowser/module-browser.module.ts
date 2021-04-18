@@ -32,6 +32,8 @@ import { ModuleBrowserModuleDetailViewRootComponent } from './module-browser-mod
 import { ModuleBrowserModuleMinimalComponent }        from './module-browser-module-minimal/module-browser-module-minimal.component';
 import { ModuleBrowserModuleComponent }               from './module-browser-module/module-browser-module.component';
 import { ModuleBrowserRootComponent }                 from './module-browser-root/module-browser-root.component';
+import { ModuleCVItemComponent }                      from './module-cvitem/module-cvitem.component';
+import { ModuleCVsComponent }                         from './module-cvs/module-cvs.component';
 import { ModuleDetailsComponent }                     from './module-details/module-details.component';
 import { ModuleEditorComponent }                      from './module-editor/module-editor.component';
 import { ModuleListComponent }                        from './module-list/module-list.component';
@@ -46,7 +48,9 @@ import { ModuleListComponent }                        from './module-list/module
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
     ModuleEditorComponent,
-    ModuleListComponent
+    ModuleListComponent,
+    ModuleCVsComponent,
+    ModuleCVItemComponent
   ],
   providers:    [ModuleBrowserDataService],
   imports: [
@@ -107,7 +111,9 @@ import { ModuleListComponent }                        from './module-list/module
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
     ModuleEditorComponent,
-    ModuleListComponent
+    ModuleListComponent,
+    ModuleCVsComponent,
+    ModuleCVItemComponent
   ]
 })
 export class ModuleBrowserModule {}
