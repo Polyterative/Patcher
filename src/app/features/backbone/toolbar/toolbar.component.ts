@@ -30,7 +30,7 @@ export class ToolbarComponent {
     },
     {
       label:    'Patch builder',
-      route:    'builder/new',
+      route:    'patch/builder',
       icon:     'build',
       disabled: false
     },
