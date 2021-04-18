@@ -10,8 +10,8 @@ export interface Module {
 }
 
 export interface DbModule extends MinimalModule {
-  ins: string;
-  outs: string;
+  ins: CV[];
+  outs: CV[];
   switches: string;
   manualURL: string;
   additional: string;
@@ -69,9 +69,9 @@ export interface CV {
 
 export interface Connection {
   from: DbModule;
-  fromId: number;
+  fromCV: CV;
   to: DbModule;
-  toId: number;
+  toCV: CV;
 }
 
 export interface Patch {

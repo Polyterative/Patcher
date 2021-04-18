@@ -3,12 +3,8 @@ import {
   Component,
   Input,
   OnInit
-}                                from '@angular/core';
-import {
-  CV,
-  DbModule
-}                                from '../../../models/models';
-import { UserManagementService } from '../../backbone/login/user-management.service';
+}                   from '@angular/core';
+import { DbModule } from '../../../models/models';
 
 @Component({
   selector:        'app-module-details',
@@ -19,18 +15,13 @@ import { UserManagementService } from '../../backbone/login/user-management.serv
 export class ModuleDetailsComponent implements OnInit {
   @Input() data: DbModule;
   
-  ins: CV[] = [];
-  outs: CV[] = [];
   switches = [];
   
   constructor(
-    userManagerService: UserManagementService
+    // userManagerService: UserManagementService
   ) { }
   
   ngOnInit(): void {
-    
-    if (this.data.ins && JSON.parse(this.data.ins)) { this.ins = JSON.parse(this.data.ins);}
-    if (this.data.outs && JSON.parse(this.data.outs)) { this.outs = JSON.parse(this.data.outs);}
     
   }
   

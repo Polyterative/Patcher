@@ -67,7 +67,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   private validatorsName: ValidatorFn = Validators.compose([
     Validators.required,
-    Validators.minLength(3),
+    Validators.minLength(1),
     Validators.maxLength(36)
   ]);
   
@@ -112,8 +112,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.save$.pipe(
       map(() => ({
         ...this.data,
-        ins:  this.serialize(this.formCVToCV(this.INs$.value)),
-        outs: this.serialize(this.formCVToCV(this.OUTs$.value))
+        ins:  this.formCVToCV(this.INs$.value),
+        outs: this.formCVToCV(this.OUTs$.value)
       })),
       switchMap(x => this.dataService.backend.update.module(x)),
       withLatestFrom(this.dataService.updateSingleModuleData$),
@@ -133,14 +133,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
-    
-    const ins: CV[] = JSON.parse(this.data.ins);
+  
+    const ins: CV[] = this.data.ins;
     ins.forEach(x => this.addIN$.next([
       x.name,
       x.min,
       x.max
     ]));
-    const outs: CV[] = JSON.parse(this.data.outs);
+    const outs: CV[] = this.data.outs;
     outs.forEach(x => this.addOUT$.next([
       x.name,
       x.min,
