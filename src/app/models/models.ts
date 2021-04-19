@@ -12,9 +12,9 @@ export interface Module {
 export interface DbModule extends MinimalModule {
   ins: CV[];
   outs: CV[];
-  switches: string;
+  switches: Switch[];
   manualURL: string;
-  additional: string;
+  additional: any;
   isComplete: boolean;
   isDIY: boolean;
 }
