@@ -21,12 +21,12 @@ import {
   takeUntil,
   withLatestFrom
 }                                  from 'rxjs/operators';
+import { SupabaseService }         from '../../../features/backend/supabase.service';
 import {
   CV,
   DbModule
 }                                  from '../../../models/models';
 import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SupabaseService }         from '../../backend/supabase.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 interface FormCV {
