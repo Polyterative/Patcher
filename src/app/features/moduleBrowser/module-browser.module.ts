@@ -13,6 +13,7 @@ import { MatSnackBarModule }                          from '@angular/material/sn
 import { MatToolbarModule }                           from '@angular/material/toolbar';
 import { MatTooltipModule }                           from '@angular/material/tooltip';
 import { RouterModule }                               from '@angular/router';
+import { ModulePartsModule }                          from '../../components/module-parts/module-parts.module';
 import { AutoLoadingIndicatorModule }                 from '../../shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
 import { DevOnlyWindowModule }                        from '../../shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule }                        from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
@@ -26,13 +27,9 @@ import { PageHeaderModule }                           from '../../shared-interpr
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { generateSaturnRoutes }                       from '../../shared-interproject/routing-layouts/saturn/saturn.module';
 import { CommonSidebarComponent }                     from '../backbone/common-sidebar/common-sidebar.component';
+import { ModuleBrowserDataService }                   from './module-browser-data.service';
 import { ModuleCompositeComponent }                   from './module-composite/module-composite.component';
-import { ModuleCVItemComponent }                      from './module-cvitem/module-cvitem.component';
-import { ModuleCVsComponent }                         from './module-cvs/module-cvs.component';
-import { ModuleDetailsComponent }                     from './module-details/module-details.component';
-import { ModuleEditorComponent }                      from './module-editor/module-editor.component';
 import { ModuleListComponent }                        from './module-list/module-list.component';
-import { ModuleMinimalComponent }                     from './module-minimal/module-minimal.component';
 import { ModuleBrowserFiltersComponent }              from './pages/module-browser-module-detail-view-root/module-browser-filters/module-browser-filters.component';
 import { ModuleBrowserModuleDetailViewRootComponent } from './pages/module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
 import { ModuleBrowserRootComponent }                 from './pages/module-browser-root/module-browser-root.component';
@@ -43,15 +40,11 @@ import { ModuleBrowserRootComponent }                 from './pages/module-brows
     ModuleBrowserRootComponent,
     ModuleCompositeComponent,
     ModuleBrowserModuleDetailViewRootComponent,
-    ModuleMinimalComponent,
-    ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
-    ModuleEditorComponent,
-    ModuleListComponent,
-    ModuleCVsComponent,
-    ModuleCVItemComponent
+    ModuleListComponent
   ],
-  imports: [
+  providers:    [ModuleBrowserDataService],
+  imports:      [
     CommonModule,
     RouterModule.forChild([
       generateSaturnRoutes('modules', [
@@ -99,19 +92,15 @@ import { ModuleBrowserRootComponent }                 from './pages/module-brows
     PageHeaderModule,
     DevOnlyWindowModule,
     HeroInfoBoxModule,
-    RestrictedEntityModule
+    RestrictedEntityModule,
+    ModulePartsModule
   ],
   exports:      [
     ModuleBrowserRootComponent,
     ModuleCompositeComponent,
     ModuleBrowserModuleDetailViewRootComponent,
-    ModuleMinimalComponent,
-    ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
-    ModuleEditorComponent,
-    ModuleListComponent,
-    ModuleCVsComponent,
-    ModuleCVItemComponent
+    ModuleListComponent
   ]
 })
 export class ModuleBrowserModule {}

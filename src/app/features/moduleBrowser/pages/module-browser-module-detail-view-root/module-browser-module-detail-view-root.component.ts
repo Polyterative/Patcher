@@ -9,8 +9,8 @@ import {
   map,
   take
 }                                  from 'rxjs/operators';
+import { ModuleDetailDataService } from '../../../../components/module-parts/module-detail-data.service';
 import { FirebaseService }         from '../../../backend/firebase.service';
-import { ModuleDetailDataService } from '../../module-detail-data.service';
 
 @Component({
   selector:    'app-module-browser-module-detail-view-root',
