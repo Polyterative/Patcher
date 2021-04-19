@@ -1,16 +1,16 @@
 import {
   Component,
   OnInit
-}                                   from '@angular/core';
-import { ActivatedRoute }           from '@angular/router';
-import { Subject }                  from 'rxjs';
+}                                  from '@angular/core';
+import { ActivatedRoute }          from '@angular/router';
+import { Subject }                 from 'rxjs';
 import {
   filter,
   map,
   take
-}                                   from 'rxjs/operators';
-import { FirebaseService }          from '../../backend/firebase.service';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
+}                                  from 'rxjs/operators';
+import { FirebaseService }         from '../../../backend/firebase.service';
+import { ModuleDetailDataService } from '../../module-detail-data.service';
 
 @Component({
   selector:    'app-module-browser-module-detail-view-root',
@@ -23,7 +23,7 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
   protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
-    public dataService: ModuleBrowserDataService,
+    public dataService: ModuleDetailDataService,
     public api: FirebaseService,
     public route: ActivatedRoute
   ) {

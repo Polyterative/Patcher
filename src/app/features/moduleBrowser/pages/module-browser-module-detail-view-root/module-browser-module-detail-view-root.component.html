@@ -25,8 +25,8 @@ data:(dataService.singleModuleData$|async)
                 ></app-auto-loading-indicator>
                 <ng-container *ngIf="bag.data"
                 >
-                  <app-module-browser-module [data]="(bag.data)"
-                  ></app-module-browser-module>
+                  <app-module-composite [data]="(bag.data)"
+                  ></app-module-composite>
                 </ng-container>
               </mat-card>
             </div>

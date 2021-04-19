@@ -4,29 +4,30 @@ import {
   Input,
   OnDestroy,
   OnInit
-}                                   from '@angular/core';
+}                                  from '@angular/core';
 import {
   FormBuilder,
   FormControl,
   ValidatorFn,
   Validators
-}                                   from '@angular/forms';
+}                                  from '@angular/forms';
 import {
   BehaviorSubject,
   Subject
-}                                   from 'rxjs';
+}                                  from 'rxjs';
 import {
   map,
   switchMap,
   takeUntil,
   withLatestFrom
-}                                   from 'rxjs/operators';
+}                                  from 'rxjs/operators';
 import {
   CV,
   DbModule
-}                                   from '../../../models/models';
-import { FormTypes }                from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
+}                                  from '../../../models/models';
+import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SupabaseService }         from '../../backend/supabase.service';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 
 interface FormCV {
   name: FormControl;
@@ -72,8 +73,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   ]);
   
   constructor(
+    public backend: SupabaseService,
     public formBuilder: FormBuilder,
-    public dataService: ModuleBrowserDataService
+    public dataService: ModuleDetailDataService
   ) {
   
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
@@ -115,7 +117,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         ins:  this.formCVToCV(this.INs$.value),
         outs: this.formCVToCV(this.OUTs$.value)
       })),
-      switchMap(x => this.dataService.backend.update.module(x)),
+      switchMap(x => this.backend.update.module(x)),
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
