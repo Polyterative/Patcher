@@ -5,6 +5,7 @@ import { MatCardModule }             from '@angular/material/card';
 import { MatExpansionModule }        from '@angular/material/expansion';
 import { MatIconModule }             from '@angular/material/icon';
 import { RouterModule }              from '@angular/router';
+import { ModulePartsModule }         from '../../components/module-parts/module-parts.module';
 import { UserDataHandlerComponent }  from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule }  from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }     from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -54,7 +55,8 @@ import { PatchBuilderRootComponent } from './patch-builder-root.component';
     MatIconModule,
     MatCardModule,
     HeroContentCardModule,
-    ModuleBrowserModule
+    ModuleBrowserModule,
+    ModulePartsModule
   ],
   exports:      [
     PatchBuilderRootComponent
