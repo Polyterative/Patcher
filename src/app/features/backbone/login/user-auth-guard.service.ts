@@ -24,7 +24,9 @@ export class UserAuthGuard implements CanActivate {
     if (user) {return true; }
   
     fromPromise(this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}))
-      .subscribe(value => this.snackBar.open('⚠ You need to login to use this feature', undefined, {duration: 2000}));
+      .subscribe(value => {
+        this.snackBar.open('⚠ You need to login to use this feature', undefined, {duration: 2000});
+      });
     
     return false;
   }

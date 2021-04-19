@@ -8,7 +8,7 @@ import {
 import { MatPaginator }             from '@angular/material/paginator';
 import { Subject }                  from 'rxjs';
 import { takeUntil }                from 'rxjs/operators';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
+import { ModuleBrowserDataService } from '../../module-browser-data.service';
 
 @Component({
   selector:        'app-module-browser-root',
@@ -29,7 +29,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
         .subscribe(value => this.paginator.firstPage());
   
     this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.serversideTableRequestData.take$.next(20);
+    this.dataService.serversideTableRequestData.take$.next(10);
     this.dataService.serversideTableRequestData.filter$.next('');
     this.dataService.updateModulesList$.next();
   

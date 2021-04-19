@@ -74,8 +74,9 @@ export class UserLoginDataService {
             this.loginImage$.next(this.postLoginImage);
             interval(1000)
               .pipe(take(1))
-              .subscribe(x => {
-                this.router.navigate(['/modules/browser']);
+              .subscribe(z => {
+      
+                this.router.navigate([x.returnUrl ? x.returnUrl : '/modules/browser']);
               });
           }
         });
