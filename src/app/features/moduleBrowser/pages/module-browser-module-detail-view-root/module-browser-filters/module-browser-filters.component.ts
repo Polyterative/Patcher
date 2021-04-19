@@ -3,8 +3,8 @@ import {
   Component,
   OnInit
 }                                   from '@angular/core';
-import { AppStateService }          from '../../../shared-interproject/app-state.service';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
+import { AppStateService }          from '../../../../../shared-interproject/app-state.service';
+import { ModuleBrowserDataService } from '../../../module-browser-data.service';
 
 @Component({
   selector:        'app-module-browser-filters',

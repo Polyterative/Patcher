@@ -26,25 +26,24 @@ import { PageHeaderModule }                           from '../../shared-interpr
 import { ScreenWrapperModule }                        from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { generateSaturnRoutes }                       from '../../shared-interproject/routing-layouts/saturn/saturn.module';
 import { CommonSidebarComponent }                     from '../backbone/common-sidebar/common-sidebar.component';
-import { ModuleBrowserDataService }                   from './module-browser-data.service';
-import { ModuleBrowserFiltersComponent }              from './module-browser-filters/module-browser-filters.component';
-import { ModuleBrowserModuleDetailViewRootComponent } from './module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
-import { ModuleBrowserModuleMinimalComponent }        from './module-browser-module-minimal/module-browser-module-minimal.component';
-import { ModuleBrowserModuleComponent }               from './module-browser-module/module-browser-module.component';
-import { ModuleBrowserRootComponent }                 from './module-browser-root/module-browser-root.component';
+import { ModuleCompositeComponent }                   from './module-composite/module-composite.component';
 import { ModuleCVItemComponent }                      from './module-cvitem/module-cvitem.component';
 import { ModuleCVsComponent }                         from './module-cvs/module-cvs.component';
 import { ModuleDetailsComponent }                     from './module-details/module-details.component';
 import { ModuleEditorComponent }                      from './module-editor/module-editor.component';
 import { ModuleListComponent }                        from './module-list/module-list.component';
+import { ModuleMinimalComponent }                     from './module-minimal/module-minimal.component';
+import { ModuleBrowserFiltersComponent }              from './pages/module-browser-module-detail-view-root/module-browser-filters/module-browser-filters.component';
+import { ModuleBrowserModuleDetailViewRootComponent } from './pages/module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
+import { ModuleBrowserRootComponent }                 from './pages/module-browser-root/module-browser-root.component';
 
 
 @NgModule({
   declarations: [
     ModuleBrowserRootComponent,
-    ModuleBrowserModuleComponent,
+    ModuleCompositeComponent,
     ModuleBrowserModuleDetailViewRootComponent,
-    ModuleBrowserModuleMinimalComponent,
+    ModuleMinimalComponent,
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
     ModuleEditorComponent,
@@ -52,7 +51,6 @@ import { ModuleListComponent }                        from './module-list/module
     ModuleCVsComponent,
     ModuleCVItemComponent
   ],
-  providers:    [ModuleBrowserDataService],
   imports: [
     CommonModule,
     RouterModule.forChild([
@@ -105,9 +103,9 @@ import { ModuleListComponent }                        from './module-list/module
   ],
   exports:      [
     ModuleBrowserRootComponent,
-    ModuleBrowserModuleComponent,
+    ModuleCompositeComponent,
     ModuleBrowserModuleDetailViewRootComponent,
-    ModuleBrowserModuleMinimalComponent,
+    ModuleMinimalComponent,
     ModuleDetailsComponent,
     ModuleBrowserFiltersComponent,
     ModuleEditorComponent,

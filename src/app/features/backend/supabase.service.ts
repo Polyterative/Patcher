@@ -1,20 +1,22 @@
 import {
   EventEmitter,
   Injectable
-}                          from '@angular/core';
-import { MatSnackBar }     from '@angular/material/snack-bar';
-import { createClient }    from '@supabase/supabase-js';
+}                         from '@angular/core';
+import { MatSnackBar }    from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { createClient }   from '@supabase/supabase-js';
 import {
   ReplaySubject,
   throwError
-}                          from 'rxjs';
-import { fromPromise }     from 'rxjs/internal-compatibility';
-import { of }              from 'rxjs/internal/observable/of';
+}                         from 'rxjs';
+import { fromPromise }    from 'rxjs/internal-compatibility';
+import { of }             from 'rxjs/internal/observable/of';
 import {
   map,
   switchMap,
-  tap
-}                          from 'rxjs/operators';
+  tap,
+  withLatestFrom
+}                         from 'rxjs/operators';
 import { environment }     from '../../../environments/environment';
 import {
   DBManufacturer,
@@ -155,17 +157,28 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   login(email: string, password: string) {
+    let params$ = of('')
+      .pipe(withLatestFrom(this.activated.queryParams), map(([x, data]) => data));
+  
     return fromPromise(this.supabase.auth.signIn({
       email,
       password
     }))
-      .pipe(switchMap(x =>
-        !x.error ? fromPromise(
+      .pipe(
+        switchMap(x => !x.error ? fromPromise(
           this.supabase
               .from(this.paths.profiles)
               .update({confirmed: true})
-        )
-          .pipe(map(z => x)) : of(x)));
+          )
+            .pipe(map(z => x)) : of(x)
+        ),
+        withLatestFrom(params$),
+        map(([x, y]) => ({
+          ...x,
+          returnUrl: y.returnUrl
+        }))
+      )
+      ;
   }
   
   signupGoogle() {
@@ -189,7 +202,10 @@ export class SupabaseService {
     return this.supabase.auth.signOut();
   }
   
-  constructor(public snackBar: MatSnackBar) {
+  constructor(
+    public activated: ActivatedRoute,
+    public snackBar: MatSnackBar
+  ) {
     // console.clear();
     
   }

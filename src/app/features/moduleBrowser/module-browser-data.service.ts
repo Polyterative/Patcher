@@ -8,8 +8,6 @@ import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
-  merge,
-  ReplaySubject,
   Subject
 }                                from 'rxjs';
 import { of }                    from 'rxjs/internal/observable/of';
@@ -33,11 +31,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   modulesList$ = new BehaviorSubject<MinimalModule[]>([]);
   userModulesList$ = new BehaviorSubject<DbModule[]>([]);
   updateModulesList$ = new Subject();
-  addModuleToCollection$ = new Subject<number>();
-  removeModuleFromCollection$ = new Subject<number>();
-  moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  singleModuleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
-  updateSingleModuleData$ = new ReplaySubject<number>();
+  
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
@@ -133,22 +127,8 @@ export class ModuleBrowserDataService implements OnDestroy {
   constructor(
     private userService: UserManagementService,
     private snackBar: MatSnackBar,
-    public backend: SupabaseService
+    private backend: SupabaseService
   ) {
-  
-    merge(this.userService.user$, this.updateSingleModuleData$)
-      .pipe(
-        switchMap(x => this.userService.user$),
-        switchMap(x => !!x ? this.backend.get.userModules() : of([])),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(x => {
-        this.userModulesList$.next(x);
-      });
-  
-    this.updateSingleModuleData$
-        .pipe(switchMap(x => this.backend.get.moduleWithId(x)), takeUntil(this.destroyEvent$))
-        .subscribe(x => this.singleModuleData$.next(x.data));
   
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, 'asc'));
   
@@ -159,7 +139,7 @@ export class ModuleBrowserDataService implements OnDestroy {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
   
-            return this.backend.get.modulesMinimal(skip, skip + take, filter, sortColumnName);
+            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName);
           }),
           takeUntil(this.destroyEvent$)
         )
@@ -174,30 +154,6 @@ export class ModuleBrowserDataService implements OnDestroy {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);
           // this.updateData$.next();
-        });
-  
-    this.addModuleToCollection$
-        .pipe(
-          switchMap(x => this.backend.add.userModule(x)),
-          withLatestFrom(this.updateSingleModuleData$, this.updateModulesList$),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(([a, b, c]) => {
-          snackBar.open('Added', undefined, {duration: 1000});
-          this.updateSingleModuleData$.next(b);
-          this.updateModulesList$.next(c);
-        });
-  
-    this.removeModuleFromCollection$
-        .pipe(
-          switchMap(x => this.backend.delete.userModule(x)),
-          withLatestFrom(this.updateSingleModuleData$, this.updateModulesList$),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(([a, b, c]) => {
-          snackBar.open('Removed', undefined, {duration: 1000});
-          this.updateSingleModuleData$.next(b);
-          this.updateModulesList$.next(c);
         });
   }
   
