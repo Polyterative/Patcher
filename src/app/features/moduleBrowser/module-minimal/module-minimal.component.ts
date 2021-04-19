@@ -3,33 +3,33 @@ import {
   Component,
   Input,
   OnInit
-}                                   from '@angular/core';
+}                                  from '@angular/core';
 import {
   Observable,
   Subject
-}                                   from 'rxjs';
+}                                  from 'rxjs';
 import {
   map,
   takeUntil
-}                                   from 'rxjs/operators';
-import { MinimalModule }            from '../../../models/models';
-import { UserManagementService }    from '../../backbone/login/user-management.service';
-import { ModuleBrowserDataService } from '../module-browser-data.service';
+}                                  from 'rxjs/operators';
+import { MinimalModule }           from '../../../models/models';
+import { UserManagementService }   from '../../backbone/login/user-management.service';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({
-  selector:        'app-module-browser-module-minimal',
-  templateUrl:     './module-browser-module-minimal.component.html',
-  styleUrls:       ['./module-browser-module-minimal.component.scss'],
+  selector:        'app-module-minimal',
+  templateUrl:     './module-minimal.component.html',
+  styleUrls:       ['./module-minimal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModuleBrowserModuleMinimalComponent implements OnInit {
+export class ModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;
   
   isInCollection$: Observable<boolean>;
   
   constructor(
     public userManagerService: UserManagementService,
-    public dataService: ModuleBrowserDataService
+    public dataService: ModuleDetailDataService
   ) {}
   
   ngOnInit(): void {

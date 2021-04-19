@@ -1,27 +1,26 @@
-import { Injectable }               from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-}                                   from 'rxjs';
-import { Patch }                    from '../../models/models';
-import { ModuleBrowserDataService } from '../moduleBrowser/module-browser-data.service';
+}                     from 'rxjs';
+import { Patch }      from '../../models/models';
 
 @Injectable()
 export class PatchBuilderDataService {
-    generate$ = new Subject<number>();
-    generated$ = new BehaviorSubject<Patch | undefined>(undefined);
-    
-    constructor(allmodules: ModuleBrowserDataService) {
-      // this.generate$.pipe(withLatestFrom(allmodules.modulesList$))
-      //     .subscribe(([x, modules]) => {
-      //           const toReturn: Connection[] = [];
-      //
-      //           // const usableOUTs = modules.filter(module => module.outs && module.outs.length > 0);
-      //           // const usableINs = modules.filter(module => module.ins && module.ins.length > 0);
-      //
-      //           // for (let i = 0; i < x; i++) {
-      //           //
-      //           //     const A = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
+  generate$ = new Subject<number>();
+  generated$ = new BehaviorSubject<Patch | undefined>(undefined);
+  
+  constructor() {
+    // this.generate$.pipe(withLatestFrom(allmodules.modulesList$))
+    //     .subscribe(([x, modules]) => {
+    //           const toReturn: Connection[] = [];
+    //
+    //           // const usableOUTs = modules.filter(module => module.outs && module.outs.length > 0);
+    //           // const usableINs = modules.filter(module => module.ins && module.ins.length > 0);
+    //
+    //           // for (let i = 0; i < x; i++) {
+    //           //
+    //           //     const A = usableOUTs[this.randomIntFromInterval(usableOUTs.length - 1)];
       //           //     const B = usableINs[this.randomIntFromInterval(usableINs.length - 1)];
       //           //
       //           //       const Aid: number = this.randomIntFromInterval(A.outs.length - 1);

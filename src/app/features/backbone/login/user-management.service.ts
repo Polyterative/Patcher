@@ -1,6 +1,9 @@
 import { Injectable }             from '@angular/core';
 import { MatSnackBar }            from '@angular/material/snack-bar';
-import { Router }                 from '@angular/router';
+import {
+  ActivatedRoute,
+  Router
+}                                 from '@angular/router';
 import { User }                   from '@supabase/supabase-js';
 import { BehaviorSubject }        from 'rxjs';
 import { fromPromise }            from 'rxjs/internal-compatibility';
@@ -17,8 +20,10 @@ export class UserManagementService {
     public snackBar: MatSnackBar,
     public router: Router,
     public backend: SupabaseService,
+    public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
+    this.checkUserInCookies();
     
     this.user$.subscribe(x => {
   
@@ -28,8 +33,6 @@ export class UserManagementService {
         this.userBoxService.store.user$.next({username: undefined});
       }
     });
-  
-    this.checkUserInCookies();
   
     userBoxService.logoffButtonClick$.subscribe(x => {
       this.logoff();
@@ -50,6 +53,7 @@ export class UserManagementService {
   }
   
   logoff(): void {
+    console.log('Logging out...');
     this.userBoxService.store.user$.next(undefined);
     this.user$.next(undefined);
     fromPromise(this.backend.logoff())
