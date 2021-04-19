@@ -12,9 +12,9 @@ import {
   takeUntil,
   withLatestFrom
 }                                from 'rxjs/operators';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { SupabaseService }       from '../../features/backend/supabase.service';
 import { DbModule }              from '../../models/models';
-import { UserManagementService } from '../backbone/login/user-management.service';
-import { SupabaseService }       from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleDetailDataService {
@@ -24,6 +24,8 @@ export class ModuleDetailDataService {
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   addModuleToCollection$ = new Subject<number>();
   removeModuleFromCollection$ = new Subject<number>();
+  
+  protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
     private snackBar: MatSnackBar,
@@ -44,7 +46,6 @@ export class ModuleDetailDataService {
     this.updateSingleModuleData$
         .pipe(switchMap(x => this.backend.get.moduleWithId(x)), takeUntil(this.destroyEvent$))
         .subscribe(x => this.singleModuleData$.next(x.data));
-    
     
     this.addModuleToCollection$
         .pipe(
@@ -68,10 +69,7 @@ export class ModuleDetailDataService {
           this.updateSingleModuleData$.next(b);
         });
     
-    
   }
-  
-  protected destroyEvent$: Subject<void> = new Subject();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
