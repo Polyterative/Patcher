@@ -103,6 +103,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
   ]);
+  dirty = false;
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
@@ -147,6 +148,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.modulesList$.next(x.data);
   
+          this.dirty = true;
         });
   
     this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
