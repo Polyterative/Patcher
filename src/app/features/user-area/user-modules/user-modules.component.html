@@ -2,13 +2,13 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card fxFlex="auto"
-                         title="My modules"
+  <app-hero-content-card title="My modules"
   >
-    <app-module-list [data$]="userModules$"
+    <app-module-list fxFlex="grow"
+                     [data$]="userModules$"
                      *ngIf="(userModules$|async).length>0 else noM"
     ></app-module-list>
-  
+
   </app-hero-content-card>
   <app-hero-content-card fxFlex="auto"
                          title="My patches"

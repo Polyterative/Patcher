@@ -1,4 +1,5 @@
 ﻿@import "../../../app.component";
+@import "~src/app/style/brand-resources.scss";
 
 #navbar {
   //@include mat-elevation(2);
@@ -49,5 +50,5 @@ mat-toolbar-row > button {
 }
 
 .toolbar {
-  background-color: #159365
+  background-color: $brand-primary
 }

@@ -24,15 +24,19 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
+    // this.dataService.fields.search.control.patchValue('');
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());
   
-    this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.serversideTableRequestData.take$.next(10);
-    this.dataService.serversideTableRequestData.filter$.next('');
-    this.dataService.updateModulesList$.next();
-  
+    if (!this.dataService.dirty) {
+    
+      this.dataService.serversideTableRequestData.skip$.next(0);
+      this.dataService.serversideTableRequestData.take$.next(10);
+      this.dataService.serversideTableRequestData.filter$.next('');
+      this.dataService.updateModulesList$.next();
+    
+    }
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

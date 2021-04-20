@@ -15,34 +15,34 @@
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined])">Add IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,0,5])">Add 0→5V IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V IN
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,0,8])">Add 0→8V IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V IN
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5])">Add -5→5V IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V IN
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10])">Add -10→10V IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V IN
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12])">Add -12→12V IN
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V IN
       </app-brand-primary-button>
     </div>
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined])">Add OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,0])">Add OUT
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5])">Add 0→5V OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V OUT
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8])">Add 0→8V OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8,0])">Add 0→8V OUT
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5])">Add -5→5V OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5,0])">Add -5→5V OUT
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10])">Add -10→10V OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10,0])">Add -10→10V OUT
       </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12])">Add -12→12V OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12,0])">Add -12→12V OUT
       </app-brand-primary-button>
     </div>
     <app-brand-primary-button>Add SWITCH</app-brand-primary-button>

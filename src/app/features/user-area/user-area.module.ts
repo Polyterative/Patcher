@@ -5,6 +5,7 @@ import { MatCardModule }            from '@angular/material/card';
 import { MatExpansionModule }       from '@angular/material/expansion';
 import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
+import { EmptyStateModule }         from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { UserDataHandlerComponent } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }    from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -22,7 +23,7 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
     UserAreaRootComponent,
     UserModulesComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       generateSaturnRoutes('user', [
@@ -55,7 +56,8 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
     MatIconModule,
     MatCardModule,
     ModuleBrowserModule,
-    HeroContentCardModule
+    HeroContentCardModule,
+    EmptyStateModule
   ],
   exports:      [
     UserAreaRootComponent,
