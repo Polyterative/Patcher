@@ -4,6 +4,7 @@ import {
   OnInit
 }                          from '@angular/core';
 import { Subject }         from 'rxjs';
+import { switchMap }       from 'rxjs/operators';
 import { SupabaseService } from '../supabase.service';
 
 @Component({
@@ -22,7 +23,24 @@ export class AdminPanelRootComponent implements OnInit {
   constructor(public backend: SupabaseService) { }
   
   ngOnInit(): void {
+  
+    this.click$
+        .pipe(
+          switchMap(x => this.backend.get.modulesFull(0, 9999))
+        )
+        .subscribe(x => {
     
+          // let z = x.data.filter(value => (value.ins.length > 0) || (value.outs.length > 0));
+          //
+          //
+          // z.forEach(m => {
+          //
+          //   this.backend.add.moduleOUTs(m.outs, m.id)
+          //       .subscribe(value => {});
+          //
+          // });
+    
+        });
   }
   
 }
