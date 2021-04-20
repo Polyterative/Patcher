@@ -1,28 +1,30 @@
 import {
   EventEmitter,
   Injectable
-}                         from '@angular/core';
-import { MatSnackBar }    from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
-import { createClient }   from '@supabase/supabase-js';
+}                          from '@angular/core';
+import { MatSnackBar }     from '@angular/material/snack-bar';
+import { ActivatedRoute }  from '@angular/router';
+import { createClient }    from '@supabase/supabase-js';
 import {
+  combineLatest,
   ReplaySubject,
   throwError
-}                         from 'rxjs';
-import { fromPromise }    from 'rxjs/internal-compatibility';
-import { of }             from 'rxjs/internal/observable/of';
+}                          from 'rxjs';
+import { fromPromise }     from 'rxjs/internal-compatibility';
+import { of }              from 'rxjs/internal/observable/of';
 import {
   map,
   switchMap,
   tap,
   withLatestFrom
-}                         from 'rxjs/operators';
-import { environment }     from '../../../environments/environment';
+}                          from 'rxjs/operators';
 import {
+  CV,
   DBManufacturer,
   DbModule
-}                          from '../../models/models';
-import { SharedConstants } from '../../shared-interproject/SharedConstants';
+}                          from 'src/app/models/models';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment }     from 'src/environments/environment';
 
 @Injectable()
 export class SupabaseService {
@@ -50,6 +52,26 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
+    moduleINs: (data: CV[], moduleId: number) => fromPromise(
+      this.supabase
+          .from(this.paths.moduleINs)
+          .insert(data.map(x => ({
+            ...x,
+            moduleId
+          })))
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
+    moduleOUTs: (data: CV[], moduleId: number) => fromPromise(
+      this.supabase
+          .from(this.paths.moduleOUTs)
+          .insert(data.map(x => ({
+            ...x,
+            moduleId
+          })))
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     manufacturers: (data: DBManufacturer[]) => fromPromise(
       this.supabase
           .from(this.paths.manufacturers)
@@ -66,7 +88,7 @@ export class SupabaseService {
       .pipe(map((value => value.data.map(y => y.module)))),
     modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
-          .select(`${ columns }, manufacturer:manufacturerId(name,id,logo)`)
+          .select(`${ columns }, manufacturer:manufacturerId(name,id,logo), ${ this.queryJoins.insOuts }`)
           .range(from, to)
     ),
     modulesCount:   () => fromPromise(
@@ -84,7 +106,7 @@ export class SupabaseService {
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
     moduleWithId:   (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
-          .select(`${ columns }, manufacturer:manufacturerId(name)`)
+          .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .range(from, to)
           .filter('id', 'eq', id)
           .single()
@@ -134,8 +156,10 @@ export class SupabaseService {
   };
   
   update = {
-    module: (data: DbModule) => {
+    module:        (data: DbModule) => {
       data.manufacturer = undefined;
+      data.ins = undefined;
+      data.outs = undefined;
       return fromPromise(
         this.supabase.from(this.paths.modules)
             .update(data)
@@ -143,11 +167,22 @@ export class SupabaseService {
             .single()
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
-    }
+    },
+    moduleINsOUTs: (data: DbModule) => combineLatest(
+      [
+        this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
+        this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),
+        this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
+        this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
+      ]
+    )
+      .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); }))
   };
   
   private paths = {
     modules:       'modules',
+    moduleINs:     'module_ins',
+    moduleOUTs:    'module_outs',
     manufacturers: 'manufacturers',
     user_modules:  'user_modules',
     profiles:      'profiles'
@@ -156,10 +191,16 @@ export class SupabaseService {
   private defaultPag = 20;
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
-  login(email: string, password: string) {
-    let params$ = of('')
-      .pipe(withLatestFrom(this.activated.queryParams), map(([x, data]) => data));
+  private queryJoins = {
+    ins:     `ins:${ this.paths.moduleINs }(*)`,
+    outs:    `outs:${ this.paths.moduleOUTs }(*)`,
+    insOuts: `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
+  };
   
+  login(email: string, password: string) {
+    const params$ = of('')
+      .pipe(withLatestFrom(this.activated.queryParams), map(([x, data]) => data));
+    
     return fromPromise(this.supabase.auth.signIn({
       email,
       password
@@ -208,6 +249,48 @@ export class SupabaseService {
   ) {
     // console.clear();
     
+  }
+  
+  private buildCVInserter(cvs: CV[], path: string, moduleId: number) {
+    
+    return combineLatest(
+      cvs.map(this.getCvMapper(moduleId))
+         .filter(x => x.id == 0)
+         .map(x => {
+           x.id = undefined;
+           return x;
+         })
+         .map(cv => fromPromise(
+           this.supabase.from(path)
+               .insert(cv)
+               .select('id')
+         ))
+    );
+  }
+  
+  private getCvMapper(moduleId: number) {
+    const mapper: (cv) => { min: number; id: number; max: number; name: string; moduleId: number } = (roq: CV) => ({
+      max:  roq.max,
+      min:  roq.min,
+      name: roq.name,
+      // id:       roq.id > 0 ? roq.id : undefined, //fix this
+      id: roq.id,
+      moduleId
+    });
+    return mapper;
+  }
+  
+  private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
+    return combineLatest(
+      cvs.map(this.getCvMapper(moduleId))
+         .filter(x => x.id > 0)
+         .map(cv => fromPromise(
+           this.supabase.from(path)
+               .update(cv)
+               .eq('id', cv.id)
+               .select('id')
+         ))
+    );
   }
   
 }
