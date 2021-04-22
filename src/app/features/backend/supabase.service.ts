@@ -34,8 +34,22 @@ export class SupabaseService {
     logout$: new EventEmitter<void>()
   };
   
+  // filters={
+  //   currentUser:
+  // }
+  
   add = {
     userModule: (moduleId: number) => fromPromise(
+      this.supabase
+          .from(this.paths.user_modules)
+          .insert({
+            moduleid:  moduleId,
+            profileid: this.getUser().id
+          })
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
+    patch: (moduleId: number) => fromPromise(
       this.supabase
           .from(this.paths.user_modules)
           .insert({
@@ -82,13 +96,19 @@ export class SupabaseService {
   get = {
     userModules:    () => fromPromise(
       this.supabase.from(this.paths.user_modules)
-          .select('module:moduleid(*, manufacturer:manufacturerId(name,id,logo))')
+          .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
           .filter('profileid', 'eq', this.getUser().id)
+    )
+      .pipe(map((value => value.data.map(y => y.module)))),
+    userRacks:      () => fromPromise(
+      this.supabase.from(this.paths.racks)
+          .select('*')
+          .filter('authorid', 'eq', this.getUser().id)
     )
       .pipe(map((value => value.data.map(y => y.module)))),
     modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
-          .select(`${ columns }, manufacturer:manufacturerId(name,id,logo), ${ this.queryJoins.insOuts }`)
+          .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)
           .range(from, to)
     ),
     modulesCount:   () => fromPromise(
@@ -109,6 +129,8 @@ export class SupabaseService {
           .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .range(from, to)
           .filter('id', 'eq', id)
+          .order('id', {foreignTable: this.paths.moduleINs})
+          .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
@@ -185,6 +207,8 @@ export class SupabaseService {
     moduleOUTs:    'module_outs',
     manufacturers: 'manufacturers',
     user_modules:  'user_modules',
+    racks:         'racks',
+    patches:       'patches',
     profiles:      'profiles'
   };
   
@@ -192,9 +216,10 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   private queryJoins = {
-    ins:     `ins:${ this.paths.moduleINs }(*)`,
-    outs:    `outs:${ this.paths.moduleOUTs }(*)`,
-    insOuts: `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
+    manufacturer: `manufacturer:manufacturerId(name,id,logo)`,
+    ins:          `ins:${ this.paths.moduleINs }(*)`,
+    outs:         `outs:${ this.paths.moduleOUTs }(*)`,
+    insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
   };
   
   login(email: string, password: string) {

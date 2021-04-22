@@ -13,7 +13,7 @@ import { ScreenWrapperModule }       from '../../shared-interproject/components/
 import { generateSaturnRoutes }      from '../../shared-interproject/routing-layouts/saturn/saturn.module';
 import { CommonSidebarComponent }    from '../backbone/common-sidebar/common-sidebar.component';
 import { UserAuthGuard }             from '../backbone/login/user-auth-guard.service';
-import { ModuleBrowserModule }       from '../moduleBrowser/module-browser.module';
+import { ModuleBrowserModule }       from '../module-browser/module-browser.module';
 import { PatchBuilderDataService }   from './patch-builder-data.service';
 import { PatchBuilderRootComponent } from './patch-builder-root.component';
 

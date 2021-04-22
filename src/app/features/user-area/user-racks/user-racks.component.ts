@@ -9,21 +9,21 @@ import {
 }                          from 'rxjs';
 import { takeUntil }       from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { MinimalModule }   from 'src/app/models/models';
+import { Rack }            from 'src/app/models/models';
 
 @Component({
-  selector:        'app-user-modules',
-  templateUrl:     './user-modules.component.html',
-  styleUrls:       ['./user-modules.component.scss'],
+  selector:        'app-user-racks',
+  templateUrl:     './user-racks.component.html',
+  styleUrls:       ['./user-racks.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserModulesComponent implements OnInit {
-  data$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
+export class UserRacksComponent implements OnInit {
+  data$: BehaviorSubject<Rack[]> = new BehaviorSubject([]);
   
   constructor(
     public backend: SupabaseService
   ) {
-    this.backend.get.userModules()
+    this.backend.get.userRacks()
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.data$.next(x));
   }
