@@ -1,22 +1,25 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    OnInit
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewEncapsulation
 }                      from '@angular/core';
-import { environment } from '../../../../../../environments/environment';
+import { environment } from 'src/environments/environment';
 
 @Component({
-    selector:        'app-dev-only-window',
-    templateUrl:     './dev-only-window.component.html',
-    styleUrls:       ['./dev-only-window.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'app-dev-only-window',
+  templateUrl:     './dev-only-window.component.html',
+  styleUrls:       ['./dev-only-window.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation:   ViewEncapsulation.None
+  
 })
 export class DevOnlyWindowComponent implements OnInit {
-    show = !environment.production;
-    
-    constructor() { }
-    
-    ngOnInit(): void {
-    }
-    
+  show = !environment.production;
+  
+  constructor() { }
+  
+  ngOnInit(): void {
+  }
+  
 }

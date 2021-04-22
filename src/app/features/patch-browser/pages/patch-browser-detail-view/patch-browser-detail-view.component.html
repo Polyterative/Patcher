@@ -1,0 +1,46 @@
+<ng-container *ngIf="{
+data:(dataService.singlePatchData$|async)
+} as bag"
+>
+  <app-hero-content-card title="Patch details">
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <div fxFlex="auto"
+           fxLayout="column"
+           fxLayoutGap="1rem"
+      >
+        <div fxFlex="auto"
+             fxLayoutAlign="center"
+        >
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            <div>
+              <mat-card>
+                <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                            [data$]="dataService.singlePatchData$"
+                ></app-auto-loading-indicator>
+                <ng-container *ngIf="bag.data"
+                >
+                  <app-patch-composite [data]="(bag.data)"
+                  ></app-patch-composite>
+                </ng-container>
+              </mat-card>
+            </div>
+            <mat-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
+              <app-patch-editor
+                [data]="(bag.data)"
+              ></app-patch-editor>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+      <app-dev-only-window>
+        <!--        {{bag.data|json}}-->
+      </app-dev-only-window>
+    </div>
+  </app-hero-content-card>
+</ng-container>

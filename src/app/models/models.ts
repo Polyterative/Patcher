@@ -20,9 +20,9 @@ export interface DbModule extends MinimalModule {
 }
 
 interface MinimalManufacturer {
-    name: string;
-    id: number;
-    logo?: string;
+  name: string;
+  id: number;
+  logo?: string;
 }
 
 export interface MinimalModule {
@@ -49,7 +49,6 @@ export interface Rack {
   // updated: string;
 }
 
-
 export interface DBManufacturer {
   id: number;
   name: string;
@@ -59,15 +58,15 @@ export interface DBManufacturer {
 }
 
 export interface Manufacturer {
-    name: string;
-    url?: string;
-    logo?: string;
-    admin?: string;
+  name: string;
+  url?: string;
+  logo?: string;
+  admin?: string;
 }
 
 export interface Switch {
-    name: string;
-    positions: string[];
+  name: string;
+  positions: string[];
 }
 
 export interface CV {
@@ -87,8 +86,18 @@ export interface Connection {
   toCV: CV;
 }
 
-export interface Patch {
+export interface Patch extends PatchMinimal {
+  author: PublicUser;
+}
+
+export interface PatchMinimal {
+  id: string;
+  authorid: string;
   name: string;
+}
+
+export interface PublicUser {
+  email: string;
 }
 
 // export const modules: Module[] = [

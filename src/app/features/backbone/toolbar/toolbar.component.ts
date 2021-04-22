@@ -29,8 +29,8 @@ export class ToolbarComponent {
       disabled: false
     },
     {
-      label:    'Patch builder',
-      route:    'patch/builder',
+      label:    'Patches',
+      route:    'patches/browser',
       icon:     'build',
       disabled: false
     },

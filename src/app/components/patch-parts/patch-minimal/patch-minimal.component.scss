@@ -1,0 +1,17 @@
+
+.parent {
+  > .buttons {
+    opacity: 0.2;
+
+  }
+
+}
+
+.parent:hover > .buttons {
+  opacity:            1;
+  -webkit-transition: opacity 125ms ease-in-out;
+  -moz-transition:    opacity 125ms ease-in-out;
+  -ms-transition:     opacity 125ms ease-in-out;
+  -o-transition:      opacity 125ms ease-in-out;
+  transition:         opacity 125ms ease-in-out;
+}

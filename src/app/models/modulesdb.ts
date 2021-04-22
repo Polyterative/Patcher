@@ -7932,13 +7932,13 @@ export const allmodules = [
         price:        '1968 Mixing Console Commander',
         hp:           '260'
     },
-    {
-        name:         '10 HP Mixer Controller Dual/Stereo',
-        manufacturer: 'Soleo Vero',
-        desc:         'Soleo Vero Noise Engineering',
-        price:        'Stroboscope patch-through tuner',
-        hp:           '167'
-    },
+  {
+    name:         '10 HP Mixer Controller Dual/Stereo',
+    manufacturer: 'Soleo Vero',
+    desc:         'Soleo Vero Noise Engineering',
+    price:        'Stroboscope patch-parts-through tuner',
+    hp:           '167'
+  },
     {
         name:         '4 HP Tuner',
         manufacturer: 'Running Order',
@@ -12881,13 +12881,13 @@ export const allmodules = [
         price:        '20 HP Reverb',
         hp:           'Soleo Vero (Black)'
     },
-    {
-        name:         'Soleo Vero (Black) Noise Engineering',
-        manufacturer: 'Stroboscope patch-through tuner',
-        desc:         '185',
-        price:        '4 HP Tuner',
-        hp:           'ATT'
-    },
+  {
+    name:         'Soleo Vero (Black) Noise Engineering',
+    manufacturer: 'Stroboscope patch-parts-through tuner',
+    desc:         '185',
+    price:        '4 HP Tuner',
+    hp:           'ATT'
+  },
     {
         name:         'ATT Eurorack Hardware',
         manufacturer: 'Triple Attenuator Eurorack Module',
@@ -15450,13 +15450,13 @@ export const allmodules = [
         price:        '18 HP Clock Modulator Sequencer',
         hp:           '2hp blind / notebook panel'
     },
-    {
-        name:         '2hp blind / notebook panel Endorphin.es',
-        manufacturer: '1 blind panel with white surface for writing patch, song, technical notices with...',
-        desc:         '3',
-        price:        '2 HP Blind Panel',
-        hp:           'Chloe V3'
-    },
+  {
+    name:         '2hp blind / notebook panel Endorphin.es',
+    manufacturer: '1 blind panel with white surface for writing patch-parts, song, technical notices with...',
+    desc:         '3',
+    price:        '2 HP Blind Panel',
+    hp:           'Chloe V3'
+  },
     {
         name:         'Chloe V3 Bizarre Jezabel',
         manufacturer: 'tube overdrive Delay MultiMode Filter',
@@ -18285,13 +18285,13 @@ export const allmodules = [
         price:        'Audio Processor',
         hp:           '663'
     },
-    {
-        name:         '18 HP Envelope Follower PreAmp',
-        manufacturer: 'Soleo Vero (Black)',
-        desc:         'Soleo Vero (Black) Noise Engineering',
-        price:        'Stroboscope patch-through tuner',
-        hp:           '161'
-    },
+  {
+    name:         '18 HP Envelope Follower PreAmp',
+    manufacturer: 'Soleo Vero (Black)',
+    desc:         'Soleo Vero (Black) Noise Engineering',
+    price:        'Stroboscope patch-parts-through tuner',
+    hp:           '161'
+  },
     {
         name:         '4 HP Tuner',
         manufacturer: 'Quad Pingable LFO - Black',
@@ -22191,12 +22191,12 @@ export const allmodules = [
         price:        '4023 VCF G-Storm Electro',
         hp:           'ARP Odyssey MK1 Two-Pole Filter Adaptation'
     },
-    {
+  {
         name:         '125',
         manufacturer: '8 HP Filter Mixer Clock Generator',
         desc:         '3hp blind / notebook panel',
         price:        '3hp blind / notebook panel Endorphin.es',
-        hp:           '1 blind panel with white surface for writing patch, song, technical notices with...'
+    hp: '1 blind panel with white surface for writing patch-parts, song, technical notices with...'
     },
     {
         name:         '4',
@@ -25145,13 +25145,13 @@ export const allmodules = [
         price:        'Stereo Compressor',
         hp:           '295'
     },
-    {
-        name:         '16 HP Dual/Stereo Effect VCA',
-        manufacturer: 'Magus',
-        desc:         'Magus Rebel Technology',
-        price:        'Programmable audio processor with 20 bidirectional patch points',
-        hp:           '538'
-    },
+  {
+    name:         '16 HP Dual/Stereo Effect VCA',
+    manufacturer: 'Magus',
+    desc:         'Magus Rebel Technology',
+    price:        'Programmable audio processor with 20 bidirectional patch-parts points',
+    hp:           '538'
+  },
     {
         name:         '20 HP Synth Voice Utility',
         manufacturer: 'ToyBoy',
@@ -26867,13 +26867,13 @@ export const allmodules = [
         price:        'Control Voltage Processor',
         hp:           '270'
     },
-    {
-        name:         '20 HP Sample and Hold Utility',
-        manufacturer: 'Active patch',
-        desc:         'Active patch EMW',
-        price:        '6 HP buffered multiple',
-        hp:           '70'
-    },
+  {
+    name:         '20 HP Sample and Hold Utility',
+    manufacturer: 'Active patch-parts',
+    desc:         'Active patch-parts EMW',
+    price:        '6 HP buffered multiple',
+    hp:           '70'
+  },
     {
         name:         '6 HP Multiple',
         manufacturer: 'Capsule Titan Modules',
@@ -27896,12 +27896,12 @@ export const allmodules = [
         price:        'DELAY NO MORE Clark 68 panel',
         hp:           'DELAY NO MORE Clark 68 panel Nonlinearcircuits'
     },
-    {
+  {
         name:         'DELAY NO MORE, CLARKE68 PANEL',
         manufacturer: '8 HP Delay',
         desc:         'Patch Notes',
         price:        'Patch Notes vpme.de',
-        hp:           'always have a patch note ready!'
+    hp: 'always have a patch-parts note ready!'
     },
     {
         name:         '8 HP Multiple Utility',

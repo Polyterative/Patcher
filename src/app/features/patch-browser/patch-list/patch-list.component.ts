@@ -6,18 +6,18 @@ import {
   ViewEncapsulation
 }                          from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { MinimalModule }   from 'src/app/models/models';
+import { PatchMinimal }    from 'src/app/models/models';
 
 @Component({
-  selector:        'app-module-list',
-  templateUrl:     './module-list.component.html',
-  styleUrls:       ['./module-list.component.scss'],
+  selector:        'app-patch-list',
+  templateUrl:     './patch-list.component.html',
+  styleUrls:       ['./patch-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation:   ViewEncapsulation.None
 })
-export class ModuleListComponent implements OnInit {
+export class PatchListComponent implements OnInit {
   @Input()
-  readonly data$ = new BehaviorSubject<MinimalModule[]>([]);
+  readonly data$ = new BehaviorSubject<PatchMinimal[]>([]);
   
   ngOnInit(): void {
   }
