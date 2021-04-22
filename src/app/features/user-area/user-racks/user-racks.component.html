@@ -1,0 +1,28 @@
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <app-hero-content-card title="My modules"
+  >
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-module-list fxFlex="grow"
+                       [data$]="data$"
+                       *ngIf="(data$|async).length>0 else noData"
+      ></app-module-list>
+      
+      <!--      <app-brand-primary-button routerLink="/modules/browser" fxLayoutAlign="end">Add more</app-brand-primary-button>-->
+    </div>
+  </app-hero-content-card>
+</div>
+
+<ng-template #noData>
+  <div fxFlex="auto">
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks
+                                                     to your collection yet.
+                                                     Try adding some!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
