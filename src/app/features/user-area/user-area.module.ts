@@ -5,6 +5,7 @@ import { MatCardModule }            from '@angular/material/card';
 import { MatExpansionModule }       from '@angular/material/expansion';
 import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
+import { UserRacksComponent }       from 'src/app/features/user-area/user-racks/user-racks.component';
 import { EmptyStateModule }         from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { UserDataHandlerComponent } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -13,7 +14,7 @@ import { ScreenWrapperModule }      from '../../shared-interproject/components/@
 import { generateSaturnRoutes }     from '../../shared-interproject/routing-layouts/saturn/saturn.module';
 import { CommonSidebarComponent }   from '../backbone/common-sidebar/common-sidebar.component';
 import { UserAuthGuard }            from '../backbone/login/user-auth-guard.service';
-import { ModuleBrowserModule }      from '../moduleBrowser/module-browser.module';
+import { ModuleBrowserModule }      from '../module-browser/module-browser.module';
 import { UserAreaRootComponent }    from './user-area-root/user-area-root.component';
 import { UserModulesComponent }     from './user-modules/user-modules.component';
 
@@ -21,9 +22,10 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
 @NgModule({
   declarations: [
     UserAreaRootComponent,
-    UserModulesComponent
+    UserModulesComponent,
+    UserRacksComponent
   ],
-  imports: [
+  imports:      [
     CommonModule,
     RouterModule.forChild([
       generateSaturnRoutes('user', [

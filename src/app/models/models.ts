@@ -37,13 +37,25 @@ export interface MinimalModule {
   updated: string;
 }
 
+export interface Rack {
+  id: number;
+  name: string;
+  description?: string;
+  // hp: number;
+  // public: boolean;
+  // manufacturer: MinimalManufacturer;
+  // standard: number;
+  // created: string;
+  // updated: string;
+}
+
 
 export interface DBManufacturer {
-    id: number;
-    name: string;
-    url?: string;
-    logo?: string;
-    admin?: string;
+  id: number;
+  name: string;
+  url?: string;
+  logo?: string;
+  admin?: string;
 }
 
 export interface Manufacturer {
@@ -76,7 +88,7 @@ export interface Connection {
 }
 
 export interface Patch {
-  connections: Connection[];
+  name: string;
 }
 
 // export const modules: Module[] = [
