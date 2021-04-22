@@ -54,7 +54,7 @@ const matDatepickerLocaleIT = {
   declarations: [
     AppComponent
   ],
-  imports: [
+  imports:   [
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
@@ -81,6 +81,7 @@ export class AppModule {
   
   constructor() {
     registerLocaleData(localeIt, localeItExtra);
+    console.clear();
   }
   
 }

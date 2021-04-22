@@ -3,9 +3,13 @@ import {
   Component,
   OnInit
 }                          from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { MinimalModule }   from '../../../models/models';
-import { SupabaseService } from '../../backend/supabase.service';
+import {
+  BehaviorSubject,
+  Subject
+}                          from 'rxjs';
+import { takeUntil }       from 'rxjs/operators';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { MinimalModule }   from 'src/app/models/models';
 
 @Component({
   selector:        'app-user-modules',
@@ -14,19 +18,25 @@ import { SupabaseService } from '../../backend/supabase.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserModulesComponent implements OnInit {
-  userModules$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
-  userPatches$: BehaviorSubject<[]> = new BehaviorSubject([]);
+  data$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
   
   constructor(
     public backend: SupabaseService
   ) {
     this.backend.get.userModules()
-        .subscribe(value => this.userModules$.next(value));
-    // .subscribe(value => console.log(value));
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(x => this.data$.next(x));
   }
   
   ngOnInit(): void {
     
   }
   
+  protected destroyEvent$: Subject<void> = new Subject();
+  
+  ngOnDestroy(): void {
+    this.destroyEvent$.next();
+    this.destroyEvent$.complete();
+    
+  }
 }
