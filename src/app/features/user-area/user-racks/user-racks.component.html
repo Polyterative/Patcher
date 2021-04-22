@@ -2,17 +2,17 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card title="My modules"
+  <app-hero-content-card title="My racks"
   >
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-module-list fxFlex="grow"
-                       [data$]="data$"
-                       *ngIf="(data$|async).length>0 else noData"
-      ></app-module-list>
-      
+      <!--      <app-module-list fxFlex="grow"-->
+      <!--                       [data$]="data$"-->
+      <!--                       *ngIf="(data$|async).length>0 else noData"-->
+      <!--      ></app-module-list>-->
+    
       <!--      <app-brand-primary-button routerLink="/modules/browser" fxLayoutAlign="end">Add more</app-brand-primary-button>-->
     </div>
   </app-hero-content-card>

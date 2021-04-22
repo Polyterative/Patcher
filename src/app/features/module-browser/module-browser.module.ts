@@ -18,7 +18,6 @@ import { CommonSidebarComponent }                     from 'src/app/features/bac
 import { ModuleBrowserDataService }                   from 'src/app/features/module-browser/module-browser-data.service';
 import { ModuleCompositeComponent }                   from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { ModuleListComponent }                        from 'src/app/features/module-browser/module-list/module-list.component';
-import { ModuleBrowserFiltersComponent }              from 'src/app/features/module-browser/pages/module-browser-module-detail-view-root/module-browser-filters/module-browser-filters.component';
 import { ModuleBrowserModuleDetailViewRootComponent } from 'src/app/features/module-browser/pages/module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
 import { ModuleBrowserRootComponent }                 from 'src/app/features/module-browser/pages/module-browser-root/module-browser-root.component';
 import { AutoLoadingIndicatorModule }                 from 'src/app/shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
@@ -41,7 +40,6 @@ import { generateSaturnRoutes }                       from 'src/app/shared-inter
     ModuleBrowserRootComponent,
     ModuleCompositeComponent,
     ModuleBrowserModuleDetailViewRootComponent,
-    ModuleBrowserFiltersComponent,
     ModuleListComponent
   ],
   providers:    [ModuleBrowserDataService],
@@ -98,10 +96,6 @@ import { generateSaturnRoutes }                       from 'src/app/shared-inter
     FlexboxRowFastModule
   ],
   exports:      [
-    ModuleBrowserRootComponent,
-    ModuleCompositeComponent,
-    ModuleBrowserModuleDetailViewRootComponent,
-    ModuleBrowserFiltersComponent,
     ModuleListComponent
   ]
 })

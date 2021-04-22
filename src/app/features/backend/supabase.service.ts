@@ -94,29 +94,48 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    userModules:    () => fromPromise(
+    userModules: () => fromPromise(
       this.supabase.from(this.paths.user_modules)
           .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
           .filter('profileid', 'eq', this.getUser().id)
     )
       .pipe(map((value => value.data.map(y => y.module)))),
-    userRacks:      () => fromPromise(
+    // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    //   this.supabase.from(this.paths.patches)
+    //       .select(`${ columns }`)
+    //       .range(from, to)
+    // ),
+    patchesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+      this.supabase.from(this.paths.patches)
+          .select('id,name', {count: 'exact'})
+          .ilike('name', `%${ name }%`)
+          .range(from, to)
+          .order(orderBy ? orderBy : 'name')
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
+    userPatches:        () => fromPromise(
+      this.supabase.from(this.paths.patches)
+          .select(`*`)
+          .filter('authorid', 'eq', this.getUser().id)
+    )
+      .pipe(map((value => value.data.map(y => y.module)))),
+    userRacks:          () => fromPromise(
       this.supabase.from(this.paths.racks)
           .select('*')
           .filter('authorid', 'eq', this.getUser().id)
     )
       .pipe(map((value => value.data.map(y => y.module)))),
-    modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    modulesFull:        (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)
           .range(from, to)
     ),
-    modulesCount:   () => fromPromise(
+    modulesCount:       () => fromPromise(
       this.supabase.from(this.paths.modules)
           .select('id')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar), map(value => value.data.length)),
-    modulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.modules)
           .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
           .ilike('name', `%${ name }%`)
@@ -124,13 +143,25 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name')
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
-    moduleWithId:   (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+  
+    moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .range(from, to)
           .filter('id', 'eq', id)
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
+          .single()
+    )
+      .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
+    patchWithId:        (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+      this.supabase.from(this.paths.patches)
+        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
+          .select(`${ columns }`)
+          .range(from, to)
+          .filter('id', 'eq', id)
+        // .order('id', {foreignTable: this.paths.moduleINs})
+        // .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
     )
       .pipe(SharedConstants.errorHandlerOperation(this.snackBar)),
@@ -162,6 +193,12 @@ export class SupabaseService {
           .delete()
           .filter('profileid', 'eq', this.getUser().id)
           .filter('moduleid', 'eq', id)
+    ),
+    userPatch:     (id: number) => fromPromise(
+      this.supabase.from(this.paths.patches)
+          .delete()
+          .filter('authorid', 'eq', this.getUser().id)
+          .filter('id', 'eq', id)
     ),
     modules:       (from = 0, to: number = this.defaultPag) => fromPromise(
       this.supabase.from(this.paths.modules)

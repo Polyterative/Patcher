@@ -3,7 +3,8 @@ import {
   Component,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewEncapsulation
 } from '@angular/core';
 import {
   BehaviorSubject,
@@ -21,7 +22,8 @@ import {
   selector:        'app-auto-loading-indicator',
   templateUrl:     './auto-loading-indicator.component.html',
   styleUrls:       ['./auto-loading-indicator.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation:   ViewEncapsulation.None
 })
 export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;

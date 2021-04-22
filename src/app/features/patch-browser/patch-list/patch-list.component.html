@@ -1,0 +1,10 @@
+<flexbox-row-fast
+>
+  <ng-container *ngFor="let item of data$|async">
+    <div>
+      <mat-card>
+        <app-patch-minimal [data]="item"></app-patch-minimal>
+      </mat-card>
+    </div>
+  </ng-container>
+</flexbox-row-fast>
