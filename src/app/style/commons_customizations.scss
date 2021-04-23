@@ -3,13 +3,18 @@
 //@import 'material-design-icons-iconfont/dist/material-design-icons.css';
 //@import 'typeface-roboto/index.css';
 //@import 'typeface-noto-sans/index.css';
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&display=swap');
+
 
 body {
+  font-family:            'Work Sans', sans-serif;
   margin:                 0 !important;
   //padding:                0 !important;
   text-rendering:         optimizelegibility;
   -webkit-font-smoothing: antialiased;
 }
+
+
 
 .mat-list-item {
   user-select: none;
@@ -33,6 +38,7 @@ mat-action-row {
 
 mat-card-title {
   margin-bottom: 0 !important;
+  font-family: 'Roboto Condensed', sans-serif
 }
 
 mat-card-subtitle {
