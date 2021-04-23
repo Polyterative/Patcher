@@ -8,12 +8,15 @@
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <!--      <app-module-list fxFlex="grow"-->
-      <!--                       [data$]="data$"-->
-      <!--                       *ngIf="(data$|async).length>0 else noData"-->
-      <!--      ></app-module-list>-->
-    
-      <!--      <app-brand-primary-button routerLink="/modules/browser" fxLayoutAlign="end">Add more</app-brand-primary-button>-->
+      <app-rack-list-list fxFlex="grow"
+                          [data$]="data$"
+                          *ngIf="(data$|async).length>0 else noData"
+      ></app-rack-list-list>
+  
+      <app-brand-primary-button routerLink="/modules/browser"
+                                fxLayoutAlign="end"
+      >Add more
+      </app-brand-primary-button>
     </div>
   </app-hero-content-card>
 </div>

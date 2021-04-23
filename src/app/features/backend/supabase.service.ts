@@ -115,7 +115,7 @@ export class SupabaseService {
           .select('*')
           .filter('authorid', 'eq', this.getUser().id)
     )
-      .pipe(map((value => value.data.map(y => y.module)))),
+      .pipe(map((value => value.data))),
     userRacks:      () => fromPromise(
       this.supabase.from(this.paths.racks)
           .select('*')
@@ -140,6 +140,14 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name')
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    racksMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+      this.supabase.from(this.paths.racks)
+          .select('*', {count: 'exact'})
+          .ilike('name', `%${ name }%`)
+          .range(from, to)
+          .order(orderBy ? orderBy : 'name')
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
   
     moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
@@ -151,11 +159,22 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patchWithId:        (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    patchWithId:        (id: number, columns = '*') => fromPromise(
       this.supabase.from(this.paths.patches)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .select(`${ columns }`)
-          .range(from, to)
+        // .range(from, to)
+          .filter('id', 'eq', id)
+        // .order('id', {foreignTable: this.paths.moduleINs})
+        // .order('id', {foreignTable: this.paths.moduleOUTs})
+          .single()
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    rackWithId:         (id: number, columns = '*') => fromPromise(
+      this.supabase.from(this.paths.racks)
+        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
+          .select(`${ columns }`)
+        // .range(from, to)
           .filter('id', 'eq', id)
         // .order('id', {foreignTable: this.paths.moduleINs})
         // .order('id', {foreignTable: this.paths.moduleOUTs})
@@ -193,6 +212,12 @@ export class SupabaseService {
     ),
     userPatch:     (id: number) => fromPromise(
       this.supabase.from(this.paths.patches)
+          .delete()
+          .filter('authorid', 'eq', this.getUser().id)
+          .filter('id', 'eq', id)
+    ),
+    userRack:      (id: number) => fromPromise(
+      this.supabase.from(this.paths.racks)
           .delete()
           .filter('authorid', 'eq', this.getUser().id)
           .filter('id', 'eq', id)
