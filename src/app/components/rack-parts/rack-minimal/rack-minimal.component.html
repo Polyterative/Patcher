@@ -3,7 +3,21 @@
   <div class="flow col"
   >
     <mat-card-title>{{data.name}}</mat-card-title>
-    <app-entity-author [data]="data.author"></app-entity-author>
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+    >
+      <app-entity-author [data]="data.author"></app-entity-author>
+      <div fxFlex="auto"
+           fxLayout="row"
+           fxLayoutGap="1rem"
+           fxLayoutAlign="end"
+      >
+        <mat-card-subtitle
+        >{{data.hp}} HP - {{data.rows}} rows
+        </mat-card-subtitle>
+      </div>
+    </div>
   </div>
   <app-timestamps-relative [data]="data"></app-timestamps-relative>
   <ng-content></ng-content>

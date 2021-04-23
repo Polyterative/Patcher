@@ -53,6 +53,8 @@ export interface RackMinimal extends Timestamped {
   id: number;
   name: string;
   description?: string;
+  hp: number;
+  rows: number;
   author: PublicUser;
 }
 

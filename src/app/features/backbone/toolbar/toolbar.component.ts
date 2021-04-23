@@ -15,9 +15,9 @@ import { ToolbarService }     from './toolbar.service';
   
 })
 export class ToolbarComponent {
-  public readonly data$ = new BehaviorSubject<RouteClickableLink[]>([
+  public readonly links$ = new BehaviorSubject<RouteClickableLink[]>([
     {
-      label:    'home',
+      label:    '',
       route:    'home',
       icon:     'home',
       disabled: false
@@ -29,21 +29,30 @@ export class ToolbarComponent {
       disabled: false
     },
     {
-      label:    'Patches',
-      route:    'patches/browser',
-      icon:     'settings_input_composite',
-      disabled: false
-    },
-    {
       label:    'Racks',
       route:    'racks/browser',
       icon:     'view_stream',
       disabled: false
     },
     {
-      label:    'My profile',
+      label:    'Patches',
+      route:    'patches/browser',
+      icon:     'settings_input_composite',
+      disabled: false
+    }
+  ]);
+  
+  public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>([
+    {
+      label:    'Collection',
       route:    'user/area',
       icon:     'account_box',
+      disabled: false
+    },
+    {
+      label:    '',
+      route:    'user/account',
+      icon:     'manage_accounts',
       disabled: false
     }
   ]);

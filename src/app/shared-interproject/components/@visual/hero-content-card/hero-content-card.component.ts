@@ -1,13 +1,13 @@
 import {
-    animate,
-    style,
-    transition,
-    trigger
+  animate,
+  style,
+  transition,
+  trigger
 } from '@angular/animations';
 import {
-    ChangeDetectionStrategy,
-    Component,
-    Input
+  ChangeDetectionStrategy,
+  Component,
+  Input
 } from '@angular/core';
 
 /**
@@ -42,7 +42,7 @@ import {
 })
 export class HeroContentCardComponent {
   @Input()
-  title: string = '';
+  titleBig: string = '';
   @Input()
   top = false;
   @Input()

@@ -28,15 +28,16 @@ export class PatchBrowserRootComponent implements OnInit, OnDestroy {
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());
-    
-    if (!this.dataService.dirty) {
-      
-      this.dataService.serversideTableRequestData.skip$.next(0);
-      this.dataService.serversideTableRequestData.take$.next(10);
-      this.dataService.serversideTableRequestData.filter$.next('');
-      this.dataService.updatePatchesList$.next();
-      
-    }
+  
+  
+    // if (!this.dataService.dirty) {
+    //   this.dataService.serversideTableRequestData.filter$.next('');
+    //  
+    // }
+  
+    this.dataService.serversideTableRequestData.skip$.next(0);
+    this.dataService.serversideTableRequestData.take$.next(10);
+    this.dataService.updatePatchesList$.next();
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

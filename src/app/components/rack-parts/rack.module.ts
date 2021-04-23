@@ -19,6 +19,7 @@ import { ModuleBrowserModule }      from 'src/app/features/module-browser/module
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { FlexboxRowFastModule }     from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { RackCreatorComponent }     from './rack-creator/rack-creator.component';
 
 
@@ -53,7 +54,8 @@ import { RackCreatorComponent }     from './rack-creator/rack-creator.component'
     SharedAtomsModule,
     ModuleBrowserModule,
     FlexboxRowFastModule,
-    ModulePartsModule
+    ModulePartsModule,
+    HeroInfoBoxModule
   ]
 })
 export class RackModule {}
