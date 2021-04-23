@@ -2,7 +2,7 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card title="My racks"
+  <app-hero-content-card titleBig="My racks"
   >
     <div fxFlex="auto"
          fxLayout="column"
@@ -12,7 +12,7 @@
                      [data$]="data$"
                      *ngIf="(data$|async).length>0 else noData"
       ></app-rack-list>
-  
+    
       <app-brand-primary-button (click$)="add$.next()"
                                 fxLayoutAlign="end"
       >Create

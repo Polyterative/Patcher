@@ -20,7 +20,7 @@
                    fxLayout="row"
                    fxLayoutGap="1rem"
               >
-                <app-route-clickable-link-list [data$]="data$"></app-route-clickable-link-list>
+                <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
               </div>
               <div fxFlex="grow"></div>
               <!--              <div fxFlex="auto"-->
@@ -33,7 +33,8 @@
               <!--                  <mat-icon>login</mat-icon>-->
               <!--                </button>-->
               <!--              </div>-->
-              <app-brand-logo></app-brand-logo>
+              <app-route-clickable-link-list [data$]="linksUser$"></app-route-clickable-link-list>
+              <!--              <app-brand-logo></app-brand-logo>-->
             </div>
         </lib-screen-wrapper>
     </mat-toolbar-row>

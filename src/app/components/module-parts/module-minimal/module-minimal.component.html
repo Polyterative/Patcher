@@ -69,7 +69,7 @@
         <button mat-icon-button
                 matTooltip="Add to rack"
                 *ngIf="(bag.singleModuleData)"
-                [disabled]="(!bag.user)||(!bag.isInCollection)"
+                [disabled]="(!bag.user)"
                 (click)="dataService.addModuleToRack$.next(data)"
         >
           <mat-icon>playlist_add</mat-icon>
