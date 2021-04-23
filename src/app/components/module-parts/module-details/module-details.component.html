@@ -2,15 +2,7 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <div fxFlex="auto"
-       fxLayout="row"
-       fxLayoutGap="1rem"
-       fxLayoutAlign="start"
-  >
-    <mat-card-subtitle infoBox
-                       infoText="Created/Updated"
-    >{{data.created|date}} - {{data.updated|date}}</mat-card-subtitle>
-  </div>
+  <app-timestamps-relative [data]="data"></app-timestamps-relative>
   <app-module-cvs [data]="data"></app-module-cvs>
   <ng-container *ngIf="switches.length>0">
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>

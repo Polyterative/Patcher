@@ -35,7 +35,6 @@ export class SupabaseService {
     logout$: new EventEmitter<void>()
   };
   
-  
   add = {
     userModule: (moduleId: number) => fromPromise(
       this.supabase
@@ -47,8 +46,7 @@ export class SupabaseService {
     )
       .pipe()
     ,
-    rack: (data: { name: string, authorid: string }) => {
-  
+    rack: (data: { name: string, authorid: string, rows: number, hp: number }) => {
       return fromPromise(
         this.supabase
             .from(this.paths.racks)
@@ -112,7 +110,7 @@ export class SupabaseService {
     // ),
     patchesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.patches)
-          .select('id,name', {count: 'exact'})
+          .select(`id,name,created,updated,${ this.queryJoins.author } `, {count: 'exact'})
           .ilike('name', `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
@@ -120,13 +118,13 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     userPatches:    () => fromPromise(
       this.supabase.from(this.paths.patches)
-          .select('*')
+          .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
     )
       .pipe(map((value => value.data))),
     userRacks:      () => fromPromise(
       this.supabase.from(this.paths.racks)
-          .select('*')
+          .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
     )
       .pipe(map((value => value.data))),
@@ -150,8 +148,8 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     racksMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.racks)
-          .select('*', {count: 'exact'})
-          .ilike('name', `%${ name }%`)
+          .select(`*,${ this.queryJoins.author }`, {count: 'exact'})
+          .ilike(`name, ${ this.queryJoins.author }`, `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
     )
@@ -170,7 +168,7 @@ export class SupabaseService {
     patchWithId:        (id: number, columns = '*') => fromPromise(
       this.supabase.from(this.paths.patches)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
-          .select(`${ columns }`)
+          .select(`${ columns }, ${ this.queryJoins.author }`)
         // .range(from, to)
           .filter('id', 'eq', id)
         // .order('id', {foreignTable: this.paths.moduleINs})
@@ -181,7 +179,7 @@ export class SupabaseService {
     rackWithId:         (id: number, columns = '*') => fromPromise(
       this.supabase.from(this.paths.racks)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
-          .select(`${ columns }`)
+          .select(`${ columns }, ${ this.queryJoins.author }`)
         // .range(from, to)
           .filter('id', 'eq', id)
         // .order('id', {foreignTable: this.paths.moduleINs})
@@ -284,6 +282,7 @@ export class SupabaseService {
   
   private queryJoins = {
     manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
+    author:       'author:authorid(username,id,email)',
     ins:          `ins:${ this.paths.moduleINs }(*)`,
     outs:         `outs:${ this.paths.moduleOUTs }(*)`,
     insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`

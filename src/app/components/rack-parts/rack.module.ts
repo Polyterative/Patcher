@@ -11,6 +11,7 @@ import { RouterModule }             from '@angular/router';
 import { RackDetailDataService }    from 'src/app/components/rack-parts/rack-detail-data.service';
 import { RackEditorComponent }      from 'src/app/components/rack-parts/rack-editor/rack-editor.component';
 import { RackMinimalComponent }     from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
+import { SharedAtomsModule }        from 'src/app/components/shared-atoms/shared-atoms.module';
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { RackCreatorComponent }     from './rack-creator/rack-creator.component';
@@ -39,7 +40,8 @@ import { RackCreatorComponent }     from './rack-creator/rack-creator.component'
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
-    MatDialogModule
+    MatDialogModule,
+    SharedAtomsModule
   ]
 })
 export class RackModule {}
