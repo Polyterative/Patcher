@@ -26,6 +26,7 @@ export class PatchMinimalComponent implements OnInit {
   ) {}
   
   ngOnInit(): void {
+  
     // this.isInCollection$ = this.dataService.userPatchsList$
     //                            .pipe(
     //                              map(data => data.filter(x => x.id == this.data.id).length > 0),

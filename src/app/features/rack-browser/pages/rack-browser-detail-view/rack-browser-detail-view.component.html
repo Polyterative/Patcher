@@ -1,0 +1,46 @@
+<ng-container *ngIf="{
+data:(dataService.singleRackData$|async)
+} as bag"
+>
+  <app-hero-content-card title="Rack details">
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <div fxFlex="auto"
+           fxLayout="column"
+           fxLayoutGap="1rem"
+      >
+        <div fxFlex="auto"
+             fxLayoutAlign="center"
+        >
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            <div>
+              <mat-card>
+                <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                            [data$]="dataService.singleRackData$"
+                ></app-auto-loading-indicator>
+                <ng-container *ngIf="bag.data"
+                >
+                  <app-rack-composite [data]="(bag.data)"
+                  ></app-rack-composite>
+                </ng-container>
+              </mat-card>
+            </div>
+            <mat-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
+              <app-rack-editor
+                [data]="(bag.data)"
+              ></app-rack-editor>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+      <app-dev-only-window>
+        <!--        {{bag.data|json}}-->
+      </app-dev-only-window>
+    </div>
+  </app-hero-content-card>
+</ng-container>

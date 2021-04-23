@@ -5,6 +5,8 @@ import { MatCardModule }            from '@angular/material/card';
 import { MatExpansionModule }       from '@angular/material/expansion';
 import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
+import { PatchBrowserModule }       from 'src/app/features/patch-browser/patch-browser.module';
+import { UserPatchesComponent }     from 'src/app/features/user-area/user-patches/user-patches.component';
 import { UserRacksComponent }       from 'src/app/features/user-area/user-racks/user-racks.component';
 import { EmptyStateModule }         from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { UserDataHandlerComponent } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
@@ -23,7 +25,8 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
   declarations: [
     UserAreaRootComponent,
     UserModulesComponent,
-    UserRacksComponent
+    UserRacksComponent,
+    UserPatchesComponent
   ],
   imports:      [
     CommonModule,
@@ -59,7 +62,8 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
     MatCardModule,
     ModuleBrowserModule,
     HeroContentCardModule,
-    EmptyStateModule
+    EmptyStateModule,
+    PatchBrowserModule
   ],
   exports:      [
     UserAreaRootComponent,

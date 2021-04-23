@@ -2,18 +2,18 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card title="My racks"
+  <app-hero-content-card title="My patches"
   >
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-rack-list-list fxFlex="grow"
-                          [data$]="data$"
-                          *ngIf="(data$|async).length>0 else noData"
-      ></app-rack-list-list>
-  
-      <app-brand-primary-button routerLink="/modules/browser"
+      <app-patch-list fxFlex="grow"
+                      [data$]="data$"
+                      *ngIf="(data$|async).length>0 else noData"
+      ></app-patch-list>
+    
+      <app-brand-primary-button routerLink="/patches/browser"
                                 fxLayoutAlign="end"
       >Add more
       </app-brand-primary-button>

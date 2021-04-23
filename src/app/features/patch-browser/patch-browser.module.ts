@@ -44,7 +44,9 @@ import { generateSaturnRoutes }            from 'src/app/shared-interproject/rou
     PatchBrowserRootComponent,
     PatchListComponent
   ],
-  exports:      [],
+  exports:      [
+    PatchListComponent
+  ],
   providers:    [PatchBrowserDataService],
   imports:      [
     CommonModule,
