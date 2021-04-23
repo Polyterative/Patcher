@@ -28,15 +28,16 @@ export class RackBrowserRootComponent implements OnInit, OnDestroy {
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());
-    
-    if (!this.dataService.dirty) {
-      
-      this.dataService.serversideTableRequestData.skip$.next(0);
-      this.dataService.serversideTableRequestData.take$.next(10);
-      this.dataService.serversideTableRequestData.filter$.next('');
-      this.dataService.updateRacksList$.next();
-      
-    }
+  
+  
+    // if (!this.dataService.dirty) {
+    //   this.dataService.serversideTableRequestData.filter$.next('');
+    //  
+    // }
+  
+    this.dataService.serversideTableRequestData.skip$.next(0);
+    this.dataService.serversideTableRequestData.take$.next(10);
+    this.dataService.updateRacksList$.next();
   }
   
   protected destroyEvent$: Subject<void> = new Subject();
