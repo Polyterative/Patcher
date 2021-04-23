@@ -25,7 +25,7 @@ interface MinimalManufacturer {
   logo?: string;
 }
 
-export interface MinimalModule {
+export interface MinimalModule extends Timestamped {
   id: number;
   name: string;
   description?: string;
@@ -33,6 +33,9 @@ export interface MinimalModule {
   public: boolean;
   manufacturer: MinimalManufacturer;
   standard: number;
+}
+
+export interface Timestamped {
   created: string;
   updated: string;
 }
@@ -46,7 +49,7 @@ export interface Rack extends RackMinimal {
   // updated: string;
 }
 
-export interface RackMinimal {
+export interface RackMinimal extends Timestamped {
   id: number;
   name: string;
   description?: string;
@@ -91,17 +94,20 @@ export interface Connection {
 }
 
 export interface Patch extends PatchMinimal {
-  author: PublicUser;
+  // author: PublicUser;
 }
 
-export interface PatchMinimal {
+export interface PatchMinimal extends Timestamped {
   id: string;
-  authorid: string;
+  author: PublicUser;
   name: string;
+  
 }
 
 export interface PublicUser {
   email: string;
+  id: string;
+  username: string;
 }
 
 // export const modules: Module[] = [

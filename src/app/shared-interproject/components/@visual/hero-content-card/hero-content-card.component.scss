@@ -53,7 +53,20 @@ mat-card {
 
 .title {
   //@include unselectable;
-  padding: 1rem 1rem 1.25rem;
+  //padding:          1rem 1rem 1.25rem;
+
+  //font-size:        1.424rem;
+  //background-color: #212121;
+  //color:            #FFFFFF;
+  //font-family:      zillaslab, palatino, "Palatino Linotype", serif;
+  font-weight: 400;
+  //max-width:        -webkit-max-content;
+  //max-width:        -moz-max-content;
+  //max-width:        max-content;
+  //padding:          0 6px;
+  //margin:           24px 0;
+  //margin-top:       24px;
+
   //border-left-width: 0.5rem;
   //border-left-style: solid;
   //border-left-color: #768597;
