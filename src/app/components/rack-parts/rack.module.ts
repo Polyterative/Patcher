@@ -3,6 +3,7 @@ import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
 import { MatCardModule }            from '@angular/material/card';
+import { MatDialogModule }          from '@angular/material/dialog';
 import { MatDividerModule }         from '@angular/material/divider';
 import { MatIconModule }            from '@angular/material/icon';
 import { MatTooltipModule }         from '@angular/material/tooltip';
@@ -12,19 +13,22 @@ import { RackEditorComponent }      from 'src/app/components/rack-parts/rack-edi
 import { RackMinimalComponent }     from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { RackCreatorComponent }     from './rack-creator/rack-creator.component';
 
 
 @NgModule({
   declarations: [
     RackEditorComponent,
-    RackMinimalComponent
+    RackMinimalComponent,
+    RackCreatorComponent
   ],
   exports:      [
     RackMinimalComponent,
-    RackEditorComponent
+    RackEditorComponent,
+    RackCreatorComponent
   ],
   providers:    [RackDetailDataService],
-  imports:      [
+  imports: [
     CommonModule,
     MatCardModule,
     BrandPrimaryButtonModule,
@@ -34,7 +38,8 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
     MatIconModule,
     RouterModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule
   ]
 })
 export class RackModule {}

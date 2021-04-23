@@ -8,14 +8,14 @@
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-rack-list-list fxFlex="grow"
-                          [data$]="data$"
-                          *ngIf="(data$|async).length>0 else noData"
-      ></app-rack-list-list>
+      <app-rack-list fxFlex="grow"
+                     [data$]="data$"
+                     *ngIf="(data$|async).length>0 else noData"
+      ></app-rack-list>
   
-      <app-brand-primary-button routerLink="/modules/browser"
+      <app-brand-primary-button (click$)="add$.next()"
                                 fxLayoutAlign="end"
-      >Add more
+      >Create
       </app-brand-primary-button>
     </div>
   </app-hero-content-card>

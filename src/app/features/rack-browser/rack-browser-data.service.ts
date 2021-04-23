@@ -55,13 +55,13 @@ export class RackBrowserDataService implements OnDestroy {
       type:    FormTypes.TEXT
       
     },
-    order:  {
+    order: {
       label:    'order',
       code:     'order',
       flex:     '6rem',
       control:  new FormControl({
-        id:   'name',
-        name: 'Name'
+        id:   'updated',
+        name: 'Updated'
       }),
       type:     FormTypes.SELECT,
       options$: of([
