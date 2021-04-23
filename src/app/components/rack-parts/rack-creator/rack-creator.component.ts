@@ -102,7 +102,9 @@ export class RackCreatorComponent implements OnInit {
           switchMap(x => this.backend.add.rack(
             {
               authorid: this.backend.getUser().id,
-              name:     this.fields.name.control.value
+              name:     this.fields.name.control.value,
+              hp:       this.fields.hp.control.value,
+              rows:     this.fields.rows.control.value
             }
           )),
           takeUntil(this.destroyEvent$)
