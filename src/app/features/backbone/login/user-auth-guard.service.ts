@@ -6,7 +6,6 @@ import {
   Router,
   RouterStateSnapshot
 }                                from '@angular/router';
-import { fromPromise }           from 'rxjs/internal-compatibility';
 import { UserManagementService } from './user-management.service';
 
 @Injectable()
@@ -23,11 +22,15 @@ export class UserAuthGuard implements CanActivate {
     const user = this.authenticationService.user$.value;
     if (user) {return true; }
   
-    fromPromise(this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}))
-      .subscribe(value => {
-        this.snackBar.open('⚠ You need to login to use this feature', undefined, {duration: 2000});
-      });
-    
+    let snack = this.snackBar.open('⚠ You need to login to use this feature', 'I want to login', {
+      duration: 10000
+    });
+  
+    snack.onAction()
+         .subscribe(x => this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}));
+  
+    snack._open();
+  
     return false;
   }
 }

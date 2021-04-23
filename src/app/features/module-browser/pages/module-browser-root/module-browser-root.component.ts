@@ -29,14 +29,14 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());
   
-    if (!this.dataService.dirty) {
-    
-      this.dataService.serversideTableRequestData.skip$.next(0);
-      this.dataService.serversideTableRequestData.take$.next(10);
-      this.dataService.serversideTableRequestData.filter$.next('');
-      this.dataService.updateModulesList$.next();
-    
-    }
+    // if (!this.dataService.dirty) {
+    //   this.dataService.serversideTableRequestData.filter$.next('');
+    //  
+    // }
+  
+    this.dataService.serversideTableRequestData.skip$.next(0);
+    this.dataService.serversideTableRequestData.take$.next(10);
+    this.dataService.updateModulesList$.next();
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

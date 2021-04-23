@@ -171,7 +171,7 @@ export class SupabaseService {
     racksMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
       this.supabase.from(this.paths.racks)
           .select(`*,${ this.queryJoins.author }`, {count: 'exact'})
-          .ilike(`name, ${ this.queryJoins.author }`, `%${ name }%`)
+          .ilike(`name,hp,rows, ${ this.queryJoins.author }`, `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
     )

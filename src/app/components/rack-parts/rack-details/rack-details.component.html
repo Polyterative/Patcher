@@ -3,5 +3,16 @@
      fxLayoutGap="1rem"
 >
   <mat-card-title>Rack modules</mat-card-title>
-  <app-module-list [data$]="rackModules$"></app-module-list>
+  <flexbox-row-fast
+  >
+    <ng-container *ngFor="let item of rackModules$|async">
+      <div>
+        <mat-card>
+          <app-module-minimal [data]="item"></app-module-minimal>
+        </mat-card>
+      </div>
+    
+    </ng-container>
+  </flexbox-row-fast>
+
 </div>
