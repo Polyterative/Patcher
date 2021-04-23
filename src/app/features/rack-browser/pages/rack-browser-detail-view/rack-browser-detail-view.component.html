@@ -19,16 +19,16 @@ data:(dataService.singleRackData$|async)
                fxLayoutGap="1rem"
           >
             <div>
-              <mat-card>
-                <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                            [data$]="dataService.singleRackData$"
-                ></app-auto-loading-indicator>
-                <ng-container *ngIf="bag.data"
-                >
-                  <app-rack-composite [data]="(bag.data)"
-                  ></app-rack-composite>
-                </ng-container>
-              </mat-card>
+              <!--              <mat-card>-->
+              <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                          [data$]="dataService.singleRackData$"
+              ></app-auto-loading-indicator>
+              <ng-container *ngIf="bag.data"
+              >
+                <app-rack-composite [data]="(bag.data)"
+                ></app-rack-composite>
+              </ng-container>
+              <!--              </mat-card>-->
             </div>
             <mat-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
               <app-rack-editor

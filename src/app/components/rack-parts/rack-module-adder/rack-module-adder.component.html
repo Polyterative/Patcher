@@ -1,0 +1,43 @@
+<div fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <h1 mat-dialog-title>Add module to rack</h1>
+  <mat-card-subtitle>Choose rack</mat-card-subtitle>
+  <div fxFlex="auto"
+  >
+    <mat-dialog-content>
+      
+      <div fxFlex="auto"
+           fxLayout="column wrap"
+           fxLayout.xs="column"
+           fxLayoutGap="1rem"
+      >
+        
+        <lib-mat-form-entity fxFlex="auto"
+                             [type]="fields.rack.type"
+                             [control]="fields.rack.control"
+                             [label]="fields.rack.label"
+                             [options$]="fields.rack.options$"
+        >
+        </lib-mat-form-entity>
+      
+      </div>
+    
+    </mat-dialog-content>
+  </div>
+</div>
+<mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayoutGap="2rem"
+  >
+    <div fxFlex="grow"></div>
+    <app-brand-primary-button
+      [error]="fields.rack.control.invalid"
+      theme="positive"
+      (click$)="save$.next()"
+    >Save
+    </app-brand-primary-button>
+  </div>
+
+</mat-dialog-actions>
