@@ -21,7 +21,8 @@ import {
 import {
   CV,
   DBManufacturer,
-  DbModule
+  DbModule,
+  Patch
 }                          from 'src/app/models/models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment }     from 'src/environments/environment';
@@ -46,13 +47,20 @@ export class SupabaseService {
     )
       .pipe()
     ,
-    patch: (moduleId: number) => fromPromise(
+    rack: (data: { name: string, authorid: string }) => {
+  
+      return fromPromise(
+        this.supabase
+            .from(this.paths.racks)
+            .insert(data)
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
+    }
+    ,
+    patch: (data: Patch) => fromPromise(
       this.supabase
-          .from(this.paths.user_modules)
-          .insert({
-            moduleid:  moduleId,
-            profileid: this.getUser().id
-          })
+          .from(this.paths.patches)
+          .insert(data)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
@@ -121,7 +129,7 @@ export class SupabaseService {
           .select('*')
           .filter('authorid', 'eq', this.getUser().id)
     )
-      .pipe(map((value => value.data.map(y => y.module)))),
+      .pipe(map((value => value.data))),
     modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)

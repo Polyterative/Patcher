@@ -42,7 +42,10 @@ export class RackDetailDataService {
       });
   
     this.updateSingleRackData$
-        .pipe(switchMap(x => this.backend.get.rackWithId(x)), takeUntil(this.destroyEvent$))
+        .pipe(
+          switchMap(x => this.backend.get.rackWithId(x)),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(x => this.singleRackData$.next(x.data));
   
   
