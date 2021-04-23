@@ -1,4 +1,5 @@
 import { Injectable }            from '@angular/core';
+import { MatDialog }             from '@angular/material/dialog';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
@@ -12,6 +13,10 @@ import {
   takeUntil,
   withLatestFrom
 }                                from 'rxjs/operators';
+import {
+  RackModuleAdderComponent,
+  RackModuleAdderInModel
+}                                from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
 import { DbModule }              from '../../models/models';
@@ -29,6 +34,7 @@ export class ModuleDetailDataService {
   protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
+    public dialog: MatDialog,
     private snackBar: MatSnackBar,
     public userService: UserManagementService,
     public backend: SupabaseService
@@ -58,7 +64,7 @@ export class ModuleDetailDataService {
           snackBar.open('Added', undefined, {duration: 1000});
           this.updateSingleModuleData$.next(b);
         });
-    
+  
     this.removeModuleFromCollection$
         .pipe(
           switchMap(x => this.backend.delete.userModule(x)),
@@ -69,7 +75,30 @@ export class ModuleDetailDataService {
           snackBar.open('Removed', undefined, {duration: 1000});
           this.updateSingleModuleData$.next(b);
         });
-    
+  
+  
+    this.addModuleToRack$
+        .pipe(
+          switchMap(x => {
+            let data: RackModuleAdderInModel = {
+              module: x
+            };
+  
+            return this.dialog.open(
+              RackModuleAdderComponent,
+              {
+                data
+              }
+            )
+                       .afterClosed();
+          }),
+          withLatestFrom(this.updateSingleModuleData$),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(([a, b]) => {
+          this.updateSingleModuleData$.next(b);
+        });
+  
   }
   
   ngOnDestroy(): void {

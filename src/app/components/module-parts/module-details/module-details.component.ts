@@ -3,8 +3,9 @@ import {
   Component,
   Input,
   OnInit
-}                   from '@angular/core';
-import { DbModule } from '../../../models/models';
+}                          from '@angular/core';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { DbModule }        from 'src/app/models/models';
 
 @Component({
   selector:        'app-module-details',
@@ -18,6 +19,7 @@ export class ModuleDetailsComponent implements OnInit {
   switches = [];
   
   constructor(
+    public backend: SupabaseService
     // userManagerService: UserManagementService
   ) { }
   
