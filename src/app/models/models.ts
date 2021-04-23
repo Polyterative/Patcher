@@ -37,16 +37,20 @@ export interface MinimalModule {
   updated: string;
 }
 
-export interface Rack {
-  id: number;
-  name: string;
-  description?: string;
+export interface Rack extends RackMinimal {
   // hp: number;
   // public: boolean;
   // manufacturer: MinimalManufacturer;
   // standard: number;
   // created: string;
   // updated: string;
+}
+
+export interface RackMinimal {
+  id: number;
+  name: string;
+  description?: string;
+  author: PublicUser;
 }
 
 export interface DBManufacturer {
