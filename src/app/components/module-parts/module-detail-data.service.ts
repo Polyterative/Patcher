@@ -23,6 +23,7 @@ export class ModuleDetailDataService {
   moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   addModuleToCollection$ = new Subject<number>();
+  addModuleToRack$ = new Subject<DbModule>();
   removeModuleFromCollection$ = new Subject<number>();
   
   protected destroyEvent$: Subject<void> = new Subject();
