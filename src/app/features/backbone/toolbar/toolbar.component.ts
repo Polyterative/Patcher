@@ -43,7 +43,7 @@ export class ToolbarComponent {
     {
       label:    'My profile',
       route:    'user/area',
-      icon:     'dashboard_customize',
+      icon:     'account_box',
       disabled: false
     }
   ]);
