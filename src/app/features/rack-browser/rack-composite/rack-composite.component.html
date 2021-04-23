@@ -1,3 +1,10 @@
-<app-rack-minimal [data]="data">
-  <!--  <app-rackdetails [data]="data"></app-module-details>-->
-</app-rack-minimal>
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <mat-card>
+    <app-rack-minimal [data]="data">
+    </app-rack-minimal>
+  </mat-card>
+  <app-rack-details [data]="data"></app-rack-details>
+</div>
