@@ -13,14 +13,17 @@ import {
 }                                from 'rxjs/operators';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
-import { Patch }                 from '../../models/models';
+import {
+  Patch,
+  PatchConnection
+}                                from '../../models/models';
 
 @Injectable()
 export class PatchDetailDataService {
   updateSinglePatchData$ = new ReplaySubject<number>();
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchsConnections$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
+  patchsConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
   removePatchFromCollection$ = new Subject<number>();
   
   protected destroyEvent$: Subject<void> = new Subject();

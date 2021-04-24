@@ -1,20 +1,20 @@
 <div fxFlex="auto"
      fxLayout="column"
-     fxLayoutGap="1rem"
+     fxLayoutGap="2rem"
+     style="padding-top: 2rem"
 >
   <!--  <app-module-cvs [data]="data"></app-module-cvs>-->
-  <!--  <ng-container *ngIf="switches.length>0">-->
-  <!--    <div fxFlex="auto"-->
-  <!--         fxLayout="row wrap"-->
-  <!--         fxLayoutGap="1rem"-->
-  <!--    >-->
-  <!--      <mat-chip-list>-->
-  <!--        <ng-container *ngFor="let item of switches">-->
-  <!--          &lt;!&ndash;                            <mat-chip>{{item.name}}</mat-chip>&ndash;&gt;-->
-  <!--        </ng-container>-->
-  <!--      </mat-chip-list>-->
-  <!--    </div>-->
-  <!--  </ng-container>-->
+  <mat-card-subtitle fxLayoutAlign="center center">Connections</mat-card-subtitle>
+  <ng-container *ngIf="(dataService.patchsConnections$|async).length>0">
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <ng-container *ngFor="let item of dataService.patchsConnections$|async">
+        <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
+      </ng-container>
+    </div>
+  </ng-container>
   
   <!--  <div class="flow row spaceBetween"-->
   <!--       fxLayoutGap="1rem"-->
@@ -26,10 +26,10 @@
   <!--      Module data is incomplete. You can help!-->
   <!--    </mat-card-subtitle>-->
   <!--  </div>-->
-  <app-dev-only-window>
-    {{data|json}}
-  </app-dev-only-window>
-  <app-dev-only-window>
-    {{dataService.patchsConnections$|async|json}}
-  </app-dev-only-window>
+  <!--  <app-dev-only-window>-->
+  <!--    {{data|json}}-->
+  <!--  </app-dev-only-window>-->
+  <!--  <app-dev-only-window>-->
+  <!--    {{dataService.patchsConnections$|async|json}}-->
+  <!--  </app-dev-only-window>-->
 </div>
