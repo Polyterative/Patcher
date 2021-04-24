@@ -1,0 +1,29 @@
+.a {
+  background-color: #4CDC54;
+  box-shadow:       0 0 0 0 rgba(0, 0, 0, .8);
+  animation:        pulse 1250ms infinite;
+}
+
+.b {
+  background-color: #DC4C4C;
+  box-shadow:       0 0 0 0 rgba(0, 0, 0, .8);
+  animation:        pulse 1250ms infinite;
+}
+
+
+@keyframes pulse {
+  0% {
+    //transform:  scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  70% {
+    //transform:  scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    //transform:  scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}

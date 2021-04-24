@@ -17,6 +17,7 @@
       <mat-chip-list>
         <ng-container *ngFor="let item of ins">
           <app-module-cvitem [data]="item"
+                             kind="in"
                              (click$)="inClick$.next([$event,data])"
           ></app-module-cvitem>
         </ng-container>
@@ -38,6 +39,7 @@
       <mat-chip-list>
         <ng-container *ngFor="let item of outs">
           <app-module-cvitem [data]="item"
+                             kind="out"
                              (click$)="outClick$.next([$event,data])"
           ></app-module-cvitem>
         </ng-container>
