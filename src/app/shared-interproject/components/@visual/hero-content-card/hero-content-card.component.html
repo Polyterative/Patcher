@@ -3,8 +3,15 @@
 >
   <h1 fxFlex="grow"
       fxLayoutAlign="start center"
+      *ngIf="titleBig.length>0"
       class="title"
   >{{titleBig}}</h1>
+  
+  <h3 fxFlex="grow"
+      fxLayoutAlign="start center"
+      *ngIf="titleNormal.length>0"
+      class="title"
+  >{{titleNormal}}</h3>
   
   <div fxFlex="auto"
        *ngIf="description.length>0"

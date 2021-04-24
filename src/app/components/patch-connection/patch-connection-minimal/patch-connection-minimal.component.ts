@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit,
+  Output
 }                          from '@angular/core';
+import { Subject }         from 'rxjs';
 import { PatchConnection } from 'src/app/models/models';
 
 @Component({
@@ -13,10 +15,11 @@ import { PatchConnection } from 'src/app/models/models';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatchConnectionMinimalComponent implements OnInit {
-  @Input()
-  public readonly data: PatchConnection;
-  
-  constructor() { }
+  @Input() readonly data: PatchConnection;
+  @Input() readonly isEditing = false;
+  @Input() readonly isCreator = false;
+  @Output() readonly remove$ = new Subject<PatchConnection>();
+  @Output() readonly create$ = new Subject<PatchConnection>();
   
   ngOnInit(): void {
   }

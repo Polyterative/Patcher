@@ -1,16 +1,66 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
+<ng-container *ngIf="{
+  selectedForConnection:(dataService.selectedForConnection$|async)
+  } as bag"
 >
-  <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
-  <app-user-modules></app-user-modules>
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap="1rem"
+  >
+    <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
+    <app-user-modules></app-user-modules>
   
-  <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
-  </mat-card-subtitle>
-  <mat-divider inset="true"></mat-divider>
-  <app-brand-primary-button (click$)="save$.next()"
-                            theme="positive"
-                            fxLayoutAlign="end"
-  >Save data
-  </app-brand-primary-button>
-</div>
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayout.gt-lg="row"
+         fxLayoutGap="1rem"
+    >
+      <ng-container *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b">
+        <app-hero-content-card fxFlex.gt-lg="50%"
+                               fxFlex="auto"
+                               titleNormal="Your selection"
+        >
+          <mat-card>
+            <app-patch-connection-minimal [data]="{
+    a:bag.selectedForConnection.a.cv,
+    b:bag.selectedForConnection.b.cv,
+    patch:data
+    }"
+                                          isEditing="true"
+                                          [isCreator]="true"
+                                          (remove$)="dataService.resetSelectedForConnection$.next()"
+                                          (create$)="dataService.confirmSelectedConnection$.next()"
+            ></app-patch-connection-minimal>
+          </mat-card>
+        </app-hero-content-card>
+      </ng-container>
+      <ng-container *ngIf="(dataService.patchesConnections$|async).length>0">
+        <app-hero-content-card fxFlex.gt-lg="50%"
+                               fxFlex="auto"
+                               titleNormal="Patch connections"
+        >
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            <ng-container *ngFor="let item of dataService.editorConnections$|async">
+              <mat-card>
+                <app-patch-connection-minimal [data]="item"
+                                              [isEditing]="true"
+                ></app-patch-connection-minimal>
+              </mat-card>
+            </ng-container>
+          </div>
+        </app-hero-content-card>
+      </ng-container>
+    </div>
+  
+    <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
+    </mat-card-subtitle>
+    <mat-divider inset="true"></mat-divider>
+    <app-brand-primary-button (click$)="save$.next()"
+                              theme="positive"
+                              fxLayoutAlign="end"
+    >Save patch
+    </app-brand-primary-button>
+  </div>
+</ng-container>
