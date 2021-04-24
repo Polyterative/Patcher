@@ -35,3 +35,10 @@
 .end {
   justify-content: flex-end;
 }
+
+
+.textEllipse {
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
