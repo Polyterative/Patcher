@@ -120,7 +120,11 @@ export class SupabaseService {
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
         //   .select(`*,a(*,${ this.queryJoins.module })`)
         //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
-          .select(`patch:patchid(*),a(*,module:moduleid(*)),b(*,module:moduleid(*))`)
+          .select(`
+          patch:patchid(*),
+          a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
+          b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
+          `)
           .filter('patchid', 'eq', patchid)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))

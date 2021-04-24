@@ -78,6 +78,10 @@ export interface Switch {
   positions: string[];
 }
 
+export interface CVwithModule extends CV {
+  module: MinimalModule;
+}
+
 export interface CV {
   name: string;
   id: number;
@@ -97,8 +101,8 @@ export interface Connection {
 
 export interface PatchConnection {
   patch: Patch;
-  a: CV;
-  b: CV;
+  a: CVwithModule;
+  b: CVwithModule;
 }
 
 export interface Patch extends PatchMinimal {
