@@ -3,15 +3,18 @@ import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
 import { MatCardModule }            from '@angular/material/card';
+import { MatChipsModule }           from '@angular/material/chips';
 import { MatDividerModule }         from '@angular/material/divider';
 import { MatIconModule }            from '@angular/material/icon';
 import { MatTooltipModule }         from '@angular/material/tooltip';
 import { RouterModule }             from '@angular/router';
 import { TimeagoModule }            from 'ngx-timeago';
 import { PatchDetailDataService }   from 'src/app/components/patch-parts/patch-detail-data.service';
+import { PatchDetailsComponent }    from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent }     from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent }    from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SharedAtomsModule }        from 'src/app/components/shared-atoms/shared-atoms.module';
+import { DevOnlyWindowModule }      from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
@@ -20,11 +23,13 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
 @NgModule({
   declarations: [
     PatchEditorComponent,
-    PatchMinimalComponent
+    PatchMinimalComponent,
+    PatchDetailsComponent
   ],
   exports:      [
     PatchMinimalComponent,
-    PatchEditorComponent
+    PatchEditorComponent,
+    PatchDetailsComponent
   ],
   providers:    [PatchDetailDataService],
   imports:      [
@@ -40,7 +45,9 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
     MatButtonModule,
     MatTooltipModule,
     HeroInfoBoxModule,
-    SharedAtomsModule
+    SharedAtomsModule,
+    MatChipsModule,
+    DevOnlyWindowModule
   ]
 })
 export class PatchModule {}

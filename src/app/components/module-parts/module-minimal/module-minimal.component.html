@@ -80,14 +80,26 @@
            fxLayout="row"
            fxLayoutGap="1rem"
       >
-        <button mat-icon-button
-                matTooltip="Edit module"
-                *ngIf="(bag.singleModuleData)"
-                [disabled]="!bag.user"
-                (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-        >
-          <mat-icon>edit</mat-icon>
-        </button>
+        <ng-container *ngIf="(bag.singleModuleData)">
+          <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
+            <button mat-icon-button
+                    matTooltip="Edit module"
+                    [disabled]="!bag.user"
+                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          </ng-container>
+          <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
+            <button mat-icon-button
+                    matTooltip="Close editor"
+                    [disabled]="!bag.user"
+                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
+        </ng-container>
         <a mat-icon-button
            matTooltip="Show details"
            [routerLink]="['/modules/details',data.id]"

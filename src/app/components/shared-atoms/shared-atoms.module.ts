@@ -7,7 +7,6 @@ import { HeroInfoBoxModule }           from 'src/app/shared-interproject/compone
 import { EntityAuthorComponent }       from './entity-author/entity-author.component';
 import { TimestampsRelativeComponent } from './timestamps-relative/timestamps-relative.component';
 
-
 @NgModule({
   declarations: [
     TimestampsRelativeComponent,
