@@ -21,7 +21,9 @@ export class ModuleDetailsComponent implements OnInit {
   constructor(
     public backend: SupabaseService
     // userManagerService: UserManagementService
-  ) { }
+  ) {
+    // console.error(patchService);
+  }
   
   ngOnInit(): void {
     

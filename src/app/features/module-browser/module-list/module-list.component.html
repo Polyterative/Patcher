@@ -6,6 +6,15 @@
         <app-module-minimal [data]="item"></app-module-minimal>
       </mat-card>
     </div>
-
+  </ng-container>
+  
+  <ng-container *ngIf="patchingService.patchEditingPanelOpenState$|async">
+    <ng-container *ngFor="let item of data$|async">
+      <div>
+        <mat-card>
+          <app-module-composite [data]="item"></app-module-composite>
+        </mat-card>
+      </div>
+    </ng-container>
   </ng-container>
 </flexbox-row-fast>

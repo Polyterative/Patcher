@@ -6,6 +6,7 @@ import { MatCardModule }            from '@angular/material/card';
 import { MatChipsModule }           from '@angular/material/chips';
 import { MatDividerModule }         from '@angular/material/divider';
 import { MatIconModule }            from '@angular/material/icon';
+import { MatToolbarModule }         from '@angular/material/toolbar';
 import { MatTooltipModule }         from '@angular/material/tooltip';
 import { RouterModule }             from '@angular/router';
 import { TimeagoModule }            from 'ngx-timeago';
@@ -15,8 +16,10 @@ import { PatchDetailsComponent }    from 'src/app/components/patch-parts/patch-d
 import { PatchEditorComponent }     from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent }    from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SharedAtomsModule }        from 'src/app/components/shared-atoms/shared-atoms.module';
+import { UserModulesModule }        from 'src/app/features/user-area/user-modules/user-modules.module';
 import { DevOnlyWindowModule }      from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { AdviceTooltipModule }      from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 
@@ -49,7 +52,10 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
     SharedAtomsModule,
     MatChipsModule,
     DevOnlyWindowModule,
-    PatchConnectionModule
+    PatchConnectionModule,
+    UserModulesModule,
+    MatToolbarModule,
+    AdviceTooltipModule
   ]
 })
 export class PatchModule {}
