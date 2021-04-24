@@ -1,11 +1,11 @@
 {
   "name":            "patcher",
   "version":         "0.11.0",
-  "scripts":         {
+  "scripts": {
     "ng":     "ng",
     "start":  "ng serve --hmr ",
     "build":  "angular-build-info && ng build --prod",
-    "deploy": "angular-build-info && firebase deploy",
+    "deploy": "angular-build-info && ng build --prod && firebase deploy",
     "test":   "ng test",
     "lint":   "ng lint",
     "e2e":    "ng e2e"

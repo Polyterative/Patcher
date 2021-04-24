@@ -1,7 +1,7 @@
 import {
-    Component,
-    Input,
-    OnInit
+  Component,
+  Input,
+  OnInit
 } from '@angular/core';
 
 /**
@@ -11,24 +11,24 @@ import {
  * 2k ma non fhd oppure permette di forzare roba ad una certa dimensione
  */
 @Component({
-    selector:    'lib-screen-wrapper',
-    templateUrl: './screen-wrapper.component.html',
-    styleUrls:   ['./screen-wrapper.component.scss']
+  selector:    'lib-screen-wrapper',
+  templateUrl: './screen-wrapper.component.html',
+  styleUrls:   ['./screen-wrapper.component.scss']
 })
 export class ScreenWrapperComponent implements OnInit {
-    
-    @Input()
-    gravity: 'right' | 'left' | 'center' = 'center';
-    
-    @Input()
-    maxSize = '120rem'; //kinda fhd, good default
-    
-    @Input()
-    force = false;
-    
-    constructor() { }
-    
-    ngOnInit(): void {
-    }
-    
+  
+  @Input()
+  gravity: 'right' | 'left' | 'center' = 'center';
+  
+  @Input()
+  maxSize = '100rem'; //kinda fhd, good default
+  
+  @Input()
+  force = false;
+  
+  constructor() { }
+  
+  ngOnInit(): void {
+  }
+  
 }

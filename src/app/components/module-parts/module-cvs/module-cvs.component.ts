@@ -43,8 +43,10 @@ export class ModuleCVsComponent implements OnInit {
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(([cv, module]) => {
           this.patchService.clickOnModuleCV$.next({
-            module,
-            cv,
+            cv:   {
+              ...cv,
+              module
+            },
             kind: 'in'
           });
         });
@@ -52,8 +54,10 @@ export class ModuleCVsComponent implements OnInit {
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(([cv, module]) => {
           this.patchService.clickOnModuleCV$.next({
-            module,
-            cv,
+            cv:   {
+              ...cv,
+              module
+            },
             kind: 'out'
           });
         });
