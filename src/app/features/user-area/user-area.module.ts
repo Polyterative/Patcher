@@ -7,6 +7,7 @@ import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
 import { PatchBrowserModule }       from 'src/app/features/patch-browser/patch-browser.module';
 import { RackBrowserModule }        from 'src/app/features/rack-browser/rack-browser.module';
+import { UserModulesModule }        from 'src/app/features/user-area/user-modules/user-modules.module';
 import { UserPatchesComponent }     from 'src/app/features/user-area/user-patches/user-patches.component';
 import { UserRacksComponent }       from 'src/app/features/user-area/user-racks/user-racks.component';
 import { EmptyStateModule }         from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
@@ -19,13 +20,11 @@ import { CommonSidebarComponent }   from '../backbone/common-sidebar/common-side
 import { UserAuthGuard }            from '../backbone/login/user-auth-guard.service';
 import { ModuleBrowserModule }      from '../module-browser/module-browser.module';
 import { UserAreaRootComponent }    from './user-area-root/user-area-root.component';
-import { UserModulesComponent }     from './user-modules/user-modules.component';
 
 
 @NgModule({
   declarations: [
     UserAreaRootComponent,
-    UserModulesComponent,
     UserRacksComponent,
     UserPatchesComponent
   ],
@@ -65,11 +64,11 @@ import { UserModulesComponent }     from './user-modules/user-modules.component'
     HeroContentCardModule,
     EmptyStateModule,
     PatchBrowserModule,
-    RackBrowserModule
+    RackBrowserModule,
+    UserModulesModule
   ],
   exports:      [
     UserAreaRootComponent,
-    UserModulesComponent
   ]
 })
 export class UserAreaModule {}

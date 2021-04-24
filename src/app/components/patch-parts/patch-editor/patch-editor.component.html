@@ -2,13 +2,11 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <div fxFlex="auto">
-    <!--      <mat-card-subtitle>module-editor</mat-card-subtitle>-->
-    <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
-    </mat-card-subtitle>
-  </div>
-  <mat-divider inset="true"></mat-divider>
+  <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
+  <app-user-modules></app-user-modules>
   
+  <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
+  </mat-card-subtitle>
   <mat-divider inset="true"></mat-divider>
   <app-brand-primary-button (click$)="save$.next()"
                             theme="positive"

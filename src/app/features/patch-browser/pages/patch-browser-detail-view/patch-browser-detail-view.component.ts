@@ -44,6 +44,7 @@ export class PatchBrowserDetailViewComponent implements OnInit {
   
   ngOnDestroy(): void {
     this.dataService.singlePatchData$.next(undefined);
+    this.dataService.patchEditingPanelOpenState$.next(false);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     

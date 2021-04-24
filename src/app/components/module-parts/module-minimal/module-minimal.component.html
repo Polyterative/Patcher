@@ -8,12 +8,16 @@
   >
     <div class="flow col"
     >
-      <mat-card-title>{{data.name}}</mat-card-title>
+      <mat-card-title infoBox
+                      infoText="Module name"
+      >{{data.name}}</mat-card-title>
       <div class="flow row spaceBetween"
            fxLayoutGap="1rem"
       >
         <div>
-          <mat-card-subtitle>{{data.manufacturer.name}}</mat-card-subtitle>
+          <mat-card-subtitle infoBox
+                             infoText="Manufacturer name"
+          >{{data.manufacturer.name}}</mat-card-subtitle>
         </div>
         <div style="font-size: small"
              fxLayoutAlign="center center"
