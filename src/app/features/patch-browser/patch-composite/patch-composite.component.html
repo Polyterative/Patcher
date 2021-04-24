@@ -1,3 +1,12 @@
-<app-patch-minimal [data]="data">
-  <!--  <app-patchdetails [data]="data"></app-module-details>-->
-</app-patch-minimal>
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <mat-card>
+    <app-patch-minimal [data]="data">
+      <app-patch-details [data]="data"></app-patch-details>
+    </app-patch-minimal>
+  </mat-card>
+  <!--  <mat-card>-->
+  <!--  </mat-card>-->
+</div>

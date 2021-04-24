@@ -2,12 +2,11 @@ import { Injectable }            from '@angular/core';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
-  merge,
   ReplaySubject,
   Subject
 }                                from 'rxjs';
-import { of }                    from 'rxjs/internal/observable/of';
 import {
+  filter,
   switchMap,
   takeUntil,
   withLatestFrom
@@ -21,7 +20,7 @@ export class PatchDetailDataService {
   updateSinglePatchData$ = new ReplaySubject<number>();
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  userPatchsList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
+  patchsConnections$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
   removePatchFromCollection$ = new Subject<number>();
   
   protected destroyEvent$: Subject<void> = new Subject();
@@ -31,22 +30,25 @@ export class PatchDetailDataService {
     public userService: UserManagementService,
     public backend: SupabaseService
   ) {
-    
-    merge(this.userService.user$, this.updateSinglePatchData$)
-      .pipe(
-        switchMap(x => this.userService.user$),
-        switchMap(x => !!x ? this.backend.get.userPatches() : of([])),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(x => {
-        this.userPatchsList$.next(x);
-      });
-    
+  
+    // merge(this.userService.user$, this.updateSinglePatchData$)
+    //   .pipe(
+    //     switchMap(x => this.userService.user$),
+    //     switchMap(x => !!x ? this.backend.get.userPatches() : of([])),
+    //     takeUntil(this.destroyEvent$)
+    //   )
+    //   .subscribe(x => {
+    //     this.userPatchsList$.next(x);
+    //   });
+  
     this.updateSinglePatchData$
-        .pipe(switchMap(x => this.backend.get.patchWithId(x)), takeUntil(this.destroyEvent$))
+        .pipe(
+          switchMap(x => this.backend.get.patchWithId(x)),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(x => this.singlePatchData$.next(x.data));
-    
-    
+  
+  
     this.removePatchFromCollection$
         .pipe(
           switchMap(x => this.backend.delete.userPatch(x)),
@@ -57,7 +59,15 @@ export class PatchDetailDataService {
           snackBar.open('Removed', undefined, {duration: 1000});
           this.updateSinglePatchData$.next(b);
         });
-    
+  
+  
+    this.singlePatchData$
+        .pipe(
+          filter(x => !!x),
+          switchMap(x => this.backend.get.patchConnections(x.id)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(data => this.patchsConnections$.next(data));
   }
   
   ngOnDestroy(): void {

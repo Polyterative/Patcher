@@ -19,17 +19,17 @@ data:(dataService.singlePatchData$|async)
                fxLayoutGap="1rem"
           >
             <div>
-              <mat-card>
-                <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                            [data$]="dataService.singlePatchData$"
-                ></app-auto-loading-indicator>
-                <ng-container *ngIf="bag.data"
-                >
-                  <app-patch-composite [data]="(bag.data)"
-                  ></app-patch-composite>
-                </ng-container>
-              </mat-card>
+              <!--              <mat-card>-->
+              <ng-container *ngIf="bag.data"
+              >
+                <app-patch-composite [data]="(bag.data)"
+                ></app-patch-composite>
+              </ng-container>
+              <!--              </mat-card>-->
             </div>
+            <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                        [data$]="dataService.singlePatchData$"
+            ></app-auto-loading-indicator>
             <mat-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
               <app-patch-editor
                 [data]="(bag.data)"

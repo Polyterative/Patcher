@@ -7,9 +7,7 @@ import {
   BehaviorSubject,
   Subject
 }                          from 'rxjs';
-import { withLatestFrom }  from 'rxjs/operators';
 import {
-  Connection,
   CV,
   DbModule
 }                          from '../../models/models';
@@ -28,29 +26,29 @@ export class PatchBuilderRootComponent implements OnInit {
   inClick$ = new Subject<[CV, DbModule]>();
   outClick$ = new Subject<[CV, DbModule]>();
   
-  connections$ = new BehaviorSubject<Connection[]>([]);
+  // connections$ = new BehaviorSubject<Connection[]>([]);
   
   constructor(
     public backend: SupabaseService
   ) {
     this.backend.get.userModules()
         .subscribe(value => this.userModules$.next(value));
-    
-    this.inClick$
-        .pipe(
-          withLatestFrom(this.outClick$, this.connections$))
-        .subscribe(([inD, outD, connections]) => {
-      
-          this.connections$.next([
-            ...connections,
-            {
-              from:   outD[1],
-              fromCV: outD[0],
-              to:     inD[1],
-              toCV:   inD[0]
-            }
-          ]);
-        });
+  
+    // this.inClick$
+    //     .pipe(
+    //       withLatestFrom(this.outClick$, this.connections$))
+    //     .subscribe(([inD, outD, connections]) => {
+    //  
+    //       this.connections$.next([
+    //         ...connections,
+    //         {
+    //           from:   outD[1],
+    //           fromCV: outD[0],
+    //           to:     inD[1],
+    //           toCV:   inD[0]
+    //         }
+    //       ]);
+    //     });
   }
   
   ngOnInit(): void {
