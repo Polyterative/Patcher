@@ -1,0 +1,26 @@
+<div fxFlex="auto"
+     fxLayout="row"
+     fxLayoutGap="1rem"
+     fxLayoutAlign="space-between"
+>
+  <app-module-minimal fxFlex="grow"
+                      [data]="data.a.module"
+  >
+    <mat-chip-list>
+      <mat-chip>{{data.a.name}}</mat-chip>
+    </mat-chip-list>
+  </app-module-minimal>
+  <div fxFlex="4rem"
+       fxLayoutAlign="center center"
+       style="font-size:2rem"
+  >
+    ⇥
+  </div>
+  <app-module-minimal fxFlex="grow"
+                      [data]="data.b.module"
+  >
+    <mat-chip-list>
+      <mat-chip>{{data.b.name}}</mat-chip>
+    </mat-chip-list>
+  </app-module-minimal>
+</div>
