@@ -9,6 +9,7 @@ import { MatIconModule }            from '@angular/material/icon';
 import { MatTooltipModule }         from '@angular/material/tooltip';
 import { RouterModule }             from '@angular/router';
 import { TimeagoModule }            from 'ngx-timeago';
+import { PatchConnectionModule }    from 'src/app/components/patch-connection/patch-connection.module';
 import { PatchDetailDataService }   from 'src/app/components/patch-parts/patch-detail-data.service';
 import { PatchDetailsComponent }    from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent }     from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
@@ -32,7 +33,7 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
     PatchDetailsComponent
   ],
   providers:    [PatchDetailDataService],
-  imports:      [
+  imports: [
     CommonModule,
     TimeagoModule.forChild(),
     MatCardModule,
@@ -47,7 +48,8 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
     HeroInfoBoxModule,
     SharedAtomsModule,
     MatChipsModule,
-    DevOnlyWindowModule
+    DevOnlyWindowModule,
+    PatchConnectionModule
   ]
 })
 export class PatchModule {}
