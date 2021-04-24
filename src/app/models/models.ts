@@ -95,12 +95,18 @@ export interface Connection {
   toCV: CV;
 }
 
+export interface PatchConnection {
+  patch: Patch;
+  a: CV;
+  b: CV;
+}
+
 export interface Patch extends PatchMinimal {
   // author: PublicUser;
 }
 
 export interface PatchMinimal extends Timestamped {
-  id: string;
+  id: number;
   author: PublicUser;
   name: string;
   
