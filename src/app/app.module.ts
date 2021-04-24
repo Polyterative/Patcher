@@ -16,6 +16,8 @@ import { MatToolbarModule }        from '@angular/material/toolbar';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule }            from '@angular/router';
+import build                       from 'src/build';
+import { environment }             from 'src/environments/environment';
 
 import { AppComponent }        from './app.component';
 import { AppFeaturesModule }   from './features/app-features.module';
@@ -82,6 +84,20 @@ export class AppModule {
   constructor() {
     registerLocaleData(localeIt, localeItExtra);
     console.clear();
+  
+  
+    console.log(
+      `\n%cBuild Info:\n\n` +
+      `%c ❯ Environment: %c${ environment.production ? 'production 🏭' : 'development 🚧' }\n` +
+      `%c ❯ Build Version: ${ build.version }\n` +
+      ` ❯ Build Timestamp: ${ build.timestamp }\n` +
+      ` ❯ Build Message: %c${ build.message || '<no message>' }\n`,
+      'font-size: 14px; color: #7c7c7b;',
+      'font-size: 12px; color: #7c7c7b',
+      environment.production ? 'font-size: 12px; color: #95c230;' : 'font-size: 12px; color: #e26565;',
+      'font-size: 12px; color: #7c7c7b',
+      'font-size: 12px; color: #bdc6cf'
+    );
   }
   
 }

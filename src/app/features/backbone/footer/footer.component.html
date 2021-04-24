@@ -1,28 +1,10 @@
 <div fxFlex="auto"
      fxLayout="row"
-     fxLayoutGap="1rem"
-     style="margin-top:4rem"
+     class="root"
+     fxLayoutAlign="center center"
 >
-  <div fxFlex="auto">
-    <mat-card>
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
-      >
-        <mat-card-subtitle fxFlex="auto">Join the server for feedback and news!</mat-card-subtitle>
-        <iframe fxFlex="auto"
-                src="https://discord.com/widget?id=830863669885796442&theme=dark"
-                allowtransparency="true"
-                height="400"
-                frameborder="0"
-                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-        ></iframe>
-      </div>
-    </mat-card>
-  </div>
   <app-feedback-box fxFlex="shrink"></app-feedback-box>
-  <app-dev-only-window>
-    DEVELOPMENT
-  </app-dev-only-window>
-  <div fxFlex="grow"></div>
+  <app-discord-widget fxFlex="shrink"></app-discord-widget>
+  <app-build-info fxFlex="shrink"></app-build-info>
+  <!--  <div fxFlex="grow"></div>-->
 </div>
