@@ -1,0 +1,10 @@
+.root {
+  margin-top:       8rem;
+  padding-top:      2rem;
+  padding-bottom:   2rem;
+  background-color: rgba(0, 0, 0, .1);
+
+  > * {
+    padding: 1rem;
+  }
+}
