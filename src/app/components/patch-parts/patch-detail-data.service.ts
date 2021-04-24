@@ -14,13 +14,15 @@ import {
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
 import {
-  CV,
-  MinimalModule,
+  CVwithModule,
   Patch,
   PatchConnection
 }                                from '../../models/models';
 
-export type CVConnectionEntity = { cv: CV, module: MinimalModule, kind: 'in' | 'out' };
+export interface CVConnectionEntity {
+  cv: CVwithModule,
+  kind: 'in' | 'out'
+}
 
 @Injectable()
 export class PatchDetailDataService {
@@ -28,17 +30,18 @@ export class PatchDetailDataService {
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchsConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
+  patchesConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
+  editorConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
   removePatchFromCollection$ = new Subject<number>();
   //
   clickOnModuleCV$ = new Subject<CVConnectionEntity>();
-  resetSelectedForConnection$$ = new Subject<void>();
-  selectedForConnection$ = new BehaviorSubject<{ a: CVConnectionEntity | null, b: CVConnectionEntity | null, }>({
+  resetSelectedForConnection$ = new Subject<void>();
+  selectedForConnection$ = new BehaviorSubject<{ a: CVConnectionEntity | null, b: CVConnectionEntity | null }>({
     a: null,
     b: null
   });
+  confirmSelectedConnection$: Subject<void> = new Subject();
   protected destroyEvent$: Subject<void> = new Subject();
-  
   
   constructor(
     private snackBar: MatSnackBar,
@@ -63,7 +66,6 @@ export class PatchDetailDataService {
         )
         .subscribe(x => this.singlePatchData$.next(x.data));
     
-    
     this.removePatchFromCollection$
         .pipe(
           switchMap(x => this.backend.delete.userPatch(x)),
@@ -75,23 +77,22 @@ export class PatchDetailDataService {
           this.updateSinglePatchData$.next(b);
         });
   
-  
     this.singlePatchData$
         .pipe(
           filter(x => !!x),
           switchMap(x => this.backend.get.patchConnections(x.id)),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(data => this.patchsConnections$.next(data));
+        .subscribe(data => this.patchesConnections$.next(data));
   
     this.patchEditingPanelOpenState$
         .pipe(
           filter(x => !x),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(value => this.resetSelectedForConnection$$.next());
+        .subscribe(value => this.resetSelectedForConnection$.next());
   
-    this.resetSelectedForConnection$$
+    this.resetSelectedForConnection$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.selectedForConnection$.next({
           a: null,
@@ -104,7 +105,7 @@ export class PatchDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(([x, z]) => {
-    
+  
           switch (x.kind) {
             case 'in':
               this.selectedForConnection$.next({
@@ -113,15 +114,42 @@ export class PatchDetailDataService {
               });
               break;
             case 'out':
-        
+  
               this.selectedForConnection$.next({
                 a: x,
                 b: z.b
               });
               break;
           }
-    
+  
         });
+  
+    this.confirmSelectedConnection$
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(x => {
+          const patchConnections: PatchConnection[] = this.editorConnections$.value;
+          const selectedForConnection: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } = this.selectedForConnection$.value;
+  
+          const patch: Patch = this.singlePatchData$.value;
+  
+          const newConnection: { patch: Patch; a: CVwithModule; b: CVwithModule } = {
+            a: selectedForConnection.a.cv,
+            b: selectedForConnection.b.cv,
+            patch
+          };
+          this.editorConnections$.next([
+            ...patchConnections,
+            newConnection
+          ]);
+  
+        });
+  
+    this.patchesConnections$
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(x => {
+          this.editorConnections$.next(x);
+        });
+  
   }
   
   ngOnDestroy(): void {

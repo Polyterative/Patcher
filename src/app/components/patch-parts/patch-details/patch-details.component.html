@@ -3,19 +3,22 @@
      fxLayoutGap="2rem"
      style="padding-top: 2rem"
 >
-  <!--  <app-module-cvs [data]="data"></app-module-cvs>-->
-  <mat-card-subtitle fxLayoutAlign="center center">Connections</mat-card-subtitle>
-  <ng-container *ngIf="(dataService.patchsConnections$|async).length>0">
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
-    >
-      <ng-container *ngFor="let item of dataService.patchsConnections$|async">
-        <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
-      </ng-container>
-    </div>
-  </ng-container>
-  
+  <app-hero-content-card titleNormal="Connections"
+                         *ngIf="(dataService.patchesConnections$|async).length>0; else noData"
+  >
+    <ng-container>
+      <div fxFlex="auto"
+           fxLayout="column"
+           fxLayoutGap="1rem"
+      >
+        <ng-container *ngFor="let item of dataService.patchesConnections$|async">
+          <mat-card>
+            <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
+          </mat-card>
+        </ng-container>
+      </div>
+    </ng-container>
+  </app-hero-content-card>
   <!--  <div class="flow row spaceBetween"-->
   <!--       fxLayoutGap="1rem"-->
   <!--       *ngIf="!data.isComplete"-->
@@ -30,6 +33,20 @@
   <!--    {{data|json}}-->
   <!--  </app-dev-only-window>-->
   <!--  <app-dev-only-window>-->
-  <!--    {{dataService.patchsConnections$|async|json}}-->
+  <!--    {{dataService.patchesConnections$|async|json}}-->
   <!--  </app-dev-only-window>-->
 </div>
+
+<ng-template #noData>
+  <div fxFlex="auto">
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <mat-card-subtitle fxLayoutAlign="center center">It looks like this patch has no connections
+      </mat-card-subtitle>
+      <mat-card-subtitle fxLayoutAlign="center center">¯\_(ツ)_/¯
+      </mat-card-subtitle>
+    </div>
+  </div>
+</ng-template>

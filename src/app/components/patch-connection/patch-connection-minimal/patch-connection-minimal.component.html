@@ -1,26 +1,44 @@
 <div fxFlex="auto"
-     fxLayout="row"
+     fxLayout="column"
      fxLayoutGap="1rem"
-     fxLayoutAlign="space-between"
 >
-  <app-module-minimal fxFlex="grow"
-                      [data]="data.a.module"
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayoutGap="1rem"
+       fxLayoutAlign="space-between"
   >
-    <mat-chip-list>
-      <mat-chip>{{data.a.name}}</mat-chip>
-    </mat-chip-list>
-  </app-module-minimal>
-  <div fxFlex="4rem"
-       fxLayoutAlign="center center"
-       style="font-size:2rem"
-  >
-    ⇥
+    <app-module-minimal fxFlex="grow"
+                        [data]="data.a.module"
+    >
+      <mat-chip-list>
+        <mat-chip>{{data.a.name}}</mat-chip>
+      </mat-chip-list>
+    </app-module-minimal>
+    <app-patch-connection-symbol></app-patch-connection-symbol>
+    <app-module-minimal fxFlex="grow"
+                        [data]="data.b.module"
+    >
+      <mat-chip-list>
+        <mat-chip>{{data.b.name}}</mat-chip>
+      </mat-chip-list>
+    </app-module-minimal>
   </div>
-  <app-module-minimal fxFlex="grow"
-                      [data]="data.b.module"
-  >
-    <mat-chip-list>
-      <mat-chip>{{data.b.name}}</mat-chip>
-    </mat-chip-list>
-  </app-module-minimal>
+  <ng-container *ngIf="isEditing">
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+    >
+      <button mat-icon-button
+              matTooltip="Remove connection"
+              (click)="remove$.next(data)"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+      <div fxFlex="grow"></div>
+      <app-brand-primary-button *ngIf="isCreator"
+                                (click)="create$.next(data)"
+      >Add connection to patch
+      </app-brand-primary-button>
+    </div>
+  </ng-container>
 </div>

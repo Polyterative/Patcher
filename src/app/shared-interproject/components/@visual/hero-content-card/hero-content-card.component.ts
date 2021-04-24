@@ -17,6 +17,8 @@ export class HeroContentCardComponent {
   @Input()
   titleBig: string = '';
   @Input()
+  titleNormal: string = '';
+  @Input()
   top = false;
   @Input()
   bottom = false;
@@ -24,5 +26,5 @@ export class HeroContentCardComponent {
   description: string = '';
   @Input()
   icon: string = '';
-
+  
 }
