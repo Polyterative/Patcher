@@ -1,5 +1,6 @@
 import {
   Directive,
+  ElementRef,
   HostListener,
   Input,
   OnDestroy
@@ -11,20 +12,21 @@ import { HeroInfoBoxService } from './hero-info-box.service';
 })
 export class HeroInfoBoxTextDirective implements OnDestroy {
   @Input() infoText: string;
-
-  constructor(public dataService: HeroInfoBoxService) { }
-
+  
+  constructor(public dataService: HeroInfoBoxService, public el: ElementRef) {
+    this.el.nativeElement.style.cursor = 'help';
+  }
+  
   @HostListener('mouseenter') onMouseEnter() {
     this.dataService.hoverStart$.next(this.infoText);
   }
-
+  
   @HostListener('mouseleave') onMouseLeave() {
     this.dataService.hoverEnd$.next(this.infoText);
   }
-
+  
   ngOnDestroy(): void {
     this.dataService.hoverEnd$.next(this.infoText);
   }
-
-
+  
 }
