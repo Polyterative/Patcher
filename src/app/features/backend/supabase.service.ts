@@ -79,22 +79,22 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
-    moduleINs: (data: CV[], moduleId: number) => fromPromise(
+    moduleINs: (data: CV[], moduleid: number) => fromPromise(
       this.supabase
           .from(this.paths.moduleINs)
           .insert(data.map(x => ({
             ...x,
-            moduleId
+            moduleid
           })))
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
-    moduleOUTs: (data: CV[], moduleId: number) => fromPromise(
+    moduleOUTs: (data: CV[], moduleid: number) => fromPromise(
       this.supabase
           .from(this.paths.moduleOUTs)
           .insert(data.map(x => ({
             ...x,
-            moduleId
+            moduleid
           })))
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
@@ -114,6 +114,18 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data.map(y => y.module)))),
+  
+    patchConnections: (patchid: number) => fromPromise(
+      this.supabase.from(this.paths.patch_connections)
+        // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
+        //   .select(`*,a(*,${ this.queryJoins.module })`)
+        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
+          .select(`patch:patchid(*),a(*,module:moduleid(*)),b(*,module:moduleid(*))`)
+          .filter('patchid', 'eq', patchid)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(map((x => x.data)))
+    ,
   
     // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
     //   this.supabase.from(this.paths.patches)
@@ -295,15 +307,16 @@ export class SupabaseService {
   };
   
   private paths = {
-    modules:       'modules',
-    moduleINs:     'module_ins',
-    moduleOUTs:    'module_outs',
-    manufacturers: 'manufacturers',
-    user_modules:  'user_modules',
-    racks:         'racks',
-    rack_modules:  'rack_modules',
-    patches:       'patches',
-    profiles:      'profiles'
+    modules:           'modules',
+    moduleINs:         'module_ins',
+    moduleOUTs:        'module_outs',
+    manufacturers:     'manufacturers',
+    user_modules:      'user_modules',
+    racks:             'racks',
+    rack_modules:      'rack_modules',
+    patches:           'patches',
+    patch_connections: 'patch_connections',
+    profiles:          'profiles'
   };
   
   private defaultPag = 20;

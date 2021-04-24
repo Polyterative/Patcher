@@ -1,23 +1,55 @@
-<div class="flow col parent"
+<ng-container *ngIf="{
+  user:(userManagerService.user$|async),
+  singlePatchData:(dataService.singlePatchData$|async)
+  } as bag"
 >
-  <div class="flow col"
+  <div class="flow col parent"
   >
-    <mat-card-title>{{data.name}}</mat-card-title>
-    <app-entity-author [data]="data.author"></app-entity-author>
-    <app-timestamps-relative [data]="data"></app-timestamps-relative>
-  </div>
-  <ng-content></ng-content>
-  <mat-divider [inset]="true"
-               style="margin-top:.5rem"
-  ></mat-divider>
-  <div class="flow row buttons"
-  >
-    <div fxFlex="grow"></div>
-    <a mat-icon-button
-       matTooltip="Show details"
-       [routerLink]="['/patches/details',data.id]"
+    <div class="flow col"
     >
-      <mat-icon>search</mat-icon>
-    </a>
+      <mat-card-title>{{data.name}}</mat-card-title>
+      <app-entity-author [data]="data.author"></app-entity-author>
+      <app-timestamps-relative [data]="data"></app-timestamps-relative>
+    </div>
+    <ng-content></ng-content>
+    <mat-divider [inset]="true"
+                 style="margin-top:.5rem"
+    ></mat-divider>
+    <div class="flow row buttons"
+         fxLayoutGap="2rem"
+    >
+      <div fxFlex="grow"></div>
+      <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
+        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
+    
+          <!--          <app-brand-primary-button (click$)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)">-->
+          <!--            Edit patch-->
+          <!--          </app-brand-primary-button>-->
+          <button mat-icon-button
+                  matTooltip="Edit patch"
+                  [disabled]="!bag.user"
+                  (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </ng-container>
+        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==true">
+          <button mat-icon-button
+                  matTooltip="Close editor"
+                  [disabled]="!bag.user"
+                  (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </ng-container>
+      </ng-container>
+      
+      <a mat-icon-button
+         matTooltip="Show details"
+         [routerLink]="['/patches/details',data.id]"
+      >
+        <mat-icon>search</mat-icon>
+      </a>
+    </div>
   </div>
-</div>
+</ng-container>
