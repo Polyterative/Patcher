@@ -15,18 +15,19 @@ import {
 }                                from 'rxjs';
 import {
   switchMap,
-  take
+  take,
+  takeUntil
 }                                from 'rxjs/operators';
-import { FormTypes }             from '../../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }       from '../../../../shared-interproject/SharedConstants';
+import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants }       from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 
 @Injectable()
 export class UserLoginDataService {
-  updateData$ = new Subject<void>();
+  public readonly updateData$ = new Subject<void>();
   private preLoginImage = 'assets/doorc.png';
   private postLoginImage = 'assets/dooro.png';
-  loginImage$ = new BehaviorSubject<string>(this.preLoginImage);
+  public readonly loginImage$ = new BehaviorSubject<string>(this.preLoginImage);
   // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
   
   fields = {
@@ -52,8 +53,9 @@ export class UserLoginDataService {
       type:    FormTypes.PASSWORD
     }
   };
-  mailLoginClick$ = new Subject<void>();
-  mailSignClick$ = new Subject<void>();
+  public readonly mailLoginClick$ = new Subject<void>();
+  public readonly mailSignClick$ = new Subject<void>();
+  public readonly loginSuccessful$ = new Subject<void>();
   
   constructor(
     public router: Router,
@@ -61,10 +63,11 @@ export class UserLoginDataService {
     public loginInteraction: UserManagementService,
     snackBar: MatSnackBar
   ) {
-  
+    
     this.mailLoginClick$
         .pipe(
-          switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value))
+          switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)),
+          takeUntil(this.destroyEvent$)
         )
         .subscribe(x => {
           if (!!x.error) {
@@ -75,12 +78,12 @@ export class UserLoginDataService {
             interval(1000)
               .pipe(take(1))
               .subscribe(z => {
-      
+                this.loginSuccessful$.next();
                 this.router.navigate([x.returnUrl ? x.returnUrl : '/modules/browser']);
               });
           }
         });
-  
+    
     // this.mailSignClick$
     //     .pipe(
     //       switchMap(x => this.loginInteraction.signup(this.fields.user.control.value, this.fields.password.control.value)),
@@ -94,7 +97,7 @@ export class UserLoginDataService {
     //       }
     //  
     //     });
-  
+    
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

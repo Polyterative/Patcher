@@ -27,11 +27,11 @@
   <div class="flow row buttons"
   >
     <div fxFlex="grow"></div>
-    <button mat-icon-button
-            matTooltip="Show details"
-            [routerLink]="['/racks/details',data.id]"
+    <a mat-icon-button
+       matTooltip="Show details"
+       [routerLink]="['/racks/details',data.id]"
     >
       <mat-icon>search</mat-icon>
-    </button>
+    </a>
   </div>
 </div>

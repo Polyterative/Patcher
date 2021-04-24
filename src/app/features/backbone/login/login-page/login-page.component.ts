@@ -11,7 +11,6 @@ import { UserLoginDataService }  from './user-login-data.service';
   selector:        'app-login-page',
   templateUrl:     './login-page.component.html',
   styleUrls:       ['./login-page.component.scss'],
-  providers:       [UserLoginDataService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginPageComponent implements OnInit {
