@@ -64,8 +64,8 @@
             <mat-icon>eject</mat-icon>
           </button>
         </ng-container>
-      
-      
+  
+  
         <button mat-icon-button
                 matTooltip="Add to rack"
                 *ngIf="(bag.singleModuleData)"
@@ -88,12 +88,12 @@
         >
           <mat-icon>edit</mat-icon>
         </button>
-        <button mat-icon-button
-                matTooltip="Show details"
-                [routerLink]="['/modules/details',data.id]"
+        <a mat-icon-button
+           matTooltip="Show details"
+           [routerLink]="['/modules/details',data.id]"
         >
           <mat-icon>search</mat-icon>
-        </button>
+        </a>
       </div>
     </div>
   </div>

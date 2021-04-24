@@ -6,6 +6,8 @@
 }
 
 .option {
+  color:         rgba(255, 255, 255, 0.95);
+
   //background-color: $brand-tertiary;
   //color: white;
   //margin-bottom: 0.2em;
@@ -22,13 +24,13 @@
   }
 
   &:hover {
-    //background-color: $brand-tertiary;
+    background-color: transparentize($brand-tertiary, 0.9);
   }
 
   transition:    125ms;
 }
 
 .selected {
-  color:            rgba(255, 255, 255, 0.7);
+  color:            rgb(255, 255, 255);
   background-color: rgba(255, 255, 255, 0.1)
 }
