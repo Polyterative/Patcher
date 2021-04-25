@@ -7,6 +7,7 @@ import {
 import { Subject }                from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { UserManagementService }  from 'src/app/features/backbone/login/user-management.service';
+import { UrlCreatorService }      from 'src/app/features/backend/url-creator.service';
 import { PatchMinimal }           from 'src/app/models/models';
 
 @Component({
@@ -22,7 +23,8 @@ export class PatchMinimalComponent implements OnInit {
   
   constructor(
     public userManagerService: UserManagementService,
-    public dataService: PatchDetailDataService
+    public dataService: PatchDetailDataService,
+    public urlCreatorService: UrlCreatorService
   ) {}
   
   ngOnInit(): void {
@@ -41,4 +43,6 @@ export class PatchMinimalComponent implements OnInit {
     this.destroyEvent$.complete();
     
   }
+  
+  
 }
