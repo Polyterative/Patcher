@@ -88,7 +88,7 @@
           <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
             <button mat-icon-button
                     matTooltip="Edit module"
-                    [disabled]="!bag.user"
+                    [disabled]="(!bag.user)||bag.singleModuleData.isComplete"
                     (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
             >
               <mat-icon>edit</mat-icon>
