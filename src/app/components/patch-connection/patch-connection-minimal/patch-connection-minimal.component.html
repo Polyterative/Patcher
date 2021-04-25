@@ -29,15 +29,18 @@
          fxLayoutGap="1rem"
     >
       <button mat-icon-button
-              matTooltip="Remove connection"
+              [matTooltip]="isCreator?'Clear selection':'Remove connection'"
               (click)="remove$.next(data)"
       >
-        <mat-icon>close</mat-icon>
+        <!--        <mat-icon>link_off</mat-icon>-->
+        <mat-icon>delete</mat-icon>
       </button>
       <div fxFlex="grow"></div>
       <app-brand-primary-button *ngIf="isCreator"
                                 (click)="create$.next(data)"
-      >Add connection to patch
+      >
+        <mat-icon>add_link</mat-icon>
+        Add connection to patch
       </app-brand-primary-button>
     </div>
   </ng-container>
