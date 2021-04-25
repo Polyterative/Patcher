@@ -190,6 +190,7 @@ export class PatchDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
+          this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
         });
   
   

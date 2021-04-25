@@ -51,19 +51,18 @@ export class SupabaseService {
           .from(this.paths.rack_modules)
           .insert({
             moduleid: moduleId,
-            rackid:   rackid
+            rackid
           })
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
-    rack: (data: { name: string, authorid: string, rows: number, hp: number }) => {
-      return fromPromise(
-        this.supabase
-            .from(this.paths.racks)
-            .insert(data)
-      )
-        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
-    }
+    rack: (data: { name: string, authorid: string, rows: number, hp: number }) =>
+            fromPromise(
+              this.supabase
+                  .from(this.paths.racks)
+                  .insert(data)
+            )
+              .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
     patch: (data: { name: string }) => fromPromise(
       this.supabase
@@ -351,7 +350,7 @@ export class SupabaseService {
     manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
     author:       'author:authorid(username,id,email)',
     rack_modules: 'rackModules:rackid(*)',
-    module:       `module:moduleid(*,manufacturer:manufacturerId(name,id,logo))`,
+    module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
     ins:          `ins:${ this.paths.moduleINs }(*)`,
     outs:         `outs:${ this.paths.moduleOUTs }(*)`,
     insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
@@ -369,7 +368,10 @@ export class SupabaseService {
         switchMap(x => !x.error ? fromPromise(
           this.supabase
               .from(this.paths.profiles)
-              .update({confirmed: true})
+              .update({
+                confirmed: true,
+                username:  email.substring(0, email.indexOf('@'))
+              })
           )
             .pipe(map(z => x)) : of(x)
         ),
@@ -430,7 +432,7 @@ export class SupabaseService {
   
   private buildPatchConnectionInserter(connections: PatchConnection[]) {
   
-    let inserter$ = combineLatest(
+    const inserter$ = combineLatest(
       connections.map(conn => ({
         patchid: conn.patch.id,
         a:       conn.a.id,
