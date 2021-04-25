@@ -1,7 +1,7 @@
 {
   "name":            "patcher",
-  "version":         "0.11.0",
-  "scripts": {
+  "version":         "1.0",
+  "scripts":         {
     "ng":     "ng",
     "start":  "ng serve --hmr ",
     "build":  "angular-build-info && ng build --prod",
