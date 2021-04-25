@@ -53,7 +53,7 @@ export class ToolbarComponent {
       label:    '',
       route:    'user/account',
       icon:     'manage_accounts',
-      disabled: false
+      disabled: true
     }
   ]);
   
