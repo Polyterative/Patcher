@@ -1,20 +1,20 @@
-<flexbox-row-fast
+<ng-container *ngIf="{
+  patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async)
+  } as bag"
 >
-  <ng-container *ngFor="let item of data$|async">
-    <div>
-      <mat-card>
-        <app-module-minimal [data]="item"></app-module-minimal>
-      </mat-card>
-    </div>
-  </ng-container>
-  
-  <ng-container *ngIf="patchingService.patchEditingPanelOpenState$|async">
+  <flexbox-row-fast
+  >
     <ng-container *ngFor="let item of data$|async">
       <div>
         <mat-card>
-          <app-module-composite [data]="item"></app-module-composite>
+          <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
+                              [data]="item"
+          ></app-module-minimal>
         </mat-card>
       </div>
+      <ng-template #fullData>
+        <app-module-composite [data]="item"></app-module-composite>
+      </ng-template>
     </ng-container>
-  </ng-container>
-</flexbox-row-fast>
+  </flexbox-row-fast>
+</ng-container>

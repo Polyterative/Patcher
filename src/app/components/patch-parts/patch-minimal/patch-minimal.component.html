@@ -18,10 +18,16 @@
     <div class="flow row buttons"
          fxLayoutGap="2rem"
     >
+      <a mat-icon-button
+         matTooltip="Share patch"
+         (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+      >
+        <mat-icon>share</mat-icon>
+      </a>
       <div fxFlex="grow"></div>
       <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
         <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-    
+      
           <!--          <app-brand-primary-button (click$)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)">-->
           <!--            Edit patch-->
           <!--          </app-brand-primary-button>-->
