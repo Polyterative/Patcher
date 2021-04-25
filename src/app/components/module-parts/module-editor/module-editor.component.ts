@@ -13,8 +13,8 @@ import {
 }                                  from '@angular/forms';
 import {
   BehaviorSubject,
-  Subject,
-  zip
+  combineLatest,
+  Subject
 }                                  from 'rxjs';
 import {
   map,
@@ -116,11 +116,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.save$.pipe(
       map(() => ({
         ...this.data,
-        ins:  this.formCVToCV(this.INs$.value),
+        ins: this.formCVToCV(this.INs$.value),
         outs: this.formCVToCV(this.OUTs$.value)
       })),
       // switchMap(x => this.backend.update.module(x)),
-      switchMap(x => zip(this.backend.update.moduleINsOUTs(x), this.backend.update.module(x))),
+      switchMap(x => combineLatest([
+        this.backend.update.moduleINsOUTs(x),
+        this.backend.update.module(x)
+      ])),
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
