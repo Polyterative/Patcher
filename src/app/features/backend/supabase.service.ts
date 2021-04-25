@@ -22,7 +22,7 @@ import {
   CV,
   DBManufacturer,
   DbModule,
-  Patch
+  PatchConnection
 }                          from 'src/app/models/models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment }     from 'src/environments/environment';
@@ -65,10 +65,13 @@ export class SupabaseService {
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
     }
     ,
-    patch: (data: Patch) => fromPromise(
+    patch: (data: { name: string }) => fromPromise(
       this.supabase
           .from(this.paths.patches)
-          .insert(data)
+          .insert({
+            ...data,
+            authorid: this.getUser().id
+          })
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
@@ -256,6 +259,22 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
+    patch: (id: number) => fromPromise(
+      this.supabase.from(this.paths.patches)
+          .delete()
+        // .filter('profileid', 'eq', this.getUser().id)
+          .filter('id', 'eq', id)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
+    patchConnectionsForPatch: (id: number) => fromPromise(
+      this.supabase.from(this.paths.patch_connections)
+          .delete()
+          .filter('patchid', 'eq', id)
+      // .filter('moduleid', 'eq', id)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     userPatch: (id: number) => fromPromise(
       this.supabase.from(this.paths.patches)
           .delete()
@@ -287,7 +306,7 @@ export class SupabaseService {
   };
   
   update = {
-    module:        (data: DbModule) => {
+    module:           (data: DbModule) => {
       data.manufacturer = undefined;
       data.ins = undefined;
       data.outs = undefined;
@@ -299,7 +318,7 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs: (data: DbModule) => combineLatest(
+    moduleINsOUTs:    (data: DbModule) => combineLatest(
       [
         this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
         this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),
@@ -307,7 +326,9 @@ export class SupabaseService {
         this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
       ]
     )
-      .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); }))
+      .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); })),
+    patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
+                                                       .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); }))
   };
   
   private paths = {
@@ -405,6 +426,38 @@ export class SupabaseService {
                .select('id')
          ))
     );
+  }
+  
+  private buildPatchConnectionInserter(connections: PatchConnection[]) {
+  
+    let inserter$ = combineLatest(
+      connections.map(conn => ({
+        patchid: conn.patch.id,
+        a:       conn.a.id,
+        b:       conn.b.id
+      }))
+        // .filter(x => x.id == 0)
+        // .map(x => {
+        //   x.id = undefined;
+        //   return x;
+        // })
+                 .map(item => fromPromise(
+                   this.supabase.from(this.paths.patch_connections)
+                       .insert(item)
+                       .select('patchid')
+                 )
+                   .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
+    );
+  
+    if (connections.length > 0) {
+      return this.delete.patchConnectionsForPatch(connections[0].patch.id)
+                 .pipe(
+                   switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar),
+                   switchMap(x => inserter$)
+                 );
+    }
+  
+    return inserter$;
   }
   
   private getCvMapper(moduleId: number) {

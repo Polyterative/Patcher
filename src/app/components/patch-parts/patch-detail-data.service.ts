@@ -1,5 +1,7 @@
 import { Injectable }            from '@angular/core';
+import { MatDialog }             from '@angular/material/dialog';
 import { MatSnackBar }           from '@angular/material/snack-bar';
+import { Router }                from '@angular/router';
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -11,6 +13,11 @@ import {
   takeUntil,
   withLatestFrom
 }                                from 'rxjs/operators';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+}                                from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
 import {
@@ -20,8 +27,8 @@ import {
 }                                from '../../models/models';
 
 export interface CVConnectionEntity {
-  cv: CVwithModule,
-  kind: 'in' | 'out'
+  cv: CVwithModule;
+  kind: 'in' | 'out';
 }
 
 @Injectable()
@@ -41,10 +48,16 @@ export class PatchDetailDataService {
     b: null
   });
   confirmSelectedConnection$: Subject<void> = new Subject();
+  removeConnectionFromEditor$: Subject<PatchConnection> = new Subject();
+  readonly savePatchEditing$ = new Subject();
+  readonly deletePatch$ = new Subject<number>();
+  //
   protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
+    private router: Router,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
     public userService: UserManagementService,
     public backend: SupabaseService
   ) {
@@ -84,6 +97,12 @@ export class PatchDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.patchesConnections$.next(data));
+  
+    this.singlePatchData$
+        .pipe(
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser().id == data.author.id));
   
     this.patchEditingPanelOpenState$
         .pipe(
@@ -137,17 +156,72 @@ export class PatchDetailDataService {
             b: selectedForConnection.b.cv,
             patch
           };
-          this.editorConnections$.next([
-            ...patchConnections,
-            newConnection
-          ]);
+  
+          const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
+  
+          if (!isAlreadyInList) {
+            this.editorConnections$.next([
+              ...patchConnections,
+              newConnection
+            ]);
+          } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
   
         });
   
     this.patchesConnections$
         .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(x => {
-          this.editorConnections$.next(x);
+        .subscribe(x => this.editorConnections$.next(x));
+    
+    this.removeConnectionFromEditor$
+        .pipe(
+          withLatestFrom(this.editorConnections$),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(([x, data]) => this.editorConnections$.next(
+          data.filter(
+            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
+          )
+        );
+  
+    this.savePatchEditing$
+        .pipe(
+          withLatestFrom(this.editorConnections$),
+          switchMap(([a, data]) => this.backend.update.patchConnections(data)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(value => {
+        });
+  
+  
+    this.deletePatch$
+        .pipe(
+          switchMap(x => {
+  
+            let data: ConfirmDialogDataInModel = {
+              title:       'Eliminazione',
+              description: 'Are you sure you want to delete this item?',
+              positive:    {label: '✔️ Delete'},
+              negative:    {label: '❌ Cancel'}
+            };
+  
+  
+            return this.dialog.open(
+              ConfirmDialogComponent,
+              {
+                data,
+                disableClose: true
+              }
+            )
+                       .afterClosed()
+                       .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
+                       );
+          }),
+          withLatestFrom(this.deletePatch$),
+          switchMap(([z, x]) => this.backend.delete.patch(x)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(value => {
+          this.router.navigate(['/patches/browser']);
         });
   
   }

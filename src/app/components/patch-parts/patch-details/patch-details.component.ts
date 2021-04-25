@@ -4,7 +4,6 @@ import {
   Input,
   OnInit
 }                                 from '@angular/core';
-import { of }                     from 'rxjs/internal/observable/of';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService }        from 'src/app/features/backend/supabase.service';
 import { Patch }                  from 'src/app/models/models';
@@ -27,11 +26,6 @@ export class PatchDetailsComponent implements OnInit {
   ) { }
   
   ngOnInit(): void {
-    of('a')
-      .subscribe(value => {
-        this.dataService.patchEditingPanelOpenState$.next(true);
-      
-      });
   
   }
   
