@@ -2,36 +2,110 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-    <mat-toolbar
-            style="background-color: #778698"
-            color="primary"
-            id="navbar"
+  <mat-toolbar
+    style="background-color: #778698"
+    color="primary"
+    id="navbar"
+  >
+    <mat-toolbar-row>Home</mat-toolbar-row>
+  </mat-toolbar>
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap="1rem"
+  >
+    <mat-card-title fxFlex="auto">What is patcher.xyz?</mat-card-title>
+    <p>
+      This project was born as a way to solve the problem of transcribing and sharing patch notes to
+      keep them or simply to send them to someone.
+    
+    </p>
+    <mat-card-title>What can I do?</mat-card-title>
+    <p>The first development goals are focused on the possibility of adding modules to your
+       collection
+       and interactively connecting CV inputs and CV outputs in an easy and fast way and then
+       export/save the list of connections. In the future the patches will be saved on the website
+       itself so that they can be shared in the form of a simple link.
+    </p>
+    
+    <p>But doesn't this require having a list of all modules and their information?
+
+       Yes, however, we are not starting from scratch!
+       Since one of the objectives is to maintain a database of inputs and outputs of each module,
+       the
+       development team(me) needs the contribution of the community to map all modules' CVs. This
+       can
+       happen once the project enters the open beta phase.
+    </p>
+  
+  
+    <mat-card-title>What can I expect from this project in 3 months?</mat-card-title>
+    <p>The mid-term goal is to create a Hub in which not only to share and create patches but
+       also to
+       manage your rack and all your modules in a manner similar to modular grid with the
+       advantage, of
+       a more modern interface and above all more rapid navigation/editing and several other
+       features
+       yet to be announced!
+    </p>
+  
+    <mat-card-title>Great! How i can help?</mat-card-title>
+    <p>I am currently making the first public announcements of this idea and collecting some
+       initial
+       feedback from testers so I would like to know what you think about this idea and if you are
+       interested in the project.
+    </p>
+    
+    If you want to stay updated on the progress of development the best way is to subscribe to the
+    discord channel that is the central communication hub.
+  </div>
+  
+  <a href="https://discord.gg/pYz3gagUDA"
+     fxLayoutAlign="center center"
+  >Join Discord Server
+  </a>
+  <div fxFlex="auto"
+       fxLayout="row wrap"
+       fxLayoutGap="1rem"
+       fxLayoutAlign="center center"
+  >
+    <app-brand-primary-button routerLink="/modules/browser">Browse modules
+    </app-brand-primary-button>
+    <app-brand-primary-button routerLink="/racks/browser">Browse racks
+    </app-brand-primary-button>
+    <app-brand-primary-button routerLink="/patches/browser">Browse patches
+    </app-brand-primary-button>
+  </div>
+  <div fxFlex="auto"
+       fxLayout="row wrap"
+       fxLayoutGap="1rem"
+       fxLayoutAlign="center center"
+  >
+    <app-brand-primary-button routerLink="/auth/signup">Create an account
+    </app-brand-primary-button>
+    <app-brand-primary-button routerLink="/auth/login">Login
+    </app-brand-primary-button>
+  </div>
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayoutGap="1rem"
+  >
+    <div fxFlex="16rem"
+         fxLayout="column"
+         fxLayoutGap="2rem"
     >
-        <mat-toolbar-row>Home</mat-toolbar-row>
-    </mat-toolbar>
-    
-    
+      <app-list-link-router [linksData]="linksData"></app-list-link-router>
+    </div>
     <div fxFlex="auto"
-         fxLayout="row"
+         fxLayout="row wrap"
          fxLayoutGap="1rem"
     >
-        <div fxFlex="16rem"
-             fxLayout="column"
-             fxLayoutGap="2rem"
-        >
-            <app-list-link-router [linksData]="linksData"></app-list-link-router>
-        </div>
-        <div fxFlex="auto"
-             fxLayout="row wrap"
-             fxLayoutGap="1rem"
-        >
-        
-        </div>
     
     </div>
-    
-    <app-empty-state style="padding-top: 8rem"
-                     backgroundImage="assets/undraw_coming_home_52ir.svg"
-    ></app-empty-state>
+  
+  </div>
+  
+  <app-empty-state style="padding-top: 8rem"
+                   backgroundImage="assets/undraw_coming_home_52ir.svg"
+  ></app-empty-state>
 
 </div>

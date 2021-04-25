@@ -33,7 +33,7 @@
         </mat-card>
         <ng-template #selectedForConnectionVoidState>The connection will appear here</ng-template>
       </app-hero-content-card>
-      <ng-container *ngIf="(dataService.patchesConnections$|async).length>0">
+      <ng-container *ngIf="(dataService.editorConnections$|async).length>0">
         <app-hero-content-card fxFlex.gt-lg="50%"
                                fxFlex="auto"
                                titleNormal="Patch connections"
