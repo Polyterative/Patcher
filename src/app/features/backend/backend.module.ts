@@ -7,6 +7,7 @@ import { FlexLayoutModule }           from '@angular/flex-layout';
 import { MatSnackBarModule }          from '@angular/material/snack-bar';
 import { RouterModule }               from '@angular/router';
 import { LuxonModule }                from 'luxon-angular';
+import { UrlCreatorService }          from 'src/app/features/backend/url-creator.service';
 import { environment }                from 'src/environments/environment';
 import { BrandPrimaryButtonModule }   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { AdminGuardService }          from './admin-guard.service';
@@ -24,6 +25,7 @@ import { SupabaseService }            from './supabase.service';
     LocalStorageService,
     AngularFireAuth,
     FirebaseService,
+    UrlCreatorService,
     SupabaseService
   ],
   imports:      [
