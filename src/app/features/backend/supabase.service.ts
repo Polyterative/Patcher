@@ -7,6 +7,7 @@ import { ActivatedRoute }  from '@angular/router';
 import { createClient }    from '@supabase/supabase-js';
 import {
   combineLatest,
+  forkJoin,
   ReplaySubject,
   throwError
 }                          from 'rxjs';
@@ -317,15 +318,25 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs:    (data: DbModule) => combineLatest(
+    moduleINsOUTs: (data: DbModule) => forkJoin(
       [
-        this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
-        this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),
-        this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
-        this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
+        forkJoin(
+          [
+            this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
+            this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id)
+          ]
+        ),
+        forkJoin([
+            this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
+            this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
+          ]
+        )
       ]
     )
-      .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); })),
+      .pipe(
+        tap(x => {
+          SharedConstants.showSuccessUpdate(this.snackBar);
+        })),
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
                                                        .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); }))
   };
@@ -414,8 +425,8 @@ export class SupabaseService {
   }
   
   private buildCVInserter(cvs: CV[], path: string, moduleId: number) {
-    
-    return combineLatest(
+  
+    return forkJoin(
       cvs.map(this.getCvMapper(moduleId))
          .filter(x => x.id == 0)
          .map(x => {
@@ -426,7 +437,10 @@ export class SupabaseService {
            this.supabase.from(path)
                .insert(cv)
                .select('id')
-         ))
+         )
+           .pipe(
+             // take(1),
+             switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
     );
   }
   
@@ -462,20 +476,20 @@ export class SupabaseService {
     return inserter$;
   }
   
-  private getCvMapper(moduleId: number) {
-    const mapper: (cv) => { min: number; id: number; max: number; name: string; moduleId: number } = (roq: CV) => ({
+  private getCvMapper(moduleid: number) {
+    const mapper: (cv) => { min: number; id: number; max: number; name: string; moduleid: number } = (roq: CV) => ({
       max:  roq.max,
       min:  roq.min,
       name: roq.name,
       // id:       roq.id > 0 ? roq.id : undefined, //fix this
-      id: roq.id,
-      moduleId
+      id:       roq.id,
+      moduleid: moduleid
     });
     return mapper;
   }
   
   private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
-    return combineLatest(
+    return forkJoin(
       cvs.map(this.getCvMapper(moduleId))
          .filter(x => x.id > 0)
          .map(cv => fromPromise(
@@ -483,7 +497,8 @@ export class SupabaseService {
                .update(cv)
                .eq('id', cv.id)
                .select('id')
-         ))
+         )
+           .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
     );
   }
   
