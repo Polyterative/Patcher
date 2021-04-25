@@ -26,8 +26,15 @@
       </a>
       <div fxFlex="grow"></div>
       <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
+        <button mat-icon-button
+                matTooltip="Delete patch"
+                [disabled]="!bag.user"
+                (click)="dataService.deletePatch$.next(data.id)"
+        >
+          <mat-icon>delete_forever</mat-icon>
+        </button>
         <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-      
+    
           <!--          <app-brand-primary-button (click$)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)">-->
           <!--            Edit patch-->
           <!--          </app-brand-primary-button>-->

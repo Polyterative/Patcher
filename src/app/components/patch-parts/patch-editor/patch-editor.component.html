@@ -14,26 +14,25 @@
          fxLayout.gt-lg="row"
          fxLayoutGap="1rem"
     >
-      <ng-container *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b">
-        <app-hero-content-card fxFlex.gt-lg="50%"
-                               fxFlex="auto"
-                               titleNormal="Your selection"
-                               description="The connection you want to create"
-        >
-          <mat-card>
-            <app-patch-connection-minimal [data]="{
+      <app-hero-content-card fxFlex.gt-lg="50%"
+                             fxFlex="auto"
+                             titleNormal="Your selection"
+                             description="The connection you want to create"
+      >
+        <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+          <app-patch-connection-minimal [data]="{
     a:bag.selectedForConnection.a.cv,
     b:bag.selectedForConnection.b.cv,
     patch:data
     }"
-                                          isEditing="true"
-                                          [isCreator]="true"
-                                          (remove$)="dataService.resetSelectedForConnection$.next()"
-                                          (create$)="dataService.confirmSelectedConnection$.next()"
-            ></app-patch-connection-minimal>
-          </mat-card>
-        </app-hero-content-card>
-      </ng-container>
+                                        isEditing="true"
+                                        [isCreator]="true"
+                                        (remove$)="dataService.resetSelectedForConnection$.next()"
+                                        (create$)="dataService.confirmSelectedConnection$.next()"
+          ></app-patch-connection-minimal>
+        </mat-card>
+        <ng-template #selectedForConnectionVoidState>The connection will appear here</ng-template>
+      </app-hero-content-card>
       <ng-container *ngIf="(dataService.patchesConnections$|async).length>0">
         <app-hero-content-card fxFlex.gt-lg="50%"
                                fxFlex="auto"
@@ -48,6 +47,7 @@
               <mat-card>
                 <app-patch-connection-minimal [data]="item"
                                               [isEditing]="true"
+                                              (remove$)="dataService.removeConnectionFromEditor$.next($event)"
                 ></app-patch-connection-minimal>
               </mat-card>
             </ng-container>
@@ -59,7 +59,7 @@
     <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
     </mat-card-subtitle>
     <mat-divider inset="true"></mat-divider>
-    <app-brand-primary-button (click$)="save$.next()"
+    <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                               theme="positive"
                               fxLayoutAlign="end"
     >

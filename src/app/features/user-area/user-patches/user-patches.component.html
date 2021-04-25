@@ -12,10 +12,11 @@
                       [data$]="data$"
                       *ngIf="(data$|async).length>0 else noData"
       ></app-patch-list>
-    
-      <app-brand-primary-button routerLink="/patches/browser"
-                                fxLayoutAlign="end"
-      >Create
+  
+      <app-brand-primary-button
+        (click$)="add$.next()"
+        fxLayoutAlign="end"
+      >Create patch
       </app-brand-primary-button>
     </div>
   </app-hero-content-card>

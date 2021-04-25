@@ -1,0 +1,60 @@
+<ng-container
+>
+  <div fxLayout="column"
+       fxLayoutGap="0.2em"
+  >
+    <div fxFlex="auto"
+    
+    >
+      <h1 mat-dialog-title>Create new patch</h1></div>
+    <div fxFlex="auto"
+    >
+      <mat-dialog-content>
+        
+        <div fxFlex="auto"
+             fxLayout="column wrap"
+             fxLayout.xs="column"
+             fxLayoutGap="1rem"
+        >
+          
+          <lib-mat-form-entity fxFlex="auto"
+                               [type]="fields.name.type"
+                               [control]="fields.name.control"
+                               [label]="fields.name.label"
+          >
+          </lib-mat-form-entity>
+          <!--          <lib-mat-form-entity fxFlex="auto"-->
+          <!--                               [type]="fields.hp.type"-->
+          <!--                               [control]="fields.hp.control"-->
+          <!--                               [label]="fields.hp.label"-->
+          <!--          >-->
+          <!--          </lib-mat-form-entity>-->
+          <!--          <lib-mat-form-entity fxFlex="auto"-->
+          <!--                               [type]="fields.rows.type"-->
+          <!--                               [control]="fields.rows.control"-->
+          <!--                               [label]="fields.rows.label"-->
+          <!--          >-->
+          <!--          </lib-mat-form-entity>-->
+        
+        </div>
+      
+      </mat-dialog-content>
+    </div>
+  </div>
+  <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="2rem"
+    >
+      <div fxFlex="grow"></div>
+      <app-brand-primary-button
+        theme="positive"
+        (click$)="save$.next()"
+      >
+        <mat-icon>save</mat-icon>
+        Save patch
+      </app-brand-primary-button>
+    </div>
+  
+  </mat-dialog-actions>
+</ng-container>

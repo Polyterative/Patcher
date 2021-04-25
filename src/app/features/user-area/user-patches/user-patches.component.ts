@@ -3,11 +3,19 @@ import {
   Component,
   OnInit
 }                          from '@angular/core';
+import { MatDialog }       from '@angular/material/dialog';
 import {
   BehaviorSubject,
   Subject
 }                          from 'rxjs';
-import { takeUntil }       from 'rxjs/operators';
+import {
+  switchMap,
+  takeUntil
+}                          from 'rxjs/operators';
+import {
+  PatchCreatorComponent,
+  PatchCreatorInModel
+}                          from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Patch }           from 'src/app/models/models';
 
@@ -19,17 +27,50 @@ import { Patch }           from 'src/app/models/models';
 })
 export class UserPatchesComponent implements OnInit {
   data$: BehaviorSubject<Patch[]> = new BehaviorSubject([]);
+  public readonly add$ = new Subject();
+  public readonly updateData$ = new Subject();
   
   constructor(
+    public dialog: MatDialog,
     public backend: SupabaseService
   ) {
-    this.backend.get.userPatches()
-        .pipe(takeUntil(this.destroyEvent$))
+    this.updateData$
+        .pipe(
+          switchMap(x => this.backend.get.userPatches()),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(x => this.data$.next(x));
+    
+    
+    this.add$
+        .pipe(
+          switchMap(x => {
+            let data: PatchCreatorInModel = {
+              // description: 'Stai per eliminare questo elemento, procedere?',
+              // positive:    {label: '✔️ Conferma'},
+              // negative:    {label: '❌ Annulla'}
+            };
+        
+            return this.dialog.open(
+              PatchCreatorComponent,
+              {
+                data
+                // disableClose: true
+              }
+            )
+                       .afterClosed();
+            // .pipe(filter((x: CalendarCreateDialogDataOutModel) => x.editedStuff)
+            // );
+          }),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(x => this.updateData$.next());
+  
   }
   
   ngOnInit(): void {
-    
+    this.updateData$.next();
+  
   }
   
   protected destroyEvent$: Subject<void> = new Subject();
