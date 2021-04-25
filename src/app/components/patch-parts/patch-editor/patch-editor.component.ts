@@ -31,7 +31,6 @@ type DataType = Patch;
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: DataType;
-  readonly save$ = new Subject();
   protected destroyEvent$: Subject<void> = new Subject();
   
   
