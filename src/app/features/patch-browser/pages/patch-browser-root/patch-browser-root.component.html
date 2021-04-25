@@ -9,7 +9,7 @@
     >
       <lib-mat-form-entity [control]="dataService.fields.search.control"
                            [type]="dataService.formTypes.TEXT"
-                           label="Search..."
+                           label="Search patch..."
       ></lib-mat-form-entity>
     
       <lib-mat-form-entity [control]="dataService.fields.order.control"
@@ -28,7 +28,7 @@
       <!--      </div>-->
     </div>
     <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
-                   [pageSizeOptions]="[10,25,50,100]"
+                   [pageSizeOptions]="[10,25,50]"
                    [length]="dataService.serversideAdditionalData.itemsCount$|async"
                    (page)="dataService.onPageEvent($event)"
                    showFirstLastButtons
