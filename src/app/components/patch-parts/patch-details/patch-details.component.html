@@ -1,52 +1,40 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="2rem"
-     style="padding-top: 2rem"
+<ng-container *ngIf="{
+  connections:(dataService.patchesConnections$|async)
+  } as bag"
 >
-  <app-hero-content-card titleNormal="Connections"
-                         *ngIf="(dataService.patchesConnections$|async).length>0; else noData"
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap="2rem"
+       style="padding-top: 2rem"
   >
-    <ng-container>
+    <ng-container *ngIf="bag.connections.length>0; else noData">
+      <app-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
+      >
+        <mat-card>
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap=".5rem"
+          >
+            <ng-container *ngFor="let item of dataService.patchesConnections$|async">
+              <app-patch-connection-micro [data]="item"></app-patch-connection-micro>
+            </ng-container>
+          </div>
+        </mat-card>
+      </app-hero-content-card>
+    </ng-container>
+  </div>
+  
+  <ng-template #noData>
+    <div fxFlex="auto">
       <div fxFlex="auto"
            fxLayout="column"
            fxLayoutGap="1rem"
       >
-        <ng-container *ngFor="let item of dataService.patchesConnections$|async">
-          <mat-card>
-            <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
-          </mat-card>
-        </ng-container>
+        <mat-card-subtitle fxLayoutAlign="center center">It looks like this patch has no connections
+        </mat-card-subtitle>
+        <mat-card-subtitle fxLayoutAlign="center center">¯\_(ツ)_/¯
+        </mat-card-subtitle>
       </div>
-    </ng-container>
-  </app-hero-content-card>
-  <!--  <div class="flow row spaceBetween"-->
-  <!--       fxLayoutGap="1rem"-->
-  <!--       *ngIf="!data.isComplete"-->
-  <!--  >-->
-  <!--    <mat-card-subtitle fxFlex="auto"-->
-  <!--                       fxLayoutAlign="end"-->
-  <!--    >-->
-  <!--      Module data is incomplete. You can help!-->
-  <!--    </mat-card-subtitle>-->
-  <!--  </div>-->
-  <!--  <app-dev-only-window>-->
-  <!--    {{data|json}}-->
-  <!--  </app-dev-only-window>-->
-  <!--  <app-dev-only-window>-->
-  <!--    {{dataService.patchesConnections$|async|json}}-->
-  <!--  </app-dev-only-window>-->
-</div>
-
-<ng-template #noData>
-  <div fxFlex="auto">
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
-    >
-      <mat-card-subtitle fxLayoutAlign="center center">It looks like this patch has no connections
-      </mat-card-subtitle>
-      <mat-card-subtitle fxLayoutAlign="center center">¯\_(ツ)_/¯
-      </mat-card-subtitle>
     </div>
-  </div>
-</ng-template>
+  </ng-template>
+</ng-container>
