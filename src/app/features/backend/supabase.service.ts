@@ -9,7 +9,8 @@ import {
   combineLatest,
   forkJoin,
   ReplaySubject,
-  throwError
+  throwError,
+  zip
 }                          from 'rxjs';
 import { fromPromise }     from 'rxjs/internal-compatibility';
 import { of }              from 'rxjs/internal/observable/of';
@@ -248,7 +249,28 @@ export class SupabaseService {
           .filter('id', 'eq', id)
           .single()
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    statistics:         () => zip(
+      fromPromise(
+        this.supabase.from(this.paths.modules)
+            .select('id', {count: 'exact'})
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+        .pipe(map(((x: any) => x.count))),
+      fromPromise(
+        this.supabase.from(this.paths.manufacturers)
+            .select('id', {count: 'exact'})
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+        .pipe(map(((x: any) => x.count))),
+      fromPromise(
+        this.supabase.from(this.paths.patches)
+            .select('id', {count: 'exact'})
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+        .pipe(map(((x: any) => x.count)))
+    )
+  
   };
   delete = {
     userModule: (id: number) => fromPromise(
@@ -318,7 +340,22 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs: (data: DbModule) => forkJoin(
+    modules:          (data: DbModule[]) => {
+      for (let datum of data) {
+        datum.manufacturer = undefined;
+        datum.ins = undefined;
+        datum.outs = undefined;
+        datum.created = undefined;
+        datum.updated = undefined;
+        datum.manualURL = undefined;
+      }
+      return fromPromise(
+        this.supabase.from(this.paths.modules)
+            .update(data)
+      )
+        .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
+    },
+    moduleINsOUTs:    (data: DbModule) => forkJoin(
       [
         forkJoin(
           [
@@ -327,8 +364,8 @@ export class SupabaseService {
           ]
         ),
         forkJoin([
-            this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
-            this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
+          this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
+          this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
           ]
         )
       ]

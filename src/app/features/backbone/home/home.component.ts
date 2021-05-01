@@ -1,36 +1,54 @@
 import {
-    Component,
-    OnDestroy
-}                  from '@angular/core';
-import { Router }  from '@angular/router';
-import { Subject } from 'rxjs';
+  Component,
+  OnDestroy
+}                          from '@angular/core';
+import { Router }          from '@angular/router';
 import {
-    CardLinkDataModel,
-    cleanCardlinkModelObject
-}                  from '../../../shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+  BehaviorSubject,
+  Subject
+}                          from 'rxjs';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import {
+  CardLinkDataModel,
+  cleanCardlinkModelObject
+}                          from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
 
 @Component({
-    selector:    'app-home',
-    templateUrl: './home.component.html'
+  selector:    'app-home',
+  templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnDestroy {
-    iconColor = '#041E50';
-    
-    destroyEvent$: Subject<void> = new Subject();
-    
-    readonly linksData: CardLinkDataModel = {
-        ...cleanCardlinkModelObject,
-        links: []
-    };
-    
-    constructor(
-        private router: Router
-    ) {
-    }
-    
-    ngOnDestroy(): void {
-        this.destroyEvent$.next();
-        this.destroyEvent$.complete();
-    }
-    
+  iconColor = '#041E50';
+  
+  destroyEvent$: Subject<void> = new Subject();
+  
+  readonly linksData: CardLinkDataModel = {
+    ...cleanCardlinkModelObject,
+    links: []
+  };
+  
+  statistics$ = new BehaviorSubject<number[]>([
+    0,
+    0
+  ]);
+  
+  constructor(
+    public backend: SupabaseService,
+    private router: Router
+  ) {
+    this.backend.get.statistics()
+        .pipe(
+          // take(1)
+        )
+        .subscribe(value => {
+          this.statistics$.next(value);
+          console.log(value);
+        });
+  }
+  
+  ngOnDestroy(): void {
+    this.destroyEvent$.next();
+    this.destroyEvent$.complete();
+  }
+  
 }
