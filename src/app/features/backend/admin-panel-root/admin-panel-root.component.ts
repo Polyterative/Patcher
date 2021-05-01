@@ -3,7 +3,10 @@ import {
   Component,
   OnInit
 }                          from '@angular/core';
-import { Subject }         from 'rxjs';
+import {
+  Subject,
+  zip
+}                          from 'rxjs';
 import { switchMap }       from 'rxjs/operators';
 import { SupabaseService } from '../supabase.service';
 
@@ -26,21 +29,19 @@ export class AdminPanelRootComponent implements OnInit {
   
     this.click$
         .pipe(
-          switchMap(x => this.backend.get.modulesFull(0, 9999))
+          switchMap(x => zip(
+            this.backend.get.modulesFull(0, 99999),
+            this.backend.get.manufacturers(0, 99999)
+            )
+          )
         )
-        .subscribe(x => {
-    
-          // let z = x.data.filter(value => (value.ins.length > 0) || (value.outs.length > 0));
-          //
-          //
-          // z.forEach(m => {
-          //
-          //   this.backend.add.moduleOUTs(m.outs, m.id)
-          //       .subscribe(value => {});
-          //
-          // });
-    
+        .subscribe(([modules, manufacturers]) => {
+          console.clear();
+  
+  
         });
+  
+    // this.click$.next();
   }
   
 }
