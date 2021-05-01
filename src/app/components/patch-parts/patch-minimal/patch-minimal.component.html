@@ -24,6 +24,12 @@
       >
         <mat-icon>share</mat-icon>
       </a>
+      <a mat-icon-button
+         matTooltip="Copy patch text"
+         [disabled]="true"
+      >
+        <mat-icon>speaker_notes</mat-icon>
+      </a>
       <div fxFlex="grow"></div>
       <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
         <button mat-icon-button

@@ -12,8 +12,8 @@ import {
   map,
   takeUntil
 }                                  from 'rxjs/operators';
-import { UserManagementService }   from '../../../features/backbone/login/user-management.service';
-import { MinimalModule }           from '../../../models/models';
+import { UserManagementService }   from 'src/app/features/backbone/login/user-management.service';
+import { MinimalModule }           from 'src/app/models/models';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({

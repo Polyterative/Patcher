@@ -1,0 +1,46 @@
+<mat-chip-list>
+  <div fxFlex="auto">
+    <div fxFlex="50"
+         fxLayout="row"
+         
+    >
+      <div fxFlex="auto"
+           fxLayout="column"
+           
+      >
+        <div fxFlex="auto"
+             fxLayoutAlign="center center"
+        >{{data.a.module.name}}</div>
+        <app-module-cvitem [data]="data.a"
+                           fxLayoutAlign="center center"
+        
+                           kind="in"
+        ></app-module-cvitem>
+      </div>
+    </div>
+    <div fxFlex="auto"
+         fxLayoutAlign="center center"
+    >⇥
+    </div>
+    <div fxFlex="50"
+         fxLayout="row"
+         
+    >
+      <div fxFlex="auto"
+           fxLayout="column"
+           
+      >
+        <div fxFlex="auto"
+             fxLayoutAlign="center center"
+        >{{data.b.module.name}}</div>
+        <app-module-cvitem [data]="data.b"
+                           fxLayoutAlign="center center"
+        
+                           kind="out"
+        ></app-module-cvitem>
+      </div>
+    </div>
+  </div>
+</mat-chip-list>
+
+<!--    <div fxFlex="auto">-->

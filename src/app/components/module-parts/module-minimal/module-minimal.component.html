@@ -11,6 +11,12 @@
       <mat-card-title infoBox
                       infoText="Module name"
       >{{data.name}}</mat-card-title>
+      <div class="flow row spaceBetween description"
+           fxLayoutGap="1rem"
+           *ngIf="data.description"
+      >
+        <mat-card-subtitle>{{data.description|ellipsis:75}}</mat-card-subtitle>
+      </div>
       <div class="flow row spaceBetween"
            fxLayoutGap="1rem"
       >
@@ -26,12 +32,6 @@
           {{data.hp}} HP
         </div>
       </div>
-    </div>
-    <div class="flow row spaceBetween description"
-         fxLayoutGap="1rem"
-         *ngIf="data.description.length>0"
-    >
-      <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
     </div>
     <ng-content></ng-content>
     <mat-divider [inset]="true"

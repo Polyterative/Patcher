@@ -56,7 +56,7 @@ const matDatepickerLocaleIT = {
   declarations: [
     AppComponent
   ],
-  imports:   [
+  imports:      [
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
@@ -69,9 +69,9 @@ const matDatepickerLocaleIT = {
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule
-
+  
   ],
-  providers: [
+  providers:    [
     italianLocale,
     matDatepickerLocale,
     matDatepickerLocaleIT,
@@ -84,8 +84,8 @@ export class AppModule {
   constructor() {
     registerLocaleData(localeIt, localeItExtra);
     console.clear();
-  
-  
+    
+    
     console.log(
       `\n%cBuild Info:\n\n` +
       `%c ❯ Environment: %c${ environment.production ? 'production 🏭' : 'development 🚧' }\n` +
