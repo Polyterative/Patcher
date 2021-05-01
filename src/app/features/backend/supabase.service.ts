@@ -184,6 +184,7 @@ export class SupabaseService {
       this.supabase.from(this.paths.modules)
           .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
           .ilike('name', `%${ name }%`)
+          .filter('public','eq', true)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
     )
