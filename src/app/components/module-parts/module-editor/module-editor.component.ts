@@ -22,12 +22,12 @@ import {
   takeUntil,
   withLatestFrom
 }                                  from 'rxjs/operators';
-import { SupabaseService }         from '../../../features/backend/supabase.service';
+import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import {
   CV,
   DbModule
-}                                  from '../../../models/models';
-import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                                  from 'src/app/models/models';
+import { FormTypes }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 interface FormCV {
@@ -87,7 +87,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             this.createCV(name, min, max, id)
           ];
           this.INs$.next(x);
-    
+  
           this.formGroupA = this.formBuilder.group({});
           x.forEach((a, i) => {
             this.formGroupA.addControl(`name${ i.toString() }`, a.name);
@@ -103,7 +103,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             this.createCV(name, min, max, id)
           ];
           this.OUTs$.next(x);
-    
+  
           this.formGroupB = this.formBuilder.group({});
           x.forEach((a, i) => {
             this.formGroupB.addControl(`name${ i.toString() }`, a.name);
@@ -116,7 +116,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.save$.pipe(
       map(() => ({
         ...this.data,
-        ins: this.formCVToCV(this.INs$.value),
+        ins:  this.formCVToCV(this.INs$.value),
         outs: this.formCVToCV(this.OUTs$.value)
       })),
       // switchMap(x => this.backend.update.module(x)),
