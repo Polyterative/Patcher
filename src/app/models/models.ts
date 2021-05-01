@@ -28,7 +28,7 @@ interface MinimalManufacturer {
 export interface MinimalModule extends Timestamped {
   id: number;
   name: string;
-  description?: string;
+  description: string;
   hp: number;
   public: boolean;
   manufacturer: MinimalManufacturer;
