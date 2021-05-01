@@ -10,6 +10,7 @@ import { MatTooltipModule }         from '@angular/material/tooltip';
 import { RouterModule }             from '@angular/router';
 import { TimeagoModule }            from 'ngx-timeago';
 import { SharedAtomsModule }        from 'src/app/components/shared-atoms/shared-atoms.module';
+import { SharedPipesModule }        from 'src/app/shared-interproject/pipes/shared-pipes.module';
 import { MatFormEntityModule }      from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }   from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -32,7 +33,7 @@ import { ModuleMinimalComponent }   from './module-minimal/module-minimal.compon
   providers:    [
     ModuleDetailDataService
   ],
-  imports:      [
+  imports: [
     CommonModule,
     TimeagoModule.forChild(),
     MatCardModule,
@@ -47,7 +48,8 @@ import { ModuleMinimalComponent }   from './module-minimal/module-minimal.compon
     MatButtonModule,
     RestrictedEntityModule,
     RouterModule,
-    SharedAtomsModule
+    SharedAtomsModule,
+    SharedPipesModule
   ],
   exports:      [
     ModuleCVItemComponent,
