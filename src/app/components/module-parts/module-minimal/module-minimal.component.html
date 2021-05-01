@@ -27,15 +27,11 @@
         </div>
       </div>
     </div>
-    <div class="flow row spaceBetween"
+    <div class="flow row spaceBetween description"
          fxLayoutGap="1rem"
          *ngIf="data.description.length>0"
     >
-      <div>
-        <app-restricted-entity [disabled]="true">
-          <div>{{data.description}}</div>
-        </app-restricted-entity>
-      </div>
+      <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
     </div>
     <ng-content></ng-content>
     <mat-divider [inset]="true"

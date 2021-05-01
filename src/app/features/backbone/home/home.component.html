@@ -3,9 +3,9 @@
      fxLayoutGap="1rem"
 >
   <mat-toolbar
-    style="background-color: #778698"
-    color="primary"
-    id="navbar"
+      style="background-color: #778698"
+      color="primary"
+      id="navbar"
   >
     <mat-toolbar-row>Home</mat-toolbar-row>
   </mat-toolbar>
@@ -98,6 +98,54 @@
   <div fxFlex="auto"
        fxLayout="row"
        fxLayoutGap="1rem"
+       fxLayoutAlign="space-between"
+  >
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="center center"
+    
+    >
+      <mat-card-title>
+        Modules
+      </mat-card-title>
+      <div fxFlex="auto"
+           style="font-size:xx-large"
+      >{{(statistics$|async)[0]}}
+      </div>
+    </div>
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="center center"
+    
+    >
+      <mat-card-title>
+        Manufacturers
+      </mat-card-title>
+      <div fxFlex="auto"
+           style="font-size:xx-large"
+      >{{(statistics$|async)[1]}}
+      </div>
+    </div>
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="center center"
+    
+    >
+      <mat-card-title>
+        Patches
+      </mat-card-title>
+      <div fxFlex="auto"
+           style="font-size:xx-large"
+      >{{(statistics$|async)[2]}}
+      </div>
+    </div>
+  </div>
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayoutGap="1rem"
   >
     <div fxFlex="16rem"
          fxLayout="column"
@@ -113,6 +161,7 @@
     </div>
   
   </div>
+  
   
   <app-empty-state style="padding-top: 8rem"
                    backgroundImage="assets/undraw_coming_home_52ir.svg"
