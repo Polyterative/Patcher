@@ -27,9 +27,10 @@ export class HomeComponent implements OnDestroy {
     links: []
   };
   
-  statistics$ = new BehaviorSubject<number[]>([
-    0,
-    0
+  statistics$ = new BehaviorSubject<number[] | string[]>([
+    '...',
+    '...',
+    '...'
   ]);
   
   constructor(
