@@ -21,19 +21,19 @@ import { ModuleListComponent }                        from 'src/app/features/mod
 import { ModuleBrowserModuleDetailViewRootComponent } from 'src/app/features/module-browser/pages/module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
 import { ModuleBrowserRootComponent }                 from 'src/app/features/module-browser/pages/module-browser-root/module-browser-root.component';
 import { AutoLoadingIndicatorModule }                 from 'src/app/shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
-import { DevOnlyWindowModule }      from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
-import { RestrictedEntityModule }   from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
-import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { FlexboxRowFastModule }     from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }         from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }      from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }       from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateSaturnRoutes }     from 'src/app/shared-interproject/routing-layouts/saturn/saturn.module';
+import { DevOnlyWindowModule }                        from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { MatFormEntityModule }                        from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { RestrictedEntityModule }                     from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
+import { UserDataHandlerComponent }                   from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
+import { BrandPrimaryButtonModule }                   from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { FlexboxRowFastModule }                       from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroContentCardModule }                      from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }                          from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { LabelValueShowcaseModule }                   from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }                           from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }                        from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }                         from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }                       from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 
 
 @NgModule({
@@ -47,7 +47,7 @@ import { generateSaturnRoutes }     from 'src/app/shared-interproject/routing-la
   imports:      [
     CommonModule,
     RouterModule.forChild([
-      generateSaturnRoutes('modules', [
+      generateUranusRoutes('modules', [
         {
           path:      'browser',
           component: ModuleBrowserRootComponent

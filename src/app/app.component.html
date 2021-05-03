@@ -1,20 +1,17 @@
-<app-toolbar>
-</app-toolbar>
+<app-toolbar></app-toolbar>
 <div class="main">
-    <lib-screen-wrapper>
-        <div fxFlex="auto"
-             fxLayout="column"
-             fxLayoutGap="1rem"
-        >
-          <mat-toolbar
-            [ngStyle]="{'background-color': '#b1610f'}"
-            color="primary"
-          >
-            <mat-toolbar-row>This project is in Alpha! Expect bugs or sudden data loss
-            </mat-toolbar-row>
-          </mat-toolbar>
-          <router-outlet></router-outlet>
-          <app-footer></app-footer>
-        </div>
-    </lib-screen-wrapper>
+  <lib-screen-wrapper>
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-advice-tooltip [ngStyle]="{'background-color': '#b1610f'}">This project is in beta!
+                                                                      Expect some hiccups
+      </app-advice-tooltip>
+      <div>
+        <router-outlet></router-outlet>
+      </div>
+      <app-footer></app-footer>
+    </div>
+  </lib-screen-wrapper>
 </div>

@@ -26,7 +26,6 @@ import { SupabaseService }       from '../backend/supabase.service';
 @Injectable()
 export class PatchBrowserDataService implements OnDestroy {
   patchesList$ = new BehaviorSubject<Patch[]>([]);
-  userPatchesList$ = new BehaviorSubject<Patch[]>([]);
   updatePatchesList$ = new Subject();
   
   ////

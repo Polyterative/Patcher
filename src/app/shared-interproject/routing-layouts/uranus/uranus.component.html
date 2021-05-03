@@ -1,0 +1,28 @@
+<lib-screen-wrapper gravity="center"
+
+>
+  
+  <ng-container *ngIf="title else content ">
+    
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap=".5rem"
+    >
+      <mat-toolbar fxFlex="4rem"
+                   style="background-color: #778698"
+                   color="primary"
+                   id="navbar"
+      >
+        <mat-toolbar-row>{{title}}</mat-toolbar-row>
+      </mat-toolbar>
+      
+      <router-outlet></router-outlet>
+    </div>
+  
+  </ng-container>
+  
+  <ng-template #content>
+    <router-outlet></router-outlet>
+  </ng-template>
+
+</lib-screen-wrapper>
