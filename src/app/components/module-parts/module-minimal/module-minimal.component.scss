@@ -1,13 +1,11 @@
-
 .parent {
-  > .buttons {
+  > .opacizeOnHover {
     opacity: 0.2;
 
   }
-
 }
 
-.parent:hover > .buttons {
+.parent:hover > .opacizeOnHover {
   opacity:            1;
   -webkit-transition: opacity 125ms ease-in-out;
   -moz-transition:    opacity 125ms ease-in-out;
