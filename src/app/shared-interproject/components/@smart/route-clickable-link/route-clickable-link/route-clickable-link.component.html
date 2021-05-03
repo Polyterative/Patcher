@@ -19,9 +19,26 @@
        fxLayout="row"
        fxHide
        [fxHide.lt-md]="false"
+       [fxHide.xs]="true"
   >
     <ng-container *ngFor="let item of bag.data">
       <a mat-button
+         class="option"
+         [routerLink]="item.route"
+         routerLinkActive="selected"
+         [matTooltip]="item.label"
+      >
+        <mat-icon>{{item.icon}}</mat-icon>
+      </a>
+    </ng-container>
+  </div>
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxHide
+       [fxHide.xs]="false"
+  >
+    <ng-container *ngFor="let item of bag.data">
+      <a mat-icon-button
          class="option"
          [routerLink]="item.route"
          routerLinkActive="selected"
