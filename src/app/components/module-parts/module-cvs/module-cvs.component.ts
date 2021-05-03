@@ -6,7 +6,10 @@ import {
   Output
 }                                 from '@angular/core';
 import { Subject }                from 'rxjs';
-import { takeUntil }              from 'rxjs/operators';
+import {
+  filter,
+  takeUntil
+}                                 from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import {
   CV,
@@ -38,9 +41,12 @@ export class ModuleCVsComponent implements OnInit {
     
     if (this.data.ins) { this.ins = this.data.ins; }
     if (this.data.outs) { this.outs = this.data.outs; }
-    
+  
     this.inClick$
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(
+          filter(() => this.patchService.patchEditingPanelOpenState$.value),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(([cv, module]) => {
           this.patchService.clickOnModuleCV$.next({
             cv:   {
@@ -51,7 +57,10 @@ export class ModuleCVsComponent implements OnInit {
           });
         });
     this.outClick$
-        .pipe(takeUntil(this.destroyEvent$))
+        .pipe(
+          filter(() => this.patchService.patchEditingPanelOpenState$.value),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(([cv, module]) => {
           this.patchService.clickOnModuleCV$.next({
             cv:   {

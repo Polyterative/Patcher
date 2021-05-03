@@ -199,7 +199,7 @@ export class PatchDetailDataService {
           switchMap(x => {
   
             let data: ConfirmDialogDataInModel = {
-              title:       'Eliminazione',
+              title:       'Deletion',
               description: 'Are you sure you want to delete this item?',
               positive:    {label: '✔️ Delete'},
               negative:    {label: '❌ Cancel'}
