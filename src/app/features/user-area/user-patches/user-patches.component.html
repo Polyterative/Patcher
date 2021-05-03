@@ -3,6 +3,7 @@
      fxLayoutGap="1rem"
 >
   <app-hero-content-card titleBig="My patches"
+                         icon="settings_input_composite"
   >
     <div fxFlex="auto"
          fxLayout="column"
@@ -12,7 +13,7 @@
                       [data$]="data$"
                       *ngIf="(data$|async).length>0 else noData"
       ></app-patch-list>
-  
+    
       <app-brand-primary-button
         (click$)="add$.next()"
         fxLayoutAlign="end"

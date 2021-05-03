@@ -5,18 +5,19 @@
 >
   <div class="flow col parent"
   >
-    <div class="flow col"
-    >
-      <mat-card-title>{{data.name}}</mat-card-title>
+    <!--    <div class="flow col"-->
+    <!--    >-->
+    <mat-card-title>{{data.name}}</mat-card-title>
       <app-entity-author [data]="data.author"></app-entity-author>
       <app-timestamps-relative [data]="data"></app-timestamps-relative>
-    </div>
+    <!--    </div>-->
     <ng-content></ng-content>
     <mat-divider [inset]="true"
                  style="margin-top:.5rem"
     ></mat-divider>
     <div class="flow row buttons"
          fxLayoutGap="2rem"
+         fxLayoutGap.xs="0rem"
     >
       <a mat-icon-button
          matTooltip="Share patch"

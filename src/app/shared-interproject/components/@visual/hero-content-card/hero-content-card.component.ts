@@ -25,6 +25,6 @@ export class HeroContentCardComponent {
   @Input()
   description: string = '';
   @Input()
-  icon: string = '';
+  icon: string;
   
 }

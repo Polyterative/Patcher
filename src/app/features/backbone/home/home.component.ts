@@ -39,11 +39,9 @@ export class HomeComponent implements OnDestroy {
   ) {
     this.backend.get.statistics()
         .pipe(
-          // take(1)
         )
         .subscribe(value => {
           this.statistics$.next(value);
-          console.log(value);
         });
   }
   

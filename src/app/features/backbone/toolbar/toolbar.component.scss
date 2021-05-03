@@ -1,14 +1,9 @@
 ﻿@import "../../../app.component";
 @import "~src/app/style/brand-resources.scss";
 
-#navbar {
-  //@include mat-elevation(2);
-  margin-bottom: 1em;
-}
-
 mat-toolbar-row {
-  min-height: 3em;
-  min-width:  fit-content;
+  height: 3em;
+  //min-width:  fit-content;
 }
 
 #title {
@@ -36,21 +31,14 @@ mat-toolbar-row > button {
 }
 
 
-.toolbarSpacer {
-  flex: 1 1 auto;
-}
-
 .selectedLink {
   color:            rgba(255, 255, 255, 0.7);
   background-color: rgba(255, 255, 255, 0.1)
 }
 
-.opacizeOnHover {
-  //transition-duration: 125ms
-}
-
 .toolbar {
-  background-color: $brand-primary
+  background-color: $brand-primary;
+  margin-bottom:    1em;
 }
 
 .sticky {

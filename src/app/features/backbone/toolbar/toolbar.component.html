@@ -1,41 +1,31 @@
 ﻿<mat-toolbar class="toolbar sticky"
              color="primary"
-             id="navbar"
 >
-  <mat-toolbar-row>
-    <lib-screen-wrapper fxFlex="grow">
+  <lib-screen-wrapper fxFlex="grow">
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+    >
       <div fxFlex="auto"
+           fxLayoutAlign="center center"
+           [fxHide.xs]="true"
+      
+      >
+        {{service.state.title|async}}
+      </div>
+      <div fxFlex="grow"
+           [fxHide.xs]="true"
+      ></div>
+      <div class="buttons"
            fxLayout="row"
            fxLayoutGap="1rem"
+           fxLayoutGap.xs=".25rem"
       >
-        <div fxFlex="auto"
-             fxLayoutAlign="center center"
-             [fxHide.xs]="true"
-        
-        >
-          {{service.state.title|async}}
-        </div>
-        <div fxFlex="grow"></div>
-        <div class="buttons"
-             fxLayout="row"
-             fxLayoutGap="1rem"
-        >
-          <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
-        </div>
-        <div fxFlex="grow"></div>
-        <!--              <div fxFlex="auto"-->
-        <!--                   fxLayout="row"-->
-        <!--                   fxLayoutGap="1rem"-->
-        <!--              >-->
-        <!--                <button mat-icon-button-->
-        <!--                        aria-label="Example icon button with a vertical three dot icon"-->
-        <!--                >-->
-        <!--                  <mat-icon>login</mat-icon>-->
-        <!--                </button>-->
-        <!--              </div>-->
-        <app-route-clickable-link-list [data$]="linksUser$"></app-route-clickable-link-list>
-        <!--              <app-brand-logo></app-brand-logo>-->
+        <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
       </div>
-    </lib-screen-wrapper>
-  </mat-toolbar-row>
+      <div fxFlex="grow"></div>
+      <app-route-clickable-link-list [data$]="linksUser$"></app-route-clickable-link-list>
+      <!--              <app-brand-logo></app-brand-logo>-->
+    </div>
+  </lib-screen-wrapper>
 </mat-toolbar>
