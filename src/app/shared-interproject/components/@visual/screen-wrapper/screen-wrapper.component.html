@@ -1,22 +1,5 @@
-<div fxFlex="auto"
-     fxLayout="row"
-     fxLayoutGap="1rem"
-     fxFlexFill
+<div [ngStyle]="{'max-width':maxSize}"
+     class="content"
 >
-  <div fxFlex.gt-lg="grow"
-       [fxFlex.gt-xs]="force?'grow':''"
-       [fxHide.lt-lg]="!force"
-       *ngIf="(gravity=='left'||gravity=='center')"
-  ></div>
-  <div [fxFlex.xl]="maxSize"
-       [fxFlex]="force?maxSize:'fill'"
-  >
-    <ng-content></ng-content>
-  </div>
-  <div fxFlex.gt-lg="grow"
-       [fxFlex.gt-xs]="force?'grow':''"
-       [fxHide.lt-lg]="!force"
-       *ngIf="(gravity=='right'||gravity=='center')"
-  ></div>
-
+  <ng-content></ng-content>
 </div>
