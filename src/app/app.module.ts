@@ -16,6 +16,7 @@ import { MatToolbarModule }        from '@angular/material/toolbar';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule }            from '@angular/router';
+import { AdviceTooltipModule }     from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import build                       from 'src/build';
 import { environment }             from 'src/environments/environment';
 
@@ -56,7 +57,7 @@ const matDatepickerLocaleIT = {
   declarations: [
     AppComponent
   ],
-  imports:      [
+  imports: [
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
@@ -68,7 +69,8 @@ const matDatepickerLocaleIT = {
     PageHeaderModule,
     MatToolbarModule,
     FlexLayoutModule,
-    MatCardModule
+    MatCardModule,
+    AdviceTooltipModule
   
   ],
   providers:    [

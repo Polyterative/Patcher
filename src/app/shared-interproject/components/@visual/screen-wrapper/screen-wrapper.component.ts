@@ -18,10 +18,7 @@ import {
 export class ScreenWrapperComponent implements OnInit {
   
   @Input()
-  gravity: 'right' | 'left' | 'center' = 'center';
-  
-  @Input()
-  maxSize = '100rem'; //kinda fhd, good default
+  maxSize = '76rem'; //kinda fhd, good default
   
   @Input()
   force = false;

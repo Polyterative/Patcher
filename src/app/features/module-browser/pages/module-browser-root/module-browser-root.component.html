@@ -5,25 +5,26 @@
   >
     <div fxFlex="auto"
          fxLayout="row"
+         fxLayout.lt-sm="column"
          fxLayoutGap="1rem"
     >
-      <lib-mat-form-entity
-        [control]="dataService.fields.search.control"
-        [type]="dataService.formTypes.TEXT"
-        label="Search module..."
+      <lib-mat-form-entity [control]="dataService.fields.search.control"
+                           [type]="dataService.formTypes.TEXT"
+                           label="Search module..."
       ></lib-mat-form-entity>
-    
+  
       <lib-mat-form-entity
-        [control]="dataService.fields.order.control"
-        [options$]="dataService.fields.order.options$"
-        [type]="dataService.formTypes.SELECT"
-        [disableVoidSelection]="true"
-        label="Order by"
+          [control]="dataService.fields.order.control"
+          [options$]="dataService.fields.order.options$"
+          [type]="dataService.formTypes.SELECT"
+          [disableVoidSelection]="true"
+          label="Order by"
       ></lib-mat-form-entity>
-    
-      <div fxFlex="grow"></div>
-      <div fxFlex="auto">
-        <a mat-button
+  
+      <div fxFlex="auto"
+           fxLayoutAlign="end start"
+      >
+        <a mat-raised-button
            href="https://forms.gle/MjyXuafbrXmaSMiaA"
            target="_blank"
         >Add a module</a>

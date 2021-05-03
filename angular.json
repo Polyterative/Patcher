@@ -10,12 +10,13 @@
       "prefix":      "app",
       "schematics":  {
         "@schematics/angular:component": {
-          "style":           "scss",
-          "changeDetection": "OnPush",
-          "export":          true,
-          "skipTests":       true,
-          "flat":            false,
-          "skipImport":      false
+          "style":             "scss",
+          "changeDetection":   "OnPush",
+          "viewEncapsulation": "None",
+          "export":            true,
+          "skipTests":         true,
+          "flat":              false,
+          "skipImport":        false
         },
         "@schematics/angular:pipe":      {
           "skipTests":  true,

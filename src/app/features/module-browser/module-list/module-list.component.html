@@ -5,13 +5,11 @@
   <flexbox-row-fast
   >
     <ng-container *ngFor="let item of data$|async">
-      <div>
         <mat-card>
           <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
                               [data]="item"
           ></app-module-minimal>
         </mat-card>
-      </div>
       <ng-template #fullData>
         <app-module-composite [data]="item"></app-module-composite>
       </ng-template>

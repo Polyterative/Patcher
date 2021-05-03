@@ -1,6 +1,7 @@
 <div fxFlex="auto"
      fxLayout="column"
      fxLayoutGap="1rem"
+     class="parent"
 >
   <app-timestamps-relative [data]="data"></app-timestamps-relative>
   <app-module-cvs [data]="data"></app-module-cvs>
@@ -18,7 +19,7 @@
     </div>
   </ng-container>
   
-  <div class="flow row spaceBetween"
+  <div class="flow row spaceBetween showOnHover"
        fxLayoutGap="1rem"
        *ngIf="!data.isComplete"
   >
