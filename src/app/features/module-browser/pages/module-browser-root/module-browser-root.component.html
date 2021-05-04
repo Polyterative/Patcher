@@ -5,18 +5,24 @@
   >
     <div fxFlex="auto"
          fxLayout="row"
-         fxLayout.lt-sm="column"
+         fxLayout.lt-md="column"
          fxLayoutGap="1rem"
     >
       <lib-mat-form-entity [control]="dataService.fields.search.control"
-                           [type]="dataService.formTypes.TEXT"
-                           label="Search module..."
+                           [type]="dataService.fields.search.type"
+                           [label]="dataService.fields.search.label"
+      ></lib-mat-form-entity>
+  
+      <lib-mat-form-entity [control]="dataService.fields.manufacturers.control"
+                           [type]="dataService.fields.manufacturers.type"
+                           [options$]="dataService.fields.manufacturers.options$"
+                           [label]="dataService.fields.manufacturers.label"
       ></lib-mat-form-entity>
   
       <lib-mat-form-entity
           [control]="dataService.fields.order.control"
           [options$]="dataService.fields.order.options$"
-          [type]="dataService.formTypes.SELECT"
+          [type]="dataService.fields.order.type"
           [disableVoidSelection]="true"
           label="Order by"
       ></lib-mat-form-entity>

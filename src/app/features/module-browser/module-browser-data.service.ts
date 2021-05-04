@@ -13,6 +13,8 @@ import {
 import { of }                    from 'rxjs/internal/observable/of';
 import {
   distinctUntilChanged,
+  map,
+  share,
   startWith,
   switchMap,
   takeUntil,
@@ -22,12 +24,17 @@ import {
   DbModule,
   MinimalModule
 }                                from '../../models/models';
-import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  FormTypes,
+  getCleanedValueId
+}                                from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
+  protected destroyEvent$: Subject<void> = new Subject();
+  //
   modulesList$ = new BehaviorSubject<MinimalModule[]>([]);
   userModulesList$ = new BehaviorSubject<DbModule[]>([]);
   updateModulesList$ = new Subject();
@@ -48,17 +55,18 @@ export class ModuleBrowserDataService implements OnDestroy {
   
   formTypes = FormTypes;
   
-  fields = {
   
-    search: {
-      label:   'search',
+  fields = {
+    
+    search:        {
+      label:   'Search module...',
       code:    'search',
       flex:    '6rem',
       control: new FormControl(''),
       type:    FormTypes.TEXT
-    
+      
     },
-    order:  {
+    order:         {
       label:    'order',
       code:     'order',
       flex:     '6rem',
@@ -91,12 +99,29 @@ export class ModuleBrowserDataService implements OnDestroy {
       ])
                   .pipe(
                     startWith([]))
-  
+      
+    },
+    manufacturers: {
+      label:    'With Manufacturer',
+      code:     'manufacturers',
+      flex:     '6rem',
+      control:  new FormControl(),
+      type:     FormTypes.AUTOCOMPLETE,
+      options$: this.backend.get.manufacturers(0, 9999, 'id,name')
+                    .pipe(
+                      map((x) => x.data.map(z => ({
+                        id:   z.id.toString(),
+                        name: z.name
+                      }))),
+                      startWith([]),
+                      takeUntil(this.destroyEvent$),
+                      share()
+                    )
+      
     }
   };
   
   paginatorToFistPage$ = new Subject();
-  protected destroyEvent$: Subject<void> = new Subject();
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
@@ -140,7 +165,7 @@ export class ModuleBrowserDataService implements OnDestroy {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
   
-            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName);
+            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName, parseInt(getCleanedValueId(this.fields.manufacturers.control)));
           }),
           takeUntil(this.destroyEvent$)
         )
@@ -155,7 +180,11 @@ export class ModuleBrowserDataService implements OnDestroy {
         .subscribe(x => {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);
-          // this.updateData$.next();
+        });
+  
+    this.fields.manufacturers.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
+        .subscribe(x => {
+          this.updateModulesList$.next();
         });
   }
   
