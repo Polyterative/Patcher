@@ -9,7 +9,7 @@
        style="padding-top: 2rem"
   >
     <ng-container *ngIf="bag.connections.length>0; else noData">
-      <app-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
+      <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
       >
         <mat-card>
           <div fxFlex="auto"
@@ -21,7 +21,7 @@
             </ng-container>
           </div>
         </mat-card>
-      </app-hero-content-card>
+      </lib-hero-content-card>
     </ng-container>
   </div>
   

@@ -1,4 +1,4 @@
-<app-hero-content-card titleBig="Patches">
+<lib-hero-content-card titleBig="Patches">
   <div fxFlex="auto"
        fxLayout="column"
        fxLayoutGap="1rem"
@@ -34,11 +34,11 @@
                    (page)="dataService.onPageEvent($event)"
                    showFirstLastButtons
     ></mat-paginator>
-  
+    
     <app-patch-list [data$]="dataService.patchesList$"></app-patch-list>
     <app-auto-loading-indicator [data$]="dataService.patchesList$"
                                 [updateData$]="dataService.updatePatchesList$"
     ></app-auto-loading-indicator>
   </div>
   <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
-</app-hero-content-card>
+</lib-hero-content-card>

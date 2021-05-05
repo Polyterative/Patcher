@@ -1,8 +1,8 @@
 <flexbox-row-fast
 >
   <ng-container *ngFor="let item of data$|async">
-    <mat-card>
+    <lib-hero-item-card>
       <app-rack-minimal [data]="item"></app-rack-minimal>
-    </mat-card>
+    </lib-hero-item-card>
   </ng-container>
 </flexbox-row-fast>

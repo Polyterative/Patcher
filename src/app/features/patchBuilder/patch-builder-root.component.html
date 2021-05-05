@@ -2,7 +2,7 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card fxFlex="auto"
+  <lib-hero-content-card fxFlex="auto"
                          titleBig="My modules"
   >
     <div fxFlex="auto"
@@ -10,20 +10,20 @@
     >
       <ng-container *ngFor="let item of userModules$|async">
         <div>
-          <mat-card>
+          <lib-hero-item-card>
             <mat-card-title>{{item.name}}</mat-card-title>
             <app-module-cvs [data]="item"
                             (inClick$)="inClick$.next($event)"
                             (outClick$)="outClick$.next($event)"
             ></app-module-cvs>
-          </mat-card>
+          </lib-hero-item-card>
         </div>
       </ng-container>
     </div>
 
-  </app-hero-content-card>
+  </lib-hero-content-card>
   
-  <app-hero-content-card fxFlex="auto"
+  <lib-hero-content-card fxFlex="auto"
                          titleBig="Patch"
   >
     <div fxFlex="auto"
@@ -32,13 +32,13 @@
     >
       <!--      <ng-container *ngFor="let item of connections$|async">-->
       <!--        <div>-->
-      <!--          &lt;!&ndash;          <mat-card>&ndash;&gt;-->
+      <!--          &lt;!&ndash;          <lib-hero-item-card>&ndash;&gt;-->
       <!--            {{item.from.name}} {{item.fromCV.name}} => {{item.to.name}} {{item.toCV.name}}-->
-      <!--          &lt;!&ndash;          </mat-card>&ndash;&gt;-->
+      <!--          &lt;!&ndash;          </lib-hero-item-card>&ndash;&gt;-->
       <!--        </div>-->
       <!--      </ng-container>-->
     </div>
-  </app-hero-content-card>
+  </lib-hero-content-card>
 
 </div>
 
