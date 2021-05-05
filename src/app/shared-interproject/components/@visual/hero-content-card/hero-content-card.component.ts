@@ -8,7 +8,7 @@ import {
  *  UI ONLY COMPONENT
  */
 @Component({
-  selector:        'app-hero-content-card',
+  selector:        'lib-hero-content-card',
   templateUrl:     './hero-content-card.component.html',
   styleUrls:       ['./hero-content-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
