@@ -6,11 +6,11 @@
   >
     <ng-container *ngFor="let item of data$|async">
       <div>
-        <mat-card>
+        <lib-hero-item-card>
           <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
                               [data]="item"
           ></app-module-minimal>
-        </mat-card>
+        </lib-hero-item-card>
       </div>
       <ng-template #fullData>
         <app-module-composite [data]="item"></app-module-composite>

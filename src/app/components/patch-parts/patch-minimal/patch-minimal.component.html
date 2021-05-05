@@ -7,9 +7,13 @@
   >
     <!--    <div class="flow col"-->
     <!--    >-->
-    <mat-card-title>{{data.name}}</mat-card-title>
-      <app-entity-author [data]="data.author"></app-entity-author>
-      <app-timestamps-relative [data]="data"></app-timestamps-relative>
+    <app-hero-clickable-title [link]="['/patches/details',data.id]"
+                              infoBox
+                              infoText="Patch name"
+    >{{data.name}}
+    </app-hero-clickable-title>
+    <app-entity-author [data]="data.author"></app-entity-author>
+    <app-timestamps-relative [data]="data"></app-timestamps-relative>
     <!--    </div>-->
     <ng-content></ng-content>
     <mat-divider [inset]="true"
@@ -41,7 +45,7 @@
           <mat-icon>delete_forever</mat-icon>
         </button>
         <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-    
+  
           <!--          <app-brand-primary-button (click$)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)">-->
           <!--            Edit patch-->
           <!--          </app-brand-primary-button>-->

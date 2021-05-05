@@ -2,7 +2,7 @@
 data:(dataService.singlePatchData$|async)
 } as bag"
 >
-  <app-hero-content-card titleBig="Patch details">
+  <lib-hero-content-card titleBig="Patch details">
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
@@ -19,22 +19,22 @@ data:(dataService.singlePatchData$|async)
                fxLayoutGap="1rem"
           >
             <div>
-              <!--              <mat-card>-->
+              <!--              <lib-hero-item-card>-->
               <ng-container *ngIf="bag.data"
               >
                 <app-patch-composite [data]="(bag.data)"
                 ></app-patch-composite>
               </ng-container>
-              <!--              </mat-card>-->
+              <!--              </lib-hero-item-card>-->
             </div>
             <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
                                         [data$]="dataService.singlePatchData$"
             ></app-auto-loading-indicator>
-            <mat-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
+            <lib-hero-item-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
               <app-patch-editor
-                [data]="(bag.data)"
+                  [data]="(bag.data)"
               ></app-patch-editor>
-            </mat-card>
+            </lib-hero-item-card>
           </div>
         </div>
       </div>
@@ -42,5 +42,5 @@ data:(dataService.singlePatchData$|async)
         <!--        {{bag.data|json}}-->
       </app-dev-only-window>
     </div>
-  </app-hero-content-card>
+  </lib-hero-content-card>
 </ng-container>

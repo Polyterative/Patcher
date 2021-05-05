@@ -27,7 +27,7 @@ import {
 })
 export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;
-  @Input() updateData$: Subject<void>;
+  @Input() updateData$: Observable<any>;
   dataLoading$ = new BehaviorSubject<boolean>(true);
   
   protected destroyEvent$ = new Subject();

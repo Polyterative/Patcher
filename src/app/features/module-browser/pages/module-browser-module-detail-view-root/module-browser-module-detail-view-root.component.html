@@ -2,7 +2,7 @@
 data:(dataService.singleModuleData$|async)
 } as bag"
 >
-  <app-hero-content-card titleBig="Module details">
+  <lib-hero-content-card titleBig="Module details">
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
@@ -19,22 +19,22 @@ data:(dataService.singleModuleData$|async)
                fxLayoutGap="1rem"
           >
             <div>
-              <mat-card>
+              <lib-hero-item-card>
                 <ng-container *ngIf="bag.data"
                 >
                   <app-module-composite [data]="(bag.data)"
                   ></app-module-composite>
                 </ng-container>
-              </mat-card>
+              </lib-hero-item-card>
             </div>
             <app-auto-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
                                         [data$]="dataService.singleModuleData$"
             ></app-auto-loading-indicator>
-            <mat-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
+            <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
               <app-module-editor
-                [data]="(bag.data)"
+                  [data]="(bag.data)"
               ></app-module-editor>
-            </mat-card>
+            </lib-hero-item-card>
           </div>
         </div>
       </div>
@@ -42,5 +42,5 @@ data:(dataService.singleModuleData$|async)
         <!--        {{bag.data|json}}-->
       </app-dev-only-window>
     </div>
-  </app-hero-content-card>
+  </lib-hero-content-card>
 </ng-container>

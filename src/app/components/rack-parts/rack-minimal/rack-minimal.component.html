@@ -2,7 +2,11 @@
 >
   <div class="flow col"
   >
-    <mat-card-title>{{data.name}}</mat-card-title>
+    <app-hero-clickable-title [link]="['/racks/details',data.id]"
+                              infoBox
+                              infoText="Rack name"
+    >{{data.name}}
+    </app-hero-clickable-title>
     <div fxFlex="auto"
          fxLayout="row"
          fxLayoutGap="1rem"

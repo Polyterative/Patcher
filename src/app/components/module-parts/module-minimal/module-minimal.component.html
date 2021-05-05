@@ -8,9 +8,11 @@
   >
     <div class="flow col"
     >
-      <mat-card-title infoBox
-                      infoText="Module name"
-      >{{data.name}}</mat-card-title>
+      <app-hero-clickable-title [link]="['/modules/details',data.id]"
+                                infoBox
+                                infoText="Module name"
+  
+      >{{data.name}}</app-hero-clickable-title>
       <div class="flow row spaceBetween description"
            fxLayoutGap="1rem"
            *ngIf="data.description"

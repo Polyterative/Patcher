@@ -2,7 +2,7 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <app-hero-content-card titleBig="My patches"
+  <lib-hero-content-card titleBig="My patches"
                          icon="settings_input_composite"
   >
     <div fxFlex="auto"
@@ -15,12 +15,12 @@
       ></app-patch-list>
     
       <app-brand-primary-button
-        (click$)="add$.next()"
-        fxLayoutAlign="end"
+          (click$)="add$.next()"
+          fxLayoutAlign="end"
       >Create patch
       </app-brand-primary-button>
     </div>
-  </app-hero-content-card>
+  </lib-hero-content-card>
 </div>
 
 <ng-template #noData>
