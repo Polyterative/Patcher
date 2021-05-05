@@ -1,0 +1,22 @@
+.title {
+  &:visited {
+    color: rgba(59, 59, 59, 0.16);
+  }
+
+  & a {
+  }
+
+
+  &:hover {
+    text-decoration: underline !important;
+    cursor:          pointer;
+  }
+
+  transition:      75ms;
+  text-decoration: underline rgba(0, 0, 0, 0);
+
+  user-select:     none;
+
+  color:           rgba(0, 0, 0, 0.9);
+
+}

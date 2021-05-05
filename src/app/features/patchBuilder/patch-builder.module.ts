@@ -5,6 +5,7 @@ import { MatCardModule }             from '@angular/material/card';
 import { MatExpansionModule }        from '@angular/material/expansion';
 import { MatIconModule }             from '@angular/material/icon';
 import { RouterModule }              from '@angular/router';
+import { HeroItemCardModule }        from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
 import { ModulePartsModule }         from '../../components/module-parts/module-parts.module';
 import { UserDataHandlerComponent }  from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule }  from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -22,7 +23,7 @@ import { PatchBuilderRootComponent } from './patch-builder-root.component';
     PatchBuilderRootComponent
   ],
   providers:    [PatchBuilderDataService],
-  imports: [
+  imports:      [
     CommonModule,
     RouterModule.forChild([
       generateSaturnRoutes('patch', [
@@ -56,7 +57,8 @@ import { PatchBuilderRootComponent } from './patch-builder-root.component';
     MatCardModule,
     HeroContentCardModule,
     ModuleBrowserModule,
-    ModulePartsModule
+    ModulePartsModule,
+    HeroItemCardModule
   ],
   exports:      [
     PatchBuilderRootComponent

@@ -14,7 +14,7 @@
          fxLayout.gt-lg="row"
          fxLayoutGap="1rem"
     >
-      <app-hero-content-card fxFlex.gt-lg="50%"
+      <lib-hero-content-card fxFlex.gt-lg="50%"
                              fxFlex="auto"
                              titleNormal="Your selection"
                              description="The connection you want to create"
@@ -32,9 +32,9 @@
           ></app-patch-connection-minimal>
         </mat-card>
         <ng-template #selectedForConnectionVoidState>The connection will appear here</ng-template>
-      </app-hero-content-card>
+      </lib-hero-content-card>
       <ng-container *ngIf="(dataService.editorConnections$|async).length>0">
-        <app-hero-content-card fxFlex.gt-lg="50%"
+        <lib-hero-content-card fxFlex.gt-lg="50%"
                                fxFlex="auto"
                                titleNormal="Patch connections"
                                description="The connections of the patch you are editing"
@@ -52,7 +52,7 @@
               </mat-card>
             </ng-container>
           </div>
-        </app-hero-content-card>
+        </lib-hero-content-card>
       </ng-container>
     </div>
   

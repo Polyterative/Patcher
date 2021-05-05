@@ -10,6 +10,7 @@ import { MatTooltipModule }         from '@angular/material/tooltip';
 import { RouterModule }             from '@angular/router';
 import { TimeagoModule }            from 'ngx-timeago';
 import { SharedAtomsModule }        from 'src/app/components/shared-atoms/shared-atoms.module';
+import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { SharedPipesModule }        from 'src/app/shared-interproject/pipes/shared-pipes.module';
 import { MatFormEntityModule }      from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }   from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
@@ -49,7 +50,8 @@ import { ModuleMinimalComponent }   from './module-minimal/module-minimal.compon
     RestrictedEntityModule,
     RouterModule,
     SharedAtomsModule,
-    SharedPipesModule
+    SharedPipesModule,
+    HeroClickableTitleModule
   ],
   exports:      [
     ModuleCVItemComponent,

@@ -23,6 +23,7 @@ import { DevOnlyWindowModule }      from 'src/app/shared-interproject/components
 import { MatFormEntityModule }      from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { AdviceTooltipModule }      from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { ConfirmDialogModule }      from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
@@ -63,7 +64,8 @@ import { ConfirmDialogModule }      from 'src/app/shared-interproject/dialogs/co
     MatToolbarModule,
     AdviceTooltipModule,
     HeroContentCardModule,
-    MatDialogModule
+    MatDialogModule,
+    HeroClickableTitleModule
   ]
 })
 export class PatchModule {}
