@@ -10,7 +10,6 @@ import {
   selector:        'app-hero-clickable-title',
   templateUrl:     './hero-clickable-title.component.html',
   styleUrls:       ['./hero-clickable-title.component.scss'],
-  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeroClickableTitleComponent implements OnInit {

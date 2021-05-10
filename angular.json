@@ -12,7 +12,6 @@
         "@schematics/angular:component": {
           "style":             "scss",
           "changeDetection":   "OnPush",
-          "viewEncapsulation": "None",
           "export":            true,
           "skipTests":         true,
           "flat":              false,
