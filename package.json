@@ -1,15 +1,16 @@
 {
   "name": "patcher",
   "version": "1.0.6",
-  "scripts": {
-    "ng": "ng",
-    "start": "ng serve --hmr ",
-    "build": "angular-build-info && ng build --prod",
-    "deploy": "angular-build-info && ng build --prod && firebase deploy",
+  "scripts":         {
+    "ng":           "ng",
+    "start":        "ng serve --hmr ",
+    "build":        "angular-build-info && ng build --prod",
+    "deploy":       "angular-build-info && ng build --prod && firebase deploy",
     "updateMinors": "npm update --save/--save-dev",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "release":      "npm release-it",
+    "test":         "ng test",
+    "lint":         "ng lint",
+    "e2e":          "ng e2e"
   },
   "private": true,
   "dependencies": {
@@ -40,26 +41,27 @@
     "zone.js": "~0.10.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.1102.12",
-    "@angular/cli": "^11.2.12",
-    "@angular/compiler-cli": "^11.2.13",
-    "@angular/language-service": "^11.2.13",
-    "@types/jasmine": "^3.7.0",
-    "@types/jasminewd2": "^2.0.9",
-    "@types/luxon": "^1.26.5",
-    "@types/node": "^12.20.12",
-    "angular-build-info": "^2.0.1",
-    "codelyzer": "^5.1.2",
-    "jasmine-core": "^3.4.0",
-    "jasmine-spec-reporter": "^4.2.1",
-    "karma": "^6.3.2",
-    "karma-chrome-launcher": "^3.1.0",
+    "@angular-devkit/build-angular":    "^0.1102.12",
+    "@angular/cli":                     "^11.2.12",
+    "@angular/compiler-cli":            "^11.2.13",
+    "@angular/language-service":        "^11.2.13",
+    "@types/jasmine":                   "^3.7.0",
+    "@types/jasminewd2":                "^2.0.9",
+    "@types/luxon":                     "^1.26.5",
+    "@types/node":                      "^12.20.12",
+    "angular-build-info":               "^2.0.1",
+    "codelyzer":                        "^5.1.2",
+    "jasmine-core":                     "^3.4.0",
+    "jasmine-spec-reporter":            "^4.2.1",
+    "karma":                            "^6.3.2",
+    "karma-chrome-launcher":            "^3.1.0",
     "karma-coverage-istanbul-reporter": "^2.1.0",
-    "karma-jasmine": "^2.0.1",
-    "karma-jasmine-html-reporter": "^1.6.0",
-    "protractor": "^7.0.0",
-    "ts-node": "^8.4.1",
-    "tslint": "^6.1.3",
-    "typescript": "4.0.3"
+    "karma-jasmine":                    "^2.0.1",
+    "karma-jasmine-html-reporter":      "^1.6.0",
+    "protractor":                       "^7.0.0",
+    "release-it":                       "^14.6.2",
+    "ts-node":                          "^8.4.1",
+    "tslint":                           "^6.1.3",
+    "typescript":                       "4.0.3"
   }
 }
