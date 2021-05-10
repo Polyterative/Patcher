@@ -8,7 +8,7 @@ import {
   Routes
 }                              from '@angular/router';
 import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
-import { UranusComponent }     from './Uranus.component';
+import { UranusComponent }     from './uranus.component';
 
 @NgModule({
   declarations: [UranusComponent],
