@@ -1,39 +1,26 @@
 <lib-screen-wrapper maxSize="26rem"
                     style="margin-bottom:16rem"
 >
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
-       class="roundedCard"
+  <div style="padding-top: 4rem"
   >
-    <div style="padding-top: 4rem"
-    >
-      
-      <!--    <app-empty-state-->
-      <!--      backgroundImage="assets/undraw_login.svg"-->
-      <!--    ></app-empty-state>-->
-      <app-empty-state
-          [backgroundImage]="dataService.loginImage$|async"
-      ></app-empty-state>
-    </div>
-    <lib-hero-content-card titleBig="Login"
-    >
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
-      >
-        <app-login-email fxFlex="auto"></app-login-email>
-        <mat-card-subtitle fxLayoutAlign="center"
-                           routerLink="/auth/signup"
-                           style="cursor: pointer"
-        >Sign up instead?
-        </mat-card-subtitle>
-      </div>
-    
-    
-    </lib-hero-content-card>
-  
-  
+    <app-empty-state
+        backgroundImage="assets/undraw_login.svg"
+    ></app-empty-state>
   </div>
+  <lib-hero-content-card titleBig="Login"
+  >
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-login-email fxFlex="auto"></app-login-email>
+      <mat-card-subtitle fxLayoutAlign="center"
+                         routerLink="/auth/signup"
+                         style="cursor: pointer"
+      >Sign up instead?
+      </mat-card-subtitle>
+    </div>
+  
+  </lib-hero-content-card>
+
 </lib-screen-wrapper>
-<!--{{dataService.user$|async|json}}-->
