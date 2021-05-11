@@ -1,16 +1,16 @@
 {
   "name": "patcher",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "scripts": {
-    "ng":           "ng",
-    "start":        "ng serve --hmr ",
-    "build":        "angular-build-info && ng build --prod",
-    "deploy":       "angular-build-info && ng build --prod && firebase deploy",
+    "ng": "ng",
+    "start": "ng serve --hmr ",
+    "build": "angular-build-info && ng build --prod",
+    "deploy": "angular-build-info && ng build --prod && firebase deploy",
     "updateMinors": "npm update --save/--save-dev",
-    "release":      "release-it",
-    "test":         "ng test",
-    "lint":         "ng lint",
-    "e2e":          "ng e2e"
+    "release": "release-it",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
