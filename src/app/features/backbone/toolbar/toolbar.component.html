@@ -24,7 +24,7 @@
         <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
       </div>
       <div fxFlex="grow"></div>
-      <app-route-clickable-link-list [data$]="linksUser$"></app-route-clickable-link-list>
+      <app-route-clickable-link-list [data$]="(userService.user$|async)?linksUser$:linksA$"></app-route-clickable-link-list>
       <!--              <app-brand-logo></app-brand-logo>-->
     </div>
   </lib-screen-wrapper>

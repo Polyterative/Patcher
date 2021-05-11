@@ -4,6 +4,7 @@ import { NgModule }               from '@angular/core';
 import { FlexLayoutModule }       from '@angular/flex-layout';
 import { MatCardModule }          from '@angular/material/card';
 import { TimeagoModule }          from 'ngx-timeago';
+import { UserManagementModule }   from 'src/app/features/backbone/user-management/user-management.module';
 import { AppStateService }        from '../../shared-interproject/app-state.service';
 import { DevOnlyWindowModule }    from '../../shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { UserDataHandlerService } from '../../shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
@@ -31,6 +32,7 @@ import { ToolbarModule }          from './toolbar/toolbar.module';
     FeedbackBoxModule,
     FlexLayoutModule,
     LoginModule,
+    UserManagementModule,
     HeroInfoBoxModule,
     MatCardModule,
     DevOnlyWindowModule,

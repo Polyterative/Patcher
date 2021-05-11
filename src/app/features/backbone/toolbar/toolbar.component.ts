@@ -1,11 +1,12 @@
 ﻿import {
   ChangeDetectionStrategy,
   Component
-}                             from '@angular/core';
-import { Router }             from '@angular/router';
-import { BehaviorSubject }    from 'rxjs';
-import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link/route-clickable-link.component';
-import { ToolbarService }     from './toolbar.service';
+}                                from '@angular/core';
+import { Router }                from '@angular/router';
+import { BehaviorSubject }       from 'rxjs';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { RouteClickableLink }    from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link/route-clickable-link.component';
+import { ToolbarService }        from './toolbar.service';
 
 @Component({
   selector:        'app-toolbar',
@@ -57,7 +58,26 @@ export class ToolbarComponent {
     }
   ]);
   
-  constructor(public service: ToolbarService, public router: Router) {
+  
+  public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>([
+    {
+      label:    'Login',
+      route:    'auth/login',
+      disabled: false
+    },
+    {
+      label:    'Signup',
+      route:    'auth/signup',
+      style:    {border: '1px solid #fff'},
+      disabled: false
+    }
+  ]);
+  
+  constructor(
+    public userService: UserManagementService,
+    public service: ToolbarService,
+    public router: Router
+  ) {
   }
   
 }
