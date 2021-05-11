@@ -1,51 +1,37 @@
-<ng-container *ngIf="{data:(data$|async)} as bag">
+<ng-container *ngIf="{
+data:(data$|async),
+layoutFlexWidth:(appState.layoutFlexWidth$|async)
+} as bag"
+>
   <div fxFlex="auto"
        fxLayout="row"
-       fxShow
-       [fxShow.lt-md]="false"
+       *ngIf="bag.layoutFlexWidth"
   >
     <ng-container *ngFor="let item of bag.data">
-      <a mat-button
+      <a *ngIf="bag.layoutFlexWidth.xs"
+         mat-icon-button
          class="option"
          [routerLink]="item.route"
          routerLinkActive="selected"
+         [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+         [ngStyle]="item.style"
       >
-        <mat-icon>{{item.icon}}</mat-icon>
-        {{item.label}}
+        <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
+        <ng-container *ngIf="bag.layoutFlexWidth.gtsm"> {{item.label}}</ng-container>
       </a>
-    </ng-container>
-  </div>
-  <div fxFlex="auto"
-       fxLayout="row"
-       fxHide
-       [fxHide.lt-md]="false"
-       [fxHide.xs]="true"
-  >
-    <ng-container *ngFor="let item of bag.data">
-      <a mat-button
+      <a *ngIf="bag.layoutFlexWidth.gtxs"
+         mat-button
          class="option"
          [routerLink]="item.route"
          routerLinkActive="selected"
-         [matTooltip]="item.label"
+         [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+         [ngStyle]="item.style"
       >
-        <mat-icon>{{item.icon}}</mat-icon>
+        <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
+        <ng-container *ngIf="bag.layoutFlexWidth.gtsm"> {{item.label}}</ng-container>
       </a>
     </ng-container>
   </div>
-  <div fxFlex="auto"
-       fxLayout="row"
-       fxHide
-       [fxHide.xs]="false"
-  >
-    <ng-container *ngFor="let item of bag.data">
-      <a mat-icon-button
-         class="option"
-         [routerLink]="item.route"
-         routerLinkActive="selected"
-         [matTooltip]="item.label"
-      >
-        <mat-icon>{{item.icon}}</mat-icon>
-      </a>
-    </ng-container>
-  </div>
+
+
 </ng-container>

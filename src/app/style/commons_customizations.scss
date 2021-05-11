@@ -12,7 +12,6 @@ body {
 }
 
 
-
 .mat-list-item {
   user-select: none;
 }
@@ -85,4 +84,8 @@ mat-expansion-panel {
 
 .mat-chip {
   hyphens: none;
+}
+
+.roundedCard {
+  border: solid 1px #D9DFF1;border-radius: .5rem; padding: 2rem; background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
 }
