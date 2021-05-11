@@ -1,0 +1,29 @@
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <lib-hero-content-card titleBig="My account"
+                         icon="manage_accounts"
+  >
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-brand-primary-button
+          (click$)="userManagementService.logoff()"
+          theme="warning"
+          fxLayoutAlign="end"
+      >Logout
+      </app-brand-primary-button>
+    </div>
+  </lib-hero-content-card>
+</div>
+
+<ng-template #noData>
+  <div fxFlex="auto">
+    <!--    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks-->
+    <!--                                                     to your collection yet.-->
+    <!--                                                     Try adding some!-->
+    <!--    </mat-card-subtitle>-->
+  </div>
+</ng-template>

@@ -1,34 +1,63 @@
-<lib-screen-wrapper maxSize="26rem"
+<lib-screen-wrapper maxSize="65rem"
                     style="margin-bottom:16rem"
 >
-  <div style="padding-top: 4rem">
-    <app-empty-state
-      backgroundImage="assets/undraw_access.svg"
-    ></app-empty-state>
-  </div>
-  <lib-hero-content-card titleBig="Sign up"
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayout.lt-md="column"
+       fxLayoutGap="1rem"
   >
+    
+    <div fxFlex="grow"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="center start"
+    
+    >
+      <mat-card-title>Join the patcher.xyz community</mat-card-title>
+      <mat-card-subtitle>Find inspiration and share your ideas!</mat-card-subtitle>
+      
+      <ul>
+        <li>Find modules and add them to your collection</li>
+        <li>Model your rack and explore your modules</li>
+        <li>Build, save and share patches</li>
+      </ul>
+    
+    </div>
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
+         class="roundedCard"
     >
-      <app-signup-email fxFlex="auto"></app-signup-email>
+      <div style="padding-top: 4rem">
+        <app-empty-state
+            backgroundImage="assets/undraw_access.svg"
+        ></app-empty-state>
+      </div>
+      <lib-hero-content-card titleBig="Sign up"
+      >
+        <div fxFlex="auto"
+             fxLayout="column"
+             fxLayoutGap="1rem"
+        >
+          <app-signup-email fxFlex="auto"></app-signup-email>
+          
+          
+          <app-brand-primary-button *ngIf="false"
+                                    style="padding-top: 1rem"
+                                    innerFlex="auto"
+                                    theme="positive"
+                                    (click$)="dataService.googleSignClick$.next()"
+          >Google Sign up
+          </app-brand-primary-button>
+          
+          <mat-card-subtitle fxLayoutAlign="center"
+                             routerLink="/auth/login"
+                             style="cursor: pointer"
+          >Login instead?
+          </mat-card-subtitle>
+        </div>
+      </lib-hero-content-card>
     
-    
-      <app-brand-primary-button *ngIf="false"
-                                style="padding-top: 1rem"
-                                innerFlex="auto"
-                                theme="positive"
-                                (click$)="dataService.googleSignClick$.next()"
-      >Google Sign up
-      </app-brand-primary-button>
-    
-      <mat-card-subtitle fxLayoutAlign="center"
-                         routerLink="/auth/login"
-                         style="cursor: pointer"
-      >Login instead?
-      </mat-card-subtitle>
     </div>
-  </lib-hero-content-card>
-
+  </div>
 </lib-screen-wrapper>
