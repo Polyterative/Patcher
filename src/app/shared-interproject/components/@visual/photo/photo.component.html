@@ -1,0 +1,17 @@
+<ng-container *ngIf="{
+layoutFlexWidth:(appState.layoutFlexWidth$|async),
+  data:(this.dataService.url$|async)
+  } as bag"
+>
+  <div fxLayoutAlign="center center"
+  >
+    <div [ngStyle]='{"background-image": "url("+ (bag.data) + ")"}'
+         class="bg"
+    >
+      <div [class]="theme"
+      >
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+</ng-container>

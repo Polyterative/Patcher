@@ -11,14 +11,34 @@
            fxLayout="column"
            fxLayoutGap="1rem"
       >
-        <mat-card-title fxFlex="auto">What is patcher.xyz?</mat-card-title>
+        <lib-photo
+            path="assets/jpg/Resolve__2020-12-03_18-53.jpg"
+            theme="imageMid"
+        >
+        </lib-photo>
+  
+<!--        <div fxFlex="auto">-->
+<!--          <video autoplay-->
+<!--                 muted-->
+<!--                 loop-->
+<!--                 id="myVideo"-->
+<!--          >-->
+<!--            <source src="assets/mp4/demo.mp4"-->
+<!--                    type="video/mp4"-->
+<!--                    style="filter: grayscale(90%)"-->
+<!--            >-->
+<!--            Your browser does not support HTML5 video.-->
+<!--          </video>-->
+<!--        </div>-->
+  
+        <h1>What is patcher.xyz?</h1>
         <p>
           This project was born as a way to solve the problem of transcribing and sharing patch
           notes to
           keep them or simply to send them to someone.
-        
+  
         </p>
-        <mat-card-title>What can I do?</mat-card-title>
+        <h1>What can I do?</h1>
         <p>The first development goals are focused on the possibility of adding modules to your
            collection
            and interactively connecting CV inputs and CV outputs in an easy and fast way and then
@@ -26,9 +46,9 @@
            website
            itself so that they can be shared in the form of a simple link.
         </p>
-        <mat-card-title>
+        <h1>
           But doesn't this require having a list of all modules and their information?
-        </mat-card-title>
+        </h1>
         <p>Yes, however, we are not starting from scratch!
            Since one of the objectives is to maintain a database of inputs and outputs of each
            module,
@@ -38,9 +58,9 @@
            can
            happen once the project enters the open beta phase.
         </p>
-        
-        
-        <mat-card-title>What can I expect from this project in 3 months?</mat-card-title>
+  
+  
+        <h1>What can I expect from this project in 3 months?</h1>
         <p>The mid-term goal is to create a Hub in which not only to share and create patches but
            also to
            manage your rack and all your modules in a manner similar to modular grid with the
@@ -49,18 +69,19 @@
            other
            features yet to be announced!
         </p>
-        
-        <mat-card-title>Great! How i can help?</mat-card-title>
+  
+        <h1>Great! How i can help?</h1>
         <p>I am currently making the first public announcements of this idea and collecting some
            initial
            feedback from testers so I would like to know what you think about this idea and if you
            are
            interested in the project.
         </p>
-        
-        If you want to stay updated on the progress of development the best way is to subscribe to
-        the
-        discord channel that is the central communication hub.
+        <p>
+          If you want to stay updated on the progress of development the best way is to subscribe to
+          the
+          discord channel that is the central communication hub.
+        </p>
       </div>
       
       <a href="https://discord.gg/pYz3gagUDA"
@@ -110,9 +131,9 @@
              fxLayoutAlign="center center"
         
         >
-          <mat-card-title>
+          <h1>
             Modules
-          </mat-card-title>
+          </h1>
           <div fxFlex="auto"
                style="font-size:xx-large"
           >{{(statistics$|async)[0]}}
@@ -124,9 +145,9 @@
              fxLayoutAlign="center center"
         
         >
-          <mat-card-title>
+          <h1>
             Manufacturers
-          </mat-card-title>
+          </h1>
           <div fxFlex="auto"
                style="font-size:xx-large"
           >{{(statistics$|async)[1]}}
@@ -138,9 +159,9 @@
              fxLayoutAlign="center center"
         
         >
-          <mat-card-title>
+          <h1>
             Patches
-          </mat-card-title>
+          </h1>
           <div fxFlex="auto"
                style="font-size:xx-large"
           >{{(statistics$|async)[2]}}
@@ -162,17 +183,17 @@
              fxLayout="row wrap"
              fxLayoutGap="1rem"
         >
-  
+
         </div>
 
       </div>
-  
+
     </div>
   </lib-hero-content-card>
   
   
   <app-empty-state style="padding-top: 8rem"
-                   backgroundImage="assets/undraw_coming_home_52ir.svg"
+                   backgroundImage="assets/svg/undraw_coming_home_52ir.svg"
   ></app-empty-state>
 
 </div>

@@ -1,6 +1,6 @@
 <div fxLayout="column"
      fxLayoutGap="1rem"
-     *ngIf="{user:userDataHandlerService.store.user$|async} as bag"
+     *ngIf="{email:userDataHandlerService.store.user$|async} as bag"
 >
   <div fxFlex="auto"
        *ngIf="bag.user; else noData"

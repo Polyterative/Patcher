@@ -47,7 +47,7 @@ export class ToolbarComponent {
     {
       label:    'Collection',
       route:    'user/area',
-      icon:     'account_box',
+      icon:     'account_circle',
       disabled: false
     },
     {
@@ -61,14 +61,16 @@ export class ToolbarComponent {
   
   public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>([
     {
-      label:    'Login',
+      label:    'Log in',
       route:    'auth/login',
+      icon:     'login',
       disabled: false
     },
     {
-      label:    'Signup',
+      label:    'Sign up',
       route:    'auth/signup',
-      style:    {border: '1px solid #fff'},
+      icon:     'account_circle',
+      style:    {border: '1px solid rgba(210,210,210, 70%)'},
       disabled: false
     }
   ]);

@@ -17,7 +17,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          [ngStyle]="item.style"
       >
         <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
-        <ng-container *ngIf="bag.layoutFlexWidth.gtsm"> {{item.label}}</ng-container>
+        <ng-container *ngIf="item.icon?bag.layoutFlexWidth.gtsm:true"> {{  item.label}}</ng-container>
       </a>
       <a *ngIf="bag.layoutFlexWidth.gtxs"
          mat-button
@@ -28,10 +28,10 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          [ngStyle]="item.style"
       >
         <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
-        <ng-container *ngIf="bag.layoutFlexWidth.gtsm"> {{item.label}}</ng-container>
+        <ng-container *ngIf="item.icon?bag.layoutFlexWidth.gtsm:true"> {{  item.label}}</ng-container>
       </a>
     </ng-container>
   </div>
 
-
+ 
 </ng-container>
