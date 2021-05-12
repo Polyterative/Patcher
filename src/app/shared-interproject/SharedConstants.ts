@@ -36,7 +36,7 @@ export class SharedConstants {
   }
   
   static errorSignup<T>(snackBar: MatSnackBar, msg?: string) {
-    return snackBar.open(`❌ Signup not possible ${ msg }`, undefined, {duration: 5000});
+    return snackBar.open(`❌ Signup not possible \n ${ msg }`, undefined, {duration: 5000});
     
   }
   
@@ -66,7 +66,7 @@ export class SharedConstants {
   }
   
   static successSignup(snackBar: MatSnackBar) {
-    snackBar.open('✅ Login Successful ', undefined, {duration: 5000});
+    snackBar.open('✅ Signup Successful, please login', undefined, {duration: 5000});
   }
   
   static showSuccessUpdate(snackBar: MatSnackBar) {

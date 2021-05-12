@@ -7,6 +7,7 @@ import { MatToolbarModule }         from '@angular/material/toolbar';
 import { RouterModule }             from '@angular/router';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { PhotoModule }              from 'src/app/shared-interproject/components/@visual/photo/photo.module';
 import { EmptyStateModule }         from '../../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { ListLinkRouterModule }     from '../../../shared-interproject/components/@smart/list-link-router/list-link-router.module';
 import { UserDataHandlerModule }    from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
@@ -41,7 +42,8 @@ import { HomeComponent }            from './home.component';
     UserDataHandlerModule,
     EmptyStateModule,
     BrandPrimaryButtonModule,
-    HeroContentCardModule
+    HeroContentCardModule,
+    PhotoModule
   ]
 })
 export class HomeModule {}

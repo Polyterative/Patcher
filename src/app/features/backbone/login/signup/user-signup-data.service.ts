@@ -24,13 +24,24 @@ export class UserSignupDataService {
   // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
   
   fields = {
-    user:          {
+    username:      {
+      label:   'Username',
+      code:    'username',
+      flex:    '6rem',
+      control: new FormControl('', Validators.compose([
+        Validators.required,
+        Validators.maxLength(128),
+        Validators.minLength(3)
+      ])),
+      type:    FormTypes.TEXT
+    },
+    email:         {
       label:   'Email',
       code:    'email',
       flex:    '6rem',
       control: new FormControl('', Validators.compose([
-        Validators.email,
-        Validators.required
+        Validators.required,
+        Validators.email
       ])),
       type:    FormTypes.EMAIL
     },
@@ -66,7 +77,7 @@ export class UserSignupDataService {
     public loginInteraction: UserManagementService,
     snackBar: MatSnackBar
   ) {
-  
+    
     // this.mailLoginClick$
     //     .pipe(switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)))
     //     .subscribe(x => {
@@ -77,19 +88,21 @@ export class UserSignupDataService {
     //         this.router.navigate(['/modules/browser']);
     //       }
     //     });
-  
+    
     this.mailSignClick$
         .pipe(
-          switchMap(x => this.loginInteraction.signup(this.fields.user.control.value, this.fields.password.control.value)),
+          switchMap(x => this.loginInteraction.signup(this.fields.username.control.value, this.fields.email.control.value, this.fields.password.control.value)),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => {
           if (!!x.error) {
-            SharedConstants.errorSignup(snackBar, x.error.message);
+            SharedConstants.errorSignup(snackBar, 'A user with this email address or username may already have been registered');
           } else {
-            SharedConstants.confirmMail(snackBar);
+            // SharedConstants.confirmMail(snackBar);
+            SharedConstants.successSignup(snackBar);
+            this.router.navigate(['/auth/login']);
           }
-  
+      
         });
     this.googleSignClick$
         .pipe(
@@ -102,9 +115,9 @@ export class UserSignupDataService {
           } else {
             SharedConstants.confirmMail(snackBar);
           }
-    
+      
         });
-  
+    
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

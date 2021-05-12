@@ -44,8 +44,8 @@ export class UserManagementService {
                .pipe(tap(x => {if (!x.error) {this.user$.next(x.user); } }));
   }
   
-  signup(email: string, password: string) {
-    return this.backend.signup(email, password);
+  signup(username: string, email: string, password: string) {
+    return this.backend.signup(username, email, password);
   }
   
   signupGoogle() {

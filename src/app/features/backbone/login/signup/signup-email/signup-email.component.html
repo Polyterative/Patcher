@@ -2,9 +2,16 @@
      fxLayout="column"
 >
   <lib-mat-form-entity fxFlex="auto"
-                       [type]="dataService.fields.user.type"
-                       [control]="dataService.fields.user.control"
-                       [label]="dataService.fields.user.label"
+                       [dataPack]="dataService.fields.username"
+                       hint="Visible by other users"
+                       formFieldAppearenceType="fill"
+  >
+  </lib-mat-form-entity>
+  <lib-mat-form-entity fxFlex="auto"
+                       [type]="dataService.fields.email.type"
+                       [control]="dataService.fields.email.control"
+                       [label]="dataService.fields.email.label"
+                       hint="NOT visible by other users"
                        formFieldAppearenceType="fill"
   >
   </lib-mat-form-entity>
@@ -33,7 +40,7 @@ dataService.fields.password.control.value!=dataService.fields.passwordAgain.cont
   <app-brand-primary-button style="padding-top: 1rem"
                             innerFlex="auto"
                             theme="positive"
-                            [error]="(dataService.fields.user.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value!=''&&
+                            [error]="(dataService.fields.username.control.invalid||dataService.fields.email.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value!=''&&
 dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value)"
                             (click$)="dataService.mailSignClick$.next()"
   >Sign up
