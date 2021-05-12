@@ -11,6 +11,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+* {
+  box-sizing:              border-box;
+  text-rendering:          optimizeLegibility;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-kerning:            auto;
+
+  //transition:25ms;
+}
 
 .mat-list-item {
   user-select: none;
@@ -88,4 +101,24 @@ mat-expansion-panel {
 
 .roundedCard {
   border: solid 1px #D9DFF1;border-radius: .5rem; padding: 2rem; background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
+}
+
+h1 {
+  color: rgba(35, 35, 35, 0.95);
+}
+
+p {
+  color: rgba(16, 16, 16, 0.8);
+}
+
+
+a {
+  color:           rgba(68, 166, 243, 0.9);
+  text-decoration: underline;
+
+  &:visited {
+    color:           rgba(18, 123, 199, 0.9);
+    text-decoration: underline dotted;
+
+  }
 }
