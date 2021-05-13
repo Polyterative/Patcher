@@ -5,7 +5,7 @@
 import { Router }                from '@angular/router';
 import { BehaviorSubject }       from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { RouteClickableLink }    from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link/route-clickable-link.component';
+import { RouteClickableLink }    from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { ToolbarService }        from './toolbar.service';
 
 @Component({
