@@ -1,4 +1,7 @@
-﻿@import "../../../app.component";
+﻿﻿
+
+@use '~@angular/material' as mat;
+@import "../../../app.component";
 @import "~src/app/style/brand-resources.scss";
 
 mat-toolbar-row {
@@ -42,7 +45,7 @@ mat-toolbar-row > button {
 }
 
 .sticky {
-  //background-color: mat-color($nga-background, card);
+  //background-color: mat.get-color-from-palette($nga-background, card);
   position: sticky;
   position: -webkit-sticky; /* For macOS/iOS Safari */
   top:      0; /* Sets the sticky toolbar to be on top */
