@@ -12,6 +12,7 @@ import { PhotosService }   from 'src/app/shared-interproject/components/@visual/
   templateUrl:     './photo.component.html',
   styleUrls:       ['./photo.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // encapsulation:   ViewEncapsulation.None,
   providers:       [PhotosService]
 })
 export class PhotoComponent implements OnInit {
@@ -20,7 +21,7 @@ export class PhotoComponent implements OnInit {
     this.dataService.url$.next(path);
   };
   
-  @Input() theme: 'title' | 'imageMid' | 'clean' = 'clean';
+  @Input() theme: 'title' | 'mid' | 'sm' | 'clean' = 'clean';
   
   constructor(
     public dataService: PhotosService,
