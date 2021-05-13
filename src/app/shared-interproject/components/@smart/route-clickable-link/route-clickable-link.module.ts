@@ -7,7 +7,7 @@ import { MatListModule }               from '@angular/material/list';
 import { MatMenuModule }               from '@angular/material/menu';
 import { MatTooltipModule }            from '@angular/material/tooltip';
 import { RouterModule }                from '@angular/router';
-import { RouteClickableLinkComponent } from './route-clickable-link/route-clickable-link.component';
+import { RouteClickableLinkComponent } from './route-clickable-link.component';
 
 
 @NgModule({
