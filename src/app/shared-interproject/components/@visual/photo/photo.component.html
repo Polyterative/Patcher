@@ -3,15 +3,13 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async),
   data:(this.dataService.url$|async)
   } as bag"
 >
-  <div fxLayoutAlign="center center"
-  >
-    <div [ngStyle]='{"background-image": "url("+ (bag.data) + ")"}'
-         class="bg"
-    >
-      <div [class]="theme"
-      >
-        <ng-content></ng-content>
-      </div>
-    </div>
-  </div>
+  
+  <ng-smart-picture
+      [src]="bag.data"
+      type="image/webp"
+      fallbackType="image/jpeg"
+      [lazyLoad]="true"
+      objectFit="cover"
+      objectPosition="center"
+  ></ng-smart-picture>
 </ng-container>
