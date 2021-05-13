@@ -2,7 +2,9 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <lib-hero-content-card titleBig="Home">
+  <lib-hero-content-card titleBig="Home"
+                         icon="home"
+  >
     <div fxFlex="auto"
          fxLayout="column"
          fxLayoutGap="1rem"
@@ -11,34 +13,33 @@
            fxLayout="column"
            fxLayoutGap="1rem"
       >
-        <lib-photo
-            path="assets/jpg/Resolve__2020-12-03_18-53.jpg"
-            theme="imageMid"
+        <div fxFlex="auto"
+             fxLayout="row"
+             fxLayout.lt-sm="column"
+             fxLayoutGap="1rem"
         >
-        </lib-photo>
-  
-<!--        <div fxFlex="auto">-->
-<!--          <video autoplay-->
-<!--                 muted-->
-<!--                 loop-->
-<!--                 id="myVideo"-->
-<!--          >-->
-<!--            <source src="assets/mp4/demo.mp4"-->
-<!--                    type="video/mp4"-->
-<!--                    style="filter: grayscale(90%)"-->
-<!--            >-->
-<!--            Your browser does not support HTML5 video.-->
-<!--          </video>-->
-<!--        </div>-->
-  
-        <h1>What is patcher.xyz?</h1>
+          <lib-hero-header fxFlex="1/3"
+                           title="Find modules "
+                           description="Find modules and add them to your collection"
+          ></lib-hero-header>
+          <lib-hero-header fxFlex="1/3"
+                           title="Manage your racks"
+                           description="Model your rack and explore your modules"
+          ></lib-hero-header>
+          <lib-hero-header fxFlex="1/3"
+                           title="Build share and "
+                           description="Build, save and share patches"
+          ></lib-hero-header>
+          <!--          </div>-->
+        </div>
+        <h2>What is patcher.xyz?</h2>
         <p>
           This project was born as a way to solve the problem of transcribing and sharing patch
           notes to
           keep them or simply to send them to someone.
-  
+        
         </p>
-        <h1>What can I do?</h1>
+        <h2>What can I do?</h2>
         <p>The first development goals are focused on the possibility of adding modules to your
            collection
            and interactively connecting CV inputs and CV outputs in an easy and fast way and then
@@ -46,9 +47,9 @@
            website
            itself so that they can be shared in the form of a simple link.
         </p>
-        <h1>
+        <h2>
           But doesn't this require having a list of all modules and their information?
-        </h1>
+        </h2>
         <p>Yes, however, we are not starting from scratch!
            Since one of the objectives is to maintain a database of inputs and outputs of each
            module,
@@ -58,9 +59,9 @@
            can
            happen once the project enters the open beta phase.
         </p>
-  
-  
-        <h1>What can I expect from this project in 3 months?</h1>
+        
+        
+        <h2>What can I expect from this project in 3 months?</h2>
         <p>The mid-term goal is to create a Hub in which not only to share and create patches but
            also to
            manage your rack and all your modules in a manner similar to modular grid with the
@@ -69,8 +70,8 @@
            other
            features yet to be announced!
         </p>
-  
-        <h1>Great! How i can help?</h1>
+        
+        <h2>Great! How i can help?</h2>
         <p>I am currently making the first public announcements of this idea and collecting some
            initial
            feedback from testers so I would like to know what you think about this idea and if you
@@ -187,7 +188,7 @@
         </div>
 
       </div>
-
+    
     </div>
   </lib-hero-content-card>
   
