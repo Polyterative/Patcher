@@ -1,5 +1,5 @@
 <ng-container *ngIf="{
-  email:(userManagerService.user$|async),
+  user:(userManagerService.user$|async),
   isInCollection:(isInCollection$|async),
   singleModuleData:(dataService.singleModuleData$|async)
   } as bag"
