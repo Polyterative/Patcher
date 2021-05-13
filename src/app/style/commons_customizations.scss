@@ -42,13 +42,25 @@ body {
   padding-top: 0 !important;
 }
 
+h1, h2, h3, h4, h5, p {
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5 {
+  color: rgba(35, 35, 35, 0.95);
+}
+
+p {
+  color: rgba(16, 16, 16, 0.8);
+}
+
 mat-action-row {
   margin-top: 1em;
 }
 
 mat-card-title {
   margin-bottom: 0 !important;
-  font-family: 'Roboto Condensed', sans-serif
+  font-family:   'Roboto Condensed', sans-serif
 }
 
 mat-card-subtitle {
@@ -101,15 +113,7 @@ mat-expansion-panel {
 }
 
 .roundedCard {
-  border: solid 1px #D9DFF1;border-radius: .5rem; padding: 2rem; background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
-}
-
-h1 {
-  color: rgba(35, 35, 35, 0.95);
-}
-
-p {
-  color: rgba(16, 16, 16, 0.8);
+  border: solid 1px #D9DFF1;border-radius: .5rem; padding: 1rem; background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
 }
 
 

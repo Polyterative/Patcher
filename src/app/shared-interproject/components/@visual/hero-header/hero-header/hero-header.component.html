@@ -1,11 +1,16 @@
 <div fxFlex="auto"
      fxLayout="column"
+     fxLayoutGap="1rem"
 >
   <h1 fxLayoutAlign="center center"
+      fxFlex="auto"
       class="title"
   >{{title}}</h1>
   <p fxLayoutAlign="center center"
+     fxFlex="auto"
      class="description"
   >{{description}}</p>
-
+  <div fxFlex="auto">
+    <ng-content></ng-content>
+  </div>
 </div>
