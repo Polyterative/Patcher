@@ -33,28 +33,28 @@
       "architect":   {
         "build":        {
           "builder":        "@angular-devkit/build-angular:browser",
-          "options":        {
-            "outputPath": "dist/Patcher",
-            "index":      "src/index.html",
-            "main":       "src/main.ts",
-            "polyfills":  "src/polyfills.ts",
-            "tsConfig":   "src/tsconfig.app.json",
-            "assets":     [
+          "options": {
+            "outputPath":      "dist/Patcher/browser",
+            "index":           "src/index.html",
+            "main":            "src/main.ts",
+            "polyfills":       "src/polyfills.ts",
+            "tsConfig":        "src/tsconfig.app.json",
+            "assets":          [
               "src/favicon.ico",
               "src/assets"
             ],
-            "styles":     [
+            "styles":          [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
-            "scripts":    [
+            "scripts":         [
             ],
-            "vendorChunk": true,
+            "vendorChunk":     true,
             "extractLicenses": false,
-            "buildOptimizer": false,
-            "sourceMap": true,
-            "optimization": false,
-            "namedChunks": true
+            "buildOptimizer":  false,
+            "sourceMap":       true,
+            "optimization":    false,
+            "namedChunks":     true
           },
           "configurations": {
             "production": {
@@ -125,11 +125,61 @@
           "options": {
             "tsConfig": [
               "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
+              "src/tsconfig.spec.json",
+              "src/tsconfig.server.json"
             ],
             "exclude":  [
               "**/node_modules/**"
             ]
+          }
+        },
+        "server":       {
+          "builder":        "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath":   "dist/Patcher/server",
+            "main":         "server.ts",
+            "tsConfig":     "src/tsconfig.server.json",
+            "sourceMap":    true,
+            "optimization": false
+          },
+          "configurations": {
+            "production": {
+              "outputHashing":    "media",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with":    "src/environments/environment.prod.ts"
+                }
+              ],
+              "sourceMap":        false,
+              "optimization":     true
+            }
+          }
+        },
+        "serve-ssr":    {
+          "builder":        "@nguniversal/builders:ssr-dev-server",
+          "options":        {
+            "browserTarget": "Patcher:build",
+            "serverTarget":  "Patcher:server"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "Patcher:build:production",
+              "serverTarget":  "Patcher:server:production"
+            }
+          }
+        },
+        "prerender":    {
+          "builder":        "@nguniversal/builders:prerender",
+          "options":        {
+            "browserTarget": "Patcher:build:production",
+            "serverTarget":  "Patcher:server:production",
+            "routes":        [
+              "/"
+            ]
+          },
+          "configurations": {
+            "production": {}
           }
         }
       }
