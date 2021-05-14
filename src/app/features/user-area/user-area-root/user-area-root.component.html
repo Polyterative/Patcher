@@ -1,9 +1,15 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
->ab
- <!--  <h3>Welcome back {{(userService.userProfile$|async).username}}</h3>-->
-  <app-user-patches></app-user-patches>
-  <app-user-racks></app-user-racks>
-  <app-user-modules></app-user-modules>
-</div>
+<ng-container *ngIf="{
+  userProfile:(userService.userProfile$|async)
+  } as bag"
+>
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap="1rem"
+       *ngIf="bag.userProfile"
+  >
+    <h3 fxLayoutAlign="end center">Welcome back, {{bag.userProfile.username}}</h3>
+    <app-user-patches></app-user-patches>
+    <app-user-racks></app-user-racks>
+    <app-user-modules></app-user-modules>
+  </div>
+</ng-container>

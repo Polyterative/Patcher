@@ -31,19 +31,19 @@ export class UserManagementService {
     this.checkUserInCookies();
     
     this.user$.subscribe(x => {
-      
+  
       if (x) {
         this.userBoxService.store.user$.next({username: x.email});
       } else {
         this.userBoxService.store.user$.next({username: undefined});
       }
     });
-    
+  
     this.user$
         .pipe(
           switchMap(x => !!x ? this.backend.get.userWithId(x.id) : of(undefined))
         )
-        .subscribe(x => this.userProfile$.next(x));
+        .subscribe(x => this.userProfile$.next(x.data));
     
     userBoxService.logoffButtonClick$.subscribe(x => {
       this.logoff();
