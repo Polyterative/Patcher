@@ -19,7 +19,7 @@
   </h3>
   
   <div fxFlex="auto"
-       *ngIf="description.length>0"
+       *ngIf="description.length>0&&!hideDescription"
        fxLayoutAlign="end end"
   >
     <mat-card-subtitle *ngIf="description"
