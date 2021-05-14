@@ -44,7 +44,7 @@
                    (page)="dataService.onPageEvent($event)"
                    showFirstLastButtons
     ></mat-paginator>
-    
+  
     <app-module-list [data$]="dataService.modulesList$"></app-module-list>
     <app-auto-loading-indicator [data$]="dataService.modulesList$"
                                 [updateData$]="dataService.updateModulesList$"
@@ -52,3 +52,4 @@
   </div>
   <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
 </lib-hero-content-card>
+<app-empty-state backgroundImage="assets/svg/wishlist.svg"></app-empty-state>

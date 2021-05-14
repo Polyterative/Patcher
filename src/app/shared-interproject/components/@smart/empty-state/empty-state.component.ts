@@ -1,12 +1,12 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    Input,
-    OnInit
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
 } from '@angular/core';
 import {
-    ActivatedRoute,
-    Router
+  ActivatedRoute,
+  Router
 } from '@angular/router';
 
 /**
@@ -21,7 +21,6 @@ import {
 export class EmptyStateComponent implements OnInit {
   @Input()
   backgroundImage: string;
-  prefix = '/assets/illustrations/';
 
   constructor(private route: ActivatedRoute, private router: Router) {
 
