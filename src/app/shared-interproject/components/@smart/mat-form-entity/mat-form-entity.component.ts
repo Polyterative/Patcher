@@ -219,22 +219,23 @@ export class MatFormEntityComponent {
         this.options$ = this.dataPack.options$;
       }
     }
-    
-    this.control.valueChanges
-        .pipe(
-          map(() => this.control.invalid),
-          tap(() => this.changeDetectorRef.detectChanges()),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(data => this.invalid$.next(data));
-    
-    merge(this.control.valueChanges, this.options$ ? this.options$ : NEVER)
+  
+    let changes$ = merge(this.control.statusChanges, this.control.valueChanges);
+    changes$
+      .pipe(
+        map(() => this.control.invalid),
+        tap(() => this.changeDetectorRef.detectChanges()),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => this.invalid$.next(data));
+  
+    merge(changes$, this.options$ ? this.options$ : NEVER)
       .pipe(
         map(_ => this.errorProvider(this.control)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(errors => this.errors$.next(errors));
-    
+  
     const hostControl = this.control; // alias
     
     // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
@@ -407,18 +408,18 @@ export class MatFormEntityComponent {
               .pipe(
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
-    
-                    if (options.length == 0) {
+  
+                  if (options.length == 0) {
                       return null;
                     }
-    
-                    if (typeof input === 'string') {
+  
+                  if (typeof input === 'string') {
                       return this.autocompleteCanBeVoid && input == '' ? null : this.errorObjectNotInOptions;
                     }
-    
-                    const foundSome = options.some(y => (y.id === input.id));
-    
-                    // tslint:disable-next-line:no-null-keyword
+  
+                  const foundSome = options.some(y => (y.id === input.id));
+  
+                  // tslint:disable-next-line:no-null-keyword
                     return foundSome ? null : this.errorObjectNotInOptions;
                   }
                 ),
