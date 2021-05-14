@@ -7,14 +7,19 @@ import {
 import { User }                   from '@supabase/supabase-js';
 import { BehaviorSubject }        from 'rxjs';
 import { fromPromise }            from 'rxjs/internal-compatibility';
-import { tap }                    from 'rxjs/operators';
-import { UserDataHandlerService } from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
-import { SharedConstants }        from '../../../shared-interproject/SharedConstants';
+import { of }                     from 'rxjs/internal/observable/of';
+import {
+  switchMap,
+  tap
+}                                 from 'rxjs/operators';
+import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
+import { SharedConstants }        from 'src/app/shared-interproject/SharedConstants';
 import { SupabaseService }        from '../../backend/supabase.service';
 
 @Injectable()
 export class UserManagementService {
   user$ = new BehaviorSubject<User | undefined>(undefined);
+  userProfile$ = new BehaviorSubject<{ username: string, email: string } | undefined>(undefined);
   
   constructor(
     public snackBar: MatSnackBar,
@@ -26,14 +31,20 @@ export class UserManagementService {
     this.checkUserInCookies();
     
     this.user$.subscribe(x => {
-  
+      
       if (x) {
         this.userBoxService.store.user$.next({username: x.email});
       } else {
         this.userBoxService.store.user$.next({username: undefined});
       }
     });
-  
+    
+    this.user$
+        .pipe(
+          switchMap(x => !!x ? this.backend.get.userWithId(x.id) : of(undefined))
+        )
+        .subscribe(x => this.userProfile$.next(x));
+    
     userBoxService.logoffButtonClick$.subscribe(x => {
       this.logoff();
     });
