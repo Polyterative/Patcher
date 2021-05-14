@@ -23,6 +23,7 @@ import { RackCompositeComponent }         from 'src/app/features/rack-browser/ra
 import { RackListComponent }              from 'src/app/features/rack-browser/rack-list/rack-list.component';
 import { AutoLoadingIndicatorModule }     from 'src/app/shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
 import { DevOnlyWindowModule }            from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { EmptyStateModule }               from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { MatFormEntityModule }            from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }         from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent }       from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
@@ -50,7 +51,7 @@ import { generateUranusRoutes }           from 'src/app/shared-interproject/rout
     RackListComponent
   ],
   providers:    [RackBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       generateUranusRoutes('racks', [
@@ -103,7 +104,8 @@ import { generateUranusRoutes }           from 'src/app/shared-interproject/rout
     ModulePartsModule,
     FlexboxRowFastModule,
     WidthLimiterModule,
-    HeroItemCardModule
+    HeroItemCardModule,
+    EmptyStateModule
   ]
 })
 export class RackBrowserModule {}
