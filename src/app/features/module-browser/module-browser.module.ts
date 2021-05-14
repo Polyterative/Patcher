@@ -22,6 +22,7 @@ import { ModuleBrowserModuleDetailViewRootComponent } from 'src/app/features/mod
 import { ModuleBrowserRootComponent }                 from 'src/app/features/module-browser/pages/module-browser-root/module-browser-root.component';
 import { AutoLoadingIndicatorModule }                 from 'src/app/shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
 import { DevOnlyWindowModule }                        from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { EmptyStateModule }                           from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { MatFormEntityModule }                        from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }                     from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent }                   from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
@@ -45,7 +46,7 @@ import { generateUranusRoutes }                       from 'src/app/shared-inter
     ModuleListComponent
   ],
   providers:    [ModuleBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       generateUranusRoutes('modules', [
@@ -97,7 +98,8 @@ import { generateUranusRoutes }                       from 'src/app/shared-inter
     ModulePartsModule,
     FlexboxRowFastModule,
     WidthLimiterModule,
-    HeroItemCardModule
+    HeroItemCardModule,
+    EmptyStateModule
   ],
   exports:      [
     ModuleListComponent
