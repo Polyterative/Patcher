@@ -89,7 +89,7 @@ fieldset > legend {
   margin: $dim-standardUnit;
 }
 
-$roundingRadius: 1em;
+$roundingRadius: .5em;
 
 @mixin round {
   border-radius: $roundingRadius;
@@ -113,7 +113,10 @@ mat-expansion-panel {
 }
 
 .roundedCard {
-  border: solid 1px #D9DFF1;border-radius: .5rem; padding: 1rem; background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
+  border:     solid 1px #D9DFF1;
+  //border-radius: .5rem;
+  padding:    1rem;
+  background: linear-gradient(26deg, rgb(255, 255, 255) 0%, rgb(249, 250, 255) 100%)
 }
 
 
