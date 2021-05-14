@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit
-} from '@angular/core';
+}                                from '@angular/core';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SupabaseService }       from 'src/app/features/backend/supabase.service';
 
 @Component({
   selector:        'app-user-area-root',
@@ -12,7 +14,10 @@ import {
 })
 export class UserAreaRootComponent implements OnInit {
   
-  constructor() { }
+  constructor(
+    public userService: UserManagementService,
+    public backend: SupabaseService
+  ) { }
   
   ngOnInit(): void {
   }

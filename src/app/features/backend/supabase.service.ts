@@ -15,7 +15,6 @@ import {
 import { fromPromise }     from 'rxjs/internal-compatibility';
 import { of }              from 'rxjs/internal/observable/of';
 import {
-  delay,
   map,
   switchMap,
   tap,
@@ -250,7 +249,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     userWithId:         (id: string, columns = '*') => fromPromise(
-      this.supabase.from(this.paths.modules)
+      this.supabase.from(this.paths.profiles)
           .select(columns)
           .filter('id', 'eq', id)
           .single()
