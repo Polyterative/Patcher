@@ -1,6 +1,6 @@
 {
   "name":            "patcher",
-  "version":         "2.2.1",
+  "version":         "2.6.1",
   "scripts":         {
     "start":         "ng serve --hmr ",
     "build":         "angular-build-info && ng build --configuration production",
@@ -10,7 +10,6 @@
     "release:minor": "standard-version --release-as minor && angular-build-info && git push --follow-tags origin master",
     "release:major": "standard-version --release-as major && angular-build-info && git push --follow-tags origin master",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
-    "release":       "release-it",
     "test":          "ng test",
     "lint":          "ng lint",
     "e2e":           "ng e2e"

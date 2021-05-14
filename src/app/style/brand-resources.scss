@@ -23,8 +23,20 @@ $brand-negative-background: rgba($brand-negative, .2);
 $main-font:                 'Roboto';
 $secondary-font:            'Noto Sans';
 
-body {
+html {
   font-family: 'Roboto', sans-serif;
+  font-size:   100%;
+}
+
+
+body {font-size: 1rem;font-family: inherit;}
+
+h1 {
+  //font
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: normal;
 }
 
 //COLORS
