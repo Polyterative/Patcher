@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "2.6.5",
+  "version": "2.6.6",
   "scripts": {
     "start": "ng serve --hmr ",
     "build": "angular-build-info && ng build --configuration production",
