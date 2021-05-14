@@ -11,7 +11,7 @@ deploy_production:
     - tags
   script:
     - npm -v
-    - npm install -g npm i universal-analytics
+    - npm install -g universal-analytics
     - npm install -g firebase-tools
     - npm install
     - firebase use --token $FIREBASE_DEPLOY_KEY $FIREBASE_PROJ_CODE
