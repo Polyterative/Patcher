@@ -4,6 +4,7 @@ import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatCardModule }            from '@angular/material/card';
 import { RouterModule }             from '@angular/router';
 import { UserManagementComponent }  from 'src/app/features/backbone/user-management/user-management.component';
+import { EmptyStateModule }         from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 
@@ -33,7 +34,8 @@ import { HeroContentCardModule }    from 'src/app/shared-interproject/components
     MatCardModule,
     FlexLayoutModule,
     HeroContentCardModule,
-    BrandPrimaryButtonModule
+    BrandPrimaryButtonModule,
+    EmptyStateModule
   
   ],
   exports:      [
