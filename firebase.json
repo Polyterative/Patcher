@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public":   "dist/Patcher/browser",
+    "public":   "dist/Patcher",
     "ignore":   [
       "firebase.json",
       "**/.*",
