@@ -58,7 +58,7 @@ const matDatepickerLocaleIT = {
     AppComponent
   ],
   imports: [
-    BrowserModule.withServerTransition({appId: 'serverApp'}),
+    BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
     ToolbarModule,
