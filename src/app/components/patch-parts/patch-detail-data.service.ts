@@ -11,6 +11,7 @@ import {
   filter,
   switchMap,
   takeUntil,
+  tap,
   withLatestFrom
 }                                from 'rxjs/operators';
 import {
@@ -74,6 +75,7 @@ export class PatchDetailDataService {
     
     this.updateSinglePatchData$
         .pipe(
+          tap(x => this.singlePatchData$.next(undefined)),
           switchMap(x => this.backend.get.patchWithId(x)),
           takeUntil(this.destroyEvent$)
         )
