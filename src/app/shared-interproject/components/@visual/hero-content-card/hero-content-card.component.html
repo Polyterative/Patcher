@@ -2,20 +2,25 @@
      class="container"
 >
   <h1 fxFlex="grow"
-      fxLayoutAlign="start center"
+      fxLayout="row"
       *ngIf="titleBig.length>0"
       class="title"
   >
-    <div fxFlex="auto">{{titleBig}}</div>
-    <app-hero-content-card-head-icon [icon]="icon"></app-hero-content-card-head-icon>
+    <div fxFlex="grow">{{titleBig}}</div>
+    <app-hero-content-card-head-icon
+        fxLayoutAlign="center center"
+        [icon]="icon"
+  
+    ></app-hero-content-card-head-icon>
   </h1>
   <h3 fxFlex="grow"
-      fxLayoutAlign="start center"
+      fxLayout="row"
       *ngIf="titleNormal.length>0"
       class="title"
   >
-    <div fxFlex="auto">{{titleNormal}}</div>
-    <app-hero-content-card-head-icon [icon]="icon"></app-hero-content-card-head-icon>
+    <div fxFlex="grow">{{titleNormal}}</div>
+    <app-hero-content-card-head-icon [icon]="icon"
+    ></app-hero-content-card-head-icon>
   </h3>
   
   <div fxFlex="auto"

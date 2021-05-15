@@ -50,11 +50,11 @@ mat-card-subtitle, p {
 
 h1 {
   font-family: 'Roboto', sans-serif;
-  font-weight: 300;
   font-size:   5rem;
 
-  mat-icon {
-    font-size: 4em
+  & .material-icons, app-hero-content-card-head-icon {
+    font-size: .5em;
+    color:     rgba(83, 83, 83, 0.98)
   }
 
   //font
@@ -63,7 +63,22 @@ h1 {
 }
 
 
-h1, h2, h3, h4, h5 {
+h2 {
+  font-size: 2.5rem;
+}
+
+h3 {
+  font-size: 2rem;
+}
+
+h1, h2 {
+  font-weight: 300;
+  //font-family: 'Roboto', serif;
+  //font-weight: normal;
+}
+
+h3, h4, h5 {
+  font-weight: 400;
   //font-family: 'Roboto', serif;
   //font-weight: normal;
 }
