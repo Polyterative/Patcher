@@ -10,3 +10,37 @@
   padding: .5rem;
   border:  0.2rem dotted #325574;
 }
+
+//$palette: (
+//            a : #c8b78c,
+//            b : #87bbe3,
+//            c : #dda6b3,
+//            d : #87c6b7,
+//            e : #b5b7d7
+//          );
+
+
+$palette: (
+            a : #EE8BB5,
+            b : #5ED0B4,
+            c : #E89D70,
+            d : #AAA8EA,
+            e : #B1C06F
+          );
+
+
+.connections {
+  & h3 {
+    padding-left: 1em !important
+  }
+
+  background-color: transparentize(map-get($palette, d), 0.7);
+}
+
+.selection {
+  background-color: transparentize(map-get($palette, b), 0.7);
+}
+
+.modules {
+  background-color: transparentize(map-get($palette, c), 0.7);
+}

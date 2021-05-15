@@ -7,7 +7,7 @@
        fxLayoutGap="1rem"
   >
     <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
-    <app-user-modules></app-user-modules>
+    <app-user-modules class="modules"></app-user-modules>
   
     <div fxFlex="auto"
          fxLayout="column"
@@ -16,6 +16,7 @@
     >
       <lib-hero-content-card fxFlex.gt-lg="50%"
                              fxFlex="auto"
+                             class="selection"
                              titleNormal="Your selection"
                              description="The connection you want to create"
       >
@@ -37,6 +38,7 @@
         <lib-hero-content-card fxFlex.gt-lg="50%"
                                fxFlex="auto"
                                titleNormal="Patch connections"
+                               class="connections"
                                description="The connections of the patch you are editing"
         >
           <div fxFlex="auto"
