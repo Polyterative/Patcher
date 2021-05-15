@@ -1,5 +1,5 @@
-﻿@import "brand-resources";
-@import "reset";
+﻿@import "reset";
+@import "brand-resources";
 //@import 'material-design-icons-iconfont/dist/material-design-icons.css';
 //@import 'typeface-roboto/index.css';
 //@import 'typeface-noto-sans/index.css';
@@ -43,15 +43,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, p {
-  margin: 0;
-}
-
-h1, h2, h3, h4, h5 {
-  color: rgba(35, 35, 35, 0.95);
-}
-
-p {
-  color: rgba(16, 16, 16, 0.8);
+  //margin: 0;
 }
 
 mat-action-row {
@@ -60,7 +52,6 @@ mat-action-row {
 
 mat-card-title {
   margin-bottom: 0 !important;
-  font-family:   'Roboto Condensed', sans-serif
 }
 
 mat-card-subtitle {
