@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.7.1](https://gitlab.com/polymain/focus/compare/v2.7.0...v2.7.1) (2021-05-15)
+
 ## [2.7.0](https://gitlab.com/polymain/focus/compare/v2.6.6...v2.7.0) (2021-05-15)
 
 ### [2.6.6](https://gitlab.com/polymain/focus/compare/v2.6.5...v2.6.6) (2021-05-14)
