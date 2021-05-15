@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&display=swap');
+//@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato&family=Roboto+Condensed&family=Roboto+Slab:wght@500&family=Roboto:ital,wght@0,300;0,500;0,900;1,500&display=swap');
+//font-family: 'Lato', sans-serif;
+//font-family: 'Roboto', sans-serif;
+//font-family: 'Roboto Condensed', sans-serif;
+//font-family: 'Roboto Slab', serif;
 
 
 $brand-primary:             darken(#194987, 10);
@@ -29,15 +34,48 @@ html {
 }
 
 
-body {font-size: 1rem;font-family: inherit;}
+body {
+  font-size: 1rem;font-family: inherit;
+}
+
+mat-card-title {
+  font-family: 'Roboto Condensed', sans-serif
+}
+
+mat-card-subtitle, p {
+  //font-family: 'Roboto-Slab', serif;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+}
 
 h1 {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size:   5rem;
+
+  mat-icon {
+    font-size: 4em
+  }
+
   //font
+  //font-family: 'Roboto', sans-serif;
+  //font-family: 'Roboto Condensed', sans-serif;
+}
+
+
+h1, h2, h3, h4, h5 {
+  //font-family: 'Roboto', serif;
+  //font-weight: normal;
 }
 
 h1, h2, h3, h4, h5 {
-  font-weight: normal;
+  color: rgba(0, 0, 0, 0.8);
 }
+
+p {
+  color: rgba(0, 0, 0, 0.64);
+}
+
 
 //COLORS
 

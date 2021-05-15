@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector:        'app-hero-contenst-card-head-icon',
+  selector:        'app-hero-content-card-head-icon',
   templateUrl:     './hero-contenst-card-head-icon.component.html',
   styleUrls:       ['./hero-contenst-card-head-icon.component.scss'],
   encapsulation:   ViewEncapsulation.None,
