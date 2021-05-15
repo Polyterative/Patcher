@@ -76,6 +76,8 @@ export class PatchDetailDataService {
     this.updateSinglePatchData$
         .pipe(
           tap(x => this.singlePatchData$.next(undefined)),
+          tap(x => this.patchesConnections$.next([])),
+          tap(x => this.editorConnections$.next([])),
           switchMap(x => this.backend.get.patchWithId(x)),
           takeUntil(this.destroyEvent$)
         )
