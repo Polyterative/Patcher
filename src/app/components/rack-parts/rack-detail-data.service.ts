@@ -9,7 +9,8 @@ import {
 import { of }                    from 'rxjs/internal/observable/of';
 import {
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 }                                from 'rxjs/operators';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
@@ -43,6 +44,7 @@ export class RackDetailDataService {
   
     this.updateSingleRackData$
         .pipe(
+          tap(x => this.singleRackData$.next(undefined)),
           switchMap(x => this.backend.get.rackWithId(x)),
           takeUntil(this.destroyEvent$)
         )

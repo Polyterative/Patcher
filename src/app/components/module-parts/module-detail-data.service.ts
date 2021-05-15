@@ -11,6 +11,7 @@ import { of }                    from 'rxjs/internal/observable/of';
 import {
   switchMap,
   takeUntil,
+  tap,
   withLatestFrom
 }                                from 'rxjs/operators';
 import {
@@ -49,9 +50,13 @@ export class ModuleDetailDataService {
       .subscribe(x => {
         this.userModulesList$.next(x);
       });
-    
+  
     this.updateSingleModuleData$
-        .pipe(switchMap(x => this.backend.get.moduleWithId(x)), takeUntil(this.destroyEvent$))
+        .pipe(
+          tap(x => this.singleModuleData$.next(undefined)),
+          switchMap(x => this.backend.get.moduleWithId(x)),
+          takeUntil(this.destroyEvent$)
+        )
         .subscribe(x => this.singleModuleData$.next(x.data));
     
     this.addModuleToCollection$
