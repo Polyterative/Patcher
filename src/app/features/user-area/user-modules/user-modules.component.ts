@@ -1,7 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  OnInit,
+  ViewEncapsulation
 }                          from '@angular/core';
 import {
   BehaviorSubject,
@@ -15,6 +16,7 @@ import { MinimalModule }   from 'src/app/models/models';
   selector:        'app-user-modules',
   templateUrl:     './user-modules.component.html',
   styleUrls:       ['./user-modules.component.scss'],
+  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserModulesComponent implements OnInit {

@@ -6,34 +6,11 @@
        fxLayout="column"
        fxLayoutGap="1rem"
   >
-    <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
-    <app-user-modules class="modules"></app-user-modules>
-  
     <div fxFlex="auto"
          fxLayout="column"
          fxLayout.gt-lg="row"
          fxLayoutGap="1rem"
     >
-      <lib-hero-content-card fxFlex.gt-lg="50%"
-                             fxFlex="auto"
-                             class="selection"
-                             titleNormal="Your selection"
-                             description="The connection you want to create"
-      >
-        <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
-          <app-patch-connection-minimal [data]="{
-    a:bag.selectedForConnection.a.cv,
-    b:bag.selectedForConnection.b.cv,
-    patch:data
-    }"
-                                        isEditing="true"
-                                        [isCreator]="true"
-                                        (remove$)="dataService.resetSelectedForConnection$.next()"
-                                        (create$)="dataService.confirmSelectedConnection$.next()"
-          ></app-patch-connection-minimal>
-        </mat-card>
-        <ng-template #selectedForConnectionVoidState>The connection will appear here</ng-template>
-      </lib-hero-content-card>
       <ng-container *ngIf="(dataService.editorConnections$|async).length>0">
         <lib-hero-content-card fxFlex.gt-lg="50%"
                                fxFlex="auto"
@@ -56,17 +33,63 @@
           </div>
         </lib-hero-content-card>
       </ng-container>
+      <lib-hero-content-card fxFlex.gt-lg="50%"
+                             fxFlex="auto"
+                             class="selection"
+                             titleNormal="Your selection"
+                             description="The connection you want to create"
+      >
+        <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+          <app-patch-connection-minimal [data]="{
+    a:bag.selectedForConnection.a.cv,
+    b:bag.selectedForConnection.b.cv,
+    patch:data
+    }"
+                                        isEditing="true"
+                                        [isCreator]="true"
+                                        (remove$)="dataService.resetSelectedForConnection$.next()"
+                                        (create$)="dataService.confirmSelectedConnection$.next()"
+          ></app-patch-connection-minimal>
+        </mat-card>
+        <ng-template #selectedForConnectionVoidState>The connection will appear here</ng-template>
+      </lib-hero-content-card>
+
     </div>
+    <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
   
-    <mat-card-subtitle>You're editing your patch. Remember to save after you're done!
-    </mat-card-subtitle>
+  
+    <!--    <mat-accordion class="example-headers-align" multi>-->
+    <!--      <mat-expansion-panel>-->
+    <!--        <mat-expansion-panel-header>-->
+    <!--          <mat-panel-title>-->
+    <!--            Modules-->
+    <!--          </mat-panel-title>-->
+    <!--        </mat-expansion-panel-header>-->
+    <app-user-modules class="modules"></app-user-modules>
+  
+    <!--      </mat-expansion-panel>-->
+    <!--    </mat-accordion>-->
+  
+  
     <mat-divider inset="true"></mat-divider>
-    <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
-                              theme="positive"
-                              fxLayoutAlign="end"
+    <div fxFlex="auto"
+         fxLayout="row"
+         fxLayoutGap="1rem"
     >
-      <mat-icon>save</mat-icon>
-      Save patch
-    </app-brand-primary-button>
+      <mat-card-subtitle fxFlex="grow"
+                         fxLayoutAlign="end center"
+      > You're editing your patch. Remember to save
+        after
+        you're done!
+      </mat-card-subtitle>
+      <div></div>
+      <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
+                                theme="positive"
+                                fxLayoutAlign="end"
+      >
+        <mat-icon>save</mat-icon>
+        Save patch
+      </app-brand-primary-button>
+    </div>
   </div>
 </ng-container>
