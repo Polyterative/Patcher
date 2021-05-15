@@ -8,7 +8,7 @@
 
 $brand-primary:             darken(#194987, 10);
 $brand-secondary:           #7B8A9C;
-$brand-tertiary:            #DFE7EA;
+$brand-tertiary:            rgba(173, 191, 198, 0.45);
 
 $brand-error:               #F44336;
 $brand-error:               rgba($brand-error, .2);
@@ -50,7 +50,7 @@ mat-card-subtitle, p {
 
 h1 {
   font-family: 'Roboto', sans-serif;
-  font-size:   5rem;
+  font-size:   4rem;
 
   & .material-icons, app-hero-content-card-head-icon {
     font-size: .5em;

@@ -22,7 +22,7 @@
       <div class="flow row spaceBetween"
            fxLayoutGap="1rem"
       >
-        <div>
+        <div *ngIf="!hideManufacturer">
           <mat-card-subtitle infoBox
                              infoText="Manufacturer name"
           >{{data.manufacturer.name}}</mat-card-subtitle>
@@ -36,80 +36,82 @@
       </div>
     </div>
     <ng-content></ng-content>
-    <mat-divider [inset]="true"
-                 style="margin-top:.5rem"
-    ></mat-divider>
-    <div class="flow row opacizeOnHover"
-         fxLayoutGap="2rem"
-         fxLayoutGap.xs="0rem"
-    >
-      <div fxFlex="auto"
-           fxLayout="row"
-           fxLayoutGap="1rem"
+    <ng-container *ngIf="!hideButtons">
+      <mat-divider [inset]="true"
+                   style="margin-top:.5rem"
+      ></mat-divider>
+      <div class="flow row opacizeOnHover"
+           fxLayoutGap="2rem"
+           fxLayoutGap.xs="0rem"
       >
-        <ng-container *ngIf="!bag.isInCollection">
-          <button mat-icon-button
-                  matTooltip="Add to your collection"
-                  *ngIf="(bag.singleModuleData)"
-                  [disabled]="!bag.user"
-                  (click)="dataService.addModuleToCollection$.next(data.id)"
-          >
-            <mat-icon>add</mat-icon>
-          </button>
-        </ng-container>
-        <ng-container *ngIf="bag.isInCollection">
-          <button mat-icon-button
-                  matTooltip="Remove from your collection"
-                  *ngIf="(bag.singleModuleData)"
-                  [disabled]="!bag.user"
-                  (click)="dataService.removeModuleFromCollection$.next(data.id)"
-          >
-            <mat-icon>eject</mat-icon>
-          </button>
-        </ng-container>
-  
-  
-        <button mat-icon-button
-                matTooltip="Add to rack"
-                *ngIf="(bag.singleModuleData)"
-                [disabled]="(!bag.user)"
-                (click)="dataService.addModuleToRack$.next(data)"
+        <div fxFlex="auto"
+             fxLayout="row"
+             fxLayoutGap="1rem"
         >
-          <mat-icon>playlist_add</mat-icon>
-        </button>
-      </div>
-      <div fxFlex="grow"></div>
-      <div fxFlex="auto"
-           fxLayout="row"
-           fxLayoutGap="1rem"
-      >
-        <ng-container *ngIf="(bag.singleModuleData)">
-          <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
+          <ng-container *ngIf="!bag.isInCollection">
             <button mat-icon-button
-                    matTooltip="Edit module"
-                    [disabled]="(!bag.user)||bag.singleModuleData.isComplete"
-                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-          </ng-container>
-          <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
-            <button mat-icon-button
-                    matTooltip="Close editor"
+                    matTooltip="Add to your collection"
+                    *ngIf="(bag.singleModuleData)"
                     [disabled]="!bag.user"
-                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                    (click)="dataService.addModuleToCollection$.next(data.id)"
             >
-              <mat-icon>close</mat-icon>
+              <mat-icon>add</mat-icon>
             </button>
           </ng-container>
-        </ng-container>
-        <a mat-icon-button
-           matTooltip="Show details"
-           [routerLink]="['/modules/details',data.id]"
+          <ng-container *ngIf="bag.isInCollection">
+            <button mat-icon-button
+                    matTooltip="Remove from your collection"
+                    *ngIf="(bag.singleModuleData)"
+                    [disabled]="!bag.user"
+                    (click)="dataService.removeModuleFromCollection$.next(data.id)"
+            >
+              <mat-icon>eject</mat-icon>
+            </button>
+          </ng-container>
+        
+        
+          <button mat-icon-button
+                  matTooltip="Add to rack"
+                  *ngIf="(bag.singleModuleData)"
+                  [disabled]="(!bag.user)"
+                  (click)="dataService.addModuleToRack$.next(data)"
+          >
+            <mat-icon>playlist_add</mat-icon>
+          </button>
+        </div>
+        <div fxFlex="grow"></div>
+        <div fxFlex="auto"
+             fxLayout="row"
+             fxLayoutGap="1rem"
         >
-          <mat-icon>search</mat-icon>
-        </a>
+          <ng-container *ngIf="(bag.singleModuleData)">
+            <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
+              <button mat-icon-button
+                      matTooltip="Edit module"
+                      [disabled]="(!bag.user)||bag.singleModuleData.isComplete"
+                      (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
+              <button mat-icon-button
+                      matTooltip="Close editor"
+                      [disabled]="!bag.user"
+                      (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </ng-container>
+          </ng-container>
+          <a mat-icon-button
+             matTooltip="Show details"
+             [routerLink]="['/modules/details',data.id]"
+          >
+            <mat-icon>search</mat-icon>
+          </a>
+        </div>
       </div>
-    </div>
+    </ng-container>
   </div>
 </ng-container>

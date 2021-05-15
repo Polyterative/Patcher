@@ -1,46 +1,28 @@
-<mat-chip-list>
-  <div fxFlex="auto">
-    <div fxFlex="50"
-         fxLayout="row"
-         
-    >
-      <div fxFlex="auto"
-           fxLayout="column"
-           
-      >
-        <div fxFlex="auto"
-             fxLayoutAlign="center center"
-        >{{data.a.module.name}}</div>
-        <app-module-cvitem [data]="data.a"
-                           fxLayoutAlign="center center"
-        
-                           kind="in"
-        ></app-module-cvitem>
-      </div>
-    </div>
-    <div fxFlex="auto"
-         fxLayoutAlign="center center"
-    >⇥
-    </div>
-    <div fxFlex="50"
-         fxLayout="row"
-         
-    >
-      <div fxFlex="auto"
-           fxLayout="column"
-           
-      >
-        <div fxFlex="auto"
-             fxLayoutAlign="center center"
-        >{{data.b.module.name}}</div>
-        <app-module-cvitem [data]="data.b"
-                           fxLayoutAlign="center center"
-        
-                           kind="out"
-        ></app-module-cvitem>
-      </div>
-    </div>
-  </div>
-</mat-chip-list>
+<div fxFlex="shrink"
+     fxLayout="row"
+     fxLayoutGap="1rem"
+     fxLayoutAlign="space-between"
+>
+  <app-module-minimal fxFlex="50%"
+                      [data]="data.a.module"
+                      [hideManufacturer]="true"
+                      [hideButtons]="true"
+  >
+    <mat-chip-list>
+      <mat-chip>{{data.a.name}}</mat-chip>
+    </mat-chip-list>
+  </app-module-minimal>
+  <app-patch-connection-symbol></app-patch-connection-symbol>
+  <app-module-minimal fxFlex="50%"
+                      [data]="data.b.module"
+                      [hideManufacturer]="true"
+                      [hideButtons]="true"
+  >
+    <mat-chip-list>
+      <mat-chip>{{data.b.name}}</mat-chip>
+    </mat-chip-list>
+  </app-module-minimal>
+</div>
+
 
 <!--    <div fxFlex="auto">-->

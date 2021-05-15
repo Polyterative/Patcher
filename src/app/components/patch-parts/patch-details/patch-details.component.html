@@ -18,6 +18,7 @@
           >
             <ng-container *ngFor="let item of dataService.patchesConnections$|async">
               <app-patch-connection-micro [data]="item"></app-patch-connection-micro>
+              <mat-divider inset="true"></mat-divider>
             </ng-container>
           </div>
         </mat-card>
