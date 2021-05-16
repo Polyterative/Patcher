@@ -40,11 +40,3 @@ $palette: (
 .selection {
   background-color: transparentize(map-get($palette, b), 0.7);
 }
-
-.modules {
-  background-color: transparentize(map-get($palette, c), 0.7);
-
-  //h1 {
-  //  font-size: 2rem
-  //}
-}

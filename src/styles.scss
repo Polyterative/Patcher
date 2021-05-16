@@ -3,3 +3,26 @@
 //body {
 //  font-family: Roboto, "Helvetica Neue", sans-serif;
 //}
+
+$bgOpacity:    0.20;
+$bgGradientBG: rgb(223, 223, 223);
+
+.modulesBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, rgba(86, 187, 220, $bgOpacity) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.racksBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, rgba(104, 191, 167, $bgOpacity) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.patchesBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, rgba(175, 166, 223, $bgOpacity) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.homeBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, rgba(229, 155, 156, $bgOpacity) 0%, rgba(255, 255, 255, 0) 100%);
+}
