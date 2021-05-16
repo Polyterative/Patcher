@@ -102,7 +102,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       
     },
     manufacturers: {
-      label:    'With Manufacturer',
+      label:    '...with manufacturer',
       code:     'manufacturers',
       flex:     '6rem',
       control:  new FormControl(),
