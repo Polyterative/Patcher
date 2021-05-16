@@ -9,6 +9,7 @@ import { BehaviorSubject }        from 'rxjs';
 import { fromPromise }            from 'rxjs/internal-compatibility';
 import { of }                     from 'rxjs/internal/observable/of';
 import {
+  filter,
   switchMap,
   tap
 }                                 from 'rxjs/operators';
@@ -41,6 +42,8 @@ export class UserManagementService {
   
     this.user$
         .pipe(
+          tap(x => this.userProfile$.next(undefined)),
+          filter(x => !!x),
           switchMap(x => !!x ? this.backend.get.userWithId(x.id) : of(undefined))
         )
         .subscribe(x => this.userProfile$.next(x.data));

@@ -47,5 +47,5 @@ export class HeroContentCardComponent {
   @Input() description: string = '';
   @Input() hideDescription = false;
   @Input() icon: string;
-  
+  @Input() titleStyle?: { [param: string]: any };
 }

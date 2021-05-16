@@ -4,10 +4,11 @@
 >
   <lib-hero-content-card titleBig="Home"
                          icon="home"
+                         class="homeBG"
   >
     <div fxFlex="auto"
          fxLayout="column"
-         fxLayoutGap="1rem"
+         fxLayoutGap="2rem"
     >
       <div fxFlex="auto"
            fxLayout="column"
@@ -19,7 +20,7 @@
              fxLayoutGap="1rem"
         >
           <lib-hero-header fxFlex="1/3"
-                           class="roundedCard"
+                           class="gradientCard"
                            [title]="'Find modules ('+(statistics$|async)[0]+')'"
                            description="Find modules and add them to your collection"
           >
@@ -29,7 +30,7 @@
             </app-brand-primary-button>
           </lib-hero-header>
           <lib-hero-header fxFlex="1/3"
-                           class="roundedCard"
+                           class="gradientCard"
                            [title]="'Manage racks ('+(statistics$|async)[1]+')'"
                            description="Model your rack and explore your modules"
           >
@@ -39,122 +40,157 @@
             </app-brand-primary-button>
           </lib-hero-header>
           <lib-hero-header fxFlex="1/3"
-                           class="roundedCard"
+                           class="gradientCard"
                            [title]="'Share patches ('+(statistics$|async)[2]+')'"
                            description="Build, save and share patches with our unique interactive patch builder"
           >
             <app-brand-primary-button routerLink="/patches/browser"
                                       fxLayoutAlign="center center"
-
+  
             >Browse patches
             </app-brand-primary-button>
           </lib-hero-header>
           <!--          </div>-->
         </div>
-        <h3>What is patcher.xyz?</h3>
-        <p>
-          This project was born as a way to solve the problem of transcribing and sharing patch
-          notes to
-          keep them or simply to send them to someone.
-        
-        </p>
-        <h3>What can I do?</h3>
-        <p>The first development goals are focused on the possibility of adding modules to your
-           collection
-           and interactively connecting CV inputs and CV outputs in an easy and fast way and then
-           export/save the list of connections. In the future the patches will be saved on the
-           website
-           itself so that they can be shared in the form of a simple link.
-        </p>
-        <h3>
-          But doesn't this require having a list of all modules and their information?
-        </h3>
-        <p>Yes, however, we are not starting from scratch!
-           Since one of the objectives is to maintain a database of inputs and outputs of each
-           module,
-           the
-           development team(me) needs the contribution of the community to map all modules' CVs.
-           This
-           can
-           happen once the project enters the open beta phase.
-        </p>
-  
-  
-        <h3>What can I expect from this project in 3 months?</h3>
-        <p>The mid-term goal is to create a Hub in which not only to share and create patches but
-           also to
-           manage your rack and all your modules in a manner similar to modular grid with the
-           advantage of a more modern interface and above all more rapid navigation/editing and
-           several
-           other
-           features yet to be announced!
-        </p>
-  
-        <h3>Great! How i can help?</h3>
-        <p>I am currently making the first public announcements of this idea and collecting some
-           initial
-           feedback from testers so I would like to know what you think about this idea and if you
-           are
-           interested in the project.
-        </p>
-        <p>
-          If you want to stay updated on the progress of development the best way is to subscribe to
-          the
-          discord channel that is the central communication hub.
-        </p>
-      </div>
-      
-      <a href="https://discord.gg/pYz3gagUDA"
-         fxLayoutAlign="center center"
-      >Join Discord Server
-      </a>
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayoutGap="1rem"
-           fxLayoutAlign="center center"
-      >
 
-      </div>
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayoutGap="1rem"
-           fxLayoutAlign="center center"
-      >
-        <app-brand-primary-button routerLink="/modules/details/1025">See Maths
-        </app-brand-primary-button>
-        <app-brand-primary-button routerLink="/patches/details/5">See demo patch
-        </app-brand-primary-button>
-      </div>
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayoutGap="1rem"
-           fxLayoutAlign="center center"
-      >
-        <app-brand-primary-button routerLink="/auth/signup">Create an account
-        </app-brand-primary-button>
-        <app-brand-primary-button routerLink="/auth/login">Login
-        </app-brand-primary-button>
       </div>
       <div fxFlex="auto"
            fxLayout="row"
+           fxLayout.lt-md="column"
            fxLayoutGap="1rem"
       >
-        <div fxFlex="16rem"
-             fxLayout="column"
-             fxLayoutGap="2rem"
-             fxLayoutGap.xs="0rem"
+        <div fxFlex="50"
+             fxFlex.lt-md="auto"
         >
-          <app-list-link-router [linksData]="linksData"></app-list-link-router>
+          <mat-accordion>
+            <mat-expansion-panel [expanded]="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  What is patcher.xyz?
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <p>
+                This project solves the problem of transcribing and sharing patch
+                notes to
+                save them or simply to send them to someone. No more typing!
+          
+              </p>
+            </mat-expansion-panel>
+        
+        
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  What can I do?
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+          
+              <p>The patch builder allows connecting CV inputs and CV outputs in an easy and fast
+                 way. </p>
+              <p>You can then share the URL or save the list of connections as text.
+          
+                 Patches are saved on the
+                 website
+                 itself and can be shared in with a simple link.
+              </p>
+          
+              <h4>But doesn't this require having a list of all modules and their information?</h4>
+              <p>
+            
+            
+                Yes, however, we are not starting from scratch!
+                Since one of the objectives is to maintain a database of inputs and outputs of each
+                module,
+                we ask for the help of the community to map all modules' CVs.
+                We already have a lot of data mapped and ready. </p>
+        
+            </mat-expansion-panel>
+        
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  What can I expect from this project in 3 months?
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+          
+              <p>The mid-term goal is to create a Hub in which not only to share and create patches
+                 but
+                 also to
+                 manage your rack and all your modules in a manner similar to modular grid with the
+                 advantage of a more modern interface and above all more rapid navigation/editing
+                 and
+                 several
+                 other
+                 features yet to be announced! </p>
+            </mat-expansion-panel>
+        
+        
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Great! How i can help?
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+          
+              <p>We are currently making the first public announcements of this idea and collecting
+                 some
+                 initial
+                 feedback from testers so I would like to know what you think about this idea and if
+                 you
+                 are
+                 interested in the project.</p>
+              <p>
+                If you want to stay updated on the progress of development the best way is to
+                subscribe to
+                the
+                discord channel that is the central communication hub. </p>
+            </mat-expansion-panel>
+      
+      
+          </mat-accordion>
         </div>
+    
         <div fxFlex="auto"
-             fxLayout="row wrap"
+             fxLayout="column"
              fxLayoutGap="1rem"
         >
-
+      
+          <a fxFlex="auto"
+             href="https://discord.gg/pYz3gagUDA"
+             fxLayoutAlign="center center"
+          >Join Discord Server
+          </a>
+          <div fxFlex="auto"
+               fxLayout="row wrap"
+               fxLayoutGap="1rem"
+               fxLayoutAlign="center center"
+          >
+      
+          </div>
+          <div fxFlex="auto"
+               fxLayout="row wrap"
+               fxLayoutGap="1rem"
+               fxLayoutAlign="center center"
+          >
+            <app-brand-primary-button routerLink="/modules/details/1025">See Maths
+            </app-brand-primary-button>
+            <app-brand-primary-button routerLink="/patches/details/5">See demo patch
+            </app-brand-primary-button>
+          </div>
+          <div fxFlex="auto"
+               fxLayout="row wrap"
+               fxLayoutGap="1rem"
+               fxLayoutAlign="center center"
+          >
+            <app-brand-primary-button routerLink="/auth/signup">Create an account
+            </app-brand-primary-button>
+            <app-brand-primary-button routerLink="/auth/login">Login
+            </app-brand-primary-button>
+          </div>
         </div>
-
       </div>
-    
+
+
     </div>
   </lib-hero-content-card>
   

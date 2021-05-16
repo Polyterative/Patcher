@@ -2,45 +2,52 @@
 data:(dataService.singlePatchData$|async)
 } as bag"
 >
-  <lib-hero-content-card titleBig="Patch details">
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap="1rem"
+  >
+    <lib-hero-content-card titleBig="Patch details"
+                           class="patchesBG"
     >
       <div fxFlex="auto"
            fxLayout="column"
            fxLayoutGap="1rem"
       >
         <div fxFlex="auto"
-             fxLayoutAlign="center"
+             fxLayout="column"
+             fxLayoutGap="1rem"
         >
           <div fxFlex="auto"
-               fxLayout="column"
-               fxLayoutGap="1rem"
+               fxLayoutAlign="center"
           >
-            <div>
-              <!--              <lib-hero-item-card>-->
-              <ng-container *ngIf="bag.data"
-              >
-                <app-patch-composite [data]="(bag.data)"
-                ></app-patch-composite>
-              </ng-container>
-              <!--              </lib-hero-item-card>-->
+            <div fxFlex="auto"
+                 fxLayout="column"
+                 fxLayoutGap="1rem"
+            >
+              <div>
+                <!--              <lib-hero-item-card>-->
+                <ng-container *ngIf="bag.data"
+                >
+                  <app-patch-composite [data]="(bag.data)"
+                  ></app-patch-composite>
+                </ng-container>
+                <!--              </lib-hero-item-card>-->
+              </div>
+              <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                          [data$]="dataService.singlePatchData$"
+              ></app-auto-loading-indicator>
+              <lib-hero-item-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
+                <app-patch-editor
+                    [data]="(bag.data)"
+                ></app-patch-editor>
+              </lib-hero-item-card>
             </div>
-            <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                        [data$]="dataService.singlePatchData$"
-            ></app-auto-loading-indicator>
-            <lib-hero-item-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
-              <app-patch-editor
-                  [data]="(bag.data)"
-              ></app-patch-editor>
-            </lib-hero-item-card>
           </div>
         </div>
+        <app-dev-only-window>
+          <!--        {{bag.data|json}}-->
+        </app-dev-only-window>
       </div>
-      <app-dev-only-window>
-        <!--        {{bag.data|json}}-->
-      </app-dev-only-window>
-    </div>
-  </lib-hero-content-card>
+    </lib-hero-content-card>
+  </div>
 </ng-container>

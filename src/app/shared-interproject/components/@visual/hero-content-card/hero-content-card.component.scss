@@ -32,6 +32,11 @@ mat-card {
   padding: 1rem;
 }
 
+.padHeight {
+  padding-top:    2rem;
+  padding-bottom: 2rem;
+}
+
 .side {
   //@include darkBG;
   //background-color:           rgb(123, 138, 156);
@@ -139,4 +144,16 @@ mat-card {
   //border-left-style: solid;
   //border-bottom-width: 0.5rem;
   //border-bottom-style: solid;
+}
+
+.bgImage {
+  //$color: rgb(255, 255, 255, 0);
+  //background-image: linear-gradient($color, $color) url(/assets/illustrations/undraw_road_sign_mfpo.svg);
+  background-size:     cover;
+  background-repeat:   no-repeat;
+  background-position: center;
+  width:               100%;
+  height:              100%;
+  z-index:             1;
+
 }
