@@ -36,17 +36,18 @@ data:(dataService.singlePatchData$|async)
               <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
                                           [data$]="dataService.singlePatchData$"
               ></app-auto-loading-indicator>
-              <lib-hero-item-card *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async">
-                <app-patch-editor
-                    [data]="(bag.data)"
-                ></app-patch-editor>
-              </lib-hero-item-card>
+              <lib-hero-content-card titleNormal="Editor"
+                                     *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async"
+              >
+                <lib-hero-item-card>
+                  <app-patch-editor
+                      [data]="(bag.data)"
+                  ></app-patch-editor>
+                </lib-hero-item-card>
+              </lib-hero-content-card>
             </div>
           </div>
         </div>
-        <app-dev-only-window>
-          <!--        {{bag.data|json}}-->
-        </app-dev-only-window>
       </div>
     </lib-hero-content-card>
   </div>
