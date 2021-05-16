@@ -3,6 +3,8 @@ import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
 import { MatCardModule }            from '@angular/material/card';
+import { MatExpansionModule }       from '@angular/material/expansion';
+import { MatIconModule }            from '@angular/material/icon';
 import { MatToolbarModule }         from '@angular/material/toolbar';
 import { RouterModule }             from '@angular/router';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -45,7 +47,9 @@ import { HomeComponent }            from './home.component';
     BrandPrimaryButtonModule,
     HeroContentCardModule,
     PhotoModule,
-    HeroHeaderModule
+    HeroHeaderModule,
+    MatExpansionModule,
+    MatIconModule
   ]
 })
 export class HomeModule {}
