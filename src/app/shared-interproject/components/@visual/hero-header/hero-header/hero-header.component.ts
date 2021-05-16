@@ -2,13 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit,
+  ViewEncapsulation
 } from '@angular/core';
 
 @Component({
   selector:        'lib-hero-header',
   templateUrl:     './hero-header.component.html',
   styleUrls:       ['./hero-header.component.scss'],
+  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeroHeaderComponent implements OnInit {

@@ -6,8 +6,9 @@
 //font-family: 'Roboto Slab', serif;
 
 
-$brand-primary:             darken(#194987, 10);
-$brand-secondary:           #7B8A9C;
+//$brand-primary:             darken(rgba(64,97,194, 0.98), 10);
+$brand-primary:             darken(rgba(61, 115, 188, 0.98), 10);
+$brand-secondary:           rgba(123, 138, 156, 0.95);
 $brand-tertiary:            rgba(173, 191, 198, 0.45);
 
 $brand-error:               #F44336;
@@ -97,26 +98,3 @@ p {
 $icon-color:                darken(white, 8%) opacity(86%);
 
 $pendingContent-color:      #E0E0E0; //grey 300
-
-
-//$bg_positiveHigh: rgba(183, 28, 28, 1); //material 900
-//$bg_positiveLow: rgba(211, 47, 47, 1); //material 700
-
-//$bg_grey_0: darken(white, 2%); //
-//$bg_grey_1: darken(white, 4%); //
-//$bg_grey_2: darken(white, 8%); //
-//$bg_grey_3: darken(white, 16%); //
-//$bg_grey_4: darken(white, 24%); //
-//$bg_grey_5: darken(white, 32%); //
-//$bg_grey_6: darken(white, 38%); //
-//$bg_grey_7: darken(white, 44%); //
-
-//$bg_positiveHigh: rgba(27, 94, 32, 1); //material 900
-//$bg_positiveLow: rgba(56, 142, 60, 1); ///material 700
-//
-//$bg_negativeLow: rgba(211, 47, 47, 1); //material 700
-//$bg_negativeHigh: rgba(183, 28, 28, 1); //material 900
-//
-//$fg_pureWhite: #ffffff;
-
-//$bg_neutral: #0277bd; //material 800
