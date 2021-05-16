@@ -28,6 +28,7 @@ export class ModuleMinimalComponent implements OnInit {
   isInCollection$: Observable<boolean>;
   @Input() hideManufacturer = false;
   @Input() hideButtons = false;
+  @Input() hideHP = false;
   
   constructor(
     public userManagerService: UserManagementService,
