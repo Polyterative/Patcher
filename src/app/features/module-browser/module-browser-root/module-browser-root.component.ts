@@ -8,7 +8,7 @@ import {
 import { MatPaginator }             from '@angular/material/paginator';
 import { Subject }                  from 'rxjs';
 import { takeUntil }                from 'rxjs/operators';
-import { ModuleBrowserDataService } from '../../module-browser-data.service';
+import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 
 @Component({
   selector:        'app-module-browser-root',
