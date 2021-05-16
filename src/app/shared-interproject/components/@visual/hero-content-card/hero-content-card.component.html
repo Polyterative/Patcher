@@ -4,7 +4,8 @@
   <h1 fxFlex="grow"
       fxLayout="row"
       *ngIf="titleBig.length>0"
-      class="title"
+      class="title bgImage padHeight"
+      [ngStyle]="titleStyle"
   >
     <div fxFlex="grow">{{titleBig}}</div>
     <app-hero-content-card-head-icon
