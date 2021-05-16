@@ -1,16 +1,7 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1em"
->
-  <h3 fxLayoutAlign="center center"
-      fxFlex="auto"
-      class="title"
-  >{{title}}</h3>
-  <p fxLayoutAlign="center center"
-     fxFlex="auto"
-     class="description"
-  >{{description}}</p>
-  <div fxFlex="auto">
-    <ng-content></ng-content>
-  </div>
-</div>
+<h3 fxLayoutAlign="start center"
+    class="title"
+>{{title}}</h3>
+<p fxLayoutAlign="start center"
+   class="description"
+>{{description}}</p>
+<ng-content></ng-content>
