@@ -21,8 +21,6 @@ interface FormCV {
   b: FormControl;
 }
 
-type DataType = Patch;
-
 @Component({
   selector:        'app-patch-editor',
   templateUrl:     './patch-editor.component.html',
@@ -30,7 +28,7 @@ type DataType = Patch;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
-  @Input() data: DataType;
+  @Input() data: Patch;
   protected destroyEvent$: Subject<void> = new Subject();
   
   

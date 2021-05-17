@@ -93,8 +93,20 @@ p {
 }
 
 
+//a:not(.stock) {
+//  color:           rgba(68, 166, 243, 0.9);
+//  text-decoration: underline;
+//
+//  &:visited {
+//    color:           rgba(18, 123, 199, 0.9);
+//    text-decoration: underline dotted;
+//
+//  }
+//}
+
+
 //COLORS
 
-$icon-color:                darken(white, 8%) opacity(86%);
+$icon-color:           darken(white, 8%) opacity(86%);
 
-$pendingContent-color:      #E0E0E0; //grey 300
+$pendingContent-color: #E0E0E0; //grey 300

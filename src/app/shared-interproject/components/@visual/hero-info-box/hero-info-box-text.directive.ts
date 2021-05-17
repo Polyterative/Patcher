@@ -17,16 +17,24 @@ export class HeroInfoBoxTextDirective implements OnDestroy {
     this.el.nativeElement.style.cursor = 'help';
   }
   
+  ngOnInit() {
+  
+  }
+  
   @HostListener('mouseenter') onMouseEnter() {
-    this.dataService.hoverStart$.next(this.infoText);
+    // this.dataService.hoverStart$.next(this.infoText);
+    
+    this.el.nativeElement.setAttribute('title', this.infoText);
   }
   
   @HostListener('mouseleave') onMouseLeave() {
-    this.dataService.hoverEnd$.next(this.infoText);
+    // this.dataService.hoverEnd$.next(this.infoText);
+    
+    this.el.nativeElement.setAttribute('title', undefined);
   }
   
   ngOnDestroy(): void {
-    this.dataService.hoverEnd$.next(this.infoText);
+    // this.dataService.hoverEnd$.next(this.infoText);
   }
   
 }

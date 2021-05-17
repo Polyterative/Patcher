@@ -5,6 +5,10 @@ import {
   OnInit,
   Output
 }                          from '@angular/core';
+import {
+  FormControl,
+  Validators
+}                          from '@angular/forms';
 import { Subject }         from 'rxjs';
 import { PatchConnection } from 'src/app/models/models';
 
@@ -21,7 +25,29 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Output() readonly remove$ = new Subject<PatchConnection>();
   @Output() readonly create$ = new Subject<PatchConnection>();
   
+  notes = {
+    control: new FormControl('', Validators.compose([
+      Validators.min(0),
+      Validators.max(999)
+    ]))
+  };
+  
   ngOnInit(): void {
+    if (this.data.notes) {
+      this.notes.control.patchValue(this.data.notes);
+    }
+    
+    this.notes.control.valueChanges.subscribe(value => this.data.notes = value);
+    
+  }
+  
+  
+  protected destroyEvent$: Subject<void> = new Subject();
+  
+  ngOnDestroy(): void {
+    this.destroyEvent$.next();
+    this.destroyEvent$.complete();
+    
   }
   
 }

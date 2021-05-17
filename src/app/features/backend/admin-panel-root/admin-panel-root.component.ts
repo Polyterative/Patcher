@@ -1,3 +1,4 @@
+import { HttpClient }      from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,24 +24,24 @@ export class AdminPanelRootComponent implements OnInit {
   prodToDev$ = new Subject();
   click$ = new Subject();
   
-  constructor(public backend: SupabaseService) { }
+  constructor(public http: HttpClient, public backend: SupabaseService) { }
   
   ngOnInit(): void {
-  
+    
     this.click$
         .pipe(
           switchMap(x => zip(
-            this.backend.get.modulesFull(0, 99999),
-            this.backend.get.manufacturers(0, 99999)
+            this.http.get('https://api.martinpas.com/products?published=true&_limit=99999')
             )
           )
         )
-        .subscribe(([modules, manufacturers]) => {
+        .subscribe(x => {
           console.clear();
-  
-  
+          console.log(x);
+      
+      
         });
-  
+    
     // this.click$.next();
   }
   

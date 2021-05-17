@@ -85,7 +85,7 @@
              fxLayout="row"
              fxLayoutGap="1rem"
         >
-          <ng-container *ngIf="(bag.singleModuleData)">
+          <ng-container *ngIf="(bag.singleModuleData&&bag.user)">
             <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
               <button mat-icon-button
                       matTooltip="Edit module"
@@ -109,7 +109,7 @@
              matTooltip="Show details"
              [routerLink]="['/modules/details',data.id]"
           >
-            <mat-icon>search</mat-icon>
+            <mat-icon>info</mat-icon>
           </a>
         </div>
       </div>

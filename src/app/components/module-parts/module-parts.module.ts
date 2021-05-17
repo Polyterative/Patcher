@@ -16,6 +16,7 @@ import { MatFormEntityModule }      from '../../shared-interproject/components/@
 import { RestrictedEntityModule }   from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroInfoBoxModule }        from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { ModuleCvIconComponent }    from './module-cv-icon/module-cv-icon.component';
 import { ModuleCVItemComponent }    from './module-cvitem/module-cvitem.component';
 import { ModuleCVsComponent }       from './module-cvs/module-cvs.component';
 import { ModuleDetailDataService }  from './module-detail-data.service';
@@ -29,7 +30,8 @@ import { ModuleMinimalComponent }   from './module-minimal/module-minimal.compon
     ModuleCVsComponent,
     ModuleDetailsComponent,
     ModuleEditorComponent,
-    ModuleMinimalComponent
+    ModuleMinimalComponent,
+    ModuleCvIconComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -58,7 +60,8 @@ import { ModuleMinimalComponent }   from './module-minimal/module-minimal.compon
     ModuleCVsComponent,
     ModuleDetailsComponent,
     ModuleEditorComponent,
-    ModuleMinimalComponent
+    ModuleMinimalComponent,
+    ModuleCvIconComponent
   ]
 })
 export class ModulePartsModule {}
