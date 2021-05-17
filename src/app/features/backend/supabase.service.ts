@@ -125,6 +125,7 @@ export class SupabaseService {
         //   .select(`*,a(*,${ this.queryJoins.module })`)
         //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
           .select(`
+          *,
           patch:patchid(*),
           a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
           b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
@@ -134,7 +135,6 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)))
     ,
-    
     // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
     //   this.supabase.from(this.paths.patches)
     //       .select(`${ columns }`)
@@ -175,11 +175,6 @@ export class SupabaseService {
           .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)
           .range(from, to)
     ),
-    modulesCount:       () => fromPromise(
-      this.supabase.from(this.paths.modules)
-          .select('id')
-    )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar), map(x => x.data.length)),
     modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, manufacturerId?: number) => {
       const baseQuery = this.supabase.from(this.paths.modules)
                             .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
@@ -505,7 +500,8 @@ export class SupabaseService {
       connections.map(conn => ({
         patchid: conn.patch.id,
         a:       conn.a.id,
-        b:       conn.b.id
+        b:       conn.b.id,
+        notes:   conn.notes
       }))
         // .filter(x => x.id == 0)
         // .map(x => {

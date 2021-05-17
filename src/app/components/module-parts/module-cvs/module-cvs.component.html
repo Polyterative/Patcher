@@ -7,8 +7,9 @@
        fxLayoutGap="1rem"
        *ngIf="ins.length>0"
   >
-    <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">{{ins.length}}
-      INs:
+    <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">
+      <app-module-cv-icon type="in"></app-module-cv-icon>
+      {{ins.length}} INs:
     </mat-card-subtitle>
     <div fxFlex="auto"
          fxLayout="row wrap"
@@ -29,8 +30,9 @@
        fxLayoutGap="1rem"
        *ngIf="outs.length>0"
   >
-    <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">{{outs.length}}
-      OUTs:
+    <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">
+      <app-module-cv-icon type="out"></app-module-cv-icon>
+      {{outs.length}} OUTs:
     </mat-card-subtitle>
     <div fxFlex="auto"
          fxLayout="row wrap"

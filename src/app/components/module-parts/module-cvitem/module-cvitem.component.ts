@@ -23,14 +23,14 @@ import { CV }                     from 'src/app/models/models';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleCVItemComponent implements OnInit {
-  @Input()
-  public readonly data: CV;
-  @Input()
-  public readonly kind: 'in' | 'out';
-  @Output() click$ = new Subject<CV>();
+  @Input() readonly data: CV;
+  @Input() readonly kind: 'in' | 'out';
+  @Output() readonly click$ = new Subject<CV>();
   
   highlightedFrom = new BehaviorSubject(false);
   highlightedTo = new BehaviorSubject(false);
+  
+  protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
     public patchService: PatchDetailDataService
@@ -38,14 +38,12 @@ export class ModuleCVItemComponent implements OnInit {
   
   ngOnInit(): void {
     
-    
     switch (this.kind) {
       case 'in':
         this.patchService.selectedForConnection$
             .pipe(
-              map((data) => {
-                return data && data.b ? data.b.cv.id == this.data.id : false;
-              }),
+              map(data =>
+                data && data.b ? data.b.cv.id == this.data.id : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedFrom);
@@ -53,19 +51,15 @@ export class ModuleCVItemComponent implements OnInit {
       case 'out':
         this.patchService.selectedForConnection$
             .pipe(
-              map((data) => {
-                return data && data.a ? data.a.cv.id == this.data.id : false;
-              }),
+              map(data =>
+                data && data.a ? data.a.cv.id == this.data.id : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedTo);
         break;
     }
     
-    ;
   }
-  
-  protected destroyEvent$: Subject<void> = new Subject();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

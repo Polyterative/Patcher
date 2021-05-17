@@ -97,8 +97,6 @@ export class ModuleBrowserDataService implements OnDestroy {
           name: 'Updated'
         }
       ])
-                  .pipe(
-                    startWith([]))
       
     },
     manufacturers: {

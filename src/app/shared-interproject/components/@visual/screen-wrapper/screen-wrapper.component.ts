@@ -18,7 +18,7 @@ import {
 export class ScreenWrapperComponent implements OnInit {
   
   @Input()
-  maxSize = '76rem'; //kinda fhd, good default
+  maxSize = '86rem'; //kinda fhd, good default
   
   @Input()
   force = false;

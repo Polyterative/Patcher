@@ -17,7 +17,7 @@
                fxLayoutGap=".5rem"
           >
             <ng-container *ngFor="let item of dataService.patchesConnections$|async">
-              <app-patch-connection-micro [data]="item"></app-patch-connection-micro>
+              <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
               <mat-divider inset="true"></mat-divider>
             </ng-container>
           </div>
