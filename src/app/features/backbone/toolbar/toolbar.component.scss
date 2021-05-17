@@ -7,10 +7,34 @@ mat-toolbar-row {
 }
 
 .title {
-  color:         rgba(255, 255, 255, 0.81);
-  padding-right: 2em;
-  padding-left:  2em;
+  //padding-right: 2em;
+  //padding-left:  2em;
+
+  //opacity:           0;
+  $appearTime:       250ms;
+  $color:            rgb(255, 255, 255);
+  color:             $color;
+  //text-decoration: underline;
+
+  &:visited {
+    color: $color;
+    //text-decoration: underline dotted;
+
+  }
+
+  @keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  -webkit-animation: fadein $appearTime; /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation:    fadein $appearTime; /* Firefox < 16 */
+  -o-animation:      fadein $appearTime; /* Opera < 12.1 */
+  animation:         fadein $appearTime;
+
   //padding-x: 0.5em;
+
+  font-size:         1rem;
 }
 
 .titleTextBig {

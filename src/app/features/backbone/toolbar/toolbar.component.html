@@ -6,13 +6,16 @@
          fxLayout="row"
          fxLayoutGap="1rem"
     >
-      <div fxFlex="auto"
-           fxLayoutAlign="center center"
-           [fxHide.xs]="true"
-      
+      <a fxFlex="auto"
+         mat-button
+         routerLink="/home"
+         class="title stock"
+         fxLayoutAlign="center center"
+         [fxHide.xs]="true"
+  
       >
         {{service.state.title|async}}
-      </div>
+      </a>
       <div fxFlex="grow"
            [fxHide.xs]="true"
       ></div>
