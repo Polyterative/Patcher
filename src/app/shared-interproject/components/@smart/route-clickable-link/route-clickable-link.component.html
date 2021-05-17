@@ -10,7 +10,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
     <ng-container *ngFor="let item of bag.data">
       <a *ngIf="bag.layoutFlexWidth.xs"
          mat-icon-button
-         class="option"
+         class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
@@ -21,7 +21,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
       </a>
       <a *ngIf="bag.layoutFlexWidth.gtxs"
          mat-button
-         class="option"
+         class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"

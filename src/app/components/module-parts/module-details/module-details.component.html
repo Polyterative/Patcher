@@ -11,15 +11,15 @@
          fxLayout="row wrap"
          fxLayoutGap="1rem"
     >
-      <mat-chip-list>
-        <ng-container *ngFor="let item of switches">
-          <!--                            <mat-chip>{{item.name}}</mat-chip>-->
-        </ng-container>
-      </mat-chip-list>
+      <!--      <mat-chip-list>-->
+      <!--        <ng-container *ngFor="let item of switches">-->
+      <!--          &lt;!&ndash;                            <mat-chip>{{item.name}}</mat-chip>&ndash;&gt;-->
+      <!--        </ng-container>-->
+      <!--      </mat-chip-list>-->
     </div>
   </ng-container>
   
-  <div class="flow row spaceBetween showOnHover"
+  <div class="flow row spaceBetween opacizeOnHover"
        fxLayoutGap="1rem"
        *ngIf="!data.isComplete"
   >
