@@ -17,11 +17,13 @@
                           [hideManufacturer]="true"
                           [hideButtons]="true"
                           [hideHP]="true"
-      
+
       >
-        <app-module-cvitem [data]="data.a"
-                           kind="out"
-        ></app-module-cvitem>
+        <mat-chip-list>
+          <app-module-cvitem [data]="data.a"
+                             kind="out"
+          ></app-module-cvitem>
+        </mat-chip-list>
       </app-module-minimal>
       <app-patch-connection-symbol></app-patch-connection-symbol>
       <app-module-minimal fxFlex="50%"
@@ -30,9 +32,12 @@
                           [hideButtons]="true"
                           [hideHP]="true"
       >
-        <app-module-cvitem [data]="data.b"
-                           kind="in"
-        ></app-module-cvitem>
+    
+        <mat-chip-list>
+          <app-module-cvitem [data]="data.b"
+                             kind="in"
+          ></app-module-cvitem>
+        </mat-chip-list>
       </app-module-minimal>
     </div>
   
