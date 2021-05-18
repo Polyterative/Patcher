@@ -93,16 +93,16 @@ p {
 }
 
 
-//a:not(.stock) {
-//  color:           rgba(68, 166, 243, 0.9);
-//  text-decoration: underline;
-//
-//  &:visited {
-//    color:           rgba(18, 123, 199, 0.9);
-//    text-decoration: underline dotted;
-//
-//  }
-//}
+a:not(.stock) {
+  color:           rgba(0, 0, 0, 0.9);
+  text-decoration: underline;
+
+  &:visited {
+    color:           rgba(23, 23, 23, 0.9);
+    text-decoration: underline dotted;
+
+  }
+}
 
 
 //COLORS
