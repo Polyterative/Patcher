@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.8.12](https://github.com/Polyterative/Patcher/compare/v2.8.11...v2.8.12) (2021-05-22)
+
 ### [2.8.11](https://github.com/Polyterative/Patcher/compare/v2.8.10...v2.8.11) (2021-05-22)
 
 ### [2.8.10](https://github.com/Polyterative/Patcher/compare/v2.8.9...v2.8.10) (2021-05-22)
