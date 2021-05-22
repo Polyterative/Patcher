@@ -19,8 +19,18 @@ export class UranusComponent {
   
   }
   
+  public width: string = this.route.snapshot.data.width;
+  
   ngOnInit(): void {
     const providedTitle = this.route.snapshot.data.title;
+    
+    if (!this.title) {
+      if (providedTitle) {
+        this.title = providedTitle;
+      } else {
+        // console.warn('No title provided');
+      }
+    }
     
     if (!this.title) {
       if (providedTitle) {

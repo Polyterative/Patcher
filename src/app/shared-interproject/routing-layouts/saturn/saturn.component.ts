@@ -1,7 +1,7 @@
 import { Component }     from '@angular/core';
 import {
-    ActivatedRoute,
-    Router
+  ActivatedRoute,
+  Router
 }                        from '@angular/router';
 import { fadeAnimation } from './fade.animation';
 
@@ -13,7 +13,7 @@ import { fadeAnimation } from './fade.animation';
   animations: [fadeAnimation]
 })
 export class SaturnComponent {
-  public title?: string;
+  title?: string;
 
   constructor(private route: ActivatedRoute, private router: Router) {
 
@@ -29,7 +29,6 @@ export class SaturnComponent {
         // console.warn('No title provided');
       }
     }
-
 
   }
 }
