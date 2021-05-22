@@ -2,7 +2,7 @@ name: Build and deploy
 
 on:
   release:
-    branches: [ main ]
+    branches: [ master ]
 
   # Run workflow manually
   workflow_dispatch:
