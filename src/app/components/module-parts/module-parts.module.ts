@@ -15,6 +15,7 @@ import { SharedPipesModule }          from 'src/app/shared-interproject/pipes/sh
 import { AutoLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
 import { MatFormEntityModule }        from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }     from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
+import { AdviceTooltipModule }        from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule }   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroInfoBoxModule }          from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { ModuleCvIconComponent }      from './module-cv-icon/module-cv-icon.component';
@@ -55,7 +56,8 @@ import { ModuleMinimalComponent }     from './module-minimal/module-minimal.comp
     SharedAtomsModule,
     SharedPipesModule,
     HeroClickableTitleModule,
-    AutoLoadingIndicatorModule
+    AutoLoadingIndicatorModule,
+    AdviceTooltipModule
   ],
   exports:      [
     ModuleCVItemComponent,
