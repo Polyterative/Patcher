@@ -13,7 +13,7 @@ import {
 }                                  from '@angular/forms';
 import {
   BehaviorSubject,
-  combineLatest,
+  concat,
   Subject
 }                                  from 'rxjs';
 import {
@@ -120,15 +120,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         outs: this.formCVToCV(this.OUTs$.value)
       })),
       // switchMap(x => this.backend.update.module(x)),
-      switchMap(x => combineLatest([
+      switchMap(x => concat(
         this.backend.update.moduleINsOUTs(x),
         this.backend.update.module(x)
-      ])),
+      )),
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
         .subscribe(([x, a]) => this.dataService.updateSingleModuleData$.next(a));
-  
   }
   
   private serialize(cvs: CV[]): string {

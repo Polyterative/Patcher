@@ -15,6 +15,7 @@ import {
 import {
   filter,
   mapTo,
+  skip,
   takeUntil
 } from 'rxjs/operators';
 
@@ -30,12 +31,14 @@ export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() updateData$: Observable<any>;
   dataLoading$ = new BehaviorSubject<boolean>(true);
   
+  @Input() skipFirstData: boolean = false;
+  @Input() loadingLabel: string = 'Loading';
   protected destroyEvent$ = new Subject();
   
   ngOnInit(): void {
     merge(
       this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
-      this.data$.pipe(takeUntil(this.destroyEvent$), filter(data => !!data), mapTo(false))
+      this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), filter(data => !!data), mapTo(false))
     )
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(x => this.dataLoading$.next(x));

@@ -357,17 +357,10 @@ export class SupabaseService {
     },
     moduleINsOUTs:    (data: DbModule) => forkJoin(
       [
-        forkJoin(
-          [
-            this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
-            this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id)
-          ]
-        ),
-        forkJoin([
-            this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
-            this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
-          ]
-        )
+        this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
+        this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),
+        this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
+        this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
       ]
     )
       .pipe(
@@ -449,7 +442,7 @@ export class SupabaseService {
               .from(this.paths.profiles)
               .update({
                 confirmed: false,
-                username:  username
+                username
               })
               .eq('id', x.user.id)
           )
@@ -475,23 +468,20 @@ export class SupabaseService {
   }
   
   private buildCVInserter(cvs: CV[], path: string, moduleId: number) {
-    
-    return forkJoin(
-      cvs.map(this.getCvMapper(moduleId))
-         .filter(x => x.id == 0)
-         .map(x => {
-           x.id = undefined;
-           return x;
-         })
-         .map(cv => fromPromise(
-           this.supabase.from(path)
-               .insert(cv)
-               .select('id')
-         )
-           .pipe(
-             // take(1),
-             switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
-    );
+    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
+                         .filter(x => x.id == 0)
+                         .map(x => {
+                           x.id = undefined;
+                           return x;
+                         });
+    return fromPromise(
+      this.supabase.from(path)
+          .upsert(mappedCVs)
+    )
+      .pipe(
+        // take(1),
+        switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)
+      );
   }
   
   private buildPatchConnectionInserter(connections: PatchConnection[]) {
@@ -540,17 +530,15 @@ export class SupabaseService {
   }
   
   private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
-    return forkJoin(
-      cvs.map(this.getCvMapper(moduleId))
-         .filter(x => x.id > 0)
-         .map(cv => fromPromise(
-           this.supabase.from(path)
-               .update(cv)
-               .eq('id', cv.id)
-               .select('id')
-         )
-           .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
-    );
+    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
+                         .filter(x => x.id > 0);
+    return fromPromise(
+      this.supabase.from(path)
+          .upsert(mappedCVs)
+    )
+      .pipe(
+        switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)
+      );
   }
   
 }
