@@ -111,3 +111,20 @@ mat-expansion-panel {
   color:      rgba(255, 255, 255, 0.96);
   background: linear-gradient(26deg, rgba(255, 255, 255, 0.9) 0%, rgba(234, 234, 234, 0.5) 100%)
 }
+
+
+.ellipsisfade {
+  position: relative;
+  height:   3.6em; /* exactly three lines */
+}
+
+.ellipsisfade:after {
+  content:    "";
+  text-align: right;
+  position:   absolute;
+  bottom:     0;
+  right:      0;
+  width:      70%;
+  height:     1.2em;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
+}

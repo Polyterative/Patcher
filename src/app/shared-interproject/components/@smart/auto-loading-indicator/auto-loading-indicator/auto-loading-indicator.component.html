@@ -1,3 +1,16 @@
+<ng-container *ngIf="{
+    dataLoading:(dataLoading$|async)
+    } as bag"
+>
   <mat-progress-bar mode="indeterminate"
-                    *ngIf="(dataLoading$|async)"
+                    *ngIf="bag.dataLoading"
   ></mat-progress-bar>
+  <mat-card-subtitle *ngIf="bag.dataLoading"
+                     fxLayoutAlign="center center"
+                     style="padding: 1rem"
+  >{{loadingLabel}}...
+  </mat-card-subtitle>
+  <ng-container *ngIf="!bag.dataLoading">
+    <ng-content></ng-content>
+  </ng-container>
+</ng-container>
