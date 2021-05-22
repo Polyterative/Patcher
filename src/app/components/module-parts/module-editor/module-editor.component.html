@@ -32,7 +32,7 @@
          fxLayout="column"
          fxLayoutGap="1rem"
     >
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,0])">Add OUT
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,undefined,0])">Add OUT
       </app-brand-primary-button>
       <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V OUT
       </app-brand-primary-button>
@@ -135,12 +135,19 @@
   </div>
   
   <mat-divider inset="true"></mat-divider>
-  <app-brand-primary-button (click$)="save$.next()"
-                            theme="positive"
-                            fxLayoutAlign="end"
-                            [disabled]="formGroupA.invalid||formGroupB.invalid||formGroupC.invalid"
+  <app-auto-loading-indicator [data$]="dataService.singleModuleData$"
+                              [updateData$]="save$"
+                              loadingLabel="Saving data"
   >
-    <mat-icon>save</mat-icon>
-    Save data
-  </app-brand-primary-button>
+    <app-brand-primary-button (click$)="save$.next()"
+                              theme="positive"
+                              fxLayoutAlign="end"
+                              [disabled]="formGroupA.invalid||formGroupB.invalid||formGroupC.invalid"
+    >
+      <mat-icon>save</mat-icon>
+      Save data
+    </app-brand-primary-button>
+  </app-auto-loading-indicator>
+
+
 </div>
