@@ -1,8 +1,11 @@
 name: Build and deploy
 
 on:
-  release:
-    branches: [ master ]
+  push:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
 
   # Run workflow manually
   workflow_dispatch:
