@@ -2,56 +2,11 @@
      fxLayout="column"
      fxLayoutGap="1rem"
 >
-  <div fxFlex="auto">
-    <!--      <mat-card-subtitle>module-editor</mat-card-subtitle>-->
-    <mat-card-subtitle>Please update this information and only if it is incorrect or some is
-                       missing, any changes you make will affect what all other users see
-    </mat-card-subtitle>
-  </div>
-  <div fxFlex="auto"
-       fxLayout="row"
-  >
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
-    >
-      <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V IN
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V IN
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V IN
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V IN
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V IN
-      </app-brand-primary-button>
-    </div>
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
-    >
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,undefined,0])">Add OUT
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V OUT
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8,0])">Add 0→8V OUT
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5,0])">Add -5→5V OUT
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10,0])">Add -10→10V OUT
-      </app-brand-primary-button>
-      <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12,0])">Add -12→12V OUT
-      </app-brand-primary-button>
-    </div>
-    <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-  </div>
-  <mat-divider inset="true"></mat-divider>
   
   <div fxFlex="auto"
        fxLayout="column"
        fxLayout.gt-lg="row"
+       fxLayoutAlign="start"
        fxLayoutGap="1rem"
   >
     <ng-container *ngIf="(INs$|async).length>0">
@@ -59,7 +14,7 @@
            fxLayout="column"
            fxLayoutGap="1rem"
       >
-        <div fxFlex="auto"
+        <div fxFlex="shrink"
              fxLayout="row"
              fxLayoutGap="1rem"
              fxLayoutAlign="space-between"
@@ -72,7 +27,7 @@
              class="leftBorderS"
         >
           <ng-container *ngFor="let item of INs$|async;">
-        
+  
             <div fxFlex="auto"
                  fxLayout="row"
             >
@@ -98,7 +53,7 @@
            fxLayout="column"
            fxLayoutGap="1rem"
       >
-        <div fxFlex="auto"
+        <div fxFlex="shrink"
              fxLayout="row"
              fxLayoutGap="1rem"
              fxLayoutAlign="space-between"
@@ -111,7 +66,7 @@
              class="leftBorderS"
         >
           <ng-container *ngFor="let item of OUTs$|async;">
-        
+  
             <div fxFlex="auto"
                  fxLayout="row"
             >
@@ -134,6 +89,62 @@
     </ng-container>
   </div>
   
+  <div fxFlex="auto"
+       fxLayout="row"
+       fxLayout.lt-md="column"
+       fxLayoutGap="1rem"
+  >
+    <div fxFlex="33%"
+         fxFlex.lt-md="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V IN
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V IN
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V IN
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V IN
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V IN
+      </app-brand-primary-button>
+    </div>
+    <div fxFlex="33%"
+         fxFlex.lt-md="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,undefined,0])">Add OUT
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V OUT
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8,0])">Add 0→8V OUT
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5,0])">Add -5→5V OUT
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10,0])">Add -10→10V OUT
+      </app-brand-primary-button>
+      <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12,0])">Add -12→12V OUT
+      </app-brand-primary-button>
+    </div>
+    <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
+    
+    <div fxFlex="33%"
+         fxFlex.lt-md="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <app-advice-tooltip fxFlex="auto"
+      >Update this only if data is incorrect or some is missing.
+      </app-advice-tooltip>
+      <mat-card-subtitle fxFlex="auto"
+      >Any changes you make will affect what all other users see
+      </mat-card-subtitle>
+    </div>
+  </div>
   <mat-divider inset="true"></mat-divider>
   <app-auto-loading-indicator [data$]="dataService.singleModuleData$"
                               [updateData$]="save$"
