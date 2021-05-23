@@ -140,12 +140,12 @@ export class SupabaseService {
     //       .select(`${ columns }`)
     //       .range(from, to)
     // ),
-    patchesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+    patchesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => fromPromise(
       this.supabase.from(this.paths.patches)
           .select(`id,name,created,updated,${ this.queryJoins.author } `, {count: 'exact'})
           .ilike('name', `%${ name }%`)
           .range(from, to)
-          .order(orderBy ? orderBy : 'name')
+          .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     userPatches:        () => fromPromise(
@@ -188,12 +188,12 @@ export class SupabaseService {
       )
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
     },
-    racksMinimal:       (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string) => fromPromise(
+    racksMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => fromPromise(
       this.supabase.from(this.paths.racks)
           .select(`*,${ this.queryJoins.author }`, {count: 'exact'})
           .ilike(`name,hp,rows, ${ this.queryJoins.author }`, `%${ name }%`)
           .range(from, to)
-          .order(orderBy ? orderBy : 'name')
+          .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(

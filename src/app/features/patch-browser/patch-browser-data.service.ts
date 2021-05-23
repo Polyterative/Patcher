@@ -66,23 +66,27 @@ export class PatchBrowserDataService implements OnDestroy {
       options$: of([
         {
           id:   'name',
-          name: 'Name'
+          name: 'Name ↑'
         },
-        // {
-        //   id:   'hp',
-        //   name: 'HP'
-        // },
-        // {
-        //   id:   'manufacturerId',
-        //   name: 'Manufacturer'
-        // },
+        {
+          id:   'name',
+          name: 'Name ↓'
+        },
         {
           id:   'created',
-          name: 'Created'
+          name: 'Created ↑'
+        },
+        {
+          id:   'created',
+          name: 'Created ↓'
         },
         {
           id:   'updated',
-          name: 'Updated'
+          name: 'Updated ↑'
+        },
+        {
+          id:   'updated',
+          name: 'Updated ↓'
         }
       ])
                   .pipe(
@@ -126,8 +130,8 @@ export class PatchBrowserDataService implements OnDestroy {
     private snackBar: MatSnackBar,
     private backend: SupabaseService
   ) {
-    
-    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, 'asc'));
+  
+    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
   
     this.updatePatchesList$
         .pipe(
@@ -135,9 +139,8 @@ export class PatchBrowserDataService implements OnDestroy {
           switchMap(([z, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-  
-            // return this.backend.get.patches(skip, (skip + take) - 1, filter, sortColumnName);
-            return this.backend.get.patchesMinimal(skip, (skip + take) - 1, filter);
+      
+            return this.backend.get.patchesMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),
           takeUntil(this.destroyEvent$)
         )
