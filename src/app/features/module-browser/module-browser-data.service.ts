@@ -115,6 +115,10 @@ export class ModuleBrowserDataService implements OnDestroy {
         {
           id:   'updated',
           name: 'Updated ↓'
+        },
+        {
+          id:   'isComplete',
+          name: 'Data Complete ↓'
         }
       ])
       
