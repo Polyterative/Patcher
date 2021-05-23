@@ -1,12 +1,7 @@
-<lib-screen-wrapper
-
->
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
+<lib-screen-wrapper>
+  <div class="flow col gap1"
   >
-    <div fxLayout="row"
-         fxLayoutGap="1rem"
+    <div class="flow row gap1"
     >
       <div fxLayout="column"
            fxLayoutGap="1rem"
@@ -28,7 +23,7 @@
              class="content"
         >
           <ng-container *ngIf="title else content ">
-
+  
             <div fxFlex="auto"
                  fxLayout="column"
                  fxLayoutGap=".5rem"
@@ -40,12 +35,12 @@
               >
                 <mat-toolbar-row>{{title}}</mat-toolbar-row>
               </mat-toolbar>
-
+    
               <router-outlet></router-outlet>
             </div>
 
           </ng-container>
-
+  
           <ng-template #content>
             <router-outlet></router-outlet>
           </ng-template>

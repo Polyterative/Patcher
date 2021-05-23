@@ -1,6 +1,5 @@
 <mat-card>
-  <div fxLayout="row"
-       fxLayoutGap="1rem"
+  <div class="flow row gap1"
   >
     <ng-container *ngIf="name; else noUser">
       <!--            <div fxFlex='2rem'-->
@@ -45,9 +44,7 @@
     </ng-container>
   
     <ng-template #noUser>
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
+      <div class="flow col gap1"
       >
         <button mat-flat-button
                 color="accent"
