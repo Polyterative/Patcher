@@ -1,9 +1,7 @@
 <app-toolbar></app-toolbar>
 <div class="main">
   <lib-screen-wrapper>
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
+    <div class="flow col gap1"
     >
       <router-outlet></router-outlet>
       <app-advice-tooltip [ngStyle]="{'background-color': '#b1610f'}">This project is in beta!
