@@ -8,22 +8,27 @@
        fxLayoutGap.xs="0rem"
        style="padding-top: 2rem"
   >
-    <ng-container *ngIf="bag.connections.length>0; else noData">
-      <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
-      >
-        <mat-card>
-          <div fxFlex="auto"
-               fxLayout="column"
-               fxLayoutGap=".5rem"
-          >
-            <ng-container *ngFor="let item of dataService.patchesConnections$|async">
-              <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
-              <mat-divider inset="true"></mat-divider>
-            </ng-container>
-          </div>
-        </mat-card>
-      </lib-hero-content-card>
-    </ng-container>
+    <app-auto-loading-indicator [data$]="dataService.patchesConnections$"
+                                [updateData$]="dataService.updateSinglePatchData$"
+    >
+    
+      <ng-container *ngIf="bag.connections.length>0; else noData">
+        <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
+        >
+          <mat-card>
+            <div fxFlex="auto"
+                 fxLayout="column"
+                 fxLayoutGap=".5rem"
+            >
+              <ng-container *ngFor="let item of dataService.patchesConnections$|async">
+                <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
+                <mat-divider inset="true"></mat-divider>
+              </ng-container>
+            </div>
+          </mat-card>
+        </lib-hero-content-card>
+      </ng-container>
+    </app-auto-loading-indicator>
   </div>
   
   <ng-template #noData>
