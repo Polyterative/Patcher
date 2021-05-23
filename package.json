@@ -1,20 +1,20 @@
 {
   "name": "patcher",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "scripts": {
-    "start":         "ng serve --hmr ",
-    "startProd":     "ng serve --configuration production --hmr ",
-    "build":         "angular-build-info && ng build --configuration production",
-    "deploy":        "angular-build-info && ng build --configuration production && firebase deploy",
-    "updateMinors":  "npm update --save/--save-dev",
-    "ci":            "",
+    "start": "ng serve --hmr ",
+    "startProd": "ng serve --configuration production --hmr ",
+    "build": "angular-build-info && ng build --configuration production",
+    "deploy": "angular-build-info && ng build --configuration production && firebase deploy",
+    "updateMinors": "npm update --save/--save-dev",
+    "ci": "",
     "release:patch": "standard-version --release-as patch && git push --follow-tags origin master",
     "release:minor": "standard-version --release-as minor && git push --follow-tags origin master",
     "release:major": "standard-version --release-as major && git push --follow-tags origin master",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
-    "test":          "ng test",
-    "lint":          "ng lint",
-    "e2e":           "ng e2e"
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
