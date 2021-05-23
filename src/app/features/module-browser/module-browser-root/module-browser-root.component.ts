@@ -27,7 +27,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     if (!this.dataService.dirty) {
       this.dataService.fields.order.control.patchValue({
         id:   'updated',
-        name: 'Updated'
+        name: 'Updated ↓'
       });
       
       
