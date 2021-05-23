@@ -2,48 +2,30 @@
 data:(dataService.singleRackData$|async)
 } as bag"
 >
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
+  <div class="flow col gap1"
   >
     <lib-hero-content-card titleBig="Rack details"
                            class="racksBG"
     >
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
+      <div class="flow col gap1"
       >
-        <div fxFlex="auto"
-             fxLayout="column"
-             fxLayoutGap="1rem"
-        >
-          <div fxFlex="auto"
-               fxLayoutAlign="center"
+        <div>
+          <!--              <lib-hero-item-card>-->
+          <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                      [data$]="dataService.singleRackData$"
+          ></app-auto-loading-indicator>
+          <ng-container *ngIf="bag.data"
           >
-            <div fxFlex="auto"
-                 fxLayout="column"
-                 fxLayoutGap="1rem"
-            >
-              <div>
-                <!--              <lib-hero-item-card>-->
-                <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                            [data$]="dataService.singleRackData$"
-                ></app-auto-loading-indicator>
-                <ng-container *ngIf="bag.data"
-                >
-                  <app-rack-composite [data]="(bag.data)"
-                  ></app-rack-composite>
-                </ng-container>
-                <!--              </lib-hero-item-card>-->
-              </div>
-              <lib-hero-item-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
-                <app-rack-editor
-                    [data]="(bag.data)"
-                ></app-rack-editor>
-              </lib-hero-item-card>
-            </div>
-          </div>
+            <app-rack-composite [data]="(bag.data)"
+            ></app-rack-composite>
+          </ng-container>
+          <!--              </lib-hero-item-card>-->
         </div>
+        <lib-hero-item-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
+          <app-rack-editor
+              [data]="(bag.data)"
+          ></app-rack-editor>
+        </lib-hero-item-card>
       </div>
     </lib-hero-content-card>
   </div>
