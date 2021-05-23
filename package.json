@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "2.10.1",
+  "version": "2.10.2",
   "scripts": {
     "start": "ng serve --hmr ",
     "startProd": "ng serve --configuration production --hmr ",
