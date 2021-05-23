@@ -2,14 +2,10 @@
   selectedForConnection:(dataService.selectedForConnection$|async)
   } as bag"
 >
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
+  <div class="flow col gap1"
   >
-    <div fxFlex="auto"
-         fxLayout="column"
+    <div class="flow col gap1"
          fxLayout.gt-lg="row"
-         fxLayoutGap="1rem"
     >
       <ng-container *ngIf="(dataService.editorConnections$|async).length>0">
         <lib-hero-content-card fxFlex.gt-lg="50%"
@@ -18,9 +14,7 @@
                                class="connections"
                                description="The connections of the patch you are editing"
         >
-          <div fxFlex="auto"
-               fxLayout="column"
-               fxLayoutGap="1rem"
+          <div class="flow col gap1"
           >
             <ng-container *ngFor="let item of dataService.editorConnections$|async">
               <mat-card>
@@ -72,9 +66,7 @@
   
   
     <mat-divider inset="true"></mat-divider>
-    <div fxFlex="auto"
-         fxLayout="row"
-         fxLayoutGap="1rem"
+    <div class="flow row gap1"
     >
       <mat-card-subtitle fxFlex="grow"
                          fxLayoutAlign="end center"

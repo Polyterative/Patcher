@@ -2,9 +2,7 @@
   connections:(dataService.patchesConnections$|async)
   } as bag"
 >
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
+  <div class="flow col gap1"
        fxLayoutGap.xs="0rem"
        style="padding-top: 2rem"
   >
@@ -31,9 +29,7 @@
   
   <ng-template #noData>
     <div fxFlex="auto">
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
+      <div class="flow col gap1"
       >
         <mat-card-subtitle fxLayoutAlign="center center">It looks like this patch has no connections
         </mat-card-subtitle>
