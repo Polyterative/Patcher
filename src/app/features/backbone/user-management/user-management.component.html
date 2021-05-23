@@ -1,13 +1,9 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
+<div class="flow col gap1"
 >
   <lib-hero-content-card titleBig="My account"
                          icon="manage_accounts"
   >
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
+    <div class="flow col gap1"
     >
       <app-brand-primary-button
           (click$)="userManagementService.logoff()"
