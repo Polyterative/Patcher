@@ -165,7 +165,7 @@ export class SupabaseService {
     rackModules:    (rackid: number) => fromPromise(
       this.supabase.from(this.paths.rack_modules)
           .select(`${ this.queryJoins.module }`)
-          .order('name')
+          // .order('module.id')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
     )
