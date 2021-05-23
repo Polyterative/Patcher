@@ -8,13 +8,16 @@
   >
     <app-auto-loading-indicator [data$]="dataService.patchesConnections$"
                                 [updateData$]="dataService.updateSinglePatchData$"
+                                [skipFirstData]="true"
+                                [loadingLines]="5"
     >
-    
+  
       <ng-container *ngIf="bag.connections.length>0; else noData">
         <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
         >
           <mat-card>
             <div class="flow col gap1"
+                 style="max-height: 40rem; overflow-y: auto;"
             >
               <ng-container *ngFor="let item of dataService.patchesConnections$|async">
                 <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
@@ -29,7 +32,7 @@
   
   <ng-template #noData>
     <div fxFlex="auto">
-      <div class="flow col gap1"
+      <div class="flow col gap1 animate-fadein-slowest"
       >
         <mat-card-subtitle fxLayoutAlign="center center">It looks like this patch has no connections
         </mat-card-subtitle>

@@ -2,14 +2,24 @@
     dataLoading:(dataLoading$|async)
     } as bag"
 >
-  <mat-progress-bar mode="indeterminate"
-                    *ngIf="bag.dataLoading"
-  ></mat-progress-bar>
-  <mat-card-subtitle *ngIf="bag.dataLoading"
-                     fxLayoutAlign="center center"
-                     style="padding: 1rem"
-  >{{loadingLabel}}...
-  </mat-card-subtitle>
+  <div *ngIf="bag.dataLoading"
+       fxLayout="column"
+       fxLayoutGap=".5rem"
+  >
+    <ng-container *ngFor="let i of [].constructor(loadingLines)">
+    
+      <div class="skeleton m1"
+      >Lorem ipsum dolor sit amet, consectetur adipiscing elit
+      </div>
+      <div class="skeleton m2"
+      >ullamco laboris nisi ut aliquip ex
+      </div>
+      <div class="skeleton m3"
+      >Excepteur sint occaecat cupidatat non proident
+      </div>
+    </ng-container>
+  </div>
+  <!--  </ng-container>-->
   <ng-container *ngIf="!bag.dataLoading">
     <ng-content></ng-content>
   </ng-container>
