@@ -9,6 +9,10 @@
   -webkit-box-orient: horizontal;
 }
 
+.gap1 {
+  gap: 1rem
+}
+
 .col {
   flex-direction:     column;
   -webkit-box-orient: vertical;
@@ -41,4 +45,9 @@
   white-space:   nowrap;
   overflow:      hidden;
   text-overflow: ellipsis;
+}
+
+.padTB1 {
+  padding-top:    1rem;
+  padding-bottom: 1rem;
 }
