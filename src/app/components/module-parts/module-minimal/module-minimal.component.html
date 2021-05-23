@@ -15,7 +15,7 @@
       >{{data.name}}</app-hero-clickable-title>
       <div class="flow row spaceBetween description"
            fxLayoutGap="1rem"
-           *ngIf="data.description"
+           *ngIf="data.description&&(!hideDescription)"
       >
         <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
       </div>

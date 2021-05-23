@@ -164,6 +164,7 @@ export class PatchDetailDataService {
           const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
   
           if (!isAlreadyInList) {
+            this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
             this.editorConnections$.next([
               ...patchConnections,
               newConnection
