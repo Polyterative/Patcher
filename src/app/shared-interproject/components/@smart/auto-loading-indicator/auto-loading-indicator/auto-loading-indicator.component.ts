@@ -31,8 +31,9 @@ export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() updateData$: Observable<any>;
   dataLoading$ = new BehaviorSubject<boolean>(true);
   
-  @Input() skipFirstData: boolean = false;
-  @Input() loadingLabel: string = 'Loading';
+  @Input() loadingLines = 1;
+  @Input() skipFirstData = false;
+  @Input() loadingLabel = 'Loading';
   protected destroyEvent$ = new Subject();
   
   ngOnInit(): void {
