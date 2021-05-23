@@ -1,88 +1,80 @@
-<div fxFlex="auto"
-     fxLayout="column"
-     fxLayoutGap="1rem"
->
-  <div fxFlex="auto"
-       fxLayout="row"
-       fxLayout.lt-md="column"
-       fxLayoutGap=".5rem"
-  >
-    <div fxFlex="grow"
-         fxLayout="row"
-         fxLayoutGap="1rem"
-         fxLayoutAlign="space-between"
-    >
-      <app-module-minimal fxFlex="50%"
-                          [data]="data.a.module"
-                          [hideManufacturer]="true"
-                          [hideDescription]="true"
-                          [hideButtons]="true"
-                          [hideHP]="true"
+<div class="flow row gap1"
+     fxLayout.lt-md="column"
 
-      >
-        <mat-chip-list>
-          <app-module-cvitem [data]="data.a"
-                             kind="out"
-          ></app-module-cvitem>
-        </mat-chip-list>
-      </app-module-minimal>
-      <app-patch-connection-symbol></app-patch-connection-symbol>
-      <app-module-minimal fxFlex="50%"
-                          [data]="data.b.module"
-                          [hideManufacturer]="true"
-                          [hideDescription]="true"
-                          [hideButtons]="true"
-                          [hideHP]="true"
-      >
+>
+  <div fxFlex="grow"
+       class="flow row"
+  >
+    <app-module-minimal fxFlex="50%"
+                        [data]="data.a.module"
+                        [hideManufacturer]="true"
+                        [hideDescription]="true"
+                        [hideButtons]="true"
+                        [hideHP]="true"
     
-        <mat-chip-list>
-          <app-module-cvitem [data]="data.b"
-                             kind="in"
-          ></app-module-cvitem>
-        </mat-chip-list>
-      </app-module-minimal>
-    </div>
-  
-    <ng-container *ngIf="!isEditing">
-      <div fxFlex="33%">
-        <ng-container *ngIf="data.notes&&data.notes.length>0">
-          <mat-card-subtitle style="font-style:italic"
-          >
-            {{data.notes}}
-          </mat-card-subtitle>
-        </ng-container>
-      </div>
-    </ng-container>
-    <ng-container *ngIf="isEditing">
-      <mat-divider
-          [vertical]="true"
-      ></mat-divider>
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
-      >
-        <button mat-icon-button
-                [matTooltip]="isCreator?'Clear selection':'Remove connection'"
-                (click)="remove$.next(data)"
-        >
-          <!--        <mat-icon>link_off</mat-icon>-->
-          <mat-icon>delete</mat-icon>
-        </button>
-        <div fxFlex="grow"></div>
-        <app-brand-primary-button *ngIf="isCreator"
-                                  (click)="create$.next(data)"
-        >
-          <mat-icon>add_link</mat-icon>
-          Add
-        </app-brand-primary-button>
-      </div>
-    </ng-container>
+    >
+      <mat-chip-list>
+        <app-module-cvitem [data]="data.a"
+                           kind="out"
+        ></app-module-cvitem>
+      </mat-chip-list>
+    </app-module-minimal>
+    <app-patch-connection-symbol></app-patch-connection-symbol>
+    <app-module-minimal fxFlex="50%"
+                        [data]="data.b.module"
+                        [hideManufacturer]="true"
+                        [hideDescription]="true"
+                        [hideButtons]="true"
+                        [hideHP]="true"
+    >
+      
+      <mat-chip-list>
+        <app-module-cvitem [data]="data.b"
+                           kind="in"
+        ></app-module-cvitem>
+      </mat-chip-list>
+    </app-module-minimal>
   </div>
-  <lib-mat-form-entity type="area"
-                       [control]="notes.control"
-                       label="Notes"
-                       [disabled]="!isEditing"
-                       *ngIf="isEditing&&!isCreator"
-                       [hint]="notes.control.value.length+'/999'"
-  ></lib-mat-form-entity>
+  
+  <ng-container *ngIf="!isEditing">
+    <div fxFlex="33%">
+      <ng-container *ngIf="data.notes&&data.notes.length>0">
+        <mat-card-subtitle style="font-style:italic"
+        >
+          {{data.notes}}
+        </mat-card-subtitle>
+      </ng-container>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isEditing">
+    <mat-divider
+        [vertical]="true"
+    ></mat-divider>
+    <div fxFlex="auto"
+         fxLayout="column"
+         fxLayoutGap="1rem"
+    >
+      <button mat-icon-button
+              [matTooltip]="isCreator?'Clear selection':'Remove connection'"
+              (click)="remove$.next(data)"
+      >
+        <!--        <mat-icon>link_off</mat-icon>-->
+        <mat-icon>delete</mat-icon>
+      </button>
+      <div fxFlex="grow"></div>
+      <app-brand-primary-button *ngIf="isCreator"
+                                (click)="create$.next(data)"
+      >
+        <mat-icon>add_link</mat-icon>
+        Add
+      </app-brand-primary-button>
+    </div>
+  </ng-container>
 </div>
+<lib-mat-form-entity type="area"
+                     [control]="notes.control"
+                     label="Notes"
+                     [disabled]="!isEditing"
+                     *ngIf="isEditing&&!isCreator"
+                     [hint]="notes.control.value.length+'/999'"
+></lib-mat-form-entity>
