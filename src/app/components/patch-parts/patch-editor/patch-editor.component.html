@@ -15,6 +15,7 @@
                                description="The connections of the patch you are editing"
         >
           <div class="flow col gap1"
+               style="max-height: 40rem; overflow-y: auto;"
           >
             <ng-container *ngFor="let item of dataService.editorConnections$|async">
               <mat-card>

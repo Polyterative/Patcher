@@ -42,8 +42,7 @@ export class ModuleCVItemComponent implements OnInit {
       case 'in':
         this.patchService.selectedForConnection$
             .pipe(
-              map(data =>
-                data && data.b ? data.b.cv.id == this.data.id : false),
+              map(data => data && data.b ? data.b.cv.id == this.data.id : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedFrom);
@@ -51,8 +50,7 @@ export class ModuleCVItemComponent implements OnInit {
       case 'out':
         this.patchService.selectedForConnection$
             .pipe(
-              map(data =>
-                data && data.a ? data.a.cv.id == this.data.id : false),
+              map(data => data && data.a ? data.a.cv.id == this.data.id : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedTo);
