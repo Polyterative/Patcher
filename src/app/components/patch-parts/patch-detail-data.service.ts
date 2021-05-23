@@ -106,7 +106,7 @@ export class PatchDetailDataService {
         .pipe(
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser().id == data.author.id));
+        .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id));
   
     this.patchEditingPanelOpenState$
         .pipe(
