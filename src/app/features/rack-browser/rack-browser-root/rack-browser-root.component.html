@@ -5,8 +5,7 @@
   >
     <div class="flow col gap1"
     >
-      <div fxFlex="auto"
-           fxLayout="row"
+      <div fxLayout="row"
            fxLayout.lt-sm="column"
            fxLayoutGap="1rem"
       >
@@ -14,7 +13,7 @@
                              [type]="dataService.formTypes.TEXT"
                              label="Search rack..."
         ></lib-mat-form-entity>
-        
+  
         <lib-mat-form-entity [control]="dataService.fields.order.control"
                              [options$]="dataService.fields.order.options$"
                              [type]="dataService.formTypes.SELECT"
