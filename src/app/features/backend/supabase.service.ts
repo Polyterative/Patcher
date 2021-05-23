@@ -175,13 +175,13 @@ export class SupabaseService {
           .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)
           .range(from, to)
     ),
-    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, manufacturerId?: number) => {
+    modulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
       const baseQuery = this.supabase.from(this.paths.modules)
                             .select('id,name,hp,description,public,standard, manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
                             .ilike('name', `%${ name }%`)
                             .filter('public', 'eq', true)
                             .range(from, to)
-                            .order(orderBy ? orderBy : 'name');
+                            .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'});
       return fromPromise(
         manufacturerId ? baseQuery.eq('manufacturerId', manufacturerId) :
         baseQuery

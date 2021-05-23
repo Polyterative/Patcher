@@ -78,23 +78,43 @@ export class ModuleBrowserDataService implements OnDestroy {
       options$: of([
         {
           id:   'name',
-          name: 'Name'
+          name: 'Name ↑'
+        },
+        {
+          id:   'name',
+          name: 'Name ↓'
         },
         {
           id:   'hp',
-          name: 'HP'
+          name: 'HP ↑'
+        },
+        {
+          id:   'hp',
+          name: 'HP ↓'
         },
         {
           id:   'manufacturerId',
-          name: 'Manufacturer'
+          name: 'Manufacturer ↑'
+        },
+        {
+          id:   'manufacturerId',
+          name: 'Manufacturer ↓'
         },
         {
           id:   'created',
-          name: 'Created'
+          name: 'Created ↑'
+        },
+        {
+          id:   'created',
+          name: 'Created ↓'
         },
         {
           id:   'updated',
-          name: 'Updated'
+          name: 'Updated ↑'
+        },
+        {
+          id:   'updated',
+          name: 'Updated ↓'
         }
       ])
       
@@ -154,7 +174,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     private backend: SupabaseService
   ) {
   
-    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, 'asc'));
+    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
   
     this.updateModulesList$
         .pipe(
@@ -162,8 +182,8 @@ export class ModuleBrowserDataService implements OnDestroy {
           switchMap(([z, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-  
-            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName, parseInt(getCleanedValueId(this.fields.manufacturers.control)));
+      
+            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection, parseInt(getCleanedValueId(this.fields.manufacturers.control)));
           }),
           takeUntil(this.destroyEvent$)
         )
