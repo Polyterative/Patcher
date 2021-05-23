@@ -6,7 +6,6 @@ import { MatSnackBar }     from '@angular/material/snack-bar';
 import { ActivatedRoute }  from '@angular/router';
 import { createClient }    from '@supabase/supabase-js';
 import {
-  combineLatest,
   forkJoin,
   ReplaySubject,
   throwError,
@@ -133,7 +132,6 @@ export class SupabaseService {
           .filter('patchid', 'eq', patchid)
           .order('ordinal')
     )
-      .pipe(tap(x => console.log(x)))
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)))
     ,
@@ -488,28 +486,22 @@ export class SupabaseService {
   }
   
   private buildPatchConnectionInserter(connections: PatchConnection[]) {
-    
-    const inserter$ = combineLatest(
-      connections.map((conn, i) => ({
-        patchid: conn.patch.id,
-        a:       conn.a.id,
-        b:       conn.b.id,
-        notes:   conn.notes,
-        ordinal: i
-      }))
-        // .filter(x => x.id == 0)
-        // .map(x => {
-        //   x.id = undefined;
-        //   return x;
-        // })
-                 .map(item => fromPromise(
-                   this.supabase.from(this.paths.patch_connections)
-                       .insert(item)
-                       .select('patchid')
-                 )
-                   .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)))
-    );
-    
+  
+    let toInsert = connections.map((conn, i) => ({
+      patchid: conn.patch.id,
+      a:       conn.a.id,
+      b:       conn.b.id,
+      notes:   conn.notes,
+      ordinal: i
+    }));
+  
+    const inserter$ = fromPromise(
+      this.supabase.from(this.paths.patch_connections)
+          .insert(toInsert)
+          .select('patchid')
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
+  
     if (connections.length > 0) {
       return this.delete.patchConnectionsForPatch(connections[0].patch.id)
                  .pipe(
@@ -517,7 +509,7 @@ export class SupabaseService {
                    switchMap(x => inserter$)
                  );
     }
-    
+  
     return inserter$;
   }
   
