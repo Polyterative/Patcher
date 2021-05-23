@@ -3,7 +3,7 @@
 
 >
   <div fxFlex="grow"
-       class="flow row"
+       class="flow row gap1"
   >
     <app-module-minimal fxFlex="50%"
                         [data]="data.a.module"
@@ -50,9 +50,7 @@
     <mat-divider
         [vertical]="true"
     ></mat-divider>
-    <div fxFlex="auto"
-         fxLayout="column"
-         fxLayoutGap="1rem"
+    <div class="flow col gap1"
     >
       <button mat-icon-button
               [matTooltip]="isCreator?'Clear selection':'Remove connection'"
