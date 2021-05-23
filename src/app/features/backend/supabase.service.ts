@@ -131,7 +131,9 @@ export class SupabaseService {
           b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
           `)
           .filter('patchid', 'eq', patchid)
+          .order('ordinal')
     )
+      .pipe(tap(x => console.log(x)))
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)))
     ,
@@ -162,9 +164,10 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    rackModules:        (rackid: number) => fromPromise(
+    rackModules:    (rackid: number) => fromPromise(
       this.supabase.from(this.paths.rack_modules)
           .select(`${ this.queryJoins.module }`)
+          .order('name')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
     )
@@ -487,11 +490,12 @@ export class SupabaseService {
   private buildPatchConnectionInserter(connections: PatchConnection[]) {
     
     const inserter$ = combineLatest(
-      connections.map(conn => ({
+      connections.map((conn, i) => ({
         patchid: conn.patch.id,
         a:       conn.a.id,
         b:       conn.b.id,
-        notes:   conn.notes
+        notes:   conn.notes,
+        ordinal: i
       }))
         // .filter(x => x.id == 0)
         // .map(x => {
