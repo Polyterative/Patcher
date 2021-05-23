@@ -16,9 +16,7 @@
         <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
         >
           <mat-card>
-            <div fxFlex="auto"
-                 fxLayout="column"
-                 fxLayoutGap=".5rem"
+            <div class="flow col gap1"
             >
               <ng-container *ngFor="let item of dataService.patchesConnections$|async">
                 <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
