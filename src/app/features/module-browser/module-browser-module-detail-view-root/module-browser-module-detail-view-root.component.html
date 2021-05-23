@@ -2,49 +2,29 @@
 data:(dataService.singleModuleData$|async)
 } as bag"
 >
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayoutGap="1rem"
+  <div class="flow col gap1"
   >
     <lib-hero-content-card titleBig="Module details"
                            class="modulesBG"
     >
-      <div fxFlex="auto"
-           fxLayout="column"
-           fxLayoutGap="1rem"
+      <div class="flow col gap1"
       >
-        <div fxFlex="auto"
-             fxLayout="column"
-             fxLayoutGap="1rem"
-        >
-          <div fxFlex="auto"
-               fxLayoutAlign="center"
+        <lib-hero-item-card>
+          <ng-container *ngIf="bag.data"
           >
-            <div fxFlex="auto"
-                 fxLayout="column"
-                 fxLayoutGap="1rem"
-            >
-              <div>
-                <lib-hero-item-card>
-                  <ng-container *ngIf="bag.data"
-                  >
-                    <app-module-composite [data]="(bag.data)"
-                    ></app-module-composite>
-                  </ng-container>
-                </lib-hero-item-card>
-              </div>
-              <app-auto-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                          [data$]="dataService.singleModuleData$"
-              ></app-auto-loading-indicator>
-              <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
-                <app-module-editor
-                    [data]="(bag.data)"
-                ></app-module-editor>
-              </lib-hero-item-card>
-              <!--              stuff-->
-            </div>
-          </div>
-        </div>
+            <app-module-composite [data]="(bag.data)"
+            ></app-module-composite>
+          </ng-container>
+        </lib-hero-item-card>
+        <app-auto-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                    [data$]="dataService.singleModuleData$"
+        ></app-auto-loading-indicator>
+        <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
+          <app-module-editor
+              [data]="(bag.data)"
+          ></app-module-editor>
+        </lib-hero-item-card>
+        <!--              stuff-->
       </div>
     </lib-hero-content-card>
   </div>
