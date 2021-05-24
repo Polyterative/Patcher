@@ -1,4 +1,6 @@
 <ng-container *ngIf="{
+
+  editorConnections:(dataService.editorConnections$|async),
   selectedForConnection:(dataService.selectedForConnection$|async)
   } as bag"
 >
@@ -14,10 +16,12 @@
                                class="connections"
                                description="The connections of the patch you are editing"
         >
-          <div class="flow col gap1"
+  
+          <div *ngIf="bag.editorConnections.length<=5"
+               class="flow col gap1"
                style="max-height: 40rem; overflow-y: auto;"
           >
-            <ng-container *ngFor="let item of dataService.editorConnections$|async">
+            <ng-container *ngFor="let item of bag.editorConnections">
               <mat-card>
                 <app-patch-connection-minimal [data]="item"
                                               [isEditing]="true"
@@ -26,6 +30,26 @@
               </mat-card>
             </ng-container>
           </div>
+    
+    
+          <cdk-virtual-scroll-viewport *ngIf="bag.editorConnections.length>5"
+                                       itemSize="175.76"
+                                       style="height: 40rem; overflow: auto;"
+    
+          >
+            <div class="flow col gap1">
+              <ng-container *cdkVirtualFor="let item of bag.editorConnections">
+                <div>
+                  <mat-card>
+                    <app-patch-connection-minimal [data]="item"
+                                                  [isEditing]="true"
+                                                  (remove$)="dataService.removeConnectionFromEditor$.next($event)"
+                    ></app-patch-connection-minimal>
+                  </mat-card>
+                </div>
+              </ng-container>
+            </div>
+          </cdk-virtual-scroll-viewport>
         </lib-hero-content-card>
       </ng-container>
       <lib-hero-content-card fxFlex.gt-lg="50%"
