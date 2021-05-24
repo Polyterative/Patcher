@@ -12,6 +12,7 @@ if (environment.production) {
   enableProdMode();
   
   sentry = {
+    environment:      'production',
     dsn:              'https://57dc8f0b1ad240f3afa61628b8351aae@o718439.ingest.sentry.io/5780783',
     integrations:     [
       new Integrations.BrowserTracing({
@@ -26,6 +27,7 @@ if (environment.production) {
   };
 } else {
   sentry = {
+    environment:      'development',
     dsn:              'https://57dc8f0b1ad240f3afa61628b8351aae@o718439.ingest.sentry.io/5780783',
     integrations:     [
       new Integrations.BrowserTracing({
@@ -36,7 +38,7 @@ if (environment.production) {
         routingInstrumentation: Sentry.routingInstrumentation
       })
     ],
-    tracesSampleRate: 0
+    tracesSampleRate: 1
   };
   
 }
