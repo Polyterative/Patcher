@@ -1,3 +1,4 @@
+import { ScrollingModule }            from '@angular/cdk/scrolling';
 import { CommonModule }               from '@angular/common';
 import { NgModule }                   from '@angular/core';
 import { FlexLayoutModule }           from '@angular/flex-layout';
@@ -44,7 +45,7 @@ import { AutoLoadingIndicatorModule } from '../../shared-interproject/components
     PatchDetailsComponent
   ],
   providers:    [PatchDetailDataService],
-  imports: [
+  imports:      [
     CommonModule,
     ConfirmDialogModule,
     TimeagoModule.forChild(),
@@ -69,7 +70,8 @@ import { AutoLoadingIndicatorModule } from '../../shared-interproject/components
     MatDialogModule,
     HeroClickableTitleModule,
     MatExpansionModule,
-    AutoLoadingIndicatorModule
+    AutoLoadingIndicatorModule,
+    ScrollingModule
   ]
 })
 export class PatchModule {}
