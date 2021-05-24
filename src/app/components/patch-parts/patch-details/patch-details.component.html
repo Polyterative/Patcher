@@ -16,7 +16,8 @@
         <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
         >
           <mat-card>
-            <div class="flow col gap1"
+            <div *ngIf="bag.connections.length<=5"
+                 class="flow col gap1"
                  style="max-height: 40rem; overflow-y: auto;"
             >
               <ng-container *ngFor="let item of dataService.patchesConnections$|async">
@@ -24,6 +25,19 @@
                 <mat-divider inset="true"></mat-divider>
               </ng-container>
             </div>
+  
+            <cdk-virtual-scroll-viewport *ngIf="bag.connections.length>5"
+                                         itemSize="58.76"
+                                         style="height: 40rem; overflow: auto;"
+            >
+              <div class="flow col gap1">
+                <ng-container *cdkVirtualFor="let item of dataService.patchesConnections$|async">
+                  <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
+                  <mat-divider inset="true"></mat-divider>
+                </ng-container>
+              </div>
+            </cdk-virtual-scroll-viewport>
+  
           </mat-card>
         </lib-hero-content-card>
       </ng-container>
