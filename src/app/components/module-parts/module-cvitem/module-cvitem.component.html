@@ -1,7 +1,16 @@
-<mat-chip infoBox
-          (click)="click$.next(data)"
-          [ngClass]="{'a' : highlightedFrom|async, 'b': highlightedTo|async }"
-          [infoText]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
+<ng-container *ngIf="{
+layoutFlexWidth:(appState.layoutFlexWidth$|async)
+} as bag"
 >
-  {{data.name}}
-</mat-chip>
+  <mat-chip infoBox
+            *ngIf="bag.layoutFlexWidth.gtxs"
+            (click)="click$.next(data)"
+            [ngClass]="{'a' : highlightedFrom|async, 'b': highlightedTo|async }"
+            [infoText]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
+  >
+    {{data.name}}
+  </mat-chip>
+  <mat-card-subtitle *ngIf="bag.layoutFlexWidth.xs"
+                     class="mobileChip"
+  >{{data.name}}</mat-card-subtitle>
+</ng-container>

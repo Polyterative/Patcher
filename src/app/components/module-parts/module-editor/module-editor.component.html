@@ -1,67 +1,60 @@
 <div class="flow col gap1"
 >
   
-  <div fxFlex="auto"
-       fxLayout="column"
-       fxLayout.gt-lg="row"
-       fxLayoutAlign="start"
-       fxLayoutGap="1rem"
+  <div ngClass.lt-md="flow col gap1"
+       ngClass.gt-md="flow row gap1"
   >
-    <ng-container>
-      <div class="flow col gap1"
+    <div class="flow col gap1"
+    >
+      <div fxFlex="shrink"
+           fxLayout="row"
+           fxLayoutGap="1rem"
+           fxLayoutAlign="space-between"
       >
-        <div fxFlex="shrink"
-             fxLayout="row"
-             fxLayoutGap="1rem"
-             fxLayoutAlign="space-between"
-        >
-          <mat-card-title>INs</mat-card-title>
-          <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
-        </div>
-        <div fxFlex="auto"
-             fxLayout="column"
-             class="leftBorderS"
-        >
-          <ng-container *ngFor="let item of INs$|async;">
-  
-            <div fxFlex="auto"
-                 fxLayout="row"
-            >
-              <lib-mat-form-entity [type]="types.TEXT"
-                                   [control]="item.name"
-                                   label="name"
-              ></lib-mat-form-entity>
-              <lib-mat-form-entity [type]="types.NUMBER"
-                                   [control]="item.a"
-                                   label="min V"
-              ></lib-mat-form-entity>
-              <lib-mat-form-entity [type]="types.NUMBER"
-                                   [control]="item.b"
-                                   label="max V"
-              ></lib-mat-form-entity>
-            </div>
-          </ng-container>
-        </div>
-        <div fxFlex="auto"
-             fxFlex.lt-md="auto"
-             fxLayout="row wrap"
-             fxLayoutGap="1rem grid"
-        >
-          <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
-          </app-brand-primary-button>
-          <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V
-          </app-brand-primary-button>
-          <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V
-          </app-brand-primary-button>
-          <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V
-          </app-brand-primary-button>
-          <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V
-          </app-brand-primary-button>
-          <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V
-          </app-brand-primary-button>
-        </div>
+        <mat-card-title>INs</mat-card-title>
+        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
       </div>
-    </ng-container>
+      <div class="flow col gap1 leftBorderS"
+      >
+        <ng-container *ngFor="let item of INs$|async;">
+          
+          <div ngClass.xs="flow col gap1"
+               ngClass.gt-xs="flow row gap1"
+          >
+            <lib-mat-form-entity [type]="types.TEXT"
+                                 [control]="item.name"
+                                 label="name"
+            ></lib-mat-form-entity>
+            <lib-mat-form-entity [type]="types.NUMBER"
+                                 [control]="item.a"
+                                 label="min V"
+            ></lib-mat-form-entity>
+            <lib-mat-form-entity [type]="types.NUMBER"
+                                 [control]="item.b"
+                                 label="max V"
+            ></lib-mat-form-entity>
+          </div>
+        </ng-container>
+      </div>
+      <div fxFlex="auto"
+           fxFlex.lt-md="auto"
+           fxLayout="row wrap"
+           fxLayoutGap="1rem grid"
+      >
+        <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
+        </app-brand-primary-button>
+        <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V
+        </app-brand-primary-button>
+        <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V
+        </app-brand-primary-button>
+        <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V
+        </app-brand-primary-button>
+        <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V
+        </app-brand-primary-button>
+        <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V
+        </app-brand-primary-button>
+      </div>
+    </div>
     <div class="flow col gap1"
     >
       <div fxFlex="shrink"
@@ -72,14 +65,12 @@
         <mat-card-title>OUTs</mat-card-title>
         <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
       </div>
-      <div fxFlex="auto"
-           fxLayout="column"
-           class="leftBorderS"
+      <div class="flow col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of OUTs$|async;">
-        
-          <div fxFlex="auto"
-               fxLayout="row"
+          
+          <div ngClass.xs="flow col gap1"
+               ngClass.gt-xs="flow row gap1"
           >
             <lib-mat-form-entity [type]="types.TEXT"
                                  [control]="item.name"
@@ -125,10 +116,11 @@
     
     
     <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-    
+  
     <div fxFlex="auto"
-         fxFlex.lt-md="column"
-         class="flow row gap1"
+         fxLayout="row"
+         fxLayout.lt-md="column"
+         fxLayoutGap="1rem"
     >
       <mat-card-subtitle fxFlex="grow"
                          fxLayoutAlign="end center"
