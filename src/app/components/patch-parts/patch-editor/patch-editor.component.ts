@@ -15,7 +15,7 @@ import { SupabaseService }        from 'src/app/features/backend/supabase.servic
 import { Patch }                  from 'src/app/models/models';
 
 interface FormCV {
-  id: number,
+  id: number;
   name: FormControl;
   a: FormControl;
   b: FormControl;
@@ -31,14 +31,12 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
   protected destroyEvent$: Subject<void> = new Subject();
   
-  
   constructor(
     public backend: SupabaseService,
     public formBuilder: FormBuilder,
     public dataService: PatchDetailDataService
   ) {
   }
-  
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
@@ -47,6 +45,5 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
   }
-  
   
 }

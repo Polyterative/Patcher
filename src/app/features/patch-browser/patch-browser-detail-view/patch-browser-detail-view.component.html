@@ -1,36 +1,79 @@
 <ng-container *ngIf="{
+patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
 data:(dataService.singlePatchData$|async)
 } as bag"
 >
-  <div class="flow col gap1"
-  >
-    <lib-hero-content-card titleBig="Patch details"
-                           class="patchesBG"
-    >
+  <ng-container *ngIf="!bag.patchEditingPanelOpenState">
+    <lib-screen-wrapper>
       <div class="flow col gap1"
       >
-        <div>
-          <!--              <lib-hero-item-card>-->
-          <ng-container *ngIf="bag.data"
-          >
-            <app-patch-composite [data]="(bag.data)"
-            ></app-patch-composite>
-          </ng-container>
-          <!--              </lib-hero-item-card>-->
-        </div>
-        <app-auto-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                    [data$]="dataService.singlePatchData$"
-        ></app-auto-loading-indicator>
-        <lib-hero-content-card titleNormal="Editor"
-                               *ngIf="bag.data&&dataService.patchEditingPanelOpenState$|async"
+        <lib-hero-content-card titleBig="Patch details"
+                               class="patchesBG"
         >
-          <lib-hero-item-card>
-            <app-patch-editor
-                [data]="(bag.data)"
-            ></app-patch-editor>
-          </lib-hero-item-card>
+          <div class="flow col gap1"
+          >
+            <div>
+              <!--              <lib-hero-item-card>-->
+              <ng-container *ngIf="bag.data"
+              >
+                <app-patch-composite [data]="(bag.data)"
+                                     [isEditing]="bag.patchEditingPanelOpenState"
+                ></app-patch-composite>
+              </ng-container>
+              <!--              </lib-hero-item-card>-->
+            </div>
+            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                                [data$]="dataService.singlePatchData$"
+            ></lib-auto-content-loading-indicator>
+            <lib-hero-content-card titleNormal="Editor"
+                                   *ngIf="bag.data&&bag.patchEditingPanelOpenState"
+            >
+              <lib-hero-item-card>
+                <app-patch-editor
+                    [data]="(bag.data)"
+                ></app-patch-editor>
+              </lib-hero-item-card>
+            </lib-hero-content-card>
+          </div>
         </lib-hero-content-card>
       </div>
-    </lib-hero-content-card>
-  </div>
+    </lib-screen-wrapper>
+  </ng-container>
+  <ng-container *ngIf="bag.patchEditingPanelOpenState">
+    <div class="flow col gap1"
+    >
+      <lib-hero-content-card titleBig="Patch details"
+                             class="patchesBG"
+      >
+        <div ngClass.gt-md="flow row gap1"
+             ngClass.lt-lg="flow col gap1"
+        >
+          <div fxFlex.gt-md="35">
+            <!--              <lib-hero-item-card>-->
+            <ng-container *ngIf="bag.data"
+            >
+              <app-patch-composite [data]="(bag.data)"
+                                   [isEditing]="bag.patchEditingPanelOpenState"
+              ></app-patch-composite>
+            </ng-container>
+            <!--              </lib-hero-item-card>-->
+          </div>
+          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                              [data$]="dataService.singlePatchData$"
+          ></lib-auto-content-loading-indicator>
+          <lib-hero-content-card fxFlex.gt-md="65"
+                                 titleNormal="Editor"
+                                 *ngIf="bag.data&&bag.patchEditingPanelOpenState"
+          
+          >
+            <lib-hero-item-card>
+              <app-patch-editor
+                  [data]="(bag.data)"
+              ></app-patch-editor>
+            </lib-hero-item-card>
+          </lib-hero-content-card>
+        </div>
+      </lib-hero-content-card>
+    </div>
+  </ng-container>
 </ng-container>

@@ -22,7 +22,7 @@ import { NotFoundComponent } from './not-found.component';
                 path:       '**',//keep as last (for routes)
                 redirectTo: '/404'
             }
-        ]),
+        ], {scrollPositionRestoration: 'enabled'}),
         EmptyStateModule,
         FlexLayoutModule,
         MatCardModule

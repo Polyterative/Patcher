@@ -35,11 +35,11 @@
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
       ></mat-paginator>
-      
+  
       <app-rack-list [data$]="dataService.racksList$"></app-rack-list>
-      <app-auto-loading-indicator [data$]="dataService.racksList$"
-                                  [updateData$]="dataService.updateRacksList$"
-      ></app-auto-loading-indicator>
+      <lib-auto-content-loading-indicator [data$]="dataService.racksList$"
+                                          [updateData$]="dataService.updateRacksList$"
+      ></lib-auto-content-loading-indicator>
     </div>
     <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>

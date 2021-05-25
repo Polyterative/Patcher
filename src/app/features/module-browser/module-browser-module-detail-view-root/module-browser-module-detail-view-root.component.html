@@ -2,30 +2,35 @@
 data:(dataService.singleModuleData$|async)
 } as bag"
 >
-  <div class="flow col gap1"
-  >
-    <lib-hero-content-card titleBig="Module details"
-                           class="modulesBG"
+  <lib-screen-wrapper>
+    <div class="flow col gap1"
     >
-      <div class="flow col gap1"
+      <lib-hero-content-card titleBig="Module details"
+                             class="modulesBG"
       >
-        <lib-hero-item-card>
-          <ng-container *ngIf="bag.data"
-          >
-            <app-module-composite [data]="(bag.data)"
-            ></app-module-composite>
-          </ng-container>
-        </lib-hero-item-card>
-        <app-auto-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                    [data$]="dataService.singleModuleData$"
-        ></app-auto-loading-indicator>
-        <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
-          <app-module-editor
-              [data]="(bag.data)"
-          ></app-module-editor>
-        </lib-hero-item-card>
-        <!--              stuff-->
-      </div>
-    </lib-hero-content-card>
-  </div>
+        <div class="flow col gap1"
+        >
+          <lib-screen-wrapper maxSize="36rem">
+            <lib-hero-item-card>
+              <ng-container *ngIf="bag.data"
+              >
+                <app-module-composite [data]="(bag.data)"
+                
+                ></app-module-composite>
+              </ng-container>
+            </lib-hero-item-card>
+          </lib-screen-wrapper>
+          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                              [data$]="dataService.singleModuleData$"
+          ></lib-auto-content-loading-indicator>
+          <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
+            <app-module-editor
+                [data]="(bag.data)"
+            ></app-module-editor>
+          </lib-hero-item-card>
+          <!--              stuff-->
+        </div>
+      </lib-hero-content-card>
+    </div>
+  </lib-screen-wrapper>
 </ng-container>

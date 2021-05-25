@@ -27,8 +27,8 @@ import { UserManagementService } from './user-management.service';
           }
         ]
       }
-    
-    ])
+
+    ], {scrollPositionRestoration: 'enabled'})
   
   ]
 })

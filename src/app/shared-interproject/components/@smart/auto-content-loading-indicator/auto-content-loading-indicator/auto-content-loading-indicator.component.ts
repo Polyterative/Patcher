@@ -20,13 +20,13 @@ import {
 } from 'rxjs/operators';
 
 @Component({
-  selector:        'app-auto-loading-indicator',
-  templateUrl:     './auto-loading-indicator.component.html',
-  styleUrls:       ['./auto-loading-indicator.component.scss'],
+  selector:        'lib-auto-content-loading-indicator',
+  templateUrl:     './auto-content-loading-indicator.component.html',
+  styleUrls:       ['./auto-content-loading-indicator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation:   ViewEncapsulation.None
 })
-export class AutoLoadingIndicatorComponent implements OnInit, OnDestroy {
+export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;
   @Input() updateData$: Observable<any>;
   dataLoading$ = new BehaviorSubject<boolean>(true);

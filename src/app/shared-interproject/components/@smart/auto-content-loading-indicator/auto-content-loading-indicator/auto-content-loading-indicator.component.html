@@ -5,6 +5,7 @@
   <div *ngIf="bag.dataLoading"
        fxLayout="column"
        fxLayoutGap=".5rem"
+       [fxHide]="!bag.dataLoading"
   >
     <ng-container *ngFor="let i of [].constructor(loadingLines)">
     

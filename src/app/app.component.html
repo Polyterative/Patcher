@@ -1,13 +1,16 @@
 <app-toolbar></app-toolbar>
 <div class="main">
-  <lib-screen-wrapper>
-    <div class="flow col gap1"
-    >
-      <router-outlet></router-outlet>
-      <app-advice-tooltip [ngStyle]="{'background-color': '#b1610f'}">This project is in beta!
-                                                                      Expect some hiccups
-      </app-advice-tooltip>
-      <app-footer></app-footer>
-    </div>
-  </lib-screen-wrapper>
+  <div class="flow col gap1"
+  >
+    <router-outlet></router-outlet>
+    <lib-screen-wrapper>
+      <div class="flow col gap1"
+      >
+        <app-advice-tooltip [ngStyle]="{'background-color': '#b1610f'}">This project is in beta!
+                                                                        Expect some hiccups
+        </app-advice-tooltip>
+        <app-footer></app-footer>
+      </div>
+    </lib-screen-wrapper>
+  </div>
 </div>

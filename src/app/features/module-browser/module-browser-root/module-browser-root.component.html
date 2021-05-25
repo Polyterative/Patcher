@@ -37,19 +37,19 @@
           >Add a module</a>
         </div>
       </div>
-      
+  
       <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
                      [pageSizeOptions]="[10,25,50]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
-      
+  
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
       ></mat-paginator>
-      
+  
       <app-module-list [data$]="dataService.modulesList$"></app-module-list>
-      <app-auto-loading-indicator [data$]="dataService.modulesList$"
-                                  [updateData$]="dataService.updateModulesList$"
-      ></app-auto-loading-indicator>
+      <lib-auto-content-loading-indicator [data$]="dataService.modulesList$"
+                                          [updateData$]="dataService.updateModulesList$"
+      ></lib-auto-content-loading-indicator>
     </div>
     <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>

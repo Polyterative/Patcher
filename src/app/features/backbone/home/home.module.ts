@@ -38,7 +38,7 @@ import { HomeComponent }            from './home.component';
         path:      'home',
         component: HomeComponent
       }
-    ]),
+    ], {scrollPositionRestoration: 'enabled'}),
     ScreenWrapperModule,
     ListLinkRouterModule,
     HeroLinkModule,

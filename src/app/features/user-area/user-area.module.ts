@@ -52,7 +52,7 @@ import { UserAreaRootComponent }    from './user-area-root/user-area-root.compon
           component: UserDataHandlerComponent,
           outlet:    'user'
         }
-      ], 'Personal area', [UserAuthGuard])
+      ], undefined, [UserAuthGuard])
     ]),
     FlexLayoutModule,
     BrandPrimaryButtonModule,

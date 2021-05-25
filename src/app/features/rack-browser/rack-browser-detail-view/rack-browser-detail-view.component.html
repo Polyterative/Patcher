@@ -2,31 +2,33 @@
 data:(dataService.singleRackData$|async)
 } as bag"
 >
-  <div class="flow col gap1"
-  >
-    <lib-hero-content-card titleBig="Rack details"
-                           class="racksBG"
+  <lib-screen-wrapper>
+    <div class="flow col gap1"
     >
-      <div class="flow col gap1"
+      <lib-hero-content-card titleBig="Rack details"
+                             class="racksBG"
       >
-        <div>
-          <!--              <lib-hero-item-card>-->
-          <app-auto-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                      [data$]="dataService.singleRackData$"
-          ></app-auto-loading-indicator>
-          <ng-container *ngIf="bag.data"
-          >
-            <app-rack-composite [data]="(bag.data)"
-            ></app-rack-composite>
-          </ng-container>
-          <!--              </lib-hero-item-card>-->
+        <div class="flow col gap1"
+        >
+          <div>
+            <!--              <lib-hero-item-card>-->
+            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                                [data$]="dataService.singleRackData$"
+            ></lib-auto-content-loading-indicator>
+            <ng-container *ngIf="bag.data"
+            >
+              <app-rack-composite [data]="(bag.data)"
+              ></app-rack-composite>
+            </ng-container>
+            <!--              </lib-hero-item-card>-->
+          </div>
+          <lib-hero-item-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
+            <app-rack-editor
+                [data]="(bag.data)"
+            ></app-rack-editor>
+          </lib-hero-item-card>
         </div>
-        <lib-hero-item-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
-          <app-rack-editor
-              [data]="(bag.data)"
-          ></app-rack-editor>
-        </lib-hero-item-card>
-      </div>
-    </lib-hero-content-card>
-  </div>
+      </lib-hero-content-card>
+    </div>
+  </lib-screen-wrapper>
 </ng-container>

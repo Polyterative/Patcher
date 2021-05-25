@@ -19,7 +19,7 @@ export class UranusComponent {
   
   }
   
-  public width: string = this.route.snapshot.data.width;
+  // public width: string = this.route.snapshot.data.width;
   
   ngOnInit(): void {
     const providedTitle = this.route.snapshot.data.title;

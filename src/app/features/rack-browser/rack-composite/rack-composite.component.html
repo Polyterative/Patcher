@@ -1,8 +1,10 @@
 <div class="flow col gap1"
 >
-  <lib-hero-item-card>
-    <app-rack-minimal [data]="data">
-    </app-rack-minimal>
-  </lib-hero-item-card>
+  <lib-screen-wrapper maxSize="36rem">
+    <lib-hero-item-card>
+      <app-rack-minimal [data]="data">
+      </app-rack-minimal>
+    </lib-hero-item-card>
+  </lib-screen-wrapper>
   <app-rack-details [data]="data"></app-rack-details>
 </div>

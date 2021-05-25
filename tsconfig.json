@@ -1,22 +1,31 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "compileOnSave":   false,
-  "compilerOptions": {
-    "baseUrl":                      "./",
-    "outDir":                       "./dist/out-tsc",
-    "sourceMap":                    true,
-    "declaration":                  false,
-    "module":                       "esnext",
-    "moduleResolution":             "node",
-    "experimentalDecorators":       true,
-    "importHelpers":                true,
-    "target":                       "es5",
-    "allowSyntheticDefaultImports": true,
-    "typeRoots":                    [
-      "node_modules/@types"
-    ],
-    "lib":                          [
+  "compileOnSave":          false,
+  "compilerOptions":        {
+    "baseUrl":                          "./",
+    "outDir":                           "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict":                           false,
+    "noImplicitReturns":                true,
+    "noFallthroughCasesInSwitch":       true,
+    "sourceMap":                        true,
+    "declaration":                      false,
+    "downlevelIteration":               true,
+    "experimentalDecorators":           true,
+    "allowSyntheticDefaultImports":     true,
+    "moduleResolution":                 "node",
+    "importHelpers":                    true,
+    "target":                           "es2017",
+    "module":                           "es2020",
+    "lib":                              [
       "es2018",
       "dom"
     ]
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters":       false,
+    "strictInputAccessModifiers":      false,
+    "strictTemplates":                 false
   }
 }
