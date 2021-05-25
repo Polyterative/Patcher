@@ -2,7 +2,7 @@
   "name": "patcher",
   "version": "2.12.2",
   "scripts": {
-    "start":         "angular-build-info && ng serve --hmr ",
+    "start":         "angular-build-info && ng serve --hmr --port 5555",
     "startProd":     "ng serve --configuration production --hmr ",
     "build":         "angular-build-info && ng build --configuration production",
     "deploy":        "angular-build-info && ng build --configuration production && firebase deploy",
