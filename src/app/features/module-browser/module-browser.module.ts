@@ -18,25 +18,27 @@ import { CommonSidebarComponent }                     from 'src/app/features/bac
 import { ModuleBrowserDataService }                   from 'src/app/features/module-browser/module-browser-data.service';
 import { ModuleBrowserModuleDetailViewRootComponent } from 'src/app/features/module-browser/module-browser-module-detail-view-root/module-browser-module-detail-view-root.component';
 import { ModuleBrowserRootComponent }                 from 'src/app/features/module-browser/module-browser-root/module-browser-root.component';
-import { ModuleCompositeComponent }                   from 'src/app/features/module-browser/module-composite/module-composite.component';
-import { ModuleListComponent }                        from 'src/app/features/module-browser/module-list/module-list.component';
-import { AutoLoadingIndicatorModule }                 from 'src/app/shared-interproject/components/@smart/auto-loading-indicator/auto-loading-indicator.module';
-import { DevOnlyWindowModule }                        from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { EmptyStateModule }                           from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { MatFormEntityModule }                        from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
-import { RestrictedEntityModule }                     from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
-import { UserDataHandlerComponent }                   from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { BrandPrimaryButtonModule }                   from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { FlexboxRowFastModule }                       from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule }                      from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }                          from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule }                         from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule }                   from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }                           from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }                        from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }                         from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateUranusRoutes }                       from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { ModuleCompositeComponent }          from 'src/app/features/module-browser/module-composite/module-composite.component';
+import { ModuleListComponent }               from 'src/app/features/module-browser/module-list/module-list.component';
+import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { DevOnlyWindowModule }               from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { EmptyStateModule }                  from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { MatFormEntityModule }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { RestrictedEntityModule }            from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
+import { UserDataHandlerComponent }          from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
+import { BrandPrimaryButtonModule }          from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { FlexboxRowFastModule }              from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroContentCardModule }             from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroItemCardModule }                from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
+import { LabelValueShowcaseModule }          from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }                  from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }               from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }                from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }              from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 
+
+const parentPrefix: string = 'modules';
 
 @NgModule({
   declarations: [
@@ -46,20 +48,21 @@ import { generateUranusRoutes }                       from 'src/app/shared-inter
     ModuleListComponent
   ],
   providers:    [ModuleBrowserDataService],
-  imports: [
+  imports:      [
     CommonModule,
     RouterModule.forChild([
-      generateUranusRoutes('modules', [
+      
+      {
+        path:      `${ parentPrefix }/details/:id`,
+        pathMatch: 'full',
+        component: ModuleBrowserModuleDetailViewRootComponent
+        // children:  []
+      },
+      generateUranusRoutes(parentPrefix, [
         {
           path:      'browser',
           component: ModuleBrowserRootComponent
           // canActivate: [LocalAuthGuardService],
-        },
-        {
-          path:      'details/:id',
-          pathMatch: 'full',
-          component: ModuleBrowserModuleDetailViewRootComponent
-          // children:  []
         },
         {
           path:      '',
@@ -71,7 +74,7 @@ import { generateUranusRoutes }                       from 'src/app/shared-inter
           component: UserDataHandlerComponent,
           outlet:    'user'
         }
-      ], 'module-browser')
+      ])
     ]),
     FlexLayoutModule,
     MatCardModule,
@@ -88,7 +91,7 @@ import { generateUranusRoutes }                       from 'src/app/shared-inter
     MatDividerModule,
     MatPaginatorModule,
     BrandPrimaryButtonModule,
-    AutoLoadingIndicatorModule,
+    AutoContentLoadingIndicatorModule,
     MatFormEntityModule,
     MatToolbarModule,
     PageHeaderModule,

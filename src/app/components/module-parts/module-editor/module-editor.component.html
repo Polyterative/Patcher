@@ -140,9 +140,9 @@
     </div>
   </div>
   <mat-divider inset="true"></mat-divider>
-  <app-auto-loading-indicator [data$]="dataService.singleModuleData$"
-                              [updateData$]="save$"
-                              loadingLabel="Saving data"
+  <lib-auto-content-loading-indicator [data$]="dataService.singleModuleData$"
+                                      [updateData$]="save$"
+                                      loadingLabel="Saving data"
   >
     <app-brand-primary-button (click$)="save$.next()"
                               theme="positive"
@@ -152,7 +152,7 @@
       <mat-icon>save</mat-icon>
       Save data
     </app-brand-primary-button>
-  </app-auto-loading-indicator>
+  </lib-auto-content-loading-indicator>
 
 
 </div>
