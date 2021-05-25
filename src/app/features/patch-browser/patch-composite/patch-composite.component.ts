@@ -3,8 +3,9 @@ import {
   Component,
   Input,
   OnInit
-}                from '@angular/core';
-import { Patch } from 'src/app/models/models';
+}                          from '@angular/core';
+import { Patch }           from 'src/app/models/models';
+import { AppStateService } from '../../../shared-interproject/app-state.service';
 
 @Component({
   selector:        'app-patch-composite',
@@ -14,8 +15,10 @@ import { Patch } from 'src/app/models/models';
 })
 export class PatchCompositeComponent implements OnInit {
   @Input() data: Patch;
+  @Input() isEditing: boolean = false;
   
-  constructor() {}
+  constructor(public appState: AppStateService
+  ) {}
   
   ngOnInit(): void {
   }

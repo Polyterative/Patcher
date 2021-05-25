@@ -29,14 +29,14 @@ import { HeroContentCardModule }    from 'src/app/shared-interproject/components
           // }
         ]
       }
-    
-    ]),
+
+    ], {scrollPositionRestoration: 'enabled'}),
     MatCardModule,
     FlexLayoutModule,
     HeroContentCardModule,
     BrandPrimaryButtonModule,
     EmptyStateModule
-  
+
   ],
   exports:      [
     UserManagementComponent

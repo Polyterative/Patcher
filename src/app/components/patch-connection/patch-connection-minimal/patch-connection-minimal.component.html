@@ -1,4 +1,5 @@
-<div class="flow row gap1"
+<div fxLayout="row"
+     fxLayoutGap="1rem"
      fxLayout.lt-md="column"
 
 >
@@ -37,7 +38,7 @@
   </div>
   
   <ng-container *ngIf="!isEditing">
-    <div fxFlex="33%">
+    <div fxFlex="25%">
       <ng-container *ngIf="data.notes&&data.notes.length>0">
         <mat-card-subtitle style="font-style:italic"
         >

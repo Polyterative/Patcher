@@ -1,4 +1,5 @@
-﻿.flow {
+﻿$standardUnit: 1rem;
+.flow {
   display:               flex;
   box-sizing:            border-box;
   -webkit-box-direction: normal;
@@ -10,7 +11,11 @@
 }
 
 .gap1 {
-  gap: .5rem
+  gap: $standardUnit
+}
+
+.gap2 {
+  gap: $standardUnit*2
 }
 
 .col {
@@ -48,6 +53,6 @@
 }
 
 .padTB1 {
-  padding-top:    1rem;
-  padding-bottom: 1rem;
+  padding-top:    $standardUnit;
+  padding-bottom: $standardUnit;
 }
