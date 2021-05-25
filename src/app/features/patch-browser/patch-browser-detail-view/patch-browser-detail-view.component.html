@@ -48,7 +48,7 @@ data:(dataService.singlePatchData$|async)
         <div ngClass.gt-md="flow row gap1"
              ngClass.lt-lg="flow col gap1"
         >
-          <div fxFlex.gt-md="35">
+          <div fxFlex.gt-md="28rem">
             <!--              <lib-hero-item-card>-->
             <ng-container *ngIf="bag.data"
             >
@@ -61,10 +61,10 @@ data:(dataService.singlePatchData$|async)
           <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
                                               [data$]="dataService.singlePatchData$"
           ></lib-auto-content-loading-indicator>
-          <lib-hero-content-card fxFlex.gt-md="65"
+          <lib-hero-content-card fxFlex.gt-md="fill"
                                  titleNormal="Editor"
                                  *ngIf="bag.data&&bag.patchEditingPanelOpenState"
-          
+  
           >
             <lib-hero-item-card>
               <app-patch-editor

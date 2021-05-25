@@ -15,6 +15,7 @@ import {
 }                                 from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { CV }                     from 'src/app/models/models';
+import { AppStateService }        from '../../../shared-interproject/app-state.service';
 
 @Component({
   selector:        'app-module-cvitem',
@@ -33,6 +34,7 @@ export class ModuleCVItemComponent implements OnInit {
   protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
+    public appState: AppStateService,
     public patchService: PatchDetailDataService
   ) { }
   
