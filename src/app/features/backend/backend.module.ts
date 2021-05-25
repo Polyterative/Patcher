@@ -28,7 +28,7 @@ import { SupabaseService }            from './supabase.service';
     UrlCreatorService,
     SupabaseService
   ],
-  imports:      [
+  imports: [
     CommonModule,
     MatSnackBarModule,
     LuxonModule,
@@ -38,7 +38,7 @@ import { SupabaseService }            from './supabase.service';
         component:   AdminPanelRootComponent,
         canActivate: [AdminGuardService]
       }
-    ]),
+    ], {scrollPositionRestoration: 'enabled'}),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAnalyticsModule,
     FlexLayoutModule,
