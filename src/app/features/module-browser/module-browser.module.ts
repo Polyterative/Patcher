@@ -107,7 +107,8 @@ const parentPrefix: string = 'modules';
     AutoUpdateLoadingIndicatorModule
   ],
   exports:      [
-    ModuleListComponent
+    ModuleListComponent,
+    ModuleBrowserModuleDetailViewRootComponent
   ]
 })
 export class ModuleBrowserModule {}
