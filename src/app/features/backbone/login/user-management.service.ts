@@ -5,9 +5,11 @@ import {
   Router
 }                                 from '@angular/router';
 import { User }                   from '@supabase/supabase-js';
-import { BehaviorSubject }        from 'rxjs';
-import { fromPromise }            from 'rxjs/internal-compatibility';
-import { of }                     from 'rxjs/internal/observable/of';
+import {
+  BehaviorSubject,
+  from,
+  of
+}                                 from 'rxjs';
 import {
   filter,
   switchMap,
@@ -70,7 +72,7 @@ export class UserManagementService {
     console.log('Logging out...');
     this.userBoxService.store.user$.next(undefined);
     this.user$.next(undefined);
-    fromPromise(this.backend.logoff())
+    from(this.backend.logoff())
       .subscribe(x => {
         this.router.navigate(['/modules/browser']);
         SharedConstants.successLogout(this.snackBar);

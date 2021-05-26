@@ -3,10 +3,10 @@ import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   merge,
+  of,
   ReplaySubject,
   Subject
 }                                from 'rxjs';
-import { of }                    from 'rxjs/internal/observable/of';
 import {
   switchMap,
   takeUntil,

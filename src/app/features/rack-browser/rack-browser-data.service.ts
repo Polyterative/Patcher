@@ -8,9 +8,9 @@ import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
+  of,
   Subject
 }                                from 'rxjs';
-import { of }                    from 'rxjs/internal/observable/of';
 import {
   distinctUntilChanged,
   startWith,
@@ -140,7 +140,7 @@ export class RackBrowserDataService implements OnDestroy {
           switchMap(([z, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-      
+  
             // return this.backend.get.racks(skip, (skip + take) - 1, filter, sortColumnName);
             return this.backend.get.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),
