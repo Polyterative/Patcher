@@ -9,7 +9,9 @@ import {
 }                                from 'rxjs';
 import {
   filter,
+  pairwise,
   switchMap,
+  take,
   takeUntil,
   tap,
   withLatestFrom
@@ -39,7 +41,7 @@ export class PatchDetailDataService {
   //
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   patchesConnections$: ReplaySubject<PatchConnection[]> = new ReplaySubject<PatchConnection[]>(1);
-  editorConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
+  editorConnections$: ReplaySubject<PatchConnection[]> = new ReplaySubject<PatchConnection[]>(1);
   removePatchFromCollection$ = new Subject<number>();
   //
   clickOnModuleCV$ = new Subject<CVConnectionEntity>();
@@ -104,6 +106,9 @@ export class PatchDetailDataService {
   
     this.singlePatchData$
         .pipe(
+          filter(x => !!x),
+          filter(x => !!this.backend.getUser()),
+          take(1),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id));
@@ -114,6 +119,15 @@ export class PatchDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => this.resetSelectedForConnection$.next());
+  
+    this.patchEditingPanelOpenState$
+        .pipe(
+          pairwise(),
+          filter(x => x[0] == true && x[1] == false),
+          filter(x => !!this.singlePatchData$.value),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
   
     this.resetSelectedForConnection$
         .pipe(takeUntil(this.destroyEvent$))
@@ -148,21 +162,23 @@ export class PatchDetailDataService {
         });
   
     this.confirmSelectedConnection$
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(x => {
-          const patchConnections: PatchConnection[] = this.editorConnections$.value;
+        .pipe(
+          withLatestFrom(this.editorConnections$),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(([_, patchConnections]) => {
           const selectedForConnection: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } = this.selectedForConnection$.value;
-  
+    
           const patch: Patch = this.singlePatchData$.value;
-  
+    
           const newConnection: { patch: Patch; a: CVwithModule; b: CVwithModule } = {
             a: selectedForConnection.a.cv,
             b: selectedForConnection.b.cv,
             patch
           };
-  
+    
           const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
-  
+    
           if (!isAlreadyInList) {
             this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
             this.editorConnections$.next([
@@ -170,7 +186,7 @@ export class PatchDetailDataService {
               newConnection
             ]);
           } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
-  
+    
         });
   
     this.patchesConnections$
