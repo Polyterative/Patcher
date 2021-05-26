@@ -1,0 +1,45 @@
+@use '~@angular/material' as mat;
+
+.top {
+  background-color:        #E2E2E2;
+  padding:                 1rem;
+  border-top-right-radius: .65rem;
+  border-top-left-radius:  .65rem;
+  //border-bottom-right-radius: .5rem;
+  //border-bottom-left-radius: .5rem;
+  //border:                  solid .15rem white;
+}
+
+.bottom {
+  background-color: #E2E2E2;
+  padding:          .5rem;
+
+}
+
+.circle {
+  border-radius: 50%;
+  background:    #FFFFFF;
+  //border:        .15rem solid #DEDEDE;
+  padding:       .5rem;
+}
+
+.parent {
+  //background-color: #FFFFFF;
+  //margin:           4rem;
+  padding: 6rem;
+  //border:           3px solid #404040;
+}
+
+.item {
+  @include mat.elevation(3);
+
+}
+
+.bg {
+  //border-radius:    .5rem;
+
+  //background-color: #BBBBBB;
+  //margin:           4rem;
+  //padding:          1rem;
+  //border:           3px solid rgba(64, 64, 64, 0.36);
+}

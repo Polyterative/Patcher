@@ -1,31 +1,21 @@
-<div fxLayout="column"
-     class="container"
+<div class="col container"
 >
-  <h1 fxFlex="grow"
-      fxLayout="row"
-      *ngIf="titleBig.length>0"
-      class="title bgImage padHeight"
-      [ngStyle]="titleStyle"
-  >
-    <div fxFlex="grow">{{titleBig}}</div>
-    <app-hero-content-card-head-icon
-        fxLayoutAlign="center center"
-        [icon]="icon"
   
-    ></app-hero-content-card-head-icon>
-  </h1>
-  <h3 fxFlex="grow"
-      fxLayout="row"
-      *ngIf="titleNormal.length>0"
-      class="title"
-  >
-    <div fxFlex="grow">{{titleNormal}}</div>
-    <app-hero-content-card-head-icon [icon]="icon"
-    ></app-hero-content-card-head-icon>
-  </h3>
+  <ng-container *ngIf="titleBig&&titleNormal else titles">
+    <div class="col gap1 title bgImage">
+      <h1 [ngStyle]="titleStyle"
+          style="margin-bottom: 0"
+      >
+        {{titleBig}}
+      </h1>
+      
+      <h3>{{titleNormal}}</h3>
+    </div>
+  </ng-container>
+  
   
   <div fxFlex="auto"
-       *ngIf="description.length>0&&!hideDescription"
+       *ngIf="description&&!hideDescription"
        fxLayoutAlign="end end"
   >
     <mat-card-subtitle *ngIf="description"
@@ -59,3 +49,30 @@
   </div>
 
 </div>
+
+<ng-template #titles>
+  
+  <h1 fxFlex="grow"
+      fxLayout="row"
+      *ngIf="titleBig"
+      class="title bgImage padHeight"
+      [ngStyle]="titleStyle"
+  >
+    <div fxFlex="grow">{{titleBig}}</div>
+    <app-hero-content-card-head-icon
+        fxLayoutAlign="center center"
+        [icon]="icon"
+    
+    ></app-hero-content-card-head-icon>
+  </h1>
+  <h3 fxFlex="grow"
+      fxLayout="row"
+      *ngIf="titleNormal"
+      class="title"
+  >
+    <div fxFlex="grow">{{titleNormal}}</div>
+    <app-hero-content-card-head-icon [icon]="icon"
+    ></app-hero-content-card-head-icon>
+  </h3>
+
+</ng-template>
