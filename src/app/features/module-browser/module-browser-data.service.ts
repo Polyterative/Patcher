@@ -31,11 +31,13 @@ import {
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
+export type ModuleList = MinimalModule[] | null;
+
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
   protected destroyEvent$: Subject<void> = new Subject();
   //
-  modulesList$ = new BehaviorSubject<MinimalModule[]>([]);
+  modulesList$ = new BehaviorSubject<ModuleList>(null);
   userModulesList$ = new BehaviorSubject<DbModule[]>([]);
   updateModulesList$ = new Subject();
   

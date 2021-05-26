@@ -47,9 +47,9 @@
       ></mat-paginator>
   
       <app-module-list [data$]="dataService.modulesList$"></app-module-list>
-      <lib-auto-content-loading-indicator [data$]="dataService.modulesList$"
-                                          [updateData$]="dataService.updateModulesList$"
-      ></lib-auto-content-loading-indicator>
+      <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
+                                         [updateData$]="dataService.updateModulesList$"
+      ></lib-auto-update-loading-indicator>
     </div>
     <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>

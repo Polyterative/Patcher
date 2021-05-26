@@ -1,27 +1,29 @@
-<div class="col gap1"
->
-  <lib-hero-content-card titleBig="My account"
-                         icon="manage_accounts"
+<lib-screen-wrapper>
+  <div class="col gap1"
   >
-    <div class="col gap1"
+    <lib-hero-content-card titleBig="My account"
+                           icon="manage_accounts"
     >
-      <app-brand-primary-button
-          (click$)="userManagementService.logoff()"
-          theme="warning"
-          fxLayoutAlign="end"
-      >Logout
-      </app-brand-primary-button>
-    </div>
-  </lib-hero-content-card>
-  <app-empty-state backgroundImage="assets/svg/profile_data.svg"></app-empty-state>
-
-</div>
-
-<ng-template #noData>
-  <div fxFlex="auto">
-    <!--    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks-->
-    <!--                                                     to your collection yet.-->
-    <!--                                                     Try adding some!-->
-    <!--    </mat-card-subtitle>-->
+      <div class="col gap1"
+      >
+        <app-brand-primary-button
+            (click$)="userManagementService.logoff()"
+            theme="warning"
+            fxLayoutAlign="end"
+        >Logout
+        </app-brand-primary-button>
+      </div>
+    </lib-hero-content-card>
+    <app-empty-state backgroundImage="assets/svg/profile_data.svg"></app-empty-state>
+  
   </div>
-</ng-template>
+  
+  <ng-template #noData>
+    <div fxFlex="auto">
+      <!--    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks-->
+      <!--                                                     to your collection yet.-->
+      <!--                                                     Try adding some!-->
+      <!--    </mat-card-subtitle>-->
+    </div>
+  </ng-template>
+</lib-screen-wrapper>

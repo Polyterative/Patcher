@@ -23,10 +23,12 @@ import { FormTypes }             from '../../shared-interproject/components/@sma
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
+export type RackList = Rack[] | null;
+
 @Injectable()
 export class RackBrowserDataService implements OnDestroy {
-  racksList$ = new BehaviorSubject<Rack[]>([]);
-  userRacksList$ = new BehaviorSubject<Rack[]>([]);
+  racksList$ = new BehaviorSubject<RackList>(null);
+  userRacksList$ = new BehaviorSubject<RackList>(null);
   updateRacksList$ = new Subject();
   
   ////

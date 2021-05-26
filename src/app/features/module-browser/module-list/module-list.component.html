@@ -1,20 +1,33 @@
 <ng-container *ngIf="{
-  patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async)
+  patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async),
+  data:(data$|async)
   } as bag"
 >
-  <flexbox-row-fast
+  
+  
+  <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
+                                      [skipFirstData]="true"
+                                      [loadingLines]="5"
   >
-    <ng-container *ngFor="let item of data$|async">
-      <div>
-        <lib-hero-item-card>
-          <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
-                              [data]="item"
-          ></app-module-minimal>
-        </lib-hero-item-card>
-      </div>
-      <ng-template #fullData>
-        <app-module-composite [data]="item"></app-module-composite>
-      </ng-template>
-    </ng-container>
-  </flexbox-row-fast>
+  </lib-auto-content-loading-indicator>
+  
+  
+  <ng-template #data>
+    <flexbox-row-fast
+    >
+      <ng-container *ngFor="let item of bag.data">
+        <div>
+          <lib-hero-item-card>
+            <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
+                                [data]="item"
+            ></app-module-minimal>
+          </lib-hero-item-card>
+        </div>
+        <ng-template #fullData>
+          <app-module-composite [data]="item"></app-module-composite>
+        </ng-template>
+      </ng-container>
+    </flexbox-row-fast>
+  </ng-template>
+
 </ng-container>
