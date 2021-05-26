@@ -40,8 +40,8 @@ export class PatchDetailDataService {
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchesConnections$: ReplaySubject<PatchConnection[]> = new ReplaySubject<PatchConnection[]>(1);
-  editorConnections$: ReplaySubject<PatchConnection[]> = new ReplaySubject<PatchConnection[]>(1);
+  patchesConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
   removePatchFromCollection$ = new Subject<number>();
   //
   clickOnModuleCV$ = new Subject<CVConnectionEntity>();
@@ -78,8 +78,8 @@ export class PatchDetailDataService {
     this.updateSinglePatchData$
         .pipe(
           tap(x => this.singlePatchData$.next(undefined)),
-          tap(x => this.patchesConnections$.next([])),
-          tap(x => this.editorConnections$.next([])),
+          tap(x => this.patchesConnections$.next(null)),
+          tap(x => this.editorConnections$.next(null)),
           switchMap(x => this.backend.get.patchWithId(x)),
           takeUntil(this.destroyEvent$)
         )
@@ -168,17 +168,17 @@ export class PatchDetailDataService {
         )
         .subscribe(([_, patchConnections]) => {
           const selectedForConnection: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } = this.selectedForConnection$.value;
-    
+  
           const patch: Patch = this.singlePatchData$.value;
-    
+  
           const newConnection: { patch: Patch; a: CVwithModule; b: CVwithModule } = {
             a: selectedForConnection.a.cv,
             b: selectedForConnection.b.cv,
             patch
           };
-    
+  
           const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
-    
+  
           if (!isAlreadyInList) {
             this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
             this.editorConnections$.next([
@@ -186,7 +186,7 @@ export class PatchDetailDataService {
               newConnection
             ]);
           } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
-    
+  
         });
   
     this.patchesConnections$

@@ -20,13 +20,13 @@ import {
 } from 'rxjs/operators';
 
 @Component({
-  selector:        'lib-auto-content-loading-indicator',
-  templateUrl:     './auto-content-loading-indicator.component.html',
-  styleUrls:       ['./auto-content-loading-indicator.component.scss'],
+  selector:        'lib-auto-update-loading-indicator',
+  templateUrl:     './auto-update-loading-indicator.component.html',
+  styleUrls:       ['./auto-update-loading-indicator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation:   ViewEncapsulation.None
 })
-export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
+export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;
   @Input() updateData$: Observable<any>;
   dataLoading$ = new BehaviorSubject<boolean>(true);
@@ -37,7 +37,7 @@ export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject();
   
   ngOnInit(): void {
-  
+    
     if (this.data$ && this.updateData$) {
       merge(
         this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
@@ -46,7 +46,7 @@ export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.dataLoading$.next(x));
     }
-  
+    
   }
   
   ngOnDestroy(): void {

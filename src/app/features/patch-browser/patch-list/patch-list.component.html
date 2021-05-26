@@ -1,8 +1,25 @@
-<flexbox-row-fast
+<ng-container *ngIf="{
+  data:(data$|async)
+  } as bag"
 >
-  <ng-container *ngFor="let item of data$|async">
-      <lib-hero-item-card>
-        <app-patch-minimal [data]="item"></app-patch-minimal>
-      </lib-hero-item-card>
-  </ng-container>
-</flexbox-row-fast>
+  <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
+                                      [skipFirstData]="true"
+                                      [loadingLines]="5"
+  >
+  </lib-auto-content-loading-indicator>
+  
+  
+  <ng-template #data>
+    <flexbox-row-fast
+    >
+      <ng-container *ngFor="let item of bag.data">
+        <div>
+          <lib-hero-item-card>
+            <app-patch-minimal [data]="item"></app-patch-minimal>
+          </lib-hero-item-card>
+        </div>
+      </ng-container>
+    </flexbox-row-fast>
+  </ng-template>
+
+</ng-container>

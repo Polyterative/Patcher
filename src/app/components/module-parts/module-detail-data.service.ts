@@ -25,7 +25,7 @@ import { DbModule }              from '../../models/models';
 @Injectable()
 export class ModuleDetailDataService {
   updateSingleModuleData$ = new ReplaySubject<number>();
-  singleModuleData$ = new BehaviorSubject<DbModule | undefined>(undefined);
+  singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   addModuleToCollection$ = new Subject<number>();
