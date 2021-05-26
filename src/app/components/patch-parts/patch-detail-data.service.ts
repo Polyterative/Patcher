@@ -38,7 +38,7 @@ export class PatchDetailDataService {
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchesConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
+  patchesConnections$: ReplaySubject<PatchConnection[]> = new ReplaySubject<PatchConnection[]>(1);
   editorConnections$: BehaviorSubject<PatchConnection[]> = new BehaviorSubject<PatchConnection[]>([]);
   removePatchFromCollection$ = new Subject<number>();
   //
