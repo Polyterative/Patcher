@@ -2,7 +2,7 @@
   userProfile:(userService.userProfile$|async)
   } as bag"
 >
-  <div class="flow col gap1"
+  <div class="col gap1"
        *ngIf="bag.userProfile"
   >
     <h3 fxLayoutAlign="end center">Welcome back, {{bag.userProfile.username}}</h3>

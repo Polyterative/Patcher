@@ -2,7 +2,7 @@
   connections:(dataService.patchesConnections$|async)
   } as bag"
 >
-  <div class="flow col gap1"
+  <div class="col gap1"
        fxLayoutGap.xs="0rem"
        style="padding-top: 2rem"
   >
@@ -11,13 +11,13 @@
                                         [skipFirstData]="true"
                                         [loadingLines]="5"
     >
-  
+    
       <ng-container *ngIf="bag.connections.length>0; else noData">
         <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
         >
           <mat-card>
             <div *ngIf="bag.connections.length<=8"
-                 class="flow col gap1"
+                 class="col gap1"
             >
               <ng-container *ngFor="let item of dataService.patchesConnections$|async; let i = index">
                 <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
@@ -31,9 +31,9 @@
                                          autosize
                                          style="height: 50rem; overflow: auto;"
             >
-              <div class="flow col gap1">
+              <div class="col gap1">
                 <div *cdkVirtualFor="let item of dataService.patchesConnections$|async"
-                     class="flow col gap1"
+                     class="col gap1"
                 >
                   <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
                   <mat-divider inset="true"></mat-divider>
@@ -49,7 +49,7 @@
   
   <ng-template #noData>
     <div fxFlex="auto">
-      <div class="flow col gap1 animate-fadein-slowest"
+      <div class="col gap1 animate-fadein-slowest"
       >
         <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no connections
         </mat-card-subtitle>

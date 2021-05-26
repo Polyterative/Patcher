@@ -5,12 +5,12 @@ data:(dataService.singlePatchData$|async)
 >
   <ng-container *ngIf="!bag.patchEditingPanelOpenState">
     <lib-screen-wrapper>
-      <div class="flow col gap1"
+      <div class="col gap1"
       >
         <lib-hero-content-card titleBig="Patch details"
                                class="patchesBG"
         >
-          <div class="flow col gap1"
+          <div class="col gap1"
           >
             <div>
               <!--              <lib-hero-item-card>-->
@@ -40,13 +40,13 @@ data:(dataService.singlePatchData$|async)
     </lib-screen-wrapper>
   </ng-container>
   <ng-container *ngIf="bag.patchEditingPanelOpenState">
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <lib-hero-content-card titleBig="Patch details"
                              class="patchesBG"
       >
-        <div ngClass.gt-md="flow row gap1"
-             ngClass.lt-lg="flow col gap1"
+        <div ngClass.gt-md="row gap1"
+             ngClass.lt-lg="col gap1"
         >
           <div fxFlex.gt-md="28rem">
             <!--              <lib-hero-item-card>-->

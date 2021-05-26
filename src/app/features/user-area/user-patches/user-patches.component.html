@@ -1,16 +1,16 @@
-<div class="flow col gap1"
+<div class="col gap1"
 >
   <lib-hero-content-card titleBig="My patches"
                          class="patchesBG"
                          icon="settings_input_composite"
   >
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <app-patch-list fxFlex="grow"
                       [data$]="data$"
                       *ngIf="(data$|async).length>0 else noData"
       ></app-patch-list>
-  
+      
       <app-brand-primary-button
           (click$)="add$.next()"
           fxLayoutAlign="end"
