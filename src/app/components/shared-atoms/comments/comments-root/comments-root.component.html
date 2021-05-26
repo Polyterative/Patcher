@@ -1,10 +1,31 @@
-<p>comments-root works!</p>
+<div class="col gap1">
+  <ng-container *ngIf="comments.length>0;else noData">
+    <ng-container *ngFor="let item of comments;">
+      <app-comments-item [data]="item"></app-comments-item>
+    </ng-container>
+  </ng-container>
+  
+  <div class="col gap1 root">
+    <lib-mat-form-entity fxFlex="grow"
+                         [dataPack]="dataService.fields.submit"
+                         [hint]="dataService.fields.submit.control.value.length+'/144'"
+    ></lib-mat-form-entity>
+    <div class="row gap1">
+      <div fxFlex="grow"></div>
+      <app-brand-primary-button [disabled]="!dataService.fields.submit.control.valid"
+      >Submit
+      </app-brand-primary-button>
+    </div>
+  </div>
+</div>
 
 <ng-template #noData>
   <div fxFlex="auto">
     <div class="col gap1 animate-fadein-slowest"
     >
-      <mat-card-subtitle fxLayoutAlign="center start">Be the first to add a comment!
+      <mat-card-subtitle fxLayoutAlign="center start"
+                         style="padding: 1rem"
+      >No one commented yet
       </mat-card-subtitle>
     </div>
   </div>

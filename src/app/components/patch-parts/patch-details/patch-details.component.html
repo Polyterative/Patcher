@@ -4,7 +4,6 @@
 >
   <div class="col gap1"
        fxLayoutGap.xs="0rem"
-       style="padding-top: 2rem"
   >
     <lib-auto-content-loading-indicator [data$]="dataService.patchesConnections$"
                                         [updateData$]="dataService.updateSinglePatchData$"
@@ -48,14 +47,17 @@
   </div>
   
   <ng-template #noData>
-    <div fxFlex="auto">
-      <div class="col gap1 animate-fadein-slowest"
-      >
-        <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no connections
-        </mat-card-subtitle>
-        <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
-        </mat-card-subtitle>
+    <lib-hero-content-card titleNormal="Connections">
+      <div fxFlex="auto">
+        <div class="col gap1 animate-fadein-slowest"
+        >
+          <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
+                                                          connections
+          </mat-card-subtitle>
+          <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
+          </mat-card-subtitle>
+        </div>
       </div>
-    </div>
+    </lib-hero-content-card>
   </ng-template>
 </ng-container>
