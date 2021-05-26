@@ -1,16 +1,16 @@
-<div class="flow col gap1"
+<div class="col gap1"
 >
   <lib-hero-content-card titleBig="My racks"
                          class="racksBG"
                          icon="view_stream"
   >
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <app-rack-list fxFlex="grow"
                      [data$]="data$"
                      *ngIf="(data$|async).length>0 else noData"
       ></app-rack-list>
-  
+      
       <app-brand-primary-button (click$)="add$.next()"
                                 fxLayoutAlign="end"
       >Create rack
