@@ -14,8 +14,12 @@ import { PhotoModule }              from 'src/app/shared-interproject/components
 import { EmptyStateModule }         from '../../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { ListLinkRouterModule }     from '../../../shared-interproject/components/@smart/list-link-router/list-link-router.module';
 import { UserDataHandlerModule }    from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
+import { DeviceFrameWrapperModule } from '../../../shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
 import { HeroLinkModule }           from '../../../shared-interproject/components/@visual/hero-link/hero-link.module';
 import { ScreenWrapperModule }      from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { ModuleBrowserModule }      from '../../module-browser/module-browser.module';
+import { PatchBrowserModule }       from '../../patch-browser/patch-browser.module';
+import { RackBrowserModule }        from '../../rack-browser/rack-browser.module';
 import { HomeComponent }            from './home.component';
 
 @NgModule({
@@ -49,7 +53,11 @@ import { HomeComponent }            from './home.component';
     PhotoModule,
     HeroHeaderModule,
     MatExpansionModule,
-    MatIconModule
+    MatIconModule,
+    PatchBrowserModule,
+    ModuleBrowserModule,
+    RackBrowserModule,
+    DeviceFrameWrapperModule
   ]
 })
 export class HomeModule {}

@@ -12,6 +12,13 @@
   -webkit-box-orient: horizontal;
 }
 
+.rowrev {
+  @include flex;
+  flex-direction:     row-reverse;
+  //flex-flow:          row;
+  -webkit-box-orient: horizontal;
+}
+
 .gap1 {
   gap: $standardUnit
 }
@@ -23,6 +30,15 @@
 .col {
   @include flex;
   flex-direction:     column;
+  //flex-flow:          column;
+  -webkit-box-orient: vertical;
+  height:             auto; /*  important for sizing of row heights */
+  //margin-bottom:      20px;
+}
+
+.colrev {
+  @include flex;
+  flex-direction:     column-reverse;
   //flex-flow:          column;
   -webkit-box-orient: vertical;
   height:             auto; /*  important for sizing of row heights */
