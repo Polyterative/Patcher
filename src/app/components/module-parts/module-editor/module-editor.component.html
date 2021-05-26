@@ -1,25 +1,23 @@
-<div class="flow col gap1"
+<div class="col gap1"
 >
   
-  <div ngClass.lt-md="flow col gap1"
-       ngClass.gt-md="flow row gap1"
+  <div class="col gap1"
   >
-    <div class="flow col gap1"
+    <div class="auto col gap1"
     >
-      <div fxFlex="shrink"
-           fxLayout="row"
+      <div fxLayout="row"
            fxLayoutGap="1rem"
            fxLayoutAlign="space-between"
       >
         <mat-card-title>INs</mat-card-title>
         <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
       </div>
-      <div class="flow col gap1 leftBorderS"
+      <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of INs$|async;">
           
-          <div ngClass.xs="flow col gap1"
-               ngClass.gt-xs="flow row gap1"
+          <div ngClass.sm="col gap1"
+               ngClass.gt-sm="row gap1"
           >
             <lib-mat-form-entity [type]="types.TEXT"
                                  [control]="item.name"
@@ -33,13 +31,16 @@
                                  [control]="item.b"
                                  label="max V"
             ></lib-mat-form-entity>
+            <mat-divider inset="true"
+                         fxHide="true"
+                         fxShow.lt-md="true"
+            ></mat-divider>
           </div>
         </ng-container>
       </div>
-      <div fxFlex="auto"
-           fxFlex.lt-md="auto"
-           fxLayout="row wrap"
+      <div fxLayout="row wrap"
            fxLayoutGap="1rem grid"
+           fxLayoutAlign="end"
       >
         <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
         </app-brand-primary-button>
@@ -55,22 +56,21 @@
         </app-brand-primary-button>
       </div>
     </div>
-    <div class="flow col gap1"
+    <div class="auto col gap1"
     >
-      <div fxFlex="shrink"
-           fxLayout="row"
+      <div fxLayout="row"
            fxLayoutGap="1rem"
            fxLayoutAlign="space-between"
       >
         <mat-card-title>OUTs</mat-card-title>
         <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
       </div>
-      <div class="flow col gap1 leftBorderS"
+      <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of OUTs$|async;">
           
-          <div ngClass.xs="flow col gap1"
-               ngClass.gt-xs="flow row gap1"
+          <div ngClass.sm="col gap1"
+               ngClass.gt-sm="row gap1"
           >
             <lib-mat-form-entity [type]="types.TEXT"
                                  [control]="item.name"
@@ -84,13 +84,16 @@
                                  [control]="item.b"
                                  label="max V"
             ></lib-mat-form-entity>
+            <mat-divider inset="true"
+                         fxHide="true"
+                         fxShow.lt-md="true"
+            ></mat-divider>
           </div>
         </ng-container>
       </div>
-      <div fxFlex="auto"
-           fxFlex.lt-md="auto"
-           fxLayout="row wrap"
+      <div fxLayout="row wrap"
            fxLayoutGap="1rem grid"
+           fxLayoutAlign="end"
       >
         <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,undefined,0])">Add OUT
         </app-brand-primary-button>
@@ -122,13 +125,13 @@
          fxLayout.lt-md="column"
          fxLayoutGap="1rem"
     >
-      <mat-card-subtitle fxFlex="grow"
+      <app-advice-tooltip fxFlex="basis"
+      >Update this only if data is incorrect or some is missing.
+      </app-advice-tooltip>
+      <mat-card-subtitle fxFlex="auto"
                          fxLayoutAlign="end center"
       >Any changes you make will affect what all other users see
       </mat-card-subtitle>
-      <app-advice-tooltip fxFlex="auto"
-      >Update this only if data is incorrect or some is missing.
-      </app-advice-tooltip>
     </div>
   </div>
   <mat-divider inset="true"></mat-divider>

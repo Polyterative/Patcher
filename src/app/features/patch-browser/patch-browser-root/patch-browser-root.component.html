@@ -1,9 +1,9 @@
-<div class="flow col gap1"
+<div class="col gap1"
 >
   <lib-hero-content-card titleBig="Patches"
                          class="patchesBG"
   >
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <div fxLayout="row"
            fxLayout.lt-sm="column"
@@ -13,7 +13,7 @@
                              [type]="dataService.formTypes.TEXT"
                              label="Search patch..."
         ></lib-mat-form-entity>
-  
+        
         <lib-mat-form-entity [control]="dataService.fields.order.control"
                              [options$]="dataService.fields.order.options$"
                              [type]="dataService.formTypes.SELECT"

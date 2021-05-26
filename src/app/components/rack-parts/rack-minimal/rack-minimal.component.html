@@ -1,6 +1,6 @@
-<div class="flow col parent"
+<div class="col parent"
 >
-  <div class="flow col"
+  <div class="col"
   >
     <app-hero-clickable-title [link]="['/racks/details',data.id]"
                               infoBox
@@ -8,7 +8,7 @@
     >{{data.name}}
     </app-hero-clickable-title>
     <div fxFlex="auto"
-         class="flow row gap1"
+         class="row gap1"
     >
       <app-entity-author [data]="data.author"></app-entity-author>
       <div fxFlex="auto"
@@ -27,7 +27,7 @@
   <mat-divider [inset]="true"
                style="margin-top:.5rem"
   ></mat-divider>
-  <div class="flow row buttons"
+  <div class="row buttons"
   >
     <div fxFlex="grow"></div>
     <a mat-icon-button

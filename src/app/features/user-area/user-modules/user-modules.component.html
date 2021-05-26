@@ -1,16 +1,16 @@
-<div class="flow col gap1"
+<div class="col gap1"
 >
   <lib-hero-content-card titleBig="My modules"
                          class="modulesBG"
                          icon="view_module"
   >
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <app-module-list fxFlex="grow"
                        [data$]="data$"
                        *ngIf="(data$|async).length>0 else noData"
       ></app-module-list>
-  
+      
       <app-brand-primary-button routerLink="/modules/browser"
                                 fxLayoutAlign="start"
       >Add modules to collection

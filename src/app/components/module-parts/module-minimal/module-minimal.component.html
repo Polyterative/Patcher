@@ -4,22 +4,22 @@
   singleModuleData:(dataService.singleModuleData$|async)
   } as bag"
 >
-  <div class="flow col parent"
+  <div class="col parent"
   >
-    <div class="flow col"
+    <div class="col"
     >
       <app-hero-clickable-title [link]="['/modules/details',data.id]"
                                 infoBox
                                 infoText="Module name"
-  
+    
       >{{data.name}}</app-hero-clickable-title>
-      <div class="flow row spaceBetween description"
+      <div class="row spaceBetween description"
            fxLayoutGap="1rem"
            *ngIf="data.description&&!hideDescription"
       >
         <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
       </div>
-      <div class="flow row spaceBetween"
+      <div class="row spaceBetween"
            fxLayoutGap="1rem"
       >
         <div *ngIf="!hideManufacturer">
@@ -41,7 +41,7 @@
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="flow row opacizeOnHover"
+      <div class="row opacizeOnHover"
            fxLayoutGap="2rem"
            fxLayoutGap.xs="0rem"
       >
