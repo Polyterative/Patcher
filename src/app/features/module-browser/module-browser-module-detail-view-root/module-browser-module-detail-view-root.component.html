@@ -12,17 +12,26 @@ data:(dataService.singleModuleData$|async)
         >
           <lib-screen-wrapper maxSize="36rem">
             <lib-hero-item-card>
-              <ng-container *ngIf="bag.data"
+  
+              <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
+                                                  [skipFirstData]="true"
+                                                  [loadingLines]="5"
               >
+              </lib-auto-content-loading-indicator>
+  
+  
+              <ng-template #data>
                 <app-module-composite [data]="(bag.data)"
-            
+    
                 ></app-module-composite>
-              </ng-container>
+              </ng-template>
+
+
             </lib-hero-item-card>
           </lib-screen-wrapper>
-          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                              [data$]="dataService.singleModuleData$"
-          ></lib-auto-content-loading-indicator>
+          <!--          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
+          <!--                                              [data$]="dataService.singleModuleData$"-->
+          <!--          ></lib-auto-content-loading-indicator>-->
           <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
             <app-module-editor
                 [data]="(bag.data)"

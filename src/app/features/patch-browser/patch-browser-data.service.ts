@@ -23,9 +23,11 @@ import { FormTypes }             from '../../shared-interproject/components/@sma
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
+export type PatchList = Patch[] | null;
+
 @Injectable()
 export class PatchBrowserDataService implements OnDestroy {
-  patchesList$ = new BehaviorSubject<Patch[]>([]);
+  patchesList$ = new BehaviorSubject<PatchList>(null);
   updatePatchesList$ = new Subject();
   
   ////

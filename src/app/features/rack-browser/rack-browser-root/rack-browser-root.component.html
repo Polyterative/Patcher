@@ -37,9 +37,9 @@
       ></mat-paginator>
   
       <app-rack-list [data$]="dataService.racksList$"></app-rack-list>
-      <lib-auto-content-loading-indicator [data$]="dataService.racksList$"
-                                          [updateData$]="dataService.updateRacksList$"
-      ></lib-auto-content-loading-indicator>
+      <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
+                                         [updateData$]="dataService.updateRacksList$"
+      ></lib-auto-update-loading-indicator>
     </div>
     <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>

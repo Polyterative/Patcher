@@ -4,9 +4,9 @@ import {
   Input,
   OnInit,
   ViewEncapsulation
-}                          from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { PatchMinimal }    from 'src/app/models/models';
+}                       from '@angular/core';
+import { Observable }   from 'rxjs';
+import { PatchMinimal } from 'src/app/models/models';
 
 @Component({
   selector:        'app-patch-list',
@@ -17,7 +17,7 @@ import { PatchMinimal }    from 'src/app/models/models';
 })
 export class PatchListComponent implements OnInit {
   @Input()
-  readonly data$ = new BehaviorSubject<PatchMinimal[]>([]);
+  readonly data$: Observable<PatchMinimal>;
   
   ngOnInit(): void {
   }

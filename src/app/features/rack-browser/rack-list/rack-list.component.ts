@@ -4,9 +4,9 @@ import {
   Input,
   OnInit,
   ViewEncapsulation
-}                          from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { RackMinimal }     from 'src/app/models/models';
+}                     from '@angular/core';
+import { Observable } from 'rxjs';
+import { RackList }   from '../rack-browser-data.service';
 
 @Component({
   selector:        'app-rack-list',
@@ -17,7 +17,7 @@ import { RackMinimal }     from 'src/app/models/models';
 })
 export class RackListComponent implements OnInit {
   @Input()
-  readonly data$ = new BehaviorSubject<RackMinimal[]>([]);
+  readonly data$: Observable<RackList>;
   
   ngOnInit(): void {
   }
