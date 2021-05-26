@@ -5,13 +5,11 @@
 >
   <div ngClass.lt-lg="col gap1"
   >
-    <div ngClass.lt-lg="col gap1"
-         ngClass.gt-md="row gap1"
+    <div ngClass.lt-xl="col gap1"
+         ngClass.gt-lg="row gap1"
     >
-      <div fxFlex.gt-md="35"
+      <div fxFlex.gt-lg="32rem"
            class="col gap1"
-           fxLayout.md="row"
-           fxLayout.gt-lg="column"
       >
         <div class="row gap1"
         >
@@ -30,39 +28,42 @@
             Save patch
           </app-brand-primary-button>
         </div>
-        <lib-hero-content-card fxFlex.gt-md="auto"
-                               fxFlex="auto"
-                               class="selection"
-                               titleNormal="Your selection"
-                               description="The connection you want to create"
+        <div class="col gap1"
+             ngClass.md="row"
         >
-          <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
-            <app-patch-connection-minimal [data]="{
+          <lib-hero-content-card fxFlex.gt-lg="auto"
+                                 fxFlex="auto"
+                                 class="selection"
+                                 titleNormal="Your selection"
+                                 description="The connection you want to create"
+          >
+            <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+              <app-patch-connection-minimal [data]="{
     a:bag.selectedForConnection.a.cv,
     b:bag.selectedForConnection.b.cv,
     patch:data
     }"
-                                          isEditing="true"
-                                          [isCreator]="true"
-                                          (remove$)="dataService.resetSelectedForConnection$.next()"
-                                          (create$)="dataService.confirmSelectedConnection$.next()"
-            ></app-patch-connection-minimal>
-          </mat-card>
-          <ng-template #selectedForConnectionVoidState>
-            <div style="height:9rem;width:auto"
-                 fxLayoutAlign="center center"
-            >The connection will appear here
-            </div>
-          </ng-template>
-        </lib-hero-content-card>
-        <ng-container *ngIf="(dataService.editorConnections$|async).length>0">
-          <lib-hero-content-card fxFlex.gt-md="fill"
+                                            isEditing="true"
+                                            [isCreator]="true"
+                                            (remove$)="dataService.resetSelectedForConnection$.next()"
+                                            (create$)="dataService.confirmSelectedConnection$.next()"
+              ></app-patch-connection-minimal>
+            </mat-card>
+            <ng-template #selectedForConnectionVoidState>
+              <div style="height:9rem;width:auto"
+                   fxLayoutAlign="center center"
+              >The connection will appear here
+              </div>
+            </ng-template>
+          </lib-hero-content-card>
+          <lib-hero-content-card fxFlex.gt-lg="fill"
                                  fxFlex="auto"
-                                 titleNormal="Patch connections"
+                                 *ngIf="bag.editorConnections.length>0"
+                                 [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
                                  class="connections"
                                  description="The connections of the patch you are editing"
           >
-          
+  
             <div *ngIf="bag.editorConnections.length<=5"
                  class="col gap1"
                  style="max-height: 40rem; overflow-y: auto;"
@@ -76,12 +77,12 @@
                 </mat-card>
               </ng-container>
             </div>
-          
-          
+  
+  
             <cdk-virtual-scroll-viewport *ngIf="bag.editorConnections.length>5"
                                          itemSize="175.76"
                                          style="height: 40rem; overflow: auto;"
-          
+  
             >
               <div class="col gap1">
                 <ng-container *cdkVirtualFor="let item of bag.editorConnections">
@@ -97,9 +98,9 @@
               </div>
             </cdk-virtual-scroll-viewport>
           </lib-hero-content-card>
-        </ng-container>
+        </div>
       </div>
-      <div fxFlex.gt-md="65"
+      <div fxFlex.gt-lg="grow"
            class="col gap1"
       >
         <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
