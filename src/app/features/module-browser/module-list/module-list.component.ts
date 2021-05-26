@@ -5,9 +5,9 @@ import {
   OnInit,
   ViewEncapsulation
 }                                 from '@angular/core';
-import { BehaviorSubject }        from 'rxjs';
+import { Observable }             from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { MinimalModule }          from 'src/app/models/models';
+import { ModuleList }             from '../module-browser-data.service';
 
 @Component({
   selector:        'app-module-list',
@@ -18,7 +18,7 @@ import { MinimalModule }          from 'src/app/models/models';
 })
 export class ModuleListComponent implements OnInit {
   @Input()
-  readonly data$ = new BehaviorSubject<MinimalModule[]>([]);
+  readonly data$: Observable<ModuleList>;
   
   // showRichList$ = new BehaviorSubject<boolean>(false);
   
@@ -26,10 +26,10 @@ export class ModuleListComponent implements OnInit {
   
     // this.service.patchEditingPanelOpenState$
     //     .pipe(
-    //      
+    //
     //     )
     //     .subscribe(value => {
-    //      
+    //
     //     });
   }
   

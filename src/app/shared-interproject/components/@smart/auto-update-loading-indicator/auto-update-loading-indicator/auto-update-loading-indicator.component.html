@@ -1,0 +1,16 @@
+<ng-container *ngIf="{
+    dataLoading:(dataLoading$|async)
+    } as bag"
+>
+  <div *ngIf="bag.dataLoading"
+       fxLayout="column"
+       fxLayoutGap=".5rem"
+       [fxHide]="!bag.dataLoading"
+  >
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+  <!--  </ng-container>-->
+  <ng-container *ngIf="!bag.dataLoading">
+    <ng-content></ng-content>
+  </ng-container>
+</ng-container>

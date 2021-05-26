@@ -37,12 +37,16 @@ export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject();
   
   ngOnInit(): void {
-    merge(
-      this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
-      this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), filter(data => !!data), mapTo(false))
-    )
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(x => this.dataLoading$.next(x));
+  
+    if (this.data$ && this.updateData$) {
+      merge(
+        this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
+        this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), filter(data => !!data), mapTo(false))
+      )
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(x => this.dataLoading$.next(x));
+    }
+  
   }
   
   ngOnDestroy(): void {
