@@ -40,11 +40,11 @@ import {
   ]
 })
 export class HeroContentCardComponent {
-  @Input() titleBig: string = '';
-  @Input() titleNormal: string = '';
+  @Input() titleBig: string;
+  @Input() titleNormal: string;
   @Input() top = false;
   @Input() bottom = false;
-  @Input() description: string = '';
+  @Input() description: string;
   @Input() hideDescription = false;
   @Input() icon: string;
   @Input() titleStyle?: { [param: string]: any };

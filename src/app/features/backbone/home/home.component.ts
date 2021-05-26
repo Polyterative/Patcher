@@ -1,17 +1,20 @@
 import {
   Component,
   OnDestroy
-}                          from '@angular/core';
-import { Router }          from '@angular/router';
+}                                  from '@angular/core';
+import { Router }                  from '@angular/router';
 import {
   BehaviorSubject,
   Subject
-}                          from 'rxjs';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
+}                                  from 'rxjs';
+import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import {
   CardLinkDataModel,
   cleanCardlinkModelObject
-}                          from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+}                                  from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+import { ModuleDetailDataService } from '../../../components/module-parts/module-detail-data.service';
+import { PatchDetailDataService }  from '../../../components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService }   from '../../../components/rack-parts/rack-detail-data.service';
 
 @Component({
   selector:    'app-home',
@@ -35,6 +38,9 @@ export class HomeComponent implements OnDestroy {
   ]);
   
   constructor(
+    public patchDetailDataService: PatchDetailDataService,
+    public rackDetailDataService: RackDetailDataService,
+    public moduleDetailDataService: ModuleDetailDataService,
     public backend: SupabaseService,
     private router: Router
   ) {
@@ -44,6 +50,11 @@ export class HomeComponent implements OnDestroy {
         .subscribe(value => {
           this.statistics$.next(value);
         });
+  
+    this.patchDetailDataService.updateSinglePatchData$.next(5);
+    this.rackDetailDataService.updateSingleRackData$.next(7);
+    this.moduleDetailDataService.updateSingleModuleData$.next(1025);
+  
   }
   
   ngOnDestroy(): void {
