@@ -55,7 +55,6 @@ export class ModuleBrowserDataService implements OnDestroy {
   
   formTypes = FormTypes;
   
-  
   fields = {
     
     search:        {
@@ -131,7 +130,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       type:     FormTypes.AUTOCOMPLETE,
       options$: this.backend.get.manufacturers(0, 9999, 'id,name')
                     .pipe(
-                      map((x) => x.data.map(z => ({
+                      map(x => x.data.map(z => ({
                         id:   z.id.toString(),
                         name: z.name
                       }))),
@@ -144,13 +143,13 @@ export class ModuleBrowserDataService implements OnDestroy {
   };
   
   paginatorToFistPage$ = new Subject();
+  dirty = false;
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
   ]);
-  dirty = false;
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);

@@ -3,17 +3,17 @@
   selectedForConnection:(dataService.selectedForConnection$|async)
   } as bag"
 >
-  <div ngClass.lt-lg="flow col gap1"
+  <div ngClass.lt-lg="col gap1"
   >
-    <div ngClass.lt-lg="flow col gap1"
-         ngClass.gt-md="flow row gap1"
+    <div ngClass.lt-lg="col gap1"
+         ngClass.gt-md="row gap1"
     >
       <div fxFlex.gt-md="35"
-           class="flow col gap1"
+           class="col gap1"
            fxLayout.md="row"
            fxLayout.gt-lg="column"
       >
-        <div class="flow row gap1"
+        <div class="row gap1"
         >
           <mat-card-subtitle fxFlex="grow"
                              fxLayoutAlign="end center"
@@ -64,7 +64,7 @@
           >
           
             <div *ngIf="bag.editorConnections.length<=5"
-                 class="flow col gap1"
+                 class="col gap1"
                  style="max-height: 40rem; overflow-y: auto;"
             >
               <ng-container *ngFor="let item of bag.editorConnections">
@@ -83,7 +83,7 @@
                                          style="height: 40rem; overflow: auto;"
           
             >
-              <div class="flow col gap1">
+              <div class="col gap1">
                 <ng-container *cdkVirtualFor="let item of bag.editorConnections">
                   <div>
                     <mat-card>
@@ -100,7 +100,7 @@
         </ng-container>
       </div>
       <div fxFlex.gt-md="65"
-           class="flow col gap1"
+           class="col gap1"
       >
         <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
         <app-user-modules class="modulesBG"

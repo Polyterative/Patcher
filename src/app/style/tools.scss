@@ -1,12 +1,14 @@
 ﻿$standardUnit: 1rem;
-.flow {
+@mixin flex {
   display:               flex;
   box-sizing:            border-box;
   -webkit-box-direction: normal;
 }
 
 .row {
+  @include flex;
   flex-direction:     row;
+  //flex-flow:          row;
   -webkit-box-orient: horizontal;
 }
 
@@ -19,13 +21,19 @@
 }
 
 .col {
+  @include flex;
   flex-direction:     column;
+  //flex-flow:          column;
   -webkit-box-orient: vertical;
   height:             auto; /*  important for sizing of row heights */
   //margin-bottom:      20px;
 }
 
 .auto {
+  flex: 1 1 auto;
+}
+
+.flex50 {
   flex: 1 1 auto;
 }
 

@@ -3,19 +3,19 @@ data:(dataService.singleModuleData$|async)
 } as bag"
 >
   <lib-screen-wrapper>
-    <div class="flow col gap1"
+    <div class="col gap1"
     >
       <lib-hero-content-card titleBig="Module details"
                              class="modulesBG"
       >
-        <div class="flow col gap1"
+        <div class="col gap1"
         >
           <lib-screen-wrapper maxSize="36rem">
             <lib-hero-item-card>
               <ng-container *ngIf="bag.data"
               >
                 <app-module-composite [data]="(bag.data)"
-                
+            
                 ></app-module-composite>
               </ng-container>
             </lib-hero-item-card>
