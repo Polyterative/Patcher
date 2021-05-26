@@ -9,6 +9,10 @@ export interface Module {
   manualURL?: string;
 }
 
+export interface DbComment {
+
+}
+
 export interface DbModule extends MinimalModule {
   ins: CV[];
   outs: CV[];

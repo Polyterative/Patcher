@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnInit
-} from '@angular/core';
+}                    from '@angular/core';
+import { DbComment } from '../../../../models/models';
 
 @Component({
   selector:        'app-comments-item',
@@ -11,6 +13,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CommentsItemComponent implements OnInit {
+  @Input() data: DbComment;
   
   constructor() { }
   

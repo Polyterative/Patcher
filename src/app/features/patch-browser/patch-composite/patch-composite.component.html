@@ -16,11 +16,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
         </div>
   
         <app-patch-details [data]="data"></app-patch-details>
-        <div>
-          <lib-hero-item-card>
-            <app-comments-root></app-comments-root>
-          </lib-hero-item-card>
-        </div>
+        <lib-hero-content-card titleNormal="Comments">
+          <app-comments-root></app-comments-root>
+        </lib-hero-content-card>
       </div>
     </lib-screen-wrapper>
     
@@ -34,15 +32,17 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             <app-patch-minimal [data]="data">
             </app-patch-minimal>
           </lib-hero-item-card>
-      
-          <div fxFlex="auto">
-            <app-comments-root></app-comments-root>
-          </div>
         </div>
-  
-        <app-patch-details fxFlex="grow"
-                           [data]="data"
-        ></app-patch-details>
+        <div class="auto col gap1"
+        >
+          <app-patch-details fxFlex="grow"
+                             [data]="data"
+          ></app-patch-details>
+      
+          <lib-hero-content-card titleNormal="Comments">
+            <app-comments-root></app-comments-root>
+          </lib-hero-content-card>
+        </div>
       </div>
     </ng-container>
   </ng-container>
