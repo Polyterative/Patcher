@@ -7,12 +7,12 @@ import { ActivatedRoute }  from '@angular/router';
 import { createClient }    from '@supabase/supabase-js';
 import {
   forkJoin,
+  of,
   ReplaySubject,
   throwError,
   zip
 }                          from 'rxjs';
 import { fromPromise }     from 'rxjs/internal-compatibility';
-import { of }              from 'rxjs/internal/observable/of';
 import {
   map,
   switchMap,
@@ -165,7 +165,7 @@ export class SupabaseService {
     rackModules:    (rackid: number) => fromPromise(
       this.supabase.from(this.paths.rack_modules)
           .select(`${ this.queryJoins.module }`)
-          // .order('module.id')
+        // .order('module.id')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
     )
