@@ -23,6 +23,7 @@ import {
   CV,
   DBManufacturer,
   DbModule,
+  Patch,
   PatchConnection
 }                          from 'src/app/models/models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -329,7 +330,7 @@ export class SupabaseService {
   };
   
   update = {
-    module:           (data: DbModule) => {
+    module:        (data: DbModule) => {
       data.manufacturer = undefined;
       data.ins = undefined;
       data.outs = undefined;
@@ -341,7 +342,18 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    modules:          (data: DbModule[]) => {
+    patch:         (data: Patch) => {
+      data.author = undefined;
+    
+      return rxFrom(
+        this.supabase.from(this.paths.patches)
+            .update(data)
+            .eq('id', data.id)
+            .single()
+      )
+        .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
+    },
+    modules:       (data: DbModule[]) => {
       for (const datum of data) {
         datum.manufacturer = undefined;
         datum.ins = undefined;
@@ -356,7 +368,7 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs:    (data: DbModule) => forkJoin(
+    moduleINsOUTs: (data: DbModule) => forkJoin(
       [
         this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
         this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),

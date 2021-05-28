@@ -2,8 +2,8 @@ import { CommonModule }           from '@angular/common';
 import { NgModule }               from '@angular/core';
 import { FlexLayoutModule }       from '@angular/flex-layout';
 import {
-    FormsModule,
-    ReactiveFormsModule
+  FormsModule,
+  ReactiveFormsModule
 }                                 from '@angular/forms';
 import { MatAutocompleteModule }  from '@angular/material/autocomplete';
 import { MatButtonModule }        from '@angular/material/button';
@@ -16,6 +16,7 @@ import { MatIconModule }          from '@angular/material/icon';
 import { MatInputModule }         from '@angular/material/input';
 import { MatSelectModule }        from '@angular/material/select';
 import { MatTooltipModule }       from '@angular/material/tooltip';
+import { IsControlValidPipe }     from './is-control-valid.pipe';
 import { MatFormEntityComponent } from './mat-form-entity.component';
 
 @NgModule({
@@ -42,8 +43,14 @@ import { MatFormEntityComponent } from './mat-form-entity.component';
   //     useClass: CustomDateAdapterPlainMondayStart
   //   }
   // ],
-  declarations: [MatFormEntityComponent],
-  exports:      [MatFormEntityComponent]
+  declarations: [
+    MatFormEntityComponent,
+    IsControlValidPipe
+  ],
+  exports:      [
+    MatFormEntityComponent,
+    IsControlValidPipe
+  ]
 })
 export class MatFormEntityModule {
 }

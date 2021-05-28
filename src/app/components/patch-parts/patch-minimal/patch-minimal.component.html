@@ -1,17 +1,35 @@
 <ng-container *ngIf="{
+  patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
   user:(userManagerService.user$|async),
   singlePatchData:(dataService.singlePatchData$|async)
   } as bag"
 >
   <div class="col parent"
   >
-    <!--    <div class="col"-->
-    <!--    >-->
-    <app-hero-clickable-title [link]="['/patches/details',data.id]"
+    <ng-container *ngIf="bag.patchEditingPanelOpenState">
+      <div class="col gap1 padB1">
+        <lib-mat-form-entity [control]="dataService.formData.name.control"
+                             label="Patch name"
+        ></lib-mat-form-entity>
+        <lib-mat-form-entity [control]="dataService.formData.description.control"
+                             type="area"
+                             label="Patch description"
+        ></lib-mat-form-entity>
+      </div>
+    </ng-container>
+    <app-hero-clickable-title *ngIf="!bag.patchEditingPanelOpenState"
+                              col
+                              [link]="['/patches/details',data.id]"
                               infoBox
                               infoText="Patch name"
     >{{data.name}}
     </app-hero-clickable-title>
+    <div class="row spaceBetween description"
+         fxLayoutGap="1rem"
+         *ngIf="bag.singlePatchData&&!hideDescription&&!bag.patchEditingPanelOpenState"
+    >
+      <mat-card-subtitle>{{bag.singlePatchData.description}}</mat-card-subtitle>
+    </div>
     <app-entity-author [data]="data.author"></app-entity-author>
     <app-timestamps-relative [data]="data"></app-timestamps-relative>
     <!--    </div>-->

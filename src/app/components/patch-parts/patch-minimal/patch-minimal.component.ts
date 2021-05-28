@@ -19,6 +19,7 @@ import { PatchMinimal }           from 'src/app/models/models';
 export class PatchMinimalComponent implements OnInit {
   @Input() data: PatchMinimal;
   
+  @Input() hideDescription = false;
   // isInCollection$: Observable<boolean>;
   
   constructor(
