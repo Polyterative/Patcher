@@ -31,7 +31,7 @@
   >
   </lib-mat-form-entity>
   
-  <mat-error *ngIf="dataService.fields.password.control.value!=''&&
+  <mat-error *ngIf="dataService.fields.password.control.value!=''&&dataService.fields.passwordAgain.control.value.length>0&&
 dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value
 "
   >Repeated password should be the same as original password

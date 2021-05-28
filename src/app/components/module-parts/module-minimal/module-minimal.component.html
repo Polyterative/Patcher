@@ -11,7 +11,7 @@
       <app-hero-clickable-title [link]="['/modules/details',data.id]"
                                 infoBox
                                 infoText="Module name"
-    
+
       >{{data.name}}</app-hero-clickable-title>
       <div class="row spaceBetween description"
            fxLayoutGap="1rem"
@@ -54,6 +54,7 @@
                     matTooltip="Add to your collection"
                     *ngIf="(bag.singleModuleData)"
                     [disabled]="!bag.user"
+                    [title]="!bag.user ? 'You need to login to add to modules your collection':''"
                     (click)="dataService.addModuleToCollection$.next(data.id)"
             >
               <mat-icon>add</mat-icon>
@@ -69,16 +70,18 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-        
-        
+  
+  
           <button mat-icon-button
                   matTooltip="Add to rack"
+                  [title]="!bag.user ? 'You need to login to add to modules your rack':''"
                   *ngIf="(bag.singleModuleData)"
                   [disabled]="(!bag.user)"
                   (click)="dataService.addModuleToRack$.next(data)"
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
+
         </div>
         <div fxFlex="grow"></div>
         <div fxFlex="auto"
@@ -105,12 +108,39 @@
               </button>
             </ng-container>
           </ng-container>
-          <a mat-icon-button
-             matTooltip="Show details"
-             [routerLink]="['/modules/details',data.id]"
-          >
-            <mat-icon>info</mat-icon>
-          </a>
+          <ng-container *ngIf="bag.singleModuleData">
+            <a mat-icon-button
+               matTooltip="Open manual"
+               *ngIf="bag.singleModuleData.manualURL"
+               target="_blank"
+               rel="noopener noreferrer"
+               [href]="bag.singleModuleData.manualURL"
+            >
+              <mat-icon>menu_book</mat-icon>
+            </a>
+  
+            <a mat-icon-button
+               matTooltip="Seach on Google"
+               target="_blank"
+               rel="noopener noreferrer"
+               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' '+bag.singleModuleData.manufacturer.name"
+            >
+              <mat-icon>search</mat-icon>
+            </a>
+
+          </ng-container>
+  
+  
+          <ng-container *ngIf="!bag.singleModuleData">
+            <a mat-icon-button
+               matTooltip="Show details"
+               [routerLink]="['/modules/details',data.id]"
+            >
+              <mat-icon>info</mat-icon>
+            </a>
+  
+          </ng-container>
+
         </div>
       </div>
     </ng-container>
