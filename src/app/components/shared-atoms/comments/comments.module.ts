@@ -2,8 +2,10 @@ import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatCardModule }            from '@angular/material/card';
+import { DevOnlyWindowModule }      from '../../../shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule }      from '../../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from '../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { HeroContentCardModule }    from '../../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { CommentsDataService }      from './comments-data.service';
 import { CommentsEditorComponent }  from './comments-editor/comments-editor.component';
 import { CommentsItemComponent }    from './comments-item/comments-item.component';
@@ -23,7 +25,9 @@ import { CommentsRootComponent }    from './comments-root/comments-root.componen
     MatCardModule,
     FlexLayoutModule,
     BrandPrimaryButtonModule,
-    MatFormEntityModule
+    MatFormEntityModule,
+    DevOnlyWindowModule,
+    HeroContentCardModule
   ],
   providers:    [CommentsDataService],
   exports:      [
