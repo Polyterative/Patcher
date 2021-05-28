@@ -1,4 +1,8 @@
 import { Injectable }            from '@angular/core';
+import {
+  FormControl,
+  Validators
+}                                from '@angular/forms';
 import { MatDialog }             from '@angular/material/dialog';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import { Router }                from '@angular/router';
@@ -44,6 +48,22 @@ export class PatchDetailDataService {
   editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
   removePatchFromCollection$ = new Subject<number>();
   //
+  formData = {
+    name:        {
+      control: new FormControl('', Validators.compose([
+        Validators.required,
+        Validators.min(3),
+        Validators.maxLength(144)
+      ]))
+    },
+    description: {
+      control: new FormControl('', Validators.compose([
+        Validators.min(0),
+        Validators.maxLength(144)
+      ]))
+    }
+  };
+  //
   clickOnModuleCV$ = new Subject<CVConnectionEntity>();
   resetSelectedForConnection$ = new Subject<void>();
   selectedForConnection$ = new BehaviorSubject<{ a: CVConnectionEntity | null, b: CVConnectionEntity | null }>({
@@ -84,7 +104,7 @@ export class PatchDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.singlePatchData$.next(x.data));
-    
+  
     this.removePatchFromCollection$
         .pipe(
           switchMap(x => this.backend.delete.userPatch(x)),
@@ -94,6 +114,39 @@ export class PatchDetailDataService {
         .subscribe(([a, b]) => {
           snackBar.open('Removed', undefined, {duration: 1000});
           this.updateSinglePatchData$.next(b);
+        });
+  
+    this.formData.name.control.valueChanges
+        .pipe(
+          filter(x => !!this.singlePatchData$.value),
+          filter(x => this.formData.name.control.valid),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(input => this.singlePatchData$.value.name = input);
+    //
+    this.formData.description.control.valueChanges
+        .pipe(
+          filter(x => !!this.singlePatchData$.value),
+          filter(x => this.formData.description.control.valid),
+          filter(x => !!this.formData.description.control.value || this.formData.description.control.value == ''),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(input => this.singlePatchData$.value.description = input);
+  
+    this.singlePatchData$
+        .pipe(
+          filter(x => !!this.singlePatchData$.value),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(data => {
+          this.formData.name.control.reset();
+          this.formData.description.control.reset();
+    
+          this.formData.name.control.patchValue(data.name);
+    
+          if (!!data.description) {
+            this.formData.description.control.patchValue(data.description);
+          }
         });
   
     this.singlePatchData$
@@ -206,26 +259,25 @@ export class PatchDetailDataService {
   
     this.savePatchEditing$
         .pipe(
-          withLatestFrom(this.editorConnections$),
-          switchMap(([a, data]) => this.backend.update.patchConnections(data)),
+          withLatestFrom(this.editorConnections$, this.singlePatchData$),
+          switchMap(([a, patchConnections, patch]) => this.backend.update.patchConnections(patchConnections)
+                                                          .pipe(switchMap(x => this.backend.update.patch(patch)))),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
           this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
         });
   
-  
     this.deletePatch$
         .pipe(
           switchMap(x => {
   
-            let data: ConfirmDialogDataInModel = {
+            const data: ConfirmDialogDataInModel = {
               title:       'Deletion',
               description: 'Are you sure you want to delete this item?',
               positive:    {label: '✔️ Delete'},
               negative:    {label: '❌ Cancel'}
             };
-  
   
             return this.dialog.open(
               ConfirmDialogComponent,

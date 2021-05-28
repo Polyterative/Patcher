@@ -112,6 +112,7 @@ export interface PatchConnection {
 
 export interface Patch extends PatchMinimal {
   // author: PublicUser;
+  description?: string;
 }
 
 export interface PatchMinimal extends Timestamped {
