@@ -4,6 +4,7 @@ import {
   Input
 }                              from '@angular/core';
 import { DbComment }           from '../../../../models/models';
+import { AppStateService }     from '../../../../shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
 
 @Component({
@@ -15,7 +16,10 @@ import { CommentsDataService } from '../comments-data.service';
 export class CommentsRootComponent {
   @Input() comments: DbComment[] = [];
   
-  constructor(public dataService: CommentsDataService) { }
+  constructor(
+    public dataService: CommentsDataService,
+    public appState: AppStateService
+  ) { }
   
   
 }
