@@ -16,9 +16,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
         </div>
   
         <app-patch-details [data]="data"></app-patch-details>
-        <lib-hero-content-card titleNormal="Comments">
-          <app-comments-root></app-comments-root>
-        </lib-hero-content-card>
+        <app-comments-root></app-comments-root>
       </div>
     </lib-screen-wrapper>
     
@@ -38,7 +36,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
           <app-patch-details fxFlex="grow"
                              [data]="data"
           ></app-patch-details>
-      
+  
           <lib-hero-content-card titleNormal="Comments">
             <app-comments-root></app-comments-root>
           </lib-hero-content-card>
