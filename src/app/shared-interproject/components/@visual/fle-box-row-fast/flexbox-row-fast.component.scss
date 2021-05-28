@@ -1,12 +1,10 @@
 .box {
   display:   flex;
   flex-wrap: wrap;
-  //max-height: 60vh;
-  //overflow-x: auto;
+  gap:       1rem;
 }
 
 .box > * {
   flex:      1 1 16rem;
-  margin:    .5rem;
   min-width: 16rem
 }

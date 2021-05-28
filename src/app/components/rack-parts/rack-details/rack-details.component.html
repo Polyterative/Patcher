@@ -1,16 +1,16 @@
 <div class="col gap1"
 >
-  <mat-card-title>Rack modules</mat-card-title>
-  <flexbox-row-fast
-  >
-    <ng-container *ngFor="let item of rackModules$|async">
-      <div>
-        <mat-card>
-          <app-module-minimal [data]="item"></app-module-minimal>
-        </mat-card>
-      </div>
-    
-    </ng-container>
-  </flexbox-row-fast>
-
+  <lib-hero-content-card titleNormal="Rack modules">
+    <flexbox-row-fast
+    >
+      <ng-container *ngFor="let item of rackModules$|async">
+        <div>
+          <mat-card>
+            <app-module-minimal [data]="item"></app-module-minimal>
+          </mat-card>
+        </div>
+      
+      </ng-container>
+    </flexbox-row-fast>
+  </lib-hero-content-card>
 </div>
