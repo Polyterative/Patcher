@@ -11,6 +11,7 @@ import {
   startWith,
   takeUntil
 }                        from 'rxjs/operators';
+import { environment }   from '../../environments/environment';
 import { AppFormUtils }  from './app-form-utils';
 
 @Injectable()
@@ -23,6 +24,8 @@ export class AppStateService {
   readonly globalUtils = {
     errorProvider: (formControl: FormControl) => AppFormUtils.getErrors(formControl)
   };
+  
+  readonly isDev = !environment.production;
   
   protected destroyEvent$: Subject<void> = new Subject();
   
@@ -86,7 +89,6 @@ export class AppStateService {
           })
         )
         .subscribe(value => this.layoutFlexWidth$.next(value));
-    
     
   }
   
