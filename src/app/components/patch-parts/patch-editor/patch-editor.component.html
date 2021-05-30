@@ -20,24 +20,34 @@
         <div fxFlex.gt-lg="32rem"
              class="col gap1"
         >
-          <div class="row gap1"
+          <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
+                                             [updateData$]="dataService.savePatchEditing$"
+                                             loadingLabel="Saving data"
           >
-            <mat-card-subtitle fxFlex="grow"
-                               fxLayoutAlign="end center"
-            > You're editing your patch. Remember to save
-              after
-              you're done!
-            </mat-card-subtitle>
-            <div></div>
-            <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
-                                      theme="positive"
-                                      fxLayoutAlign="end"
-                                      [disabled]="(!(dataService.formData.name.control|formlValid))||(!(dataService.formData.description.control|formlValid))"
+            <div class="row gap1"
             >
-              <mat-icon>save</mat-icon>
-              Save patch
-            </app-brand-primary-button>
-          </div>
+              <mat-card-subtitle fxFlex="grow"
+                                 fxLayoutAlign="end center"
+              > You're editing your patch. Remember to save
+                after
+                you're done!
+              </mat-card-subtitle>
+              <div></div>
+      
+      
+              <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
+                                        theme="positive"
+                                        fxLayoutAlign="end"
+                                        [disabled]="(!(dataService.formData.name.control|formlValid))||(!(dataService.formData.description.control|formlValid))"
+              >
+                <mat-icon>save</mat-icon>
+                Save patch
+              </app-brand-primary-button>
+    
+    
+            </div>
+          </lib-auto-update-loading-indicator>
+  
           <div class="col gap1"
                ngClass.md="row"
           >
