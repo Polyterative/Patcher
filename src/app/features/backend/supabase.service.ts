@@ -260,7 +260,7 @@ export class SupabaseService {
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
         .pipe(map(((x: any) => x.count))),
       rxFrom(
-        this.supabase.from(this.paths.manufacturers)
+        this.supabase.from(this.paths.racks)
             .select('id', {count: 'exact'})
       )
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
