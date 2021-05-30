@@ -16,7 +16,7 @@ import { MatIconModule }          from '@angular/material/icon';
 import { MatInputModule }         from '@angular/material/input';
 import { MatSelectModule }        from '@angular/material/select';
 import { MatTooltipModule }       from '@angular/material/tooltip';
-import { IsControlValidPipe }     from './is-control-valid.pipe';
+import { FormlValidPipe }         from './is-control-valid.pipe';
 import { MatFormEntityComponent } from './mat-form-entity.component';
 
 @NgModule({
@@ -45,11 +45,11 @@ import { MatFormEntityComponent } from './mat-form-entity.component';
   // ],
   declarations: [
     MatFormEntityComponent,
-    IsControlValidPipe
+    FormlValidPipe
   ],
   exports:      [
     MatFormEntityComponent,
-    IsControlValidPipe
+    FormlValidPipe
   ]
 })
 export class MatFormEntityModule {

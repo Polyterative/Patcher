@@ -2,16 +2,21 @@ import {
   ChangeDetectorRef,
   Pipe,
   PipeTransform
-}                      from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Subject }     from 'rxjs';
-import { takeUntil }   from 'rxjs/operators';
+}                    from '@angular/core';
+import {
+  FormControl,
+  FormGroup
+}                    from '@angular/forms';
+import { Subject }   from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+type LocalType = FormControl | FormGroup;
 
 @Pipe({
-  name: 'isControlValid',
+  name: 'formlValid',
   pure: false
 })
-export class IsControlValidPipe implements PipeTransform {
+export class FormlValidPipe implements PipeTransform {
   valid = false;
   subscribed = false;
   
@@ -19,7 +24,7 @@ export class IsControlValidPipe implements PipeTransform {
   
   constructor(public changeDetection: ChangeDetectorRef) {}
   
-  transform(control: FormControl): boolean {
+  transform(control: LocalType): boolean {
     
     if (!this.subscribed) {
       this.subscribe(control);
@@ -28,7 +33,7 @@ export class IsControlValidPipe implements PipeTransform {
     return this.valid;
   }
   
-  private subscribe(control: FormControl): void {
+  private subscribe(control: LocalType): void {
     control.valueChanges
            .pipe(
              takeUntil(this.destroyEvent$)
@@ -42,7 +47,7 @@ export class IsControlValidPipe implements PipeTransform {
     this.updateResult(control);
   }
   
-  private updateResult(control: FormControl): void {
+  private updateResult(control: LocalType): void {
     this.valid = control.valid;
     this.changeDetection.detectChanges();
   }

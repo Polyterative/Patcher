@@ -13,6 +13,7 @@ import { SharedAtomsModule }                 from 'src/app/components/shared-ato
 import { HeroClickableTitleModule }          from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { SharedPipesModule }                 from 'src/app/shared-interproject/pipes/shared-pipes.module';
 import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { MatFormEntityModule }               from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }            from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { AdviceTooltipModule }               from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
@@ -57,7 +58,8 @@ import { ModuleMinimalComponent }            from './module-minimal/module-minim
     SharedPipesModule,
     HeroClickableTitleModule,
     AutoContentLoadingIndicatorModule,
-    AdviceTooltipModule
+    AdviceTooltipModule,
+    AutoUpdateLoadingIndicatorModule
   ],
   exports:      [
     ModuleCVItemComponent,

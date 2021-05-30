@@ -8,6 +8,7 @@ import {
 import {
   FormBuilder,
   FormControl,
+  FormGroup,
   ValidatorFn,
   Validators
 }                                  from '@angular/forms';
@@ -31,7 +32,7 @@ import { FormTypes }               from 'src/app/shared-interproject/components/
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 interface FormCV {
-  id: number,
+  id: number;
   name: FormControl;
   a: FormControl;
   b: FormControl;
@@ -47,6 +48,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   readonly save$ = new Subject();
   
+  removeIN$ = new Subject<number>();
+  removeOUT$ = new Subject<number>();
+  //
   addIN$ = new Subject<[string, number, number, number]>();
   addOUT$ = new Subject<[string, number, number, number]>();
   addSwitch$ = new Subject();
@@ -86,33 +90,38 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             ...this.INs$.value,
             this.createCV(name, min, max, id)
           ];
-          this.INs$.next(x);
   
-          this.formGroupA = this.formBuilder.group({});
-          x.forEach((a, i) => {
-            this.formGroupA.addControl(`name${ i.toString() }`, a.name);
-            this.formGroupA.addControl(`a${ i.toString() }`, a.a);
-            this.formGroupA.addControl(`b${ i.toString() }`, a.b);
-          });
-      
+          this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
+  
         });
+  
     this.addOUT$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(([name, min, max, id]) => {
           const x: any[] = [
             ...this.OUTs$.value,
             this.createCV(name, min, max, id)
           ];
-          this.OUTs$.next(x);
-  
-          this.formGroupB = this.formBuilder.group({});
-          x.forEach((a, i) => {
-            this.formGroupB.addControl(`name${ i.toString() }`, a.name);
-            this.formGroupB.addControl(`a${ i.toString() }`, a.a);
-            this.formGroupB.addControl(`b${ i.toString() }`, a.b);
-          });
-      
-        });
     
+          this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
+    
+        });
+  
+    this.removeIN$.pipe(takeUntil(this.destroyEvent$))
+        .subscribe(i => {
+          const x = this.INs$.value;
+          x.splice(i, 1);
+    
+          this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
+        });
+  
+    this.removeOUT$.pipe(takeUntil(this.destroyEvent$))
+        .subscribe(i => {
+          const x = this.OUTs$.value;
+          x.splice(i, 1);
+    
+          this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
+        });
+  
     this.save$.pipe(
       map(() => ({
         ...this.data,
@@ -130,17 +139,13 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, a]) => this.dataService.updateSingleModuleData$.next(a));
   }
   
-  private serialize(cvs: CV[]): string {
-    return JSON.stringify(cvs);
-  }
-  
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
   }
   
   ngOnInit(): void {
-  
+    
     const ins: CV[] = this.data.ins;
     ins.forEach(x => this.addIN$.next([
       x.name,
@@ -155,6 +160,24 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       x.max,
       x.id
     ]));
+  }
+  
+  private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
+    subject.next(cvs);
+    
+    for (let key in group.controls) {
+      group.removeControl(key);
+    }
+    
+    cvs.forEach((a, i) => {
+      group.addControl(`name${ i.toString() }`, a.name);
+      group.addControl(`a${ i.toString() }`, a.a);
+      group.addControl(`b${ i.toString() }`, a.b);
+    });
+  }
+  
+  private serialize(cvs: CV[]): string {
+    return JSON.stringify(cvs);
   }
   
   private createCV(name, min, max, id: number) {
