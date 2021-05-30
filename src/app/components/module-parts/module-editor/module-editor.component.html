@@ -14,11 +14,21 @@
       </div>
       <div class="col gap1 leftBorderS"
       >
-        <ng-container *ngFor="let item of INs$|async;">
-          
+        <ng-container *ngFor="let item of INs$|async; let i = index">
+  
           <div ngClass.sm="col gap1"
                ngClass.gt-sm="row gap1"
           >
+            <div fxLayoutAlign="start center">
+              <button mat-icon-button
+                      [disabled]="item.id!=0"
+                      (click)="removeIN$.next(i)"
+              >
+                <mat-icon>
+                  delete
+                </mat-icon>
+              </button>
+            </div>
             <lib-mat-form-entity [type]="types.TEXT"
                                  [control]="item.name"
                                  label="name"
@@ -67,11 +77,21 @@
       </div>
       <div class="col gap1 leftBorderS"
       >
-        <ng-container *ngFor="let item of OUTs$|async;">
-          
+        <ng-container *ngFor="let item of OUTs$|async; let i = index">
+  
           <div ngClass.sm="col gap1"
                ngClass.gt-sm="row gap1"
           >
+            <div fxLayoutAlign="start center">
+              <button mat-icon-button
+                      [disabled]="item.id!=0"
+                      (click)="removeOUT$.next(i)"
+              >
+                <mat-icon>
+                  delete
+                </mat-icon>
+              </button>
+            </div>
             <lib-mat-form-entity [type]="types.TEXT"
                                  [control]="item.name"
                                  label="name"
@@ -135,19 +155,19 @@
     </div>
   </div>
   <mat-divider inset="true"></mat-divider>
-  <lib-auto-content-loading-indicator [data$]="dataService.singleModuleData$"
-                                      [updateData$]="save$"
-                                      loadingLabel="Saving data"
+  <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
+                                     [updateData$]="save$"
+                                     loadingLabel="Saving data"
   >
     <app-brand-primary-button (click$)="save$.next()"
                               theme="positive"
                               fxLayoutAlign="end"
-                              [disabled]="formGroupA.invalid||formGroupB.invalid||formGroupC.invalid"
+                              [disabled]="!(formGroupA|formlValid)||!(formGroupB|formlValid)||!(formGroupC|formlValid)"
     >
       <mat-icon>save</mat-icon>
       Save data
     </app-brand-primary-button>
-  </lib-auto-content-loading-indicator>
+  </lib-auto-update-loading-indicator>
 
 
 </div>

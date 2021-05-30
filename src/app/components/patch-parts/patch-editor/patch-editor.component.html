@@ -32,7 +32,7 @@
             <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                       theme="positive"
                                       fxLayoutAlign="end"
-                                      [disabled]="(!(dataService.formData.name.control|isControlValid))||(!(dataService.formData.description.control|isControlValid))"
+                                      [disabled]="(!(dataService.formData.name.control|formlValid))||(!(dataService.formData.description.control|formlValid))"
             >
               <mat-icon>save</mat-icon>
               Save patch
