@@ -20,17 +20,18 @@ import { PatchDetailDataService }                         from 'src/app/componen
 import { PatchDetailsComponent }                          from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent }                           from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent }                          from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
-import { SharedAtomsModule }                              from 'src/app/components/shared-atoms/shared-atoms.module';
-import { UserModulesModule }                              from 'src/app/features/user-area/user-modules/user-modules.module';
-import { DevOnlyWindowModule }                            from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { MatFormEntityModule }                            from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
-import { AdviceTooltipModule }                            from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
-import { BrandPrimaryButtonModule }                       from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { HeroClickableTitleModule }                       from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
-import { HeroContentCardModule }                          from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }                              from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { ConfirmDialogModule }                            from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
-import { AutoContentLoadingIndicatorModule }              from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { SharedAtomsModule }                 from 'src/app/components/shared-atoms/shared-atoms.module';
+import { UserModulesModule }                 from 'src/app/features/user-area/user-modules/user-modules.module';
+import { DevOnlyWindowModule }               from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
+import { MatFormEntityModule }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { AdviceTooltipModule }               from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { BrandPrimaryButtonModule }          from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { HeroClickableTitleModule }          from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
+import { HeroContentCardModule }             from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { ConfirmDialogModule }               from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
+import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 
 
 @NgModule({
@@ -73,7 +74,8 @@ import { AutoContentLoadingIndicatorModule }              from '../../shared-int
     MatExpansionModule,
     AutoContentLoadingIndicatorModule,
     ScrollingModule,
-    ExperimentalScrollingModule
+    ExperimentalScrollingModule,
+    AutoUpdateLoadingIndicatorModule
   ]
 })
 export class PatchModule {}
