@@ -119,7 +119,7 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data.map(y => y.module)))),
   
-    patchConnections: (patchid: number) => rxFrom(
+    patchConnections:   (patchid: number) => rxFrom(
       this.supabase.from(this.paths.patch_connections)
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
         //   .select(`*,a(*,${ this.queryJoins.module })`)
@@ -217,6 +217,21 @@ export class SupabaseService {
         // .order('id', {foreignTable: this.paths.moduleINs})
         // .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    patchWithModule:    (id: number, columns = '*') => rxFrom(
+      this.supabase.from(this.paths.patch_connections)
+        // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
+        //   .select(`*,a(*,${ this.queryJoins.module })`)
+        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
+          .select(`
+          *,
+          patch:patchid(*),
+          a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
+          b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
+          `)
+          .filter('a.patchId', 'cs', id)
+          .filter('b.patchId', 'cs', id)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     rackWithId:         (id: number, columns = '*') => rxFrom(
