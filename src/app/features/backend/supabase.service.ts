@@ -230,8 +230,7 @@ export class SupabaseService {
           a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
           b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
           `)
-          .filter('a.patchId', 'cs', id)
-          .filter('b.patchId', 'cs', id)
+          .filter('patches.id', 'cs', id)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     rackWithId:         (id: number, columns = '*') => rxFrom(

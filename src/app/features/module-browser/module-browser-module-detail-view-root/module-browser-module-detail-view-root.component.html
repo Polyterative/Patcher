@@ -37,9 +37,10 @@ data:(dataService.singleModuleData$|async)
                 [data]="(bag.data)"
             ></app-module-editor>
           </lib-hero-item-card>
-  
-  
-          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>
+
+
+          <!--          hidden cause circular dependency-->
+          <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
           <!--              stuff-->
         </div>
       </lib-hero-content-card>
