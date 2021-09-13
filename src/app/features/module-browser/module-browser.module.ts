@@ -36,6 +36,7 @@ import { PageHeaderModule }                           from 'src/app/shared-inter
 import { ScreenWrapperModule }                        from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { WidthLimiterModule }                         from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
 import { generateUranusRoutes }                       from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { ModulePatchesModule }                        from '../../components/module-patches/module-patches.module';
 import { AutoUpdateLoadingIndicatorModule }           from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 
 
@@ -49,7 +50,7 @@ const parentPrefix: string = 'modules';
     ModuleListComponent
   ],
   providers:    [ModuleBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       
@@ -104,7 +105,8 @@ const parentPrefix: string = 'modules';
     WidthLimiterModule,
     HeroItemCardModule,
     EmptyStateModule,
-    AutoUpdateLoadingIndicatorModule
+    AutoUpdateLoadingIndicatorModule,
+    ModulePatchesModule
   ],
   exports:      [
     ModuleListComponent,
