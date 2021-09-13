@@ -13,8 +13,6 @@ export class UrlCreatorService {
   ) { }
   
   copyLinkToClipboard(path: string): void {
-    let text = 'Example text to appear on clipboard';
-    
     // this.router.
     let url: string = window.location.origin + path;
     
