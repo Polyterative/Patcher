@@ -12,7 +12,6 @@ import { TimeagoModule }                     from 'ngx-timeago';
 import { SharedAtomsModule }                 from 'src/app/components/shared-atoms/shared-atoms.module';
 import { HeroClickableTitleModule }          from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { SharedPipesModule }                 from 'src/app/shared-interproject/pipes/shared-pipes.module';
-import { PatchBrowserModule }                from '../../features/patch-browser/patch-browser.module';
 import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { MatFormEntityModule }               from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
@@ -27,7 +26,6 @@ import { ModuleDetailDataService }           from './module-detail-data.service'
 import { ModuleDetailsComponent }            from './module-details/module-details.component';
 import { ModuleEditorComponent }             from './module-editor/module-editor.component';
 import { ModuleMinimalComponent }            from './module-minimal/module-minimal.component';
-import { ModulePatchesComponent }            from './module-patches/module-patches.component';
 
 @NgModule({
   declarations: [
@@ -36,8 +34,7 @@ import { ModulePatchesComponent }            from './module-patches/module-patch
     ModuleDetailsComponent,
     ModuleEditorComponent,
     ModuleMinimalComponent,
-    ModuleCvIconComponent,
-    ModulePatchesComponent
+    ModuleCvIconComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -62,8 +59,7 @@ import { ModulePatchesComponent }            from './module-patches/module-patch
     HeroClickableTitleModule,
     AutoContentLoadingIndicatorModule,
     AdviceTooltipModule,
-    AutoUpdateLoadingIndicatorModule,
-    PatchBrowserModule
+    AutoUpdateLoadingIndicatorModule
   ],
   exports:      [
     ModuleCVItemComponent,
@@ -71,8 +67,7 @@ import { ModulePatchesComponent }            from './module-patches/module-patch
     ModuleDetailsComponent,
     ModuleEditorComponent,
     ModuleMinimalComponent,
-    ModuleCvIconComponent,
-    ModulePatchesComponent
+    ModuleCvIconComponent
   ]
 })
 export class ModulePartsModule {}
