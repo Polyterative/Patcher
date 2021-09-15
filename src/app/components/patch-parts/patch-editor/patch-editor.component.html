@@ -88,9 +88,10 @@
               <div class="col gap1"
                    style="max-height: 40rem; overflow-y: auto;"
               >
-                <ng-container *ngFor="let item of bag.editorConnections">
+                <ng-container *ngFor="let item of bag.editorConnections; let i = index">
                   <mat-card>
                     <app-patch-connection-minimal [data]="item"
+                                                  [index]="i+1"
                                                   [isEditing]="true"
                                                   (remove$)="dataService.removeConnectionFromEditor$.next($event)"
                     ></app-patch-connection-minimal>

@@ -33,10 +33,13 @@
       >
         <mat-card>
           <!--          <div *ngIf="bag.connections.length<=8"-->
-          <div class="col gap1"
+          <div class="col gap1 "
+               style="max-height: 56rem; overflow-y: auto;"
           >
             <ng-container *ngFor="let item of bag.connections; let i = index">
-              <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>
+              <app-patch-connection-minimal [data]="item"
+                                            [index]="i+1"
+              ></app-patch-connection-minimal>
               <mat-divider inset="true"
                            *ngIf="i!=bag.connections.length-1"
               ></mat-divider>
