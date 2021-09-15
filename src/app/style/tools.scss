@@ -19,6 +19,10 @@
   -webkit-box-orient: horizontal;
 }
 
+.gap0 {
+  gap: $standardUnit/2
+}
+
 .gap1 {
   gap: $standardUnit
 }

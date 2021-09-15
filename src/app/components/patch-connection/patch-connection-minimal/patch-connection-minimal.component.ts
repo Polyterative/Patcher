@@ -19,6 +19,7 @@ import { PatchConnection } from 'src/app/models/models';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatchConnectionMinimalComponent implements OnInit {
+  @Input() readonly index?: number;
   @Input() readonly data: PatchConnection;
   @Input() readonly isEditing = false;
   @Input() readonly isCreator = false;

@@ -4,7 +4,7 @@
 
 >
   <div fxFlex="grow"
-       class="row gap1"
+       class="row gap0"
   >
     <app-module-minimal fxFlex="50%"
                         [data]="data.a.module"
@@ -38,7 +38,12 @@
   </div>
   
   <ng-container *ngIf="!isEditing">
-    <div fxFlex="25%">
+    <div fxFlex="25%"
+         class="col gap0"
+    >
+      <mat-card-subtitle *ngIf="index"
+                         fxLayoutAlign="end"
+      >{{index}}</mat-card-subtitle>
       <ng-container *ngIf="data.notes&&data.notes.length>0">
         <mat-card-subtitle style="font-style:italic"
         >
@@ -51,8 +56,11 @@
     <mat-divider
         [vertical]="true"
     ></mat-divider>
-    <div class="col gap1"
+    <div class="col gap0"
     >
+      <mat-card-subtitle *ngIf="index"
+                         fxLayoutAlign="end"
+      >{{index}}</mat-card-subtitle>
       <button mat-icon-button
               [matTooltip]="isCreator?'Clear selection':'Remove connection'"
               (click)="remove$.next(data)"
