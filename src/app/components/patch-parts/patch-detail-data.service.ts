@@ -1,4 +1,7 @@
-import { Injectable }            from '@angular/core';
+import {
+  Injectable,
+  OnDestroy
+}                                from '@angular/core';
 import {
   FormControl,
   Validators
@@ -39,7 +42,7 @@ export interface CVConnectionEntity {
 }
 
 @Injectable()
-export class PatchDetailDataService {
+export class PatchDetailDataService implements OnDestroy {
   updateSinglePatchData$ = new ReplaySubject<number>();
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
