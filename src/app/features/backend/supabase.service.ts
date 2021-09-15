@@ -342,7 +342,6 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
-  
   update = {
     module:        (data: DbModule) => {
       data.manufacturer = undefined;
