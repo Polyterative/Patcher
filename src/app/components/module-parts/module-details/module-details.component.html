@@ -1,6 +1,8 @@
 <div class="col gap1 parent"
 >
-  <app-timestamps-relative [data]="data"></app-timestamps-relative>
+  <app-timestamps-relative [data]="data"
+                           *ngIf="!viewConfig.hideDates"
+  ></app-timestamps-relative>
   <app-module-cvs [data]="data"></app-module-cvs>
   <ng-container *ngIf="switches.length>0">
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
@@ -18,7 +20,7 @@
   
   <div class="row spaceBetween opacizeOnHover"
        fxLayoutGap="1rem"
-       *ngIf="!data.isComplete"
+       *ngIf="!data.isComplete&&!viewConfig.hideLabels"
   >
     <mat-card-subtitle fxFlex="auto"
                        fxLayoutAlign="end"

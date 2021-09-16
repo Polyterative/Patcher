@@ -15,20 +15,20 @@
       >{{data.name}}</app-hero-clickable-title>
       <div class="row spaceBetween description"
            fxLayoutGap="1rem"
-           *ngIf="data.description&&!hideDescription"
+           *ngIf="data.description&&!viewConfig.hideDescription"
       >
         <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
       </div>
       <div class="row spaceBetween"
            fxLayoutGap="1rem"
       >
-        <div *ngIf="!hideManufacturer">
+        <div *ngIf="!viewConfig.hideManufacturer">
           <mat-card-subtitle infoBox
                              infoText="Manufacturer name"
           >{{data.manufacturer.name}}</mat-card-subtitle>
         </div>
         <div style="font-size: small"
-             *ngIf="!hideHP"
+             *ngIf="!viewConfig.hideHP"
              fxLayoutAlign="center center"
         >
           {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
@@ -37,7 +37,7 @@
       </div>
     </div>
     <ng-content></ng-content>
-    <ng-container *ngIf="!hideButtons">
+    <ng-container *ngIf="!viewConfig.hideButtons">
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
