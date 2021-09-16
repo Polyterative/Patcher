@@ -39,17 +39,18 @@
   
   <ng-container *ngIf="!isEditing">
     <div fxFlex="25%"
-         class="col gap0"
+         class="row gap0"
     >
-      <mat-card-subtitle *ngIf="index"
-                         fxLayoutAlign="end"
-      >{{index}}</mat-card-subtitle>
-      <ng-container *ngIf="data.notes&&data.notes.length>0">
-        <mat-card-subtitle style="font-style:italic"
-        >
-          {{data.notes}}
-        </mat-card-subtitle>
-      </ng-container>
+  
+      <div fxFlex="grow">
+        <ng-container *ngIf="data.notes&&data.notes.length>0">
+          <mat-card-subtitle style="font-style:italic"
+          >
+            {{data.notes}}
+          </mat-card-subtitle>
+        </ng-container>
+      </div>
+      <ng-container *ngTemplateOutlet="ordinal"></ng-container>
     </div>
   </ng-container>
   <ng-container *ngIf="isEditing">
@@ -58,9 +59,7 @@
     ></mat-divider>
     <div class="col gap0"
     >
-      <mat-card-subtitle *ngIf="index"
-                         fxLayoutAlign="end"
-      >{{index}}</mat-card-subtitle>
+      <ng-container *ngTemplateOutlet="ordinal"></ng-container>
       <button mat-icon-button
               [matTooltip]="isCreator?'Clear selection':'Remove connection'"
               (click)="remove$.next(data)"
@@ -78,10 +77,19 @@
     </div>
   </ng-container>
 </div>
-<lib-mat-form-entity type="area"
+<lib-mat-form-entity [type]="types.AREA"
                      [control]="notes.control"
                      label="Notes"
                      [disabled]="!isEditing"
                      *ngIf="isEditing&&!isCreator"
                      [hint]="notes.control.value.length+'/999'"
 ></lib-mat-form-entity>
+
+
+<ng-template #ordinal>
+  <mat-card-subtitle *ngIf="index"
+                     fxLayoutAlign="end end"
+                     class="monospace"
+                     [ngClass]="index%5!=0?'fade-ordinal':''"
+  >#{{index}}</mat-card-subtitle>
+</ng-template>

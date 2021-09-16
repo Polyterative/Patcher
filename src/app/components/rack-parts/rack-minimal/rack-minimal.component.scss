@@ -5,6 +5,10 @@
 
   }
 
+
+  > .showOnHover {
+    opacity: 0;
+  }
 }
 
 .parent:hover > .opacizeOnHover {

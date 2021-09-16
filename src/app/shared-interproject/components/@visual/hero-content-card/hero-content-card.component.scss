@@ -114,7 +114,7 @@ mat-card {
   @include darkBG;
   background-color: $brand-secondary;
   //padding:          0.2rem;
-  //transition: all 225ms cubic-bezier(0.4, 0.0, 0.2, 1);
+  //transition: all 225ms cubic-bezier(0.4, 0.0, 0.2, 1
 }
 
 .line {
@@ -156,4 +156,11 @@ mat-card {
   height:              100%;
   z-index:             1;
 
+}
+
+.help-icon {
+  margin-right: 1rem;
+  margin-left:  1rem;
+  opacity:      0.33;
+  cursor:       help;
 }

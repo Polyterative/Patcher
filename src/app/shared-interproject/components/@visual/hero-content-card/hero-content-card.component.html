@@ -13,9 +13,8 @@
     </div>
   </ng-container>
   
-  
   <div fxFlex="auto"
-       *ngIf="description&&!hideDescription"
+       *ngIf="description&&!hideDescription&&!showHelpButton"
        fxLayoutAlign="end end"
   >
     <mat-card-subtitle *ngIf="description"
@@ -64,6 +63,7 @@
         [icon]="icon"
     
     ></app-hero-content-card-head-icon>
+    <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h1>
   <h3 fxFlex="grow"
       fxLayout="row"
@@ -73,6 +73,18 @@
     <div fxFlex="grow">{{titleNormal}}</div>
     <app-hero-content-card-head-icon [icon]="icon"
     ></app-hero-content-card-head-icon>
+    <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h3>
 
+</ng-template>
+
+
+<ng-template #helpButton>
+  <div fxLayoutAlign="end center"
+       fxFlex="auto"
+       *ngIf="description&&showHelpButton"
+       class="help-icon"
+  >
+    <mat-icon [matTooltip]="description">help</mat-icon>
+  </div>
 </ng-template>
