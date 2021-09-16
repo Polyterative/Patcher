@@ -4,7 +4,6 @@
   } as bag"
 >
   
-  
   <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
                                       [skipFirstData]="true"
                                       [loadingLines]="5"
@@ -20,11 +19,14 @@
           <lib-hero-item-card>
             <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
                                 [data]="item"
+                                [viewConfig]="viewConfig"
             ></app-module-minimal>
           </lib-hero-item-card>
         </div>
         <ng-template #fullData>
-          <app-module-composite [data]="item"></app-module-composite>
+          <app-module-composite [data]="item"
+                                [viewConfig]="viewConfig"
+          ></app-module-composite>
         </ng-template>
       </ng-container>
     </flexbox-row-fast>

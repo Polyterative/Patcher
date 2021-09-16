@@ -1,16 +1,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnInit,
   ViewEncapsulation
-}                          from '@angular/core';
+}                                  from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-}                          from 'rxjs';
-import { takeUntil }       from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { MinimalModule }   from 'src/app/models/models';
+}                                  from 'rxjs';
+import { takeUntil }               from 'rxjs/operators';
+import { SupabaseService }         from 'src/app/features/backend/supabase.service';
+import { MinimalModule }           from 'src/app/models/models';
+import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-user-modules',
@@ -21,6 +23,7 @@ import { MinimalModule }   from 'src/app/models/models';
 })
 export class UserModulesComponent implements OnInit {
   data$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
+  @Input() viewConfig: ModuleMinimalViewConfig;
   
   constructor(
     public backend: SupabaseService
@@ -31,7 +34,7 @@ export class UserModulesComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    
+  
   }
   
   protected destroyEvent$: Subject<void> = new Subject();

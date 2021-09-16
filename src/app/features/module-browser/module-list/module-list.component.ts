@@ -4,10 +4,11 @@ import {
   Input,
   OnInit,
   ViewEncapsulation
-}                                 from '@angular/core';
-import { Observable }             from 'rxjs';
-import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { ModuleList }             from '../module-browser-data.service';
+}                                  from '@angular/core';
+import { Observable }              from 'rxjs';
+import { PatchDetailDataService }  from 'src/app/components/patch-parts/patch-detail-data.service';
+import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { ModuleList }              from '../module-browser-data.service';
 
 @Component({
   selector:        'app-module-list',
@@ -17,13 +18,13 @@ import { ModuleList }             from '../module-browser-data.service';
   encapsulation:   ViewEncapsulation.None
 })
 export class ModuleListComponent implements OnInit {
-  @Input()
-  readonly data$: Observable<ModuleList>;
+  @Input() readonly data$: Observable<ModuleList>;
+  @Input() viewConfig: ModuleMinimalViewConfig;
   
   // showRichList$ = new BehaviorSubject<boolean>(false);
   
   constructor(public patchingService: PatchDetailDataService) {
-  
+    
     // this.service.patchEditingPanelOpenState$
     //     .pipe(
     //

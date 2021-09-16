@@ -4,6 +4,10 @@ import {
   Input,
   OnInit
 }                   from '@angular/core';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                   from '../../../components/module-parts/module-minimal/module-minimal.component';
 import { DbModule } from '../../../models/models';
 
 @Component({
@@ -14,6 +18,7 @@ import { DbModule } from '../../../models/models';
 })
 export class ModuleCompositeComponent implements OnInit {
   @Input() data: DbModule;
+  @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   
   constructor() {}
   
