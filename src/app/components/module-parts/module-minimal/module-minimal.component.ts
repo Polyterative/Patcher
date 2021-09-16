@@ -16,6 +16,25 @@ import { UserManagementService }   from 'src/app/features/backbone/login/user-ma
 import { MinimalModule }           from 'src/app/models/models';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
+export interface ModuleMinimalViewConfig {
+  hideLabels: boolean;
+  hideManufacturer: boolean;
+  hideDescription: boolean;
+  hideButtons: boolean;
+  hideHP: boolean;
+  hideDates: boolean;
+}
+
+export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
+  hideLabels:       false,
+  hideManufacturer: false,
+  hideDescription:  false,
+  hideButtons:      false,
+  hideHP:           false,
+  hideDates:        false
+  
+};
+
 @Component({
   selector:        'app-module-minimal',
   templateUrl:     './module-minimal.component.html',
@@ -25,11 +44,9 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 export class ModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;
   
+  @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
+  
   isInCollection$: Observable<boolean>;
-  @Input() hideManufacturer = false;
-  @Input() hideDescription = false;
-  @Input() hideButtons = false;
-  @Input() hideHP = false;
   
   constructor(
     public userManagerService: UserManagementService,

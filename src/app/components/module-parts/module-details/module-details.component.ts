@@ -6,6 +6,10 @@ import {
 }                          from '@angular/core';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule }        from 'src/app/models/models';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                          from '../module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-module-details',
@@ -15,6 +19,7 @@ import { DbModule }        from 'src/app/models/models';
 })
 export class ModuleDetailsComponent implements OnInit {
   @Input() data: DbModule;
+  @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   
   switches = [];
   
@@ -26,7 +31,7 @@ export class ModuleDetailsComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    
+  
   }
   
 }

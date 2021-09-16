@@ -8,6 +8,7 @@
     >
       <app-module-list fxFlex="grow"
                        [data$]="data$"
+                       [viewConfig]="viewConfig"
                        *ngIf="(data$|async).length>0 else noData"
       ></app-module-list>
       
