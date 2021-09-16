@@ -8,10 +8,7 @@
   >
     <app-module-minimal fxFlex="50%"
                         [data]="data.a.module"
-                        [hideManufacturer]="true"
-                        [hideDescription]="true"
-                        [hideButtons]="true"
-                        [hideHP]="true"
+                        [viewConfig]="viewConfig"
     
     >
       <mat-chip-list>
@@ -23,10 +20,7 @@
     <app-patch-connection-symbol></app-patch-connection-symbol>
     <app-module-minimal fxFlex="50%"
                         [data]="data.b.module"
-                        [hideManufacturer]="true"
-                        [hideDescription]="true"
-                        [hideButtons]="true"
-                        [hideHP]="true"
+                        [viewConfig]="viewConfig"
     >
       
       <mat-chip-list>

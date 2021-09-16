@@ -4,14 +4,15 @@ import {
   Input,
   OnInit,
   Output
-}                          from '@angular/core';
+}                                  from '@angular/core';
 import {
   FormControl,
   Validators
-}                          from '@angular/forms';
-import { Subject }         from 'rxjs';
-import { PatchConnection } from 'src/app/models/models';
-import { FormTypes }       from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                                  from '@angular/forms';
+import { Subject }                 from 'rxjs';
+import { PatchConnection }         from 'src/app/models/models';
+import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-patch-connection-minimal',
@@ -27,6 +28,15 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Output() readonly remove$ = new Subject<PatchConnection>();
   @Output() readonly create$ = new Subject<PatchConnection>();
   types = FormTypes;
+  
+  @Input() viewConfig: ModuleMinimalViewConfig = {
+    hideLabels:       false,
+    hideManufacturer: true,
+    hideDescription:  true,
+    hideButtons:      true,
+    hideHP:           true,
+    hideDates:        true
+  };
   
   notes = {
     control: new FormControl('', Validators.compose([

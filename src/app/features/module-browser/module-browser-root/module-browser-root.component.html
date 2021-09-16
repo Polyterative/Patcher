@@ -46,7 +46,15 @@
                      showFirstLastButtons
       ></mat-paginator>
   
-      <app-module-list [data$]="dataService.modulesList$"></app-module-list>
+      <app-module-list [data$]="dataService.modulesList$"
+                       [viewConfig]="{
+                         hideManufacturer: true,
+                         hideDescription:  true,
+                         hideButtons:      true,
+                         hideHP:           true,
+                         hideDates:        true
+  }"
+      ></app-module-list>
       <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
                                          [updateData$]="dataService.updateModulesList$"
       ></lib-auto-update-loading-indicator>

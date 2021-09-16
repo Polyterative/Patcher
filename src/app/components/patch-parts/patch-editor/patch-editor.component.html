@@ -33,8 +33,8 @@
                 you're done!
               </mat-card-subtitle>
               <div></div>
-      
-      
+  
+  
               <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                         theme="positive"
                                         fxLayoutAlign="end"
@@ -43,8 +43,8 @@
                 <mat-icon>save</mat-icon>
                 Save patch
               </app-brand-primary-button>
-    
-    
+
+
             </div>
           </lib-auto-update-loading-indicator>
   
@@ -129,6 +129,13 @@
           <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
           <app-user-modules class="modulesBG"
                             style="max-height: 73rem; overflow-y: auto;"
+                            [viewConfig]="{
+                         hideManufacturer: true,
+                         hideDescription:  true,
+                         hideButtons:      true,
+                         hideHP:           true,
+                         hideDates:        true
+  }"
           ></app-user-modules>
         </div>
       </div>
