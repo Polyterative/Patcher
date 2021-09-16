@@ -56,6 +56,7 @@
                                    class="selection"
                                    titleNormal="Your selection"
                                    description="The connection you want to create"
+                                   [showHelpButton]="true"
             >
               <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
                 <app-patch-connection-minimal [data]="{
@@ -82,11 +83,12 @@
                                    [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
                                    class="connections"
                                    description="The connections of the patch you are editing"
+                                   [showHelpButton]="true"
             >
   
               <!--              <div *ngIf="bag.editorConnections.length<=5"-->
               <div class="col gap1"
-                   style="max-height: 40rem; overflow-y: auto;"
+                   style="max-height: 46rem; overflow-y: auto;"
               >
                 <ng-container *ngFor="let item of bag.editorConnections; let i = index">
                   <mat-card>

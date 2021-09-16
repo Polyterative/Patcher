@@ -11,6 +11,7 @@ import {
 }                          from '@angular/forms';
 import { Subject }         from 'rxjs';
 import { PatchConnection } from 'src/app/models/models';
+import { FormTypes }       from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 @Component({
   selector:        'app-patch-connection-minimal',
@@ -25,6 +26,7 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Input() readonly isCreator = false;
   @Output() readonly remove$ = new Subject<PatchConnection>();
   @Output() readonly create$ = new Subject<PatchConnection>();
+  types = FormTypes;
   
   notes = {
     control: new FormControl('', Validators.compose([

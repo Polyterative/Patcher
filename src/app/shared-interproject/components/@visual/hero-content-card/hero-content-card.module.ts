@@ -3,6 +3,7 @@ import { NgModule }                          from '@angular/core';
 import { FlexLayoutModule }                  from '@angular/flex-layout';
 import { MatCardModule }                     from '@angular/material/card';
 import { MatIconModule }                     from '@angular/material/icon';
+import { MatTooltipModule }                  from '@angular/material/tooltip';
 import { HeroContenstCardHeadIconComponent } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-contenst-card-head-icon/hero-contenst-card-head-icon.component';
 import { HeroContentCardComponent }          from './hero-content-card.component';
 
@@ -16,7 +17,8 @@ import { HeroContentCardComponent }          from './hero-content-card.component
     MatCardModule,
     FlexLayoutModule,
     MatIconModule,
-    MatCardModule
+    MatCardModule,
+    MatTooltipModule
   ],
   exports:      [HeroContentCardComponent]
 })
