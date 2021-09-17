@@ -9,6 +9,7 @@ import { MatPaginator }             from '@angular/material/paginator';
 import { Subject }                  from 'rxjs';
 import { takeUntil }                from 'rxjs/operators';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
+import { ModuleMinimalViewConfig }  from '../../../components/module-parts/module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-module-browser-root',
@@ -18,8 +19,18 @@ import { ModuleBrowserDataService } from 'src/app/features/module-browser/module
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  viewConfig: ModuleMinimalViewConfig = {
+    hideLabels:       false,
+    hideManufacturer: false,
+    hideDescription:  false,
+    hideButtons:      false,
+    hideHP:           false,
+    hideDates:        false
+  };
   
   constructor(public dataService: ModuleBrowserDataService) {
+    
+    
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());

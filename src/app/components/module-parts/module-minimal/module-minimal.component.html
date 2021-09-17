@@ -35,6 +35,9 @@
           {{data.hp}} HP
         </div>
       </div>
+      <app-timestamps-relative [data]="data"
+                               *ngIf="!viewConfig.hideDates"
+      ></app-timestamps-relative>
     </div>
     <ng-content></ng-content>
     <ng-container *ngIf="!viewConfig.hideButtons">
