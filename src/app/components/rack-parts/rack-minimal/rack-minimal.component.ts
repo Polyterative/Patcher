@@ -17,6 +17,7 @@ import { RackMinimal }           from 'src/app/models/models';
 })
 export class RackMinimalComponent implements OnInit {
   @Input() data: RackMinimal;
+  @Input() viewConfig: RackMinimalViewConfig = defaultRackMinimalViewConfig;
   
   // isInCollection$: Observable<boolean>;
   
@@ -41,3 +42,19 @@ export class RackMinimalComponent implements OnInit {
     
   }
 }
+
+export interface RackMinimalViewConfig {
+  hideLabels: boolean;
+  hideDescription: boolean;
+  hideButtons: boolean;
+  hideHP: boolean;
+  hideDates: boolean;
+}
+
+export const defaultRackMinimalViewConfig: RackMinimalViewConfig = {
+  hideLabels:      false,
+  hideDescription: false,
+  hideButtons:     false,
+  hideHP:          false,
+  hideDates:       false
+};

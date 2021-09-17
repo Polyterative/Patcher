@@ -31,7 +31,6 @@ export class ModuleDetailsComponent implements OnInit {
   }
   
   ngOnInit(): void {
-  
   }
   
 }

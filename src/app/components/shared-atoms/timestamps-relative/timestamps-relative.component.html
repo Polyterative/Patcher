@@ -1,5 +1,6 @@
 <mat-card-subtitle infoBox
                    infoText="Updated/Created"
                    class="item"
+                   *ngIf="data&&data.created&&data.updated"
 >{{data.updated|timeago}} - {{data.created|timeago}}
 </mat-card-subtitle>

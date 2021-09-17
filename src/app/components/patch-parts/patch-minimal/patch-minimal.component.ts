@@ -18,8 +18,8 @@ import { PatchMinimal }           from 'src/app/models/models';
 })
 export class PatchMinimalComponent implements OnInit {
   @Input() data: PatchMinimal;
+  @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
-  @Input() hideDescription = false;
   // isInCollection$: Observable<boolean>;
   
   constructor(
@@ -47,3 +47,22 @@ export class PatchMinimalComponent implements OnInit {
   
   
 }
+
+
+export interface PatchMinimalViewConfig {
+  hideLabels: boolean;
+  hideManufacturer: boolean;
+  hideDescription: boolean;
+  hideButtons: boolean;
+  hideHP: boolean;
+  hideDates: boolean;
+}
+
+export const defaultPatchMinimalViewConfig: PatchMinimalViewConfig = {
+  hideLabels:       false,
+  hideManufacturer: false,
+  hideDescription:  false,
+  hideButtons:      false,
+  hideHP:           false,
+  hideDates:        false
+};
