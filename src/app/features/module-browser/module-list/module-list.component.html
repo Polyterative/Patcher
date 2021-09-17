@@ -1,6 +1,8 @@
 <ng-container *ngIf="{
   patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async),
+  filteredData:(filteredData$|async),
   data:(data$|async)
+  
   } as bag"
 >
   
@@ -12,24 +14,31 @@
   
   
   <ng-template #data>
-    <flexbox-row-fast
-    >
-      <ng-container *ngFor="let item of bag.data">
-        <div>
-          <lib-hero-item-card>
-            <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
-                                [data]="item"
-                                [viewConfig]="viewConfig"
-            ></app-module-minimal>
-          </lib-hero-item-card>
-        </div>
-        <ng-template #fullData>
-          <app-module-composite [data]="item"
-                                [viewConfig]="viewConfig"
-          ></app-module-composite>
-        </ng-template>
-      </ng-container>
-    </flexbox-row-fast>
+    <div class="col gap1">
+      <div class="row gap1"
+           *ngIf="showSearch"
+      >
+        <app-local-data-filter></app-local-data-filter>
+      </div>
+      <flexbox-row-fast
+      >
+        <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data)">
+          <div>
+            <lib-hero-item-card>
+              <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
+                                  [data]="item"
+                                  [viewConfig]="viewConfig"
+              ></app-module-minimal>
+            </lib-hero-item-card>
+          </div>
+          <ng-template #fullData>
+            <app-module-composite [data]="item"
+                                  [viewConfig]="viewConfig"
+            ></app-module-composite>
+          </ng-template>
+        </ng-container>
+      </flexbox-row-fast>
+    </div>
   </ng-template>
 
 </ng-container>
