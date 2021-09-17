@@ -41,19 +41,13 @@
       <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
                      [pageSizeOptions]="[10,25,50]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
-  
+
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
       ></mat-paginator>
   
       <app-module-list [data$]="dataService.modulesList$"
-                       [viewConfig]="{
-                         hideManufacturer: true,
-                         hideDescription:  true,
-                         hideButtons:      true,
-                         hideHP:           true,
-                         hideDates:        true
-  }"
+                       [viewConfig]="viewConfig"
       ></app-module-list>
       <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
                                          [updateData$]="dataService.updateModulesList$"
