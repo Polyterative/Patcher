@@ -5,14 +5,11 @@ import {
   OnInit,
   ViewEncapsulation
 }                                  from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-}                                  from 'rxjs';
-import { takeUntil }               from 'rxjs/operators';
+import { BehaviorSubject }         from 'rxjs';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import { MinimalModule }           from 'src/app/models/models';
 import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 
 @Component({
   selector:        'app-user-modules',
@@ -21,27 +18,24 @@ import { ModuleMinimalViewConfig } from '../../../components/module-parts/module
   encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserModulesComponent implements OnInit {
+export class UserModulesComponent extends SubManager implements OnInit {
   data$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
   @Input() viewConfig: ModuleMinimalViewConfig;
   
   constructor(
     public backend: SupabaseService
   ) {
-    this.backend.get.userModules()
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(x => this.data$.next(x));
+    super();
+    
+    this.manageSub(
+      this.backend.get.userModules()
+          .pipe()
+          .subscribe(x => this.data$.next(x))
+    );
   }
   
   ngOnInit(): void {
   
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
-  }
 }

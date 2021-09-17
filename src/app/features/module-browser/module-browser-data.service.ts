@@ -65,7 +65,6 @@ export class ModuleBrowserDataService implements OnDestroy {
       flex:    '6rem',
       control: new FormControl(''),
       type:    FormTypes.TEXT
-      
     },
     order:         {
       label:    'order',

@@ -8,6 +8,7 @@
     >
       <app-patch-list fxFlex="grow"
                       [data$]="data$"
+                      [showSearch]="true"
                       *ngIf="(data$|async).length>0 else noData"
       ></app-patch-list>
       
