@@ -27,17 +27,18 @@ import { EmptyStateModule }                  from 'src/app/shared-interproject/c
 import { MatFormEntityModule }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }            from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent }          from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { BrandPrimaryButtonModule }          from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { FlexboxRowFastModule }              from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule }             from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule }                from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule }          from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }                  from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }               from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }                from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateUranusRoutes }              from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
-import { CommentsModule }                    from '../../components/shared-atoms/comments/comments.module';
+import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { FlexboxRowFastModule }     from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroItemCardModule }       from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
+import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }         from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }      from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }       from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }     from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { CommentsModule }           from '../../components/shared-atoms/comments/comments.module';
+import { LocalDataFilterModule }    from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
 
 const parentPrefix = 'patches';
 
@@ -110,7 +111,8 @@ const parentPrefix = 'patches';
     WidthLimiterModule,
     HeroItemCardModule,
     EmptyStateModule,
-    CommentsModule
+    CommentsModule,
+    LocalDataFilterModule
   ]
 })
 export class PatchBrowserModule {}
