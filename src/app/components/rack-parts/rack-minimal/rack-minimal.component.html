@@ -15,6 +15,7 @@
            fxLayout="row"
            fxLayoutGap="1rem"
            fxLayoutAlign="end"
+           *ngIf="!viewConfig.hideHP"
       >
         <mat-card-subtitle
         >{{data.hp}} HP - {{data.rows}} rows
@@ -22,7 +23,9 @@
       </div>
     </div>
   </div>
-  <app-timestamps-relative [data]="data"></app-timestamps-relative>
+  <app-timestamps-relative [data]="data"
+                           *ngIf="!viewConfig.hideDates"
+  ></app-timestamps-relative>
   <ng-content></ng-content>
   <mat-divider [inset]="true"
                style="margin-top:.5rem"
@@ -30,6 +33,7 @@
   <div class="row opacizeOnHover"
        fxLayoutGap="2rem"
        fxLayoutGap.xs="0rem"
+       *ngIf="!viewConfig.hideButtons"
   >
     <div fxFlex="grow"></div>
     <a mat-icon-button
