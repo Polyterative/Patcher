@@ -1,11 +1,12 @@
 name: Audit
 
+# Only trigger, when the build workflow succeeded
 on:
-  push:
-    branches:
-      - "!*"
-    tags:
-      - "v*"
+  workflow_run:
+    workflows: [ "Build and deploy" ]
+    types:
+      - completed
+
 
   # Run workflow manually
   workflow_dispatch:
