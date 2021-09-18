@@ -13,7 +13,6 @@ on:
 
 jobs:
   audit:
-    needs: Build and deploy
     runs-on: ubuntu-latest
     steps:
       - name: Audit live URL
