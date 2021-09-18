@@ -17,7 +17,7 @@ jobs:
       - name: Audit live URL
         uses: jakejarvis/lighthouse-action@master
         with:
-          url: 'https://patchers.xyz/'
+          url: 'https://patcher.xyz/'
       - name: Upload results as an artifact
         uses: actions/upload-artifact@master
         with:
