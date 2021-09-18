@@ -5,7 +5,7 @@ on:
   workflow_run:
     workflows: [ "Build and deploy" ]
     types:
-      - completed
+      - success
 
 
   # Run workflow manually
