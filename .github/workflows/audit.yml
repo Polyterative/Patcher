@@ -1,0 +1,25 @@
+name: Audit
+
+on:
+  push:
+    branches:
+      - "!*"
+    tags:
+      - "v*"
+
+  # Run workflow manually
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit live URL
+        uses: jakejarvis/lighthouse-action@master
+        with:
+          url: 'https://patchers.xyz/'
+      - name: Upload results as an artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: report
+          path: './report'
