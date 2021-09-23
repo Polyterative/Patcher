@@ -61,6 +61,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 label: module.name
               })));
             
+              this.links$.next(patchConnections.map(patch => ({
+                source: patch.a.module.id.toString(),
+                target: patch.b.module.id.toString()
+              })));
+            
               console.log(modulesList);
             })
           ));
@@ -72,7 +77,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
     patchConnections.forEach(connection => {
       const addIfNotPresent = (module: MinimalModule): void => {
-        if (!(modulesList.some(x => x.id === module.id))) {modulesList.push(module); }
+        let isPresent: boolean = modulesList.some(x => x.id === module.id);
+        if (!isPresent) {modulesList.push(module); }
       };
       
       addIfNotPresent(connection.a.module);
