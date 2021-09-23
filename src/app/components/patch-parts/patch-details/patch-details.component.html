@@ -10,7 +10,7 @@
                                         [loadingLines]="5"
     >
     </lib-auto-content-loading-indicator>
-
+  
   </div>
   
   <ng-template #noData>
@@ -45,7 +45,6 @@
               ></mat-divider>
             </ng-container>
           </div>
-  
           <!--          <cdk-virtual-scroll-viewport *ngIf="bag.connections.length>8"-->
           <!--                                       autosize-->
           <!--                                       style="height: 50rem; overflow: auto;"-->
@@ -59,7 +58,17 @@
           <!--              </div>-->
           <!--            </div>-->
           <!--          </cdk-virtual-scroll-viewport>-->
-
+        </mat-card>
+      </lib-hero-content-card>
+      <lib-hero-content-card [titleNormal]="'Connections graph'"
+      >
+        <mat-card>
+          <div class="col gap1 "
+               style="max-height: 56rem; overflow-y: auto;"
+          >
+            <app-patch-graph></app-patch-graph>
+          </div>
+        
         </mat-card>
       </lib-hero-content-card>
     </ng-container>

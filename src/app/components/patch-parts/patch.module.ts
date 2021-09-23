@@ -32,6 +32,8 @@ import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/c
 import { ConfirmDialogModule }               from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
 import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { LibGraphModule }                    from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
+import { PatchGraphComponent }               from './patch-graph/patch-graph.component';
 
 
 @NgModule({
@@ -39,15 +41,17 @@ import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/com
     PatchEditorComponent,
     PatchMinimalComponent,
     PatchCreatorComponent,
-    PatchDetailsComponent
+    PatchDetailsComponent,
+    PatchGraphComponent
   ],
   exports:      [
     PatchMinimalComponent,
     PatchEditorComponent,
-    PatchDetailsComponent
+    PatchDetailsComponent,
+    PatchGraphComponent
   ],
   providers:    [PatchDetailDataService],
-  imports:      [
+  imports: [
     CommonModule,
     ConfirmDialogModule,
     TimeagoModule.forChild(),
@@ -75,7 +79,8 @@ import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/com
     AutoContentLoadingIndicatorModule,
     ScrollingModule,
     ExperimentalScrollingModule,
-    AutoUpdateLoadingIndicatorModule
+    AutoUpdateLoadingIndicatorModule,
+    LibGraphModule
   ]
 })
 export class PatchModule {}
