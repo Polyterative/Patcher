@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnInit
 }                  from '@angular/core';
 import {
@@ -12,91 +13,90 @@ import {
 import { Subject } from 'rxjs';
 
 @Component({
-  selector:        'app-patch-graph',
-  templateUrl:     './patch-graph.component.html',
-  styleUrls:       ['./patch-graph.component.scss'],
+  selector:        'lib-graph',
+  templateUrl:     './graph.component.html',
+  styleUrls:       ['./graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PatchGraphComponent implements OnInit {
+export class GraphComponent implements OnInit {
   
-  nodes: Node[] = [
-    {
-      id:    'first',
-      label: 'A'
-    },
-    {
-      id:    'second',
-      label: 'B'
-    },
-    {
-      id:    'c1',
-      label: 'C1'
-    },
-    {
-      id:    'c2',
-      label: 'C2'
-    }
-  ];
+  @Input() nodes: Node[] = [];
+  // {
+  //   id:    'first',
+  //   label: 'A'
+  // },
+  // {
+  //   id:    'second',
+  //   label: 'B'
+  // },
+  // {
+  //   id:    'c1',
+  //   label: 'C1'
+  // },
+  // {
+  //   id:    'c2',
+  //   label: 'C2'
+  // }
   
-  clusters: ClusterNode[] = [
-    {
-      id:           'third',
-      label:        'C',
-      childNodeIds: [
-        'c1',
-        'c2'
-      ]
-    }
-  ];
+  // clusters: ClusterNode[] = [
+  //   {
+  //     id:           'third',
+  //     label:        'C',
+  //     childNodeIds: [
+  //       'c1',
+  //       'c2'
+  //     ]
+  //   }
+  // ];
   
-  links: Edge[] = [
-    {
-      id:     'a',
-      source: 'first',
-      target: 'second',
-      label:  'is parent of'
-    },
-    {
-      id:     'b',
-      source: 'first',
-      target: 'c1',
-      label:  'custom label'
-    },
-    {
-      id:     'c',
-      source: 'first',
-      target: 'c1',
-      label:  'custom label'
-    },
-    {
-      id:     'd',
-      source: 'first',
-      target: 'c2',
-      label:  'custom label'
-    }
-  ];
+  @Input() links: Edge[] = [];
+  // {
+  //   id:     'a',
+  //   source: 'first',
+  //   target: 'second',
+  //   label:  'is parent of'
+  // },
+  //   {
+  //     id:     'b',
+  //     source: 'first',
+  //     target: 'c1',
+  //     label:  'custom label'
+  //   },
+  //   {
+  //     id:     'c',
+  //     source: 'first',
+  //     target: 'c1',
+  //     label:  'custom label'
+  //   },
+  //   {
+  //     id:     'd',
+  //     source: 'first',
+  //     target: 'c2',
+  //     label:  'custom label'
+  //   }
+  // ];
   
   layout: String | Layout = 'dagreCluster';
-  layouts: any[] = [
-    {
-      label: 'Dagre',
-      value: 'dagre'
-    },
-    {
-      label:       'Dagre Cluster',
-      value:       'dagreCluster',
-      isClustered: true
-    },
-    {
-      label:       'Cola Force Directed',
-      value:       'colaForceDirected',
-      isClustered: true
-    },
-    {
-      label: 'D3 Force Directed',
-      value: 'd3ForceDirected'
-    }
-  ];
+  // layouts: any[] = [
+  //   {
+  //     label: 'Dagre',
+  //     value: 'dagre'
+  //   },
+  //   {
+  //     label:       'Dagre Cluster',
+  //     value:       'dagreCluster',
+  //     isClustered: true
+  //   },
+  //   {
+  //     label:       'Cola Force Directed',
+  //     value:       'colaForceDirected',
+  //     isClustered: true
+  //   },
+  //   {
+  //     label: 'D3 Force Directed',
+  //     value: 'd3ForceDirected'
+  //   }
+  // ];
   
   // line interpolation
   curveType = 'Bundle';
