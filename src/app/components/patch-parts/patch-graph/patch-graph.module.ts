@@ -1,5 +1,6 @@
 import { NgModule }            from '@angular/core';
 import { CommonModule }        from '@angular/common';
+import { FlexLayoutModule }    from '@angular/flex-layout';
 import { NgxGraphModule }      from '@swimlane/ngx-graph';
 import { PatchGraphComponent } from './patch-graph/patch-graph.component';
 
@@ -11,7 +12,8 @@ import { PatchGraphComponent } from './patch-graph/patch-graph.component';
   ],
   imports: [
     CommonModule,
-    NgxGraphModule
+    NgxGraphModule,
+    FlexLayoutModule
   ],
   exports: [
     PatchGraphComponent

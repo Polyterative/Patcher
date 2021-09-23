@@ -9,6 +9,7 @@ import { RouterModule }               from '@angular/router';
 import { LuxonModule }                from 'luxon-angular';
 import { UrlCreatorService }          from 'src/app/features/backend/url-creator.service';
 import { environment }                from 'src/environments/environment';
+import { PatchGraphModule }           from '../../components/patch-parts/patch-graph/patch-graph.module';
 import { BrandPrimaryButtonModule }   from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { AdminGuardService }          from './admin-guard.service';
 import { AdminPanelRootComponent }    from './admin-panel-root/admin-panel-root.component';
@@ -42,7 +43,8 @@ import { SupabaseService }            from './supabase.service';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAnalyticsModule,
     FlexLayoutModule,
-    BrandPrimaryButtonModule
+    BrandPrimaryButtonModule,
+    PatchGraphModule
   ],
   exports:      [
     AdminPanelRootComponent
