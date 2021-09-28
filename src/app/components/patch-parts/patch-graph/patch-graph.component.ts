@@ -32,7 +32,7 @@ import { PatchDetailDataService }   from '../patch-detail-data.service';
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
   
-  modulesAsNodes$: BehaviorSubject<Node[]> = new BehaviorSubject([]);
+  modulesAsNodes$: BehaviorSubject<ClusterNode[]> = new BehaviorSubject([]);
   links$: BehaviorSubject<Edge[]> = new BehaviorSubject([]);
   
   constructor(
@@ -54,16 +54,27 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         // )
         // )
           .subscribe((patchConnections => {
-              const modulesList = this.extractUnique(patchConnections);
             
-              this.modulesAsNodes$.next(modulesList.map(module => ({
-                id:    module.id.toString(),
-                label: module.name
-              })));
+              let clusters: ClusterNode[] = [];
+            
+              const modulesList = this.extractModules(patchConnections);
+            
+              modulesList.forEach(module => {
+              
+                clusters.push({
+                  id:    module.id.toString(),
+                  label: module.name,
+                  
+                });
+              
+              });
+            
+            
+              this.modulesAsNodes$.next(clusters);
             
               this.links$.next(patchConnections.map(patch => ({
-                source: patch.a.module.id.toString(),
-                target: patch.b.module.id.toString()
+                source: patch.a.name.toString(),
+                target: patch.b.name.toString()
               })));
             
               console.log(modulesList);
@@ -72,7 +83,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
   }
   
-  private extractUnique(patchConnections: PatchConnection[]): MinimalModule[] {
+  private extractModules(patchConnections: PatchConnection[]): MinimalModule[] {
     const modulesList: MinimalModule[] = [];
     
     patchConnections.forEach(connection => {
