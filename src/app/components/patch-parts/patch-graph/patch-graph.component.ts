@@ -55,7 +55,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         // )
           .subscribe((patchConnections => {
             
-              let clusters: ClusterNode[] = [];
+              const clusters: ClusterNode[] = [];
             
               const modulesList = this.extractModules(patchConnections);
             
@@ -63,12 +63,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
               
                 clusters.push({
                   id:    module.id.toString(),
-                  label: module.name,
+                  label: module.name
                   
                 });
               
               });
-            
             
               this.modulesAsNodes$.next(clusters);
             
@@ -88,7 +87,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
     patchConnections.forEach(connection => {
       const addIfNotPresent = (module: MinimalModule): void => {
-        let isPresent: boolean = modulesList.some(x => x.id === module.id);
+        const isPresent: boolean = modulesList.some(x => x.id === module.id);
         if (!isPresent) {modulesList.push(module); }
       };
       
