@@ -44,7 +44,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   ngOnInit(): void {
     this.manageSub(
-      this.patchDetailDataService.patchesConnections$
+      this.patchDetailDataService.patchConnections$
           .pipe(tap(x => this.modulesAsNodes$.next([])))
           .pipe(tap(x => this.links$.next([])))
           .pipe(filter(data => !!data))
@@ -57,7 +57,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             
               const clusters: ClusterNode[] = [];
             
-              const modulesList = this.extractModules(patchConnections);
+              const modulesList: MinimalModule[] = this.extractModules(patchConnections);
             
               modulesList.forEach(module => {
               
@@ -82,7 +82,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
   }
   
-  private extractModules(patchConnections: PatchConnection[]): MinimalModule[] {
+  private extractModules = (patchConnections: PatchConnection[]): MinimalModule[] => {
     const modulesList: MinimalModule[] = [];
     
     patchConnections.forEach(connection => {
@@ -97,5 +97,5 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     });
     
     return modulesList;
-  }
+  };
 }
