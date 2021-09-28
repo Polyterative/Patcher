@@ -20,7 +20,7 @@ import { Subject } from 'rxjs';
 })
 export class GraphComponent implements OnInit {
   
-  @Input() nodes: Node[] = [];
+  @Input() nodes: ClusterNode[] = [];
   // {
   //   id:    'first',
   //   label: 'A'
