@@ -47,7 +47,7 @@ export class PatchDetailDataService implements OnDestroy {
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
   patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchesConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
   editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
   removePatchFromCollection$ = new Subject<number>();
   //
@@ -101,7 +101,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.updateSinglePatchData$
         .pipe(
           tap(x => this.singlePatchData$.next(undefined)),
-          tap(x => this.patchesConnections$.next(null)),
+          tap(x => this.patchConnections$.next(null)),
           tap(x => this.editorConnections$.next(null)),
           switchMap(x => this.backend.get.patchWithId(x)),
           takeUntil(this.destroyEvent$)
@@ -158,7 +158,7 @@ export class PatchDetailDataService implements OnDestroy {
           switchMap(x => this.backend.get.patchConnections(x.id)),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(data => this.patchesConnections$.next(data));
+        .subscribe(data => this.patchConnections$.next(data));
   
     this.singlePatchData$
         .pipe(
@@ -245,7 +245,7 @@ export class PatchDetailDataService implements OnDestroy {
   
         });
   
-    this.patchesConnections$
+    this.patchConnections$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.editorConnections$.next(x));
     
