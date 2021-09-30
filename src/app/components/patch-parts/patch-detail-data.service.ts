@@ -30,11 +30,9 @@ import {
 }                                from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
-import {
-  CVwithModule,
-  Patch,
-  PatchConnection
-}                                from '../../models/models';
+import { PatchConnection }       from '../../models/connection';
+import { CVwithModule } from '../../models/cv';
+import { Patch }        from '../../models/patch';
 
 export interface CVConnectionEntity {
   cv: CVwithModule;

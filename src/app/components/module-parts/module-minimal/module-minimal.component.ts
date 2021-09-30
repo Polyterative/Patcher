@@ -13,7 +13,7 @@ import {
   takeUntil
 }                                  from 'rxjs/operators';
 import { UserManagementService }   from 'src/app/features/backbone/login/user-management.service';
-import { MinimalModule }           from 'src/app/models/models';
+import { MinimalModule }           from '../../../models/module';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({

@@ -24,11 +24,9 @@ import {
   withLatestFrom
 }                                  from 'rxjs/operators';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
-import {
-  CV,
-  DbModule
-}                                  from 'src/app/models/models';
 import { FormTypes }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { CV }                      from '../../../models/cv';
+import { DbModule }                from '../../../models/module';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 interface FormCV {
