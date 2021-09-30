@@ -23,7 +23,7 @@ import {
 import {
   DbModule,
   MinimalModule
-}                                from '../../models/models';
+}                                from '../../models/module';
 import {
   FormTypes,
   getCleanedValueId

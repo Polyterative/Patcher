@@ -17,9 +17,9 @@ import {
   switchMap,
   takeUntil,
   withLatestFrom
-}                                from 'rxjs/operators';
-import { Rack }                  from '../../models/models';
-import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                    from 'rxjs/operators';
+import { Rack }      from '../../models/rack';
+import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 

@@ -17,7 +17,7 @@ import {
   PatchCreatorInModel
 }                          from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { Patch }           from 'src/app/models/models';
+import { Patch }           from '../../../models/patch';
 
 @Component({
   selector:        'app-user-patches',

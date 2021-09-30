@@ -16,11 +16,9 @@ import {
   withLatestFrom
 }                                   from 'rxjs/operators';
 import { ModuleBrowserDataService } from '../../../features/module-browser/module-browser-data.service';
-import {
-  MinimalModule,
-  Patch,
-  PatchConnection
-}                                   from '../../../models/models';
+import { PatchConnection }          from '../../../models/connection';
+import { MinimalModule }            from '../../../models/module';
+import { Patch }                    from '../../../models/patch';
 import { SubManager }               from '../../../shared-interproject/directives/subscription-manager';
 import { PatchDetailDataService }   from '../patch-detail-data.service';
 

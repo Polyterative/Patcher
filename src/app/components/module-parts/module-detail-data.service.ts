@@ -19,8 +19,8 @@ import {
   RackModuleAdderInModel
 }                                from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService }       from '../../features/backend/supabase.service';
-import { DbModule }              from '../../models/models';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { DbModule }        from '../../models/module';
 
 @Injectable()
 export class ModuleDetailDataService {

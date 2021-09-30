@@ -8,7 +8,7 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 }                   from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { DbModule } from '../../../models/models';
+import { DbModule } from '../../../models/module';
 
 @Component({
   selector:        'app-module-composite',

@@ -13,8 +13,8 @@ import {
   tap
 }                                from 'rxjs/operators';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService }       from '../../features/backend/supabase.service';
-import { Rack }                  from '../../models/models';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { Rack }            from '../../models/rack';
 
 @Injectable()
 export class RackDetailDataService {

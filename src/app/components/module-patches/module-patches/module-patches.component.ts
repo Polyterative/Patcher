@@ -5,7 +5,7 @@ import {
   OnInit
 }                       from '@angular/core';
 import { Observable }   from 'rxjs';
-import { PatchMinimal } from '../../../models/models';
+import { PatchMinimal } from '../../../models/patch';
 
 @Component({
   selector:        'app-module-patches',
