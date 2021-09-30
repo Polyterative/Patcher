@@ -1,12 +1,12 @@
-import { CV } from './cv';
+import { CV }     from './cv';
 import {
   Manufacturer,
   MinimalManufacturer
-}             from './manufacturer';
+}                 from './manufacturer';
 import {
-  Switch,
   Timestamped
-}             from './models';
+}                 from './models';
+import { Switch } from './switch';
 
 export interface Module {
   name: string;
