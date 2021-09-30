@@ -21,5 +21,4 @@ export class CommentsRootComponent {
     public appState: AppStateService
   ) { }
   
-  
 }
