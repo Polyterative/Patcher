@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                     from '@angular/core';
-import { PublicUser } from 'src/app/models/models';
+import { PublicUser } from '../../../models/user';
 
 @Component({
   selector:        'app-entity-author',

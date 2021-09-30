@@ -5,8 +5,8 @@ import {
   OnInit
 }                                 from '@angular/core';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { SupabaseService }        from 'src/app/features/backend/supabase.service';
-import { Patch }                  from 'src/app/models/models';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { Patch }           from '../../../models/patch';
 
 @Component({
   selector:        'app-patch-details',

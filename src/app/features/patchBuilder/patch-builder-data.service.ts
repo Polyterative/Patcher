@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-}                     from 'rxjs';
-import { Patch }      from '../../models/models';
+}                from 'rxjs';
+import { Patch } from '../../models/patch';
 
 @Injectable()
 export class PatchBuilderDataService {
@@ -41,7 +41,7 @@ export class PatchBuilderDataService {
       //     );
     }
     
-    randomIntFromInterval(max, min = 0) { // min and max included 
+    randomIntFromInterval(max, min = 0) { // min and max included
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
     

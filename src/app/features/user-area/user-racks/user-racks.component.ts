@@ -17,7 +17,7 @@ import {
   RackCreatorInModel
 }                          from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { Rack }            from 'src/app/models/models';
+import { Rack }            from '../../../models/rack';
 
 @Component({
   selector:        'app-user-racks',

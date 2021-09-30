@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }               from '@angular/core';
-import { Rack } from 'src/app/models/models';
+import { Rack } from '../../../models/rack';
 
 @Component({
   selector:        'app-rack-composite',

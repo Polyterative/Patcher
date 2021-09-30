@@ -7,10 +7,8 @@ import {
   BehaviorSubject,
   Subject
 }                          from 'rxjs';
-import {
-  CV,
-  DbModule
-}                          from '../../models/models';
+import { CV }              from '../../models/cv';
+import { DbModule }        from '../../models/module';
 import { SupabaseService } from '../backend/supabase.service';
 
 @Component({
@@ -38,7 +36,7 @@ export class PatchBuilderRootComponent implements OnInit {
     //     .pipe(
     //       withLatestFrom(this.outClick$, this.connections$))
     //     .subscribe(([inD, outD, connections]) => {
-    //  
+    //
     //       this.connections$.next([
     //         ...connections,
     //         {
@@ -52,7 +50,7 @@ export class PatchBuilderRootComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    
+  
   }
   
 }
