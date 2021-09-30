@@ -9,15 +9,24 @@ import {
   Layout,
   Node
 }                                   from '@swimlane/ngx-graph';
-import { BehaviorSubject }          from 'rxjs';
+import {
+  BehaviorSubject,
+  forkJoin
+}                                   from 'rxjs';
 import {
   filter,
+  map,
+  switchMap,
   tap,
   withLatestFrom
 }                                   from 'rxjs/operators';
+import { SupabaseService }          from 'src/app/features/backend/supabase.service';
 import { ModuleBrowserDataService } from '../../../features/module-browser/module-browser-data.service';
 import { PatchConnection }          from '../../../models/connection';
-import { MinimalModule }            from '../../../models/module';
+import {
+  DbModule,
+  MinimalModule
+}                                   from '../../../models/module';
 import { Patch }                    from '../../../models/patch';
 import { SubManager }               from '../../../shared-interproject/directives/subscription-manager';
 import { PatchDetailDataService }   from '../patch-detail-data.service';
@@ -34,7 +43,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   links$: BehaviorSubject<Edge[]> = new BehaviorSubject([]);
   
   constructor(
-    public patchDetailDataService: PatchDetailDataService
+    public patchDetailDataService: PatchDetailDataService,
+    public backend: SupabaseService
     // public userModulesService: ModuleBrowserDataService
   ) {
     super();
@@ -43,39 +53,63 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   ngOnInit(): void {
     this.manageSub(
       this.patchDetailDataService.patchConnections$
-          .pipe(tap(x => this.modulesAsNodes$.next([])))
-          .pipe(tap(x => this.links$.next([])))
-          .pipe(filter(data => !!data))
+          .pipe(
+            tap(x => this.modulesAsNodes$.next([])),
+            tap(x => this.links$.next([])),
+            filter(data => !!data),
+            map(patchConnections => this.extractModules(patchConnections)),
+            map(x => x.map(module => this.backend.get.moduleWithId(module.id)
+                                         .pipe(map(m => m.data)))),
+            switchMap(forkJoin),
+            withLatestFrom(this.patchDetailDataService.patchConnections$)
+          )
         // .pipe(
         //   withLatestFrom(
         // this.userModulesService.userModulesList$
         // )
         // )
-          .subscribe((patchConnections => {
-            
-              const clusters: ClusterNode[] = [];
-            
-              const modulesList: MinimalModule[] = this.extractModules(patchConnections);
-            
-              modulesList.forEach(module => {
-              
+          .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
+  
+            let clusters: ClusterNode[] = [];
+  
+            modules
+              .forEach(module => {
+      
+                const moduleId: string = module.id.toString();
+      
+                const outs: ClusterNode[] = module.outs.map(x => ({
+                  id:    moduleId + x.id,
+                  label: x.name
+                }));
+      
+                const ins = module.ins.map(x => ({
+                  id:    moduleId + x.id,
+                  label: x.name
+                }));
+      
                 clusters.push({
-                  id:    module.id.toString(),
-                  label: module.name
-                  
+                  id:           moduleId,
+                  label:        module.name,
+                  childNodeIds: [
+                    ...outs.map(x => x.id),
+                    ...ins.map(x => x.id)
+                  ]
                 });
-              
+  
+                clusters = clusters.concat(outs);
+                clusters = clusters.concat(ins);
+  
               });
             
-              this.modulesAsNodes$.next(clusters);
-            
-              this.links$.next(patchConnections.map(patch => ({
-                source: patch.a.name.toString(),
-                target: patch.b.name.toString()
+            this.modulesAsNodes$.next(clusters);
+    
+            this.links$.next(connections.map(patch => ({
+                source: patch.a.module.id + patch.a.id.toString(),
+                target: patch.b.module.id + patch.b.id.toString()
               })));
-            
-              console.log(modulesList);
-            })
+    
+            console.log(modules);
+            }
           ));
     
   }
