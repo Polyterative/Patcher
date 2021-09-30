@@ -196,10 +196,9 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    moduleWithId:       (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
           .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
-          .range(from, to)
           .filter('id', 'eq', id)
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
