@@ -7,8 +7,8 @@ import {
 }                                  from '@angular/core';
 import { BehaviorSubject }         from 'rxjs';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
-import { MinimalModule }           from 'src/app/models/models';
 import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { MinimalModule }           from '../../../models/module';
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 
 @Component({

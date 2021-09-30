@@ -11,10 +11,8 @@ import {
   takeUntil
 }                                 from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import {
-  CV,
-  DbModule
-}                                 from 'src/app/models/models';
+import { CV }                     from '../../../models/cv';
+import { DbModule }               from '../../../models/module';
 
 @Component({
   selector:        'app-module-cvs',

@@ -24,9 +24,9 @@ import {
   takeUntil
 }                          from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule }        from 'src/app/models/models';
 import { FormTypes }       from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { DbModule }        from '../../../models/module';
 
 export interface RackModuleAdderOutModel {
 }

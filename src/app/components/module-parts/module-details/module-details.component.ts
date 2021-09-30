@@ -5,7 +5,7 @@ import {
   OnInit
 }                          from '@angular/core';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule }        from 'src/app/models/models';
+import { DbModule }        from '../../../models/module';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig

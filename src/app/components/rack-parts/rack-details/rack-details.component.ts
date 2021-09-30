@@ -11,10 +11,8 @@ import {
 }                          from 'rxjs';
 import { takeUntil }       from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import {
-  DbModule,
-  RackMinimal
-}                          from 'src/app/models/models';
+import { DbModule }        from '../../../models/module';
+import { RackMinimal }     from '../../../models/rack';
 
 @Component({
   selector:        'app-rack-details',

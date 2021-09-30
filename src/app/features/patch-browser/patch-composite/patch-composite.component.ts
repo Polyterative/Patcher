@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                          from '@angular/core';
-import { Patch }           from 'src/app/models/models';
+import { Patch }           from '../../../models/patch';
 import { AppStateService } from '../../../shared-interproject/app-state.service';
 
 @Component({

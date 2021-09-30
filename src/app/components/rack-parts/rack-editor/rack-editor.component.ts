@@ -14,8 +14,8 @@ import {
 import { Subject }               from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SupabaseService }       from 'src/app/features/backend/supabase.service';
-import { Rack }                  from 'src/app/models/models';
 import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { Rack }                  from '../../../models/rack';
 
 interface FormCV {
   id: number,
@@ -83,7 +83,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
     //         this.formGroupA.addControl(`a${ i.toString() }`, a.a);
     //         this.formGroupA.addControl(`b${ i.toString() }`, a.b);
     //       });
-    //  
+    //
     //     });
     // this.addOUT$.pipe(takeUntil(this.destroyEvent$))
     //     .subscribe(([name, min, max, id]) => {
@@ -99,7 +99,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
     //         this.formGroupB.addControl(`a${ i.toString() }`, a.a);
     //         this.formGroupB.addControl(`b${ i.toString() }`, a.b);
     //       });
-    //  
+    //
     //     });
     //
     // this.save$.pipe(
@@ -163,7 +163,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
   //     max: formCV.b.value
   //     // isVOCT?: boolean;
   //   }));
-  //  
+  //
   //   return x;
   // }
   
