@@ -615,7 +615,7 @@ export class MatFormEntityComponent {
     return [
       ...options.map((option: ISelectable) => ({
         ...option,
-        options: [...option.options]
+        options: option.options?.slice()
       }))
     ];
   }
