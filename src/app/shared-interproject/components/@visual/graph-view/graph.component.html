@@ -4,6 +4,7 @@
            style="height: 800px; background-color:#ffffff"
            [links]="links"
            [nodes]="nodes"
+           [clusters]="clusters"
            [layout]="layout"
            [draggingEnabled]="draggingEnabled"
            [panningEnabled]="panningEnabled"
@@ -12,11 +13,11 @@
            [minZoomLevel]="minZoomLevel"
            [maxZoomLevel]="maxZoomLevel"
            [panOnZoom]="panOnZoom"
-           [autoZoom]="autoZoom"
-           [autoCenter]="autoCenter"
-           [update$]="update$"
-           [center$]="center$"
-           [zoomToFit$]="zoomToFit$"
+           [update$]="dataService.update$"
+           [center$]="dataService.center$"
+           [zoomToFit$]="dataService.zoomToFit$"
+           [autoZoom]="dataService.autoZoom$|async"
+           [autoCenter]="dataService.autoCenter$|async"
 >
   
   <ng-template #defsTemplate>
@@ -44,6 +45,10 @@
                 [attr.height]="cluster.dimension.height"
                 [attr.fill]="cluster.data.color"
       />
+      <svg:text alignment-baseline="central"
+                [attr.x]="10"
+                [attr.y]="20"
+      >{{cluster.label}}</svg:text>
     </svg:g>
   </ng-template>
   
