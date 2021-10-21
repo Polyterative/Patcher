@@ -3,14 +3,15 @@ import {
   Component,
   Input,
   OnInit
-}                  from '@angular/core';
+}                           from '@angular/core';
 import {
   ClusterNode,
   Edge,
   Layout,
   Node
-}                  from '@swimlane/ngx-graph';
-import { Subject } from 'rxjs';
+}                           from '@swimlane/ngx-graph';
+import { Subject }          from 'rxjs';
+import { GraphViewService } from './graph-view.service';
 
 @Component({
   selector:        'lib-graph',
@@ -20,7 +21,7 @@ import { Subject } from 'rxjs';
 })
 export class GraphComponent implements OnInit {
   
-  @Input() nodes: ClusterNode[] = [];
+  @Input() nodes: Node[] = [];
   // {
   //   id:    'first',
   //   label: 'A'
@@ -38,16 +39,16 @@ export class GraphComponent implements OnInit {
   //   label: 'C2'
   // }
   
-  // clusters: ClusterNode[] = [
-  //   {
-  //     id:           'third',
-  //     label:        'C',
-  //     childNodeIds: [
-  //       'c1',
-  //       'c2'
-  //     ]
-  //   }
-  // ];
+  @Input() clusters: ClusterNode[] = [
+    // {
+    //   id:           'third',
+    //   label:        'C',
+    //   childNodeIds: [
+    //     'c1',
+    //     'c2'
+    //   ]
+    // }
+  ];
   
   @Input() links: Edge[] = [];
   // {
@@ -76,27 +77,27 @@ export class GraphComponent implements OnInit {
   //   }
   // ];
   
-  layout: String | Layout = 'dagreCluster';
-  // layouts: any[] = [
-  //   {
-  //     label: 'Dagre',
-  //     value: 'dagre'
-  //   },
-  //   {
-  //     label:       'Dagre Cluster',
-  //     value:       'dagreCluster',
-  //     isClustered: true
-  //   },
-  //   {
-  //     label:       'Cola Force Directed',
-  //     value:       'colaForceDirected',
-  //     isClustered: true
-  //   },
-  //   {
-  //     label: 'D3 Force Directed',
-  //     value: 'd3ForceDirected'
-  //   }
-  // ];
+  layouts: any[] = [
+    {
+      label: 'Dagre',
+      value: 'dagre'
+    },
+    {
+      label:       'Dagre Cluster',
+      value:       'dagreCluster',
+      isClustered: true
+    },
+    {
+      label:       'Cola Force Directed',
+      value:       'colaForceDirected',
+      isClustered: true
+    },
+    {
+      label: 'D3 Force Directed',
+      value: 'd3ForceDirected'
+    }
+  ];
+  layout: String | Layout = this.layouts[1].value;
   
   // line interpolation
   curveType = 'Bundle';
@@ -122,14 +123,13 @@ export class GraphComponent implements OnInit {
   maxZoomLevel = 4;
   panOnZoom = true;
   
-  autoZoom = false;
-  autoCenter = false;
-  
-  update$: Subject<boolean> = new Subject();
-  center$: Subject<boolean> = new Subject();
-  zoomToFit$: Subject<boolean> = new Subject();
+  constructor(
+    public dataService: GraphViewService
+  ) {}
   
   ngOnInit() {
+  
+    
     // this.setInterpolationType(this.curveType);
   }
   
