@@ -13,10 +13,10 @@ import { takeUntil } from 'rxjs/operators';
 type LocalType = FormControl | FormGroup;
 
 @Pipe({
-  name: 'formlValid',
+  name: 'formValid',
   pure: false
 })
-export class FormlValidPipe implements PipeTransform {
+export class FormValidPipe implements PipeTransform {
   valid = false;
   subscribed = false;
   
