@@ -7,6 +7,8 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
+  OnInit,
   ViewEncapsulation
 }                                       from '@angular/core';
 import {
@@ -15,7 +17,6 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
-  ValidationErrors,
   ValidatorFn
 }                                       from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -39,11 +40,11 @@ import {
   tap,
   withLatestFrom
 }                                       from 'rxjs/operators';
+import { SubManager }                   from '../../../directives/subscription-manager';
 import {
   AppFormUtils,
   Strings
-}                                       from '../../../app-form-utils';
-import { SubManager }                   from '../../../directives/subscription-manager';
+}                                       from './app-form-utils';
 import {
   findOptionForId,
   flatOptionGroupToArray,
@@ -76,11 +77,38 @@ export interface IMatFormEntityConfig {
   encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MatFormEntityComponent extends SubManager {
+export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
+  
+  constructor(
+    private formBuilder: FormBuilder,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
+    super();
+  }
+  
+  @Input()
+  set disabled(value: boolean) {
+    // tslint:disable-next-line:switch-default
+    switch (value) {
+      case true:
+        this.control.disable();
+        if (this.ghostControl) {
+          this.ghostControl.disable();
+        }
+        break;
+      case false:
+        this.control.enable();
+        if (this.ghostControl) {
+          this.ghostControl.enable();
+        }
+        break;
+    }
+  }
   
   @Input()
   dataPack?: IMatFormEntityConfig;
   
+  // @ts-ignore
   invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
   errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
   /**
@@ -136,7 +164,7 @@ export class MatFormEntityComponent extends SubManager {
    * especially when using observables in template (|async)
    * Remember to add a starWith([])
    */
-  @Input() options$?: Observable<ISelectable[]>;
+  @Input() options$: Observable<ISelectable[]> = of([]);
   // @Input()
   optionsFiltered: BehaviorSubject<Array<ISelectable>> = new BehaviorSubject<Array<ISelectable>>([]);
   @Input() placeholder = '';
@@ -164,6 +192,8 @@ export class MatFormEntityComponent extends SubManager {
   
   private errorObjectNotInOptions = {[Strings.form.errorCode.custom.notInOptions]: true};
   
+  hidePassword = true;
+  
   ngOnDestroy(): void {
     this.control.setAsyncValidators([]);
   }
@@ -186,13 +216,6 @@ export class MatFormEntityComponent extends SubManager {
    * }
    */
   @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getErrors(x);
-  
-  constructor(
-    private formBuilder: FormBuilder,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {
-    super();
-  }
   
   /**
    * DO NOT STATICIZE, USED IN HTML
@@ -235,7 +258,6 @@ export class MatFormEntityComponent extends SubManager {
     
     const hostControl = this.control; // alias
     
-    // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
     switch (this.type) {
       case FormTypes.EMAIL:
         break;
@@ -256,14 +278,14 @@ export class MatFormEntityComponent extends SubManager {
                          }
                        })
           );
-          ;
+          
         }
         break;
       case FormTypes.SELECT:
         this.checkOptions();
         
         if (this.disableVoidSelection) {
-          this.safelyAddValidator((x: FormControl) => x.value === '' ? this.errorObjectNotInOptions : null);
+          this.safelyAddValidator((control) => control.value === '' ? this.errorObjectNotInOptions : null);
         }
         
         break;
@@ -271,7 +293,7 @@ export class MatFormEntityComponent extends SubManager {
         this.checkOptions();
         
         if (this.disableVoidSelection) {
-          this.safelyAddValidator(x => x.value === '' ? this.errorObjectNotInOptions : null);
+          this.safelyAddValidator(control => control.value === '' ? this.errorObjectNotInOptions : null);
         }
         
         break;
@@ -279,7 +301,10 @@ export class MatFormEntityComponent extends SubManager {
         this.checkOptions();
         
         this.manageSub(
-          merge(hostControl.valueChanges, this.options$)
+          merge(
+            hostControl.valueChanges,
+            this.options$
+          )
             .pipe(
               map(() => hostControl.value),
               debounceTime(200),
@@ -293,21 +318,37 @@ export class MatFormEntityComponent extends SubManager {
               if (input) {
                 if (isOption(input)) { // lib-injected object (good)
                   remainingOptions = allOptions.map((group, groupId) => {
-                    group.options = allOptions[groupId].options
-                                                       .map((x => x))
-                                                       .filter(opt =>
-                                                         this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
-                                                                                                                                       .includes(input.name.toLowerCase()));
+                    
+                    const groupOptions = allOptions[groupId].options;
+                    
+                    if (groupOptions) {
+                      group.options = groupOptions
+                        .map((x => x))
+                        .filter(opt =>
+                          this.autocompleteCaseSensitiveComparison
+                          ? opt.name.includes(input.name)
+                          : opt.name.toLowerCase()
+                               .includes(input.name.toLowerCase()));
+                    }
+                    
                     return group;
                   });
                 } else if (typeof input === 'string') { // usertext (invalid until obj)
                   
                   remainingOptions = allOptions.map((group, groupId) => {
-                    group.options = allOptions[groupId].options
-                                                       .map((x => x))
-                                                       .filter(opt =>
-                                                         this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                                                                  .includes(input.toLowerCase()));
+                    
+                    const groupOptions = allOptions[groupId].options;
+                    
+                    if (groupOptions) {
+                      group.options = groupOptions
+                        .map((x => x))
+                        .filter(opt =>
+                          this.autocompleteCaseSensitiveComparison
+                          ? opt.name.includes(input)
+                          : opt.name.toLowerCase()
+                               .includes(input.toLowerCase()));
+                    }
+                    
                     return group;
                   });
                   
@@ -332,7 +373,7 @@ export class MatFormEntityComponent extends SubManager {
         
         if (this.strictAutocomplete) {
           
-          const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
+          const myAsyncValidator = (control: AbstractControl) => {
             
             const input$ = of(control.value);
             
@@ -341,12 +382,12 @@ export class MatFormEntityComponent extends SubManager {
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
                     
-                    if (options.length == 0) {
+                    if (options.length === 0) {
                       return null;
                     }
                     
                     if (typeof input === 'string') {
-                      return this.autocompleteCanBeVoid && input == '' ? null : this.errorObjectNotInOptions;
+                      return this.autocompleteCanBeVoid && input === '' ? null : this.errorObjectNotInOptions;
                     }
                     
                     // flat opt groups
@@ -400,7 +441,7 @@ export class MatFormEntityComponent extends SubManager {
         
         if (this.strictAutocomplete) {
           
-          const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
+          const myAsyncValidator = (control: AbstractControl) => {
             
             const input$ = of(control.value);
             
@@ -409,12 +450,12 @@ export class MatFormEntityComponent extends SubManager {
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
                     
-                    if (options.length == 0) {
+                    if (options.length === 0) {
                       return null;
                     }
                     
                     if (typeof input === 'string') {
-                      return this.autocompleteCanBeVoid && input == '' ? null : this.errorObjectNotInOptions;
+                      return this.autocompleteCanBeVoid && input === '' ? null : this.errorObjectNotInOptions;
                     }
                     
                     const foundSome = options.some(y => (y.id === input.id));
@@ -470,7 +511,7 @@ export class MatFormEntityComponent extends SubManager {
         
         if (this.strictAutocomplete) {
           
-          const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
+          const myAsyncValidator = (control: AbstractControl) => {
             
             const input$ = of(control.value);
             
@@ -493,7 +534,7 @@ export class MatFormEntityComponent extends SubManager {
                       }
                     }
                     
-                    const isVoid = input.length == 0;
+                    const isVoid = input.length === 0;
                     const isVoidWhileCanBe = this.autocompleteCanBeVoid ? (isVoid) : false;
                     
                     // tslint:disable-next-line:no-null-keyword
@@ -514,7 +555,7 @@ export class MatFormEntityComponent extends SubManager {
   }
   
   compareFunctionStrictObject(o1: ISelectable, o2: ISelectable) {
-    return (o1.name == o2.name && o1.id == o2.id);
+    return (o1.name === o2.name && o1.id === o2.id);
   }
   
   addToMultiText($event: MatChipInputEvent): void {
@@ -571,25 +612,6 @@ export class MatFormEntityComponent extends SubManager {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
   
-  @Input()
-  set disabled(value: boolean) {
-    // tslint:disable-next-line:switch-default
-    switch (value) {
-      case true:
-        this.control.disable();
-        if (this.ghostControl) {
-          this.ghostControl.disable();
-        }
-        break;
-      case false:
-        this.control.enable();
-        if (this.ghostControl) {
-          this.ghostControl.enable();
-        }
-        break;
-    }
-  }
-  
   private safelyAddValidator(newValidator: ValidatorFn): void {
     const hostValidator: ValidatorFn | null = this.control.validator;
     
@@ -608,14 +630,13 @@ export class MatFormEntityComponent extends SubManager {
     ] : [newValidator]);
   }
   
-  hidePassword: boolean = true;
   // fixed this way because otherwise it caused immutability issues and object by reference passes
   // This is a quick way to make a deep copy of the array and content
   private getOptionsGroupedCopy(options: ISelectable[]): { name: string; options: ISelectable[]; disabled?: boolean; id: string }[] {
     return [
       ...options.map((option: ISelectable) => ({
         ...option,
-        options: [...option.options]
+        options: [...(option.options ? option.options : [])]
       }))
     ];
   }
@@ -626,7 +647,7 @@ export class MatFormEntityComponent extends SubManager {
     //   this.options
     // ]);
     
-    if (this.options$ == undefined) {
+    if (this.options$ === undefined) {
       console.error('Options is not observable! I\'m a selector, give me the options!');
       console.error(this.options$);
     }
