@@ -71,7 +71,7 @@ export interface IMatFormEntityConfig {
  * created: 03/03/2018
  */
 @Component({
-  selector:        ' lib-mat-form-entity',
+  selector:        'lib-mat-form-entity',
   templateUrl:     './mat-form-entity.component.html',
   styleUrls:       ['./mat-form-entity.component.scss'],
   encapsulation:   ViewEncapsulation.None,
