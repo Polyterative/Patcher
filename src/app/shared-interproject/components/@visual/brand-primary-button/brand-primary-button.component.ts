@@ -16,14 +16,14 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BrandPrimaryButtonComponent {
-  @Input() disabled: boolean = false;
-  @Input() error: boolean = false;
+  @Input() disabled = false;
+  @Input() error = false;
   @Input() theme: 'primary' | 'warning' | 'positive' | 'negative' | 'light' = 'primary';
-  @Output() click$ = new EventEmitter<void>();
+  @Output() readonly click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | any[] = undefined;
   
   doNothing() {
-    //do not delete this
+    // do not delete this
   }
 }
