@@ -6,7 +6,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   ViewEncapsulation
 }                                       from '@angular/core';
@@ -37,7 +36,6 @@ import {
   debounceTime,
   filter,
   map,
-  takeUntil,
   tap,
   withLatestFrom
 }                                       from 'rxjs/operators';
@@ -79,8 +77,6 @@ export interface IMatFormEntityConfig {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatFormEntityComponent extends SubManager {
-  
-  protected destroyEvent$: EventEmitter<void> = new EventEmitter();
   
   @Input()
   dataPack?: IMatFormEntityConfig;
@@ -224,8 +220,7 @@ export class MatFormEntityComponent extends SubManager {
       changes$
         .pipe(
           map(() => this.control.invalid),
-          tap(() => this.changeDetectorRef.detectChanges()),
-          takeUntil(this.destroyEvent$)
+          tap(() => this.changeDetectorRef.detectChanges())
         )
         .subscribe(data => this.invalid$.next(data))
     );
@@ -233,8 +228,7 @@ export class MatFormEntityComponent extends SubManager {
     this.manageSub(
       merge(changes$, this.options$ ? this.options$ : NEVER)
         .pipe(
-          map(_ => this.errorProvider(this.control)),
-          takeUntil(this.destroyEvent$)
+          map(_ => this.errorProvider(this.control))
         )
         .subscribe(errors => this.errors$.next(errors))
     );
@@ -252,8 +246,7 @@ export class MatFormEntityComponent extends SubManager {
           this.manageSub(
             hostControl.valueChanges
                        .pipe(
-                         filter(x => x.length > 0),
-                         takeUntil(this.destroyEvent$)
+                         filter(x => x.length > 0)
                        )
                        .subscribe(x => {
                          const result = this.textTransformFunction(x);
@@ -290,8 +283,7 @@ export class MatFormEntityComponent extends SubManager {
             .pipe(
               map(() => hostControl.value),
               debounceTime(200),
-              withLatestFrom(this.options$),
-              takeUntil(this.destroyEvent$)
+              withLatestFrom(this.options$)
             )
             .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
               
@@ -365,8 +357,7 @@ export class MatFormEntityComponent extends SubManager {
                     return foundSome ? null : this.errorObjectNotInOptions;
                     
                   }
-                ),
-                takeUntil(this.destroyEvent$)
+                )
               );
           };
           
@@ -382,8 +373,7 @@ export class MatFormEntityComponent extends SubManager {
             .pipe(
               map(() => hostControl.value),
               debounceTime(200),
-              withLatestFrom(this.options$),
-              takeUntil(this.destroyEvent$)
+              withLatestFrom(this.options$)
             )
             .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
               
@@ -432,8 +422,7 @@ export class MatFormEntityComponent extends SubManager {
                     // tslint:disable-next-line:no-null-keyword
                     return foundSome ? null : this.errorObjectNotInOptions;
                   }
-                ),
-                takeUntil(this.destroyEvent$)
+                )
               );
           };
           
@@ -453,7 +442,6 @@ export class MatFormEntityComponent extends SubManager {
         
         this.manageSub(
           hostControl.statusChanges
-                     .pipe(takeUntil(this.destroyEvent$))
                      .subscribe(() => {
                        hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
                      })
@@ -464,8 +452,7 @@ export class MatFormEntityComponent extends SubManager {
             .pipe(
               map(() => this.ghostControl.value),
               debounceTime(200),
-              withLatestFrom(this.options$),
-              takeUntil(this.destroyEvent$)
+              withLatestFrom(this.options$)
             )
             .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
               
@@ -513,8 +500,7 @@ export class MatFormEntityComponent extends SubManager {
                     return (foundAll) || (isVoidWhileCanBe) ? null : this.errorObjectNotInOptions;
                     
                   }
-                ),
-                takeUntil(this.destroyEvent$)
+                )
               );
           };
           
