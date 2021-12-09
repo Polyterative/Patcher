@@ -45,6 +45,7 @@ import {
   AppFormUtils,
   Strings
 }                                       from '../../../app-form-utils';
+import { SubManager }                   from '../../../directives/subscription-manager';
 import {
   findOptionForId,
   flatOptionGroupToArray,
@@ -77,7 +78,7 @@ export interface IMatFormEntityConfig {
   encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MatFormEntityComponent {
+export class MatFormEntityComponent extends SubManager {
   
   protected destroyEvent$: EventEmitter<void> = new EventEmitter();
   
@@ -169,9 +170,6 @@ export class MatFormEntityComponent {
   
   ngOnDestroy(): void {
     this.control.setAsyncValidators([]);
-    this.destroyEvent$.emit();
-    this.destroyEvent$.complete();
-    
   }
   
   /**
@@ -197,6 +195,7 @@ export class MatFormEntityComponent {
     private formBuilder: FormBuilder,
     private changeDetectorRef: ChangeDetectorRef
   ) {
+    super();
   }
   
   /**
@@ -219,23 +218,27 @@ export class MatFormEntityComponent {
         this.options$ = this.dataPack.options$;
       }
     }
-  
-    let changes$ = merge(this.control.statusChanges, this.control.valueChanges);
-    changes$
-      .pipe(
-        map(() => this.control.invalid),
-        tap(() => this.changeDetectorRef.detectChanges()),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(data => this.invalid$.next(data));
-  
-    merge(changes$, this.options$ ? this.options$ : NEVER)
-      .pipe(
-        map(_ => this.errorProvider(this.control)),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(errors => this.errors$.next(errors));
-  
+    
+    const changes$ = merge(this.control.statusChanges, this.control.valueChanges);
+    this.manageSub(
+      changes$
+        .pipe(
+          map(() => this.control.invalid),
+          tap(() => this.changeDetectorRef.detectChanges()),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(data => this.invalid$.next(data))
+    );
+    
+    this.manageSub(
+      merge(changes$, this.options$ ? this.options$ : NEVER)
+        .pipe(
+          map(_ => this.errorProvider(this.control)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(errors => this.errors$.next(errors))
+    );
+    
     const hostControl = this.control; // alias
     
     // noinspection JSMissingSwitchDefault,JSMissingSwitchBranches,JSMissingSwitchBranches
@@ -246,244 +249,255 @@ export class MatFormEntityComponent {
         break;
       case FormTypes.TEXT:
         if (this.textTransformFunction) {
-          hostControl.valueChanges
-                     .pipe(
-                       filter(x => x.length > 0),
-                       takeUntil(this.destroyEvent$)
-                     )
-                     .subscribe(x => {
-                       const result = this.textTransformFunction(x);
-  
-                       if (x !== result) { // prevent loop
-                         this.control.patchValue(result);
-                       }
-                     });
+          this.manageSub(
+            hostControl.valueChanges
+                       .pipe(
+                         filter(x => x.length > 0),
+                         takeUntil(this.destroyEvent$)
+                       )
+                       .subscribe(x => {
+                         const result = this.textTransformFunction(x);
+              
+                         if (x !== result) { // prevent loop
+                           this.control.patchValue(result);
+                         }
+                       })
+          );
+          ;
         }
         break;
       case FormTypes.SELECT:
         this.checkOptions();
-  
+        
         if (this.disableVoidSelection) {
           this.safelyAddValidator((x: FormControl) => x.value === '' ? this.errorObjectNotInOptions : null);
         }
-  
+        
         break;
       case FormTypes.MULTISELECT_GROUPED:
         this.checkOptions();
-  
+        
         if (this.disableVoidSelection) {
           this.safelyAddValidator(x => x.value === '' ? this.errorObjectNotInOptions : null);
         }
-  
+        
         break;
       case FormTypes.AUTOCOMPLETE_GROUPED:
         this.checkOptions();
-  
-        merge(hostControl.valueChanges, this.options$)
-          .pipe(
-            map(() => hostControl.value),
-            debounceTime(200),
-            withLatestFrom(this.options$),
-            takeUntil(this.destroyEvent$)
-          )
-          .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-  
-            const allOptions: Array<ISelectable> = this.getOptionsGroupedCopy(options);
-            let remainingOptions: ISelectable[] = [];
-  
-            if (input) {
-              if (isOption(input)) { // lib-injected object (good)
-                remainingOptions = allOptions.map((group, groupId) => {
-                  group.options = allOptions[groupId].options
-                                                     .map((x => x))
-                                                     .filter(opt =>
-                                                       this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
-                                                                                                                                     .includes(input.name.toLowerCase()));
-                  return group;
-                });
-              } else if (typeof input === 'string') { // usertext (invalid until obj)
-  
-                remainingOptions = allOptions.map((group, groupId) => {
-                  group.options = allOptions[groupId].options
-                                                     .map((x => x))
-                                                     .filter(opt =>
-                                                       this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                                                                .includes(input.toLowerCase()));
-                  return group;
-                });
-  
-                // in my original idea this piece of code replaced the inserted string with the found object
-                // but this causes some usage problems, so I decided to keep it simple and not apply this automatism
-                // let flattenedOptions: ISelectable[] = this.flatOptionGroupToArray(this.options);
-  
-                // let optionForInput: ISelectable | undefined = this.findOptionForName(input.toLowerCase()
-                //                                                                           .trim(),
-                //   flattenedOptions
-                // );
-                // if (optionForInput) {hostControl.patchValue(optionForInput);}
-              }
-    
-              // filter out void groups
-              remainingOptions = remainingOptions.filter(x => x.options && x.options.length > 0);
-            } else { remainingOptions = allOptions; }
-  
-            this.optionsFiltered.next(remainingOptions);
-          });
-  
+        
+        this.manageSub(
+          merge(hostControl.valueChanges, this.options$)
+            .pipe(
+              map(() => hostControl.value),
+              debounceTime(200),
+              withLatestFrom(this.options$),
+              takeUntil(this.destroyEvent$)
+            )
+            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
+              
+              const allOptions: Array<ISelectable> = this.getOptionsGroupedCopy(options);
+              let remainingOptions: ISelectable[] = [];
+              
+              if (input) {
+                if (isOption(input)) { // lib-injected object (good)
+                  remainingOptions = allOptions.map((group, groupId) => {
+                    group.options = allOptions[groupId].options
+                                                       .map((x => x))
+                                                       .filter(opt =>
+                                                         this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
+                                                                                                                                       .includes(input.name.toLowerCase()));
+                    return group;
+                  });
+                } else if (typeof input === 'string') { // usertext (invalid until obj)
+                  
+                  remainingOptions = allOptions.map((group, groupId) => {
+                    group.options = allOptions[groupId].options
+                                                       .map((x => x))
+                                                       .filter(opt =>
+                                                         this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
+                                                                                                                                  .includes(input.toLowerCase()));
+                    return group;
+                  });
+                  
+                  // in my original idea this piece of code replaced the inserted string with the found object
+                  // but this causes some usage problems, so I decided to keep it simple and not apply this automatism
+                  // let flattenedOptions: ISelectable[] = this.flatOptionGroupToArray(this.options);
+                  
+                  // let optionForInput: ISelectable | undefined = this.findOptionForName(input.toLowerCase()
+                  //                                                                           .trim(),
+                  //   flattenedOptions
+                  // );
+                  // if (optionForInput) {hostControl.patchValue(optionForInput);}
+                }
+                
+                // filter out void groups
+                remainingOptions = remainingOptions.filter(x => x.options && x.options.length > 0);
+              } else { remainingOptions = allOptions; }
+              
+              this.optionsFiltered.next(remainingOptions);
+            })
+        );
+        
         if (this.strictAutocomplete) {
-    
+          
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-      
+            
             const input$ = of(control.value);
-      
+            
             return input$// I would like to update even if options change in the future
               .pipe(
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
-    
+                    
                     if (options.length == 0) {
                       return null;
                     }
-    
+                    
                     if (typeof input === 'string') {
                       return this.autocompleteCanBeVoid && input == '' ? null : this.errorObjectNotInOptions;
                     }
-    
+                    
                     // flat opt groups
                     const allOptions = flatOptionGroupToArray(options);
                     const foundSome = allOptions.some(y => (y.id === input.id));
-    
+                    
                     // tslint:disable-next-line:no-null-keyword
                     return foundSome ? null : this.errorObjectNotInOptions;
-    
+                    
                   }
                 ),
                 takeUntil(this.destroyEvent$)
               );
           };
-    
+          
           this.safelyAddAsyncValidator(myAsyncValidator);
-    
+          
         }
-  
+        
         break;
       case FormTypes.AUTOCOMPLETE:
         this.checkOptions();
-        merge(hostControl.valueChanges, this.options$)
-          .pipe(
-            map(() => hostControl.value),
-            debounceTime(200),
-            withLatestFrom(this.options$),
-            takeUntil(this.destroyEvent$)
-          )
-          .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-  
-            const allOptions: Array<ISelectable> = options;
-            let remainingOptions: ISelectable[];
-  
-            if (isOption(input)) {
-              remainingOptions = allOptions
-                .map((x => x))
-                .filter(opt =>
-                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
-                                                                                                .includes(input.name.toLowerCase()));
-            } else if (typeof input === 'string') {
-              remainingOptions = options.filter(opt =>
-                this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                         .includes(input.toLowerCase()));
-    
-            } else {
-              remainingOptions = options;
-            }
-            this.optionsFiltered.next(remainingOptions);
-          });
-  
+        this.manageSub(
+          merge(hostControl.valueChanges, this.options$)
+            .pipe(
+              map(() => hostControl.value),
+              debounceTime(200),
+              withLatestFrom(this.options$),
+              takeUntil(this.destroyEvent$)
+            )
+            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
+              
+              const allOptions: Array<ISelectable> = options;
+              let remainingOptions: ISelectable[];
+              
+              if (isOption(input)) {
+                remainingOptions = allOptions
+                  .map((x => x))
+                  .filter(opt =>
+                    this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
+                                                                                                  .includes(input.name.toLowerCase()));
+              } else if (typeof input === 'string') {
+                remainingOptions = options.filter(opt =>
+                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
+                                                                                           .includes(input.toLowerCase()));
+                
+              } else {
+                remainingOptions = options;
+              }
+              this.optionsFiltered.next(remainingOptions);
+            })
+        );
+        
         if (this.strictAutocomplete) {
-    
+          
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-      
+            
             const input$ = of(control.value);
-      
+            
             return input$// I would like to update even if options change in the future
               .pipe(
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, ISelectable | string, Array<ISelectable>]) => {
-  
-                  if (options.length == 0) {
+                    
+                    if (options.length == 0) {
                       return null;
                     }
-  
-                  if (typeof input === 'string') {
+                    
+                    if (typeof input === 'string') {
                       return this.autocompleteCanBeVoid && input == '' ? null : this.errorObjectNotInOptions;
                     }
-  
-                  const foundSome = options.some(y => (y.id === input.id));
-  
-                  // tslint:disable-next-line:no-null-keyword
+                    
+                    const foundSome = options.some(y => (y.id === input.id));
+                    
+                    // tslint:disable-next-line:no-null-keyword
                     return foundSome ? null : this.errorObjectNotInOptions;
                   }
                 ),
                 takeUntil(this.destroyEvent$)
               );
           };
-    
+          
           this.safelyAddAsyncValidator(myAsyncValidator);
-    
+          
         }
-  
+        
         break;
       case FormTypes.AUTOCOMPLETE_MULTIPLE:
-  
+        
         this.checkOptions();
         this.ghostControl = new FormControl('');
-  
+        
         if (hostControl.value === '') {
           console.error('Input for multicomplete must be an array ');
         }
-  
-        hostControl.statusChanges
-                   .pipe(takeUntil(this.destroyEvent$))
-                   .subscribe(() => {
-                     hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
-                   });
-  
-        merge(this.ghostControl.valueChanges, this.options$)
-          .pipe(
-            map(() => this.ghostControl.value),
-            debounceTime(200),
-            withLatestFrom(this.options$),
-            takeUntil(this.destroyEvent$)
-          )
-          .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
-  
-            if (typeof input === 'string') {
-              const filtered: ISelectable[] = options.filter(opt =>
-                this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                         .includes(input.toLowerCase()));
-    
-              this.optionsFiltered.next(filtered);
-    
-            }
-  
-          });
-  
+        
+        this.manageSub(
+          hostControl.statusChanges
+                     .pipe(takeUntil(this.destroyEvent$))
+                     .subscribe(() => {
+                       hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
+                     })
+        );
+        
+        this.manageSub(
+          merge(this.ghostControl.valueChanges, this.options$)
+            .pipe(
+              map(() => this.ghostControl.value),
+              debounceTime(200),
+              withLatestFrom(this.options$),
+              takeUntil(this.destroyEvent$)
+            )
+            .subscribe(([input, options]: [ISelectable | string, ISelectable[]]) => {
+              
+              if (typeof input === 'string') {
+                const filtered: ISelectable[] = options.filter(opt =>
+                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
+                                                                                           .includes(input.toLowerCase()));
+                
+                this.optionsFiltered.next(filtered);
+                
+              }
+              
+            })
+        );
+        
         if (this.strictAutocomplete) {
-    
+          
           const myAsyncValidator = (control: AbstractControl): Observable<ValidationErrors> => {
-      
+            
             const input$ = of(control.value);
-      
+            
             return input$// I would like to update even if options change in the future
               .pipe(
                 withLatestFrom(input$, this.options$),
                 map(([_, input, options]: [void, Array<ISelectable>, Array<ISelectable>]) => {
-    
+                    
                     let foundAll = false;
-    
+                    
                     for (const currInputOption of input) {
                       const isIncluded = options.some(option =>
                         (option.id === currInputOption.id && option.name === currInputOption.name));
-      
+                      
                       if (isIncluded) {
                         foundAll = true;
                       } else {
@@ -491,21 +505,21 @@ export class MatFormEntityComponent {
                         break;
                       }
                     }
-    
+                    
                     const isVoid = input.length == 0;
                     const isVoidWhileCanBe = this.autocompleteCanBeVoid ? (isVoid) : false;
-    
+                    
                     // tslint:disable-next-line:no-null-keyword
                     return (foundAll) || (isVoidWhileCanBe) ? null : this.errorObjectNotInOptions;
-    
+                    
                   }
                 ),
                 takeUntil(this.destroyEvent$)
               );
           };
-    
+          
           this.safelyAddAsyncValidator(myAsyncValidator);
-    
+          
         }
         //
         break;
@@ -544,17 +558,17 @@ export class MatFormEntityComponent {
     const input = $event.option.value;
     // Add our thing
     if ((input && input.id && input.name)) {
-  
+      
       const isAlreadyPresent = !!findOptionForId(input.id, this.control.value);
-  
+      
       if (!isAlreadyPresent || (isAlreadyPresent && this.multiChipCompleteAllowDuplicates)) {
-    
+        
         this.control.patchValue([
           ...this.control.value,
           input
         ]);
       }
-  
+      
     }
     
     // Reset the input value, useful for resetting the debounce + filtered options smootly, LEAVE THIS HERE
