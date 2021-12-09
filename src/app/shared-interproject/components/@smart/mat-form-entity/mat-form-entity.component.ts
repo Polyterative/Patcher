@@ -68,7 +68,7 @@ export interface IMatFormEntityConfig {
  * Author Vlady Yakovenko
  * version 4.0 of the library with dynamic types and observable dynamic options
  * handle with care
- * last updated 09/03/2021
+ * updated 09/12/2021
  * created: 03/03/2018
  */
 @Component({
