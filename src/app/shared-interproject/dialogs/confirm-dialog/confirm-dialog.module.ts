@@ -7,17 +7,16 @@ import { BrandPrimaryButtonModule } from '../../components/@visual/brand-primary
 import { ConfirmDialogComponent }   from './confirm-dialog.component';
 
 @NgModule({
-  declarations:    [ConfirmDialogComponent],
-  exports:         [ConfirmDialogComponent],
-  entryComponents: [ConfirmDialogComponent],
-  imports:         [
-    CommonModule,
-    MatDialogModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    BrandPrimaryButtonModule,
-    MatDialogModule,
-    MatButtonModule
-  ]
+    declarations: [ConfirmDialogComponent],
+    exports:      [ConfirmDialogComponent],
+    imports:      [
+        CommonModule,
+        MatDialogModule,
+        FlexLayoutModule,
+        MatButtonModule,
+        BrandPrimaryButtonModule,
+        MatDialogModule,
+        MatButtonModule
+    ]
 })
 export class ConfirmDialogModule {}
