@@ -42,7 +42,7 @@ export interface RackModuleAdderInModel {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackModuleAdderComponent implements OnInit {
-  public readonly save$ = new Subject();
+  public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
@@ -88,7 +88,7 @@ export class RackModuleAdderComponent implements OnInit {
       type:     FormTypes.AUTOCOMPLETE
     }
   };
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

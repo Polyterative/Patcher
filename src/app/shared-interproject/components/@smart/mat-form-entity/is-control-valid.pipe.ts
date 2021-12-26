@@ -1,6 +1,13 @@
-import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { Subject } from 'rxjs';
+import {
+  ChangeDetectorRef,
+  Pipe,
+  PipeTransform
+}                    from '@angular/core';
+import {
+  FormControl,
+  FormGroup
+}                    from '@angular/forms';
+import { Subject }   from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 type LocalType = FormControl | FormGroup;
@@ -12,8 +19,8 @@ type LocalType = FormControl | FormGroup;
 export class FormValidPipe implements PipeTransform {
   valid = false;
   subscribed = false;
-
-  protected destroyEvent$: Subject<void> = new Subject();
+  
+  protected destroyEvent$ = new Subject<void>();
 
   constructor(public changeDetection: ChangeDetectorRef) {}
 

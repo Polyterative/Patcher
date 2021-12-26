@@ -34,11 +34,11 @@ type DataType = Rack;
 })
 export class RackEditorComponent implements OnInit, OnDestroy {
   @Input() data: DataType;
-  readonly save$ = new Subject();
+  readonly save$ = new Subject<void>();
   
   // addIN$ = new Subject<[string, number, number, number]>();
   // addOUT$ = new Subject<[string, number, number, number]>();
-  // addSwitch$ = new Subject();
+  // addSwitch$ = new Subject<void>();
   
   types = FormTypes;
   
@@ -49,7 +49,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
   // formGroupB = this.formBuilder.group({});
   // formGroupC = this.formBuilder.group({});
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   private validatorsNum: ValidatorFn = Validators.compose([
     // Validators.required,
@@ -83,7 +83,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
     //         this.formGroupA.addControl(`a${ i.toString() }`, a.a);
     //         this.formGroupA.addControl(`b${ i.toString() }`, a.b);
     //       });
-    //  
+    //
     //     });
     // this.addOUT$.pipe(takeUntil(this.destroyEvent$))
     //     .subscribe(([name, min, max, id]) => {
@@ -99,7 +99,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
     //         this.formGroupB.addControl(`a${ i.toString() }`, a.a);
     //         this.formGroupB.addControl(`b${ i.toString() }`, a.b);
     //       });
-    //  
+    //
     //     });
     //
     // this.save$.pipe(
@@ -163,7 +163,7 @@ export class RackEditorComponent implements OnInit, OnDestroy {
   //     max: formCV.b.value
   //     // isVOCT?: boolean;
   //   }));
-  //  
+  //
   //   return x;
   // }
   

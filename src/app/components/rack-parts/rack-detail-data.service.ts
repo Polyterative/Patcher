@@ -30,7 +30,7 @@ export class RackDetailDataService {
   // removeRackFromCollection$ = new Subject<number>();
   rackOrderChange$ = new Subject<CdkDragDrop<ElementRef>>();
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     private snackBar: MatSnackBar,

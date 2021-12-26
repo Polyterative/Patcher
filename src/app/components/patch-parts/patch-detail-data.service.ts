@@ -73,12 +73,12 @@ export class PatchDetailDataService implements OnDestroy {
     a: null,
     b: null
   });
-  confirmSelectedConnection$: Subject<void> = new Subject();
-  removeConnectionFromEditor$: Subject<PatchConnection> = new Subject();
-  readonly savePatchEditing$ = new Subject();
+  confirmSelectedConnection$ = new Subject<void>();
+  removeConnectionFromEditor$ = new Subject<PatchConnection>();
+  readonly savePatchEditing$ = new Subject<void>();
   readonly deletePatch$ = new Subject<number>();
   //
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     private router: Router,
@@ -107,7 +107,7 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.singlePatchData$.next(x.data));
-  
+    
     this.removePatchFromCollection$
         .pipe(
           switchMap(x => this.backend.delete.userPatch(x)),
@@ -118,7 +118,7 @@ export class PatchDetailDataService implements OnDestroy {
           snackBar.open('Removed', undefined, {duration: 1000});
           this.updateSinglePatchData$.next(b);
         });
-  
+    
     this.formData.name.control.valueChanges
         .pipe(
           filter(x => !!this.singlePatchData$.value),
@@ -135,7 +135,7 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(input => this.singlePatchData$.value.description = input);
-  
+    
     this.singlePatchData$
         .pipe(
           filter(x => !!this.singlePatchData$.value),
@@ -144,14 +144,14 @@ export class PatchDetailDataService implements OnDestroy {
         .subscribe(data => {
           this.formData.name.control.reset();
           this.formData.description.control.reset();
-    
+  
           this.formData.name.control.patchValue(data.name);
-    
+  
           if (!!data.description) {
             this.formData.description.control.patchValue(data.description);
           }
         });
-  
+    
     this.singlePatchData$
         .pipe(
           filter(x => !!x),
@@ -159,7 +159,7 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.patchesConnections$.next(data));
-  
+    
     this.singlePatchData$
         .pipe(
           filter(x => !!x),
@@ -168,14 +168,14 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id));
-  
+    
     this.patchEditingPanelOpenState$
         .pipe(
           filter(x => !x),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => this.resetSelectedForConnection$.next());
-  
+    
     this.patchEditingPanelOpenState$
         .pipe(
           pairwise(),
@@ -184,14 +184,14 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
-  
+    
     this.resetSelectedForConnection$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.selectedForConnection$.next({
           a: null,
           b: null
         }));
-  
+    
     this.clickOnModuleCV$
         .pipe(
           withLatestFrom(this.selectedForConnection$),
@@ -216,7 +216,7 @@ export class PatchDetailDataService implements OnDestroy {
           }
   
         });
-  
+    
     this.confirmSelectedConnection$
         .pipe(
           withLatestFrom(this.editorConnections$),
@@ -244,7 +244,7 @@ export class PatchDetailDataService implements OnDestroy {
           } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
   
         });
-  
+    
     this.patchesConnections$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.editorConnections$.next(x));
@@ -255,11 +255,11 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(([x, data]) => this.editorConnections$.next(
-          data.filter(
-            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
+            data.filter(
+              connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
           )
         );
-  
+    
     this.savePatchEditing$
         .pipe(
           withLatestFrom(this.editorConnections$, this.singlePatchData$),
@@ -270,7 +270,7 @@ export class PatchDetailDataService implements OnDestroy {
         .subscribe(value => {
           this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
         });
-  
+    
     this.deletePatch$
         .pipe(
           switchMap(x => {
@@ -300,7 +300,7 @@ export class PatchDetailDataService implements OnDestroy {
         .subscribe(value => {
           this.router.navigate(['/patches/browser']);
         });
-  
+    
   }
   
   ngOnDestroy(): void {

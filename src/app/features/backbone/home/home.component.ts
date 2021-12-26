@@ -24,7 +24,7 @@ import { RackDetailDataService }   from '../../../components/rack-parts/rack-det
 export class HomeComponent implements OnDestroy {
   iconColor = '#041E50';
   
-  destroyEvent$: Subject<void> = new Subject();
+  destroyEvent$ = new Subject<void>();
   
   readonly linksData: CardLinkDataModel = {
     ...cleanCardlinkModelObject,

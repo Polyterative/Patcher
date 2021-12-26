@@ -31,7 +31,7 @@ export class ModuleCVsComponent implements OnInit {
   @Output() inClick$ = new Subject<[CV, DbModule]>();
   @Output() outClick$ = new Subject<[CV, DbModule]>();
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public patchService: PatchDetailDataService

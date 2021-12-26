@@ -18,11 +18,11 @@ import { SupabaseService } from '../supabase.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminPanelRootComponent implements OnInit {
-  devToProd$ = new Subject();
-  downloadProd$ = new Subject();
-  downloadDev$ = new Subject();
-  prodToDev$ = new Subject();
-  click$ = new Subject();
+  devToProd$ = new Subject<void>();
+  downloadProd$ = new Subject<void>();
+  downloadDev$ = new Subject<void>();
+  prodToDev$ = new Subject<void>();
+  click$ = new Subject<void>();
   
   constructor(public http: HttpClient, public backend: SupabaseService) { }
   
@@ -31,7 +31,7 @@ export class AdminPanelRootComponent implements OnInit {
     this.click$
         .pipe(
           switchMap(x => zip(
-            this.http.get('https://api.martinpas.com/products?published=true&_limit=99999')
+              this.http.get('https://api.martinpas.com/products?published=true&_limit=99999')
             )
           )
         )

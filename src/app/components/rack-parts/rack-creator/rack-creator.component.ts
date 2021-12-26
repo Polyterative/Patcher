@@ -41,7 +41,7 @@ export interface RackCreatorInModel {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackCreatorComponent implements OnInit {
-  public readonly save$ = new Subject();
+  public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
@@ -82,7 +82,7 @@ export class RackCreatorComponent implements OnInit {
       type:    FormTypes.TEXT
     }
   };
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
