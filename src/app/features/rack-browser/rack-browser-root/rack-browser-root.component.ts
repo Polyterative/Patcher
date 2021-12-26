@@ -40,7 +40,7 @@ export class RackBrowserRootComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

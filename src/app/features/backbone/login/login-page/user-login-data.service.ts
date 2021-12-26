@@ -95,12 +95,12 @@ export class UserLoginDataService {
     //       } else {
     //         SharedConstants.confirmMail(snackBar);
     //       }
-    //  
+    //
     //     });
     
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

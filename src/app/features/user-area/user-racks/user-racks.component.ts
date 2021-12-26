@@ -27,14 +27,14 @@ import { Rack }            from 'src/app/models/models';
 })
 export class UserRacksComponent implements OnInit {
   data$: BehaviorSubject<Rack[]> = new BehaviorSubject([]);
-  public readonly add$ = new Subject();
-  public readonly updateData$ = new Subject();
+  public readonly add$ = new Subject<void>();
+  public readonly updateData$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
     public backend: SupabaseService
   ) {
-  
+    
     this.updateData$
         .pipe(
           switchMap(x => this.backend.get.userRacks()),
@@ -71,7 +71,7 @@ export class UserRacksComponent implements OnInit {
     this.updateData$.next();
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
