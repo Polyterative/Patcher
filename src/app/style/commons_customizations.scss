@@ -95,6 +95,10 @@ mat-expansion-panel {
   user-select: none;
 }
 
+.mat-divider.mat-divider-inset {
+  margin-left: 0 !important;
+}
+
 .mat-h2, .mat-title, .mat-typography {
   margin: 0 !important;
 }

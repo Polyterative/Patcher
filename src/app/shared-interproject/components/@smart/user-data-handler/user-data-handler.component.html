@@ -17,12 +17,12 @@
   <!--    {{bag.user|json}}-->
   <!--    -->
   <ng-template #noData>
-    <mat-card>
+    <lib-clean-card>
       <app-brand-primary-button fxFlex="grow"
                                 innerFlex="grow"
                                 (click$)="userDataHandlerService.loginButtonClick$.next()"
       >Login/Signup
       </app-brand-primary-button>
-    </mat-card>
+    </lib-clean-card>
   </ng-template>
 </div>
