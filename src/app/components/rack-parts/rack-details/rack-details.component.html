@@ -5,9 +5,9 @@
     >
       <ng-container *ngFor="let item of rackModules$|async">
         <div>
-          <mat-card>
+          <lib-clean-card>
             <app-module-minimal [data]="item"></app-module-minimal>
-          </mat-card>
+          </lib-clean-card>
         </div>
       
       </ng-container>

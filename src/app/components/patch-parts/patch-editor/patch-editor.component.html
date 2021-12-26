@@ -58,7 +58,7 @@
                                    description="The connection you want to create"
                                    [showHelpButton]="true"
             >
-              <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+              <lib-clean-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
                 <app-patch-connection-minimal [data]="{
     a:bag.selectedForConnection.a.cv,
     b:bag.selectedForConnection.b.cv,
@@ -69,7 +69,7 @@
                                               (remove$)="dataService.resetSelectedForConnection$.next()"
                                               (create$)="dataService.confirmSelectedConnection$.next()"
                 ></app-patch-connection-minimal>
-              </mat-card>
+              </lib-clean-card>
               <ng-template #selectedForConnectionVoidState>
                 <div style="height:9rem;width:auto"
                      fxLayoutAlign="center center"
@@ -91,13 +91,13 @@
                    style="max-height: 46rem; overflow-y: auto;"
               >
                 <ng-container *ngFor="let item of bag.editorConnections; let i = index">
-                  <mat-card>
+                  <lib-clean-card>
                     <app-patch-connection-minimal [data]="item"
                                                   [index]="i+1"
                                                   [isEditing]="true"
                                                   (remove$)="dataService.removeConnectionFromEditor$.next($event)"
                     ></app-patch-connection-minimal>
-                  </mat-card>
+                  </lib-clean-card>
                 </ng-container>
               </div>
   
@@ -110,12 +110,12 @@
               <!--                <div class="col gap1">-->
               <!--                  <ng-container *cdkVirtualFor="let item of bag.editorConnections">-->
               <!--                    <div>-->
-              <!--                      <mat-card>-->
+              <!--                      <lib-clean-card>-->
               <!--                        <app-patch-connection-minimal [data]="item"-->
               <!--                                                      [isEditing]="true"-->
               <!--                                                      (remove$)="dataService.removeConnectionFromEditor$.next($event)"-->
               <!--                        ></app-patch-connection-minimal>-->
-              <!--                      </mat-card>-->
+              <!--                      </lib-clean-card>-->
               <!--                    </div>-->
               <!--                  </ng-container>-->
               <!--                </div>-->
