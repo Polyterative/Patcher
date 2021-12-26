@@ -1,0 +1,21 @@
+<lib-clean-card [fxFlex]="data.hp*1+'rem'"
+>
+  <div [style]="{height:data.standard==0?'20rem':'6rem'}"
+       class="col gap1"
+
+  >
+    <app-module-part-hp [data]="data"
+    ></app-module-part-hp>
+    <app-module-part-manufacturer [data]="data"
+                                  [class]="data.hp<5?'textEllipse':''"
+                                  fxLayoutAlign="center center"
+    ></app-module-part-manufacturer>
+    <div fxFlex="grow"></div>
+    <app-module-part-name [data]="data"
+                          [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
+                          [class]="data.hp<6?'rotated':''"
+
+    ></app-module-part-name>
+
+  </div>
+</lib-clean-card>

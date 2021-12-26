@@ -36,6 +36,9 @@ export interface MinimalModule extends Timestamped {
   hp: number;
   public: boolean;
   manufacturer: MinimalManufacturer;
+  /**
+   *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
+   */
   standard: number;
 }
 

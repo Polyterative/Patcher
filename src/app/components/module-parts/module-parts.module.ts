@@ -18,6 +18,7 @@ import { MatFormEntityModule }               from '../../shared-interproject/com
 import { RestrictedEntityModule }            from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { AdviceTooltipModule }               from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule }          from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroInfoBoxModule }                 from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { ModuleCvIconComponent }             from './module-cv-icon/module-cv-icon.component';
 import { ModuleCVItemComponent }             from './module-cvitem/module-cvitem.component';
@@ -26,6 +27,11 @@ import { ModuleDetailDataService }           from './module-detail-data.service'
 import { ModuleDetailsComponent }            from './module-details/module-details.component';
 import { ModuleEditorComponent }             from './module-editor/module-editor.component';
 import { ModuleMinimalComponent }            from './module-minimal/module-minimal.component';
+import { ModulePartDescriptionComponent }    from './module-minimal/module-part-description/module-part-description.component';
+import { ModulePartHpComponent }             from './module-minimal/module-part-hp/module-part-hp.component';
+import { ModulePartManufacturerComponent }   from './module-minimal/module-part-manufacturer/module-part-manufacturer.component';
+import { ModulePartNameComponent }           from './module-minimal/module-part-name/module-part-name.component';
+import { ModuleRealisticComponent }          from './module-realistic/module-realistic.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +40,12 @@ import { ModuleMinimalComponent }            from './module-minimal/module-minim
     ModuleDetailsComponent,
     ModuleEditorComponent,
     ModuleMinimalComponent,
-    ModuleCvIconComponent
+    ModuleCvIconComponent,
+    ModuleRealisticComponent,
+    ModulePartNameComponent,
+    ModulePartDescriptionComponent,
+    ModulePartManufacturerComponent,
+    ModulePartHpComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -59,7 +70,8 @@ import { ModuleMinimalComponent }            from './module-minimal/module-minim
     HeroClickableTitleModule,
     AutoContentLoadingIndicatorModule,
     AdviceTooltipModule,
-    AutoUpdateLoadingIndicatorModule
+    AutoUpdateLoadingIndicatorModule,
+    CleanCardModule
   ],
   exports:      [
     ModuleCVItemComponent,
@@ -67,7 +79,12 @@ import { ModuleMinimalComponent }            from './module-minimal/module-minim
     ModuleDetailsComponent,
     ModuleEditorComponent,
     ModuleMinimalComponent,
-    ModuleCvIconComponent
+    ModuleCvIconComponent,
+    ModuleRealisticComponent,
+    ModulePartNameComponent,
+    ModulePartDescriptionComponent,
+    ModulePartManufacturerComponent,
+    ModulePartHpComponent
   ]
 })
 export class ModulePartsModule {}

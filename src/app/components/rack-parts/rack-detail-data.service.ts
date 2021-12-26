@@ -1,7 +1,12 @@
-import { Injectable }            from '@angular/core';
+import { CdkDragDrop }           from '@angular/cdk/drag-drop/drag-events';
+import {
+  ElementRef,
+  Injectable
+}                                from '@angular/core';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
+  combineLatest,
   merge,
   of,
   ReplaySubject,
@@ -23,7 +28,8 @@ export class RackDetailDataService {
   rackEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   userRacksList$: BehaviorSubject<Rack[]> = new BehaviorSubject<Rack[]>([]);
   // removeRackFromCollection$ = new Subject<number>();
-  
+  rackOrderChange$ = new Subject<CdkDragDrop<ElementRef>>();
+  isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
   protected destroyEvent$: Subject<void> = new Subject();
   
   constructor(
@@ -49,6 +55,21 @@ export class RackDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.singleRackData$.next(x.data));
+  
+    // if current user is authorized, allow editing
+    combineLatest([
+      this.userService.user$,
+      this.singleRackData$
+    ])
+      .pipe(
+        tap(x => this.isCurrentRackEditable$.next(false)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([user, rackData]) => {
+        if (user && rackData) {
+          this.isCurrentRackEditable$.next(user.id === rackData.author.id);
+        }
+      });
   
   
     // this.removeRackFromCollection$
