@@ -1,3 +1,4 @@
+import { DragDropModule }           from '@angular/cdk/drag-drop';
 import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
@@ -24,6 +25,7 @@ import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components
 import { CleanCardModule }          from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule }    from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { RackCreatorComponent }     from './rack-creator/rack-creator.component';
+import { TotalHpOfModulesPipe }     from './total-hp-of-modules.pipe';
 
 
 @NgModule({
@@ -32,7 +34,8 @@ import { RackCreatorComponent }     from './rack-creator/rack-creator.component'
     RackMinimalComponent,
     RackCreatorComponent,
     RackModuleAdderComponent,
-    RackDetailsComponent
+    RackDetailsComponent,
+    TotalHpOfModulesPipe
   ],
   exports:      [
     RackMinimalComponent,
@@ -61,7 +64,8 @@ import { RackCreatorComponent }     from './rack-creator/rack-creator.component'
     HeroInfoBoxModule,
     HeroClickableTitleModule,
     HeroContentCardModule,
-    CleanCardModule
+    CleanCardModule,
+    DragDropModule
   ]
 })
 export class RackModule {}

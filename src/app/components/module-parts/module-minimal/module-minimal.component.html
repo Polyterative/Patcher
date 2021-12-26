@@ -8,32 +8,19 @@
   >
     <div class="col"
     >
-      <app-hero-clickable-title [link]="['/modules/details',data.id]"
-                                infoBox
-                                infoText="Module name"
-
-      >{{data.name}}</app-hero-clickable-title>
-      <div class="row spaceBetween description"
-           fxLayoutGap="1rem"
-           *ngIf="data.description&&!viewConfig.hideDescription"
-      >
-        <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
-      </div>
+      <app-module-part-name [data]="data"></app-module-part-name>
+      <app-module-part-description [data]="data"
+                                   *ngIf="!viewConfig.hideDescription"
+      ></app-module-part-description>
       <div class="row spaceBetween"
            fxLayoutGap="1rem"
       >
-        <div *ngIf="!viewConfig.hideManufacturer">
-          <mat-card-subtitle infoBox
-                             infoText="Manufacturer name"
-          >{{data.manufacturer.name}}</mat-card-subtitle>
-        </div>
-        <div style="font-size: small"
-             *ngIf="!viewConfig.hideHP"
-             fxLayoutAlign="center center"
-        >
-          {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
-          {{data.hp}} HP
-        </div>
+        <app-module-part-manufacturer *ngIf="!viewConfig.hideManufacturer"
+                                      [data]="data"
+        ></app-module-part-manufacturer>
+        <app-module-part-hp *ngIf="!viewConfig.hideHP"
+                            [data]="data"
+        ></app-module-part-hp>
       </div>
       <app-timestamps-relative [data]="data"
                                *ngIf="!viewConfig.hideDates"
