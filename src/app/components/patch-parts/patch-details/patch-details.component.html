@@ -31,7 +31,7 @@
     <ng-container *ngIf="bag.connections.length>0; else noData">
       <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
       >
-        <mat-card>
+        <lib-clean-card>
           <!--          <div *ngIf="bag.connections.length<=8"-->
           <div class="col gap1 "
                style="max-height: 56rem; overflow-y: auto;"
@@ -60,7 +60,7 @@
           <!--            </div>-->
           <!--          </cdk-virtual-scroll-viewport>-->
 
-        </mat-card>
+        </lib-clean-card>
       </lib-hero-content-card>
     </ng-container>
   </ng-template>

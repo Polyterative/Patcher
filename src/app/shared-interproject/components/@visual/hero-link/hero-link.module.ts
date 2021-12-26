@@ -8,6 +8,7 @@ import { MatIconModule }            from '@angular/material/icon';
 import { RouterModule }             from '@angular/router';
 import { EmptyStateModule }         from '../../@smart/empty-state/empty-state.module';
 import { BrandPrimaryButtonModule } from '../brand-primary-button/brand-primary-button.module';
+import { CleanCardModule }          from '../clean-card/clean-card.module';
 import { HeroLinkComponent }        from './hero-link.component';
 
 
@@ -16,7 +17,7 @@ import { HeroLinkComponent }        from './hero-link.component';
   exports:      [
     HeroLinkComponent
   ],
-  imports: [
+  imports:      [
     CommonModule,
     MatDialogModule,
     BrandPrimaryButtonModule,
@@ -25,7 +26,8 @@ import { HeroLinkComponent }        from './hero-link.component';
     MatIconModule,
     RouterModule,
     EmptyStateModule,
-    MatButtonModule
+    MatButtonModule,
+    CleanCardModule
   ]
 })
 export class HeroLinkModule {}
