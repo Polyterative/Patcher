@@ -34,7 +34,7 @@ export class RackMinimalComponent implements OnInit {
     //                            );
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

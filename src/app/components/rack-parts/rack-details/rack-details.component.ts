@@ -39,7 +39,7 @@ export class RackDetailsComponent extends SubManager implements OnInit {
   ) { super(); }
   
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   viewConfig: ModuleMinimalViewConfig = {
     hideLabels:       true,
     hideManufacturer: false,

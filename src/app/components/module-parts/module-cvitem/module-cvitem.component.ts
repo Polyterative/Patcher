@@ -31,7 +31,7 @@ export class ModuleCVItemComponent implements OnInit {
   highlightedFrom = new BehaviorSubject(false);
   highlightedTo = new BehaviorSubject(false);
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public appState: AppStateService,

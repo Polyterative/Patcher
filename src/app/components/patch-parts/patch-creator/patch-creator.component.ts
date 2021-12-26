@@ -38,7 +38,7 @@ export interface PatchCreatorInModel {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatchCreatorComponent implements OnInit {
-  public readonly save$ = new Subject();
+  public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
@@ -79,7 +79,7 @@ export class PatchCreatorComponent implements OnInit {
       type:    FormTypes.TEXT
     }
   };
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

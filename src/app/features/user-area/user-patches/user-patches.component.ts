@@ -27,8 +27,8 @@ import { Patch }           from 'src/app/models/models';
 })
 export class UserPatchesComponent implements OnInit {
   data$: BehaviorSubject<Patch[]> = new BehaviorSubject([]);
-  public readonly add$ = new Subject();
-  public readonly updateData$ = new Subject();
+  public readonly add$ = new Subject<void>();
+  public readonly updateData$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
@@ -73,7 +73,7 @@ export class UserPatchesComponent implements OnInit {
   
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

@@ -19,13 +19,13 @@ import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail
 })
 export class RackBrowserDetailViewComponent implements OnInit {
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public dataService: RackDetailDataService,
     public route: ActivatedRoute
   ) {
-    
+  
   }
   
   ngOnInit(): void {

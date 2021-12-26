@@ -13,7 +13,7 @@ interface UnsplashResponse {
 
 @Injectable()
 export class PhotosService {
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   public readonly url$ = new BehaviorSubject<string>('');
   public readonly loadUnsplash$ = new Subject<string>();
   
