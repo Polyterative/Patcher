@@ -29,7 +29,7 @@ export type RackList = Rack[] | null;
 export class RackBrowserDataService implements OnDestroy {
   racksList$ = new BehaviorSubject<RackList>(null);
   userRacksList$ = new BehaviorSubject<RackList>(null);
-  updateRacksList$ = new Subject();
+  updateRacksList$ = new Subject<void>();
   
   ////
   serversideTableRequestData = {
@@ -94,12 +94,12 @@ export class RackBrowserDataService implements OnDestroy {
       ])
                   .pipe(
                     startWith([]))
-      
+  
     }
   };
   
-  paginatorToFistPage$ = new Subject();
-  protected destroyEvent$: Subject<void> = new Subject();
+  paginatorToFistPage$ = new Subject<void>();
+  protected destroyEvent$ = new Subject<void>();
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),

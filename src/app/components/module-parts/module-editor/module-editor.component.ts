@@ -46,14 +46,14 @@ interface FormCV {
 })
 export class ModuleEditorComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
-  readonly save$ = new Subject();
+  readonly save$ = new Subject<void>();
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
   //
   addIN$ = new Subject<[string, number, number, number]>();
   addOUT$ = new Subject<[string, number, number, number]>();
-  addSwitch$ = new Subject();
+  addSwitch$ = new Subject<void>();
   
   types = FormTypes;
   
@@ -64,7 +64,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   formGroupB = this.formBuilder.group({});
   formGroupC = this.formBuilder.group({});
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   private validatorsNum: ValidatorFn = Validators.compose([
     // Validators.required,
