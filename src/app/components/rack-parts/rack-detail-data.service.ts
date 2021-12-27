@@ -29,7 +29,9 @@ export class RackDetailDataService {
   userRacksList$: BehaviorSubject<Rack[]> = new BehaviorSubject<Rack[]>([]);
   // removeRackFromCollection$ = new Subject<number>();
   rackOrderChange$ = new Subject<CdkDragDrop<ElementRef>>();
+  isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
+  requestRackEditableStatusChange$ = new Subject<void>();
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
@@ -37,7 +39,7 @@ export class RackDetailDataService {
     public userService: UserManagementService,
     public backend: SupabaseService
   ) {
-    
+  
     merge(this.userService.user$, this.updateSingleRackData$)
       .pipe(
         switchMap(x => this.userService.user$),
@@ -48,6 +50,18 @@ export class RackDetailDataService {
         this.userRacksList$.next(x);
       });
   
+    // when user locks the rack, set rack as not editable
+    // this.requestRackEditableStatusChange$
+    //   .pipe(
+    //     switchMap(x => this.userService.user$),
+    //     switchMap(x => !!x ? this.backend.get.userRacks() : of([])),
+    //     takeUntil(this.destroyEvent$)
+    //   )
+    //   .subscribe(x => {
+    //     this.isCurrentRackEditable$.next(x.find(y => y.id === this.singleRackData$.value.id) !== undefined);
+    //   });
+  
+  
     this.updateSingleRackData$
         .pipe(
           tap(x => this.singleRackData$.next(undefined)),
@@ -56,18 +70,18 @@ export class RackDetailDataService {
         )
         .subscribe(x => this.singleRackData$.next(x.data));
   
-    // if current user is authorized, allow editing
+    // track if rack is property of current user
     combineLatest([
       this.userService.user$,
       this.singleRackData$
     ])
       .pipe(
-        tap(x => this.isCurrentRackEditable$.next(false)),
+        tap(x => this.isCurrentRackPropertyOfCurrentUser$.next(false)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([user, rackData]) => {
         if (user && rackData) {
-          this.isCurrentRackEditable$.next(user.id === rackData.author.id);
+          this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
         }
       });
   
