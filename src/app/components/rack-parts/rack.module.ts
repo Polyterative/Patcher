@@ -22,6 +22,7 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
 import { FlexboxRowFastModule }     from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { BrandLogoModule }          from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
 import { CleanCardModule }          from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule }    from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { RackCreatorComponent }     from './rack-creator/rack-creator.component';
@@ -65,7 +66,8 @@ import { TotalHpOfModulesPipe }     from './total-hp-of-modules.pipe';
     HeroClickableTitleModule,
     HeroContentCardModule,
     CleanCardModule,
-    DragDropModule
+    DragDropModule,
+    BrandLogoModule
   ]
 })
 export class RackModule {}
