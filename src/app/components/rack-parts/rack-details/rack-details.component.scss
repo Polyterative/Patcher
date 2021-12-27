@@ -26,8 +26,14 @@
 $bgOpacity:    0.35;
 $bgGradientBG: rgb(223, 223, 223);
 
-.editingBG {
+.editiableBG {
   //background: $bgGradientBG;
-  background: $bgGradientBG;
-  background: linear-gradient(135deg, rgba(43, 201, 69, $bgOpacity) 0%, rgba(255, 255, 255, 0) 100%);
+  background:       $bgGradientBG;
+  background-color: rgba(43, 201, 69, $bgOpacity);
+}
+
+.readOnlyBG {
+  //background: $bgGradientBG;
+  background:       $bgGradientBG;
+  background-color: rgba(180, 151, 123, $bgOpacity);
 }
