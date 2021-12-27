@@ -1,16 +1,30 @@
 <ng-container *ngIf="{
   rackModules:(rackModules$|async),
+  isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async)
   } as bag"
 >
   <div class="col gap1"
   >
-    <lib-hero-content-card *ngIf="bag.isCurrentRackEditable"
-                           titleNormal="Your rack is now editable"
-                           class="editingBG depadding"
-                           icon="lock_open"
+    <lib-hero-content-card *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
+                           [titleNormal]="'Your rack is '+(bag.isCurrentRackEditable?' editable':'read-only')"
+                           class="depadding"
+                           style="transition: background 500ms cubic-bezier(0, 0, 0.2, 1);"
+                           [ngClass]="{'editiableBG':bag.isCurrentRackEditable, 'readOnlyBG':!bag.isCurrentRackEditable}"
+                           [icon]="bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'"
     >
-      Any changes will be saved automatically
+      <div class="row gap1">
+        <div fxFlex="grow"
+             fxLayoutAlign="start center"
+        >Any changes will be saved automatically
+        </div>
+    
+    
+        <app-brand-primary-button (click$)="dataService.isCurrentRackEditable$.next(!bag.isCurrentRackEditable)">
+          Lock/Unlock rack
+        </app-brand-primary-button>
+      </div>
+    
     </lib-hero-content-card>
     <lib-hero-content-card *ngIf="bag.rackModules.length>0; else noData"
                            [titleNormal]="bag.rackModules.length+' module(s) in rack'+' / '+data.hp+' HP per row'+' / '+(bag.rackModules|totalHpOfModules)+' used HP'"
@@ -25,24 +39,24 @@
              (cdkDropListDropped)="dataService.rackOrderChange$.next($event)"
         >
           <ng-container *ngIf="bag.rackModules">
-        
+  
             <ng-container *ngFor="let item of bag.rackModules">
               <app-module-realistic [data]="item"
                                     cdkDrag
                                     [cdkDragDisabled]="!bag.isCurrentRackEditable"
               ></app-module-realistic>
-        
+  
             </ng-container>
             <div fxFlex="fill"
                  style="background-color:rgba(0,0,0,0.05); border: .5rem dashed rgba(0,0,0,0.2);"
-        
+
             >
               <div fxFlex="fill"
                    fxLayoutAlign="center center"
               >{{(data.hp - (bag.rackModules|totalHpOfModules))}} HP remaining
               </div>
             </div>
-      
+
           </ng-container>
         </div>
         <div fxFlex="auto"></div>
