@@ -8,8 +8,12 @@ import {
   ActivatedRoute,
   Router
 }                                from '@angular/router';
-import { Subject }               from 'rxjs';
 import {
+  of,
+  Subject
+}                                from 'rxjs';
+import {
+  filter,
   switchMap,
   takeUntil
 }                                from 'rxjs/operators';
@@ -91,33 +95,40 @@ export class UserSignupDataService {
     
     this.mailSignClick$
         .pipe(
-          switchMap(x => this.loginInteraction.signup(this.fields.username.control.value, this.fields.email.control.value, this.fields.password.control.value)),
+          switchMap(x => this.loginInteraction.signup(
+            this.fields.username.control.value,
+            this.fields.email.control.value,
+            this.fields.password.control.value)
+          ),
+          switchMap(x => {
+            if (!!x && !x.error) {
+              SharedConstants.successSignup(snackBar);
+              return this.loginInteraction.login(this.fields.email.control.value, this.fields.password.control.value);
+      
+            } else {
+              SharedConstants.errorSignup(snackBar, 'Something went wrong, a user with this email address or username may already have been registered');
+              return of(undefined);
+            }
+          }),
+          filter(x => !!x),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(x => {
-          if (!!x.error) {
-            SharedConstants.errorSignup(snackBar, 'A user with this email address or username may already have been registered');
-          } else {
-            // SharedConstants.confirmMail(snackBar);
-            SharedConstants.successSignup(snackBar);
-            this.router.navigate(['/auth/login']);
-          }
-      
-        });
-    this.googleSignClick$
-        .pipe(
-          switchMap(x => this.loginInteraction.signupGoogle()),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => {
-          if (!!x.error) {
-            SharedConstants.errorSignup(snackBar, x.error.message);
-          } else {
-            SharedConstants.confirmMail(snackBar);
-          }
-      
-        });
-    
+        .subscribe(x => this.router.navigate(['/user/area']));
+  
+    // this.googleSignClick$
+    //     .pipe(
+    //       switchMap(x => this.loginInteraction.signupGoogle()),
+    //       takeUntil(this.destroyEvent$)
+    //     )
+    //     .subscribe(x => {
+    //       if (!!x.error) {
+    //         SharedConstants.errorSignup(snackBar, x.error.message);
+    //       } else {
+    //         SharedConstants.confirmMail(snackBar);
+    //       }
+    //
+    //     });
+  
   }
   
   protected destroyEvent$ = new Subject<void>();

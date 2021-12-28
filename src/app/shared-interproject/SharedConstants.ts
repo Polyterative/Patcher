@@ -66,7 +66,7 @@ export class SharedConstants {
   }
   
   static successSignup(snackBar: MatSnackBar) {
-    snackBar.open('✅ Signup Successful, please login', undefined, {duration: 5000});
+    snackBar.open('✅ Signup Successful, welcome!', undefined, {duration: 5000});
   }
   
   static showSuccessUpdate(snackBar: MatSnackBar) {
