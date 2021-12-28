@@ -30,22 +30,26 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-$bgOpacity:    0.2;
+$bgOpacity:    0.8;
 $bgGradientBG: rgb(223, 223, 223);
 
 .editiableBG {
   //background: $bgGradientBG;
   background:       $bgGradientBG;
-  background-color: rgba(82, 142, 251, $bgOpacity);
+  background-color: transparentize(rgb(53, 178, 74), $bgOpacity);
 }
 
 .readOnlyBG {
   //background: $bgGradientBG;
   background:       $bgGradientBG;
-  background-color: rgba(190, 158, 36, $bgOpacity);
+  background-color: transparentize(rgb(0, 0, 0, 0), $bgOpacity);
 }
 
 .widthRuler {
   border-top-width: 1px;border-top-style: solid;border-top-color: rgba(0, 0, 0, 0.3);border-right-width: 1px;border-right-style: solid;border-right-color: rgba(0, 0, 0, 0.3);border-left-width: 1px;border-left-style: solid;border-left-color: rgba(0, 0, 0, 0.3);
   padding:          0.5em;
+}
+
+.zoomDown {
+  transform: scale(0.8);
 }

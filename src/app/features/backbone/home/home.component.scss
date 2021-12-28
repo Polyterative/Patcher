@@ -10,7 +10,7 @@ app-brand-primary-button {
 
 .embedded {
   //margin:      2rem;
-  zoom:        .65;
+  transform:   scale(.65);
   user-select: none;
   filter:      grayscale(25%);
 

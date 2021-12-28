@@ -1,0 +1,9 @@
+.circle {
+  $dim:          .75rem;
+  border-radius: 50%;
+  background:    rgba(0, 0, 0, 0.2);
+  //border:        .15rem solid #DEDEDE;
+  width:         $dim;
+  height:        $dim;
+  margin:        .25rem;
+}

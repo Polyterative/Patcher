@@ -2,33 +2,25 @@
      fxLayout="column"
      style="background-color: rgba(255,255,255,0.96)"
 >
-  <div class="row"
-       fxLayoutAlign="space-between"
-  >
-    <div class="circle"></div>
-    <div class="circle"></div>
-  </div>
+  <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
   <div [ngStyle]="{height:data.standard==0?'22rem':'6rem',backgroundColor: '#ffffff'}"
        style="padding-right: .5rem;padding-left: .5rem;"
        class="col gap1"
   >
     <app-module-part-hp [data]="data"
+                        *ngIf="data.hp>3"
     ></app-module-part-hp>
     <app-module-part-manufacturer [data]="data"
-                                  [class]="data.hp<5?'textEllipse':''"
+                                  *ngIf="data.hp>3"
+                                  [ngClass]="{'rotated':data.hp<6}"
+                                  [fxLayoutAlign]="data.hp<=6?'end center':'center center'"
                                   fxLayoutAlign="center center"
     ></app-module-part-manufacturer>
     <div fxFlex="grow"></div>
     <app-module-part-name [data]="data"
                           [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
-                          [class]="data.hp<6?'rotated':''"
-    
+                          [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
     ></app-module-part-name>
   </div>
-  <div class="row"
-       fxLayoutAlign="space-between"
-  >
-    <div class="circle"></div>
-    <div class="circle"></div>
-  </div>
+  <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
 </div>

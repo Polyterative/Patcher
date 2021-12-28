@@ -13,28 +13,14 @@
 
   </div>
   
-  <ng-template #noData>
-    <lib-hero-content-card titleNormal="Connections">
-      <div fxFlex="auto">
-        <div class="col gap1 animate-fadein-slowest"
-        >
-          <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
-                                                          connections
-          </mat-card-subtitle>
-          <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
-          </mat-card-subtitle>
-        </div>
-      </div>
-    </lib-hero-content-card>
-  </ng-template>
   <ng-template #data>
     <ng-container *ngIf="bag.connections.length>0; else noData">
       <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
       >
         <lib-clean-card>
           <!--          <div *ngIf="bag.connections.length<=8"-->
-          <div class="col gap1 "
-               style="max-height: 56rem; overflow-y: auto;"
+          <div class="col gap1"
+               [ngClass]="{'encloseVertically':dataService.patchEditingPanelOpenState$|async}"
           >
             <ng-container *ngFor="let item of bag.connections; let i = index">
               <app-patch-connection-minimal [data]="item"
@@ -64,6 +50,19 @@
       </lib-hero-content-card>
     </ng-container>
   </ng-template>
-
+  <ng-template #noData>
+    <lib-hero-content-card titleNormal="Connections">
+      <div fxFlex="auto">
+        <div class="col gap1 animate-fadein-slowest"
+        >
+          <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
+                                                          connections
+          </mat-card-subtitle>
+          <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
+          </mat-card-subtitle>
+        </div>
+      </div>
+    </lib-hero-content-card>
+  </ng-template>
 
 </ng-container>
