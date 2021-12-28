@@ -11,8 +11,8 @@
 
   >
     <div fxFlex="auto"
-         [fxLayoutAlign]="pushToEnd?'end':undefined"
-         [class]="bigText ? 'value' : null"
+         [fxLayoutAlign]="pushToEnd?'end':''"
+         [class]="bigText ? 'value' : ''"
     >
       <div [class]="monospace ? 'monospace' : null">
         <ng-content></ng-content>

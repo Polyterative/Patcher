@@ -79,7 +79,7 @@ export class UserLoginDataService {
               .pipe(take(1))
               .subscribe(z => {
                 this.loginSuccessful$.next();
-                this.router.navigate([x.returnUrl ? x.returnUrl : '/modules/browser']);
+                this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
               });
           }
         });
