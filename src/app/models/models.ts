@@ -23,6 +23,11 @@ export interface DbModule extends MinimalModule {
   isDIY: boolean;
 }
 
+// export interface RackedModule {
+//   row: number;
+//   column: number;
+// }
+
 interface MinimalManufacturer {
   name: string;
   id: number;
@@ -63,6 +68,7 @@ export interface RackMinimal extends Timestamped {
   hp: number;
   rows: number;
   author: PublicUser;
+  // isLocked: boolean;
 }
 
 export interface DBManufacturer {

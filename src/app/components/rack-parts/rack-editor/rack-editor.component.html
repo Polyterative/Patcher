@@ -1,133 +1,71 @@
-<div class="col gap1"
+<ng-container *ngIf="{
+  rackModules:(rackModules$|async),
+  isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
+  isCurrentRackEditable:(dataService.isCurrentRackEditable$|async)
+  } as bag"
 >
-  <div fxFlex="auto">
-    <!--      <mat-card-subtitle>module-editor</mat-card-subtitle>-->
-    <mat-card-subtitle>Please update this information and only if it is incorrect or some is
-                       missing, any changes you make will affect what all other users see
-    </mat-card-subtitle>
+  <div class="col gap1"
+  >
+    <lib-hero-content-card *ngIf="bag.rackModules.length>0; else noData"
+                           [description]="bag.rackModules.length+' module(s) in rack'+' /' +
+                            ' '+data.hp+' HP per row'+' / ' +
+                             ''+(bag.rackModules|totalHpOfModules)+' used HP' +
+                             ((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'/ Changes saving automatically':'/ Unlock to make changes')"
+                           style="transition: background 500ms cubic-bezier(0, 0, 0.2, 1);"
+                           [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
+    >
+      <div class="col gap1"
+           style="overflow-x: auto;"
+  
+      >
+        <lib-screen-wrapper [maxSize]="data.hp+'rem'">
+          <div class="col gap1"
+          >
+            <mat-card-subtitle [ngStyle]="{width: data.hp+'rem'}"
+                               fxLayoutAlign="center center"
+                               class="widthRuler"
+            >{{data.hp}}</mat-card-subtitle>
+        
+            <div class="row"
+                 fxLayoutGap=".1rem"
+                 cdkDropList
+                 cdkDropListOrientation="horizontal"
+                 (cdkDropListDropped)="dataService.rackOrderChange$.next($event)"
+            >
+              <ng-container *ngIf="bag.rackModules">
+  
+                <ng-container *ngFor="let item of bag.rackModules">
+                  <app-module-realistic [data]="item"
+                                        cdkDrag
+                                        [cdkDragDisabled]="!bag.isCurrentRackEditable"
+                  ></app-module-realistic>
+  
+                </ng-container>
+                <div [fxFlex]="(data.hp - (bag.rackModules|totalHpOfModules))+'rem'">
+                  <app-rack-details-remaining-indicator [data]="data"
+                                                        [rackModules$]="rackModules$"
+                                                        fxFlex="fill"
+                  ></app-rack-details-remaining-indicator>
+                </div>
+
+              </ng-container>
+            </div>
+            <div fxFlex="auto"></div>
+          </div>
+        </lib-screen-wrapper>
+      </div>
+    </lib-hero-content-card>
+  
   </div>
-  <!--  <div fxFlex="auto"-->
-  <!--       fxLayout="row"-->
-  <!--  >-->
-  <!--    <div fxFlex="auto"-->
-  <!--         fxLayout="column"-->
-  <!--         fxLayoutGap="1rem"-->
-  <!--    >-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V IN-->
-  <!--      </app-brand-primary-button>-->
-  <!--    </div>-->
-  <!--    <div fxFlex="auto"-->
-  <!--         fxLayout="column"-->
-  <!--         fxLayoutGap="1rem"-->
-  <!--    >-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,0])">Add OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8,0])">Add 0→8V OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5,0])">Add -5→5V OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10,0])">Add -10→10V OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--      <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12,0])">Add -12→12V OUT-->
-  <!--      </app-brand-primary-button>-->
-  <!--    </div>-->
-  <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-  <!--  </div>-->
-  <mat-divider inset="true"></mat-divider>
-  
-  <!--  <div fxFlex="auto"-->
-  <!--       fxLayout="column"-->
-  <!--       fxLayoutGap="1rem"-->
-  <!--  >-->
-  <!--    <ng-container *ngIf="(INs$|async).length>0">-->
-  <!--      <div fxFlex="auto"-->
-  <!--           fxLayout="row"-->
-  <!--           fxLayoutGap="1rem"-->
-  <!--           fxLayoutAlign="space-between"-->
-  <!--      >-->
-  <!--        <mat-card-title>INs</mat-card-title>-->
-  <!--        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>-->
-  <!--      </div>-->
-  <!--      <div fxFlex="auto"-->
-  <!--           fxLayout="column"-->
-  <!--           class="leftBorderS"-->
-  <!--      >-->
-  <!--        <ng-container *ngFor="let item of INs$|async;">-->
-  <!--          -->
-  <!--          <div fxFlex="auto"-->
-  <!--               fxLayout="row"-->
-  <!--               fxLayoutGap="1rem"-->
-  <!--          >-->
-  <!--            <lib-mat-form-entity [type]="types.TEXT"-->
-  <!--                                 [control]="item.name"-->
-  <!--                                 label="name"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--            <lib-mat-form-entity [type]="types.NUMBER"-->
-  <!--                                 [control]="item.a"-->
-  <!--                                 label="min V"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--            <lib-mat-form-entity [type]="types.NUMBER"-->
-  <!--                                 [control]="item.b"-->
-  <!--                                 label="max V"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--          </div>-->
-  <!--        </ng-container>-->
-  <!--      </div>-->
-  <!--    </ng-container>-->
-  <!--    <ng-container *ngIf="(OUTs$|async).length>0">-->
-  <!--      <div fxFlex="auto"-->
-  <!--           fxLayout="row"-->
-  <!--           fxLayoutGap="1rem"-->
-  <!--           fxLayoutAlign="space-between"-->
-  <!--      >-->
-  <!--        <mat-card-title>OUTs</mat-card-title>-->
-  <!--        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>-->
-  <!--      </div>-->
-  <!--      <div fxFlex="auto"-->
-  <!--           fxLayout="column"-->
-  <!--           class="leftBorderS"-->
-  <!--      >-->
-  <!--        <ng-container *ngFor="let item of OUTs$|async;">-->
-  <!--          -->
-  <!--          <div fxFlex="auto"-->
-  <!--               fxLayout="row"-->
-  <!--               fxLayoutGap="1rem"-->
-  <!--          >-->
-  <!--            <lib-mat-form-entity [type]="types.TEXT"-->
-  <!--                                 [control]="item.name"-->
-  <!--                                 label="name"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--            <lib-mat-form-entity [type]="types.NUMBER"-->
-  <!--                                 [control]="item.a"-->
-  <!--                                 label="min V"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--            <lib-mat-form-entity [type]="types.NUMBER"-->
-  <!--                                 [control]="item.b"-->
-  <!--                                 label="max V"-->
-  <!--            ></lib-mat-form-entity>-->
-  <!--          </div>-->
-  <!--        </ng-container>-->
-  <!--      </div>-->
-  <!--    </ng-container>-->
-  <!--  </div>-->
-  
-  <mat-divider inset="true"></mat-divider>
-  <!--  <app-brand-primary-button (click$)="save$.next()"-->
-  <!--                            theme="positive"-->
-  <!--                            fxLayoutAlign="end"-->
-  <!--                            [disabled]="formGroupA.invalid||formGroupB.invalid||formGroupC.invalid"-->
-  <!--  >Save data-->
-  <!--  </app-brand-primary-button>-->
-</div>
+  <ng-template #noData>
+    <div fxFlex="auto">
+      <div class="col gap1 animate-fadein-slowest"
+      >
+        <mat-card-subtitle fxLayoutAlign="center start"
+                           style="padding: 1rem"
+        >No modules in rack yet
+        </mat-card-subtitle>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>
