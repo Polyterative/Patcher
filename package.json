@@ -34,7 +34,7 @@
     "@ngx-pwa/local-storage":            "^12.1.0",
     "@sentry/angular":                   "^6.16.1",
     "@sentry/tracing":                   "^6.16.1",
-    "@supabase/supabase-js":             "^1.22.6",
+    "@supabase/supabase-js":             "^1.29.1",
     "angular-html-parser":               "^1.8.0",
     "core-js":                           "^3.17.3",
     "firebase":                          "^8.10.0",

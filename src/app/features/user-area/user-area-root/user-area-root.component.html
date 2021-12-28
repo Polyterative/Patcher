@@ -5,7 +5,7 @@
   <div class="col gap1"
        *ngIf="bag.userProfile"
   >
-    <h3 fxLayoutAlign="end center">Welcome back, {{bag.userProfile.username}}</h3>
+    <h3 fxLayoutAlign="end center">{{bag.userProfile.username}}'s collection</h3>
     <app-user-patches></app-user-patches>
     <app-user-racks></app-user-racks>
     <app-user-modules [viewConfig]="viewConfig"
