@@ -33,5 +33,9 @@ export class UserAvatarComponent {
   
   @Input()
   backgroundImagePath: string = './default.svg';
-
+  
+  constructor() {
+    console.log('UserAvatarComponent.constructor()');
+  }
+  
 }

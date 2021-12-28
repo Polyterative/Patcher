@@ -4,6 +4,32 @@
   <div class="row gap1"
        fxLayout.lt-md="column"
   >
+    <div fxFlex="auto"
+         class="content"
+    >
+      <ng-container *ngIf="title else content ">
+      
+        <div fxFlex="auto"
+             fxLayout="column"
+             fxLayoutGap=".5rem"
+        >
+          <mat-toolbar fxFlex="4rem"
+                       style="background-color: #778698"
+                       color="primary"
+                       id="navbar"
+          >
+            <mat-toolbar-row>{{title}}</mat-toolbar-row>
+          </mat-toolbar>
+        
+          <router-outlet></router-outlet>
+        </div>
+    
+      </ng-container>
+    
+      <ng-template #content>
+        <router-outlet></router-outlet>
+      </ng-template>
+    </div>
     <div fxLayout="column"
          fxLayoutGap="1rem"
          fxFlex="16rem"
@@ -17,31 +43,6 @@
         <router-outlet name="sidebar"></router-outlet>
       </div>
     </div>
-    <div fxFlex="auto"
-         class="content"
-    >
-      <ng-container *ngIf="title else content ">
 
-        <div fxFlex="auto"
-             fxLayout="column"
-             fxLayoutGap=".5rem"
-        >
-          <mat-toolbar fxFlex="4rem"
-                       style="background-color: #778698"
-                       color="primary"
-                       id="navbar"
-          >
-            <mat-toolbar-row>{{title}}</mat-toolbar-row>
-          </mat-toolbar>
-
-          <router-outlet></router-outlet>
-        </div>
-
-      </ng-container>
-
-      <ng-template #content>
-        <router-outlet></router-outlet>
-      </ng-template>
-    </div>
   </div>
 </lib-screen-wrapper>

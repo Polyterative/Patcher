@@ -1,10 +1,11 @@
 ﻿import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
 import {
-    FlexLayoutModule,
-    FlexModule
+  FlexLayoutModule,
+  FlexModule
 }                                   from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
+import { MatCardModule }            from '@angular/material/card';
 import { MatIconModule }            from '@angular/material/icon';
 import { MatMenuModule }            from '@angular/material/menu';
 import { MatToolbarModule }         from '@angular/material/toolbar';
@@ -16,28 +17,29 @@ import { ToolbarComponent }         from './toolbar.component';
 import { ToolbarService }           from './toolbar.service';
 
 @NgModule({
-    imports:      [
-        CommonModule,
-        MatToolbarModule,
-        MatIconModule,
-        MatButtonModule,
-        FlexModule,
-        MatMenuModule,
-        FlexLayoutModule,
-        MatToolbarModule,
-        BrandLogoModule,
-        RouterModule,
-        ScreenWrapperModule,
-        RouteClickableLinkModule
-    ],
-    declarations: [
-        ToolbarComponent
-    ],
-    exports:      [
-        ToolbarComponent
-    ],
-    providers:    [
-        ToolbarService
-    ]
+  imports:      [
+    CommonModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatButtonModule,
+    FlexModule,
+    MatMenuModule,
+    FlexLayoutModule,
+    MatToolbarModule,
+    BrandLogoModule,
+    RouterModule,
+    ScreenWrapperModule,
+    RouteClickableLinkModule,
+    MatCardModule
+  ],
+  declarations: [
+    ToolbarComponent
+  ],
+  exports:      [
+    ToolbarComponent
+  ],
+  providers:    [
+    ToolbarService
+  ]
 })
 export class ToolbarModule {}
