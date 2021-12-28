@@ -119,7 +119,7 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data.map(y => y.module)))),
   
-    patchConnections:   (patchid: number) => rxFrom(
+    patchConnections: (patchid: number) => rxFrom(
       this.supabase.from(this.paths.patch_connections)
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
         //   .select(`*,a(*,${ this.queryJoins.module })`)
@@ -433,11 +433,11 @@ export class SupabaseService {
     }))
       .pipe(
         switchMap(x => !x.error ? rxFrom(
-          this.supabase
-              .from(this.paths.profiles)
-              .update({
-                confirmed: true
-              })
+            this.supabase
+                .from(this.paths.profiles)
+                .update({
+                  confirmed: true
+                })
           )
             .pipe(map(z => x)) : of(x)
         ),
@@ -461,20 +461,29 @@ export class SupabaseService {
       email,
       password
     }))
-      .pipe(
-        switchMap(x => this.login(username, password)),
-        switchMap(x => !x.error ? rxFrom(
-          this.supabase
-              .from(this.paths.profiles)
-              .update({
-                confirmed: false,
-                username
-              })
-              .eq('id', x.user.id)
-          )
-            .pipe(map(z => x)) : of(x)
-        )
-      );
+      .pipe(switchMap(x => !x.error ? this.updateUserProfile(email, password, username) : of(x)));
+  }
+  
+  // logs in, updates profile, logs out
+  private updateUserProfile(email: string, password: string, username: string) {
+    return this.login(email, password)
+               .pipe(
+                 switchMap(x => rxFrom(
+                     this.supabase
+                         .from(this.paths.profiles)
+                         .update({
+                           confirmed: true,
+                           username
+                         })
+                         .eq('id', x.user.id)
+                   )
+                     .pipe(
+                       map(z => x),
+                       switchMap(x => rxFrom(this.supabase.auth.signOut())
+                         .pipe(map(z => x)))
+                     )
+                 )
+               );
   }
   
   getUser() {

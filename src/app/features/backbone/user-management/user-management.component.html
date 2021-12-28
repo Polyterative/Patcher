@@ -1,17 +1,59 @@
 <lib-screen-wrapper maxSize="40rem">
   <div class="col gap1"
   >
-    <lib-hero-content-card titleBig="My account"
+    <lib-hero-content-card titleBig="Account management"
                            icon="manage_accounts"
     >
-      <div class="col gap1"
+      <div class="col gap2"
       >
-        <app-brand-primary-button
-            (click$)="userManagementService.logoff()"
-            theme="warning"
-            fxLayoutAlign="end"
+        <div class="row gap1">
+          <app-label-value-showcase label="Username"
+                                    fxFlex="grow"
+          >{{(userManagementService.userProfile$|async).username}}</app-label-value-showcase>
+          <app-brand-primary-button disabled="true"
+                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+                                    theme="warning"
+          >Change
+          </app-brand-primary-button>
+        </div>
+        <app-label-value-showcase label="Email">{{(userManagementService.userProfile$|async).email}}</app-label-value-showcase>
+        <div class="row gap1">
+          <app-label-value-showcase label="Password"
+                                    fxFlex="grow"
+          >********
+          </app-label-value-showcase>
+          <app-brand-primary-button disabled="true"
+                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+                                    theme="warning"
+          >Change
+          </app-brand-primary-button>
+        </div>
+        <app-label-value-showcase label="Account created">{{(userManagementService.user$|async).created_at|timeago}}</app-label-value-showcase>
+        <app-label-value-showcase label="Account id (secret! send this to us when requesting help via mail)">{{(userManagementService.user$|async).id}}</app-label-value-showcase>
+    
+        <app-brand-primary-button fxFlex="auto"
+                                  innerFlex="fill"
+                                  style="padding-top:4rem"
+                                  (click$)="userManagementService.logoff()"
+                                  theme="warning"
         >Logout
         </app-brand-primary-button>
+        <div class="row gap1">
+          <app-brand-primary-button style="padding-top:4rem"
+                                    disabled="true"
+                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+                                    theme="warning"
+          >Delete Account
+          </app-brand-primary-button>
+      
+          <app-brand-primary-button style="padding-top:4rem"
+                                    disabled="true"
+                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+                                    theme="warning"
+          >Delete data
+          </app-brand-primary-button>
+        </div>
+  
       </div>
     </lib-hero-content-card>
     <app-empty-state backgroundImage="assets/svg/profile_data.svg"></app-empty-state>
