@@ -75,7 +75,7 @@ export class UserManagementService {
     this.user$.next(undefined);
     from(this.backend.logoff())
       .subscribe(x => {
-        this.router.navigate(['/modules/browser']);
+        this.router.navigate(['/auth/login']);
         SharedConstants.successLogout(this.snackBar);
       });
   }
