@@ -35,6 +35,21 @@
        fxLayoutGap.xs="0rem"
        *ngIf="!viewConfig.hideButtons"
   >
+    <ng-container *ngIf="{
+      isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
+      isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async)
+
+    } as bag"
+    >
+      <a mat-icon-button
+         matTooltip="Toggle rack lock"
+         *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
+         [routerLink]="['/racks/details',data.id]"
+         (click)="dataService.isCurrentRackEditable$.next(!bag.isCurrentRackEditable)"
+      >
+        <mat-icon>{{bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'}}</mat-icon>
+      </a>
+    </ng-container>
     <div fxFlex="grow"></div>
     <a mat-icon-button
        matTooltip="Show details"
