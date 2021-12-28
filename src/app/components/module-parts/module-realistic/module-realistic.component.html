@@ -1,8 +1,16 @@
-<lib-clean-card [fxFlex]="data.hp*1+'rem'"
+<div [fxFlex]="data.hp*1+'rem'"
+     fxLayout="column"
+     style="background-color: rgba(255,255,255,0.96)"
 >
-  <div [style]="{height:data.standard==0?'20rem':'6rem'}"
+  <div class="row"
+       fxLayoutAlign="space-between"
+  >
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+  <div [ngStyle]="{height:data.standard==0?'22rem':'6rem',backgroundColor: '#ffffff'}"
+       style="padding-right: .5rem;padding-left: .5rem;"
        class="col gap1"
-
   >
     <app-module-part-hp [data]="data"
     ></app-module-part-hp>
@@ -14,8 +22,13 @@
     <app-module-part-name [data]="data"
                           [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                           [class]="data.hp<6?'rotated':''"
-
+    
     ></app-module-part-name>
-
   </div>
-</lib-clean-card>
+  <div class="row"
+       fxLayoutAlign="space-between"
+  >
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+</div>
