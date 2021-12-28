@@ -25,12 +25,11 @@ import { Rack }                  from '../../models/models';
 export class RackDetailDataService {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
-  rackEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
   userRacksList$: BehaviorSubject<Rack[]> = new BehaviorSubject<Rack[]>([]);
   // removeRackFromCollection$ = new Subject<number>();
   rackOrderChange$ = new Subject<CdkDragDrop<ElementRef>>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
-  isCurrentRackEditable$ = new BehaviorSubject<boolean>(false);
+  isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
   requestRackEditableStatusChange$ = new Subject<void>();
   protected destroyEvent$ = new Subject<void>();
   
