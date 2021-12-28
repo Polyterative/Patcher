@@ -1,14 +1,15 @@
-<div fxLayout="column"
-     fxLayoutGap="1rem"
-     *ngIf="{email:userDataHandlerService.store.user$|async} as bag"
+<lib-clean-card fxLayout="column"
+                style="background-color: rgba(0, 0, 0, 50)"
+                fxLayoutGap="1rem"
+                *ngIf="{user:userDataHandlerService.store.user$|async} as bag"
 >
   <div fxFlex="auto"
        *ngIf="bag.user; else noData"
   >
     <app-user-avatar
-      [name]="bag.user.username"
-      [hideLogoff]="false"
-      (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
+        [name]="bag.user.username"
+        [hideLogoff]="false"
+        (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
       (login$)="userDataHandlerService.loginButtonClick$.next()"
       (signup$)="userDataHandlerService.signupButtonClick$.next()"
     ></app-user-avatar>
@@ -25,4 +26,4 @@
       </app-brand-primary-button>
     </lib-clean-card>
   </ng-template>
-</div>
+</lib-clean-card>

@@ -32,15 +32,17 @@ export class UserManagementService {
     public userBoxService: UserDataHandlerService
   ) {
     this.checkUserInCookies();
-    
-    this.user$.subscribe(x => {
   
-      if (x) {
-        this.userBoxService.store.user$.next({username: x.email});
-      } else {
-        this.userBoxService.store.user$.next({username: undefined});
-      }
-    });
+    this.userProfile$
+        .pipe()
+        .subscribe(x => {
+    
+          if (x) {
+            this.userBoxService.store.user$.next({username: x.username});
+          } else {
+            this.userBoxService.store.user$.next({username: undefined});
+          }
+        });
   
     this.user$
         .pipe(
@@ -70,7 +72,6 @@ export class UserManagementService {
   
   logoff(): void {
     console.log('Logging out...');
-    this.userBoxService.store.user$.next(undefined);
     this.user$.next(undefined);
     from(this.backend.logoff())
       .subscribe(x => {
