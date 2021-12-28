@@ -58,7 +58,7 @@ export class SharedConstants {
   }
   
   static successLogout(snackBar: MatSnackBar) {
-    snackBar.open('✅ Logout', undefined, {duration: 5000});
+    snackBar.open('✅ Logged out', undefined, {duration: 5000});
   }
   
   static confirmMail(snackBar: MatSnackBar) {
