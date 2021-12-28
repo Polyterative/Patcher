@@ -6,6 +6,7 @@ import { Router }                from '@angular/router';
 import { BehaviorSubject }       from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { RouteClickableLink }    from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { SubManager }            from '../../../shared-interproject/directives/subscription-manager';
 import { ToolbarService }        from './toolbar.service';
 
 @Component({
@@ -15,7 +16,7 @@ import { ToolbarService }        from './toolbar.service';
   changeDetection: ChangeDetectionStrategy.OnPush
   
 })
-export class ToolbarComponent {
+export class ToolbarComponent extends SubManager {
   public readonly links$ = new BehaviorSubject<RouteClickableLink[]>([
     {
       label:    '',
@@ -80,6 +81,21 @@ export class ToolbarComponent {
     public service: ToolbarService,
     public router: Router
   ) {
+    super();
+  
+    this.manageSub(
+      this.userService.userProfile$
+          .subscribe(x => {
+      
+            const element: RouteClickableLink = this.linksUser$.value[1];
+            element.label = x ? x.username : '';
+            const toNext = this.linksUser$.value;
+            toNext[1] = element;
+            this.linksUser$.next(toNext);
+      
+          })
+    );
+  
   }
   
 }
