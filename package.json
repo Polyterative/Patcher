@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "2.17.12",
+  "version": "2.17.13",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -8,9 +8,9 @@
     "deploy": "angular-build-info && ng build --configuration production && firebase deploy",
     "updateMinors": "npm update --save/--save-dev",
     "ci": "",
-    "release:patch": "standard-version --release-as patch && git push --follow-tags origin master",
-    "release:minor": "standard-version --release-as minor && git push --follow-tags origin master",
-    "release:major": "standard-version --release-as major && git push --follow-tags origin master",
+    "release:patch": "standard-version --release-as patch && git push --follow-tags origin production",
+    "release:minor": "standard-version --release-as minor && git push --follow-tags origin production",
+    "release:major": "standard-version --release-as major && git push --follow-tags origin production",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "test": "ng test",
     "lint": "ng lint",
