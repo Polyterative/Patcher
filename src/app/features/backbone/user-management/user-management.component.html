@@ -6,6 +6,7 @@
     >
       <div class="col gap2"
       >
+  
         <ng-container *ngIf="{
           userProfile:(userManagementService.userProfile$|async),
           user:(userManagementService.user$|async)
@@ -14,6 +15,13 @@
           <div class="col gap1"
                *ngIf="bag.user&&bag.userProfile"
           >
+            <app-brand-primary-button fxFlex="auto"
+                                      innerFlex="fill"
+                                      style="padding-bottom:4rem"
+                                      (click$)="userManagementService.logoff()"
+                                      theme="warning"
+            >Logout
+            </app-brand-primary-button>
             <div class="row gap1">
               <app-label-value-showcase label="Username"
                                         fxFlex="grow"
@@ -40,13 +48,7 @@
             <app-label-value-showcase label="Account id (secret! send this to us when requesting help via mail)">{{bag.user.id}}</app-label-value-showcase>
           </div>
         </ng-container>
-        <app-brand-primary-button fxFlex="auto"
-                                  innerFlex="fill"
-                                  style="padding-top:4rem"
-                                  (click$)="userManagementService.logoff()"
-                                  theme="warning"
-        >Logout
-        </app-brand-primary-button>
+  
         <div class="row gap1">
           <app-brand-primary-button style="padding-top:4rem"
                                     disabled="true"
