@@ -74,7 +74,7 @@
             <mat-icon>edit</mat-icon>
           </button>
         </ng-container>
-        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==true">
+        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)">
           <button mat-icon-button
                   matTooltip="Close editor"
                   [disabled]="!bag.user"

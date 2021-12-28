@@ -20,18 +20,19 @@ import { AdviceTooltipModule }               from '../../shared-interproject/com
 import { BrandPrimaryButtonModule }          from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroInfoBoxModule }                 from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { ModuleCvIconComponent }             from './module-cv-icon/module-cv-icon.component';
-import { ModuleCVItemComponent }             from './module-cvitem/module-cvitem.component';
-import { ModuleCVsComponent }                from './module-cvs/module-cvs.component';
-import { ModuleDetailDataService }           from './module-detail-data.service';
-import { ModuleDetailsComponent }            from './module-details/module-details.component';
-import { ModuleEditorComponent }             from './module-editor/module-editor.component';
-import { ModuleMinimalComponent }            from './module-minimal/module-minimal.component';
-import { ModulePartDescriptionComponent }    from './module-minimal/module-part-description/module-part-description.component';
-import { ModulePartHpComponent }             from './module-minimal/module-part-hp/module-part-hp.component';
-import { ModulePartManufacturerComponent }   from './module-minimal/module-part-manufacturer/module-part-manufacturer.component';
-import { ModulePartNameComponent }           from './module-minimal/module-part-name/module-part-name.component';
-import { ModuleRealisticComponent }          from './module-realistic/module-realistic.component';
+import { ModuleCvIconComponent }            from './module-cv-icon/module-cv-icon.component';
+import { ModuleCVItemComponent }            from './module-cvitem/module-cvitem.component';
+import { ModuleCVsComponent }               from './module-cvs/module-cvs.component';
+import { ModuleDetailDataService }          from './module-detail-data.service';
+import { ModuleDetailsComponent }           from './module-details/module-details.component';
+import { ModuleEditorComponent }            from './module-editor/module-editor.component';
+import { ModuleMinimalComponent }           from './module-minimal/module-minimal.component';
+import { ModulePartDescriptionComponent }   from './module-minimal/module-part-description/module-part-description.component';
+import { ModulePartHpComponent }            from './module-minimal/module-part-hp/module-part-hp.component';
+import { ModulePartManufacturerComponent }  from './module-minimal/module-part-manufacturer/module-part-manufacturer.component';
+import { ModulePartNameComponent }          from './module-minimal/module-part-name/module-part-name.component';
+import { ModuleRealisticHolelineComponent } from './module-realistic/module-realistic-holeline/module-realistic-holeline.component';
+import { ModuleRealisticComponent }         from './module-realistic/module-realistic.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { ModuleRealisticComponent }          from './module-realistic/module-rea
     ModulePartNameComponent,
     ModulePartDescriptionComponent,
     ModulePartManufacturerComponent,
-    ModulePartHpComponent
+    ModulePartHpComponent,
+    ModuleRealisticHolelineComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -84,7 +86,8 @@ import { ModuleRealisticComponent }          from './module-realistic/module-rea
     ModulePartNameComponent,
     ModulePartDescriptionComponent,
     ModulePartManufacturerComponent,
-    ModulePartHpComponent
+    ModulePartHpComponent,
+    ModuleRealisticHolelineComponent
   ]
 })
 export class ModulePartsModule {}
