@@ -26,9 +26,12 @@ import { BrandLogoModule }                        from '../../shared-interprojec
 import { CleanCardModule }                        from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule }                  from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule }                    from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { MapToModulePipe }                        from './map-to-module.pipe';
 import { RackCreatorComponent }                   from './rack-creator/rack-creator.component';
 import { RackDetailsRemainingIndicatorComponent } from './rack-details/rack-details-remaining-indicator/rack-details-remaining-indicator.component';
 import { TotalHpOfModulesPipe }                   from './total-hp-of-modules.pipe';
+import { TotalHpOfRackPipe }                      from './total-hp-of-rack.pipe';
+import { TotalModulesOfRackPipe }                 from './total-modules-of-rack.pipe';
 
 
 @NgModule({
@@ -39,7 +42,10 @@ import { TotalHpOfModulesPipe }                   from './total-hp-of-modules.pi
     RackModuleAdderComponent,
     RackDetailsComponent,
     TotalHpOfModulesPipe,
-    RackDetailsRemainingIndicatorComponent
+    RackDetailsRemainingIndicatorComponent,
+    TotalHpOfRackPipe,
+    TotalModulesOfRackPipe,
+    MapToModulePipe
   ],
   exports:      [
     RackMinimalComponent,

@@ -1,35 +1,29 @@
 import { moveItemInArray }         from '@angular/cdk/drag-drop';
+import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
   OnInit
 }                                  from '@angular/core';
-import { FormControl }             from '@angular/forms';
 import { MatSnackBar }             from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   Subject
 }                                  from 'rxjs';
-import { withLatestFrom }          from 'rxjs/operators';
+import {
+  take,
+  withLatestFrom
+}                                  from 'rxjs/operators';
 import { RackDetailDataService }   from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import {
-  DbModule,
-  Rack,
+  RackedModule,
   RackMinimal
 }                                  from 'src/app/models/models';
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
-
-interface FormCV {
-  id: number,
-  name: FormControl;
-  a: FormControl;
-  b: FormControl;
-}
-
-type DataType = Rack;
 
 @Component({
   selector:        'app-rack-editor',
@@ -39,7 +33,7 @@ type DataType = Rack;
 })
 export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
-  rackModules$ = new BehaviorSubject<DbModule[]>([]);
+  rowedRackedModules$ = new BehaviorSubject<RackedModule[][]>([]);
   
   
   constructor(
@@ -62,26 +56,87 @@ export class RackEditorComponent extends SubManager implements OnInit {
   
   ngOnInit(): void {
     this.manageSub(
-      this.backend.get.rackModules(this.data.id)
-          .subscribe(x => this.rackModules$.next(x))
+      this.backend.get.rackedModules(this.data.id)
+          .subscribe((rackedModules: RackedModule[]) => {
+            // create a 2d array of racked modules and sort them by row
+            let rowedRackedModules = this.buildRowedModulesArray(rackedModules);
+            this.rowedRackedModules$.next(rowedRackedModules);
+          })
     );
     
     
     this.manageSub(
       this.dataService.rackOrderChange$
           .pipe(
-            withLatestFrom(this.rackModules$)
+            withLatestFrom(this.rowedRackedModules$)
           )
-          .subscribe(([event, rackModules]) => {
-            moveItemInArray(rackModules, event.previousIndex, event.currentIndex);
-        
-            this.rackModules$.next(rackModules);
-        
-            // this.backend.
+          .subscribe(([{event,newRow,module}, rackModules]) => {
+  
+            // update array
+            if (newRow === module.rackingData.row) {
+              this.transferInRow(rackModules, newRow, event);
+            } else {
+              this.transferBetweenRows(rackModules, module, event, newRow);
+            }
+  
+            this.rowedRackedModules$.next(rackModules);
+  
+            this.backend.update.rackedModules(rackModules.flatMap(row => row))
+                .pipe(take(1))
+                .subscribe();
+  
+            this.backend.update.rack(this.data)
+                .pipe(take(1))
+                .subscribe();
+  
           })
     );
+  
+  
+  }
+  
+  private buildRowedModulesArray(rackedModules: RackedModule[]): RackedModule[][] {
+    let rowedRackedModules: RackedModule[][] = [];
+    for (let i = 0; i < this.data.rows; i++) {
+      rowedRackedModules[i] = rackedModules.filter(module => module.rackingData.row === i);
+    }
+    return rowedRackedModules;
+  }
+  
+  private transferInRow(rackModules: RackedModule[][], newRow: number, event: CdkDragDrop<ElementRef>): void {
+    moveItemInArray(rackModules[newRow], event.previousIndex, event.currentIndex);
+    // update module position
+    this.updateModulesColumnIds(rackModules, newRow);
+  }
+  
+  private updateModulesColumnIds(rackModules: RackedModule[][], row): void {
+    rackModules[row].forEach((module, index) => {
+      module.rackingData.column = index;
+      module.rackingData.row = row;
+    });
+  }
+  
+  private transferBetweenRows(rackModules: RackedModule[][], module: RackedModule, event, newRow): void {
+    // remove item from old array
+    rackModules[module.rackingData.row].splice(event.previousIndex, 1);
+    this.updateModulesColumnIds(rackModules, module.rackingData.row);
     
     
+    // add item to new array
+    rackModules[newRow].splice(event.currentIndex, 0, module);
+    this.updateModulesColumnIds(rackModules, newRow);
+    
+  }
+  
+  computeDragRenderPos(pos, dragRef) {
+    return {
+      x: Math.floor(pos.x / 32) * 32,
+      y: pos.y
+    }; // will render the element every 30 pixels horizontally
+  }
+  
+  falsePredicate(event: any) {
+    return false;
   }
   
 }
