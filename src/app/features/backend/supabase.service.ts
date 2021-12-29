@@ -308,6 +308,13 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
+    rackedModule: (id: number) => rxFrom(
+      this.supabase.from(this.paths.rack_modules)
+          .delete()
+          .filter('id', 'eq', id)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     patch: (id: number) => rxFrom(
       this.supabase.from(this.paths.patches)
           .delete()

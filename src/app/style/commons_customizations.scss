@@ -148,6 +148,36 @@ mat-expansion-panel {
 }
 
 
+.parent {
+  > .opacizeOnHover {
+    opacity: 0.2;
+
+  }
+
+  > .showOnHover {
+    opacity: 0;
+  }
+}
+
+.parent:hover > .opacizeOnHover {
+  opacity:            1;
+  -webkit-transition: opacity 125ms ease-in-out;
+  -moz-transition:    opacity 125ms ease-in-out;
+  -ms-transition:     opacity 125ms ease-in-out;
+  -o-transition:      opacity 125ms ease-in-out;
+  transition:         opacity 125ms ease-in-out;
+}
+
+.parent:hover > .showOnHover {
+  opacity:            1;
+  -webkit-transition: opacity 125ms ease-in-out;
+  -moz-transition:    opacity 125ms ease-in-out;
+  -ms-transition:     opacity 125ms ease-in-out;
+  -o-transition:      opacity 125ms ease-in-out;
+  transition:         opacity 125ms ease-in-out;
+}
+
+
 @media not all and (hover: none) {
   .opacizeParent {
     > .opacizeOnHover {
