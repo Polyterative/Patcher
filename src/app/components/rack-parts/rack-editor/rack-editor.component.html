@@ -6,11 +6,19 @@
 >
   <div class="col gap1"
   >
+    <lib-auto-content-loading-indicator *ngIf="bag.rowedRackedModules==null;else yesdata"
+                                        [skipFirstData]="true"
+                                        [loadingLines]="5"
+    >
+    </lib-auto-content-loading-indicator>
+  </div>
+  
+  <ng-template #yesdata>
     <lib-hero-content-card *ngIf="(bag.rowedRackedModules|totalModulesOfRack)>0; else noData"
                            [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) in rack'+' /' +
                             ' '+data.hp+' HP per row'+' / ' +
                              ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saving automatically':' / Unlock to make changes')):'')"
+                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically':' / Unlock to make changes')):'')"
                            class="transition-all-long"
                            [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
     >
@@ -26,7 +34,7 @@
                                fxLayoutAlign="center center"
                                class="widthRuler"
             >{{data.hp}}</mat-card-subtitle>
-  
+            
             <div class="col gap0">
               <ng-container *ngFor="let row of bag.rowedRackedModules; index as rowId"
               >
@@ -35,15 +43,25 @@
                      cdkDropListOrientation="horizontal"
                      (cdkDropListDropped)="dataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
                 >
-  
-  
+                  
                   <ng-container *ngFor="let item of row">
-                    <app-module-realistic [data]="item|mapToModule"
-                                          cdkDrag
-                                          [cdkDragData]="item"
-                                          [cdkDragDisabled]="!(bag.isCurrentRackEditable&&bag.isCurrentRackPropertyOfCurrentUser)"
-                    ></app-module-realistic>
-  
+                    <div>
+                      <app-module-realistic [data]="item|mapToModule"
+                                            cdkDrag
+                                            [cdkDragData]="item"
+                                            [cdkDragDisabled]="!(bag.isCurrentRackEditable&&bag.isCurrentRackPropertyOfCurrentUser)"
+                      >
+                        <ng-container *ngIf="bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable">
+                          <button mat-icon-button
+                                  class="showOnHover button"
+                                  (click)="dataService.requestRackedModuleRemoval$.next(item)"
+                          >
+                            <mat-icon class="transparentize-quarter ">delete</mat-icon>
+                          </button>
+                        </ng-container>
+                      </app-module-realistic>
+                    </div>
+
                   </ng-container>
                   <!--                  <div [fxFlex]="(data.hp - (row|rackedToModules|totalHpOfModules))+'rem'"-->
                   <!--                       cdkDrag-->
@@ -57,7 +75,7 @@
                   <!--                                                          fxFlex="fill"-->
                   <!--                    ></app-rack-details-remaining-indicator>-->
                   <!--                  </div>-->
-
+                
                 </div>
               </ng-container>
             </div>
@@ -66,8 +84,7 @@
         </lib-screen-wrapper>
       </div>
     </lib-hero-content-card>
-  
-  </div>
+  </ng-template>
   <ng-template #noData>
     <div fxFlex="auto">
       <div class="col gap1 animate-fadein-slowest"

@@ -8,6 +8,7 @@ import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   combineLatest,
+  forkJoin,
   of,
   ReplaySubject,
   Subject
@@ -16,7 +17,6 @@ import {
   filter,
   map,
   switchMap,
-  take,
   tap,
   withLatestFrom
 }                                from 'rxjs/operators';
@@ -35,11 +35,14 @@ export class RackDetailDataService extends SubManager {
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   // deleteRack$ = new Subject<number>();
   
-  rowedRackedModules$ = new BehaviorSubject<RackedModule[][]>([]);
+  rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+  
   rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
   requestRackEditableStatusChange$ = new Subject<void>();
+  requestRackedModuleRemoval$ = new Subject<RackedModule>();
+  requestRackedModulesDbSync$ = new Subject<void>();
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -49,7 +52,7 @@ export class RackDetailDataService extends SubManager {
     public backend: SupabaseService
   ) {
     super();
-  
+    
     // when user toggles locked status of rack, update backend
     this.manageSub(
       this.requestRackEditableStatusChange$
@@ -66,8 +69,8 @@ export class RackDetailDataService extends SubManager {
           .subscribe(x => {
           })
     );
-  
-  
+    
+    
     this.manageSub(
       this.updateSingleRackData$
           .pipe(
@@ -76,18 +79,18 @@ export class RackDetailDataService extends SubManager {
           )
           .subscribe(x => this.singleRackData$.next(x.data))
     );
-  
+    
     // when updated rack data is received, update locked status observable
     this.manageSub(
       this.singleRackData$
           .pipe(filter(x => !!x))
           .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
     );
-  
+    
     // when updated rack data is received, update rowedRackedModules$
     this.manageSub(
       this.singleRackData$.pipe(
-        tap(x => this.rowedRackedModules$.next([])),
+        tap(x => this.rowedRackedModules$.next(null)),
         filter(x => !!x),
         switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
         withLatestFrom(this.singleRackData$)
@@ -98,8 +101,8 @@ export class RackDetailDataService extends SubManager {
             this.rowedRackedModules$.next(rowedRackedModules);
           })
     );
-  
-  
+    
+    
     // on order change, update local rack data and backend
     this.manageSub(
       this.rackOrderChange$
@@ -123,19 +126,11 @@ export class RackDetailDataService extends SubManager {
   
             this.rowedRackedModules$.next(rackModules);
   
-            // update backend
-            this.backend.update.rackedModules(rackModules.flatMap(row => row))
-                .pipe(take(1))
-                .subscribe();
-  
-            this.backend.update.rack(rack)
-                .pipe(take(1))
-                .subscribe();
-  
+            this.requestRackedModulesDbSync$.next();
           })
     );
-  
-  
+    
+    
     // track if rack is property of current user
     this.manageSub(
       combineLatest([
@@ -150,7 +145,37 @@ export class RackDetailDataService extends SubManager {
           this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
         })
     );
-  
+    
+    // when request to remove module is received, find module and remove it, then update the local rack data
+    this.manageSub(
+      this.requestRackedModuleRemoval$
+          .pipe(
+            withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+            switchMap(([rackedModule, rackModules, rack]) => {
+    
+              this.removeRackedModuleFromArray(rackModules, rackedModule);
+              this.rowedRackedModules$.next(rackModules);
+    
+              // this.requestRackedModulesDbSync$.next(); // this does not work, because the rack data are upserted, so we need to delete in the backend manually
+              return this.backend.delete.rackedModule(rackedModule.rackingData.id);
+            })
+          )
+          .subscribe()
+    );
+    
+    // on request to sync rack data with backend, update backend
+    this.manageSub(
+      this.requestRackedModulesDbSync$
+          .pipe(
+            withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+            switchMap(([_, rackModules, rack]) => forkJoin([
+                this.backend.update.rackedModules(rackModules.flatMap(row => row)),
+                this.backend.update.rack(rack)
+              ])
+            ))
+          .subscribe()
+    );
+    
     // on rack delete, update backend
     // this.deleteRack$
     //     .pipe(
@@ -188,9 +213,7 @@ export class RackDetailDataService extends SubManager {
   
   private transferBetweenRows(rackModules: RackedModule[][], module: RackedModule, event, newRow): void {
     // remove item from old array
-    rackModules[module.rackingData.row].splice(event.previousIndex, 1);
-    this.updateModulesColumnIds(rackModules, module.rackingData.row);
-    
+    this.removeRackedModuleFromArray(rackModules, module);
     
     // add item to new array
     rackModules[newRow].splice(event.currentIndex, 0, module);
@@ -198,4 +221,8 @@ export class RackDetailDataService extends SubManager {
     
   }
   
+  private removeRackedModuleFromArray(rackModules: RackedModule[][], module: RackedModule): void {
+    rackModules[module.rackingData.row].splice(module.rackingData.column, 1);
+    this.updateModulesColumnIds(rackModules, module.rackingData.row);
+  }
 }

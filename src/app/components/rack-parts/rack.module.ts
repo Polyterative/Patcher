@@ -22,6 +22,7 @@ import { BrandPrimaryButtonModule }               from 'src/app/shared-interproj
 import { FlexboxRowFastModule }                   from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroClickableTitleModule }               from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroInfoBoxModule }                      from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { AutoContentLoadingIndicatorModule }      from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { BrandLogoModule }                        from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
 import { CleanCardModule }                        from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule }                  from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -58,7 +59,7 @@ import { TotalModulesOfRackPipe }                 from './total-modules-of-rack.
     RackDetailsRemainingIndicatorComponent
   ],
   providers:    [RackDetailDataService],
-  imports:      [
+  imports: [
     CommonModule,
     MatCardModule,
     BrandPrimaryButtonModule,
@@ -80,7 +81,8 @@ import { TotalModulesOfRackPipe }                 from './total-modules-of-rack.
     CleanCardModule,
     DragDropModule,
     BrandLogoModule,
-    ScreenWrapperModule
+    ScreenWrapperModule,
+    AutoContentLoadingIndicatorModule
   ]
 })
 export class RackModule {}
