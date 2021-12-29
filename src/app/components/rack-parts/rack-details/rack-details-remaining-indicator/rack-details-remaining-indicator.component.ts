@@ -3,12 +3,11 @@ import {
   Component,
   Input,
   OnInit
-}                     from '@angular/core';
-import { Observable } from 'rxjs';
+} from '@angular/core';
 import {
   DbModule,
   RackMinimal
-}                     from '../../../../models/models';
+} from '../../../../models/models';
 
 @Component({
   selector:        'app-rack-details-remaining-indicator',
@@ -20,7 +19,7 @@ export class RackDetailsRemainingIndicatorComponent implements OnInit {
   
   @Input() data: RackMinimal;
   
-  @Input() rackModules$: Observable<DbModule[]>;
+  @Input() rowModules: DbModule[];
   
   constructor() { }
   

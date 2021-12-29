@@ -45,7 +45,7 @@
          matTooltip="Toggle rack lock"
          *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
          [routerLink]="['/racks/details',data.id]"
-         (click)="dataService.isCurrentRackEditable$.next(!bag.isCurrentRackEditable)"
+         (click)="dataService.requestRackEditableStatusChange$.next()"
       >
         <mat-icon>{{bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'}}</mat-icon>
       </a>
