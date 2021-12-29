@@ -80,14 +80,8 @@ export class RackDetailDataService extends SubManager {
     // when updated rack data is received, update locked status observable
     this.manageSub(
       this.singleRackData$
-          .pipe(
-    
-          )
-          .subscribe(x => {
-            if (x) {
-              this.isCurrentRackEditable$.next(!x.locked);
-            }
-          })
+          .pipe(filter(x => !!x))
+          .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
     );
   
     // when updated rack data is received, update rowedRackedModules$
@@ -119,25 +113,25 @@ export class RackDetailDataService extends SubManager {
                           module
                         }, rackModules, rack
                       ]) => {
-      
+  
             // update array
             if (newRow === module.rackingData.row) {
               this.transferInRow(rackModules, newRow, event);
             } else {
               this.transferBetweenRows(rackModules, module, event, newRow);
             }
-      
+  
             this.rowedRackedModules$.next(rackModules);
-      
+  
             // update backend
             this.backend.update.rackedModules(rackModules.flatMap(row => row))
                 .pipe(take(1))
                 .subscribe();
-      
+  
             this.backend.update.rack(rack)
                 .pipe(take(1))
                 .subscribe();
-      
+  
           })
     );
   
@@ -149,12 +143,11 @@ export class RackDetailDataService extends SubManager {
         this.singleRackData$
       ])
         .pipe(
-          tap(x => this.isCurrentRackPropertyOfCurrentUser$.next(false))
+          tap(x => this.isCurrentRackPropertyOfCurrentUser$.next(false)),
+          filter(([user, rackData]) => (!!user && !!rackData))
         )
         .subscribe(([user, rackData]) => {
-          if (user && rackData) {
-            this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
-          }
+          this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
         })
     );
   
