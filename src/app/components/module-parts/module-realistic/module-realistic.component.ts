@@ -15,9 +15,12 @@ import { MinimalModule } from '../../../models/models';
 export class ModuleRealisticComponent implements OnInit {
   @Input() data: MinimalModule;
   
-  constructor() { }
+  constructor(
+    // public rackDetailDataService: RackDetailDataService
+  ) { }
   
   ngOnInit(): void {
+  
   }
   
 }
