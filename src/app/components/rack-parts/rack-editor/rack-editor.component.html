@@ -1,5 +1,5 @@
 <ng-container *ngIf="{
-  rowedRackedModules:((rowedRackedModules$|async)),
+  rowedRackedModules:((dataService.rowedRackedModules$|async)),
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async)
   } as bag"
