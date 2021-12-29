@@ -6,9 +6,9 @@ import {
 }                                 from '@angular/router';
 import { User }                   from '@supabase/supabase-js';
 import {
-  BehaviorSubject,
   from,
-  of
+  of,
+  ReplaySubject
 }                                 from 'rxjs';
 import {
   filter,
@@ -21,8 +21,8 @@ import { SupabaseService }        from '../../backend/supabase.service';
 
 @Injectable()
 export class UserManagementService {
-  user$ = new BehaviorSubject<User | undefined>(undefined);
-  userProfile$ = new BehaviorSubject<{ username: string, email: string } | undefined>(undefined);
+  user$ = new ReplaySubject<User | undefined>(1);
+  userProfile$ = new ReplaySubject<{ username: string, email: string } | undefined>();
   
   constructor(
     public snackBar: MatSnackBar,
@@ -31,12 +31,15 @@ export class UserManagementService {
     public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
+    this.user$.next(undefined);
+    this.userProfile$.next(undefined);
+    
     this.checkUserInCookies();
-  
+    
     this.userProfile$
         .pipe()
         .subscribe(x => {
-    
+      
           if (x) {
             this.userBoxService.store.user$.next({username: x.username});
           } else {

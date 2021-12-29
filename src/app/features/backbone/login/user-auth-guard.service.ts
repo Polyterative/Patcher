@@ -7,6 +7,10 @@ import {
   Router,
   RouterStateSnapshot
 }                                from '@angular/router';
+import {
+  map,
+  tap
+}                                from 'rxjs';
 import { UserManagementService } from './user-management.service';
 
 @Injectable()
@@ -21,19 +25,27 @@ export class UserAuthGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot, state: RouterStateSnapshot
   ) {
-    const user = this.authenticationService.user$.value;
-    if (user) {return true; }
+    // get the current user observable from the service and subscribe to it, return true if the user is logged in
   
-    // this.dialog.open(LoginProposalComponent);
-    let snack = this.snackBar.open('⚠ You need to login to use this feature', 'I want to login', {
-      duration: 10000
-    });
+    return this.authenticationService.user$.pipe(
+      tap((user) => {
+        if (!user) {
+          // this.dialog.open(LoginProposalComponent);
+          let snack = this.snackBar.open('⚠ You need to login to use this feature', 'I want to login', {
+            duration: 10000
+          });
+        
+          snack.onAction()
+               .subscribe(x => this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}));
+        
+          snack._open();
+        
+        }
+      
+      }),
+      map((user) => !!user)
+    );
   
-    snack.onAction()
-         .subscribe(x => this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}));
   
-    snack._open();
-  
-    return false;
   }
 }
