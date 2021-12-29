@@ -13,6 +13,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
+         (click)="onClick(item)"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
          [ngStyle]="item.style"
       >
@@ -24,6 +25,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
+         (click)="onClick(item)"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
          [ngStyle]="item.style"
       >
