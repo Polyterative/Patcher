@@ -1,61 +1,65 @@
 <ng-container *ngIf="{
-  rackModules:(rackModules$|async),
+  rowedRackedModules:((rowedRackedModules$|async)),
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async)
   } as bag"
 >
   <div class="col gap1"
   >
-    <lib-hero-content-card *ngIf="bag.rackModules.length>0; else noData"
-                           [description]="bag.rackModules.length+' module(s) in rack'+' /' +
+    <lib-hero-content-card *ngIf="(bag.rowedRackedModules|totalModulesOfRack)>0; else noData"
+                           [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) in rack'+' /' +
                             ' '+data.hp+' HP per row'+' / ' +
-                             ''+(bag.rackModules|totalHpOfModules)+' used HP' +
-                             ((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'/ Changes saving automatically':'/ Unlock to make changes')"
+                             ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
+                             ((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saving automatically':'/ Unlock to make changes')"
                            class="transition-all-long"
                            [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
     >
-      <div class="col gap1"
+      <div class="col gap1 transition-all"
            style="overflow-x: auto;"
-
-
       >
         <lib-screen-wrapper [maxSize]="data.hp+'rem'">
           <div class="col gap1 transition-all"
                [ngClass]="{'zoomDown':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
+               cdkDropListGroup
           >
             <mat-card-subtitle [ngStyle]="{width: data.hp+'rem'}"
                                fxLayoutAlign="center center"
                                class="widthRuler"
             >{{data.hp}}</mat-card-subtitle>
-      
-            <div class="row"
-                 fxLayoutGap=".1rem"
-                 cdkDropList
-                 cdkDropListOrientation="horizontal"
-                 (cdkDropListDropped)="dataService.rackOrderChange$.next($event)"
+            
+            <ng-container *ngFor="let row of bag.rowedRackedModules; index as rowId"
             >
-              <ng-container *ngIf="bag.rackModules">
-          
-                <ng-container *ngFor="let item of bag.rackModules">
-                  <app-module-realistic [data]="item"
+              <div class="row"
+                   style="min-height:4rem; min-width:4rem;"
+                   cdkDropList
+                   cdkDropListOrientation="horizontal"
+                   (cdkDropListDropped)="dataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
+              >
+                
+                
+                <ng-container *ngFor="let item of row">
+                  <app-module-realistic [data]="item|mapToModule"
                                         cdkDrag
+                                        [cdkDragData]="item"
                                         [cdkDragDisabled]="!bag.isCurrentRackEditable"
                   ></app-module-realistic>
-          
+                
                 </ng-container>
-                <div [fxFlex]="(data.hp - (bag.rackModules|totalHpOfModules))+'rem'"
-                     class="transition-all"
-                     [ngClass]="{'transparentize-half':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
-          
-                >
-                  <app-rack-details-remaining-indicator [data]="data"
-                                                        [rackModules$]="rackModules$"
-                                                        fxFlex="fill"
-                  ></app-rack-details-remaining-indicator>
-                </div>
-        
-              </ng-container>
-            </div>
+                <!--                <div [fxFlex]="(data.hp - (row|totalHpOfModules))+'rem'"-->
+                <!--                     class="transition-all"-->
+                <!--                     [ngClass]="{'transparentize-half':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"-->
+                <!--                     cdkDropList-->
+                <!--                     [cdkDropListEnterPredicate]="falsePredicate"-->
+                <!--                -->
+                <!--                >-->
+                <!--                  <app-rack-details-remaining-indicator [data]="data"-->
+                <!--                                                        [rowModules]="row"-->
+                <!--                                                        fxFlex="fill"-->
+                <!--                  ></app-rack-details-remaining-indicator>-->
+                <!--                </div>-->
+
+              </div>
+            </ng-container>
             <div fxFlex="auto"></div>
           </div>
         </lib-screen-wrapper>

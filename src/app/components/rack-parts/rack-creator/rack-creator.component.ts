@@ -104,7 +104,8 @@ export class RackCreatorComponent implements OnInit {
               authorid: this.backend.getUser().id,
               name:     this.fields.name.control.value,
               hp:       this.fields.hp.control.value,
-              rows:     this.fields.rows.control.value
+              rows:     this.fields.rows.control.value,
+              locked:   false
             }
           )),
           takeUntil(this.destroyEvent$)

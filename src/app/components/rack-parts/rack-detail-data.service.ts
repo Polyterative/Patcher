@@ -13,13 +13,18 @@ import {
   Subject
 }                                from 'rxjs';
 import {
+  map,
   switchMap,
   takeUntil,
-  tap
+  tap,
+  withLatestFrom
 }                                from 'rxjs/operators';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
-import { Rack }                  from '../../models/models';
+import {
+  Rack,
+  RackedModule
+}                                from '../../models/models';
 
 @Injectable()
 export class RackDetailDataService {
@@ -27,7 +32,7 @@ export class RackDetailDataService {
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   userRacksList$: BehaviorSubject<Rack[]> = new BehaviorSubject<Rack[]>([]);
   // removeRackFromCollection$ = new Subject<number>();
-  rackOrderChange$ = new Subject<CdkDragDrop<ElementRef>>();
+  rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
   requestRackEditableStatusChange$ = new Subject<void>();
@@ -49,16 +54,21 @@ export class RackDetailDataService {
         this.userRacksList$.next(x);
       });
   
-    // when user locks the rack, set rack as not editable
-    // this.requestRackEditableStatusChange$
-    //   .pipe(
-    //     switchMap(x => this.userService.user$),
-    //     switchMap(x => !!x ? this.backend.get.userRacks() : of([])),
-    //     takeUntil(this.destroyEvent$)
-    //   )
-    //   .subscribe(x => {
-    //     this.isCurrentRackEditable$.next(x.find(y => y.id === this.singleRackData$.value.id) !== undefined);
-    //   });
+    // when user toggles locked status of rack, update backend
+    this.requestRackEditableStatusChange$
+        .pipe(
+          withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
+          map(([_, x, y]) => {
+            let editable: boolean = !y;
+            this.isCurrentRackEditable$.next(editable);
+            x.locked = !editable;
+            return x;
+          }),
+          switchMap(x => this.backend.update.rack(x)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(x => {
+        });
   
   
     this.updateSingleRackData$
@@ -68,6 +78,18 @@ export class RackDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.singleRackData$.next(x.data));
+  
+    // when updated rack data is received, update locked status observable
+    this.singleRackData$
+        .pipe(
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(x => {
+          if (x) {
+            this.isCurrentRackEditable$.next(!x.locked);
+          }
+        });
+  
   
     // track if rack is property of current user
     combineLatest([
@@ -83,6 +105,8 @@ export class RackDetailDataService {
           this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
         }
       });
+  
+    // update rack lock status
   
   
     // this.removeRackFromCollection$
