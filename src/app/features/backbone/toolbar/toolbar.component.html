@@ -23,7 +23,8 @@
            fxLayoutGap="1rem"
            fxLayoutGap.xs=".25rem"
       >
-        <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
+        <app-route-clickable-link-list [data$]="homeLinks$"></app-route-clickable-link-list>
+        <app-route-clickable-link-list [data$]="mainLinks$"></app-route-clickable-link-list>
       </div>
       <div fxFlex="grow"></div>
       <app-route-clickable-link-list [data$]="(userService.user$|async)?linksUser$:linksA$"></app-route-clickable-link-list>

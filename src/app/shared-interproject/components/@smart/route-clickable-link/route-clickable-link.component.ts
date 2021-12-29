@@ -21,15 +21,22 @@ export class RouteClickableLinkComponent implements OnInit {
   constructor(
     public appState: AppStateService
   ) {
-    
+  
   }
   
   ngOnInit(): void {
   }
   
   doNothing(): any {
-    
+  
   }
+  
+  onClick(item: RouteClickableLink): void {
+    if (item.href) {
+      window.open(item.href, item.hrefNewTab ? '_blank' : '_self');
+    }
+  }
+  
 }
 
 interface RouteClickableLinkMenuItem {
@@ -43,9 +50,11 @@ interface RouteClickableLinkMenu {
 
 export interface RouteClickableLink {
   label: string,
-  route: string,
   disabled: boolean;
   // menu?: RouteClickableLinkMenu;
+  route?: string,
   icon?: string;
+  href?: string;
+  hrefNewTab?: boolean;
   style?: { [param: string]: any };
 }

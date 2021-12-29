@@ -17,13 +17,22 @@ import { ToolbarService }        from './toolbar.service';
   
 })
 export class ToolbarComponent extends SubManager {
-  public readonly links$ = new BehaviorSubject<RouteClickableLink[]>([
+  public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([
     {
       label:    '',
       route:    'home',
       icon:     'home',
       disabled: false
     },
+    {
+      label:      'Help/Info',
+      href:       'https://patcher-2.gitbook.io/patcher-help-docs/',
+      hrefNewTab: true,
+      icon:       'info',
+      disabled:   false
+    }
+  ]);
+  public readonly mainLinks$ = new BehaviorSubject<RouteClickableLink[]>([
     {
       label:    'Modules',
       route:    '/modules/browser',
