@@ -13,20 +13,7 @@ export interface DbComment {
 
 }
 
-export interface DbModule extends MinimalModule {
-  ins: CV[];
-  outs: CV[];
-  switches: Switch[];
-  manualURL: string;
-  additional: any;
-  isComplete: boolean;
-  isDIY: boolean;
-}
 
-// export interface RackedModule {
-//   row: number;
-//   column: number;
-// }
 
 interface MinimalManufacturer {
   name: string;
@@ -45,6 +32,29 @@ export interface MinimalModule extends Timestamped {
    *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
    */
   standard: number;
+}
+
+export interface DbModule extends MinimalModule {
+  ins: CV[];
+  outs: CV[];
+  switches: Switch[];
+  manualURL: string;
+  additional: any;
+  isComplete: boolean;
+  isDIY: boolean;
+}
+
+export interface RackingData {
+  id: number;
+  rackid: number;
+  moduleid: number;
+  row: number;
+  column: number;
+}
+
+export interface RackedModule {
+  rackingData: RackingData;
+  module: DbModule;
 }
 
 export interface Timestamped {
@@ -69,6 +79,7 @@ export interface RackMinimal extends Timestamped {
   rows: number;
   author: PublicUser;
   // isLocked: boolean;
+  locked: boolean;
 }
 
 export interface DBManufacturer {
