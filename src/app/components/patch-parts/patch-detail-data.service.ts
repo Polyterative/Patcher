@@ -16,6 +16,7 @@ import {
 }                                from 'rxjs';
 import {
   filter,
+  map,
   pairwise,
   switchMap,
   take,
@@ -294,7 +295,9 @@ export class PatchDetailDataService implements OnDestroy {
                        );
           }),
           withLatestFrom(this.deletePatch$),
-          switchMap(([z, x]) => this.backend.delete.patch(x)),
+          switchMap(([z, x]) => this.backend.delete.patchConnectionsForPatch(x)
+                                    .pipe(map(() => x))),
+          switchMap((x) => this.backend.delete.patch(x)),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
