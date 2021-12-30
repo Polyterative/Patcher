@@ -10,7 +10,8 @@ import {
 }                          from 'rxjs';
 import {
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 }                          from 'rxjs/operators';
 import {
   RackCreatorComponent,
@@ -37,6 +38,7 @@ export class UserRacksComponent implements OnInit {
     
     this.updateData$
         .pipe(
+          tap(x => this.data$.next([])),
           switchMap(x => this.backend.get.userRacks()),
           takeUntil(this.destroyEvent$)
         )
@@ -50,7 +52,7 @@ export class UserRacksComponent implements OnInit {
               // positive:    {label: '✔️ Conferma'},
               // negative:    {label: '❌ Annulla'}
             };
-      
+  
             return this.dialog.open(
               RackCreatorComponent,
               {

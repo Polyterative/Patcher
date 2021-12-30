@@ -14,8 +14,7 @@
   </div>
   
   <ng-template #yesdata>
-    <lib-hero-content-card *ngIf="(bag.rowedRackedModules|totalModulesOfRack)>0; else noData"
-                           [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) in rack'+' /' +
+    <lib-hero-content-card [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) in rack'+' /' +
                             ' '+data.hp+' HP per row'+' / ' +
                              ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
                              (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically':' / Unlock to make changes')):'')"
@@ -44,21 +43,14 @@
                      (cdkDropListDropped)="dataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
                 >
                   
-                  <ng-container *ngFor="let item of row">
+                  <ng-container *ngFor="let rackedModule of row">
                     <div>
-                      <app-module-realistic [data]="item|mapToModule"
+                      <app-module-realistic [data]="rackedModule|mapToModule"
                                             cdkDrag
-                                            [cdkDragData]="item"
+                                            [cdkDragData]="rackedModule"
                                             [cdkDragDisabled]="!(bag.isCurrentRackEditable&&bag.isCurrentRackPropertyOfCurrentUser)"
+                                            (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
                       >
-                        <ng-container *ngIf="bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable">
-                          <button mat-icon-button
-                                  class="showOnHover button"
-                                  (click)="dataService.requestRackedModuleRemoval$.next(item)"
-                          >
-                            <mat-icon class="transparentize-quarter ">delete</mat-icon>
-                          </button>
-                        </ng-container>
                       </app-module-realistic>
                     </div>
 
@@ -84,6 +76,7 @@
         </lib-screen-wrapper>
       </div>
     </lib-hero-content-card>
+    <app-general-context-menu></app-general-context-menu>
   </ng-template>
   <ng-template #noData>
     <div fxFlex="auto">
@@ -96,4 +89,5 @@
       </div>
     </div>
   </ng-template>
+
 </ng-container>

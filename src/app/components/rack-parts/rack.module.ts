@@ -23,6 +23,7 @@ import { FlexboxRowFastModule }                   from 'src/app/shared-interproj
 import { HeroClickableTitleModule }               from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroInfoBoxModule }                      from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { AutoContentLoadingIndicatorModule }      from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { GeneralContextMenuModule }               from '../../shared-interproject/components/@smart/general-context-menu/general-context-menu.module';
 import { BrandLogoModule }                        from '../../shared-interproject/components/@visual/brand-logo/brand-logo.module';
 import { CleanCardModule }                        from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule }                  from '../../shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -82,7 +83,8 @@ import { TotalModulesOfRackPipe }                 from './total-modules-of-rack.
     DragDropModule,
     BrandLogoModule,
     ScreenWrapperModule,
-    AutoContentLoadingIndicatorModule
+    AutoContentLoadingIndicatorModule,
+    GeneralContextMenuModule
   ]
 })
 export class RackModule {}

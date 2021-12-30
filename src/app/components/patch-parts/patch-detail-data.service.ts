@@ -298,7 +298,7 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
-          this.router.navigate(['/patches/browser']);
+          this.router.navigate(['/user/area']);
         });
     
   }

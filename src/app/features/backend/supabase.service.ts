@@ -155,13 +155,15 @@ export class SupabaseService {
       this.supabase.from(this.paths.patches)
           .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
+          .order('updated', {ascending: false})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    userRacks:          () => rxFrom(
+    userRacks:        () => rxFrom(
       this.supabase.from(this.paths.racks)
           .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
+          .order('updated', {ascending: false})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
@@ -315,6 +317,13 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
+    modulesOfRack: (rackId: number) => rxFrom(
+      this.supabase.from(this.paths.rack_modules)
+          .delete()
+          .filter('rackid', 'eq', rackId)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+    ,
     patch: (id: number) => rxFrom(
       this.supabase.from(this.paths.patches)
           .delete()
@@ -376,8 +385,22 @@ export class SupabaseService {
     rackedModules: (data: RackedModule[]) => {
       return rxFrom(
         this.supabase.from(this.paths.rack_modules)
-            .upsert(data.map(rackedModule => rackedModule.rackingData))
-      );
+            .upsert(data.filter(x => x.rackingData.id != undefined)
+                        .map(rackedModule => rackedModule.rackingData))
+      )
+        .pipe(
+          // insert where id is undefined
+          switchMap(x => {
+            let newRackedModules = data.filter(x => x.rackingData.id === undefined)
+                                       .map(rackedModule => rackedModule.rackingData);
+            let insertNew = rxFrom(
+              this.supabase.from(this.paths.rack_modules)
+                  .upsert(newRackedModules)
+            );
+            // call database for insert if there is any to insert
+            return newRackedModules.length > 0 ? insertNew : of(x);
+          })
+        );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rack:          (data: RackMinimal) => {

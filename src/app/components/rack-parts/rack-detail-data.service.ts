@@ -1,10 +1,12 @@
-import { moveItemInArray }       from '@angular/cdk/drag-drop';
-import { CdkDragDrop }           from '@angular/cdk/drag-drop/drag-events';
+import { moveItemInArray }         from '@angular/cdk/drag-drop';
+import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
 import {
   ElementRef,
   Injectable
-}                                from '@angular/core';
-import { MatSnackBar }           from '@angular/material/snack-bar';
+}                                  from '@angular/core';
+import { MatDialog }               from '@angular/material/dialog';
+import { MatSnackBar }             from '@angular/material/snack-bar';
+import { Router }                  from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
@@ -12,44 +14,58 @@ import {
   of,
   ReplaySubject,
   Subject
-}                                from 'rxjs';
+}                                  from 'rxjs';
 import {
+  debounceTime,
   filter,
   map,
   switchMap,
+  takeUntil,
   tap,
   withLatestFrom
-}                                from 'rxjs/operators';
-import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService }       from '../../features/backend/supabase.service';
+}                                  from 'rxjs/operators';
+import { UserManagementService }   from '../../features/backbone/login/user-management.service';
+import { SupabaseService }         from '../../features/backend/supabase.service';
 import {
   Rack,
   RackedModule,
   RackMinimal
-}                                from '../../models/models';
-import { SubManager }            from '../../shared-interproject/directives/subscription-manager';
+}                                  from '../../models/models';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+}                                  from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SubManager }              from '../../shared-interproject/directives/subscription-manager';
+import { SharedConstants }         from '../../shared-interproject/SharedConstants';
+import { ModuleDetailDataService } from '../module-parts/module-detail-data.service';
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
-  // deleteRack$ = new Subject<number>();
+  deleteRack$ = new Subject<RackMinimal>();
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
   rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
+  //
   requestRackEditableStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
+  requestRackedModuleDuplication$ = new Subject<RackedModule>();
   requestRackedModulesDbSync$ = new Subject<void>();
   
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
     private snackBar: MatSnackBar,
-    public userService: UserManagementService,
-    public backend: SupabaseService
+    private userService: UserManagementService,
+    private backend: SupabaseService,
+    private dialog: MatDialog,
+    private router: Router,
+    private moduleDetailDataService: ModuleDetailDataService
   ) {
     super();
     
@@ -66,8 +82,7 @@ export class RackDetailDataService extends SubManager {
             }),
             switchMap(x => this.backend.update.rack(x))
           )
-          .subscribe(x => {
-          })
+          .subscribe()
     );
     
     
@@ -152,17 +167,39 @@ export class RackDetailDataService extends SubManager {
           .pipe(
             withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
             switchMap(([rackedModule, rackModules, rack]) => {
-    
+  
               this.removeRackedModuleFromArray(rackModules, rackedModule);
               this.rowedRackedModules$.next(rackModules);
-    
-              // this.requestRackedModulesDbSync$.next(); // this does not work, because the rack data are upserted, so we need to delete in the backend manually
+  
+              // this.requestRackedModulesDbSync$.next();
+              // this does not work, because the rack data are upserted, so we need to delete in the backend manually
+  
               return this.backend.delete.rackedModule(rackedModule.rackingData.id);
-            })
+            }),
+            withLatestFrom(this.singleRackData$)
           )
-          .subscribe()
+          .subscribe(([x, rackData]) => {
+            this.singleRackData$.next(rackData);
+          })
     );
-    
+  
+    // when request to duplicate module is received, find module and duplicate it, then update the local rack data
+    this.manageSub(
+      this.requestRackedModuleDuplication$
+          .pipe(
+            withLatestFrom(this.rowedRackedModules$, this.singleRackData$)
+          )
+          .subscribe(([rackedModule, rackModules, rack]) => {
+  
+            this.duplicateRackedModule(rackModules, rackedModule);
+            this.rowedRackedModules$.next(rackModules);
+  
+            this.requestRackedModulesDbSync$.next();
+  
+  
+          })
+    );
+  
     // on request to sync rack data with backend, update backend
     this.manageSub(
       this.requestRackedModulesDbSync$
@@ -172,11 +209,57 @@ export class RackDetailDataService extends SubManager {
                 this.backend.update.rackedModules(rackModules.flatMap(row => row)),
                 this.backend.update.rack(rack)
               ])
-            ))
-          .subscribe()
+                .pipe(
+                  tap(x => {
+                    if (this.isAnyModuleWithoutRackingId(rackModules)) {
+                      this.singleRackData$.next(rack);
+                    }
+                  })
+                )
+            ),
+            debounceTime(2000)
+          )
+          .subscribe(x => {
+            // SharedConstants.successSaveShort(this.snackBar);
+  
+          })
     );
-    
-    // on rack delete, update backend
+  
+    // on rack delete, ask for confirmation and delete rack on backend
+    this.deleteRack$
+        .pipe(
+          switchMap(x => {
+      
+            const data: ConfirmDialogDataInModel = {
+              title:       'Deletion',
+              description: 'Are you sure you want to delete this item?',
+              positive:    {label: '✔️ Delete'},
+              negative:    {label: '❌ Cancel'}
+            };
+      
+            return this.dialog.open(
+              ConfirmDialogComponent,
+              {
+                data,
+                disableClose: true
+              }
+            )
+                       .afterClosed()
+                       .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
+                       );
+          }),
+          withLatestFrom(this.deleteRack$, this.rowedRackedModules$),
+          switchMap(([z, x]) => this.backend.delete.modulesOfRack(x.id)
+                                    .pipe(map(() => x))),
+          switchMap((x) => this.backend.delete.userRack(x.id)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(value => {
+          this.router.navigate(['/user/area']);
+          SharedConstants.successDelete(this.snackBar);
+        });
+  
+  
     // this.deleteRack$
     //     .pipe(
     //       switchMap(x => this.backend.delete.userRack(x)),
@@ -187,7 +270,12 @@ export class RackDetailDataService extends SubManager {
     //       snackBar.open('Removed', undefined, {duration: 1000});
     //       this.updateSingleRackData$.next(b);
     //     });
-    
+  
+  }
+  
+  private isAnyModuleWithoutRackingId(rackModules): boolean {
+    return rackModules.flatMap(row => row)
+                      .filter(module => module.rackingData.id === undefined).length > 0;
   }
   
   private buildRowedModulesArray(rackedModules: RackedModule[], rackData: RackMinimal): RackedModule[][] {
@@ -198,10 +286,11 @@ export class RackDetailDataService extends SubManager {
     return rowedRackedModules;
   }
   
-  private transferInRow(rackModules: RackedModule[][], newRow: number, event: CdkDragDrop<ElementRef>): void {
-    moveItemInArray(rackModules[newRow], event.previousIndex, event.currentIndex);
+  private transferInRow(rackedModules: RackedModule[][], row: number, event: CdkDragDrop<ElementRef>): void {
+    this.updateModulesColumnIds(rackedModules, row);
+    moveItemInArray(rackedModules[row], event.previousIndex, event.currentIndex);
     // update module position
-    this.updateModulesColumnIds(rackModules, newRow);
+    this.updateModulesColumnIds(rackedModules, row);
   }
   
   private updateModulesColumnIds(rackModules: RackedModule[][], row): void {
@@ -211,18 +300,27 @@ export class RackDetailDataService extends SubManager {
     });
   }
   
-  private transferBetweenRows(rackModules: RackedModule[][], module: RackedModule, event, newRow): void {
+  private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event, newRow): void {
     // remove item from old array
-    this.removeRackedModuleFromArray(rackModules, module);
+    this.removeRackedModuleFromArray(rackedModules, rackedModule);
     
     // add item to new array
-    rackModules[newRow].splice(event.currentIndex, 0, module);
-    this.updateModulesColumnIds(rackModules, newRow);
+    rackedModules[newRow].splice(event.currentIndex, 0, rackedModule);
+    this.updateModulesColumnIds(rackedModules, newRow);
     
   }
   
-  private removeRackedModuleFromArray(rackModules: RackedModule[][], module: RackedModule): void {
-    rackModules[module.rackingData.row].splice(module.rackingData.column, 1);
-    this.updateModulesColumnIds(rackModules, module.rackingData.row);
+  private removeRackedModuleFromArray(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
+    this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
+    rackedModules[rackedModule.rackingData.row].splice(rackedModule.rackingData.column, 1);
+    this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
+  }
+  
+  private duplicateRackedModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
+    // make a deep copy of the module
+    rackedModule = JSON.parse(JSON.stringify(rackedModule));
+    rackedModule.rackingData.id = undefined;
+    rackedModules[rackedModule.rackingData.row].splice(rackedModule.rackingData.column + 1, 0, rackedModule);
+    this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
   }
 }
