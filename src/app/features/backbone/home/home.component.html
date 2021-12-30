@@ -2,7 +2,7 @@
   <div class="col gap1"
   >
     <lib-hero-content-card titleBig="Welcome to the modern way to manage everything modular!"
-                           titleNormal="Share patch notes without manually writing them out, keep track of your modules, and manage racks super fast, so you can get back to what you do best: playing with knobs and tweaking settings"
+                           titleNormal="Share patch notes without manually writing them out, keep track of your modules, and manage racks super fast, all in one place."
                            icon="home"
                            class="homeBG"
     >
@@ -11,91 +11,43 @@
   
         <div class="col gap1"
         >
-          <div class="col gap1"
-               fxLayoutGap="1rem"
+          <lib-hero-header class="gradientCard"
+                           [title]="'Share patches ('+(statistics$|async)[2]+')'"
+                           description="Build, save and share patches with our unique interactive patch builder"
           >
-            <div class="gap1"
-                 ngClass.gt-sm="row"
-                 ngClass.lt-md="col"
-            >
-              <lib-device-frame-wrapper fxFlex="grow">
-  
-                <app-patch-browser-patch-detail-view-root
-                    class="embedded"
+            <lib-screen-wrapper maxSize="75rem">
+              <lib-device-frame-wrapper>
+                <app-patch-browser-patch-detail-view-root class="embedded"
                 ></app-patch-browser-patch-detail-view-root>
               </lib-device-frame-wrapper>
-  
-              <lib-hero-header fxFlex="20rem"
-                               fxFlex.lt-md="auto"
-                               class="gradientCard"
-                               [title]="'Share patches ('+(statistics$|async)[2]+')'"
-                               description="Build, save and share patches with our unique interactive patch builder"
-              >
-                <app-brand-primary-button routerLink="/patches/browser"
-                                          fxLayoutAlign="center center"
-                                          innerFlex="fill"
-                                          theme="light"
-                >Browse patches
-                </app-brand-primary-button>
-              </lib-hero-header>
-
-
-            </div>
-  
-            <div class="gap1"
-                 ngClass.gt-sm="row"
-                 ngClass.lt-md="col"
-            >
-              <div fxFlex="auto">
-                <lib-hero-header fxFlex="20rem"
-                                 fxFlex.lt-md="auto"
-                                 class="gradientCard"
-                                 [title]="'Find modules ('+(statistics$|async)[0]+')'"
-                                 description="Find awesome modules and add them to your personal collection"
-                >
-                  <app-brand-primary-button routerLink="/modules/browser"
-                                            fxLayoutAlign="center center"
-                                            innerFlex="fill"
-                                            theme="light"
-                  >Browse modules
-                  </app-brand-primary-button>
-                </lib-hero-header>
-              </div>
+            </lib-screen-wrapper>
+          </lib-hero-header>
     
-              <lib-device-frame-wrapper fxFlex="grow">
-                <app-module-browser-module-detail-view-root
-                    class="embedded"
+          <lib-hero-header class="gradientCard"
+                           [title]="'Find modules ('+(statistics$|async)[0]+')'"
+                           description="Find awesome modules and add them to your personal collection"
+          >
+            <lib-screen-wrapper maxSize="75rem">
+              <lib-device-frame-wrapper>
+                <app-module-browser-module-detail-view-root class="embedded"
                 ></app-module-browser-module-detail-view-root>
               </lib-device-frame-wrapper>
-            </div>
-  
-            <div class="gap1"
-                 ngClass.gt-sm="row"
-                 ngClass.lt-md="colrev"
-  
-            >
-              <lib-device-frame-wrapper fxFlex="grow">
-                <app-rack-browser-rack-detail-view-root
-                    class="embedded"
+            </lib-screen-wrapper>
+          </lib-hero-header>
+    
+          <lib-hero-header class="gradientCard"
+                           [title]="'Manage racks ('+(statistics$|async)[1]+')'"
+                           description="Model your rack and explore your modules' interactions"
+          >
+            <lib-screen-wrapper maxSize="75rem">
+              <lib-device-frame-wrapper>
+                <app-rack-browser-rack-detail-view-root class="embedded"
                 ></app-rack-browser-rack-detail-view-root>
               </lib-device-frame-wrapper>
-              <lib-hero-header fxFlex="20rem"
-                               fxFlex.lt-md="auto"
-                               class="gradientCard"
-                               [title]="'Manage racks ('+(statistics$|async)[1]+')'"
-                               description="Model your rack and explore your modules' interactions"
-              >
-                <app-brand-primary-button routerLink="/racks/browser"
-                                          fxLayoutAlign="center center"
-                                          innerFlex="fill"
-                                          theme="light"
-                >Browse racks
-                </app-brand-primary-button>
-              </lib-hero-header>
-  
-            </div>
-
-          </div>
+            </lib-screen-wrapper>
+          </lib-hero-header>
+    
+    
           <div fxFlex="auto"
                fxLayout="column"
                fxLayoutGap="1rem"
@@ -218,6 +170,7 @@
       
       
       </div>
+
     </lib-hero-content-card>
     
     

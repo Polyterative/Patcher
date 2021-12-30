@@ -10,9 +10,9 @@ app-brand-primary-button {
 
 .embedded {
   //margin:      2rem;
-  transform:   scale(.65);
+  zoom:        .75;
   user-select: none;
-  filter:      grayscale(25%);
+  filter:      grayscale(90%);
 
 
 }
