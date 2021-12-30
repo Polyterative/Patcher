@@ -1,22 +1,24 @@
 <div class="col gap1"
 >
-  <lib-hero-content-card titleBig="My racks"
+  <lib-hero-content-card titleBig="Racks"
                          description="Keep track of your racks, check if your modules fit, and share them with your friends"
                          class="racksBG"
                          icon="view_stream"
+                         id="racks"
   >
     <div class="col gap1"
     >
+      <app-brand-primary-button (click$)="add$.next()"
+                                fxLayoutAlign="end"
+      >Create rack
+      </app-brand-primary-button>
+      <mat-divider inset="true"></mat-divider>
       <app-rack-list fxFlex="grow"
                      [data$]="data$"
                      [showSearch]="true"
                      *ngIf="(data$|async).length>0 else noData"
       ></app-rack-list>
-      
-      <app-brand-primary-button (click$)="add$.next()"
-                                fxLayoutAlign="end"
-      >Create rack
-      </app-brand-primary-button>
+  
     </div>
   </lib-hero-content-card>
 </div>
