@@ -3,8 +3,10 @@ import {
   Component,
   Input,
   OnInit
-}                        from '@angular/core';
-import { MinimalModule } from '../../../models/models';
+}                                  from '@angular/core';
+import { MinimalModule }           from '../../../models/models';
+import { RackDetailDataService }   from '../../rack-parts/rack-detail-data.service';
+import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({
   selector:        'app-module-realistic',
@@ -16,7 +18,8 @@ export class ModuleRealisticComponent implements OnInit {
   @Input() data: MinimalModule;
   
   constructor(
-    // public rackDetailDataService: RackDetailDataService
+    public rackDetailDataService: RackDetailDataService,
+    public moduleDetailDataService: ModuleDetailDataService
   ) { }
   
   ngOnInit(): void {

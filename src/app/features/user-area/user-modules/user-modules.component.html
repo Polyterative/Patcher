@@ -1,23 +1,25 @@
 <div class="col gap1"
 >
-  <lib-hero-content-card titleBig="My modules"
+  <lib-hero-content-card titleBig="Modules"
                          description="Modules added to your collection will be visible in the patch builder"
                          class="modulesBG"
                          icon="view_module"
+                         id="modules"
   >
     <div class="col gap1"
     >
+      <app-brand-primary-button routerLink="/modules/browser"
+                                fxLayoutAlign="end"
+      >Add modules to collection
+      </app-brand-primary-button>
+      <mat-divider inset="true"></mat-divider>
       <app-module-list fxFlex="grow"
                        [data$]="data$"
                        [viewConfig]="viewConfig"
                        [showSearch]="true"
                        *ngIf="(data$|async).length>0 else noData"
       ></app-module-list>
-      
-      <app-brand-primary-button routerLink="/modules/browser"
-                                fxLayoutAlign="start"
-      >Add modules to collection
-      </app-brand-primary-button>
+  
     </div>
   </lib-hero-content-card>
 </div>

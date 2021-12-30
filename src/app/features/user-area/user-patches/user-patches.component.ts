@@ -10,7 +10,8 @@ import {
 }                          from 'rxjs';
 import {
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 }                          from 'rxjs/operators';
 import {
   PatchCreatorComponent,
@@ -36,6 +37,7 @@ export class UserPatchesComponent implements OnInit {
   ) {
     this.updateData$
         .pipe(
+          tap(x => this.data$.next([])),
           switchMap(x => this.backend.get.userPatches()),
           takeUntil(this.destroyEvent$)
         )
