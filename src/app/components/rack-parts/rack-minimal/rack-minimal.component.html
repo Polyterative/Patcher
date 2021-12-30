@@ -41,14 +41,21 @@
 
     } as bag"
     >
-      <a mat-icon-button
-         matTooltip="Toggle rack lock"
-         *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
-         [routerLink]="['/racks/details',data.id]"
-         (click)="dataService.requestRackEditableStatusChange$.next()"
-      >
-        <mat-icon>{{bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'}}</mat-icon>
-      </a>
+      <ng-container *ngIf="bag.isCurrentRackPropertyOfCurrentUser">
+        <a mat-icon-button
+           matTooltip="Toggle rack lock"
+           (click)="dataService.requestRackEditableStatusChange$.next()"
+        >
+          <mat-icon>{{bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'}}</mat-icon>
+        </a>
+        <a mat-icon-button
+           [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
+           [disabled]="!bag.isCurrentRackEditable"
+           (click)="dataService.deleteRack$.next(data)"
+        >
+          <mat-icon>delete_forever</mat-icon>
+        </a>
+      </ng-container>
     </ng-container>
     <div fxFlex="grow"></div>
     <a mat-icon-button

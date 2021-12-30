@@ -42,7 +42,7 @@ export class SharedConstants {
   
   static errorLogin<T>(snackBar: MatSnackBar, msg?: string) {
     return snackBar.open(`❌ Login  not possible ${ msg }`, undefined, {duration: 5000});
-    
+  
   }
   
   static successDelete(snackBar: MatSnackBar) {
@@ -51,6 +51,10 @@ export class SharedConstants {
   
   static successSave(snackBar: MatSnackBar) {
     snackBar.open('✅ Saved data', undefined, {duration: 4000});
+  }
+  
+  static successSaveShort(snackBar: MatSnackBar) {
+    snackBar.open('✅ Saved data', undefined, {duration: 1000});
   }
   
   static successLogin(snackBar: MatSnackBar) {
