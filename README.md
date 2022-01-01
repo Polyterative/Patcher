@@ -11,4 +11,4 @@ reload if you change any of the source files.
 
 ## DB
 
-![img.png](./internaldocs\db.png)
+![image](https://user-images.githubusercontent.com/16295552/147859895-e65b8675-7a6f-4a08-a046-dc68db8f0729.png)
