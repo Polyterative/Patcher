@@ -22,7 +22,6 @@ data:(dataService.singleModuleData$|async)
   
               <ng-template #data>
                 <app-module-composite [data]="(bag.data)"
-
                 ></app-module-composite>
               </ng-template>
 
@@ -37,8 +36,11 @@ data:(dataService.singleModuleData$|async)
                 [data]="(bag.data)"
             ></app-module-editor>
           </lib-hero-item-card>
-
-
+          <lib-hero-item-card *ngIf="bag.data">
+            <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
+          </lib-hero-item-card>
+  
+  
           <!--          hidden cause circular dependency-->
           <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
           <!--              stuff-->
