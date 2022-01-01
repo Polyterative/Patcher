@@ -25,10 +25,10 @@ export class ToolbarComponent extends SubManager {
       disabled: false
     },
     {
-      label:      'Help/Info',
+      label:      '',
       href:       'https://patcher-2.gitbook.io/patcher-help-docs/',
       hrefNewTab: true,
-      icon:       'info',
+      icon:       'help_outline',
       disabled:   false
     }
   ]);
@@ -57,7 +57,7 @@ export class ToolbarComponent extends SubManager {
     {
       label:    'Collection',
       route:    'user/area',
-      icon:     'account_circle',
+      icon:     'dashboard',
       disabled: false
     },
     {
