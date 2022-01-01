@@ -23,8 +23,7 @@
                               infoText="Patch name"
     >{{data.name}}
     </app-hero-clickable-title>
-    <div class="row spaceBetween description"
-         fxLayoutGap="1rem"
+    <div class="row gap1 spaceBetween description"
          *ngIf="bag.singlePatchData&&!viewConfig.hideDescription&&!bag.patchEditingPanelOpenState"
     >
       <mat-card-subtitle>{{bag.singlePatchData.description}}</mat-card-subtitle>
@@ -37,7 +36,6 @@
                  style="margin-top:.5rem"
     ></mat-divider>
     <div class="row buttons opacizeOnHover"
-         fxLayoutGap.xs="0rem"
     >
       <a mat-icon-button
          matTooltip="Share patch"
@@ -62,9 +60,6 @@
         </button>
         <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
   
-          <!--          <app-brand-primary-button (click$)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)">-->
-          <!--            Edit patch-->
-          <!--          </app-brand-primary-button>-->
           <button mat-icon-button
                   matTooltip="Edit patch"
                   [disabled]="!bag.user"

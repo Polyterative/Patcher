@@ -9,11 +9,7 @@
     <div class="col"
     >
       <app-module-part-name [data]="data"></app-module-part-name>
-      <app-module-part-description [data]="data"
-                                   *ngIf="!viewConfig.hideDescription"
-      ></app-module-part-description>
-      <div class="row spaceBetween"
-           fxLayoutGap="1rem"
+      <div class="row gap1 spaceBetween"
       >
         <app-module-part-manufacturer *ngIf="!viewConfig.hideManufacturer"
                                       [data]="data"
@@ -22,6 +18,9 @@
                             [data]="data"
         ></app-module-part-hp>
       </div>
+      <app-module-part-description [data]="data"
+                                   *ngIf="!viewConfig.hideDescription"
+      ></app-module-part-description>
       <app-timestamps-relative [data]="data"
                                *ngIf="!viewConfig.hideDates"
       ></app-timestamps-relative>
@@ -31,8 +30,7 @@
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="row opacizeOnHover"
-           fxLayoutGap="2rem"
+      <div class="row gap2 opacizeOnHover"
            fxLayoutGap.xs="0rem"
       >
         <div fxFlex="auto"
@@ -60,8 +58,8 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-  
-  
+      
+      
           <button mat-icon-button
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'You need to login to add to modules your rack':''"
@@ -71,13 +69,10 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-
+    
         </div>
         <div fxFlex="grow"></div>
-        <div fxFlex="auto"
-             fxLayout="row"
-             fxLayoutGap="1rem"
-        >
+        <div class="row gap1">
           <ng-container *ngIf="(bag.singleModuleData&&bag.user)">
             <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
               <button mat-icon-button
@@ -119,8 +114,8 @@
             </a>
 
           </ng-container>
-  
-  
+      
+      
           <ng-container *ngIf="!bag.singleModuleData">
             <a mat-icon-button
                matTooltip="Show details"
@@ -128,9 +123,9 @@
             >
               <mat-icon>info</mat-icon>
             </a>
-  
+      
           </ng-container>
-
+    
         </div>
       </div>
     </ng-container>
