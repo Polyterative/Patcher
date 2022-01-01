@@ -16,11 +16,13 @@
   <ng-template #data>
     <ng-container *ngIf="bag.connections.length>0; else noData">
       <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
+                             *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
       >
         <lib-clean-card>
           <!--          <div *ngIf="bag.connections.length<=8"-->
           <div class="col gap1"
-               [ngClass]="{'encloseVertically':dataService.patchEditingPanelOpenState$|async}"
+               [ngClass]="{'encloseVertically':(dataService.patchEditingPanelOpenState$|async)&&false}"
+  
           >
             <ng-container *ngFor="let item of bag.connections; let i = index">
               <app-patch-connection-minimal [data]="item"
@@ -31,7 +33,7 @@
               ></mat-divider>
             </ng-container>
           </div>
-  
+
           <!--          <cdk-virtual-scroll-viewport *ngIf="bag.connections.length>8"-->
           <!--                                       autosize-->
           <!--                                       style="height: 50rem; overflow: auto;"-->

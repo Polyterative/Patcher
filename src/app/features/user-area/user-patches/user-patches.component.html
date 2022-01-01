@@ -19,17 +19,16 @@
                       [showSearch]="true"
                       *ngIf="(data$|async).length>0 else noData"
       ></app-patch-list>
-  
-  
+
+
     </div>
   </lib-hero-content-card>
 </div>
 
 <ng-template #noData>
   <div fxFlex="auto">
-    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks
-                                                     to your collection yet.
-                                                     Try adding some!
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any patches
+                                                     yet. Try adding some!
     </mat-card-subtitle>
   </div>
 </ng-template>
