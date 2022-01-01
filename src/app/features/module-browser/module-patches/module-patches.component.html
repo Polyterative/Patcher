@@ -1,0 +1,8 @@
+<ng-container *ngIf="{
+  data:(data$|async)
+  } as bag"
+>
+  <ng-container *ngFor="let item of bag.data;">
+    <div>{{item.name}}</div>
+  </ng-container>
+</ng-container>

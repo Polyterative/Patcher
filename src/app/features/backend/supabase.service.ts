@@ -232,20 +232,13 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patchWithModule:    (id: number, columns = '*') => rxFrom(
-      this.supabase.from(this.paths.patch_connections)
-        // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
-        //   .select(`*,a(*,${ this.queryJoins.module })`)
-        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
-          .select(`
-          *,
-          patch:patchid(*),
-          a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
-          b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
-          `)
-          .filter('patches.id', 'cs', id)
+    patcherWithModule:  (moduleid: number) => rxFrom(
+      this.supabase.from(this.paths.moduleOUTs)
+      // this is hard
+  
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(map((x => x.data))),
     rackWithId:         (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.racks)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
