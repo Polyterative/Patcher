@@ -15,7 +15,8 @@
 
   &.disabled {
     //background-color: $brand-secondary !important;
-    opacity: 0.3;
+    opacity: .6;
+    color:   rgb(255, 255, 255) !important;
 
     &:hover {
       background-color: rgba(92, 92, 92, 0);

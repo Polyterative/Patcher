@@ -64,12 +64,17 @@ export class ToolbarComponent extends SubManager {
       label:    '',
       route:    'user/account',
       icon:     'manage_accounts',
-      disabled: true
+      disabled: false
     }
   ]);
   
   
   public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>([
+    {
+      label:    'Collection',
+      icon:     'dashboard',
+      disabled: true
+    },
     {
       label:    'Log in',
       route:    'auth/login',
@@ -95,13 +100,13 @@ export class ToolbarComponent extends SubManager {
     this.manageSub(
       this.userService.userProfile$
           .subscribe(x => {
-      
+  
             const element: RouteClickableLink = this.linksUser$.value[1];
             element.label = x ? x.username : '';
             const toNext = this.linksUser$.value;
             toNext[1] = element;
             this.linksUser$.next(toNext);
-      
+  
           })
     );
   
