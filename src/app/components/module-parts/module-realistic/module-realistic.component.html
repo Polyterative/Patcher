@@ -1,8 +1,6 @@
 <div [fxFlex]="data.hp*1+'rem'"
-     fxLayout="column"
-     class="root"
+     class="col root"
 >
-  
   <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
   <div [ngStyle]="{height:data.standard==0?'22rem':'6rem',backgroundColor: '#ffffff'}"
        style="padding-right: .5rem;padding-left: .5rem;"
