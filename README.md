@@ -11,4 +11,4 @@ reload if you change any of the source files.
 
 ## DB
 
-![img.png](E:\DEVELOPMENT UTILS\PERSONAL\Patcher\internaldocs\db.png)
+![img.png](./internaldocs\db.png)
