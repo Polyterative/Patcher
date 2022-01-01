@@ -17,8 +17,7 @@
       <div ngClass.lt-xl="col gap1"
            ngClass.gt-lg="row gap1"
       >
-        <div fxFlex.gt-lg="32rem"
-             class="col gap1"
+        <div class="col gap1"
         >
           <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
                                              [updateData$]="dataService.savePatchEditing$"
@@ -33,8 +32,8 @@
                 you're done!
               </mat-card-subtitle>
               <div></div>
-  
-  
+      
+      
               <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                         theme="positive"
                                         fxLayoutAlign="end"
@@ -43,8 +42,8 @@
                 <mat-icon>save</mat-icon>
                 Save patch
               </app-brand-primary-button>
-
-
+    
+    
             </div>
           </lib-auto-update-loading-indicator>
   
@@ -87,8 +86,7 @@
             >
   
               <!--              <div *ngIf="bag.editorConnections.length<=5"-->
-              <div class="col gap1"
-                   style="max-height: 46rem; overflow-y: auto;"
+              <div class="col gap0"
               >
                 <ng-container *ngFor="let item of bag.editorConnections; let i = index">
                   <lib-clean-card>
@@ -128,7 +126,6 @@
         >
           <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
           <app-user-modules class="modulesBG"
-                            style="max-height: 73rem; overflow-y: auto;"
                             [viewConfig]="{
                          hideManufacturer: true,
                          hideDescription:  true,

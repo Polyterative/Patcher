@@ -39,8 +39,12 @@ body {
   font-size: 1rem;font-family: inherit;
 }
 
+@mixin condensed-font {
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
 mat-card-title {
-  font-family: 'Roboto Condensed', sans-serif
+  @include condensed-font;
 }
 
 mat-card-subtitle, p {

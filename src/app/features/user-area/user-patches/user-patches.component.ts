@@ -27,7 +27,7 @@ import { Patch }           from 'src/app/models/models';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserPatchesComponent implements OnInit {
-  data$: BehaviorSubject<Patch[]> = new BehaviorSubject([]);
+  data$: BehaviorSubject<Patch[] | null> = new BehaviorSubject([]);
   public readonly add$ = new Subject<void>();
   public readonly updateData$ = new Subject<void>();
   
