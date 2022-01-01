@@ -1,6 +1,6 @@
 import { CommonModule }           from '@angular/common';
 import { NgModule }               from '@angular/core';
-import { ModulePatchesComponent } from './module-patches/module-patches.component';
+import { ModulePatchesComponent } from './module-patches.component';
 
 
 @NgModule({
@@ -9,8 +9,7 @@ import { ModulePatchesComponent } from './module-patches/module-patches.componen
     ModulePatchesComponent
   ],
   imports:      [
-    CommonModule,
-    // PatchBrowserModule
+    CommonModule
   ]
 })
-export class ModulePatchesModule { }
+export class ModulePatchesModule {}
