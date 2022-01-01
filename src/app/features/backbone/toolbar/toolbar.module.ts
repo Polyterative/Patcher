@@ -6,6 +6,7 @@ import {
 }                                   from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
 import { MatCardModule }            from '@angular/material/card';
+import { MatDividerModule }         from '@angular/material/divider';
 import { MatIconModule }            from '@angular/material/icon';
 import { MatMenuModule }            from '@angular/material/menu';
 import { MatToolbarModule }         from '@angular/material/toolbar';
@@ -17,7 +18,7 @@ import { ToolbarComponent }         from './toolbar.component';
 import { ToolbarService }           from './toolbar.service';
 
 @NgModule({
-  imports:      [
+  imports: [
     CommonModule,
     MatToolbarModule,
     MatIconModule,
@@ -30,7 +31,8 @@ import { ToolbarService }           from './toolbar.service';
     RouterModule,
     ScreenWrapperModule,
     RouteClickableLinkModule,
-    MatCardModule
+    MatCardModule,
+    MatDividerModule
   ],
   declarations: [
     ToolbarComponent
