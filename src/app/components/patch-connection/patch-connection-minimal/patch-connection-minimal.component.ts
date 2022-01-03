@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnInit,
   Output
@@ -25,8 +26,8 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Input() readonly data: PatchConnection;
   @Input() readonly isEditing = false;
   @Input() readonly isCreator = false;
-  @Output() readonly remove$ = new Subject<PatchConnection>();
-  @Output() readonly create$ = new Subject<PatchConnection>();
+  @Output() readonly remove$ = new EventEmitter<PatchConnection>();
+  @Output() readonly create$ = new EventEmitter<PatchConnection>();
   types = FormTypes;
   
   @Input() viewConfig: ModuleMinimalViewConfig = {
