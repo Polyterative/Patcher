@@ -42,7 +42,7 @@
                     matTooltip="Add to your collection"
                     *ngIf="(bag.singleModuleData)"
                     [disabled]="!bag.user"
-                    [title]="!bag.user ? 'You need to login to add to modules your collection':''"
+                    [title]="!bag.user ? 'Login to add to modules your collection':''"
                     (click)="dataService.addModuleToCollection$.next(data.id)"
             >
               <mat-icon>add</mat-icon>
@@ -62,7 +62,7 @@
       
           <button mat-icon-button
                   matTooltip="Add to rack"
-                  [title]="!bag.user ? 'You need to login to add to modules your rack':''"
+                  [title]="!bag.user ? 'Login to add to modules your rack':''"
                   *ngIf="(bag.singleModuleData)"
                   [disabled]="(!bag.user)"
                   (click)="dataService.addModuleToRack$.next(data)"

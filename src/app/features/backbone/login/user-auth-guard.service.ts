@@ -31,7 +31,7 @@ export class UserAuthGuard implements CanActivate {
       tap((user) => {
         if (!user) {
           // this.dialog.open(LoginProposalComponent);
-          let snack = this.snackBar.open('⚠ You need to login to use this feature', 'I want to login', {
+          let snack = this.snackBar.open('Login to use this feature', 'Login now', {
             duration: 10000
           });
         
