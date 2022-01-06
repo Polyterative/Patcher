@@ -1,0 +1,9 @@
+/* Webfont: FUNGIS-Regular */
+@font-face {
+    font-family: 'FUNGISRegular';
+    src: url('./FUNGIS Regular.woff2') format('woff2'), /* Modern Browsers */ url('./FUNGIS Regular.otf') format('opentype'); /* Safari, Android, iOS */
+    font-style: normal;
+    font-weight: normal;
+    text-rendering: optimizeLegibility;
+}
+
