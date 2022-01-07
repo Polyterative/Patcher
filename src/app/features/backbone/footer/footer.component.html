@@ -1,20 +1,53 @@
-<div fxFlex="auto"
-     fxLayout="row"
-     fxLayout.lt-md="column"
-     class="root"
-     style="opacity: 0.65;"
->
+<div class="col ">
+  <mat-divider inset="true"></mat-divider>
+  <div class="col">
+    <mat-divider inset="true"></mat-divider>
+    
+    <!--    <lib-screen-wrapper>-->
+    <div fxLayout="row wrap"
+         fxLayout.lt-md="column"
+         class="root"
+    >
+      <!--  <div fxFlex="25%"-->
+      <!--       fxLayoutAlign="center center"-->
+      <!--  >-->
+      <!--    <a href="https://www.buymeacoffee.com/polyterative"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=&slug=polyterative&button_colour=355E97&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00"></a>-->
+      <!--  </div>-->
+      <h3 fxLayoutAlign="start center"
+          fxFlex="auto"
+      
+          style="text-align: center; color: rgba(0,0,0,0.4); font-family: 'NeutralFace', ', ', sans-serif;padding-top: 0rem; padding-bottom: 0rem;"
+      >
+        THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
+      <!--      <mat-divider fxFlex=".5rem"-->
+      <!--                   inset="true"-->
+      <!--                   vertical="true"-->
+      <!--                   fxLayoutAlign="center center"-->
+      <!--      ></mat-divider>-->
+      <div fxFlex="auto"
+           fxLayout="row wrap"
+           fxLayout.lt-sm="column"
+           fxLayoutGap="1rem"
+      >
+        <app-label-value-showcase fxFlex="20rem"
+                                  label="Something wrong?"
+                                  [bigText]="false"
+        >
+          <p>This project is in beta! Please report any issues on the discord server</p>
+        </app-label-value-showcase>
+        <app-build-info fxFlex="20rem"
+                        fxFlex.gt-sm="auto"
+        ></app-build-info>
+        <app-discord-widget fxFlex="20rem"
+                            fxFlex.gt-sm="auto"
+        ></app-discord-widget>
+        <app-feedback-box fxFlex="20rem"
+                          fxFlex.gt-sm="auto"
+        ></app-feedback-box>
+      </div>
+      <!--  <div fxFlex="grow"></div>-->
+    </div>
+    <!--    </lib-screen-wrapper>-->
   
-  <!--  <div fxFlex="25%"-->
-  <!--       fxLayoutAlign="center center"-->
-  <!--  >-->
-  <!--    <a href="https://www.buymeacoffee.com/polyterative"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=&slug=polyterative&button_colour=355E97&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00"></a>-->
-  <!--  </div>-->
-  <app-feedback-box fxFlex="auto"
-  ></app-feedback-box>
-  <app-discord-widget fxFlex="auto"
-  ></app-discord-widget>
-  <app-build-info fxFlex="auto"
-  ></app-build-info>
-  <!--  <div fxFlex="grow"></div>-->
+  </div>
 </div>
