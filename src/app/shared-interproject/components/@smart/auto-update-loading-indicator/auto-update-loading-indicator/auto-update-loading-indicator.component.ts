@@ -3,8 +3,7 @@ import {
   Component,
   Input,
   OnDestroy,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 } from '@angular/core';
 import {
   BehaviorSubject,
@@ -24,7 +23,7 @@ import {
   templateUrl:     './auto-update-loading-indicator.component.html',
   styleUrls:       ['./auto-update-loading-indicator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None
+  
 })
 export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;

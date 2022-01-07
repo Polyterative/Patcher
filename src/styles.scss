@@ -24,7 +24,7 @@ $bgGradientBG:  rgb(223, 223, 223);
 
 .homeBG {
   background: $bgGradientBG;
-  background: linear-gradient(135deg, transparentize(rgb(229, 155, 156), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(135deg, transparentize(rgb(148, 148, 148), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 .userBG {

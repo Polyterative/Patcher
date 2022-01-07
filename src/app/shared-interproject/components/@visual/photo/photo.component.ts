@@ -12,7 +12,7 @@ import { PhotosService }   from 'src/app/shared-interproject/components/@visual/
   templateUrl:     './photo.component.html',
   styleUrls:       ['./photo.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // encapsulation:   ViewEncapsulation.None,
+  // ,
   providers: [PhotosService]
 })
 export class PhotoComponent implements OnInit {

@@ -1,3 +1,6 @@
+@import "~src/app/style/brand-resources.scss";
+@import "~src/app/style/commons_customizations.scss";
+
 .parent {
   > .opacizeOnHover {
     opacity: 0.2;
@@ -15,8 +18,6 @@
 }
 
 .description {
-  font-size:  smaller;
-  font-style: italic;
-  color:      rgba(0, 0, 0, 0.7);
+  @include item-description
 
 }

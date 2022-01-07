@@ -1,15 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 } from '@angular/core';
 
 @Component({
   selector:        'lib-hero-item-card',
   templateUrl:     './hero-item-card.component.html',
   styleUrls:       ['./hero-item-card.component.scss'],
-  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeroItemCardComponent implements OnInit {

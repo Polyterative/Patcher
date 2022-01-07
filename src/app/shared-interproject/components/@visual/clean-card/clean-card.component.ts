@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 } from '@angular/core';
 
 @Component({
@@ -10,7 +9,7 @@ import {
   templateUrl:     './clean-card.component.html',
   styleUrls:       ['./clean-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None
+  
 })
 export class CleanCardComponent implements OnInit {
   
