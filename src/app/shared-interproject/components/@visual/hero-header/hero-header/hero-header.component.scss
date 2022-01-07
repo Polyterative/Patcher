@@ -1,9 +1,12 @@
+@import "./src/app/style/brand-resources";
+
 .header {
 
 }
 
 .title {
 
+  @include heading-font
 }
 
 .description {

@@ -12,6 +12,7 @@ import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE
 }                                  from '@angular/material/core';
+import { MatDividerModule }        from '@angular/material/divider';
 import { MatToolbarModule }        from '@angular/material/toolbar';
 import { BrowserModule }           from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -70,8 +71,9 @@ const matDatepickerLocaleIT = {
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule,
-    AdviceTooltipModule
-  
+    AdviceTooltipModule,
+    MatDividerModule
+
   ],
   providers:    [
     italianLocale,

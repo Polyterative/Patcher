@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 }                                  from '@angular/core';
 import {
   BehaviorSubject,
@@ -25,7 +24,6 @@ import { ModuleList }              from '../module-browser-data.service';
   templateUrl:     './module-list.component.html',
   styleUrls:       ['./module-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None,
   viewProviders:   [LocalDataFilterService]
 })
 export class ModuleListComponent extends SubManager implements OnInit {

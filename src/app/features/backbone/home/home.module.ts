@@ -3,6 +3,7 @@ import { NgModule }                 from '@angular/core';
 import { FlexLayoutModule }         from '@angular/flex-layout';
 import { MatButtonModule }          from '@angular/material/button';
 import { MatCardModule }            from '@angular/material/card';
+import { MatDividerModule }         from '@angular/material/divider';
 import { MatExpansionModule }       from '@angular/material/expansion';
 import { MatIconModule }            from '@angular/material/icon';
 import { MatToolbarModule }         from '@angular/material/toolbar';
@@ -12,6 +13,7 @@ import { HeroContentCardModule }    from 'src/app/shared-interproject/components
 import { HeroHeaderModule }         from 'src/app/shared-interproject/components/@visual/hero-header/hero-header.module';
 import { EmptyStateModule }         from '../../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { ListLinkRouterModule }     from '../../../shared-interproject/components/@smart/list-link-router/list-link-router.module';
+import { LottieContainerModule }    from '../../../shared-interproject/components/@smart/lottie-container/lottie-container.module';
 import { UserDataHandlerModule }    from '../../../shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
 import { DeviceFrameWrapperModule } from '../../../shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
 import { HeroLinkModule }           from '../../../shared-interproject/components/@visual/hero-link/hero-link.module';
@@ -55,7 +57,9 @@ import { HomeComponent }            from './home.component';
     PatchBrowserModule,
     ModuleBrowserModule,
     RackBrowserModule,
-    DeviceFrameWrapperModule
+    DeviceFrameWrapperModule,
+    LottieContainerModule,
+    MatDividerModule
   ]
 })
 export class HomeModule {}
