@@ -1,9 +1,0 @@
-/* Webfont: FUNGIS-Bold */
-@font-face {
-    font-family: 'FUNGISBold';
-    src: url('grotescalight.woff2') format('woff2'), /* Modern Browsers */ url('grotescalight.otf') format('opentype'); /* Safari, Android, iOS */
-    font-style: normal;
-    font-weight: normal;
-    text-rendering: optimizeLegibility;
-}
-
