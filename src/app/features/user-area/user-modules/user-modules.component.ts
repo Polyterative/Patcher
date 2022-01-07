@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 }                                  from '@angular/core';
 import { BehaviorSubject }         from 'rxjs';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
@@ -15,7 +14,6 @@ import { SubManager }              from '../../../shared-interproject/directives
   selector:        'app-user-modules',
   templateUrl:     './user-modules.component.html',
   styleUrls:       ['./user-modules.component.scss'],
-  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserModulesComponent extends SubManager implements OnInit {
