@@ -1,6 +1,9 @@
 ﻿$standardUnit: 1rem;
 @mixin flex {
+  display:               -webkit-box;
+  display:               -ms-flexbox;
   display:               flex;
+  -webkit-box-sizing:    border-box;
   box-sizing:            border-box;
   -webkit-box-direction: normal;
 }
@@ -20,15 +23,15 @@
 }
 
 .gap0 {
-  gap: $standardUnit/2
+  gap: $standardUnit/2 $standardUnit/2 /* row-gap column gap */
 }
 
 .gap1 {
-  gap: $standardUnit
+  gap: $standardUnit $standardUnit
 }
 
 .gap2 {
-  gap: $standardUnit*2
+  gap: $standardUnit*2 $standardUnit*2
 }
 
 .col {
