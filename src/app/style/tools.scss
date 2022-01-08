@@ -10,6 +10,7 @@
 
 .row {
   @include flex;
+  display:            inline-flex;
   flex-direction:     row;
   //flex-flow:          row;
   -webkit-box-orient: horizontal;
