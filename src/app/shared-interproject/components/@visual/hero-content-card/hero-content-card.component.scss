@@ -1,7 +1,7 @@
 //@use '@angular/material' as mat;
-@import "~src/app/style/brand-resources.scss";
 @import '@angular/material/theming';
-
+@import "~src/app/style/brand-resources";
+@import "~src/app/style/commons_customizations";
 mat-card {
   padding: 0
 }
@@ -22,6 +22,7 @@ mat-card {
 }
 
 .root {
+  @extend .slight-rounding;
 
   & > * {
     @include unselectable
