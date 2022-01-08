@@ -1,11 +1,15 @@
 <div class="col ">
-  <mat-divider inset="true"></mat-divider>
+  <div style="margin-top: 16rem; margin-bottom: 16rem;"
+  >
+    <app-lottie-container fxLayoutAlign="center center"
+                          fxFlex="auto"
+                          [styles]="{maxWidth: '30rem'}"
+                          [options]="{path: '/assets/json/lottie/Dots Icon.json', loop: true, autoplay: true}"
+    ></app-lottie-container>
+  </div>
+  
   <div class="col">
-    <mat-divider inset="true"></mat-divider>
-    
-    <!--    <lib-screen-wrapper>-->
-    <div fxLayout="row wrap"
-         fxLayout.lt-md="column"
+    <div fxLayout="column"
          class="root"
     >
       <!--  <div fxFlex="25%"-->
@@ -13,12 +17,7 @@
       <!--  >-->
       <!--    <a href="https://www.buymeacoffee.com/polyterative"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=&slug=polyterative&button_colour=355E97&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00"></a>-->
       <!--  </div>-->
-      <h3 fxLayoutAlign="start center"
-          fxFlex="auto"
       
-          style="text-align: center; color: rgba(0,0,0,0.4); font-family: 'NeutralFace', ', ', sans-serif;padding-top: 0rem; padding-bottom: 0rem;"
-      >
-        THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
       <!--      <mat-divider fxFlex=".5rem"-->
       <!--                   inset="true"-->
       <!--                   vertical="true"-->
@@ -29,25 +28,39 @@
            fxLayout.lt-sm="column"
            fxLayoutGap="1rem"
       >
-        <app-label-value-showcase fxFlex="20rem"
+        <app-label-value-showcase fxFlex="18rem"
+                                  fxFlex.lt-sm="auto"
                                   label="Something wrong?"
                                   [bigText]="false"
         >
           <p>This project is in beta! Please report any issues on the discord server</p>
         </app-label-value-showcase>
-        <app-build-info fxFlex="20rem"
-                        fxFlex.gt-sm="auto"
+        <app-build-info fxFlex="18rem"
+                        fxFlex.lt-sm="auto"
         ></app-build-info>
-        <app-discord-widget fxFlex="20rem"
-                            fxFlex.gt-sm="auto"
+        <app-discord-widget fxFlex="18rem"
+                            fxFlex.lt-sm="auto"
         ></app-discord-widget>
-        <app-feedback-box fxFlex="20rem"
-                          fxFlex.gt-sm="auto"
+        <app-feedback-box fxFlex="18rem"
+                          fxFlex.lt-sm="auto"
         ></app-feedback-box>
+      </div>
+      <mat-divider inset="true"></mat-divider>
+      <div class="row gap1">
+        <app-lottie-container fxLayoutAlign="start end"
+                              fxFlex="auto"
+                              style="opacity: .5"
+                              [styles]="{maxWidth: '10rem'}"
+                              [options]="{path: '/assets/json/lottie/Horizontal Bars.json', loop: true, autoplay: true}"
+        ></app-lottie-container>
+        <h3 fxLayoutAlign="end end"
+            fxFlex="grow"
+            class="tagline"
+        >
+          THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
       </div>
       <!--  <div fxFlex="grow"></div>-->
     </div>
-    <!--    </lib-screen-wrapper>-->
   
   </div>
 </div>

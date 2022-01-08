@@ -3,7 +3,8 @@ import {
   Component,
   EventEmitter,
   Input,
-  Output
+  Output,
+  ViewEncapsulation
 } from '@angular/core';
 
 /**
@@ -13,6 +14,7 @@ import {
   selector:        'app-brand-primary-button',
   templateUrl:     './brand-primary-button.component.html',
   styleUrls:       ['./brand-primary-button.component.scss'],
+  encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BrandPrimaryButtonComponent {
