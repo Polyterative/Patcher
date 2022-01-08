@@ -7,26 +7,21 @@ data:(dataService.singleRackData$|async)
     <lib-hero-content-card titleBig="Rack details"
                            class="racksBG"
     >
-      <div class="col gap1"
+      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                          [data$]="dataService.singleRackData$"
+      ></lib-auto-content-loading-indicator>
+      <ng-container *ngIf="bag.data"
       >
-        <div>
-          <!--              <lib-hero-item-card>-->
-          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                              [data$]="dataService.singleRackData$"
-          ></lib-auto-content-loading-indicator>
-          <ng-container *ngIf="bag.data"
-          >
-            <app-rack-composite [data]="(bag.data)"
-            ></app-rack-composite>
-          </ng-container>
-          <!--              </lib-hero-item-card>-->
+        <div class="col gap1">
+          <app-rack-composite [data]="(bag.data)"
+          ></app-rack-composite>
+          <lib-hero-item-card>
+            <app-rack-editor
+                [data]="(bag.data)"
+            ></app-rack-editor>
+          </lib-hero-item-card>
         </div>
-        <lib-hero-item-card>
-          <app-rack-editor *ngIf="bag.data"
-                           [data]="(bag.data)"
-          ></app-rack-editor>
-        </lib-hero-item-card>
-      </div>
+      </ng-container>
     </lib-hero-content-card>
   </div>
 </ng-container>
