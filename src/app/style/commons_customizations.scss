@@ -213,3 +213,7 @@ mat-expansion-panel {
   color:      rgba(0, 0, 0, 0.5);
   @include condensed-font
 }
+
+.invert-color {
+  filter: invert(1) !important
+}

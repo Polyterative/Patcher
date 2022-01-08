@@ -111,7 +111,34 @@ $secondary-font:            'Noto Sans';
 }
 
 @mixin heading-font {
-  font-family: NeutralFace, sans-serif;
+  font-family:    NeutralFace, sans-serif;
+
+  $letterSpacing: .25rem;
+
+  letter-spacing: $letterSpacing*1;
+
+  @media (max-width: 1920px) {
+    letter-spacing: $letterSpacing*.5;
+  }
+  @media (max-width: 1270px) {
+    letter-spacing: $letterSpacing*.4;
+  }
+
+  @media (max-width: 1024px) {
+    letter-spacing: $letterSpacing*0.3;
+  }
+
+  @media (max-width: 576px) {
+    letter-spacing: $letterSpacing*0;
+  }
+
+  @media (max-width: 480px) {
+    letter-spacing: $letterSpacing*0;
+  }
+
+  @media (max-width: 360px) {
+    letter-spacing: $letterSpacing*0;
+  }
 
 }
 
@@ -155,8 +182,54 @@ mat-card-subtitle, p {
   //font-weight: 500;
 }
 
+p {
+  $size:     1.5rem;
+  font-size: $size;
+
+  @media (max-width: 1270px) {
+    font-size: $size*0.95;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: $size*0.9;
+  }
+
+  @media (max-width: 576px) {
+    font-size: $size*0.85;
+  }
+
+  @media (max-width: 480px) {
+    font-size: $size*0.82;
+  }
+
+  @media (max-width: 360px) {
+    font-size: $size*0.75;
+  }
+}
+
 h1 {
   font-size:   4rem;
+
+  @media (max-width: 1270px) {
+    font-size: 3.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: 3rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 360px) {
+    font-size: 1.5rem;
+  }
+
   @include heading-font;
   font-weight: 500;
 
@@ -170,15 +243,32 @@ h1 {
 
 h2 {
   font-size: 2.5rem;
+
+  @media (max-width: 576px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
 }
 
 h3 {
   font-size: 2rem;
+
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
 }
 
 
 //COLORS
 
-$icon-color:                darken(white, 8%) opacity(86%);
+$icon-color:           darken(white, 8%) opacity(86%);
 
-$pendingContent-color:      #E0E0E0; //grey 300
+$pendingContent-color: #E0E0E0; //grey 300

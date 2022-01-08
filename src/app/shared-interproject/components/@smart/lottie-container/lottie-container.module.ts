@@ -1,6 +1,9 @@
 import { CommonModule }             from '@angular/common';
 import { NgModule }                 from '@angular/core';
-import { LottieModule }             from 'ngx-lottie';
+import {
+  LottieCacheModule,
+  LottieModule
+}                                   from 'ngx-lottie';
 import { LottieContainerComponent } from './lottie-container.component';
 
 // Note we need a separate function as it's required
@@ -15,7 +18,8 @@ export function playerFactory() {
   ],
   imports:      [
     CommonModule,
-    LottieModule.forRoot({player: playerFactory})
+    LottieModule.forRoot({player: playerFactory}),
+    LottieCacheModule.forRoot()
   ],
   exports:      [
     LottieContainerComponent
