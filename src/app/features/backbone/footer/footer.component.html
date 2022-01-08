@@ -1,13 +1,13 @@
-<div class="col ">
-  <div style="margin-top: 16rem; margin-bottom: 16rem;"
-  >
-    <app-lottie-container fxLayoutAlign="center center"
-                          fxFlex="auto"
-                          [styles]="{maxWidth: '30rem'}"
-                          [options]="{path: '/assets/json/lottie/Dots Icon.json', loop: true, autoplay: true}"
-    ></app-lottie-container>
-  </div>
-  
+<div class="col gap2">
+  <!--  <div style="margin-top: 16rem; margin-bottom: 16rem;"-->
+  <!--  >-->
+  <!--    <app-lottie-container fxLayoutAlign="center center"-->
+  <!--                          fxFlex="auto"-->
+  <!--                          [styles]="{maxWidth: '30rem'}"-->
+  <!--                          [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"-->
+  <!--    ></app-lottie-container>-->
+  <!--  </div>-->
+  <mat-divider inset="true"></mat-divider>
   <div class="col">
     <div fxLayout="column"
          class="root"
@@ -46,14 +46,16 @@
         ></app-feedback-box>
       </div>
       <mat-divider inset="true"></mat-divider>
-      <div class="row gap1">
+      <div class="row gap1"
+           fxLayout.lt-sm="column"
+      >
         <app-lottie-container fxLayoutAlign="start end"
                               fxFlex="auto"
-                              style="opacity: .5"
-                              [styles]="{maxWidth: '10rem'}"
-                              [options]="{path: '/assets/json/lottie/Horizontal Bars.json', loop: true, autoplay: true}"
+                              class="transparentize-half"
+                              style="max-width: 20rem; margin:-.75rem;"
+                              [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
         ></app-lottie-container>
-        <h3 fxLayoutAlign="end end"
+        <h3 fxLayoutAlign="end center"
             fxFlex="grow"
             class="tagline"
         >
