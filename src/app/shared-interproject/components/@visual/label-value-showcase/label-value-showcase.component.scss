@@ -7,7 +7,28 @@
 }
 
 .value {
-  font-size: x-large;
+  $size:     1.5rem;
+  font-size: $size;
+
+  @media (max-width: 1270px) {
+    font-size: $size*0.95;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: $size*0.9;
+  }
+
+  @media (max-width: 576px) {
+    font-size: $size*0.85;
+  }
+
+  @media (max-width: 480px) {
+    font-size: $size*0.82;
+  }
+
+  @media (max-width: 360px) {
+    font-size: $size*0.75;
+  }
   //color:     rgb(250, 250, 250);
 }
 

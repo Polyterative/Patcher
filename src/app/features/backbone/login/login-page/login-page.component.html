@@ -1,23 +1,25 @@
-<lib-screen-wrapper maxSize="26rem"
-                    style="margin-bottom:16rem"
+<lib-screen-wrapper maxSize="32rem"
 >
-  <div style="padding-top: 4rem"
-  >
-    <app-empty-state
-    ></app-empty-state>
-  </div>
-  <lib-hero-content-card titleNormal="Login"
-  >
-    <div class="col gap1"
+  <div class="col gap1">
+    <app-lottie-container fxLayoutAlign="center center"
+                          style="opacity: 0.9"
+                          [styles]="{maxHeight:'10rem', maxWidth:'10rem'}"
+                          [options]="{path: '/assets/json/lottie/qr.json', loop: true, autoplay: true, renderer: 'svg'}"
+    ></app-lottie-container>
+    <lib-hero-content-card titleBig="Who are you again?"
+                           style="height:90vh;"
     >
-      <app-login-email fxFlex="auto"></app-login-email>
-      <mat-card-subtitle fxLayoutAlign="center"
-                         routerLink="/auth/signup"
-                         style="cursor: pointer"
-      >Sign up instead?
-      </mat-card-subtitle>
-    </div>
-  
-  </lib-hero-content-card>
+      <div class="col gap1"
+      >
+        <app-login-email fxFlex="auto"></app-login-email>
+        <mat-card-subtitle fxLayoutAlign="center"
+                           routerLink="/auth/signup"
+                           style="cursor: pointer"
+        >Sign up instead?
+        </mat-card-subtitle>
+      </div>
+    
+    </lib-hero-content-card>
+  </div>
 
 </lib-screen-wrapper>
