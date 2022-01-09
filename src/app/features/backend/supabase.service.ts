@@ -137,21 +137,7 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)))
     ,
-    moduleTags: (moduleid: number) => rxFrom(
-      this.supabase.from(this.paths.module_tags)
-        // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
-        //   .select(`*,a(*,${ this.queryJoins.module })`)
-        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
-          .select(`
-          *,
-          ${ this.queryJoins.module_tag }
-          `)
-          .filter('moduleid', 'eq', moduleid)
-          .order('ordinal')
-    )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-      .pipe(map((x => x.data)))
-    ,
+  
     // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
     //   this.supabase.from(this.paths.patches)
     //       .select(`${ columns }`)
@@ -204,7 +190,7 @@ export class SupabaseService {
           .select(`${ columns },
           ${ this.queryJoins.manufacturer },
           ${ this.queryJoins.insOuts },
-          ${ this.queryJoins.module_tag }
+          ${ this.queryJoins.module_tags }
 `)
           .range(from, to)
     )
@@ -231,10 +217,13 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    moduleWithId:       (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    moduleWithId:      (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
-          .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
-          .range(from, to)
+          .select(`${ columns },
+           ${ this.queryJoins.manufacturer },
+            ${ this.queryJoins.insOuts },
+            ${ this.queryJoins.module_tags }
+            `)
           .filter('id', 'eq', id)
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
@@ -255,7 +244,7 @@ export class SupabaseService {
     patcherWithModule: (moduleid: number) => rxFrom(
       this.supabase.from(this.paths.moduleOUTs)
       // this is hard
-
+  
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
@@ -484,6 +473,7 @@ export class SupabaseService {
     patches:           'patches',
     patch_connections: 'patch_connections',
     module_tags:       'module_tags',
+    tags:              'tags',
     profiles:          'profiles'
   };
   
@@ -497,7 +487,7 @@ export class SupabaseService {
     author:       'author:authorid(username,id,email)',
     rack_modules: 'rackModules:rackid(*)',
     module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
-    module_tag:   'tags:module_tags(tag:tags(*))',
+    module_tags:  `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
     ins:          `ins:${ this.paths.moduleINs }(*)`,
     outs:         `outs:${ this.paths.moduleOUTs }(*)`,
     insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
