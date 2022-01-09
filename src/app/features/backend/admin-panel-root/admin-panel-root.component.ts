@@ -9,7 +9,10 @@ import {
   map,
   withLatestFrom
 }                          from 'rxjs/operators';
-import { DBManufacturer }  from '../../../models/models';
+import {
+  DBManufacturer,
+  MinimalModule
+}                          from '../../../models/models';
 import { SupabaseService } from '../supabase.service';
 
 @Component({
@@ -55,19 +58,22 @@ export class AdminPanelRootComponent implements OnInit {
             this.backend.get.modulesFull(0, 9999)
           ),
           map(([toAddModules, manufacturers, modules]) => {
-              let tagsToAdd = [];
-        
+              let modulesToAdd = [];
+              let modulesToSkip = [];
+    
               console.log(modules);
-        
-        
+    
+    
               toAddModules.forEach(candidateToAdd => {
+                let tagsToAdd = [];
+      
                 let newManufacturer: string = candidateToAdd.manufacturer.toLowerCase()
                                                             .trim();
-          
+      
                 let dbManufacturer: DBManufacturer = manufacturers.find(x => x.name.toLowerCase()
                                                                               .trim()
                                                                               .includes(newManufacturer));
-          
+      
                 if (dbManufacturer) {
                   // add tags
                   let candidateTags = [];
@@ -75,38 +81,111 @@ export class AdminPanelRootComponent implements OnInit {
                   candidateTags.push(candidateToAdd['label 3']);
                   candidateTags.push(candidateToAdd['label 4']);
                   candidateTags.push(candidateToAdd['label 5']);
-            
+        
                   // remove blank strings from candidateTags
                   candidateTags = candidateTags.filter(x => x && x.length > 0);
-            
+        
                   // remove duplicates
                   candidateTags = candidateTags.filter((x, i, a) => a.indexOf(x) === i);
-            
+        
                   // add candidateTags to tagsToAdd
                   tagsToAdd = [
                     ...tagsToAdd,
                     ...candidateTags
                   ];
+        
+                  // remove duplicates
+                  tagsToAdd = tagsToAdd.filter(function (elem, index, self) {
+                    return index === self.indexOf(elem);
+                  });
+        
+                  // order alphabetically
+                  tagsToAdd.sort();
+        
+                  // look up for already existing module in the list modules
+                  // @ts-ignore
+                  let candidateName: string = candidateToAdd['module-name'] ? candidateToAdd['module-name'].toString() : '';
+                  let candidateManufacturer: string = candidateToAdd['manufacturer'] ? candidateToAdd['manufacturer'].toString() : '';
+                  let candidateHP = Number(candidateToAdd['hp'].toString()
+                                                               .toLowerCase()
+                                                               .replace('hp', '')
+                                                               .trim());
+        
+                  if (candidateName !== '' && candidateName != undefined) {
+          
+                    let existingModule = modules.find(x => x.name.toLowerCase()
+                                                            .trim()
+                                                            .includes(candidateName.toLowerCase()));
+          
+                    let similarModules = modules.filter(x => {
+                      if (candidateHP == x.hp) {
+                        let similarity1: number = this.similarity(x.name.toLowerCase()
+                                                                   .trim(), candidateName.toLowerCase()
+                                                                                         .replace('1u', '')
+                                                                                         .trim());
+                        let highlySimilarName: boolean = similarity1 > 0.98;
+                        let similarity2: number = this.similarity(x.manufacturer.name.toLowerCase()
+                                                                   .trim(), candidateManufacturer.toLowerCase()
+                                                                                                 .trim());
+                        let highlySimilarManufacturer: boolean = similarity2 > 0.98;
+              
+                        return highlySimilarName && highlySimilarManufacturer;
+                      } else {
+                        return false;
+                      }
+                    });
+          
+                    if (similarModules.length === 0) {
+                      // create new module
+            
+                      let newModule: MinimalModule = {
+                        id:             undefined,
+                        name:           candidateName,
+                        description:    candidateToAdd['desc'].toString()
+                                                              .trim(),
+                        public:         false,
+                        hp:             candidateHP ? candidateHP : -1,
+                        manufacturerId: dbManufacturer.id,
+                        manufacturer:   dbManufacturer,
+                        standard:       candidateName.toLowerCase()
+                                                     .includes('1u') ? 1 : 0,
+                        created:        '',
+                        updated:        ''
+                      };
             
             
+                      // @ts-ignore
+                      newModule.tags = tagsToAdd;
+            
+                      modulesToAdd.push(newModule);
+                    } else {
+                      // skip module
+                      modulesToSkip.push({
+                        candidateName,
+                        skipReason: 'module already exists'
+                      });
+                    }
+          
+                  }
+        
                 } else {
+                  modulesToSkip.push({
+                    candidateName: candidateToAdd['module-name'].toString(),
+                    skipReason:    'manufacturer not found'
+                  });
                 }
-          
-          
+      
+      
               });
-        
-              // remove duplicates
-              tagsToAdd = tagsToAdd.filter(function (elem, index, self) {
-                return index === self.indexOf(elem);
-              });
-        
-              // order alphabetically
-              tagsToAdd.sort();
-        
+    
+    
               // console.log(tagsToAdd);
-        
-              return tagsToAdd;
-        
+    
+              return [
+                modulesToAdd,
+                modulesToSkip
+              ];
+    
             }
           )
         )
@@ -124,6 +203,47 @@ export class AdminPanelRootComponent implements OnInit {
         });
   
     this.click$.next();
+  }
+  
+  similarity(s1, s2) {
+    let longer = s1;
+    var shorter = s2;
+    if (s1.length < s2.length) {
+      longer = s2;
+      shorter = s1;
+    }
+    var longerLength = longer.length;
+    if (longerLength == 0) {
+      return 1.0;
+    }
+    return (longerLength - this.editDistance(longer, shorter)) / parseFloat(longerLength);
+  }
+  
+  editDistance(s1, s2) {
+    s1 = s1.toLowerCase();
+    s2 = s2.toLowerCase();
+    
+    var costs = new Array();
+    for (var i = 0; i <= s1.length; i++) {
+      var lastValue = i;
+      for (var j = 0; j <= s2.length; j++) {
+        if (i == 0)
+          costs[j] = j;
+        else {
+          if (j > 0) {
+            var newValue = costs[j - 1];
+            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+              newValue = Math.min(Math.min(newValue, lastValue),
+                costs[j]) + 1;
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+      }
+      if (i > 0)
+        costs[s2.length] = lastValue;
+    }
+    return costs[s2.length];
   }
   
   data = [
