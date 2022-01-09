@@ -61,20 +61,20 @@ export class AdminPanelRootComponent implements OnInit {
           map(([toAddModules, manufacturers, modules, tags]) => {
               let modulesToAdd = [];
               let modulesToSkip = [];
-      
+    
               console.log(modules);
-      
-      
+    
+    
               toAddModules.forEach(candidateToAdd => {
                 let tagsToAdd = [];
-        
+      
                 let newManufacturer: string = candidateToAdd.manufacturer.toLowerCase()
                                                             .trim();
-        
+      
                 let dbManufacturer: DBManufacturer = manufacturers.find(x => x.name.toLowerCase()
                                                                               .trim()
                                                                               .includes(newManufacturer));
-        
+      
                 if (dbManufacturer) {
                   // add tags
                   let candidateTags = [];
@@ -82,27 +82,27 @@ export class AdminPanelRootComponent implements OnInit {
                   candidateTags.push(candidateToAdd['label 3']);
                   candidateTags.push(candidateToAdd['label 4']);
                   candidateTags.push(candidateToAdd['label 5']);
-          
+        
                   // remove blank strings from candidateTags
                   candidateTags = candidateTags.filter(x => x && x.length > 0);
-          
+        
                   // remove duplicates
                   candidateTags = candidateTags.filter((x, i, a) => a.indexOf(x) === i);
-          
+        
                   // add candidateTags to tagsToAdd
                   tagsToAdd = [
                     ...tagsToAdd,
                     ...candidateTags
                   ];
-          
+        
                   // remove duplicates
                   tagsToAdd = tagsToAdd.filter(function (elem, index, self) {
                     return index === self.indexOf(elem);
                   });
-          
+        
                   // order alphabetically
                   tagsToAdd.sort();
-          
+        
                   // look up for already existing module in the list modules
                   // @ts-ignore
                   let candidateName: string = candidateToAdd['module-name'] ? candidateToAdd['module-name'].toString() : '';
@@ -111,56 +111,37 @@ export class AdminPanelRootComponent implements OnInit {
                                                                .toLowerCase()
                                                                .replace('hp', '')
                                                                .trim());
-          
+        
                   if (candidateName !== '' && candidateName != undefined) {
-            
+          
                     let existingModule = modules.find(x => x.name.toLowerCase()
                                                             .trim()
                                                             .includes(candidateName.toLowerCase()));
-            
-                    let similarModules = modules.filter(x => {
-                      if (candidateHP == x.hp) {
-                        let similarity1: number = this.similarity(x.name.toLowerCase()
-                                                                   .trim(), candidateName.toLowerCase()
-                                                                                         .replace('1u', '')
-                                                                                         .trim());
-                        let highlySimilarName: boolean = similarity1 > 0.98;
-                        let similarity2: number = this.similarity(x.manufacturer.name.toLowerCase()
-                                                                   .trim(), candidateManufacturer.toLowerCase()
-                                                                                                 .trim());
-                        let highlySimilarManufacturer: boolean = similarity2 > 0.98;
-  
-                        return highlySimilarName && highlySimilarManufacturer;
-                      } else {
-                        return false;
-                      }
-                    });
-            
-                    if (similarModules.length === 0) {
+          
+          
+                    if (existingModule) {
                       // create new module
-              
+            
+                      // @ts-ignore
                       let newModule: MinimalModule = {
-                        id:             undefined,
+                        id:             existingModule.id,
                         name:           candidateName,
                         description:    candidateToAdd['desc'].toString()
                                                               .trim(),
                         public:         false,
                         hp:             candidateHP ? candidateHP : -1,
-                        manufacturerId:   dbManufacturer.id,
-                        manufacturer:     dbManufacturer,
-                        standard:         candidateName.toLowerCase()
-                                                       .includes('1u') ? 1 : 0,
-                        created:          '',
-                        updated:          ''
+                        manufacturerId: dbManufacturer.id,
+                        standard:       candidateName.toLowerCase()
+                                                     .includes('1u') ? 1 : 0
                       };
-              
-              
+            
+            
                       // @ts-ignore
                       newModule.tags = tagsToAdd.map(x => tags.find(y => y.name.toLowerCase()
                                                                           .trim()
                                                                           .includes(x.toLowerCase())));
-              
-              
+            
+            
                       modulesToAdd.push(newModule);
                     } else {
                       // skip module
@@ -169,39 +150,42 @@ export class AdminPanelRootComponent implements OnInit {
                         skipReason: 'module already exists'
                       });
                     }
-            
-                  }
           
-                } else {
-                  modulesToSkip.push({
-                    candidateName: candidateToAdd['module-name'].toString(),
-                    skipReason:    'manufacturer not found'
-                  });
+                  }
+        
                 }
-        
-        
+      
+      
               });
-      
-      
+    
+    
               // console.log(tagsToAdd);
-      
+    
               return [
                 modulesToAdd,
                 modulesToSkip
               ];
-      
+    
             }
           )
         )
         .subscribe(x => {
           // console.clear();
           // add manufacturers to database
-          console.log(x);
+          let toAdd: any = x[0].map(y => {
+            // add tags for every module
+            return y.tags.map(z => ({
+              tagid:    z.id,
+              moduleid: y.id
+            }));
+          })
+                               .flatMap(y => y);
+          console.log(toAdd);
   
-          // this.backend.add.manufacturers(newData)
-          //     .subscribe(y => {
-          //       console.log(y);
-          //     });
+          this.backend.add.module_tags(toAdd)
+              .subscribe(y => {
+                console.log(y);
+              });
   
   
         });

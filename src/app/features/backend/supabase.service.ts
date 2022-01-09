@@ -26,7 +26,8 @@ import {
   Patch,
   PatchConnection,
   RackedModule,
-  RackMinimal
+  RackMinimal,
+  Tag
 }                          from 'src/app/models/models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment }     from 'src/environments/environment';
@@ -40,7 +41,13 @@ export class SupabaseService {
   };
   
   add = {
-    userModule: (moduleId: number) => rxFrom(
+    module_tags: (data: Tag[]) => rxFrom(
+      this.supabase
+          .from(this.paths.module_tags)
+          .upsert(data)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    userModule:  (moduleId: number) => rxFrom(
       this.supabase
           .from(this.paths.user_modules)
           .insert({
@@ -81,7 +88,7 @@ export class SupabaseService {
     modules: (data: DbModule[]) => rxFrom(
       this.supabase
           .from(this.paths.modules)
-          .insert(data)
+          .upsert(data)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
