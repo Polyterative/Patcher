@@ -105,7 +105,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
-    manufacturers: (data: DBManufacturer[]) => rxFrom(
+    manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
       this.supabase
           .from(this.paths.manufacturers)
           .insert(data)
@@ -113,14 +113,13 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    userModules: () => rxFrom(
+    userModules:      () => rxFrom(
       this.supabase.from(this.paths.user_modules)
           .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
           .filter('profileid', 'eq', this.getUser().id)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data.map(y => y.module)))),
-  
     patchConnections: (patchid: number) => rxFrom(
       this.supabase.from(this.paths.patch_connections)
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
@@ -138,12 +137,27 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)))
     ,
+    moduleTags: (moduleid: number) => rxFrom(
+      this.supabase.from(this.paths.module_tags)
+        // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
+        //   .select(`*,a(*,${ this.queryJoins.module })`)
+        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
+          .select(`
+          *,
+          ${ this.queryJoins.module_tag }
+          `)
+          .filter('moduleid', 'eq', moduleid)
+          .order('ordinal')
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(map((x => x.data)))
+    ,
     // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
     //   this.supabase.from(this.paths.patches)
     //       .select(`${ columns }`)
     //       .range(from, to)
     // ),
-    patchesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
+    patchesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.patches)
           .select(`id,name,description,${ this.queryJoins.author } `, {count: 'exact'})
           .ilike('name', `%${ name }%`)
@@ -151,7 +165,7 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    userPatches:        () => rxFrom(
+    userPatches:       () => rxFrom(
       this.supabase.from(this.paths.patches)
           .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
@@ -159,7 +173,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    userRacks:        () => rxFrom(
+    userRacks:         () => rxFrom(
       this.supabase.from(this.paths.racks)
           .select(`*, ${ this.queryJoins.author }`)
           .filter('authorid', 'eq', this.getUser().id)
@@ -167,7 +181,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    rackedModules:    (rackid: number) => rxFrom(
+    rackedModules:     (rackid: number) => rxFrom(
       this.supabase.from(this.paths.rack_modules)
           .select(`*, ${ this.queryJoins.module }`)
         // .order('module.id')
@@ -185,12 +199,18 @@ export class SupabaseService {
           rackid:   y.rackid
         }
       })))),
-    modulesFull:      (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    modulesFull:       (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
-          .select(`${ columns }, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts }`)
+          .select(`${ columns },
+          ${ this.queryJoins.manufacturer },
+          ${ this.queryJoins.insOuts },
+          ${ this.queryJoins.module_tag }
+`)
           .range(from, to)
-    ),
-    modulesMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(map((x => x.data))),
+    modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
       const baseQuery = this.supabase.from(this.paths.modules)
                             .select('id,name,hp,description,public,standard,manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
                             .ilike('name', `%${ name }%`)
@@ -203,7 +223,7 @@ export class SupabaseService {
       )
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
     },
-    racksMinimal:       (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
+    racksMinimal:      (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.racks)
           .select(`id,name,hp,rows,description,authorid,${ this.queryJoins.author }`, {count: 'exact'})
           .ilike(`name,hp,rows, ${ this.queryJoins.author }`, `%${ name }%`)
@@ -232,10 +252,10 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patcherWithModule:  (moduleid: number) => rxFrom(
+    patcherWithModule: (moduleid: number) => rxFrom(
       this.supabase.from(this.paths.moduleOUTs)
       // this is hard
-  
+
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
@@ -463,6 +483,7 @@ export class SupabaseService {
     rack_modules:      'rack_modules',
     patches:           'patches',
     patch_connections: 'patch_connections',
+    module_tags:       'module_tags',
     profiles:          'profiles'
   };
   
@@ -470,10 +491,13 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   private queryJoins = {
+    // simple synthax: responseObjectName:tableName(*columns*)
+    // advanced synthax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
     manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
     author:       'author:authorid(username,id,email)',
     rack_modules: 'rackModules:rackid(*)',
     module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
+    module_tag:   'tags:module_tags(tag:tags(*))',
     ins:          `ins:${ this.paths.moduleINs }(*)`,
     outs:         `outs:${ this.paths.moduleOUTs }(*)`,
     insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
