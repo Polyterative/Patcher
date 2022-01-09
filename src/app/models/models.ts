@@ -14,7 +14,6 @@ export interface DbComment {
 }
 
 
-
 interface MinimalManufacturer {
   name: string;
   id: number;
@@ -34,6 +33,16 @@ export interface MinimalModule extends Timestamped {
   standard: number;
 }
 
+export enum TagType {
+  Purpose = 0, Nature = 1, Character = 2,
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  type: TagType;
+}
+
 export interface DbModule extends MinimalModule {
   ins: CV[];
   outs: CV[];
@@ -42,6 +51,7 @@ export interface DbModule extends MinimalModule {
   additional: any;
   isComplete: boolean;
   isDIY: boolean;
+  tags: { tag: Tag }[];
 }
 
 export interface RackingData {
