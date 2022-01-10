@@ -26,11 +26,11 @@ import {
 }                                  from 'rxjs/operators';
 import { UserManagementService }   from '../../features/backbone/login/user-management.service';
 import { SupabaseService }         from '../../features/backend/supabase.service';
+import { RackedModule }            from '../../models/module';
 import {
   Rack,
-  RackedModule,
   RackMinimal
-}                                  from '../../models/models';
+}                                  from '../../models/rack';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,

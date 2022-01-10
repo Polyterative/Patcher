@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                    from '@angular/core';
-import { DbComment } from '../../../../models/models';
+import { DbComment } from '../../../../models/comment';
 
 @Component({
   selector:        'app-comments-item',

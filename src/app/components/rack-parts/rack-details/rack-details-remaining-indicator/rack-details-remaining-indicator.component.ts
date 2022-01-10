@@ -3,11 +3,9 @@ import {
   Component,
   Input,
   OnInit
-} from '@angular/core';
-import {
-  DbModule,
-  RackMinimal
-} from '../../../../models/models';
+}                      from '@angular/core';
+import { DbModule }    from '../../../../models/module';
+import { RackMinimal } from '../../../../models/rack';
 
 @Component({
   selector:        'app-rack-details-remaining-indicator',
