@@ -19,22 +19,15 @@ export class RackMinimalComponent implements OnInit {
   @Input() data: RackMinimal;
   @Input() viewConfig: RackMinimalViewConfig = defaultRackMinimalViewConfig;
   
-  // isInCollection$: Observable<boolean>;
-  
   constructor(
     public userManagerService: UserManagementService,
     public dataService: RackDetailDataService
   ) {}
   
   ngOnInit(): void {
-    // this.isInCollection$ = this.dataService.userRacksList$
-    //                            .pipe(
-    //                              map(data => data.filter(x => x.id == this.data.id).length > 0),
-    //                              takeUntil(this.destroyEvent$)
-    //                            );
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

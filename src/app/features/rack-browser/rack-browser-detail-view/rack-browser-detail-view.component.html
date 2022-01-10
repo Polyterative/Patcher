@@ -2,33 +2,26 @@
 data:(dataService.singleRackData$|async)
 } as bag"
 >
-  <lib-screen-wrapper>
-    <div class="col gap1"
+  <div class="col gap1"
+  >
+    <lib-hero-content-card titleBig="Rack details"
+                           class="racksBG"
     >
-      <lib-hero-content-card titleBig="Rack details"
-                             class="racksBG"
+      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
+                                          [data$]="dataService.singleRackData$"
+      ></lib-auto-content-loading-indicator>
+      <ng-container *ngIf="bag.data"
       >
-        <div class="col gap1"
-        >
-          <div>
-            <!--              <lib-hero-item-card>-->
-            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                                [data$]="dataService.singleRackData$"
-            ></lib-auto-content-loading-indicator>
-            <ng-container *ngIf="bag.data"
-            >
-              <app-rack-composite [data]="(bag.data)"
-              ></app-rack-composite>
-            </ng-container>
-            <!--              </lib-hero-item-card>-->
-          </div>
-          <lib-hero-item-card *ngIf="bag.data&&dataService.rackEditingPanelOpenState$|async">
+        <div class="col gap1">
+          <app-rack-composite [data]="(bag.data)"
+          ></app-rack-composite>
+          <lib-hero-item-card>
             <app-rack-editor
                 [data]="(bag.data)"
             ></app-rack-editor>
           </lib-hero-item-card>
         </div>
-      </lib-hero-content-card>
-    </div>
-  </lib-screen-wrapper>
+      </ng-container>
+    </lib-hero-content-card>
+  </div>
 </ng-container>

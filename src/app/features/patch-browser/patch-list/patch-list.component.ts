@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 }                                 from '@angular/core';
 import {
   BehaviorSubject,
@@ -24,7 +23,6 @@ import { PatchList }              from '../patch-browser-data.service';
   templateUrl:     './patch-list.component.html',
   styleUrls:       ['./patch-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None,
   viewProviders:   [LocalDataFilterService]
 })
 export class PatchListComponent extends SubManager implements OnInit {

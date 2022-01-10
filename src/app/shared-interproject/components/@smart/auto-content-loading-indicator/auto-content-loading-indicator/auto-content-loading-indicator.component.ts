@@ -23,8 +23,8 @@ import {
   selector:        'lib-auto-content-loading-indicator',
   templateUrl:     './auto-content-loading-indicator.component.html',
   styleUrls:       ['./auto-content-loading-indicator.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None
+  encapsulation:   ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;
@@ -34,7 +34,7 @@ export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() loadingLines = 1;
   @Input() skipFirstData = false;
   @Input() loadingLabel = 'Loading';
-  protected destroyEvent$ = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {
   

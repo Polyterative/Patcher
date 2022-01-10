@@ -5,7 +5,6 @@ import {
   ReplaySubject,
   Subject
 }                     from 'rxjs';
-import { map }        from 'rxjs/operators';
 
 interface UserModel {
   username: string | undefined;
@@ -40,11 +39,11 @@ export class UserDataHandlerService {
     // this.store.user$.pipe(filter(x => !!x))
     //     .subscribe(x => console.log(`Got User: ${ x.username }`));
   
-    this.logoffButtonClick$
-        .pipe(map(x => undefined))
-        .subscribe(value => {
-          this.store.user$.next(value);
-        });
+    // this.logoffButtonClick$
+    //     .pipe(map(x => undefined))
+    //     .subscribe(value => {
+    //       this.store.user$.next(value);
+    //     });
   
     this.loginButtonClick$
         .pipe()

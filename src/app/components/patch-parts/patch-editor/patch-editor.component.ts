@@ -29,7 +29,7 @@ interface FormCV {
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public backend: SupabaseService,

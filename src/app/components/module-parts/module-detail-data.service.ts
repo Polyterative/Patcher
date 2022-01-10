@@ -33,7 +33,7 @@ export class ModuleDetailDataService {
   addModuleToRack$ = new Subject<DbModule>();
   removeModuleFromCollection$ = new Subject<number>();
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,

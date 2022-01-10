@@ -5,10 +5,22 @@
   <div class="col gap1"
        *ngIf="bag.userProfile"
   >
-    <h3 fxLayoutAlign="end center">Welcome back, {{bag.userProfile.username}}</h3>
-    <app-user-patches></app-user-patches>
-    <app-user-racks></app-user-racks>
-    <app-user-modules [viewConfig]="viewConfig"
-    ></app-user-modules>
+    <lib-clean-card>
+      <app-label-value-showcase label="User"
+                                fxLayoutAlign="start center"
+      >{{bag.userProfile.username}}</app-label-value-showcase>
+    </lib-clean-card>
+    <div class="row gap1">
+      <div fxLayout.gt-md="row"
+           fxLayout="column"
+           fxLayoutGap="1rem"
+      >
+        <app-user-modules fxFlex="1/3"
+                          [viewConfig]="viewConfig"
+        ></app-user-modules>
+        <app-user-racks fxFlex="1/3"></app-user-racks>
+        <app-user-patches fxFlex="1/3"></app-user-patches>
+      </div>
+    </div>
   </div>
 </ng-container>

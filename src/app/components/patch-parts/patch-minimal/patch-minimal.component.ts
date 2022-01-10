@@ -37,7 +37,7 @@ export class PatchMinimalComponent implements OnInit {
     //                            );
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

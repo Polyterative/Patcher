@@ -11,7 +11,7 @@ import { environment } from 'src/environments/environment';
   templateUrl:     './dev-only-window.component.html',
   styleUrls:       ['./dev-only-window.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
-  // encapsulation:   ViewEncapsulation.None
+  // 
   
 })
 export class DevOnlyWindowComponent implements OnInit {

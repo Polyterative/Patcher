@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnInit,
   Output
@@ -26,10 +27,10 @@ export class ModuleCVsComponent implements OnInit {
   ins: CV[] = [];
   outs: CV[] = [];
   
-  @Output() inClick$ = new Subject<[CV, DbModule]>();
-  @Output() outClick$ = new Subject<[CV, DbModule]>();
+  @Output() inClick$ = new EventEmitter<[CV, DbModule]>();
+  @Output() outClick$ = new EventEmitter<[CV, DbModule]>();
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public patchService: PatchDetailDataService

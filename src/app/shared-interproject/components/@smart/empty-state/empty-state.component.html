@@ -1,6 +1,7 @@
 <div style="padding-top: 4rem">
   <div fxLayout="column"
        fxLayoutAlign="center center"
+       *ngIf="backgroundImage"
   >
     <div fxFlex="auto"
          [fxHide.xs]="true"
@@ -17,6 +18,13 @@
          class="bg"
     ></div>
 
+  </div>
+  <div fxLayout="column"
+       fxLayoutAlign="center center"
+       *ngIf="!backgroundImage"
+  >
+  
+  
   </div>
 
 

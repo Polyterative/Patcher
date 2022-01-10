@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnInit,
   Output
@@ -26,12 +27,12 @@ import { AppStateService }        from '../../../shared-interproject/app-state.s
 export class ModuleCVItemComponent implements OnInit {
   @Input() readonly data: CV;
   @Input() readonly kind: 'in' | 'out';
-  @Output() readonly click$ = new Subject<CV>();
+  @Output() readonly click$ = new EventEmitter<CV>();
   
   highlightedFrom = new BehaviorSubject(false);
   highlightedTo = new BehaviorSubject(false);
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public appState: AppStateService,

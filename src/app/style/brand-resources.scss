@@ -29,70 +29,242 @@ $brand-negative-background: rgba($brand-negative, .2);
 $main-font:                 'Roboto';
 $secondary-font:            'Noto Sans';
 
+
+@font-face {
+  font-family: XXIIAven;
+  src:         url('/assets/font/XXIIAven-Regular.ttf') format("truetype");
+  font-weight: normal;
+  font-style:  normal;
+}
+
+@font-face {
+  font-family: XXIIAven;
+  src:         url('/assets/font/XXIIAven-Bold.ttf') format("truetype");
+  font-weight: bold;
+  font-style:  normal;
+}
+
+@font-face {
+  font-family: XXIIAven;
+  src:         url('/assets/font/XXIIAven-Black.ttf') format("truetype");
+  font-weight: 900; // black
+  font-style:  normal;
+}
+
+
+@font-face {
+  font-family: XXIIAven-Bold;
+  src:         url('/assets/font/XXIIAven-Regular.ttf') format("opentype");
+}
+
+@font-face {
+  font-family: XXIIAven-Black;
+  src:         url('/assets/font/XXIIAven-Regular.ttf') format("opentype");
+}
+
+
+@font-face {
+  font-family: BigShouldersText-Variable;
+  src:         url('/assets/font/BigShouldersText-VariableFont_wght.ttf') format("opentype");
+}
+
+@font-face {
+  font-family: GangsterGrotesk-Light;
+  src:         url('/assets/font/GangsterGrotesk-Light.otf') format("opentype");
+}
+
+@font-face {
+  font-family: GangsterGrotesk;
+  src:         url('/assets/font/GangsterGrotesk-Light.otf') format("opentype");
+}
+
+@font-face {
+  font-family: Gravity Points;
+  src:         url('/assets/font/Gravity Points.otf') format("opentype");
+}
+
+@font-face {
+  font-family: NeutralFace;
+  src:         url('/assets/font/NeutralFace.otf') format("opentype");
+}
+
+@font-face {
+  font-family: OBARNE-X-Regular;
+  src:         url('/assets/font/OBARNE-X-Regular.otf') format("opentype");
+}
+
+
+@font-face {
+  font-family: FUNGISRegular;
+  src:         url('/assets/font/FUNGISRegular.woff2') format('woff2'), /* Modern Browsers */
+               url('/assets/font/FUNGISRegular.otf') format('opentype'); /* Safari, Android, iOS */
+}
+
+@mixin condensed-font {
+  font-family: BigShouldersText-Variable, sans-serif;
+  font-weight: 400;
+}
+
+@mixin title-font {
+  font-family: XXIIAven, sans-serif;
+  font-weight: 900;
+}
+
+@mixin heading-font {
+  font-family:    NeutralFace, sans-serif;
+
+  $letterSpacing: .25rem;
+
+  letter-spacing: $letterSpacing*1;
+
+  @media (max-width: 1920px) {
+    letter-spacing: $letterSpacing*.5;
+  }
+  @media (max-width: 1270px) {
+    letter-spacing: $letterSpacing*.4;
+  }
+
+  @media (max-width: 1024px) {
+    letter-spacing: $letterSpacing*0.3;
+  }
+
+  @media (max-width: 576px) {
+    letter-spacing: $letterSpacing*0;
+  }
+
+  @media (max-width: 480px) {
+    letter-spacing: $letterSpacing*0;
+  }
+
+  @media (max-width: 360px) {
+    letter-spacing: $letterSpacing*0;
+  }
+
+}
+
+@mixin content-font {
+  font-family: XXIIAven, sans-serif;
+  font-weight: 400;
+}
+
+@mixin monospaced-font {
+  font-family: B612Mono-Bold, sans-serif;
+}
+
 html {
-  font-family: 'Roboto', sans-serif;
-  font-size:   100%;
+  @include content-font;
+  font-size:             100%;
+  font-feature-settings: "liga" 0;
 }
 
 
 body {
-  font-size: 1rem;font-family: inherit;
-}
-
-mat-card-title {
-  font-family: 'Roboto Condensed', sans-serif
-}
-
-mat-card-subtitle, p {
-  //font-family: 'Roboto-Slab', serif;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-}
-
-h1 {
-  font-family: 'Roboto', sans-serif;
-  font-size:   4rem;
-
-  & .material-icons, app-hero-content-card-head-icon {
-    font-size: .5em;
-    color:     rgba(83, 83, 83, 0.98)
-  }
-
-  //font
-  //font-family: 'Roboto', sans-serif;
-  //font-family: 'Roboto Condensed', sans-serif;
-}
-
-
-h2 {
-  font-size: 2.5rem;
-}
-
-h3 {
-  font-size: 2rem;
-}
-
-h1, h2 {
-  font-weight: 300;
-  //font-family: 'Roboto', serif;
-  //font-weight: normal;
-}
-
-h3, h4, h5 {
-  font-weight: 400;
-  //font-family: 'Roboto', serif;
-  //font-weight: normal;
+  font-size: 1rem;
+  //font-family: inherit;
 }
 
 h1, h2, h3, h4, h5 {
   color: rgba(0, 0, 0, 0.8);
 }
 
+h1, h2, h3, h4, h5, h6 {
+  @include content-font;
+}
+
+mat-card-title {
+  @include title-font;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+mat-card-subtitle, p {
+  //font-family: 'GangsterGrotesk', ', ', sans-serif;
+  color: rgba(0, 0, 0, 0.9) !important;
+  //font-weight: 500;
+}
+
 p {
-  color: rgba(0, 0, 0, 0.64);
+  $size:     1.5rem;
+  font-size: $size;
+
+  @media (max-width: 1270px) {
+    font-size: $size*0.95;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: $size*0.9;
+  }
+
+  @media (max-width: 576px) {
+    font-size: $size*0.85;
+  }
+
+  @media (max-width: 480px) {
+    font-size: $size*0.82;
+  }
+
+  @media (max-width: 360px) {
+    font-size: $size*0.75;
+  }
+}
+
+h1 {
+  font-size:   4rem;
+
+  @media (max-width: 1270px) {
+    font-size: 3.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: 3rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 360px) {
+    font-size: 1.5rem;
+  }
+
+  @include heading-font;
+  font-weight: 500;
+
+  & .material-icons, app-hero-content-card-head-icon {
+    font-size: .5em;
+    color:     rgba(83, 83, 83, 0.98)
+  }
+
 }
 
 
+h2 {
+  font-size: 2.5rem;
+
+  @media (max-width: 576px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
+}
+
+h3 {
+  font-size: 2rem;
+
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+}
 
 
 //COLORS

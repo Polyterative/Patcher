@@ -3,16 +3,12 @@ import {
   Component,
   Input,
   OnInit
-}                          from '@angular/core';
-import { MatSnackBar }     from '@angular/material/snack-bar';
-import {
-  BehaviorSubject,
-  Subject
-}                          from 'rxjs';
-import { takeUntil }       from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule }        from '../../../models/module';
-import { RackMinimal }     from '../../../models/rack';
+}                                from '@angular/core';
+import { MatSnackBar }           from '@angular/material/snack-bar';
+import { SupabaseService }       from 'src/app/features/backend/supabase.service';
+import { RackMinimal }           from 'src/app/models/models';
+import { SubManager }            from '../../../shared-interproject/directives/subscription-manager';
+import { RackDetailDataService } from '../rack-detail-data.service';
 
 @Component({
   selector:        'app-rack-details',
@@ -20,33 +16,20 @@ import { RackMinimal }     from '../../../models/rack';
   styleUrls:       ['./rack-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RackDetailsComponent implements OnInit {
+export class RackDetailsComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
-  rackModules$ = new BehaviorSubject<DbModule[]>([]);
-  
   
   constructor(
     public snackBar: MatSnackBar,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    public dataService: RackDetailDataService
     // userManagerService: UserManagementService
-  ) { }
+  ) { super(); }
   
-  protected destroyEvent$: Subject<void> = new Subject();
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
-  }
   
   ngOnInit(): void {
-    this.backend.get.rackModules(this.data.id)
-        .pipe(
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => {
-          this.rackModules$.next(x);
-        });
+  
   }
+  
   
 }

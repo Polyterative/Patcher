@@ -7,7 +7,12 @@
        fxLayoutGap=".5rem"
        [fxHide]="!bag.dataLoading"
   >
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <app-lottie-container fxLayoutAlign="center center"
+                          fxFlex="auto"
+                          style="opacity: 0.25;"
+                          [styles]="{maxWidth: '10rem'}"
+                          [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
+    ></app-lottie-container>
   </div>
   <!--  </ng-container>-->
   <ng-container *ngIf="!bag.dataLoading">

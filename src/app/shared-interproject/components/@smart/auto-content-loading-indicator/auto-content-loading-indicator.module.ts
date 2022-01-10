@@ -3,6 +3,7 @@ import { NgModule }                             from '@angular/core';
 import { FlexLayoutModule }                     from '@angular/flex-layout';
 import { MatCardModule }                        from '@angular/material/card';
 import { MatProgressBarModule }                 from '@angular/material/progress-bar';
+import { LottieContainerModule }                from '../lottie-container/lottie-container.module';
 import { AutoContentLoadingIndicatorComponent } from './auto-content-loading-indicator/auto-content-loading-indicator.component';
 
 
@@ -14,7 +15,8 @@ import { AutoContentLoadingIndicatorComponent } from './auto-content-loading-ind
     CommonModule,
     MatProgressBarModule,
     MatCardModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    LottieContainerModule
   ],
   exports:      [
     AutoContentLoadingIndicatorComponent

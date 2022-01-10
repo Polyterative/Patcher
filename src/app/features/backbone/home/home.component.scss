@@ -1,3 +1,5 @@
+@import "~src/app/style/brand-resources.scss";
+
 app-brand-primary-button {
   margin-top: 2rem;
 }
@@ -10,9 +12,9 @@ app-brand-primary-button {
 
 .embedded {
   //margin:      2rem;
-  zoom:        .65;
+  zoom:        .75;
   user-select: none;
-  filter:      grayscale(25%);
+  filter:      grayscale(90%);
 
 
 }

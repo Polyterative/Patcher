@@ -1,5 +1,4 @@
-﻿
-@use '~@angular/material' as mat;
+﻿@use '@angular/material' as mat;
 @import "../../../app.component";
 @import "~src/app/style/brand-resources.scss";
 
@@ -56,6 +55,12 @@ mat-toolbar-row > button {
   margin: 0.4em;
 }
 
+//mat-icon {
+//  margin: 0
+//}
+mat-divider {
+  border-color: rgba(255, 255, 255, 0.25);
+}
 
 .selectedLink {
   color:            rgba(255, 255, 255, 0.7);
@@ -64,7 +69,7 @@ mat-toolbar-row > button {
 
 .toolbar {
   background-color: $brand-primary;
-  margin-bottom:    1em;
+  //margin-bottom:    1em;
 }
 
 .sticky {

@@ -1,16 +1,8 @@
-<ng-container *ngIf="{
-layoutFlexWidth:(appState.layoutFlexWidth$|async)
-} as bag"
+<div (click)="click$.next(data)"
+     [ngClass]="{'a' : highlightedFrom|async, 'b': highlightedTo|async}"
+     [class]="kind"
+     [matTooltip]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
+     class="item-cvitem"
 >
-  <mat-chip infoBox
-            *ngIf="bag.layoutFlexWidth.gtxs"
-            (click)="click$.next(data)"
-            [ngClass]="{'a' : highlightedFrom|async, 'b': highlightedTo|async }"
-            [infoText]="(data.min!=undefined&&data.max!=undefined)?((data.min+'V → '+data.max+'V')):'No CV voltage data available'"
-  >
-    {{data.name}}
-  </mat-chip>
-  <mat-card-subtitle *ngIf="bag.layoutFlexWidth.xs"
-                     class="mobileChip"
-  >{{data.name}}</mat-card-subtitle>
-</ng-container>
+  {{data.name}}
+</div>
