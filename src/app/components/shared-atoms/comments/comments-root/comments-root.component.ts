@@ -3,7 +3,7 @@ import {
   Component,
   Input
 }                              from '@angular/core';
-import { DbComment }           from '../../../../models/models';
+import { DbComment }           from '../../../../models/comment';
 import { AppStateService }     from '../../../../shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
 

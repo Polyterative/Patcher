@@ -12,10 +12,8 @@ import {
   switchMap,
   tap
 }                          from 'rxjs/operators';
-import {
-  MinimalModule,
-  PatchMinimal
-}                          from '../../../models/models';
+import { MinimalModule }   from '../../../models/module';
+import { PatchMinimal }    from '../../../models/patch';
 import { SupabaseService } from '../../backend/supabase.service';
 
 @Component({

@@ -5,6 +5,7 @@ import {
 import { DbModule } from './module';
 import { Patch }    from './patch';
 
+
 export interface Connection {
   from: DbModule;
   fromCV: CV;

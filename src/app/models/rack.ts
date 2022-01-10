@@ -1,7 +1,13 @@
-import {
-  Timestamped
-}                     from './models';
-import { PublicUser } from './user';
+import { Timestamped } from './models';
+import { PublicUser }  from './user';
+
+export interface RackingData {
+  id: number;
+  rackid: number;
+  moduleid: number;
+  row: number;
+  column: number;
+}
 
 export interface Rack extends RackMinimal {
   // hp: number;
@@ -19,4 +25,5 @@ export interface RackMinimal extends Timestamped {
   hp: number;
   rows: number;
   author: PublicUser;
+  locked: boolean;
 }
