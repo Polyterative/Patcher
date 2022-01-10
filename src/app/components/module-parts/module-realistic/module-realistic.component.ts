@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                                  from '@angular/core';
-import { MinimalModule }           from '../../../models/models';
+import { MinimalModule }           from '../../../models/module';
 import { RackDetailDataService }   from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 

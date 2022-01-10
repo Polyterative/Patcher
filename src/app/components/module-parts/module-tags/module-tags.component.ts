@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                   from '@angular/core';
-import { DbModule } from '../../../models/models';
+import { DbModule } from '../../../models/module';
 
 @Component({
   selector:        'app-module-tags',

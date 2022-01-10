@@ -2,7 +2,7 @@ import {
   Pipe,
   PipeTransform
 }                       from '@angular/core';
-import { RackedModule } from '../../models/models';
+import { RackedModule } from '../../models/module';
 
 @Pipe({
   name: 'totalHpOfRack'

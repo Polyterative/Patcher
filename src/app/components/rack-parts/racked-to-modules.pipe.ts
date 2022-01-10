@@ -5,7 +5,7 @@ import {
 import {
   DbModule,
   RackedModule
-} from '../../models/models';
+} from '../../models/module';
 
 @Pipe({
   name: 'rackedToModules'

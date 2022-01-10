@@ -19,18 +19,18 @@ import {
   tap,
   withLatestFrom
 }                          from 'rxjs/operators';
-import {
-  CV,
-  DBManufacturer,
-  DbModule,
-  Patch,
-  PatchConnection,
-  RackedModule,
-  RackMinimal,
-  Tag
-}                          from 'src/app/models/models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment }     from 'src/environments/environment';
+import { PatchConnection } from '../../models/connection';
+import { CV }              from '../../models/cv';
+import { DBManufacturer }  from '../../models/manufacturer';
+import {
+  DbModule,
+  RackedModule
+}                          from '../../models/module';
+import { Patch }           from '../../models/patch';
+import { RackMinimal }     from '../../models/rack';
+import { Tag }             from '../../models/tag';
 
 @Injectable()
 export class SupabaseService {

@@ -2,7 +2,7 @@ import {
   Pipe,
   PipeTransform
 }                   from '@angular/core';
-import { DbModule } from '../../models/models';
+import { DbModule } from '../../models/module';
 
 @Pipe({
   name: 'totalHpOfModules'
