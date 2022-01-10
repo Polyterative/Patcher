@@ -1,7 +1,9 @@
-@import "~src/app/style/brand-resources.scss";
-
+@import "~src/app/style/brand-resources";
+@import "~src/app/style/commons_customizations";
 
 .button {
+  @extend .slight-rounding;
+
   //font-weight: bolder;
   text-transform:   uppercase;
   //font-weight: bolder;
@@ -10,7 +12,8 @@
   background-color: white;
   color:            $brand-primary;
   border:           0.2rem solid $brand-primary;
-  border-radius:    0;
+  //border-radius:    0;
+  @extend .slight-rounding;
 
   transition:       125ms;
 

@@ -1,31 +1,34 @@
 <div class="col gap1"
 >
-  <lib-hero-content-card titleBig="My patches"
+  <lib-hero-content-card titleBig="Patches"
+                         description="So many patches, so little time. Patches you've created and those you're currently working on"
                          class="patchesBG"
                          icon="settings_input_composite"
+                         id="patches"
   >
     <div class="col gap1"
     >
-      <app-patch-list fxFlex="grow"
-                      [data$]="data$"
-                      [showSearch]="true"
-                      *ngIf="(data$|async).length>0 else noData"
-      ></app-patch-list>
-      
       <app-brand-primary-button
           (click$)="add$.next()"
           fxLayoutAlign="end"
       >Create patch
       </app-brand-primary-button>
+      <mat-divider inset="true"></mat-divider>
+      <app-patch-list fxFlex="grow"
+                      [data$]="data$"
+                      [showSearch]="true"
+                      *ngIf="(data$|async).length>0 else noData"
+      ></app-patch-list>
+
+
     </div>
   </lib-hero-content-card>
 </div>
 
 <ng-template #noData>
   <div fxFlex="auto">
-    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks
-                                                     to your collection yet.
-                                                     Try adding some!
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any patches
+                                                     yet. Try adding some!
     </mat-card-subtitle>
   </div>
 </ng-template>

@@ -1,16 +1,68 @@
-<div fxFlex="auto"
-     fxLayout="row"
-     fxLayout.lt-md="column"
-     class="root"
-     fxLayoutAlign="center center"
->
-  <!--  <div fxFlex="25%"-->
-  <!--       fxLayoutAlign="center center"-->
+<div class="col gap2">
+  <!--  <div style="margin-top: 16rem; margin-bottom: 16rem;"-->
   <!--  >-->
-  <!--    <a href="https://www.buymeacoffee.com/polyterative"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=&slug=polyterative&button_colour=355E97&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00"></a>-->
+  <!--    <app-lottie-container fxLayoutAlign="center center"-->
+  <!--                          fxFlex="auto"-->
+  <!--                          [styles]="{maxWidth: '30rem'}"-->
+  <!--                          [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"-->
+  <!--    ></app-lottie-container>-->
   <!--  </div>-->
-  <app-feedback-box fxFlex="auto"></app-feedback-box>
-  <app-discord-widget fxFlex="auto"></app-discord-widget>
-  <app-build-info fxFlex="auto"></app-build-info>
-  <!--  <div fxFlex="grow"></div>-->
+  <mat-divider inset="true"></mat-divider>
+  <div class="col">
+    <div fxLayout="column"
+         class="root"
+    >
+      <!--  <div fxFlex="25%"-->
+      <!--       fxLayoutAlign="center center"-->
+      <!--  >-->
+      <!--    <a href="https://www.buymeacoffee.com/polyterative"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=&slug=polyterative&button_colour=355E97&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00"></a>-->
+      <!--  </div>-->
+      
+      <!--      <mat-divider fxFlex=".5rem"-->
+      <!--                   inset="true"-->
+      <!--                   vertical="true"-->
+      <!--                   fxLayoutAlign="center center"-->
+      <!--      ></mat-divider>-->
+      <div fxFlex="auto"
+           fxLayout="row wrap"
+           fxLayout.lt-sm="column"
+           fxLayoutGap="1rem"
+      >
+        <app-label-value-showcase fxFlex="18rem"
+                                  fxFlex.lt-sm="auto"
+                                  label="Something wrong?"
+                                  [bigText]="false"
+        >
+          <p>This project is in beta! Please report any issues on the discord server</p>
+        </app-label-value-showcase>
+        <app-build-info fxFlex="18rem"
+                        fxFlex.lt-sm="auto"
+        ></app-build-info>
+        <app-discord-widget fxFlex="18rem"
+                            fxFlex.lt-sm="auto"
+        ></app-discord-widget>
+        <app-feedback-box fxFlex="18rem"
+                          fxFlex.lt-sm="auto"
+        ></app-feedback-box>
+      </div>
+      <mat-divider inset="true"></mat-divider>
+      <div class="row gap1"
+           fxLayout.lt-sm="column"
+      >
+        <app-lottie-container fxLayoutAlign="start end"
+                              fxFlex="auto"
+                              class="transparentize-half"
+                              style="max-width: 20rem; margin:-.75rem;"
+                              [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
+        ></app-lottie-container>
+        <h3 fxLayoutAlign="end center"
+            fxFlex="grow"
+            class="tagline"
+        >
+          THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
+      </div>
+      <!--  <div fxFlex="grow"></div>-->
+    </div>
+  
+  </div>
 </div>

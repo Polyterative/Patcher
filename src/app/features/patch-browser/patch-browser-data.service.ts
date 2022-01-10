@@ -28,7 +28,7 @@ export type PatchList = Patch[] | null;
 @Injectable()
 export class PatchBrowserDataService implements OnDestroy {
   patchesList$ = new BehaviorSubject<PatchList>(null);
-  updatePatchesList$ = new Subject();
+  updatePatchesList$ = new Subject<void>();
   
   ////
   serversideTableRequestData = {
@@ -93,12 +93,12 @@ export class PatchBrowserDataService implements OnDestroy {
       ])
                   .pipe(
                     startWith([]))
-      
+  
     }
   };
   
-  paginatorToFistPage$ = new Subject();
-  protected destroyEvent$: Subject<void> = new Subject();
+  paginatorToFistPage$ = new Subject<void>();
+  protected destroyEvent$ = new Subject<void>();
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),

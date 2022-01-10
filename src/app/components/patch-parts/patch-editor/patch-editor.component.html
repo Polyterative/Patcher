@@ -17,8 +17,7 @@
       <div ngClass.lt-xl="col gap1"
            ngClass.gt-lg="row gap1"
       >
-        <div fxFlex.gt-lg="32rem"
-             class="col gap1"
+        <div class="col gap1"
         >
           <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
                                              [updateData$]="dataService.savePatchEditing$"
@@ -33,18 +32,18 @@
                 you're done!
               </mat-card-subtitle>
               <div></div>
-  
-  
+      
+      
               <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                         theme="positive"
                                         fxLayoutAlign="end"
-                                        [disabled]="(!(dataService.formData.name.control|formlValid))||(!(dataService.formData.description.control|formlValid))"
+                                        [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
               >
                 <mat-icon>save</mat-icon>
                 Save patch
               </app-brand-primary-button>
-
-
+    
+    
             </div>
           </lib-auto-update-loading-indicator>
   
@@ -58,7 +57,7 @@
                                    description="The connection you want to create"
                                    [showHelpButton]="true"
             >
-              <mat-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+              <lib-clean-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
                 <app-patch-connection-minimal [data]="{
     a:bag.selectedForConnection.a.cv,
     b:bag.selectedForConnection.b.cv,
@@ -69,7 +68,7 @@
                                               (remove$)="dataService.resetSelectedForConnection$.next()"
                                               (create$)="dataService.confirmSelectedConnection$.next()"
                 ></app-patch-connection-minimal>
-              </mat-card>
+              </lib-clean-card>
               <ng-template #selectedForConnectionVoidState>
                 <div style="height:9rem;width:auto"
                      fxLayoutAlign="center center"
@@ -87,17 +86,16 @@
             >
   
               <!--              <div *ngIf="bag.editorConnections.length<=5"-->
-              <div class="col gap1"
-                   style="max-height: 46rem; overflow-y: auto;"
+              <div class="col gap0"
               >
                 <ng-container *ngFor="let item of bag.editorConnections; let i = index">
-                  <mat-card>
+                  <lib-clean-card>
                     <app-patch-connection-minimal [data]="item"
                                                   [index]="i+1"
                                                   [isEditing]="true"
                                                   (remove$)="dataService.removeConnectionFromEditor$.next($event)"
                     ></app-patch-connection-minimal>
-                  </mat-card>
+                  </lib-clean-card>
                 </ng-container>
               </div>
   
@@ -110,12 +108,12 @@
               <!--                <div class="col gap1">-->
               <!--                  <ng-container *cdkVirtualFor="let item of bag.editorConnections">-->
               <!--                    <div>-->
-              <!--                      <mat-card>-->
+              <!--                      <lib-clean-card>-->
               <!--                        <app-patch-connection-minimal [data]="item"-->
               <!--                                                      [isEditing]="true"-->
               <!--                                                      (remove$)="dataService.removeConnectionFromEditor$.next($event)"-->
               <!--                        ></app-patch-connection-minimal>-->
-              <!--                      </mat-card>-->
+              <!--                      </lib-clean-card>-->
               <!--                    </div>-->
               <!--                  </ng-container>-->
               <!--                </div>-->
@@ -128,7 +126,6 @@
         >
           <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
           <app-user-modules class="modulesBG"
-                            style="max-height: 73rem; overflow-y: auto;"
                             [viewConfig]="{
                          hideManufacturer: true,
                          hideDescription:  true,
