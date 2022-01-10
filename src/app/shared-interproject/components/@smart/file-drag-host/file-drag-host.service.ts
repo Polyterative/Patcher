@@ -1,20 +1,20 @@
 import {
-    EventEmitter,
-    Injectable,
-    OnDestroy
+  EventEmitter,
+  Injectable,
+  OnDestroy
 }                                 from '@angular/core';
 import { MatSnackBar }            from '@angular/material/snack-bar';
 import { NgxDropzoneChangeEvent } from 'ngx-dropzone';
 import {
-    BehaviorSubject,
-    Subject
+  BehaviorSubject,
+  Subject
 }                                 from 'rxjs';
 import {
-    filter,
-    map,
-    takeUntil,
-    tap,
-    withLatestFrom
+  filter,
+  map,
+  takeUntil,
+  tap,
+  withLatestFrom
 }                                 from 'rxjs/operators';
 
 type FileArray = File[];
@@ -70,8 +70,8 @@ export class FileDragHostService implements OnDestroy {
 
 
   }
-
-  protected destroyEvent$: Subject<void> = new Subject();
+  
+  protected destroyEvent$ = new Subject<void>();
 
   ngOnDestroy(): void {
     this.destroyEvent$.next();

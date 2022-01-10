@@ -8,17 +8,14 @@
       <!--      <app-module-cv-icon type="in"></app-module-cv-icon>-->
       {{ins.length}} INs ↘
     </mat-card-subtitle>
-    <div class="row gap0"
-    >
-      <mat-chip-list>
-        <ng-container *ngFor="let item of ins">
-          <app-module-cvitem [data]="item"
-                             kind="in"
-                             (click$)="inClick$.next([$event,data])"
-          ></app-module-cvitem>
-        </ng-container>
-      </mat-chip-list>
-    </div>
+    <mat-chip-list>
+      <ng-container *ngFor="let item of ins">
+        <app-module-cvitem [data]="item"
+                           kind="in"
+                           (click$)="inClick$.next([$event,data])"
+        ></app-module-cvitem>
+      </ng-container>
+    </mat-chip-list>
   </div>
   <div class="col gap0"
        *ngIf="outs.length>0"
@@ -28,16 +25,13 @@
       <!--      <app-module-cv-icon type="out"></app-module-cv-icon>-->
       {{outs.length}} OUTs ↗
     </mat-card-subtitle>
-    <div class="row gap0"
-    >
-      <mat-chip-list>
-        <ng-container *ngFor="let item of outs">
-          <app-module-cvitem [data]="item"
-                             kind="out"
-                             (click$)="outClick$.next([$event,data])"
-          ></app-module-cvitem>
-        </ng-container>
-      </mat-chip-list>
-    </div>
+    <mat-chip-list>
+      <ng-container *ngFor="let item of outs">
+        <app-module-cvitem [data]="item"
+                           kind="out"
+                           (click$)="outClick$.next([$event,data])"
+        ></app-module-cvitem>
+      </ng-container>
+    </mat-chip-list>
   </div>
 </div>

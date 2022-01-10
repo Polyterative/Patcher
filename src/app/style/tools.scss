@@ -1,12 +1,16 @@
 ﻿$standardUnit: 1rem;
 @mixin flex {
+  display:               -webkit-box;
+  display:               -ms-flexbox;
   display:               flex;
+  -webkit-box-sizing:    border-box;
   box-sizing:            border-box;
   -webkit-box-direction: normal;
 }
 
 .row {
   @include flex;
+  display:            inline-flex;
   flex-direction:     row;
   //flex-flow:          row;
   -webkit-box-orient: horizontal;
@@ -20,15 +24,15 @@
 }
 
 .gap0 {
-  gap: $standardUnit/2
+  gap: $standardUnit/2 $standardUnit/2 /* row-gap column gap */
 }
 
 .gap1 {
-  gap: $standardUnit
+  gap: $standardUnit $standardUnit
 }
 
 .gap2 {
-  gap: $standardUnit*2
+  gap: $standardUnit*2 $standardUnit*2
 }
 
 .col {
@@ -91,4 +95,24 @@
 
 .padB1 {
   padding-bottom: $standardUnit;
+}
+
+.transparentize-half {
+  opacity: .5;
+}
+
+.transparentize-quarter {
+  opacity: .75;
+}
+
+.transition-all {
+  transition: all 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.transition-all-long {
+  transition: all 500ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.half-sizing {
+  transform: scale(0.5);
 }

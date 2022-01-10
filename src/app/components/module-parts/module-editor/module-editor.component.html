@@ -162,7 +162,7 @@
     <app-brand-primary-button (click$)="save$.next()"
                               theme="positive"
                               fxLayoutAlign="end"
-                              [disabled]="!(formGroupA|formlValid)||!(formGroupB|formlValid)||!(formGroupC|formlValid)"
+                              [disabled]="!(formGroupA|formValid)||!(formGroupB|formValid)||!(formGroupC|formValid)"
     >
       <mat-icon>save</mat-icon>
       Save data

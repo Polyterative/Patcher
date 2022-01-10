@@ -1,0 +1,15 @@
+<div class="col gap0"
+     *ngIf="data.tags.length>0"
+>
+  <mat-card-subtitle>
+    {{data.tags.length}} Tag(s)
+  </mat-card-subtitle>
+  <!--  <ng-container *ngFor="let item of data.tags|onlyTagOfType:0">-->
+  <!--    {{item.name}}-->
+  <!--  </ng-container>-->
+  <mat-chip-list>
+    <ng-container *ngFor="let item of data.tags|orderTagsByType">
+      <mat-chip>{{item.tag.name}}</mat-chip>
+    </ng-container>
+  </mat-chip-list>
+</div>

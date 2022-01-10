@@ -1,16 +1,9 @@
-<div class="col gap1"
+<div class="row gap1"
+     fxLayoutAlign="end center"
 >
-  <lib-hero-content-card titleNormal="Rack modules">
-    <flexbox-row-fast
-    >
-      <ng-container *ngFor="let item of rackModules$|async">
-        <div>
-          <mat-card>
-            <app-module-minimal [data]="item"></app-module-minimal>
-          </mat-card>
-        </div>
-      
-      </ng-container>
-    </flexbox-row-fast>
-  </lib-hero-content-card>
+  <app-brand-primary-button disabled="true"
+                            matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+  >
+    Clone
+  </app-brand-primary-button>
 </div>

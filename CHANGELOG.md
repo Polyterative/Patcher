@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.2](https://github.com/Polyterative/Patcher/compare/v3.0.1...v3.0.2) (2022-01-08)
+
+### [3.0.1](https://github.com/Polyterative/Patcher/compare/v3.0.0...v3.0.1) (2022-01-08)
+
+## [3.0.0](https://github.com/Polyterative/Patcher/compare/v2.19.2...v3.0.0) (2022-01-07)
+
+### [2.19.2](https://github.com/Polyterative/Patcher/compare/v2.19.1...v2.19.2) (2022-01-03)
+
+### [2.19.1](https://github.com/Polyterative/Patcher/compare/v2.19.0...v2.19.1) (2022-01-03)
+
+## [2.19.0](https://github.com/Polyterative/Patcher/compare/v2.18.1...v2.19.0) (2022-01-01)
+
+### [2.18.1](https://github.com/Polyterative/Patcher/compare/v2.18.0...v2.18.1) (2021-12-30)
+
+## [2.18.0](https://github.com/Polyterative/Patcher/compare/v2.17.14...v2.18.0) (2021-12-30)
+
+### [2.17.14](https://github.com/Polyterative/Patcher/compare/v2.17.13...v2.17.14) (2021-12-28)
+
+### [2.17.13](https://github.com/Polyterative/Patcher/compare/v2.17.12...v2.17.13) (2021-12-28)
+
+### [2.17.12](https://github.com/Polyterative/Patcher/compare/v2.17.10...v2.17.12) (2021-12-28)
+
+### [2.17.11](https://github.com/Polyterative/Patcher/compare/v2.17.10...v2.17.11) (2021-12-28)
+
+### [2.17.10](https://github.com/Polyterative/Patcher/compare/v2.17.9...v2.17.10) (2021-12-26)
+
+### [2.17.9](https://github.com/Polyterative/Patcher/compare/v2.17.8...v2.17.9) (2021-12-25)
+
+### [2.17.8](https://github.com/Polyterative/Patcher/compare/v2.17.7...v2.17.8) (2021-12-25)
+
 ### [2.17.7](https://github.com/Polyterative/Patcher/compare/v2.17.6...v2.17.7) (2021-09-18)
 
 ### [2.17.6](https://github.com/Polyterative/Patcher/compare/v2.17.5...v2.17.6) (2021-09-18)

@@ -1,0 +1,22 @@
+<ng-container *ngIf="(dataService.positionData$|async) as positionData">
+  <div style="visibility: hidden; position: fixed"
+       [style.left]="positionData.x"
+       [style.top]="positionData.y"
+       [matMenuTriggerFor]="contextMenu"
+  >
+  </div>
+  <mat-menu #contextMenu="matMenu">
+    <ng-template matMenuContent
+    >
+      <ng-container *ngFor="let menuItem of dataService.menuItems$|async;">
+        
+        <button mat-menu-item
+                (click)="menuItem.click$.next(menuItem)"
+                [disabled]="menuItem.disabled"
+        
+        >{{menuItem.label}}
+        </button>
+      </ng-container>
+    </ng-template>
+  </mat-menu>
+</ng-container>

@@ -10,7 +10,8 @@ import {
 }                          from 'rxjs';
 import {
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 }                          from 'rxjs/operators';
 import {
   PatchCreatorComponent,
@@ -26,9 +27,9 @@ import { Patch }           from '../../../models/patch';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserPatchesComponent implements OnInit {
-  data$: BehaviorSubject<Patch[]> = new BehaviorSubject([]);
-  public readonly add$ = new Subject();
-  public readonly updateData$ = new Subject();
+  data$: BehaviorSubject<Patch[] | null> = new BehaviorSubject([]);
+  public readonly add$ = new Subject<void>();
+  public readonly updateData$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
@@ -36,6 +37,7 @@ export class UserPatchesComponent implements OnInit {
   ) {
     this.updateData$
         .pipe(
+          tap(x => this.data$.next([])),
           switchMap(x => this.backend.get.userPatches()),
           takeUntil(this.destroyEvent$)
         )
@@ -73,7 +75,7 @@ export class UserPatchesComponent implements OnInit {
   
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

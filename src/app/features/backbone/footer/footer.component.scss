@@ -1,11 +1,21 @@
+@import "~src/app/style/brand-resources.scss";
+
 .root {
-  margin-top:       8rem;
-  padding-top:      2rem;
-  padding-bottom:   2rem;
+  padding-top:      1rem;
+  padding-bottom:   1rem;
   background-color: rgba(0, 0, 0, .1);
   margin-bottom:    2rem;
 
   > * {
     padding: 1rem;
   }
+}
+
+.tagline {
+  @include heading-font;
+  text-align:     end;
+  color:          rgba(0, 0, 0, 0.4);
+  margin-top:     0;
+  margin-bottom:  0;
+  letter-spacing: 0 !important;
 }

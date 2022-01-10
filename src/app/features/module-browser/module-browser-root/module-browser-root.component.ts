@@ -53,7 +53,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

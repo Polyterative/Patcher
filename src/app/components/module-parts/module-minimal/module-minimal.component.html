@@ -8,33 +8,19 @@
   >
     <div class="col"
     >
-      <app-hero-clickable-title [link]="['/modules/details',data.id]"
-                                infoBox
-                                infoText="Module name"
-
-      >{{data.name}}</app-hero-clickable-title>
-      <div class="row spaceBetween description"
-           fxLayoutGap="1rem"
-           *ngIf="data.description&&!viewConfig.hideDescription"
+      <app-module-part-name [data]="data"></app-module-part-name>
+      <div class="row gap1 spaceBetween"
       >
-        <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
+        <app-module-part-manufacturer *ngIf="!viewConfig.hideManufacturer"
+                                      [data]="data"
+        ></app-module-part-manufacturer>
+        <app-module-part-hp *ngIf="!viewConfig.hideHP"
+                            [data]="data"
+        ></app-module-part-hp>
       </div>
-      <div class="row spaceBetween"
-           fxLayoutGap="1rem"
-      >
-        <div *ngIf="!viewConfig.hideManufacturer">
-          <mat-card-subtitle infoBox
-                             infoText="Manufacturer name"
-          >{{data.manufacturer.name}}</mat-card-subtitle>
-        </div>
-        <div style="font-size: small"
-             *ngIf="!viewConfig.hideHP"
-             fxLayoutAlign="center center"
-        >
-          {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
-          {{data.hp}} HP
-        </div>
-      </div>
+      <app-module-part-description [data]="data"
+                                   *ngIf="!viewConfig.hideDescription"
+      ></app-module-part-description>
       <app-timestamps-relative [data]="data"
                                *ngIf="!viewConfig.hideDates"
       ></app-timestamps-relative>
@@ -44,8 +30,7 @@
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="row opacizeOnHover"
-           fxLayoutGap="2rem"
+      <div class="row gap2 opacizeOnHover"
            fxLayoutGap.xs="0rem"
       >
         <div fxFlex="auto"
@@ -57,7 +42,7 @@
                     matTooltip="Add to your collection"
                     *ngIf="(bag.singleModuleData)"
                     [disabled]="!bag.user"
-                    [title]="!bag.user ? 'You need to login to add to modules your collection':''"
+                    [title]="!bag.user ? 'Login to add to modules your collection':''"
                     (click)="dataService.addModuleToCollection$.next(data.id)"
             >
               <mat-icon>add</mat-icon>
@@ -73,24 +58,21 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-  
-  
+      
+      
           <button mat-icon-button
                   matTooltip="Add to rack"
-                  [title]="!bag.user ? 'You need to login to add to modules your rack':''"
+                  [title]="!bag.user ? 'Login to add to modules your rack':''"
                   *ngIf="(bag.singleModuleData)"
                   [disabled]="(!bag.user)"
                   (click)="dataService.addModuleToRack$.next(data)"
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-
+    
         </div>
         <div fxFlex="grow"></div>
-        <div fxFlex="auto"
-             fxLayout="row"
-             fxLayoutGap="1rem"
-        >
+        <div class="row gap1">
           <ng-container *ngIf="(bag.singleModuleData&&bag.user)">
             <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
               <button mat-icon-button
@@ -132,8 +114,8 @@
             </a>
 
           </ng-container>
-  
-  
+      
+      
           <ng-container *ngIf="!bag.singleModuleData">
             <a mat-icon-button
                matTooltip="Show details"
@@ -141,9 +123,9 @@
             >
               <mat-icon>info</mat-icon>
             </a>
-  
+      
           </ng-container>
-
+    
         </div>
       </div>
     </ng-container>

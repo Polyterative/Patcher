@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 } from '@angular/core';
 
 @Component({
@@ -11,7 +10,7 @@ import {
   templateUrl:     './width-limiter.component.html',
   styleUrls:       ['./width-limiter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None
+  
 })
 export class WidthLimiterComponent implements OnInit {
   @Input()

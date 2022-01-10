@@ -35,11 +35,11 @@ export type ModuleList = MinimalModule[] | null;
 
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   //
   modulesList$ = new BehaviorSubject<ModuleList>(null);
   userModulesList$ = new BehaviorSubject<DbModule[]>([]);
-  updateModulesList$ = new Subject();
+  updateModulesList$ = new Subject<void>();
   
   ////
   serversideTableRequestData = {
@@ -143,7 +143,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     }
   };
   
-  paginatorToFistPage$ = new Subject();
+  paginatorToFistPage$ = new Subject<void>();
   dirty = false;
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),

@@ -1,24 +1,20 @@
-<lib-screen-wrapper maxSize="26rem"
-                    style="margin-bottom:16rem"
+<lib-screen-wrapper maxSize="32rem"
 >
-  <div style="padding-top: 4rem"
-  >
-    <app-empty-state
-        backgroundImage="assets/svg/undraw_login.svg"
-    ></app-empty-state>
-  </div>
-  <lib-hero-content-card titleNormal="Login"
-  >
-    <div class="col gap1"
+  <div class="col gap1">
+    <lib-hero-content-card titleBig="Who are you again?"
+                           style="height:90vh;"
     >
-      <app-login-email fxFlex="auto"></app-login-email>
-      <mat-card-subtitle fxLayoutAlign="center"
-                         routerLink="/auth/signup"
-                         style="cursor: pointer"
-      >Sign up instead?
-      </mat-card-subtitle>
-    </div>
-  
-  </lib-hero-content-card>
+      <div class="col gap1"
+      >
+        <app-login-email fxFlex="auto"></app-login-email>
+        <mat-card-subtitle fxLayoutAlign="center"
+                           routerLink="/auth/signup"
+                           style="cursor: pointer"
+        >Sign up instead?
+        </mat-card-subtitle>
+      </div>
+    
+    </lib-hero-content-card>
+  </div>
 
 </lib-screen-wrapper>

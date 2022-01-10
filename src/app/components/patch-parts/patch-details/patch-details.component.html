@@ -1,5 +1,5 @@
 <ng-container *ngIf="{
-  connections:(dataService.patchConnections$|async)
+  connections:(dataService.patchesConnections$|async)
   } as bag"
 >
   <div class="col gap1"
@@ -10,9 +10,59 @@
                                         [loadingLines]="5"
     >
     </lib-auto-content-loading-indicator>
-  
+
   </div>
   
+  <ng-template #data>
+    <ng-container *ngIf="bag.connections.length>0; else noData">
+      <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
+                             *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
+      >
+        <lib-clean-card>
+          <!--          <div *ngIf="bag.connections.length<=8"-->
+          <div class="col gap1"
+               [ngClass]="{'encloseVertically':(dataService.patchEditingPanelOpenState$|async)&&false}"
+  
+          >
+            <ng-container *ngFor="let item of bag.connections; let i = index">
+              <app-patch-connection-minimal [data]="item"
+                                            [index]="i+1"
+              ></app-patch-connection-minimal>
+              <mat-divider inset="true"
+                           *ngIf="i!=bag.connections.length-1"
+              ></mat-divider>
+            </ng-container>
+          </div>
+  
+          <!--          <cdk-virtual-scroll-viewport *ngIf="bag.connections.length>8"-->
+          <!--                                       autosize-->
+          <!--                                       style="height: 50rem; overflow: auto;"-->
+          <!--          >-->
+          <!--            <div class="col gap1">-->
+          <!--              <div *cdkVirtualFor="let item of bag.connections"-->
+          <!--                   class="col gap1"-->
+          <!--              >-->
+          <!--                <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>-->
+          <!--                <mat-divider inset="true"></mat-divider>-->
+          <!--              </div>-->
+          <!--            </div>-->
+          <!--          </cdk-virtual-scroll-viewport>-->
+
+        </lib-clean-card>
+      </lib-hero-content-card>
+      <lib-hero-content-card [titleNormal]="'Connections graph'"
+      >
+        <mat-card>
+          <div class="col gap1 "
+               style="max-height: 56rem; overflow-y: auto;"
+          >
+            <app-patch-graph></app-patch-graph>
+          </div>
+    
+        </mat-card>
+      </lib-hero-content-card>
+    </ng-container>
+  </ng-template>
   <ng-template #noData>
     <lib-hero-content-card titleNormal="Connections">
       <div fxFlex="auto">
@@ -27,52 +77,5 @@
       </div>
     </lib-hero-content-card>
   </ng-template>
-  <ng-template #data>
-    <ng-container *ngIf="bag.connections.length>0; else noData">
-      <lib-hero-content-card [titleNormal]="bag.connections.length+' Connections'"
-      >
-        <mat-card>
-          <!--          <div *ngIf="bag.connections.length<=8"-->
-          <div class="col gap1 "
-               style="max-height: 56rem; overflow-y: auto;"
-          >
-            <ng-container *ngFor="let item of bag.connections; let i = index">
-              <app-patch-connection-minimal [data]="item"
-                                            [index]="i+1"
-              ></app-patch-connection-minimal>
-              <mat-divider inset="true"
-                           *ngIf="i!=bag.connections.length-1"
-              ></mat-divider>
-            </ng-container>
-          </div>
-          <!--          <cdk-virtual-scroll-viewport *ngIf="bag.connections.length>8"-->
-          <!--                                       autosize-->
-          <!--                                       style="height: 50rem; overflow: auto;"-->
-          <!--          >-->
-          <!--            <div class="col gap1">-->
-          <!--              <div *cdkVirtualFor="let item of bag.connections"-->
-          <!--                   class="col gap1"-->
-          <!--              >-->
-          <!--                <app-patch-connection-minimal [data]="item"></app-patch-connection-minimal>-->
-          <!--                <mat-divider inset="true"></mat-divider>-->
-          <!--              </div>-->
-          <!--            </div>-->
-          <!--          </cdk-virtual-scroll-viewport>-->
-        </mat-card>
-      </lib-hero-content-card>
-      <lib-hero-content-card [titleNormal]="'Connections graph'"
-      >
-        <mat-card>
-          <div class="col gap1 "
-               style="max-height: 56rem; overflow-y: auto;"
-          >
-            <app-patch-graph></app-patch-graph>
-          </div>
-        
-        </mat-card>
-      </lib-hero-content-card>
-    </ng-container>
-  </ng-template>
-
 
 </ng-container>

@@ -20,14 +20,14 @@ import { FirebaseService }         from 'src/app/features/backend/firebase.servi
 })
 export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public dataService: ModuleDetailDataService,
     public api: FirebaseService,
     public route: ActivatedRoute
   ) {
-    
+  
   }
   
   ngOnInit(): void {

@@ -1,6 +1,62 @@
-.leftBorderS {
-  border-left-width: .5rem;
-  border-left-style: solid;
-  border-left-color: #778698;
-  padding-left:      .5rem;
+@use '@angular/material' as mat;
+
+.cdk-drag-preview {
+  //box-sizing:    border-box;
+  @include mat.elevation(8);
+}
+
+.cdk-drag-placeholder {
+  opacity: .5;
+}
+
+.cdk-drag-animating {
+  transition: all 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+$bgOpacity:    0.8;
+$bgGradientBG: rgb(223, 223, 223);
+
+.editiableBG {
+  //background: $bgGradientBG;
+  background:       $bgGradientBG;
+  background-color: transparentize(rgb(53, 178, 74), $bgOpacity);
+}
+
+.readOnlyBG {
+  //background: $bgGradientBG;
+  background:       $bgGradientBG;
+  background-color: transparentize(rgb(0, 0, 0, 0), $bgOpacity);
+}
+
+.widthRuler {
+  border-width:       .1rem;
+  border-color:       rgba(0, 0, 0, 0.3);
+  border-top-style:   solid;
+  border-right-style: solid;
+  border-left-style:  solid;
+
+  padding:            0.5em;
+}
+
+.rackLocked {
+  transform: scale(0.98);
+
+}
+
+.innerEditor {
+  //background-color: rgba(0, 0, 0, 0.05);
+
+}
+
+.row {
+  @include mat.elevation(2);
+
+  $gridColor:       rgba(0, 0, 0, 0.15);
+  $gridWeight:      .1rem;
+
+  background-color: rgba(255, 255, 255, 0.25);
+  background-image: linear-gradient(to right, $gridColor $gridWeight, transparent $gridWeight);
+  background-size:  1rem;
+  min-height:       4rem;
+  min-width:        4rem;
 }

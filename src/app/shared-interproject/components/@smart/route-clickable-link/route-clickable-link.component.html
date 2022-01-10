@@ -3,8 +3,7 @@ data:(data$|async),
 layoutFlexWidth:(appState.layoutFlexWidth$|async)
 } as bag"
 >
-  <div fxFlex="auto"
-       fxLayout="row"
+  <div class="row "
        *ngIf="bag.layoutFlexWidth"
   >
     <ng-container *ngFor="let item of bag.data">
@@ -13,6 +12,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
+         (click)="onClick(item)"
+         [disabled]="item.disabled"
+         [ngClass]="{'disabled':item.disabled}"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
          [ngStyle]="item.style"
       >
@@ -24,6 +26,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
          class="option stock"
          [routerLink]="item.route"
          routerLinkActive="selected"
+         (click)="onClick(item)"
+         [disabled]="item.disabled"
+         [ngClass]="{'disabled':item.disabled}"
          [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
          [ngStyle]="item.style"
       >
