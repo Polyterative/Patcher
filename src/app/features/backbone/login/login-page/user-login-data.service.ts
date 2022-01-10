@@ -79,7 +79,7 @@ export class UserLoginDataService {
               .pipe(take(1))
               .subscribe(z => {
                 this.loginSuccessful$.next();
-                this.router.navigate([x.returnUrl ? x.returnUrl : '/modules/browser']);
+                this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
               });
           }
         });
@@ -95,12 +95,12 @@ export class UserLoginDataService {
     //       } else {
     //         SharedConstants.confirmMail(snackBar);
     //       }
-    //  
+    //
     //     });
     
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

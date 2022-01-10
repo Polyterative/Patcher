@@ -10,7 +10,8 @@ import {
 }                          from 'rxjs';
 import {
   switchMap,
-  takeUntil
+  takeUntil,
+  tap
 }                          from 'rxjs/operators';
 import {
   RackCreatorComponent,
@@ -27,16 +28,17 @@ import { Rack }            from '../../../models/rack';
 })
 export class UserRacksComponent implements OnInit {
   data$: BehaviorSubject<Rack[]> = new BehaviorSubject([]);
-  public readonly add$ = new Subject();
-  public readonly updateData$ = new Subject();
+  public readonly add$ = new Subject<void>();
+  public readonly updateData$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
     public backend: SupabaseService
   ) {
-  
+    
     this.updateData$
         .pipe(
+          tap(x => this.data$.next([])),
           switchMap(x => this.backend.get.userRacks()),
           takeUntil(this.destroyEvent$)
         )
@@ -50,7 +52,7 @@ export class UserRacksComponent implements OnInit {
               // positive:    {label: '✔️ Conferma'},
               // negative:    {label: '❌ Annulla'}
             };
-      
+  
             return this.dialog.open(
               RackCreatorComponent,
               {
@@ -71,7 +73,7 @@ export class UserRacksComponent implements OnInit {
     this.updateData$.next();
   }
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

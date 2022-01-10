@@ -27,7 +27,7 @@ export class AppStateService {
   
   readonly isDev = !environment.production;
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   layoutFlexWidth$ = new ReplaySubject<{
     xs: boolean,

@@ -19,13 +19,13 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 })
 export class PatchBrowserDetailViewComponent implements OnInit {
   
-  protected destroyEvent$: Subject<void> = new Subject();
+  protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public dataService: PatchDetailDataService,
     public route: ActivatedRoute
   ) {
-    
+  
   }
   
   ngOnInit(): void {

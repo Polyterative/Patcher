@@ -2,8 +2,7 @@
              class="toolbar sticky"
 >
   <lib-screen-wrapper fxFlex="grow">
-    <div fxFlex="auto"
-         class="row gap1"
+    <div class="row gap1"
     >
       <a fxFlex="auto"
          mat-button
@@ -15,19 +14,19 @@
       >
         {{service.state.title|async}}
       </a>
+      <!--      <app-brand-logo></app-brand-logo>-->
       <div fxFlex="grow"
            [fxHide.xs]="true"
       ></div>
-      <div class="buttons"
-           fxLayout="row"
-           fxLayoutGap="1rem"
+      <div class="row gap1 buttons"
            fxLayoutGap.xs=".25rem"
       >
-        <app-route-clickable-link-list [data$]="links$"></app-route-clickable-link-list>
+        <app-route-clickable-link-list [data$]="homeLinks$"></app-route-clickable-link-list>
+        <mat-divider vertical="true"></mat-divider>
+        <app-route-clickable-link-list [data$]="mainLinks$"></app-route-clickable-link-list>
       </div>
       <div fxFlex="grow"></div>
       <app-route-clickable-link-list [data$]="(userService.user$|async)?linksUser$:linksA$"></app-route-clickable-link-list>
-      <!--              <app-brand-logo></app-brand-logo>-->
     </div>
   </lib-screen-wrapper>
 </mat-toolbar>

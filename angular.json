@@ -122,18 +122,6 @@
               "src/assets"
             ]
           }
-        },
-        "lint":  {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude":  [
-              "**/node_modules/**"
-            ]
-          }
         }
       }
     },
@@ -152,15 +140,6 @@
             "production": {
               "devServerTarget": "Patcher:serve:production"
             }
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": "e2e/tsconfig.e2e.json",
-            "exclude":  [
-              "**/node_modules/**"
-            ]
           }
         }
       }

@@ -10,6 +10,7 @@ import { MatFormEntityModule }      from 'src/app/shared-interproject/components
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule }      from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { LottieContainerModule }    from '../../../../shared-interproject/components/@smart/lottie-container/lottie-container.module';
 import { LoginEmailModule }         from './login-email/login-email.module';
 import { LoginPageComponent }       from './login-page.component';
 
@@ -30,7 +31,8 @@ import { LoginPageComponent }       from './login-page.component';
     FlexLayoutModule,
     LoginEmailModule,
     RouterModule,
-    MatCardModule
+    MatCardModule,
+    LottieContainerModule
   ],
   exports:      [
     LoginPageComponent,

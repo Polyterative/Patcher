@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
-  ViewEncapsulation
+  OnInit
 }                                 from '@angular/core';
 import {
   BehaviorSubject,
@@ -24,7 +23,6 @@ import { RackList }               from '../rack-browser-data.service';
   templateUrl:     './rack-list.component.html',
   styleUrls:       ['./rack-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation:   ViewEncapsulation.None,
   viewProviders:   [LocalDataFilterService]
 })
 export class RackListComponent extends SubManager implements OnInit {
