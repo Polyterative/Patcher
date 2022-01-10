@@ -2,38 +2,32 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit
-}                                   from '@angular/core';
+}                                 from '@angular/core';
 import {
   ClusterNode,
   Edge,
-  Layout,
   Node
-}                                   from '@swimlane/ngx-graph';
+}                                 from '@swimlane/ngx-graph';
 import {
   BehaviorSubject,
-  forkJoin,
-  of
-}                                   from 'rxjs';
+  forkJoin
+}                                 from 'rxjs';
 import {
-  debounceTime,
   filter,
   map,
   switchMap,
-  take,
   tap,
   withLatestFrom
-}                                   from 'rxjs/operators';
-import { SupabaseService }          from 'src/app/features/backend/supabase.service';
-import { ModuleBrowserDataService } from '../../../features/module-browser/module-browser-data.service';
-import { PatchConnection }          from '../../../models/connection';
+}                                 from 'rxjs/operators';
+import { SupabaseService }        from 'src/app/features/backend/supabase.service';
+import { PatchConnection }        from '../../../models/connection';
 import {
   DbModule,
   MinimalModule
-}                                   from '../../../models/module';
-import { Patch }                    from '../../../models/patch';
-import { GraphViewService }         from '../../../shared-interproject/components/@visual/graph-view/graph-view.service';
-import { SubManager }               from '../../../shared-interproject/directives/subscription-manager';
-import { PatchDetailDataService }   from '../patch-detail-data.service';
+}                                 from '../../../models/module';
+import { GraphViewService }       from '../../../shared-interproject/components/@visual/graph-view/graph-view.service';
+import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
+import { PatchDetailDataService } from '../patch-detail-data.service';
 
 @Component({
   selector:        'app-patch-graph',
@@ -58,7 +52,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   ngOnInit(): void {
     this.manageSub(
-      this.patchDetailDataService.patchConnections$
+      this.patchDetailDataService.patchesConnections$
           .pipe(
             tap(x => this.nodes$.next([])),
             tap(x => this.clusters$.next([])),
@@ -70,7 +64,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                                        .pipe(map(m => m.data)))
               )
             ),
-            withLatestFrom(this.patchDetailDataService.patchConnections$)
+            withLatestFrom(this.patchDetailDataService.patchesConnections$)
           )
         // .pipe(
         //   withLatestFrom(
@@ -84,9 +78,9 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
               modules
                 .forEach(module => {
-        
+  
                   const moduleId: string = module.id.toString();
-        
+  
                   const outs: Node[] = module.outs.map(x => ({
                     id:    moduleId + x.id,
                     label: x.name,
@@ -94,7 +88,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                       color: '11c757'
                     }
                   }));
-        
+  
                   const ins: Node[] = module.ins.map(x => ({
                     id:    moduleId + x.id,
                     label: x.name,
@@ -102,7 +96,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                       color: 'a9d2020'
                     }
                   }));
-        
+  
                   clusters.push({
                     id:           moduleId,
                     label:        module.name,
@@ -115,10 +109,10 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                       ...ins.map(x => x.id)
                     ]
                   });
-        
+  
                   // nodes = nodes.concat(outs);
                   // nodes = nodes.concat(ins);
-        
+  
                 });
     
               connections.forEach(connection => {

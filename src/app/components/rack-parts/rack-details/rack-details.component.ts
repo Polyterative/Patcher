@@ -6,7 +6,7 @@ import {
 }                                from '@angular/core';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import { SupabaseService }       from 'src/app/features/backend/supabase.service';
-import { RackMinimal }           from 'src/app/models/models';
+import { RackMinimal }           from '../../../models/rack';
 import { SubManager }            from '../../../shared-interproject/directives/subscription-manager';
 import { RackDetailDataService } from '../rack-detail-data.service';
 

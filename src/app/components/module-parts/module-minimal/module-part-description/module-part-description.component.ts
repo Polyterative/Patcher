@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 }                        from '@angular/core';
-import { MinimalModule } from '../../../../models/models';
+import { MinimalModule } from '../../../../models/module';
 
 @Component({
   selector:        'app-module-part-description',
