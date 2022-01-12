@@ -2,15 +2,15 @@
 <div fxLayout="column "
      fxLayoutGap="1rem"
 >
-  <div fxFlex="auto"><h1 mat-dialog-title>{{title}}</h1></div>
-  <div fxFlex="auto"
+  <div fxFlex="100"><h1 mat-dialog-title>{{title}}</h1></div>
+  <div fxFlex="100"
        *ngIf="description"
   >
     <mat-dialog-content>
       {{description}}
     </mat-dialog-content>
   </div>
-  <lib-mat-form-entity fxFlex="auto"
+  <lib-mat-form-entity fxFlex="100"
                        [label]="data.label"
                        [type]="data.type"
                        [control]="data.control"
@@ -18,14 +18,14 @@
                        formFieldAppearenceType="outline"
   ></lib-mat-form-entity>
   <div fxLayout="row"
-       fxFlex="auto"
+       fxFlex="100"
   >
-    <app-brand-primary-button fxFlex="auto"
+    <app-brand-primary-button fxFlex="100"
                               (click$)="dialogRef.close({result: undefined})"
     >Annulla
     </app-brand-primary-button>
     <div fxFlex="grow"></div>
-    <app-brand-primary-button fxFlex="auto"
+    <app-brand-primary-button fxFlex="100"
                               (click$)="dialogRef.close({result: data.control.value})"
                               [error]="!data.control.valid"
     >Conferma

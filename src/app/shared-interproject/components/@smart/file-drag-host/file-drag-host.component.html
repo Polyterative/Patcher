@@ -10,17 +10,17 @@
                         *ngIf="bag.files.length===0"
                         style="padding: 1rem"
     >
-      <div fxFlex="auto"
+      <div fxFlex="100"
            fxLayout="column"
            fxLayoutGap="2rem"
            fxLayoutGap.xs="0rem"
       >
-        <div fxFlex="auto"
+        <div fxFlex="100"
              style="font-size: 3.5rem"
         >{{multipleFilesMode ? "🗃️" : "📁"}}
         </div>
-
-        <div fxFlex="auto">{{"Trascina " +
+  
+        <div fxFlex="100">{{"Trascina " +
         (multipleFilesMode ? "i" : "il")
         + " file qui oppure clicca per selezionare"}}</div>
       </div>
@@ -42,7 +42,7 @@
     </ng-container>
     <ng-container *ngIf="isImageOnlyMode">
       <ng-container *ngFor="let file of bag.files">
-        <div fxFlex="auto"
+        <div fxFlex="100"
              fxLayout="row"
              fxLayoutGap="1rem"
         >
@@ -52,17 +52,17 @@
                                       (removed)="service.removeFile$.emit(file)"
           >
           </ngx-dropzone-image-preview>
-          <div fxFlex="auto"
+          <div fxFlex="100"
                fxLayout="column"
                fxLayoutGap="1rem"
                class="label"
           >
-            <mat-card-subtitle fxFlex="auto"
+            <mat-card-subtitle fxFlex="100"
             >{{ file.name|shorten:144: '...' }}</mat-card-subtitle>
-            <mat-card-subtitle fxFlex="auto"
+            <mat-card-subtitle fxFlex="100"
             >[{{ file.type }}]
             </mat-card-subtitle>
-            <mat-card-subtitle fxFlex="auto"
+            <mat-card-subtitle fxFlex="100"
             >{{ file.lastModified|date }}</mat-card-subtitle>
           </div>
         </div>
