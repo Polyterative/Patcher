@@ -16,7 +16,7 @@
           <div class="col gap1"
                *ngIf="bag.user&&bag.userProfile"
           >
-            <app-brand-primary-button fxFlex="auto"
+            <app-brand-primary-button fxFlex="100"
                                       innerFlex="fill"
                                       style="padding-bottom:4rem"
                                       (click$)="userManagementService.logoff()"
@@ -73,7 +73,7 @@
   </div>
   
   <ng-template #noData>
-    <div fxFlex="auto">
+    <div fxFlex="100">
       <!--    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't added any racks-->
       <!--                                                     to your collection yet.-->
       <!--                                                     Try adding some!-->

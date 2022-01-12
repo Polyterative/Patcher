@@ -3,14 +3,14 @@
        fxLayoutAlign="center center"
        *ngIf="backgroundImage"
   >
-    <div fxFlex="auto"
+    <div fxFlex="100"
          [fxHide.xs]="true"
          style="padding: 8rem 16rem;"
          [ngStyle]='{"background-image": "url("+ this.backgroundImage + ")"}'
          class="bg"
     ></div>
   
-    <div fxFlex="auto"
+    <div fxFlex="100"
          fxHide="true"
          [fxHide.xs]="false"
          style="padding: 4rem 8rem;"
