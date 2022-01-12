@@ -50,18 +50,17 @@
           <div class="col gap1"
                ngClass.md="row"
           >
-            <lib-hero-content-card fxFlex.gt-lg="auto"
-                                   class="selection"
+            <lib-hero-content-card class="selection"
                                    titleNormal="Your selection"
                                    description="The connection you want to create"
                                    [showHelpButton]="true"
             >
               <lib-clean-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
                 <app-patch-connection-minimal [data]="{
-    a:bag.selectedForConnection.a.cv,
-    b:bag.selectedForConnection.b.cv,
-    patch:data
-    }"
+                                                        a:bag.selectedForConnection.a.cv,
+                                                        b:bag.selectedForConnection.b.cv,
+                                                        patch:data
+                                                        }"
                                               isEditing="true"
                                               [isCreator]="true"
                                               (remove$)="dataService.resetSelectedForConnection$.next()"
