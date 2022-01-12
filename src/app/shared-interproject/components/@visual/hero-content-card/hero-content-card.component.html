@@ -13,8 +13,7 @@
     </div>
   </ng-container>
   
-  <div fxFlex="100"
-       *ngIf="description&&!hideDescription&&!showHelpButton"
+  <div *ngIf="description&&!hideDescription&&!showHelpButton"
        fxLayoutAlign="end end"
   >
     <mat-card-subtitle *ngIf="description"
@@ -22,28 +21,21 @@
     >{{description}}</mat-card-subtitle>
   </div>
   
-  <div class="content"
+  <div class="content col"
   >
-    <div fxLayout="column "
-         fxLayoutGap="0"
+    <div class="supporting-top"
+         *ngIf="top"
     >
-      <div fxFlex="100"
-           class="supporting-top"
-           *ngIf="top"
-      >
-        <ng-content select=".TOP"></ng-content>
-      </div>
-      <div fxFlex="100"
-           class="pad"
-      >
-        <ng-content></ng-content>
-      </div>
-      <div fxFlex="100"
-           class="supporting-bottom"
-           *ngIf="bottom"
-      >
-        <ng-content select=".BOTTOM"></ng-content>
-      </div>
+      <ng-content select=".TOP"></ng-content>
+    </div>
+    <div class="pad"
+    >
+      <ng-content></ng-content>
+    </div>
+    <div class="supporting-bottom"
+         *ngIf="bottom"
+    >
+      <ng-content select=".BOTTOM"></ng-content>
     </div>
   </div>
 
@@ -81,7 +73,6 @@
 
 <ng-template #helpButton>
   <div fxLayoutAlign="end center"
-       fxFlex="100"
        *ngIf="description&&showHelpButton"
        class="help-icon"
   >
