@@ -1,14 +1,13 @@
 <div class="row gap1"
      fxLayout.lt-md="column"
-
 >
   <div fxFlex="grow"
        class="row gap0"
   >
-    <app-module-minimal fxFlex="50%"
+    <app-module-minimal fxFlex="100"
                         [data]="data.a.module"
                         [viewConfig]="viewConfig"
-    
+
     >
       <mat-chip-list>
         <app-module-cvitem [data]="data.a"
@@ -17,11 +16,11 @@
       </mat-chip-list>
     </app-module-minimal>
     <app-patch-connection-symbol></app-patch-connection-symbol>
-    <app-module-minimal fxFlex="50%"
+    <app-module-minimal fxFlex="100"
                         [data]="data.b.module"
                         [viewConfig]="viewConfig"
     >
-      
+    
       <mat-chip-list>
         <app-module-cvitem [data]="data.b"
                            kind="in"
