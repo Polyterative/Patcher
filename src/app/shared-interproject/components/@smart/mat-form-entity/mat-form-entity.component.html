@@ -8,7 +8,7 @@
                   [hideRequiredMarker]="styleOptions.hideRequired"
                   [matTooltipPosition]="tooltipPosition"
                   [matTooltip]="tooltip"
-                  fxFlex="auto"
+                  fxFlex="100"
   >
     <mat-label>{{ label }}</mat-label>
     
@@ -77,7 +77,7 @@
       <mat-select [formControl]="control"
                   [placeholder]="placeholder"
                   [compareWith]="compareFunctionStrictObject"
-                  fxFlex="auto"
+                  fxFlex="100"
       >
         <ng-container *ngIf="!disableVoidSelection">
           <mat-option>/</mat-option>
@@ -98,7 +98,7 @@
       <mat-select [formControl]="control"
                   [placeholder]="placeholder"
                   [compareWith]="compareFunctionStrictObject"
-                  fxFlex="auto"
+                  fxFlex="100"
                   multiple
       >
         <mat-optgroup *ngFor="let group of (bag.options)"
@@ -124,7 +124,7 @@
       <mat-select [formControl]="control"
                   [placeholder]="placeholder"
                   [compareWith]="compareFunctionStrictObject"
-                  fxFlex="auto"
+                  fxFlex="100"
                   multiple
       >
         <mat-option *ngFor="let option of (bag.options)"

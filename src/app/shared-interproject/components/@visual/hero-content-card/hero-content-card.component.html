@@ -13,7 +13,7 @@
     </div>
   </ng-container>
   
-  <div fxFlex="auto"
+  <div fxFlex="100"
        *ngIf="description&&!hideDescription&&!showHelpButton"
        fxLayoutAlign="end end"
   >
@@ -27,18 +27,18 @@
     <div fxLayout="column "
          fxLayoutGap="0"
     >
-      <div fxFlex="auto"
+      <div fxFlex="100"
            class="supporting-top"
            *ngIf="top"
       >
         <ng-content select=".TOP"></ng-content>
       </div>
-      <div fxFlex="auto"
+      <div fxFlex="100"
            class="pad"
       >
         <ng-content></ng-content>
       </div>
-      <div fxFlex="auto"
+      <div fxFlex="100"
            class="supporting-bottom"
            *ngIf="bottom"
       >
@@ -81,7 +81,7 @@
 
 <ng-template #helpButton>
   <div fxLayoutAlign="end center"
-       fxFlex="auto"
+       fxFlex="100"
        *ngIf="description&&showHelpButton"
        class="help-icon"
   >
