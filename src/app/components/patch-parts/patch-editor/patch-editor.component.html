@@ -85,10 +85,10 @@
               <!--              <div *ngIf="bag.editorConnections.length<=5"-->
               <div class="col gap0"
               >
-                <ng-container *ngFor="let item of bag.editorConnections; let i = index">
+                <ng-container *ngFor="let item of bag.editorConnections.slice().reverse(); let i = index">
                   <lib-clean-card>
                     <app-patch-connection-minimal [data]="item"
-                                                  [index]="i+1"
+                                                  [index]="bag.editorConnections.length-i"
                                                   [isEditing]="true"
                                                   (remove$)="dataService.removeConnectionFromEditor$.next($event)"
                     ></app-patch-connection-minimal>
