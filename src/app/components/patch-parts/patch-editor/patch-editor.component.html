@@ -32,8 +32,8 @@
                 you're done!
               </mat-card-subtitle>
               <div></div>
-      
-      
+  
+  
               <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                         theme="positive"
                                         fxLayoutAlign="end"
@@ -42,8 +42,8 @@
                 <mat-icon>save</mat-icon>
                 Save patch
               </app-brand-primary-button>
-    
-    
+
+
             </div>
           </lib-auto-update-loading-indicator>
   
@@ -51,7 +51,6 @@
                ngClass.md="row"
           >
             <lib-hero-content-card fxFlex.gt-lg="auto"
-                                   fxFlex="auto"
                                    class="selection"
                                    titleNormal="Your selection"
                                    description="The connection you want to create"
@@ -77,7 +76,6 @@
               </ng-template>
             </lib-hero-content-card>
             <lib-hero-content-card fxFlex.gt-lg="fill"
-                                   fxFlex="auto"
                                    *ngIf="bag.editorConnections.length>0"
                                    [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
                                    class="connections"
@@ -127,11 +125,12 @@
           <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
           <app-user-modules class="modulesBG"
                             [viewConfig]="{
-                         hideManufacturer: true,
-                         hideDescription:  true,
-                         hideButtons:      true,
-                         hideHP:           true,
-                         hideDates:        true
+                              hideLabels: true,
+                              hideManufacturer: true,
+                              hideDescription: true,
+                              hideButtons: true,
+                              hideHP: true,
+                              hideDates: true
   }"
           ></app-user-modules>
         </div>

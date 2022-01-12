@@ -15,7 +15,7 @@
           <router-outlet name="sidebar"></router-outlet>
         </div>
       </div>
-      <div fxFlex="auto"
+      <div fxFlex="100"
            fxLayout="row"
            fxLayoutGap="1rem"
       >
@@ -23,8 +23,8 @@
              class="content"
         >
           <ng-container *ngIf="title else content ">
-  
-            <div fxFlex="auto"
+      
+            <div fxFlex="100"
                  fxLayout="column"
                  fxLayoutGap=".5rem"
             >
@@ -45,12 +45,12 @@
             <router-outlet></router-outlet>
           </ng-template>
         </div>
-        <div fxFlex="auto">
+        <div fxFlex="100">
           <router-outlet name="sidebar-right"></router-outlet>
         </div>
       </div>
     </div>
-    <div fxFlex="auto">
+    <div fxFlex="100">
       <router-outlet name="content-below"></router-outlet>
     </div>
   </div>

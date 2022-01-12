@@ -1,17 +1,17 @@
 <div class="container"
-     fxFlex="auto"
+     fxFlex="100"
      fxLayout="column"
      [@fadeInOut]
 
 >
-  <div fxFlex="auto"
+  <div fxFlex="100"
        fxLayoutAlign="start center"
        class="text"
   >
     <mat-card-subtitle>
       <ng-container *ngIf="{data:dataService.infoText$|async} as bag">
         <ng-container *ngIf="bag.data&&bag.data.length>0; else noData">{{
-          bag.data}}</ng-container>
+            bag.data}}</ng-container>
       </ng-container>
     </mat-card-subtitle>
   </div>
