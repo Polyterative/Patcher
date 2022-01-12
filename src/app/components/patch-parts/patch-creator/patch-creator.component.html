@@ -3,33 +3,33 @@
   <div fxLayout="column"
        fxLayoutGap="0.2em"
   >
-    <div fxFlex="auto"
-    
+    <div fxFlex="100"
+
     >
       <h1 mat-dialog-title>Create new patch</h1></div>
-    <div fxFlex="auto"
+    <div fxFlex="100"
     >
       <mat-dialog-content>
-        
-        <div fxFlex="auto"
+      
+        <div fxFlex="100"
              fxLayout="column wrap"
              fxLayout.xs="column"
              fxLayoutGap="1rem"
         >
-          
-          <lib-mat-form-entity fxFlex="auto"
+        
+          <lib-mat-form-entity fxFlex="100"
                                [type]="fields.name.type"
                                [control]="fields.name.control"
                                [label]="fields.name.label"
           >
           </lib-mat-form-entity>
-          <!--          <lib-mat-form-entity fxFlex="auto"-->
+          <!--          <lib-mat-form-entity fxFlex="100"-->
           <!--                               [type]="fields.hp.type"-->
           <!--                               [control]="fields.hp.control"-->
           <!--                               [label]="fields.hp.label"-->
           <!--          >-->
           <!--          </lib-mat-form-entity>-->
-          <!--          <lib-mat-form-entity fxFlex="auto"-->
+          <!--          <lib-mat-form-entity fxFlex="100"-->
           <!--                               [type]="fields.rows.type"-->
           <!--                               [control]="fields.rows.control"-->
           <!--                               [label]="fields.rows.label"-->
@@ -42,15 +42,15 @@
     </div>
   </div>
   <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
-    <div fxFlex="auto"
+    <div fxFlex="100"
          fxLayout="row"
          fxLayoutGap="2rem"
          fxLayoutGap.xs="0rem"
     >
       <div fxFlex="grow"></div>
       <app-brand-primary-button
-        theme="positive"
-        (click$)="save$.next()"
+          theme="positive"
+          (click$)="save$.next()"
       >
         <mat-icon>save</mat-icon>
         Save patch

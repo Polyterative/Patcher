@@ -3,14 +3,14 @@
      *ngIf="linksData.links.length>0"
 >
   <ng-container *ngFor="let group of linksData.links">
-    <div fxFlex="auto">
+    <div fxFlex="100">
       <lib-clean-card class="depadding"
-      
+  
       >
         <mat-nav-list class="depadding"
         >
           <ng-container *ngFor="let cardLink of group">
-            
+        
             <ng-container *ngIf="{
                         disabled:(cardLink.disabled?(cardLink.disabled|async):false),
                         hidden:(cardLink.hidden?(cardLink.hidden|async):false)
