@@ -71,19 +71,22 @@ export class RackModuleAdderComponent implements OnInit {
     return this.userRacksService.data$
                .pipe(
                  map(x => {
-                     let mapFunction: (row) => { name: string; id: string } = row => ({
-                       id:   row.id.toString(),
-                       name: `${ row.name } (${ row.hp } HP, ${ row.rows } rows, updated: ${ this.timeagoPipe.transform(new Date(row.updated)) }) `
-                     });
-                     let options: { name: string; id: string }[] = x.map(mapFunction);
-          
-                     //add lastly updated rack if not already empty
-                     if (options.length > 0) {
-                       let lastUpdatedRack = x.sort((a, b) => {
-                         return new Date(b.updated).getTime() - new Date(a.updated).getTime();
-                       })[0];
-            
-                       let firstRackAsOption: { name: string; id: string } = [lastUpdatedRack].map(mapFunction)[0];
+                   let mapFunction: (row) => { name: string; id: string } = row => {
+                     let name = `${ row.name } ( ${ row.hp } HP , ${ row.rows } row(s) , ${ this.timeagoPipe.transform(new Date(row.updated)) } )`;
+                     return {
+                       id: row.id.toString(),
+                       name
+                     };
+                   };
+                   let options: { name: string; id: string }[] = x.map(mapFunction);
+  
+                   //add lastly updated rack if not already empty
+                   if (options.length > 0) {
+                     let lastUpdatedRack = x.sort((a, b) => {
+                       return new Date(b.updated).getTime() - new Date(a.updated).getTime();
+                     })[0];
+    
+                     let firstRackAsOption: { name: string; id: string } = [lastUpdatedRack].map(mapFunction)[0];
             
                        this.fields.rack.control.patchValue(firstRackAsOption);
                      }
@@ -135,6 +138,10 @@ export class RackModuleAdderComponent implements OnInit {
   }
   
   public static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel> {
-    return dialog.open(RackModuleAdderComponent, {data});
+    return dialog.open(RackModuleAdderComponent, {
+      data,
+      width:    '70%',
+      maxWidth: '40rem'
+    });
   }
 }
