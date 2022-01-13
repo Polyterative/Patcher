@@ -3,31 +3,32 @@ import {
   Component,
   Inject,
   OnInit
-}                          from '@angular/core';
+}                                from '@angular/core';
 import {
   FormControl,
   Validators
-}                          from '@angular/forms';
+}                                from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogRef
-}                          from '@angular/material/dialog';
-import { MatSnackBar }     from '@angular/material/snack-bar';
+}                                from '@angular/material/dialog';
+import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   Subject
-}                          from 'rxjs';
+}                                from 'rxjs';
 import {
   map,
   startWith,
   switchMap,
   takeUntil
-}                          from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule }        from 'src/app/models/models';
-import { FormTypes }       from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+}                                from 'rxjs/operators';
+import { SupabaseService }       from 'src/app/features/backend/supabase.service';
+import { DbModule }              from 'src/app/models/models';
+import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants }       from 'src/app/shared-interproject/SharedConstants';
+import { RackDetailDataService } from '../rack-detail-data.service';
 
 export interface RackModuleAdderOutModel {
 }
@@ -101,6 +102,7 @@ export class RackModuleAdderComponent implements OnInit {
     public snackBar: MatSnackBar,
     public backend: SupabaseService,
     public dialogRef: MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel>,
+    public rackDetailDataService: RackDetailDataService,
     @Inject(MAT_DIALOG_DATA) public data: RackModuleAdderInModel
   ) {
     

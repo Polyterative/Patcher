@@ -1,0 +1,35 @@
+<div class="col gap1 transition-all innerEditor"
+     cdkDropListGroup
+>
+  <mat-card-subtitle [ngStyle]="{width: rackData.hp+'rem'}"
+                     fxLayoutAlign="center center"
+                     class="widthRuler"
+  >{{rackData.hp}}</mat-card-subtitle>
+  
+  <div class="col gap0">
+    <ng-container *ngFor="let row of rowedRackedModules; index as rowId"
+    >
+      <div class="row"
+           cdkDropList
+           cdkDropListOrientation="horizontal"
+           (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
+      >
+        
+        <ng-container *ngFor="let rackedModule of row">
+          <div>
+            <app-module-realistic [data]="rackedModule|mapToModule"
+                                  cdkDrag
+                                  [cdkDragData]="rackedModule"
+                                  [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                  (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+            >
+            </app-module-realistic>
+          </div>
+        
+        </ng-container>
+      
+      </div>
+    </ng-container>
+  </div>
+  <div fxFlex="100"></div>
+</div>
