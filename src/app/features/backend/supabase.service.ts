@@ -180,6 +180,8 @@ export class SupabaseService {
         // .order('module.id')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
+          .order('row', {ascending: true})
+          .order('column', {ascending: true})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)), map(x => x.map(y => ({
