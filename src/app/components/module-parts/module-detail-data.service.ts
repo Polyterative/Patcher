@@ -30,7 +30,7 @@ export class ModuleDetailDataService {
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
   addModuleToCollection$ = new Subject<number>();
-  addModuleToRack$ = new Subject<DbModule>();
+  requestAddModuleToRack$ = new Subject<DbModule>();
   removeModuleFromCollection$ = new Subject<number>();
   
   protected destroyEvent$ = new Subject<void>();
@@ -92,7 +92,7 @@ export class ModuleDetailDataService {
           this.updateSingleModuleData$.next(b);
         });
   
-    this.addModuleToRack$
+    this.requestAddModuleToRack$
         .pipe(
           switchMap(x => {
             const data: RackModuleAdderInModel = {
