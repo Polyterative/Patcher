@@ -10,6 +10,7 @@ import {
 }                          from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogRef
 }                          from '@angular/material/dialog';
 import { MatSnackBar }     from '@angular/material/snack-bar';
@@ -113,7 +114,7 @@ export class RackModuleAdderComponent implements OnInit {
         )
         .subscribe(value => {
           SharedConstants.successSave(this.snackBar);
-      
+  
           this.dialogRef.close();
         });
   }
@@ -121,4 +122,7 @@ export class RackModuleAdderComponent implements OnInit {
   ngOnInit(): void {
   }
   
+  public static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel> {
+    return dialog.open(RackModuleAdderComponent, {data});
+  }
 }
