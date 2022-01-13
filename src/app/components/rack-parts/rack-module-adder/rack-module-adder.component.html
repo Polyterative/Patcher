@@ -1,25 +1,26 @@
-<div fxLayout="column"
-     fxLayoutGap="1rem"
+<div class="col gap1"
+     style="width: 70vh;"
 >
+  
   <h1 mat-dialog-title>Add module to rack</h1>
   <mat-card-subtitle>Choose rack</mat-card-subtitle>
-  <div fxFlex="100"
-  >
+  <div>
     <mat-dialog-content>
-  
-  
+      
+      <!--      <app-rack-visual-model></app-rack-visual-model>-->
       <div fxFlex="100"
            fxLayout="column wrap"
            fxLayout.xs="column"
            fxLayoutGap="1rem"
       >
-      
+        
         <lib-mat-form-entity fxFlex="100"
                              [type]="fields.rack.type"
                              [control]="fields.rack.control"
                              [label]="fields.rack.label"
                              [disableVoidSelection]="true"
                              [options$]="fields.rack.options$"
+                             [disableClearButton]="false"
         >
         </lib-mat-form-entity>
       

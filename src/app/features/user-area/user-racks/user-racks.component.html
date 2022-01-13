@@ -14,11 +14,11 @@
       </app-brand-primary-button>
       <mat-divider inset="true"></mat-divider>
       <app-rack-list fxFlex="grow"
-                     [data$]="data$"
+                     [data$]="dataService.data$"
                      [showSearch]="true"
-                     *ngIf="(data$|async).length>0 else noData"
+                     *ngIf="(dataService.data$|async).length>0 else noData"
       ></app-rack-list>
-  
+
     </div>
   </lib-hero-content-card>
 </div>
