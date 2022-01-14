@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnInit
@@ -10,14 +10,13 @@ import {
   Layout,
   Node
 }                           from '@swimlane/ngx-graph';
-import { Subject }          from 'rxjs';
 import { GraphViewService } from './graph-view.service';
 
 @Component({
-  selector:        'lib-graph',
-  templateUrl:     './graph.component.html',
-  styleUrls:       ['./graph.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector:    'lib-graph',
+  templateUrl: './graph.component.html',
+  styleUrls:   ['./graph.component.scss']
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GraphComponent implements OnInit {
   
@@ -90,14 +89,14 @@ export class GraphComponent implements OnInit {
     {
       label:       'Cola Force Directed',
       value:       'colaForceDirected',
-      isClustered: true
+      isClustered: false
     },
     {
       label: 'D3 Force Directed',
       value: 'd3ForceDirected'
     }
   ];
-  layout: String | Layout = this.layouts[1].value;
+  layout: String | Layout = this.layouts[2];
   
   // line interpolation
   curveType = 'Bundle';
@@ -124,12 +123,13 @@ export class GraphComponent implements OnInit {
   panOnZoom = true;
   
   constructor(
-    public dataService: GraphViewService
-  ) {}
+    public dataService: GraphViewService,
+    private cd: ChangeDetectorRef
+  ) {
+  }
   
   ngOnInit() {
-  
-    
+    this.cd.detectChanges();
     // this.setInterpolationType(this.curveType);
   }
   

@@ -1,7 +1,7 @@
 <!--suppress XmlUnboundNsPrefix -->
 <ngx-graph fxFlex="grow"
            *ngIf="nodes.length>0&&links.length>0"
-           style="height: 800px; background-color:#ffffff"
+           style="height: 600px; background-color:rgba(255,255,255,0)"
            [links]="links"
            [nodes]="nodes"
            [clusters]="clusters"
@@ -39,31 +39,37 @@
                let-cluster
   >
     <svg:g class="node cluster">
-      <svg:rect rx="5"
-                ry="5"
-                [attr.width]="cluster.dimension.width"
-                [attr.height]="cluster.dimension.height"
-                [attr.fill]="cluster.data.color"
+      <svg:rect
+          rx="5"
+          ry="5"
+          [attr.width]="cluster.dimension.width"
+          [attr.height]="cluster.dimension.height"
+          [attr.fill]="cluster.data.color"
       />
-      <svg:text alignment-baseline="central"
-                [attr.x]="10"
-                [attr.y]="20"
-      >{{cluster.label}}</svg:text>
     </svg:g>
   </ng-template>
   
   <ng-template #nodeTemplate
                let-node
   >
-    <svg:g class="node">
-      <svg:rect [attr.width]="node.dimension.width"
-                [attr.height]="node.dimension.height"
-                [attr.fill]="node.data.color"
+    <svg:g
+        (click)="onNodeClick($event)"
+        (dblclick)="onNodeClick($event)"
+        class="node"
+        ngx-tooltip
+        [tooltipPlacement]="'top'"
+        [tooltipType]="'tooltip'"
+        [tooltipTitle]="node.label"
+    >
+      <svg:rect
+          attr.fill="#cacaca"
       />
       <svg:text alignment-baseline="central"
                 [attr.x]="10"
                 [attr.y]="node.dimension.height / 2"
-      >{{node.label}}</svg:text>
+      >
+        {{node.label}}
+      </svg:text>
     </svg:g>
   </ng-template>
   
@@ -74,15 +80,15 @@
       <svg:path class="line"
                 stroke-width="2"
                 marker-end="url(#arrow)"
-      >
-      </svg:path>
+      ></svg:path>
       <svg:text class="edge-label"
                 text-anchor="middle"
       >
-        <textPath class="text-path"
-                  [attr.href]="'#' + link.id"
-                  [style.dominant-baseline]="link.dominantBaseline"
-                  startOffset="50%"
+        <textPath
+            class="text-path"
+            [attr.href]="'#' + link.id"
+            [style.dominant-baseline]="link.dominantBaseline"
+            startOffset="50%"
         >
           {{link.label}}
         </textPath>
