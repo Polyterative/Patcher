@@ -5,10 +5,8 @@ import {
   OnInit
 }                                from '@angular/core';
 import { Subject }               from 'rxjs';
-import {
-  RackedModule,
-  RackMinimal
-}                                from '../../../../models/models';
+import { RackedModule }          from '../../../../models/module';
+import { RackMinimal }           from '../../../../models/rack';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { ModuleRightClick }      from '../rack-editor.component';
 
