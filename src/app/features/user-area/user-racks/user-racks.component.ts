@@ -2,47 +2,37 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnInit
-}                          from '@angular/core';
-import { MatDialog }       from '@angular/material/dialog';
-import {
-  BehaviorSubject,
-  Subject
-}                          from 'rxjs';
+}                           from '@angular/core';
+import { MatDialog }        from '@angular/material/dialog';
+import { Subject }          from 'rxjs';
 import {
   switchMap,
-  takeUntil,
-  tap
-}                          from 'rxjs/operators';
+  takeUntil
+}                           from 'rxjs/operators';
 import {
   RackCreatorComponent,
   RackCreatorInModel
 }                          from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Rack }            from '../../../models/rack';
+import { UserRacksService } from '../../../components/user-parts/user-racks/user-racks.service';
 
 @Component({
   selector:        'app-user-racks',
   templateUrl:     './user-racks.component.html',
   styleUrls:       ['./user-racks.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers:       [UserRacksService]
 })
 export class UserRacksComponent implements OnInit {
-  data$: BehaviorSubject<Rack[]> = new BehaviorSubject([]);
   public readonly add$ = new Subject<void>();
-  public readonly updateData$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    public dataService: UserRacksService
   ) {
-    
-    this.updateData$
-        .pipe(
-          tap(x => this.data$.next([])),
-          switchMap(x => this.backend.get.userRacks()),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => this.data$.next(x));
+  
   
     this.add$
         .pipe(
@@ -66,11 +56,13 @@ export class UserRacksComponent implements OnInit {
           }),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(x => this.updateData$.next());
+        .subscribe(x => this.dataService.updateData$.next(undefined));
+  
+    // update with local user data
+    this.dataService.updateData$.next(undefined);
   }
   
   ngOnInit(): void {
-    this.updateData$.next();
   }
   
   protected destroyEvent$ = new Subject<void>();

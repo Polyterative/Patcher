@@ -1,13 +1,13 @@
-import { Injectable }            from '@angular/core';
-import { MatDialog }             from '@angular/material/dialog';
-import { MatSnackBar }           from '@angular/material/snack-bar';
+import { Injectable }               from '@angular/core';
+import { MatDialog }                from '@angular/material/dialog';
+import { MatSnackBar }              from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   merge,
   of,
   ReplaySubject,
   Subject
-}                                from 'rxjs';
+}                                   from 'rxjs';
 import {
   switchMap,
   takeUntil,
@@ -30,7 +30,7 @@ export class ModuleDetailDataService {
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
   addModuleToCollection$ = new Subject<number>();
-  addModuleToRack$ = new Subject<DbModule>();
+  requestAddModuleToRack$ = new Subject<DbModule>();
   removeModuleFromCollection$ = new Subject<number>();
   
   protected destroyEvent$ = new Subject<void>();
@@ -92,21 +92,10 @@ export class ModuleDetailDataService {
           this.updateSingleModuleData$.next(b);
         });
   
-    this.addModuleToRack$
+    this.requestAddModuleToRack$
         .pipe(
-          switchMap(x => {
-            const data: RackModuleAdderInModel = {
-              module: x
-            };
-  
-            return this.dialog.open(
-              RackModuleAdderComponent,
-              {
-                data
-              }
-            )
-                       .afterClosed();
-          }),
+          switchMap(x => RackModuleAdderComponent.open(this.dialog, {module: x})
+                                                 .afterClosed()),
           withLatestFrom(this.updateSingleModuleData$),
           takeUntil(this.destroyEvent$)
         )
