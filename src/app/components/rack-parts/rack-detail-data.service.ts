@@ -10,13 +10,11 @@ import { Router }                  from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
-  forkJoin,
   of,
   ReplaySubject,
   Subject
 }                                  from 'rxjs';
 import {
-  debounceTime,
   filter,
   map,
   switchMap,
@@ -205,23 +203,18 @@ export class RackDetailDataService extends SubManager {
       this.requestRackedModulesDbSync$
           .pipe(
             withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-            switchMap(([_, rackModules, rack]) => forkJoin([
-                this.backend.update.rackedModules(rackModules.flatMap(row => row)),
-                this.backend.update.rack(rack)
-              ])
-                .pipe(
-                  tap(x => {
-                    if (this.isAnyModuleWithoutRackingId(rackModules)) {
-                      this.singleRackData$.next(rack);
-                    }
-                  })
-                )
-            ),
-            debounceTime(2000)
+            switchMap(([_, rackModules, rack]) => this.backend.update.rackedModules(rackModules.flatMap(row => row))
+                                                      .pipe(
+                                                        tap(x => {
+                                                          if (this.isAnyModuleWithoutRackingId(rackModules)) {
+                                                            this.singleRackData$.next(rack);
+                                                          }
+                                                        })
+                                                      )
+            )
           )
           .subscribe(x => {
-            // SharedConstants.successSaveShort(this.snackBar);
-  
+            SharedConstants.successSaveShort(this.snackBar);
           })
     );
   
@@ -229,14 +222,14 @@ export class RackDetailDataService extends SubManager {
     this.deleteRack$
         .pipe(
           switchMap(x => {
-      
+  
             const data: ConfirmDialogDataInModel = {
               title:       'Deletion',
               description: 'Are you sure you want to delete this item?',
               positive:    {label: '✔️ Delete'},
               negative:    {label: '❌ Cancel'}
             };
-      
+  
             return this.dialog.open(
               ConfirmDialogComponent,
               {
@@ -283,6 +276,15 @@ export class RackDetailDataService extends SubManager {
     for (let i = 0; i < rackData.rows; i++) {
       rowedRackedModules[i] = rackedModules.filter(module => module.rackingData.row === i);
     }
+  
+    // check if there are modules without row and column, add them to a new row
+    const modulesWithoutRowAndColumn = rackedModules.filter(module => module.rackingData.row === null && module.rackingData.column === null);
+  
+    if (modulesWithoutRowAndColumn.length > 0) {
+      rowedRackedModules.push(modulesWithoutRowAndColumn);
+    }
+  
+  
     return rowedRackedModules;
   }
   
@@ -293,11 +295,19 @@ export class RackDetailDataService extends SubManager {
     this.updateModulesColumnIds(rackedModules, row);
   }
   
-  private updateModulesColumnIds(rackModules: RackedModule[][], row): void {
-    rackModules[row].forEach((module, index) => {
-      module.rackingData.column = index;
-      module.rackingData.row = row;
-    });
+  private updateModulesColumnIds(rackModules: RackedModule[][], row: number | undefined): void {
+    if (row === undefined) {
+      return; // do nothing if rack has not been placed yet
+    }
+    let modulesInRow: RackedModule[] | undefined = rackModules[row];
+    
+    if (modulesInRow) {
+      modulesInRow.forEach((module, index) => {
+        module.rackingData.column = index;
+        module.rackingData.row = row;
+      });
+    }
+    
   }
   
   private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event, newRow): void {
@@ -312,7 +322,26 @@ export class RackDetailDataService extends SubManager {
   
   private removeRackedModuleFromArray(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
     this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
-    rackedModules[rackedModule.rackingData.row].splice(rackedModule.rackingData.column, 1);
+  
+    // undefined accounts for unracked modules
+    let modulesOfRow: RackedModule[] | undefined = rackedModules[rackedModule.rackingData.row];
+    if (modulesOfRow) {
+      // module was previously racked
+      modulesOfRow.splice(rackedModule.rackingData.column, 1);
+    } else {
+      // module has not been racked yet
+      let lastRow: RackedModule[] = rackedModules[rackedModules.length - 1];
+    
+      // remove unracked module from last row
+      let unrackedModuleRowIndex: number = lastRow.findIndex(module => module.rackingData.id === rackedModule.rackingData.id);
+      lastRow.splice(unrackedModuleRowIndex, 1);
+    
+      if (lastRow.length === 0) {
+        // remove empty row
+        rackedModules.splice(rackedModules.length - 1, 1);
+      }
+    }
+  
     this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
   }
   
