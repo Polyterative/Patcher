@@ -74,51 +74,64 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         // )
           .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
     
-              const clusters: ClusterNode[] = [];
+              const modulesNodes: Node[] = [];
               const nodes: Node[] = [];
-    
+              const links: Edge[] = [];
               modules
                 .forEach(module => {
-  
+        
                   const moduleId: string = module.id.toString();
-  
-                  const outs: Node[] = module.outs.map(x => ({
-                    id:    moduleId + x.id,
-                    label: x.name,
+        
+                  const moduleNode: Node = {
+                    id:    moduleId,
+                    label: module.name,
                     data:  {
-                      color: '11c757'
+                      type: 'module',
+                      module
+                    }
+                  };
+        
+                  modulesNodes.push(moduleNode);
+        
+                  const outs: Node[] = module.outs.map(jack => ({
+                    id:    moduleId + jack.id,
+                    label: jack.name,
+                    data:  {
+                      color: '000000'
                     }
                   }));
-  
-                  const ins: Node[] = module.ins.map(x => ({
-                    id:    moduleId + x.id,
-                    label: x.name,
+        
+                  const ins: Node[] = module.ins.map(jack => ({
+                    id:    moduleId + jack.id,
+                    label: jack.name,
                     data:  {
-                      color: 'a9d2020'
+                      color: '000000'
                     }
                   }));
-  
-                  clusters.push({
-                    id:           moduleId,
-                    label:        module.name,
-                    dimension:    {
-                      width:  400,
-                      height: 800
-                    },
-                    childNodeIds: [
-                      ...outs.map(x => x.id),
-                      ...ins.map(x => x.id)
-                    ]
-                  });
-  
-                  // nodes = nodes.concat(outs);
-                  // nodes = nodes.concat(ins);
-  
+        
+                  // push connections between module and outs and ins
+                  const insConnections = ins.map(x => ({
+                    id:          x.id,
+                    source:      moduleId,
+                    target:      x.id,
+                    description: `in: ${ x.label }from module: ${ module.name }`
+                  }));
+                  const outsConnections = outs.map(x => ({
+                    id:          x.id,
+                    source:      moduleId,
+                    target:      x.id,
+                    description: `outs: ${ x.label }from module: ${ module.name }`
+          
+                  }));
+        
+                  links.push(...insConnections);
+                  links.push(...outsConnections);
+        
                 });
     
               connections.forEach(connection => {
                 const nodeIdA: string = connection.a.module.id.toString() + connection.a.id;
-                if (!nodes.some(node => node.id == nodeIdA)) {
+                if (!nodes.some(node => node.id === nodeIdA)) {
                   nodes.push({
                     id:    nodeIdA,
                     label: connection.a.name
@@ -126,7 +139,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 }
       
                 const nodeIdB: string = connection.b.module.id.toString() + connection.b.id;
-                if (!nodes.some(node => node.id == nodeIdB)) {
+                if (!nodes.some(node => node.id === nodeIdB)) {
                   nodes.push({
                     id:    nodeIdB,
                     label: connection.b.name
@@ -135,18 +148,29 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       
               });
     
-              this.nodes$.next(nodes);
-              this.clusters$.next(clusters);
+              const finalNodes: Node[] = [
+                ...modulesNodes,
+                ...nodes
+              ];
+              this.nodes$.next(finalNodes);
+              // this.clusters$.next(modulesNodes);
     
               // this.links$.next(connections.map(patch => ({
               //   source: patch.a.module.id + patch.a.id.toString(),
               //   target: patch.b.module.id + patch.b.id.toString()
               // })));
     
-              this.links$.next(connections.map(patch => ({
-                source: patch.a.module.id + patch.a.id.toString(),
-                target: patch.b.module.id + patch.b.id.toString()
-              })));
+              const connectionLinks: Edge[] = connections.map(patch => ({
+                id:          patch.a.module.id + patch.a.id.toString() + patch.b.module.id + patch.b.id.toString(),
+                source:      patch.a.module.id + patch.a.id.toString(),
+                target:      patch.b.module.id + patch.b.id.toString(),
+                description: 'from: ' + patch.a.name + ' to ' + patch.b.name
+              }));
+    
+              links.push(...connectionLinks);
+    
+              this.links$.next(links);
+              this.clusters$.next([]);
     
               this.graphViewService.center$.next(true);
     
