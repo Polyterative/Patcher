@@ -22,6 +22,11 @@ import {
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
 
+export interface ModuleRightClick {
+  $event: MouseEvent;
+  rackedModule: RackedModule;
+}
+
 @Component({
   selector:        'app-rack-editor',
   templateUrl:     './rack-editor.component.html',
@@ -32,7 +37,7 @@ import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/modul
 export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
   
-  moduleRightClick$ = new Subject<{ $event: MouseEvent, rackedModule: RackedModule }>();
+  moduleRightClick$ = new Subject<ModuleRightClick>();
   
   constructor(
     public snackBar: MatSnackBar,

@@ -65,7 +65,7 @@
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
                   *ngIf="(bag.singleModuleData)"
                   [disabled]="(!bag.user)"
-                  (click)="dataService.addModuleToRack$.next(data)"
+                  (click)="dataService.requestAddModuleToRack$.next(data)"
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
