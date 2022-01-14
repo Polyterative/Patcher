@@ -3,22 +3,25 @@ import {
   Component,
   Inject,
   OnInit
-}                          from '@angular/core';
+}                                from '@angular/core';
 import {
   FormControl,
   Validators
-}                          from '@angular/forms';
+}                                from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogRef
-}                          from '@angular/material/dialog';
-import { MatSnackBar }     from '@angular/material/snack-bar';
+}                                from '@angular/material/dialog';
+import { MatSnackBar }           from '@angular/material/snack-bar';
+import { TimeagoPipe }           from 'ngx-timeago';
 import {
   BehaviorSubject,
   Subject
-}                          from 'rxjs';
+}                                from 'rxjs';
 import {
   map,
+  share,
   startWith,
   switchMap,
   takeUntil
@@ -27,6 +30,8 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { FormTypes }       from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { DbModule }        from '../../../models/module';
+import { UserRacksService }      from '../../user-parts/user-racks/user-racks.service';
+import { RackDetailDataService } from '../rack-detail-data.service';
 
 export interface RackModuleAdderOutModel {
 }
@@ -39,37 +44,17 @@ export interface RackModuleAdderInModel {
   selector:        'app-rack-module-adder',
   templateUrl:     './rack-module-adder.component.html',
   styleUrls:       ['./rack-module-adder.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers:       [
+    UserRacksService,
+    TimeagoPipe
+  ]
 })
 export class RackModuleAdderComponent implements OnInit {
   public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
-    // hp:   {
-    //   label:   'hp',
-    //   code:    'hp',
-    //   flex:    '6rem',
-    //   control: new FormControl('84', Validators.compose([
-    //     Validators.required,
-    //     Validators.min(2),
-    //     Validators.max(416),
-    //     CustomValidators.onlyIntegers
-    //   ])),
-    //   type:    FormTypes.NUMBER
-    // },
-    // rows: {
-    //   label:   'Rows',
-    //   code:    'rows',
-    //   flex:    '6rem',
-    //   control: new FormControl('2', Validators.compose([
-    //     Validators.required,
-    //     Validators.min(1),
-    //     Validators.max(10),
-    //     CustomValidators.onlyIntegers
-    //   ])),
-    //   type:    FormTypes.NUMBER
-    // },
     rack: {
       label:    'Rack',
       code:     'rack',
@@ -77,17 +62,43 @@ export class RackModuleAdderComponent implements OnInit {
       control:  new FormControl('', Validators.compose([
         Validators.required
       ])),
-      options$: this.backend.get.userRacks()
-                    .pipe(
-                      map(x => x.map(row => ({
-                        id:   row.id.toString(),
-                        name: row.name
-                      }))),
-                      startWith([])
-                    ),
+      options$: this.buildOptions(),
       type:     FormTypes.AUTOCOMPLETE
     }
   };
+  
+  private buildOptions() {
+    return this.userRacksService.data$
+               .pipe(
+                 map(x => {
+                   let mapFunction: (row) => { name: string; id: string } = row => {
+                     let name = `${ row.name } ( ${ row.hp } HP , ${ row.rows } row(s) , ${ this.timeagoPipe.transform(new Date(row.updated)) } )`;
+                     return {
+                       id: row.id.toString(),
+                       name
+                     };
+                   };
+                   let options: { name: string; id: string }[] = x.map(mapFunction);
+  
+                   //add lastly updated rack if not already empty
+                   if (options.length > 0) {
+                     let lastUpdatedRack = x.sort((a, b) => {
+                       return new Date(b.updated).getTime() - new Date(a.updated).getTime();
+                     })[0];
+    
+                     let firstRackAsOption: { name: string; id: string } = [lastUpdatedRack].map(mapFunction)[0];
+            
+                       this.fields.rack.control.patchValue(firstRackAsOption);
+                     }
+          
+                     return options;
+                   }
+                 ),
+                 startWith([]),
+                 share()
+               );
+  }
+  
   protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
@@ -99,7 +110,10 @@ export class RackModuleAdderComponent implements OnInit {
   constructor(
     public snackBar: MatSnackBar,
     public backend: SupabaseService,
+    public timeagoPipe: TimeagoPipe,
+    public userRacksService: UserRacksService,
     public dialogRef: MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel>,
+    public rackDetailDataService: RackDetailDataService,
     @Inject(MAT_DIALOG_DATA) public data: RackModuleAdderInModel
   ) {
     
@@ -113,12 +127,21 @@ export class RackModuleAdderComponent implements OnInit {
         )
         .subscribe(value => {
           SharedConstants.successSave(this.snackBar);
-      
+  
           this.dialogRef.close();
         });
+    
+    this.userRacksService.updateData$.next(undefined);
   }
   
   ngOnInit(): void {
   }
   
+  public static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel> {
+    return dialog.open(RackModuleAdderComponent, {
+      data,
+      width:    '70%',
+      maxWidth: '40rem'
+    });
+  }
 }

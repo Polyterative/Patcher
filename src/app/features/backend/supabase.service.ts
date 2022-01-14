@@ -166,20 +166,22 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    userRacks:         () => rxFrom(
+    userRacks:         (authorid: string = this.getUser().id) => rxFrom(
       this.supabase.from(this.paths.racks)
           .select(`*, ${ this.queryJoins.author }`)
-          .filter('authorid', 'eq', this.getUser().id)
+          .filter('authorid', 'eq', authorid)
           .order('updated', {ascending: false})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    rackedModules:  (rackid: number) => rxFrom(
+    rackedModules:     (rackid: number) => rxFrom(
       this.supabase.from(this.paths.rack_modules)
           .select(`*, ${ this.queryJoins.module }`)
         // .order('module.id')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
+          .order('row', {ascending: true})
+          .order('column', {ascending: true})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data)), map(x => x.map(y => ({
@@ -192,7 +194,7 @@ export class SupabaseService {
           rackid:   y.rackid
         }
       })))),
-    modulesFull:    (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    modulesFull:       (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
           .select(`${ columns },
           ${ this.queryJoins.manufacturer },
@@ -203,13 +205,13 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    tags:           () => rxFrom(
+    tags:              () => rxFrom(
       this.supabase.from(this.paths.tags)
           .select(`*`)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    modulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
+    modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
       const baseQuery = this.supabase.from(this.paths.modules)
                             .select('id,name,hp,description,public,standard,manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
                             .ilike('name', `%${ name }%`)
@@ -222,7 +224,7 @@ export class SupabaseService {
       )
         .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
     },
-    racksMinimal:   (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
+    racksMinimal:      (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.racks)
           .select(`id,name,hp,rows,description,authorid,${ this.queryJoins.author }`, {count: 'exact'})
           .ilike(`name,hp,rows, ${ this.queryJoins.author }`, `%${ name }%`)
@@ -398,6 +400,7 @@ export class SupabaseService {
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rackedModules: (data: RackedModule[]) => {
+      let rackId: number = data[0].rackingData.rackid;
       return rxFrom(
         this.supabase.from(this.paths.rack_modules)
             .upsert(data.filter(x => x.rackingData.id != undefined)
@@ -415,6 +418,13 @@ export class SupabaseService {
             // call database for insert if there is any to insert
             return newRackedModules.length > 0 ? insertNew : of(x);
           })
+          // this updated rack after its modules are updated
+          // switchMap(x => this.supabase.from(this.paths.racks)
+          //                    .upsert({
+          //                      id: rackId
+          //                    })
+          //                    .filter('id', 'eq', rackId) // forces updated refresh
+          // );
         );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
