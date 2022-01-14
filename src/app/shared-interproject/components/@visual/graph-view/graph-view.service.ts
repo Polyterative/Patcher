@@ -4,9 +4,7 @@ import {
   Subject
 }                     from 'rxjs';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class GraphViewService {
   readonly center$: Subject<boolean> = new Subject();
   
