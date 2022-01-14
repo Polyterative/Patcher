@@ -33,7 +33,8 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
   selector:        'app-patch-graph',
   templateUrl:     './patch-graph.component.html',
   styleUrls:       ['./patch-graph.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers:       [GraphViewService]
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
   
