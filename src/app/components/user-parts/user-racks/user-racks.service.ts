@@ -8,7 +8,7 @@ import {
   tap
 }                          from 'rxjs/operators';
 import { SupabaseService } from '../../../features/backend/supabase.service';
-import { Rack }            from '../../../models/models';
+import { Rack }            from '../../../models/rack';
 import { SubManager }      from '../../../shared-interproject/directives/subscription-manager';
 
 /**
