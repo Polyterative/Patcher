@@ -400,6 +400,7 @@ export class SupabaseService {
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rackedModules: (data: RackedModule[]) => {
+      let rackId: number = data[0].rackingData.rackid;
       return rxFrom(
         this.supabase.from(this.paths.rack_modules)
             .upsert(data.filter(x => x.rackingData.id != undefined)
@@ -417,6 +418,13 @@ export class SupabaseService {
             // call database for insert if there is any to insert
             return newRackedModules.length > 0 ? insertNew : of(x);
           })
+          // this updated rack after its modules are updated
+          // switchMap(x => this.supabase.from(this.paths.racks)
+          //                    .upsert({
+          //                      id: rackId
+          //                    })
+          //                    .filter('id', 'eq', rackId) // forces updated refresh
+          // );
         );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
