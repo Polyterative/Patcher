@@ -1,16 +1,18 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
-  OnInit
-}                           from '@angular/core';
-import {
-  ClusterNode,
-  Edge,
-  Layout,
-  Node
-}                           from '@swimlane/ngx-graph';
-import { GraphViewService } from './graph-view.service';
+  OnInit,
+  ViewChild
+} from '@angular/core';
+
+import Graph                                                  from 'graphology';
+import erdosRenyi                                             from 'graphology-generators/random/erdos-renyi';
+import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
+import circularLayout                                         from 'graphology-layout/circular';
+import { Sigma }                                              from 'sigma';
+import { GraphViewService }                                   from './graph-view.service';
 
 @Component({
   selector:    'lib-graph',
@@ -20,151 +22,55 @@ import { GraphViewService } from './graph-view.service';
 })
 export class GraphComponent implements OnInit {
   
-  @Input() nodes: Node[] = [];
-  // {
-  //   id:    'first',
-  //   label: 'A'
-  // },
-  // {
-  //   id:    'second',
-  //   label: 'B'
-  // },
-  // {
-  //   id:    'c1',
-  //   label: 'C1'
-  // },
-  // {
-  //   id:    'c2',
-  //   label: 'C2'
-  // }
+  // @Input() nodes: Node[] = [];
   
-  @Input() clusters: ClusterNode[] = [
-    // {
-    //   id:           'third',
-    //   label:        'C',
-    //   childNodeIds: [
-    //     'c1',
-    //     'c2'
-    //   ]
-    // }
-  ];
+  // @Input() clusters: ClusterNode[] = [];
+  //
+  // @Input() links: Edge[] = [];
   
-  @Input() links: Edge[] = [];
-  // {
-  //   id:     'a',
-  //   source: 'first',
-  //   target: 'second',
-  //   label:  'is parent of'
-  // },
-  //   {
-  //     id:     'b',
-  //     source: 'first',
-  //     target: 'c1',
-  //     label:  'custom label'
-  //   },
-  //   {
-  //     id:     'c',
-  //     source: 'first',
-  //     target: 'c1',
-  //     label:  'custom label'
-  //   },
-  //   {
-  //     id:     'd',
-  //     source: 'first',
-  //     target: 'c2',
-  //     label:  'custom label'
-  //   }
-  // ];
-  
-  layouts: any[] = [
-    {
-      label: 'Dagre',
-      value: 'dagre'
-    },
-    {
-      label:       'Dagre Cluster',
-      value:       'dagreCluster',
-      isClustered: true
-    },
-    {
-      label:       'Cola Force Directed',
-      value:       'colaForceDirected',
-      isClustered: false
-    },
-    {
-      label: 'D3 Force Directed',
-      value: 'd3ForceDirected'
-    }
-  ];
-  layout: String | Layout = this.layouts[2];
-  
-  // line interpolation
-  curveType = 'Bundle';
-  interpolationTypes = [
-    'Bundle',
-    'Cardinal',
-    'Catmull Rom',
-    'Linear',
-    'Monotone X',
-    'Monotone Y',
-    'Natural',
-    'Step',
-    'Step After',
-    'Step Before'
-  ];
-  
-  draggingEnabled = true;
-  panningEnabled = true;
-  zoomEnabled = true;
-  
-  zoomSpeed = 0.1;
-  minZoomLevel = 0.1;
-  maxZoomLevel = 4;
-  panOnZoom = true;
+  @ViewChild('container') container: ElementRef | null = null;
+  @Input('graph') graph: Graph = new Graph();
+  sigma?: Sigma;
+  @Input() settings: FA2LayoutSupervisorParameters = {};
+  fa2?: FA2LayoutSupervisor;
   
   constructor(
     public dataService: GraphViewService,
     private cd: ChangeDetectorRef
   ) {
+    this.graph = erdosRenyi(Graph, {
+      order:       50,
+      probability: 0.1
+    });
+    circularLayout.assign(this.graph);
+    
+    // sigma.js graph height
+    
   }
   
   ngOnInit() {
     this.cd.detectChanges();
-    // this.setInterpolationType(this.curveType);
   }
   
-  // setInterpolationType(curveType) {
-  //   this.curveType = curveType;
-  //   if (curveType === 'Bundle') {
-  //     this.curve = shape.curveBundle.beta(1);
-  //   }
-  //   if (curveType === 'Cardinal') {
-  //     this.curve = shape.curveCardinal;
-  //   }
-  //   if (curveType === 'Catmull Rom') {
-  //     this.curve = shape.curveCatmullRom;
-  //   }
-  //   if (curveType === 'Linear') {
-  //     this.curve = shape.curveLinear;
-  //   }
-  //   if (curveType === 'Monotone X') {
-  //     this.curve = shape.curveMonotoneX;
-  //   }
-  //   if (curveType === 'Monotone Y') {
-  //     this.curve = shape.curveMonotoneY;
-  //   }
-  //   if (curveType === 'Natural') {
-  //     this.curve = shape.curveNatural;
-  //   }
-  //   if (curveType === 'Step') {
-  //     this.curve = shape.curveStep;
-  //   }
-  //   if (curveType === 'Step After') {
-  //     this.curve = shape.curveStepAfter;
-  //   }
-  //   if (curveType === 'Step Before') {
-  //     this.curve = shape.curveStepBefore;
-  //   }
-  // }
+  ngAfterViewInit(): void {
+    if (this.container) {
+      this.sigma = new Sigma(this.graph, this.container.nativeElement);
+      
+      this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
+      
+      this.fa2.start();
+      
+    }
+  }
   
+  ngOnDestroy(): void {
+    if (this.sigma) {
+      
+      this.fa2.stop();
+      this.fa2.kill();
+      
+      this.sigma.kill();
+      
+    }
+  }
 }
