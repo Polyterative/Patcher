@@ -8,14 +8,30 @@ import {
 } from '@angular/core';
 
 import Graph                                                  from 'graphology';
+import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
 // import erdosRenyi                                             from 'graphology-generators/random/erdos-renyi';
 // import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
-// import circularLayout                                         from 'graphology-layout/circular';
-import forceAtlas2                                            from 'graphology-layout-forceatlas2';
-import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
+import circularLayout                                         from 'graphology-layout/circular';
 
 import { Sigma }            from 'sigma';
 import { GraphViewService } from './graph-view.service';
+
+export interface GraphNode {
+  id: string;
+  size: number;
+  label: string;
+  color: string;
+  data?: any,
+  x: number;
+  y: number;
+}
+
+export interface GraphEdge {
+  id: string;
+  label: string;
+  from: string;
+  to: string;
+}
 
 @Component({
   selector:    'lib-graph',
@@ -25,7 +41,7 @@ import { GraphViewService } from './graph-view.service';
 })
 export class GraphComponent implements OnInit {
   
-  @Input() nodes: string[] = [];
+  @Input() nodes: GraphNode[] = [];
   
   // @Input() nodes: { id:string,attributes:{
   //     x:     number,
@@ -37,13 +53,13 @@ export class GraphComponent implements OnInit {
   
   // @Input() clusters: ClusterNode[] = [];
   //
-  @Input() links: { start: string, end: string }[] = [];
+  @Input() links: GraphEdge[] = [];
   
   @ViewChild('container') container: ElementRef | null = null;
   @Input('graph') graph: Graph = new Graph({
-    type:           'mixed',
-    multi:          true,
-    allowSelfLoops: true
+    type: 'directed'
+    // multi:          true,
+    // allowSelfLoops: true
   });
   
   sigma?: Sigma;
@@ -71,18 +87,19 @@ export class GraphComponent implements OnInit {
     // renderer.
   
     this.nodes.forEach(node => {
-      this.graph.mergeNode(node, {
-        key:   node,
-        x:     Math.random(),
-        y:     Math.random(),
-        size:  20,
-        label: node
-      });
+      this.graph.mergeNode(node.id, node);
     });
   
     this.links.forEach(link => {
-      this.graph.mergeEdge(link.start, link.end);
+      // this.graph.mergeDirectedEdge(link.from, link.to, {
+      //   key:   link.id,
+      //   label: link.label
+      // });
+      this.graph.mergeDirectedEdge(link.from, link.to);
     });
+  
+    console.log('nodes', this.nodes);
+    console.log('links', this.links);
   
     // circularLayout.assign(this.graph);
 
@@ -91,12 +108,14 @@ export class GraphComponent implements OnInit {
     console.log('Number of edges', this.graph.size);
     // With settings:
   
-    const sensibleSettings = forceAtlas2.inferSettings(this.graph);
-    forceAtlas2(this.graph, {
-      iterations: 10000,
-      settings:   sensibleSettings
-    });
+    // const sensibleSettings = forceAtlas2.inferSettings(this.graph);
+    // forceAtlas2(this.graph, {
+    //   iterations: 10,
+    //   settings:   sensibleSettings
+    // });
   
+    circularLayout.assign(this.graph);
+    //
     this.cd.detectChanges();
   
   }
@@ -108,6 +127,11 @@ export class GraphComponent implements OnInit {
       this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
   
       this.fa2.start();
+  
+      // turn off after 2 seconds
+      setTimeout(() => {
+        this.fa2.stop();
+      }, 2000);
   
       console.log('sigma', this.graph.inspect());
   
