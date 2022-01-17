@@ -4,11 +4,6 @@ import {
   OnInit
 }                                 from '@angular/core';
 import {
-  ClusterNode,
-  Edge,
-  Node
-}                                 from '@swimlane/ngx-graph';
-import {
   BehaviorSubject,
   forkJoin
 }                                 from 'rxjs';
@@ -26,8 +21,13 @@ import {
   MinimalModule
 }                                 from '../../../models/module';
 import { GraphViewService }       from '../../../shared-interproject/components/@visual/graph-view/graph-view.service';
+import {
+  GraphEdge,
+  GraphNode
+}                                 from '../../../shared-interproject/components/@visual/graph-view/graph.component';
 import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
 import { PatchDetailDataService } from '../patch-detail-data.service';
+
 
 @Component({
   selector:        'app-patch-graph',
@@ -38,9 +38,9 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
   
-  nodes$: BehaviorSubject<Node[]> = new BehaviorSubject([]);
-  clusters$: BehaviorSubject<ClusterNode[]> = new BehaviorSubject([]);
-  links$: BehaviorSubject<Edge[]> = new BehaviorSubject([]);
+  nodes$: BehaviorSubject<GraphNode[]> = new BehaviorSubject([]);
+  // clusters$: BehaviorSubject<any[]> = new BehaviorSubject([]);
+  links$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
   
   constructor(
     public patchDetailDataService: PatchDetailDataService,
@@ -56,7 +56,6 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       this.patchDetailDataService.patchesConnections$
           .pipe(
             tap(x => this.nodes$.next([])),
-            tap(x => this.clusters$.next([])),
             tap(x => this.links$.next([])),
             filter(data => !!data),
             switchMap(x => forkJoin(
@@ -74,17 +73,21 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         // )
           .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
     
-              const modulesNodes: Node[] = [];
-              const nodes: Node[] = [];
-              const links: Edge[] = [];
+              const modulesNodes: GraphNode[] = [];
+              const nodes: GraphNode[] = [];
+              const links: GraphEdge[] = [];
               modules
                 .forEach(module => {
         
                   const moduleId: string = module.id.toString();
         
-                  const moduleNode: Node = {
+                  const moduleNode: GraphNode = {
                     id:    moduleId,
                     label: module.name,
+                    color: '#000000',
+                    size:  10,
+                    x:     1,
+                    y:     1,
                     data:  {
                       type: 'module',
                       module
@@ -93,34 +96,44 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         
                   modulesNodes.push(moduleNode);
         
-                  const outs: Node[] = module.outs.map(jack => ({
+                  const outs: GraphNode[] = module.outs.map(jack => ({
                     id:    moduleId + jack.id,
+                    color: '#333333',
+                    size:  5,
+                    x:     1,
+                    y:     1,
                     label: jack.name,
                     data:  {
                       color: '000000'
                     }
                   }));
         
-                  const ins: Node[] = module.ins.map(jack => ({
+                  const ins: GraphNode[] = module.ins.map(jack => ({
                     id:    moduleId + jack.id,
+                    color: '#333333',
+                    size:  5,
+                    x:     1,
+                    y:     1,
                     label: jack.name,
                     data:  {
                       color: '000000'
                     }
                   }));
+        
+                  nodes.push(...outs, ...ins);
         
                   // push connections between module and outs and ins
-                  const insConnections = ins.map(x => ({
-                    id:          x.id,
-                    source:      moduleId,
-                    target:      x.id,
-                    description: `in: ${ x.label }from module: ${ module.name }`
+                  const insConnections: GraphEdge[] = ins.map(x => ({
+                    id:    x.id,
+                    from:  moduleId,
+                    to:    x.id,
+                    label: `in: ${ x.label }from module: ${ module.name }`
                   }));
-                  const outsConnections = outs.map(x => ({
-                    id:          x.id,
-                    source:      moduleId,
-                    target:      x.id,
-                    description: `outs: ${ x.label }from module: ${ module.name }`
+                  const outsConnections: GraphEdge[] = outs.map(x => ({
+                    id:    x.id,
+                    from:  moduleId,
+                    to:    x.id,
+                    label: `outs: ${ x.label }from module: ${ module.name }`
           
                   }));
         
@@ -134,7 +147,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 if (!nodes.some(node => node.id === nodeIdA)) {
                   nodes.push({
                     id:    nodeIdA,
-                    label: connection.a.name
+                    label: connection.a.name,
+                    color: '#000000',
+                    size:  10,
+                    x:     1,
+                    y:     1
                   });
                 }
       
@@ -142,17 +159,20 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 if (!nodes.some(node => node.id === nodeIdB)) {
                   nodes.push({
                     id:    nodeIdB,
-                    label: connection.b.name
+                    label: connection.b.name,
+                    color: '#000000',
+                    size:  10,
+                    x:     1,
+                    y:     1
                   });
                 }
       
               });
     
-              const finalNodes: Node[] = [
+              const finalNodes: GraphNode[] = [
                 ...modulesNodes,
                 ...nodes
               ];
-              this.nodes$.next(finalNodes);
               // this.clusters$.next(modulesNodes);
     
               // this.links$.next(connections.map(patch => ({
@@ -160,17 +180,23 @@ export class PatchGraphComponent extends SubManager implements OnInit {
               //   target: patch.b.module.id + patch.b.id.toString()
               // })));
     
-              const connectionLinks: Edge[] = connections.map(patch => ({
-                id:          patch.a.module.id + patch.a.id.toString() + patch.b.module.id + patch.b.id.toString(),
-                source:      patch.a.module.id + patch.a.id.toString(),
-                target:      patch.b.module.id + patch.b.id.toString(),
-                description: 'from: ' + patch.a.name + ' to ' + patch.b.name
+              const connectionLinks: GraphEdge[] = connections.map(patch => ({
+                id:    patch.a.module.id + patch.a.id.toString() + patch.b.module.id + patch.b.id.toString(),
+                from:  patch.a.module.id + patch.a.id.toString(),
+                to:    patch.b.module.id + patch.b.id.toString(),
+                color: '#000000',
+                size:  10,
+                x:     1,
+                y:     1,
+                label: `from: ${ patch.a.name } to ${ patch.b.name }`
               }));
     
               links.push(...connectionLinks);
     
+              console.log('finalNodes', finalNodes);
+    
+              this.nodes$.next(finalNodes);
               this.links$.next(links);
-              this.clusters$.next([]);
     
               this.graphViewService.center$.next(true);
     
