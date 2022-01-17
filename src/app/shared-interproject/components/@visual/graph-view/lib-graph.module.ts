@@ -1,9 +1,7 @@
 import { CommonModule }     from '@angular/common';
 import { NgModule }         from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { NgxGraphModule }   from '@swimlane/ngx-graph';
 import { GraphComponent }   from './graph.component';
-
 
 @NgModule({
   declarations: [
@@ -11,7 +9,6 @@ import { GraphComponent }   from './graph.component';
   ],
   imports:      [
     CommonModule,
-    NgxGraphModule,
     FlexLayoutModule
   ],
   exports:      [
