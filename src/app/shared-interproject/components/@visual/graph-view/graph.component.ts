@@ -119,7 +119,7 @@ export class GraphComponent implements OnInit {
       // turn off after 2 seconds
       setTimeout(() => {
         this.fa2.stop();
-      }, 100);
+      }, 2000);
   
       console.log('sigma', this.graph.inspect());
   
