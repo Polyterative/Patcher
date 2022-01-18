@@ -28,7 +28,6 @@ import {
 import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 
-
 @Component({
   selector:        'app-patch-graph',
   templateUrl:     './patch-graph.component.html',
@@ -78,13 +77,13 @@ export class PatchGraphComponent extends SubManager implements OnInit {
               const links: GraphEdge[] = [];
               modules
                 .forEach(module => {
-        
+  
                   const moduleId: string = module.id.toString();
-        
+  
                   const moduleNode: GraphNode = {
                     id:    moduleId,
                     label: module.name,
-                    color: '#000000',
+                    color: '#656565',
                     size:  10,
                     x:     1,
                     y:     1,
@@ -93,35 +92,30 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                       module
                     }
                   };
-        
+  
                   modulesNodes.push(moduleNode);
-        
+  
                   const outs: GraphNode[] = module.outs.map(jack => ({
                     id:    moduleId + jack.id,
-                    color: '#333333',
+                    color: '#27d580',
                     size:  5,
                     x:     1,
                     y:     1,
-                    label: jack.name,
-                    data:  {
-                      color: '000000'
-                    }
+                    label: jack.name
                   }));
-        
+  
                   const ins: GraphNode[] = module.ins.map(jack => ({
                     id:    moduleId + jack.id,
-                    color: '#333333',
+                    color: '#e72222',
                     size:  5,
                     x:     1,
                     y:     1,
-                    label: jack.name,
-                    data:  {
-                      color: '000000'
-                    }
+                    label: jack.name
                   }));
-        
-                  nodes.push(...outs, ...ins);
-        
+  
+                  // uncomment to see all connections even for unused inputs/outputs
+                  // nodes.push(...outs, ...ins);
+  
                   // push connections between module and outs and ins
                   const insConnections: GraphEdge[] = ins.map(x => ({
                     id:    x.id,
@@ -134,12 +128,12 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                     from:  moduleId,
                     to:    x.id,
                     label: `outs: ${ x.label }from module: ${ module.name }`
-          
+    
                   }));
-        
+  
                   links.push(...insConnections);
                   links.push(...outsConnections);
-        
+  
                 });
     
               connections.forEach(connection => {
@@ -148,8 +142,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   nodes.push({
                     id:    nodeIdA,
                     label: connection.a.name,
-                    color: '#000000',
-                    size:  10,
+                    color: '#3a6740',
+                    size:  4,
                     x:     1,
                     y:     1
                   });
@@ -160,8 +154,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   nodes.push({
                     id:    nodeIdB,
                     label: connection.b.name,
-                    color: '#000000',
-                    size:  10,
+                    color: '#854040',
+                    size:  4,
                     x:     1,
                     y:     1
                   });
@@ -184,8 +178,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 id:    patch.a.module.id + patch.a.id.toString() + patch.b.module.id + patch.b.id.toString(),
                 from:  patch.a.module.id + patch.a.id.toString(),
                 to:    patch.b.module.id + patch.b.id.toString(),
-                color: '#000000',
-                size:  10,
+                color: 'rgb(114,114,114)',
+                size:  2,
                 x:     1,
                 y:     1,
                 label: `from: ${ patch.a.name } to ${ patch.b.name }`
