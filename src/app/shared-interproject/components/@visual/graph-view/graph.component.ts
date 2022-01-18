@@ -21,7 +21,7 @@ export interface GraphNode {
   size: number;
   label: string;
   color: string;
-  data?: any,
+  data?: any;
   x: number;
   y: number;
 }
@@ -43,29 +43,21 @@ export class GraphComponent implements OnInit {
   
   @Input() nodes: GraphNode[] = [];
   
-  // @Input() nodes: { id:string,attributes:{
-  //     x:     number,
-  //     y:     number,
-  //     size:  number,
-  //     label: string
-  //   } }[] = [];
-  //
-  
-  // @Input() clusters: ClusterNode[] = [];
-  //
   @Input() links: GraphEdge[] = [];
   
   @ViewChild('container') container: ElementRef | null = null;
+  
   @Input('graph') graph: Graph = new Graph({
-    type: 'directed'
+    type: 'directed',
     // multi:          true,
-    // allowSelfLoops: true
+    allowSelfLoops: true
   });
   
   sigma?: Sigma;
   @Input() settings: FA2LayoutSupervisorParameters = {weighted: true};
   
   fa2?: FA2LayoutSupervisor;
+  loaded = false;
   
   constructor(
     public dataService: GraphViewService,
@@ -84,28 +76,23 @@ export class GraphComponent implements OnInit {
   ngOnInit() {
     // const renderer = new Sigma(this.graph, this.container.nativeElement);
   
-    // renderer.
-  
     this.nodes.forEach(node => {
       this.graph.mergeNode(node.id, node);
     });
   
     this.links.forEach(link => {
-      // this.graph.mergeDirectedEdge(link.from, link.to, {
-      //   key:   link.id,
-      //   label: link.label
-      // });
-      this.graph.mergeDirectedEdge(link.from, link.to);
+      this.graph.mergeDirectedEdge(link.from, link.to, link);
     });
   
-    console.log('nodes', this.nodes);
-    console.log('links', this.links);
+    this.loaded = true;
+    // console.log('nodes', this.nodes);
+    // console.log('links', this.links);
   
     // circularLayout.assign(this.graph);
-
-// Displaying useful information about your graph
-    console.log('Number of nodes', this.graph.order);
-    console.log('Number of edges', this.graph.size);
+  
+    // Displaying useful information about your graph
+//     console.log('Number of nodes', this.graph.order);
+//     console.log('Number of edges', this.graph.size);
     // With settings:
   
     // const sensibleSettings = forceAtlas2.inferSettings(this.graph);
@@ -114,9 +101,10 @@ export class GraphComponent implements OnInit {
     //   settings:   sensibleSettings
     // });
   
-    circularLayout.assign(this.graph);
-    //
-    this.cd.detectChanges();
+    circularLayout.assign(this.graph, {
+      scale: 1000
+    });
+    // this.cd.detectChanges();
   
   }
   
@@ -131,7 +119,7 @@ export class GraphComponent implements OnInit {
       // turn off after 2 seconds
       setTimeout(() => {
         this.fa2.stop();
-      }, 2000);
+      }, 100);
   
       console.log('sigma', this.graph.inspect());
   
@@ -140,12 +128,14 @@ export class GraphComponent implements OnInit {
   
   ngOnDestroy(): void {
     if (this.sigma) {
-      
+  
       this.fa2.stop();
       this.fa2.kill();
-      
+  
+      this.graph.clear();
+      // this.graph.();
       this.sigma.kill();
-      
+  
     }
   }
 }

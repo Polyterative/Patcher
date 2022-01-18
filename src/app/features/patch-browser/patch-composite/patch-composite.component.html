@@ -3,8 +3,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
 } as bag"
 >
   <ng-container *ngIf="bag.layoutFlexWidth">
-    <lib-screen-wrapper *ngIf="bag.layoutFlexWidth.ltlg||isEditing"
-                        maxSize="40rem"
+    <div *ngIf="bag.layoutFlexWidth.ltlg||isEditing"
     >
       <div class="col gap1"
       >
@@ -14,30 +13,34 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             </app-patch-minimal>
           </lib-hero-item-card>
         </div>
-  
+    
         <app-patch-details [data]="data"></app-patch-details>
         <app-comments-root></app-comments-root>
       </div>
-    </lib-screen-wrapper>
+    </div>
     
     <ng-container *ngIf="bag.layoutFlexWidth.gtmd&&!isEditing">
       <div class="row gap2"
       >
-        <div fxFlex="24rem"
-             class="col gap2"
+        <div class="col gap1"
+             fxFlex="30rem"
         >
           <lib-hero-item-card>
             <app-patch-minimal [data]="data">
             </app-patch-minimal>
           </lib-hero-item-card>
+          <lib-screen-wrapper maxSize="36rem">
+            <app-comments-root></app-comments-root>
+          </lib-screen-wrapper>
         </div>
-        <div class="auto col gap1"
+        <div class="col gap1"
+             fxFlex="grow"
         >
           <app-patch-details fxFlex="grow"
                              [data]="data"
           ></app-patch-details>
     
-          <app-comments-root></app-comments-root>
+    
         </div>
       </div>
     </ng-container>

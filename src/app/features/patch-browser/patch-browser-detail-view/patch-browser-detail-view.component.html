@@ -4,31 +4,27 @@ data:(dataService.singlePatchData$|async)
 } as bag"
 >
   <ng-container *ngIf="!bag.patchEditingPanelOpenState">
-    <lib-screen-wrapper>
-      <div class="col gap1"
+    <div class="col gap1"
+    >
+      <lib-hero-content-card titleBig="Patch details"
+                             class="patchesBG"
       >
-        <lib-hero-content-card titleBig="Patch details"
-                               class="patchesBG"
+        <div class="col gap1"
         >
-          <div class="col gap1"
-          >
-            <div>
-              <!--              <lib-hero-item-card>-->
-              <ng-container *ngIf="bag.data"
-              >
-                <app-patch-composite [data]="(bag.data)"
-                                     [isEditing]="bag.patchEditingPanelOpenState"
-                ></app-patch-composite>
-              </ng-container>
-              <!--              </lib-hero-item-card>-->
-            </div>
-            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                                [data$]="dataService.singlePatchData$"
-            ></lib-auto-content-loading-indicator>
+          <div>
+            <ng-container *ngIf="bag.data"
+            >
+              <app-patch-composite [data]="(bag.data)"
+                                   [isEditing]="bag.patchEditingPanelOpenState"
+              ></app-patch-composite>
+            </ng-container>
           </div>
-        </lib-hero-content-card>
-      </div>
-    </lib-screen-wrapper>
+          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                              [data$]="dataService.singlePatchData$"
+          ></lib-auto-content-loading-indicator>
+        </div>
+      </lib-hero-content-card>
+    </div>
   </ng-container>
   <ng-container *ngIf="bag.patchEditingPanelOpenState">
     <div class="col gap1"
@@ -55,7 +51,7 @@ data:(dataService.singlePatchData$|async)
           <lib-hero-content-card fxFlex.gt-md="fill"
                                  titleNormal="Connections Editor"
                                  *ngIf="bag.data&&bag.patchEditingPanelOpenState"
-  
+
           >
             <lib-hero-item-card>
               <app-patch-editor
