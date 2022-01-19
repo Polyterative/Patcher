@@ -80,7 +80,7 @@ export class HomeComponent extends SubManager implements OnDestroy {
   ]);
   
   renderingClock$ = interval(1500)
-    .pipe(delay(1000), take(6), share());
+    .pipe(delay(0), take(6), share());
   
   constructor(
     public patchDetailDataService: PatchDetailDataService,
