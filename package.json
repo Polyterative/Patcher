@@ -21,8 +21,8 @@
   },
   "standard-version": {
     "scripts": {
-      "postchangelog": "copyfiles changelog.md assets/md/",
-      "precommit": "git add assets/md/changelog.md"
+      "postchangelog": "copyfiles changelog.md src/assets/md/",
+      "precommit":     "git add src/assets/md/changelog.md"
     }
   },
   "private": true,
