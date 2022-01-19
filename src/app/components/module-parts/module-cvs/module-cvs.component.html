@@ -9,10 +9,12 @@
       {{ins.length}} INs ↘
     </mat-card-subtitle>
     <mat-chip-list>
-      <ng-container *ngFor="let item of ins">
+      <ng-container *ngFor="let item of ins; let i = index">
         <app-module-cvitem [data]="item"
                            kind="in"
                            (click$)="inClick$.next([$event,data])"
+                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                           [@leave]="{ value: '', params: { delay:  5 }}"
         ></app-module-cvitem>
       </ng-container>
     </mat-chip-list>
@@ -26,10 +28,12 @@
       {{outs.length}} OUTs ↗
     </mat-card-subtitle>
     <mat-chip-list>
-      <ng-container *ngFor="let item of outs">
+      <ng-container *ngFor="let item of outs; let i = index">
         <app-module-cvitem [data]="item"
                            kind="out"
                            (click$)="outClick$.next([$event,data])"
+                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                           [@leave]="{ value: '', params: { delay:  5 }}"
         ></app-module-cvitem>
       </ng-container>
     </mat-chip-list>
