@@ -187,8 +187,6 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     
               links.push(...connectionLinks);
     
-              console.log('finalNodes', finalNodes);
-    
               this.nodes$.next(finalNodes);
               this.links$.next(links);
     
