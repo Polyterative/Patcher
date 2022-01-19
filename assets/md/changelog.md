@@ -1,22 +1,33 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-See [standard-version](https://github.com/conventional-changelog/standard-version) for commit
-guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [3.1.0](https://github.com/Polyterative/Patcher/compare/v3.0.17...v3.1.0) (2022-01-19)
+
+### [3.0.17](https://github.com/Polyterative/Patcher/compare/v3.0.16...v3.0.17) (2022-01-19)
+
+### [3.0.16](https://github.com/Polyterative/Patcher/compare/v3.0.15...v3.0.16) (2022-01-19)
+
+### [3.0.15](https://github.com/Polyterative/Patcher/compare/v3.0.14...v3.0.15) (2022-01-19)
+
+
+### Features
+
+* auto changelog improvements ([8297bd2](https://github.com/Polyterative/Patcher/commit/8297bd2c2f82a1b3b1cb090d2b02f32ecd234ebd))
 
 ### [3.0.14](https://github.com/Polyterative/Patcher/compare/v3.0.13...v3.0.14) (2022-01-19)
 
+
 ### Features
 
-* auto changelog
-  improvements ([da32039](https://github.com/Polyterative/Patcher/commit/da32039341f83d5606f5d7309eafeb4341bf3af0))
+* auto changelog improvements ([da32039](https://github.com/Polyterative/Patcher/commit/da32039341f83d5606f5d7309eafeb4341bf3af0))
 
 ### [3.0.13](https://github.com/Polyterative/Patcher/compare/v3.0.12...v3.0.13) (2022-01-19)
 
+
 ### Features
 
-* auto changelog
-  building ([1f43e6d](https://github.com/Polyterative/Patcher/commit/1f43e6d03cd623584d94701d5d15b0dda694ca05))
+* auto changelog building ([1f43e6d](https://github.com/Polyterative/Patcher/commit/1f43e6d03cd623584d94701d5d15b0dda694ca05))
 
 ### [3.0.12](https://github.com/Polyterative/Patcher/compare/v3.0.10...v3.0.12) (2022-01-19)
 
@@ -27,8 +38,7 @@ guidelines.
 
 ### Features
 
-* cleaned
-  footer ([0cfaa54](https://github.com/Polyterative/Patcher/commit/0cfaa5452c6f649a869627e2e1b8ad017b5842f6))
+* cleaned footer ([0cfaa54](https://github.com/Polyterative/Patcher/commit/0cfaa5452c6f649a869627e2e1b8ad017b5842f6))
 
 ### [3.0.9](https://github.com/Polyterative/Patcher/compare/v3.0.8...v3.0.9) (2022-01-19)
 
