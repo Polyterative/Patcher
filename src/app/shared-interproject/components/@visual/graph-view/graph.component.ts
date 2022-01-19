@@ -121,8 +121,6 @@ export class GraphComponent implements OnInit {
         this.fa2.stop();
       }, 2000);
   
-      console.log('sigma', this.graph.inspect());
-  
     }
   }
   
