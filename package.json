@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "3.0.16",
+  "version": "3.0.17",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -21,7 +21,8 @@
   },
   "standard-version": {
     "scripts": {
-      "postchangelog": "copyfiles changelog.md assets/md/ && git add assets/md/changelog.md"
+      "postchangelog": "copyfiles changelog.md assets/md/",
+      "precommit": "git add assets/md/changelog.md"
     }
   },
   "private": true,
