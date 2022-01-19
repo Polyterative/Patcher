@@ -1,6 +1,6 @@
 import { Injectable }       from '@angular/core';
-import { AngularFireAuth }  from '@angular/fire/auth';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFireAuth }  from '@angular/fire/compat/auth/angular-fire-compat-auth';
+import { AngularFirestore } from '@angular/fire/compat/firestore/angular-fire-compat-firestore';
 
 @Injectable()
 export class FirebaseService {
@@ -25,7 +25,7 @@ export class FirebaseService {
     // this.user.logout$
     //     .subscribe(x => {
     //         this.user.user$.next(undefined);
-    //    
+    //
     //         this.firebaseLogout();
     //     });
     

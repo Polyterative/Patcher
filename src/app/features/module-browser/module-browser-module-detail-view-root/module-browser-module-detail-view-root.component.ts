@@ -10,7 +10,6 @@ import {
   take
 }                                  from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
-import { FirebaseService }         from 'src/app/features/backend/firebase.service';
 
 @Component({
   selector:    'app-module-browser-module-detail-view-root',
@@ -24,7 +23,6 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
   
   constructor(
     public dataService: ModuleDetailDataService,
-    public api: FirebaseService,
     public route: ActivatedRoute
   ) {
   

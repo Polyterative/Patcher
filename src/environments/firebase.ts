@@ -1,7 +1,5 @@
-import { FirebaseOptions } from '@angular/fire';
 
-
-export const firebaseConfig: FirebaseOptions = {
+export const firebaseConfig = {
     apiKey:            'AIzaSyBWYGQEVwqo0hRXwPLKlgTqbDcfvrEAFkU',
     authDomain:        'patcher-89a29.firebaseapp.com',
     projectId:         'patcher-89a29',
