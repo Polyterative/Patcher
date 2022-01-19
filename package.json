@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -11,8 +11,8 @@
     "updateAll": "ncu -u",
     "ci": "",
     "testRelease:patch": "standard-version  --release-as patch --dry-run && git push --follow-tags origin production",
-    "release:patch": "standard-version  --release-as patch ",
-    "release:minor": "standard-version  --release-as minor --commit-all && git push --follow-tags origin production",
+    "release:patch": "standard-version  --release-as patch --commit-all ",
+    "release:minor": "standard-version  --release-as minor && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major && git push --follow-tags origin production",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "test": "ng test",
