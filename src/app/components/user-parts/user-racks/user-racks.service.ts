@@ -18,7 +18,7 @@ import { SubManager }      from '../../../shared-interproject/directives/subscri
 export class UserRacksService extends SubManager {
   data$: ReplaySubject<Rack[]> = new ReplaySubject(1);
   
-  public readonly updateData$ = new Subject<string | undefined>(); //user id othervise current
+  readonly updateData$ = new Subject<string | undefined>(); // user id othervise current
   
   constructor(
     public backend: SupabaseService
@@ -32,7 +32,6 @@ export class UserRacksService extends SubManager {
           switchMap(x => this.backend.get.userRacks())
         )
         .subscribe(x => this.data$.next(x));
-    
     
   }
 }

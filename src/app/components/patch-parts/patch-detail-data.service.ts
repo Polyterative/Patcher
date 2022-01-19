@@ -158,7 +158,7 @@ export class PatchDetailDataService implements OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => this.patchesConnections$.next(data));
-    
+  
     this.singlePatchData$
         .pipe(
           filter(x => !!x),
@@ -166,7 +166,11 @@ export class PatchDetailDataService implements OnDestroy {
           take(1),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(data => this.patchEditingPanelOpenState$.next(!!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id));
+        .subscribe(data => {
+          this.patchEditingPanelOpenState$.next(
+            !!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id
+          );
+        });
     
     this.patchEditingPanelOpenState$
         .pipe(
@@ -232,7 +236,9 @@ export class PatchDetailDataService implements OnDestroy {
             patch
           };
   
-          const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
+          const isAlreadyInList: boolean = !!patchConnections.find(connection => {
+            return connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id;
+          });
   
           if (!isAlreadyInList) {
             this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});

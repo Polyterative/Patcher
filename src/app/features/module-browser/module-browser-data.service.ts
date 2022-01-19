@@ -187,7 +187,10 @@ export class ModuleBrowserDataService implements OnDestroy {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
   
-            return this.backend.get.modulesMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection, parseInt(getCleanedValueId(this.fields.manufacturers.control)));
+            return this.backend.get.modulesMinimal(
+              skip, (skip + take) - 1, filter, sortColumnName, sortDirection,
+              parseInt(getCleanedValueId(this.fields.manufacturers.control))
+            );
           }),
           takeUntil(this.destroyEvent$)
         )

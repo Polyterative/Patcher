@@ -207,7 +207,7 @@ export class SupabaseService {
       .pipe(map((x => x.data))),
     tags:              () => rxFrom(
       this.supabase.from(this.paths.tags)
-          .select(`*`)
+          .select('*')
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
@@ -391,6 +391,7 @@ export class SupabaseService {
       data.manufacturer = undefined;
       data.ins = undefined;
       data.outs = undefined;
+  
       return rxFrom(
         this.supabase.from(this.paths.modules)
             .update(data)
@@ -400,7 +401,8 @@ export class SupabaseService {
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rackedModules: (data: RackedModule[]) => {
-      let rackId: number = data[0].rackingData.rackid;
+      const rackId: number = data[0].rackingData.rackid;
+  
       return rxFrom(
         this.supabase.from(this.paths.rack_modules)
             .upsert(data.filter(x => x.rackingData.id != undefined)
@@ -409,9 +411,9 @@ export class SupabaseService {
         .pipe(
           // insert where id is undefined
           switchMap(x => {
-            let newRackedModules = data.filter(x => x.rackingData.id === undefined)
-                                       .map(rackedModule => rackedModule.rackingData);
-            let insertNew = rxFrom(
+            const newRackedModules = data.filter(x => x.rackingData.id === undefined)
+                                         .map(rackedModule => rackedModule.rackingData);
+            const insertNew = rxFrom(
               this.supabase.from(this.paths.rack_modules)
                   .upsert(newRackedModules)
             );
@@ -504,8 +506,8 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   private queryJoins = {
-    // simple synthax: responseObjectName:tableName(*columns*)
-    // advanced synthax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
+    // simple syntax: responseObjectName:tableName(*columns*)
+    // advanced syntax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
     manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
     author:       'author:authorid(username,id,email)',
     rack_modules: 'rackModules:rackid(*)',
@@ -557,28 +559,6 @@ export class SupabaseService {
       .pipe(switchMap(x => !x.error ? this.updateUserProfile(email, password, username) : of(x)));
   }
   
-  // logs in, updates profile, logs out
-  private updateUserProfile(email: string, password: string, username: string) {
-    return this.login(email, password)
-               .pipe(
-                 switchMap(x => rxFrom(
-                     this.supabase
-                         .from(this.paths.profiles)
-                         .update({
-                           confirmed: true,
-                           username
-                         })
-                         .eq('id', x.user.id)
-                   )
-                     .pipe(
-                       map(z => x),
-                       switchMap(x => rxFrom(this.supabase.auth.signOut())
-                         .pipe(map(z => x)))
-                     )
-                 )
-               );
-  }
-  
   getUser() {
     return this.supabase.auth.user();
   }
@@ -595,13 +575,37 @@ export class SupabaseService {
     
   }
   
+  // logs in, updates profile, logs out
+  private updateUserProfile(email: string, password: string, username: string) {
+    return this.login(email, password)
+               .pipe(
+                 switchMap(x => rxFrom(
+                   this.supabase
+                       .from(this.paths.profiles)
+                       .update({
+                         confirmed: true,
+                         username
+                         })
+                         .eq('id', x.user.id)
+                   )
+                     .pipe(
+                       map(z => x),
+                       switchMap(x => rxFrom(this.supabase.auth.signOut())
+                         .pipe(map(z => x)))
+                     )
+                 )
+               );
+  }
+  
   private buildCVInserter(cvs: CV[], path: string, moduleId: number) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
                          .filter(x => x.id == 0)
                          .map(x => {
                            x.id = undefined;
+  
                            return x;
                          });
+  
     return rxFrom(
       this.supabase.from(path)
           .upsert(mappedCVs)
@@ -649,12 +653,14 @@ export class SupabaseService {
       id: roq.id,
       moduleid
     });
+  
     return mapper;
   }
   
   private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
                          .filter(x => x.id > 0);
+  
     return rxFrom(
       this.supabase.from(path)
           .upsert(mappedCVs)
