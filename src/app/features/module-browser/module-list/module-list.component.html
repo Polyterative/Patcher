@@ -26,7 +26,7 @@
         >
           <lib-hero-item-card
               [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
-              [@leave]="{ value: '', params: { delay:  5 }}"
+              [@leave]="{ value: '', params: { delay:  50 }}"
           >
             <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
                                 [data]="item"
