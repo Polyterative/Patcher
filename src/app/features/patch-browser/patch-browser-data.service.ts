@@ -12,6 +12,7 @@ import {
   Subject
 }                                from 'rxjs';
 import {
+  debounceTime,
   distinctUntilChanged,
   startWith,
   switchMap,
@@ -149,11 +150,14 @@ export class PatchBrowserDataService implements OnDestroy {
         .subscribe(x => {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.patchesList$.next(x.data);
-      
+  
           this.dirty = true;
         });
-    
-    this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
+  
+    this.fields.search.control.valueChanges.pipe(
+      debounceTime(500),
+      takeUntil(this.destroyEvent$)
+    )
         .subscribe(x => {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);

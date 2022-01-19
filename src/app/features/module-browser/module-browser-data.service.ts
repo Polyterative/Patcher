@@ -12,6 +12,7 @@ import {
   Subject
 }                                from 'rxjs';
 import {
+  debounceTime,
   distinctUntilChanged,
   map,
   share,
@@ -58,7 +59,6 @@ export class ModuleBrowserDataService implements OnDestroy {
   formTypes = FormTypes;
   
   fields = {
-    
     search:        {
       label:   'Search module...',
       code:    'search',
@@ -201,7 +201,10 @@ export class ModuleBrowserDataService implements OnDestroy {
           this.dirty = true;
         });
   
-    this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
+    this.fields.search.control.valueChanges.pipe(
+      debounceTime(500),
+      takeUntil(this.destroyEvent$)
+    )
         .subscribe(x => {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);
