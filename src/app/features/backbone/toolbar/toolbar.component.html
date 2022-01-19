@@ -4,13 +4,11 @@
   <lib-screen-wrapper fxFlex="grow">
     <div class="row gap1"
     >
-      <a fxFlex="100"
-         mat-button
+      <a mat-button
          routerLink="/home"
          class="title stock"
          fxLayoutAlign="center center"
          [fxHide.xs]="true"
-
       >
         {{service.state.title|async}}
       </a>
