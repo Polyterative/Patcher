@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-}                from 'rxjs';
-import { Patch } from '../../models/patch';
+}                     from 'rxjs';
+import { Patch }      from '../../models/patch';
 
 @Injectable()
 export class PatchBuilderDataService {
