@@ -27,7 +27,7 @@
             [disableVoidSelection]="true"
             label="Order modules by"
         ></lib-mat-form-entity>
-        
+  
         <div fxFlex="100"
              fxLayoutAlign="end start"
         >
@@ -37,15 +37,15 @@
           >Add a module</a>
         </div>
       </div>
-      
-      <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<10"
-                     [pageSizeOptions]="[10,25,50]"
+  
+      <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<25"
+                     [pageSizeOptions]="[25,50]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
-
+  
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
       ></mat-paginator>
-      
+  
       <app-module-list [data$]="dataService.modulesList$"
                        [viewConfig]="viewConfig"
       ></app-module-list>

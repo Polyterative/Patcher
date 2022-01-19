@@ -5,6 +5,10 @@ import {
   OnInit
 }                                 from '@angular/core';
 import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+}                                 from 'angular-animations';
+import {
   BehaviorSubject,
   combineLatest,
   Observable
@@ -22,6 +26,16 @@ import { PatchList }              from '../patch-browser-data.service';
   selector:        'app-patch-list',
   templateUrl:     './patch-list.component.html',
   styleUrls:       ['./patch-list.component.scss'],
+  animations:      [
+    fadeInOnEnterAnimation({
+      anchor:   'enter',
+      duration: 225
+    }),
+    fadeOutOnLeaveAnimation({
+      anchor:   'leave',
+      duration: 225
+    })
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders:   [LocalDataFilterService]
 })
