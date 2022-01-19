@@ -3,19 +3,32 @@
 
 
 .b {
-  background-color: #56A22C !important;
+  background-color: #E2523C !important;
   color:            rgba(255, 255, 255, 0.90) !important;
   box-shadow:       0 0 0 0 rgba(0, 0, 0, .8) !important;
   animation:        pulse 2250ms infinite;
 }
 
 .a {
-  background-color: #E45F3B !important;
+  background-color: #4483F2 !important;
   color:            rgba(255, 255, 255, 0.90) !important;
   box-shadow:       0 0 0 0 rgba(0, 0, 0, .8) !important;
   animation:        pulseBackwards 2250ms infinite;
 }
 
+//palette
+.colors {
+  background-color: #6C941A;
+  background-color: #686CF2;
+  background-color: #329C31;
+  background-color: #B55FD8;
+  background-color: #C2781B;
+  background-color: #4483F2;
+  background-color: #E2523C;
+  background-color: #8974E4;
+  background-color: #E9437E;
+  background-color: #D849B3;
+}
 
 @keyframes pulse {
   0% {

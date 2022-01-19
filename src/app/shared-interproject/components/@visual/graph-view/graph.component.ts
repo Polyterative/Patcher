@@ -31,6 +31,7 @@ export interface GraphEdge {
   label: string;
   from: string;
   to: string;
+  type: 'arrow' | 'curve' | 'line';
 }
 
 @Component({
@@ -43,7 +44,7 @@ export class GraphComponent implements OnInit {
   
   @Input() nodes: GraphNode[] = [];
   
-  @Input() links: GraphEdge[] = [];
+  @Input() edges: GraphEdge[] = [];
   
   @ViewChild('container') container: ElementRef | null = null;
   
@@ -80,7 +81,7 @@ export class GraphComponent implements OnInit {
       this.graph.mergeNode(node.id, node);
     });
   
-    this.links.forEach(link => {
+    this.edges.forEach(link => {
       this.graph.mergeDirectedEdge(link.from, link.to, link);
     });
   
