@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.13](https://github.com/Polyterative/Patcher/compare/v3.0.12...v3.0.13) (2022-01-19)
+
+
+### Features
+
+* auto changelog building ([1f43e6d](https://github.com/Polyterative/Patcher/commit/1f43e6d03cd623584d94701d5d15b0dda694ca05))
+
 ### [3.0.12](https://github.com/Polyterative/Patcher/compare/v3.0.10...v3.0.12) (2022-01-19)
 
 ### [3.0.11](https://github.com/Polyterative/Patcher/compare/v3.0.10...v3.0.11) (2022-01-19)
