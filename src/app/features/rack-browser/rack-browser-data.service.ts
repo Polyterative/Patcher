@@ -17,9 +17,9 @@ import {
   switchMap,
   takeUntil,
   withLatestFrom
-}                    from 'rxjs/operators';
-import { Rack }      from '../../models/rack';
-import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                                from 'rxjs/operators';
+import { Rack }                  from '../../models/rack';
+import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
@@ -139,10 +139,10 @@ export class RackBrowserDataService implements OnDestroy {
     this.updateRacksList$
         .pipe(
           withLatestFrom(this.serversideDataPackage$),
-          switchMap(([z, [skip, take, filter, sort]]) => {
+          switchMap(([_, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-  
+    
             // return this.backend.get.racks(skip, (skip + take) - 1, filter, sortColumnName);
             return this.backend.get.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),

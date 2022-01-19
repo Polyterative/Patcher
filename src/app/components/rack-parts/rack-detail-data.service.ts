@@ -73,7 +73,7 @@ export class RackDetailDataService extends SubManager {
           .pipe(
             withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
             map(([_, x, y]) => {
-              let editable: boolean = !y;
+              const editable: boolean = !y;
               this.isCurrentRackEditable$.next(editable);
               x.locked = !editable;
               return x;
@@ -82,7 +82,6 @@ export class RackDetailDataService extends SubManager {
           )
           .subscribe()
     );
-    
     
     this.manageSub(
       this.updateSingleRackData$
@@ -110,11 +109,10 @@ export class RackDetailDataService extends SubManager {
       )
           .subscribe(([rackedModules, rack]: [RackedModule[], Rack]) => {
             // create a 2d array of racked modules and sort them by row
-            let rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
+            const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
             this.rowedRackedModules$.next(rowedRackedModules);
           })
     );
-    
     
     // on order change, update local rack data and backend
     this.manageSub(
@@ -142,7 +140,6 @@ export class RackDetailDataService extends SubManager {
             this.requestRackedModulesDbSync$.next();
           })
     );
-    
     
     // track if rack is property of current user
     this.manageSub(
@@ -194,7 +191,6 @@ export class RackDetailDataService extends SubManager {
   
             this.requestRackedModulesDbSync$.next();
   
-  
           })
     );
   
@@ -244,14 +240,13 @@ export class RackDetailDataService extends SubManager {
           withLatestFrom(this.deleteRack$, this.rowedRackedModules$),
           switchMap(([z, x]) => this.backend.delete.modulesOfRack(x.id)
                                     .pipe(map(() => x))),
-          switchMap((x) => this.backend.delete.userRack(x.id)),
+          switchMap(x => this.backend.delete.userRack(x.id)),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
           this.router.navigate(['/user/area']);
           SharedConstants.successDelete(this.snackBar);
         });
-  
   
     // this.deleteRack$
     //     .pipe(
@@ -266,24 +261,25 @@ export class RackDetailDataService extends SubManager {
   
   }
   
-  private isAnyModuleWithoutRackingId(rackModules): boolean {
+  private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
     return rackModules.flatMap(row => row)
                       .filter(module => module.rackingData.id === undefined).length > 0;
   }
   
   private buildRowedModulesArray(rackedModules: RackedModule[], rackData: RackMinimal): RackedModule[][] {
-    let rowedRackedModules: RackedModule[][] = [];
+    const rowedRackedModules: RackedModule[][] = [];
     for (let i = 0; i < rackData.rows; i++) {
       rowedRackedModules[i] = rackedModules.filter(module => module.rackingData.row === i);
     }
   
     // check if there are modules without row and column, add them to a new row
-    const modulesWithoutRowAndColumn = rackedModules.filter(module => module.rackingData.row === null && module.rackingData.column === null);
+    const modulesWithoutRowAndColumn = rackedModules.filter(
+      module => module.rackingData.row === null && module.rackingData.column === null
+    );
   
     if (modulesWithoutRowAndColumn.length > 0) {
       rowedRackedModules.push(modulesWithoutRowAndColumn);
     }
-  
   
     return rowedRackedModules;
   }
@@ -297,9 +293,9 @@ export class RackDetailDataService extends SubManager {
   
   private updateModulesColumnIds(rackModules: RackedModule[][], row: number | undefined): void {
     if (row === undefined) {
-      return; // do nothing if rack has not been placed yet
+      return undefined; // do nothing if rack has not been placed yet
     }
-    let modulesInRow: RackedModule[] | undefined = rackModules[row];
+    const modulesInRow: RackedModule[] | undefined = rackModules[row];
     
     if (modulesInRow) {
       modulesInRow.forEach((module, index) => {
@@ -324,18 +320,18 @@ export class RackDetailDataService extends SubManager {
     this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
   
     // undefined accounts for unracked modules
-    let modulesOfRow: RackedModule[] | undefined = rackedModules[rackedModule.rackingData.row];
+    const modulesOfRow: RackedModule[] | undefined = rackedModules[rackedModule.rackingData.row];
     if (modulesOfRow) {
       // module was previously racked
       modulesOfRow.splice(rackedModule.rackingData.column, 1);
     } else {
       // module has not been racked yet
-      let lastRow: RackedModule[] = rackedModules[rackedModules.length - 1];
-    
+      const lastRow: RackedModule[] = rackedModules[rackedModules.length - 1];
+  
       // remove unracked module from last row
-      let unrackedModuleRowIndex: number = lastRow.findIndex(module => module.rackingData.id === rackedModule.rackingData.id);
+      const unrackedModuleRowIndex: number = lastRow.findIndex(module => module.rackingData.id === rackedModule.rackingData.id);
       lastRow.splice(unrackedModuleRowIndex, 1);
-    
+  
       if (lastRow.length === 0) {
         // remove empty row
         rackedModules.splice(rackedModules.length - 1, 1);
@@ -347,9 +343,14 @@ export class RackDetailDataService extends SubManager {
   
   private duplicateRackedModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
     // make a deep copy of the module
-    rackedModule = JSON.parse(JSON.stringify(rackedModule));
-    rackedModule.rackingData.id = undefined;
-    rackedModules[rackedModule.rackingData.row].splice(rackedModule.rackingData.column + 1, 0, rackedModule);
-    this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
+    const deepCopiedtRackedModule = {...rackedModule};
+  
+    deepCopiedtRackedModule.rackingData.id = undefined;
+  
+    // remove
+    rackedModules[deepCopiedtRackedModule.rackingData.row].splice(
+      deepCopiedtRackedModule.rackingData.column + 1, 0, deepCopiedtRackedModule
+    );
+    this.updateModulesColumnIds(rackedModules, deepCopiedtRackedModule.rackingData.row);
   }
 }

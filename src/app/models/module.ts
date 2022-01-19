@@ -8,7 +8,6 @@ import { RackingData } from './rack';
 import { Switch }      from './switch';
 import { Tag }         from './tag';
 
-
 export interface Module {
   name: string;
   description?: string;

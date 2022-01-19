@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class AdminGuardService implements CanActivate {
-    constructor() {}
     
     canActivate(route: ActivatedRouteSnapshot): boolean {
         

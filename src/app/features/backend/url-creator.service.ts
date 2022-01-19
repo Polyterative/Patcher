@@ -14,9 +14,8 @@ export class UrlCreatorService {
   
   copyLinkToClipboard(path: string): void {
     // this.router.
-    let url: string = window.location.origin + path;
+    const url: string = window.location.origin + path;
     
-    // @ts-ignore
     navigator.clipboard.writeText(url)
              .then(() => {
                this.snackBar.open('Copied URL to clipboard', undefined, {duration: 2000});

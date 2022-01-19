@@ -13,14 +13,11 @@ import {
   takeUntil,
   tap,
   withLatestFrom
-}                                from 'rxjs/operators';
-import {
-  RackModuleAdderComponent,
-  RackModuleAdderInModel
-}                                from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder.component';
-import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService } from '../../features/backend/supabase.service';
-import { DbModule }        from '../../models/module';
+}                                   from 'rxjs/operators';
+import { RackModuleAdderComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder.component';
+import { UserManagementService }    from '../../features/backbone/login/user-management.service';
+import { SupabaseService }          from '../../features/backend/supabase.service';
+import { DbModule }                 from '../../models/module';
 
 @Injectable()
 export class ModuleDetailDataService {
@@ -59,7 +56,6 @@ export class ModuleDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.singleModuleData$.next(x.data));
-  
   
     // hidden cause circular dependency
     // this.updateSingleModuleData$

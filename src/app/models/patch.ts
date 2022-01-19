@@ -1,7 +1,6 @@
 import { Timestamped } from './models';
 import { PublicUser }  from './user';
 
-
 export interface Patch extends PatchMinimal {
   // author: PublicUser;
   description?: string;
