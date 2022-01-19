@@ -3,15 +3,29 @@
 <!--           [clusters]="clusters$|async"-->
 <!--           fxFlex="grow"-->
 <!--&gt;</lib-graph>-->
+<div class="row gap0"
+     fxLayoutAlign="end center"
+     style="position: absolute;background-color: rgba(255,255,255,0.8)!important;z-index: 5;"
+>
+  
+  <div class="row gap0"
+       *ngFor="let item of legend"
+  >
+    <div class="circle"
+         [style]="{backgroundColor:item.color}"
+    ></div>
+    <div>{{item.label}}</div>
+  </div>
+</div>
 <div style="height: 50rem;
             width: 100%;"
 >
   <ng-container *ngIf="nodes$|async as nodes">
-    <ng-container *ngIf="links$|async as links">
+    <ng-container *ngIf="edges$|async as edges">
       
       <lib-graph [nodes]="nodes"
-                 [links]="links"
-                 *ngIf="nodes.length>0 && links.length>0"
+                 [edges]="edges"
+                 *ngIf="nodes.length>0 && edges.length>0"
       ></lib-graph>
     </ng-container>
   </ng-container>
