@@ -1,5 +1,6 @@
 import {
   Component,
+  OnDestroy,
   OnInit
 }                                 from '@angular/core';
 import { ActivatedRoute }         from '@angular/router';
@@ -17,7 +18,7 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
   styleUrls:   ['./patch-browser-detail-view.component.scss']
   // changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PatchBrowserDetailViewComponent implements OnInit {
+export class PatchBrowserDetailViewComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$ = new Subject<void>();
   

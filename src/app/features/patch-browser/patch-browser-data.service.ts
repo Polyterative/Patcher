@@ -17,9 +17,9 @@ import {
   switchMap,
   takeUntil,
   withLatestFrom
-}                    from 'rxjs/operators';
-import { Patch }     from '../../models/patch';
-import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                                from 'rxjs/operators';
+import { Patch }                 from '../../models/patch';
+import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
@@ -99,13 +99,13 @@ export class PatchBrowserDataService implements OnDestroy {
   
   paginatorToFistPage$ = new Subject<void>();
   protected destroyEvent$ = new Subject<void>();
+  dirty = false;
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
   ]);
-  dirty = false;
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
