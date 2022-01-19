@@ -10,10 +10,10 @@ import {
 import {
   BehaviorSubject,
   delay,
-  interval,
-  Subject
+  interval
 }                                  from 'rxjs';
 import {
+  filter,
   share,
   take
 }                                  from 'rxjs/operators';
@@ -25,6 +25,7 @@ import {
 import { ModuleDetailDataService } from '../../../components/module-parts/module-detail-data.service';
 import { PatchDetailDataService }  from '../../../components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService }   from '../../../components/rack-parts/rack-detail-data.service';
+import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 
 @Component({
   selector:    'app-home',
@@ -64,10 +65,8 @@ import { RackDetailDataService }   from '../../../components/rack-parts/rack-det
   ]
 })
 
-export class HomeComponent implements OnDestroy {
+export class HomeComponent extends SubManager implements OnDestroy {
   iconColor = '#041E50';
-  
-  destroyEvent$ = new Subject<void>();
   
   readonly linksData: CardLinkDataModel = {
     ...cleanCardlinkModelObject,
@@ -90,22 +89,27 @@ export class HomeComponent implements OnDestroy {
     public backend: SupabaseService,
     private router: Router
   ) {
-    this.backend.get.statistics()
-        .pipe(
-        )
-        .subscribe(value => {
-          this.statistics$.next(value);
-        });
-    
-    this.patchDetailDataService.updateSinglePatchData$.next(5);
-    this.rackDetailDataService.updateSingleRackData$.next(7);
-    this.moduleDetailDataService.updateSingleModuleData$.next(1025);
-    
-  }
+    super();
   
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
+    this.manageSub(
+      this.renderingClock$.pipe(filter(x => x > 1), take(1))
+          .subscribe(x => {
+            this.manageSub(
+              this.backend.get.statistics()
+                  .pipe(
+                  )
+                  .subscribe(value => {
+                    this.statistics$.next(value);
+                  })
+            );
+      
+            this.patchDetailDataService.updateSinglePatchData$.next(5);
+            this.rackDetailDataService.updateSingleRackData$.next(7);
+            this.moduleDetailDataService.updateSingleModuleData$.next(1025);
+          })
+    );
+  
+  
   }
   
 }
