@@ -22,15 +22,17 @@
       </div>
       <flexbox-row-fast
       >
-        <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data)">
-          <div>
-            <lib-hero-item-card>
-              <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
-                                  [data]="item"
-                                  [viewConfig]="viewConfig"
-              ></app-module-minimal>
-            </lib-hero-item-card>
-          </div>
+        <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index"
+        >
+          <lib-hero-item-card
+              [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
+              [@leave]="{ value: '', params: { delay:  5 }}"
+          >
+            <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
+                                [data]="item"
+                                [viewConfig]="viewConfig"
+            ></app-module-minimal>
+          </lib-hero-item-card>
           <ng-template #fullData>
             <app-module-composite [data]="item"
                                   [viewConfig]="viewConfig"
