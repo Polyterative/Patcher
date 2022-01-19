@@ -12,6 +12,7 @@ import {
   Subject
 }                                from 'rxjs';
 import {
+  debounceTime,
   distinctUntilChanged,
   startWith,
   switchMap,
@@ -94,7 +95,7 @@ export class RackBrowserDataService implements OnDestroy {
       ])
                   .pipe(
                     startWith([]))
-  
+    
     }
   };
   
@@ -142,7 +143,7 @@ export class RackBrowserDataService implements OnDestroy {
           switchMap(([_, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-    
+  
             // return this.backend.get.racks(skip, (skip + take) - 1, filter, sortColumnName);
             return this.backend.get.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),
@@ -151,11 +152,14 @@ export class RackBrowserDataService implements OnDestroy {
         .subscribe(x => {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.racksList$.next(x.data);
-      
+  
           this.dirty = true;
         });
-    
-    this.fields.search.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
+  
+    this.fields.search.control.valueChanges.pipe(
+      debounceTime(500),
+      takeUntil(this.destroyEvent$)
+    )
         .subscribe(x => {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);

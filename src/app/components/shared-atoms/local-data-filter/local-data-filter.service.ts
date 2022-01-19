@@ -22,7 +22,7 @@ export class LocalDataFilterService extends SubManager {
     super();
     
     this.manageSub(
-      this.search.control.valueChanges.pipe(debounceTime(100))
+      this.search.control.valueChanges.pipe(debounceTime(500))
           .subscribe(x => this.filterEvent$.next(x))
     );
     
