@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.10](https://github.com/Polyterative/Patcher/compare/v3.0.9...v3.0.10) (2022-01-19)
+
+
+### Features
+
+* cleaned footer ([0cfaa54](https://github.com/Polyterative/Patcher/commit/0cfaa5452c6f649a869627e2e1b8ad017b5842f6))
+
 ### [3.0.9](https://github.com/Polyterative/Patcher/compare/v3.0.8...v3.0.9) (2022-01-19)
 
 ### [3.0.8](https://github.com/Polyterative/Patcher/compare/v3.0.7...v3.0.8) (2022-01-18)
