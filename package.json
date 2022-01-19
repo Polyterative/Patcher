@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "3.0.15",
+  "version": "3.0.16",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -10,7 +10,8 @@
     "updateMinors": "npm update --save/--save-dev",
     "updateAll": "ncu -u",
     "ci": "",
-    "release:patch": "standard-version  --release-as patch && git push --follow-tags origin production",
+    "testRelease:patch": "standard-version  --release-as patch --dry-run && git push --follow-tags origin production",
+    "release:patch": "standard-version  --release-as patch ",
     "release:minor": "standard-version  --release-as minor && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major && git push --follow-tags origin production",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
@@ -20,7 +21,7 @@
   },
   "standard-version": {
     "scripts": {
-      "postchangelog": "copyfiles changelog.md assets/md/"
+      "postchangelog": "copyfiles changelog.md assets/md/ && git add assets/md/changelog.md"
     }
   },
   "private": true,
