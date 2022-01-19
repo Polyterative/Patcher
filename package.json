@@ -1,21 +1,27 @@
 {
   "name": "patcher",
-  "version": "3.0.10",
+  "version": "3.0.12",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
     "build": "angular-build-info && ng build --configuration production",
     "deploy": "angular-build-info && ng build --configuration production && firebase deploy",
+    "copyChangelog": "copyfiles changelog.md assets/md/",
     "updateMinors": "npm update --save/--save-dev",
     "updateAll": "ncu -u",
     "ci": "",
-    "release:patch": "standard-version --release-as patch && git push --follow-tags origin production",
-    "release:minor": "standard-version --release-as minor && git push --follow-tags origin production",
-    "release:major": "standard-version --release-as major && git push --follow-tags origin production",
+    "release:patch": "standard-version --release-as patch ",
+    "release:minor": "standard-version --release-as minor ",
+    "release:major": "standard-version --release-as major ",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
+  },
+  "standard-version": {
+    "scripts": {
+      "postchangelog": "copyfiles changelog.md assets/md/"
+    }
   },
   "private": true,
   "dependencies": {
@@ -68,6 +74,7 @@
     "angular-build-info": "^2.0.1",
     "angular-tslint-rules": "^1.20.4",
     "codelyzer": "^6.0.2",
+    "copyfiles": "^2.4.1",
     "jasmine-core": "^4.0.0",
     "jasmine-spec-reporter": "^7.0.0",
     "karma": "^6.3.11",
