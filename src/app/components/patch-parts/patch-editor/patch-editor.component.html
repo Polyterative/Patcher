@@ -31,17 +31,16 @@
                 after
                 you're done!
               </mat-card-subtitle>
-              <div></div>
-  
-  
-              <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
-                                        theme="positive"
-                                        fxLayoutAlign="end"
-                                        [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
-              >
-                <mat-icon>save</mat-icon>
-                Save patch
-              </app-brand-primary-button>
+              <div>
+                <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
+                                          theme="positive"
+                                          fxLayoutAlign="end"
+                                          [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
+                >
+                  <mat-icon>save</mat-icon>
+                  Save patch
+                </app-brand-primary-button>
+              </div>
 
 
             </div>
