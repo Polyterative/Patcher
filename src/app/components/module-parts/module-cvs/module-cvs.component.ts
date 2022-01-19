@@ -6,6 +6,10 @@ import {
   OnInit,
   Output
 }                                 from '@angular/core';
+import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+}                                 from 'angular-animations';
 import { Subject }                from 'rxjs';
 import {
   filter,
@@ -19,6 +23,16 @@ import { DbModule }               from '../../../models/module';
   selector:        'app-module-cvs',
   templateUrl:     './module-cvs.component.html',
   styleUrls:       ['./module-cvs.component.scss'],
+  animations:      [
+    fadeInOnEnterAnimation({
+      anchor:   'enter',
+      duration: 225
+    }),
+    fadeOutOnLeaveAnimation({
+      anchor:   'leave',
+      duration: 225
+    })
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleCVsComponent implements OnInit {
