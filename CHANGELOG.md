@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.1](https://github.com/Polyterative/Patcher/compare/v3.2.0...v3.2.1) (2022-01-19)
+
+
+### Features
+
+* animations in main lists ([f8cbf09](https://github.com/Polyterative/Patcher/commit/f8cbf094bae8774bacac42193968a6a56c949b68))
+* appear animations in module ([0540f96](https://github.com/Polyterative/Patcher/commit/0540f9626f0a3430726f1a004ce52bc3751e0973))
+* dependencies updated ([06225ce](https://github.com/Polyterative/Patcher/commit/06225ce6fa5a1dc00961f0cd5784ab61b599a6d5))
+* filters less aggressive on showing data ([164c207](https://github.com/Polyterative/Patcher/commit/164c20711404744c06933ef298fcef194056c099))
+* homepage animations ([794f532](https://github.com/Polyterative/Patcher/commit/794f532561cb44377e43a2ae2a39fed28f9cbc57))
+* homepage improvements ([90c8847](https://github.com/Polyterative/Patcher/commit/90c8847a14ee3f76e30f7bb44e479731fb35e6c9))
+
 ## [3.2.0](https://github.com/Polyterative/Patcher/compare/v3.1.4...v3.2.0) (2022-01-19)
 
 
