@@ -16,6 +16,7 @@ import {
 }                                 from 'rxjs/operators';
 import { SupabaseService }        from 'src/app/features/backend/supabase.service';
 import { PatchConnection }        from '../../../models/connection';
+import { CVwithModule }           from '../../../models/cv';
 import {
   DbModule,
   MinimalModule
@@ -39,7 +40,25 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   nodes$: BehaviorSubject<GraphNode[]> = new BehaviorSubject([]);
   // clusters$: BehaviorSubject<any[]> = new BehaviorSubject([]);
-  links$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
+  edges$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
+  
+  private sizeConstant = 3;
+  
+  legend = [
+    {
+      label: 'Module',
+      color: '#8974E4'
+    },
+    {
+      label: 'CV out',
+      color: '#E2523C'
+    },
+    {
+      label: 'CV in',
+      color: '#4483F2'
+    }
+  
+  ];
   
   constructor(
     public patchDetailDataService: PatchDetailDataService,
@@ -55,7 +74,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       this.patchDetailDataService.patchesConnections$
           .pipe(
             tap(x => this.nodes$.next([])),
-            tap(x => this.links$.next([])),
+            tap(x => this.edges$.next([])),
             filter(data => !!data),
             switchMap(x => forkJoin(
                 this.extractModules(x)
@@ -63,6 +82,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                                        .pipe(map(m => m.data)))
               )
             ),
+            // delay(50),
             withLatestFrom(this.patchDetailDataService.patchesConnections$)
           )
         // .pipe(
@@ -72,129 +92,149 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         // )
           .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
     
-              const modulesNodes: GraphNode[] = [];
-              const nodes: GraphNode[] = [];
-              const links: GraphEdge[] = [];
-              modules
-                .forEach(module => {
-  
-                  const moduleId: string = module.id.toString();
-  
-                  const moduleNode: GraphNode = {
-                    id:    moduleId,
-                    label: module.name,
-                    color: '#656565',
-                    size:  10,
-                    x:     1,
-                    y:     1,
-                    data:  {
-                      type: 'module',
-                      module
-                    }
-                  };
-  
-                  modulesNodes.push(moduleNode);
-  
-                  const outs: GraphNode[] = module.outs.map(jack => ({
-                    id:    moduleId + jack.id,
-                    color: '#27d580',
-                    size:  5,
-                    x:     1,
-                    y:     1,
-                    label: jack.name
-                  }));
-  
-                  const ins: GraphNode[] = module.ins.map(jack => ({
-                    id:    moduleId + jack.id,
-                    color: '#e72222',
-                    size:  5,
-                    x:     1,
-                    y:     1,
-                    label: jack.name
-                  }));
-  
-                  // uncomment to see all connections even for unused inputs/outputs
-                  // nodes.push(...outs, ...ins);
-  
-                  // push connections between module and outs and ins
-                  const insConnections: GraphEdge[] = ins.map(x => ({
-                    id:    x.id,
-                    from:  moduleId,
-                    to:    x.id,
-                    label: `in: ${ x.label }from module: ${ module.name }`
-                  }));
-                  const outsConnections: GraphEdge[] = outs.map(x => ({
-                    id:    x.id,
-                    from:  moduleId,
-                    to:    x.id,
-                    label: `outs: ${ x.label }from module: ${ module.name }`
+              // inverse proportion between sizeConstant and number of connections
+              this.sizeConstant = this.sizeConstant * (10 / connections.length);
     
-                  }));
+              const nodes: GraphNode[] = [];
+              const allModuleJackEdges: GraphEdge[] = [];
+    
+              modules.forEach(module => {
+      
+                const moduleId: string = module.id.toString();
+      
+                const moduleNode: GraphNode = {
+                  id:    moduleId,
+                  label: module.name,
+                  color: this.legend[0].color,
+                  // color: '#C2781B',
+                  size: this.sizeConstant * 7.5,
+                  x:    1,
+                  y:    1,
+                  data: {
+                    type: 'module',
+                    module
+                  }
+                };
+      
+                nodes.push(moduleNode);
+      
+                const outNodes: GraphNode[] = module.outs.map(jack => ({
+                  id:    moduleId + jack.id,
+                  color: this.legend[1].color,
+                  size:  this.sizeConstant * 5,
+                  x:     1,
+                  y:     1,
+                  label: `${ module.name } ${ jack.name }`
+                }));
+      
+                const inNodes: GraphNode[] = module.ins.map(jack => ({
+                  id:    moduleId + jack.id,
+                  color: this.legend[2].color,
+                  size:  this.sizeConstant * 5,
+                  x:     1,
+                  y:     1,
+                  label: `${ module.name } ${ jack.name }`
+                }));
+      
+                // uncomment to see nodes even for unused inputs/outputs
+                // nodes.push(...outNodes, ...inNodes);
+      
+                // push connections between module and outNodes and inNodes
+                const insEdges: GraphEdge[] = inNodes.map(x => ({
+                  id:    x.id,
+                  from:  x.id,
+                  to:    moduleId,
+                  label: `in: ${ x.label } to module: ${ module.name }`,
+                  size:  this.sizeConstant * 1,
+                  type:  'arrow'
+                }));
+                const outsEdges: GraphEdge[] = outNodes.map(x => ({
+                  id:    x.id,
+                  from:  moduleId,
+                  to:    x.id,
+                  label: `out: ${ x.label } from module: ${ module.name }`,
+                  size:  this.sizeConstant * 1,
+                  type:  'arrow'
   
-                  links.push(...insConnections);
-                  links.push(...outsConnections);
-  
-                });
+                }));
+      
+                allModuleJackEdges.push(...insEdges);
+                allModuleJackEdges.push(...outsEdges);
+      
+              });
     
               connections.forEach(connection => {
-                const nodeIdA: string = connection.a.module.id.toString() + connection.a.id;
-                if (!nodes.some(node => node.id === nodeIdA)) {
-                  nodes.push({
-                    id:    nodeIdA,
-                    label: connection.a.name,
-                    color: '#3a6740',
-                    size:  4,
-                    x:     1,
-                    y:     1
-                  });
+                const cvNodeIdA: string = connection.a.module.id.toString() + connection.a.id;
+                if (!nodes.some(node => node.id === cvNodeIdA)) {
+                  nodes.push(this.buildNode(cvNodeIdA, connection.a, '#E2523C'));
                 }
       
-                const nodeIdB: string = connection.b.module.id.toString() + connection.b.id;
-                if (!nodes.some(node => node.id === nodeIdB)) {
-                  nodes.push({
-                    id:    nodeIdB,
-                    label: connection.b.name,
-                    color: '#854040',
-                    size:  4,
-                    x:     1,
-                    y:     1
-                  });
+                const cvNodeIdB: string = connection.b.module.id.toString() + connection.b.id;
+                if (!nodes.some(node => node.id === cvNodeIdB)) {
+                  nodes.push(this.buildNode(cvNodeIdB, connection.b, '#4483F2'));
                 }
       
               });
     
               const finalNodes: GraphNode[] = [
-                ...modulesNodes,
                 ...nodes
               ];
-              // this.clusters$.next(modulesNodes);
     
-              // this.links$.next(connections.map(patch => ({
+              // this.allModuleJackEdges$.next(connections.map(patch => ({
               //   source: patch.a.module.id + patch.a.id.toString(),
               //   target: patch.b.module.id + patch.b.id.toString()
               // })));
     
-              const connectionLinks: GraphEdge[] = connections.map(patch => ({
+              const patchEdges: GraphEdge[] = connections.map(patch => ({
                 id:    patch.a.module.id + patch.a.id.toString() + patch.b.module.id + patch.b.id.toString(),
                 from:  patch.a.module.id + patch.a.id.toString(),
                 to:    patch.b.module.id + patch.b.id.toString(),
-                color: 'rgb(114,114,114)',
-                size:  2,
+                type:  'arrow',
+                color: '#c0c0c0',
+                size:  this.sizeConstant * 2,
                 x:     1,
                 y:     1,
                 label: `from: ${ patch.a.name } to ${ patch.b.name }`
               }));
     
-              links.push(...connectionLinks);
-    
               this.nodes$.next(finalNodes);
-              this.links$.next(links);
+    
+              const onlyUsedModuleJacksEdges: GraphEdge[] = allModuleJackEdges.filter(
+                link => patchEdges.some(
+                  connectionLink => connectionLink.from === link.from
+                                    || connectionLink.to === link.to
+                                    || connectionLink.from === link.to
+                                    || connectionLink.to === link.from
+                )
+              );
+    
+              // console.log(allModuleJackEdges.map(patch => patch.label));
+              // console.log(patchEdges.map(patch => patch.label));
+              // console.log(onlyUsedModuleJacksEdges.map(patch => patch.label));
+    
+              this.edges$.next([
+                // ...allModuleJackEdges,
+                ...onlyUsedModuleJacksEdges,
+                ...patchEdges
+              ]);
     
               this.graphViewService.center$.next(true);
     
             }
           ));
-    
+  
+  }
+  
+  private buildNode(nodeId: string, CV: CVwithModule, color: string): GraphNode {
+    return {
+      id: nodeId,
+      // label: `${ CV.name }  (${ CV.module.name })`,
+      label: `${ CV.name }`,
+      color,
+      size:  this.sizeConstant * 4,
+      x:     1,
+      y:     1
+    };
   }
   
   private extractModules = (patchConnections: PatchConnection[]): MinimalModule[] => {
