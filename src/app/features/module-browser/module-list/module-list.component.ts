@@ -34,7 +34,7 @@ import { ModuleList }              from '../module-browser-data.service';
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
-      duration: 225
+      duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

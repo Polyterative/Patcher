@@ -21,7 +21,7 @@
       >
         <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index">
           <lib-hero-item-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
-                              [@leave]="{ value: '', params: { delay:  50 }}"
+                              [@leave]="{ value: '', params: { delay:  0 }}"
           >
             <app-rack-minimal [data]="item"></app-rack-minimal>
           </lib-hero-item-card>
