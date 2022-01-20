@@ -1,3 +1,16 @@
+@import "~src/app/style/brand-resources.scss";
+
+
+$transpAm: .95;
 mat-card-subtitle {
-  padding-bottom: .5rem;
+  padding-top: .5rem;
+}
+
+.ins {
+  background-color: transparentize($color-cv-in, $transpAm);
+  //border-radius: .5rem;
+}
+
+.outs {
+  background-color: transparentize($color-cv-out, $transpAm);
 }
