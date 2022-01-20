@@ -1,30 +1,9 @@
 <div class="col gap0"
 >
   <div class="col gap0"
-       *ngIf="ins.length>0"
-  >
-    <!--    <mat-card-subtitle style="border-right: .5rem solid rgba(193,98,98,0.2)">-->
-    <mat-card-subtitle>
-      <!--      <app-module-cv-icon type="in"></app-module-cv-icon>-->
-      {{ins.length}} INs ↘
-    </mat-card-subtitle>
-    <mat-chip-list>
-      <ng-container *ngFor="let item of ins; let i = index">
-        <app-module-cvitem [data]="item"
-                           kind="in"
-                           (click$)="inClick$.next([$event,data])"
-                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                           [@leave]="{ value: '', params: { delay:  5 }}"
-        ></app-module-cvitem>
-      </ng-container>
-    </mat-chip-list>
-  </div>
-  <div class="col gap0"
        *ngIf="outs.length>0"
   >
-    <!--    <mat-card-subtitle style="border-right: .5rem solid  rgba(98,193,144,0.2)">-->
     <mat-card-subtitle>
-      <!--      <app-module-cv-icon type="out"></app-module-cv-icon>-->
       {{outs.length}} OUTs ↗
     </mat-card-subtitle>
     <mat-chip-list>
@@ -32,6 +11,23 @@
         <app-module-cvitem [data]="item"
                            kind="out"
                            (click$)="outClick$.next([$event,data])"
+                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                           [@leave]="{ value: '', params: { delay:  5 }}"
+        ></app-module-cvitem>
+      </ng-container>
+    </mat-chip-list>
+  </div>
+  <div class="col gap0"
+       *ngIf="ins.length>0"
+  >
+    <mat-card-subtitle>
+      {{ins.length}} INs ↘
+    </mat-card-subtitle>
+    <mat-chip-list>
+      <ng-container *ngFor="let item of ins; let i = index">
+        <app-module-cvitem [data]="item"
+                           kind="in"
+                           (click$)="inClick$.next([$event,data])"
                            [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
                            [@leave]="{ value: '', params: { delay:  5 }}"
         ></app-module-cvitem>
