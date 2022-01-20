@@ -33,7 +33,7 @@ import { PatchList }              from '../patch-browser-data.service';
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
-      duration: 225
+      duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

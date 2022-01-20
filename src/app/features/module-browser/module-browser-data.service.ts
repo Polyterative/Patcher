@@ -45,7 +45,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
-    take$:   new BehaviorSubject<number>(25),
+    take$:   new BehaviorSubject<number>(10),
     filter$: new BehaviorSubject<string>(''),
     sort$:   new BehaviorSubject<[string, string]>([
       '',
