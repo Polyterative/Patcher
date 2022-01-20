@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.2](https://github.com/Polyterative/Patcher/compare/v3.2.1...v3.2.2) (2022-01-20)
+
+
+### Features
+
+* login/signup improvements ([7c7e989](https://github.com/Polyterative/Patcher/commit/7c7e98971bd65008e7f524e0e84985395c9db808))
+
 ### [3.2.1](https://github.com/Polyterative/Patcher/compare/v3.2.0...v3.2.1) (2022-01-19)
 
 
