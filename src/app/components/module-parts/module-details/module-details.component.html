@@ -4,8 +4,7 @@
   <app-module-cvs [data]="data"></app-module-cvs>
   <ng-container *ngIf="switches.length>0">
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
-    <div fxFlex="100"
-         fxLayout="row wrap"
+    <div fxLayout="row wrap"
          fxLayoutGap="1rem"
     >
       <!--      <mat-chip-list>-->
@@ -16,14 +15,13 @@
     </div>
   </ng-container>
   
-  <div class="row spaceBetween opacizeOnHover"
-       fxLayoutGap="1rem"
-       *ngIf="!data.isComplete&&!viewConfig.hideLabels"
+  <p fxLayoutAlign="end"
+     class="opacizeOnHover"
+     style="font-size: 1rem"
+     *ngIf="!data.isComplete&&!viewConfig.hideLabels"
   >
-    <mat-card-subtitle fxFlex="100"
-                       fxLayoutAlign="end"
-    >
-      Module data is incomplete. You can help!
-    </mat-card-subtitle>
-  </div>
+    Do you know about this module?
+    Please help the community by adding the module's ins and outs.
+    Contributors' patches DO sound better!
+  </p>
 </div>
