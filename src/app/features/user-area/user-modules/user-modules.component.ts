@@ -1,14 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 }                                  from '@angular/core';
-import { BehaviorSubject }         from 'rxjs';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { MinimalModule }           from '../../../models/module';
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
+import { UserAreaDataService }     from '../user-area-data.service';
 
 @Component({
   selector:        'app-user-modules',
@@ -16,24 +14,17 @@ import { SubManager }              from '../../../shared-interproject/directives
   styleUrls:       ['./user-modules.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserModulesComponent extends SubManager implements OnInit {
-  data$: BehaviorSubject<MinimalModule[]> = new BehaviorSubject([]);
+export class UserModulesComponent extends SubManager {
   @Input() viewConfig: ModuleMinimalViewConfig;
   
   constructor(
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    public dataService: UserAreaDataService
   ) {
     super();
+    this.dataService.updateModulesData$.next();
     
-    this.manageSub(
-      this.backend.get.userModules()
-          .pipe()
-          .subscribe(x => this.data$.next(x))
-    );
   }
   
-  ngOnInit(): void {
-  
-  }
   
 }

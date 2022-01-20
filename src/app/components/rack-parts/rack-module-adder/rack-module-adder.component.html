@@ -2,10 +2,8 @@
 >
   
   <h1 mat-dialog-title>Add module to rack</h1>
-  <mat-card-subtitle>Choose rack</mat-card-subtitle>
   <div>
     <mat-dialog-content>
-      
       <!--      <app-rack-visual-model></app-rack-visual-model>-->
       <div fxFlex="100"
            fxLayout="column wrap"
@@ -20,6 +18,7 @@
                              [disableVoidSelection]="true"
                              [options$]="fields.rack.options$"
                              [disableClearButton]="false"
+                             [disabled]="(userAreaDataService.rackData$|async)===undefined"
         >
         </lib-mat-form-entity>
       
@@ -38,7 +37,7 @@
     <app-brand-primary-button
         [error]="fields.rack.control.invalid"
         theme="positive"
-        (click$)="save$.next()"
+        (click$)="saveRackedModule$.next()"
     >
       <mat-icon>save</mat-icon>
       Save data

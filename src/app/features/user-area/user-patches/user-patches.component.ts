@@ -1,24 +1,10 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
-}                          from '@angular/core';
-import { MatDialog }       from '@angular/material/dialog';
-import {
-  BehaviorSubject,
-  Subject
-}                          from 'rxjs';
-import {
-  switchMap,
-  takeUntil,
-  tap
-}                          from 'rxjs/operators';
-import {
-  PatchCreatorComponent,
-  PatchCreatorInModel
-}                          from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { Patch }           from '../../../models/patch';
+  Component
+}                              from '@angular/core';
+import { MatDialog }           from '@angular/material/dialog';
+import { SupabaseService }     from 'src/app/features/backend/supabase.service';
+import { UserAreaDataService } from '../user-area-data.service';
 
 @Component({
   selector:        'app-user-patches',
@@ -26,60 +12,14 @@ import { Patch }           from '../../../models/patch';
   styleUrls:       ['./user-patches.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserPatchesComponent implements OnInit {
-  data$: BehaviorSubject<Patch[] | null> = new BehaviorSubject([]);
-  public readonly add$ = new Subject<void>();
-  public readonly updateData$ = new Subject<void>();
+export class UserPatchesComponent {
   
   constructor(
     public dialog: MatDialog,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    public dataService: UserAreaDataService
   ) {
-    this.updateData$
-        .pipe(
-          tap(x => this.data$.next([])),
-          switchMap(x => this.backend.get.userPatches()),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => this.data$.next(x));
-    
-    
-    this.add$
-        .pipe(
-          switchMap(x => {
-            let data: PatchCreatorInModel = {
-              // description: 'Stai per eliminare questo elemento, procedere?',
-              // positive:    {label: '✔️ Conferma'},
-              // negative:    {label: '❌ Annulla'}
-            };
-        
-            return this.dialog.open(
-              PatchCreatorComponent,
-              {
-                data
-                // disableClose: true
-              }
-            )
-                       .afterClosed();
-            // .pipe(filter((x: CalendarCreateDialogDataOutModel) => x.editedStuff)
-            // );
-          }),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => this.updateData$.next());
+    this.dataService.updatePatchesData$.next();
   
-  }
-  
-  ngOnInit(): void {
-    this.updateData$.next();
-  
-  }
-  
-  protected destroyEvent$ = new Subject<void>();
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
   }
 }
