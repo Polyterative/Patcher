@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.3](https://github.com/Polyterative/Patcher/compare/v3.2.2...v3.2.3) (2022-01-20)
+
+
+### Features
+
+* animations improvements ([743035a](https://github.com/Polyterative/Patcher/commit/743035a24330a20d46e4fd464db3019bcccce6b9))
+* module outs are now first in the list ([fb0bac5](https://github.com/Polyterative/Patcher/commit/fb0bac57535d937ceb0479369c5dd1cb48974e82))
+* module page callouts for contributions ([2566bf9](https://github.com/Polyterative/Patcher/commit/2566bf9a669974149e8735dac3103bbf7935aa05))
+* module page callouts for contributions ([a5d4c93](https://github.com/Polyterative/Patcher/commit/a5d4c9378047753239485fde7bfaac156bb3841a))
+* module UI improvements ([7788fa3](https://github.com/Polyterative/Patcher/commit/7788fa3b230c56f5d10c0827e0aefae0e356ba08))
+* user area improvements ([789232d](https://github.com/Polyterative/Patcher/commit/789232d677b42795e253e0d50111d797b4139ad6))
+
 ### [3.2.2](https://github.com/Polyterative/Patcher/compare/v3.2.1...v3.2.2) (2022-01-20)
 
 
