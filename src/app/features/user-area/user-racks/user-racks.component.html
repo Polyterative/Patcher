@@ -8,22 +8,27 @@
   >
     <div class="col gap1"
     >
-      <app-brand-primary-button (click$)="add$.next()"
+      <app-brand-primary-button (click$)="dataService.addRack$.next()"
                                 fxLayoutAlign="end"
       >Create rack
       </app-brand-primary-button>
       <mat-divider inset="true"></mat-divider>
-      <app-rack-list fxFlex="grow"
-                     [data$]="dataService.data$"
-                     [showSearch]="true"
-                     *ngIf="(dataService.data$|async).length>0 else noData"
-      ></app-rack-list>
-
+      <ng-container *ngIf="(dataService.rackData$|async) as data">
+        <app-rack-list fxFlex="grow"
+                       [data$]="dataService.rackData$"
+                       [showSearch]="true"
+                       *ngIf="data.length>0 else voidData"
+        ></app-rack-list>
+      </ng-container>
+  
+      <lib-auto-update-loading-indicator [data$]="dataService.rackData$"
+                                         [updateData$]="dataService.updateRackData$"
+      ></lib-auto-update-loading-indicator>
     </div>
   </lib-hero-content-card>
 </div>
 
-<ng-template #noData>
+<ng-template #voidData>
   <div fxFlex="100">
     <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any racks
                                                      yet.

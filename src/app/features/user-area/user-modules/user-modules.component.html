@@ -13,21 +13,27 @@
       >Add modules to collection
       </app-brand-primary-button>
       <mat-divider inset="true"></mat-divider>
-      <app-module-list fxFlex="grow"
-                       [data$]="data$"
-                       [viewConfig]="viewConfig"
-                       [showSearch]="true"
-                       *ngIf="(data$|async).length>0 else noData"
-      ></app-module-list>
-  
+      <ng-container *ngIf="(dataService.modulesData$|async) as data">
+        <app-module-list fxFlex="grow"
+                         [data$]="dataService.modulesData$"
+                         [viewConfig]="viewConfig"
+                         [showSearch]="true"
+                         *ngIf="data.length>0 else voidData"
+        ></app-module-list>
+      </ng-container>
+      <lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
+                                         [updateData$]="dataService.updateModulesData$"
+      ></lib-auto-update-loading-indicator>
+
     </div>
   </lib-hero-content-card>
 </div>
 
-<ng-template #noData>
+<ng-template #voidData>
   <div fxFlex="100">
     <mat-card-subtitle fxLayoutAlign="center center">So far, you haven't added any modules to your
                                                      collection. Try adding a few!
     </mat-card-subtitle>
   </div>
 </ng-template>
+
