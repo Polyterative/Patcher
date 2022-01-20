@@ -9,23 +9,27 @@
     <div class="col gap1"
     >
       <app-brand-primary-button
-          (click$)="add$.next()"
+          (click$)="dataService.addPatch$.next()"
           fxLayoutAlign="end"
       >Create patch
       </app-brand-primary-button>
       <mat-divider inset="true"></mat-divider>
-      <app-patch-list fxFlex="grow"
-                      [data$]="data$"
-                      [showSearch]="true"
-                      *ngIf="(data$|async).length>0 else noData"
-      ></app-patch-list>
-
+      <ng-container *ngIf="(dataService.patchesData$|async) as data">
+        <app-patch-list fxFlex="grow"
+                        [data$]="dataService.patchesData$"
+                        [showSearch]="true"
+                        *ngIf="data.length>0 else voidData"
+        ></app-patch-list>
+      </ng-container>
+      <lib-auto-update-loading-indicator [data$]="dataService.patchesData$"
+                                         [updateData$]="dataService.updatePatchesData$"
+      ></lib-auto-update-loading-indicator>
 
     </div>
   </lib-hero-content-card>
 </div>
 
-<ng-template #noData>
+<ng-template #voidData>
   <div fxFlex="100">
     <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any patches
                                                      yet. Try adding some!
