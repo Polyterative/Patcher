@@ -30,7 +30,7 @@ import { DbModule }               from '../../../models/module';
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
-      duration: 225
+      duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush

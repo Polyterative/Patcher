@@ -30,7 +30,7 @@
         <!--      </div>-->
       </div>
       <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<25"
-                     [pageSizeOptions]="[25,50]"
+                     [pageSizeOptions]="[10,25,50]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons

@@ -33,7 +33,7 @@ import { RackList }               from '../rack-browser-data.service';
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
-      duration: 225
+      duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
