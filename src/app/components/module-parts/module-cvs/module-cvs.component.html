@@ -12,7 +12,7 @@
                            kind="out"
                            (click$)="outClick$.next([$event,data])"
                            [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                           [@leave]="{ value: '', params: { delay:  5 }}"
+                           [@leave]="{ value: '', params: { delay:  0 }}"
         ></app-module-cvitem>
       </ng-container>
     </mat-chip-list>
