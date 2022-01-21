@@ -28,8 +28,9 @@ import { PatchList }              from '../patch-browser-data.service';
   styleUrls:       ['./patch-list.component.scss'],
   animations:      [
     fadeInOnEnterAnimation({
-      anchor:   'enter',
-      duration: 225
+      anchor:          'enter',
+      duration:        225,
+      animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
