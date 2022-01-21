@@ -3,14 +3,16 @@
 >
   
   <ng-container *ngIf="titleBig&&titleNormal else titles">
-    <div class="col gap1 title bgImage">
+    <div class="col gap1 title bgImage"
+    >
       <h2 [ngStyle]="titleStyle"
           style="margin-bottom: 0"
+          [@title]
       >
         {{titleBig}}
       </h2>
-      
-      <h3>{{titleNormal}}</h3>
+  
+      <h3 [@title]>{{titleNormal}}</h3>
     </div>
   </ng-container>
   
@@ -19,6 +21,7 @@
   >
     <mat-card-subtitle *ngIf="description"
                        class="description pad"
+                       [@description]
     >{{description}}</mat-card-subtitle>
   </div>
   
@@ -50,7 +53,9 @@
       class="title bgImage padHeight"
       [ngStyle]="titleStyle"
   >
-    <div fxFlex="grow">{{titleBig}}</div>
+    <div fxFlex="grow"
+         [@title]
+    >{{titleBig}}</div>
     <app-hero-content-card-head-icon
         fxLayoutAlign="center center"
         [icon]="icon"
@@ -62,6 +67,7 @@
       fxLayout="row"
       *ngIf="titleNormal"
       class="title"
+      [@title]
   >
     <div fxFlex="grow">{{titleNormal}}</div>
     <app-hero-content-card-head-icon [icon]="icon"

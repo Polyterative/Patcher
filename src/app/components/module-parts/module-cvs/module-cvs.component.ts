@@ -25,8 +25,9 @@ import { DbModule }               from '../../../models/module';
   styleUrls:       ['./module-cvs.component.scss'],
   animations:      [
     fadeInOnEnterAnimation({
-      anchor:   'enter',
-      duration: 225
+      anchor:          'enter',
+      duration:        225,
+      animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',

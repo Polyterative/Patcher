@@ -29,8 +29,9 @@ import { ModuleList }              from '../module-browser-data.service';
   styleUrls:       ['./module-list.component.scss'],
   animations:      [
     fadeInOnEnterAnimation({
-      anchor:   'enter',
-      duration: 225
+      anchor:          'enter',
+      duration:        225,
+      animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',

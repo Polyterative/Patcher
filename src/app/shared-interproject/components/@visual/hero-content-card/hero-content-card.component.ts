@@ -1,14 +1,9 @@
 import {
-  animate,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
-import {
   ChangeDetectionStrategy,
   Component,
   Input
-} from '@angular/core';
+}                                 from '@angular/core';
+import { fadeInOnEnterAnimation } from 'angular-animations';
 
 /**
  *  UI ONLY COMPONENT
@@ -19,24 +14,20 @@ import {
   styleUrls:       ['./hero-content-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations:      [
-    trigger('fadeInOut', [
-      transition(':enter', [   // :enter is alias to 'void => *'
-        style({
-          opacity: 0
-          // height:  0.01
-        }),
-        animate('225ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
-        style(
-          {opacity: 1}
-        )
-      ]),
-      transition(':leave', [   // :leave is alias to '* => void'
-        animate('75ms cubic-bezier(0.4, 0.0, 1, 1)'),
-        style(
-          {opacity: 0}
-        )
-      ])
-    ])
+    fadeInOnEnterAnimation(
+      {
+        anchor:   'title',
+        duration: 500,
+        delay:    100
+      }
+    ),
+    fadeInOnEnterAnimation(
+      {
+        anchor:   'description',
+        duration: 1000,
+        delay:    500
+      }
+    )
   ]
 })
 export class HeroContentCardComponent {
