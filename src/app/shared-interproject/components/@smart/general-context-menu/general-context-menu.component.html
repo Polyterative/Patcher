@@ -9,12 +9,17 @@
     <ng-template matMenuContent
     >
       <ng-container *ngFor="let menuItem of dataService.menuItems$|async;">
-        
+        <!--        mat icon of menu item -->
+  
+  
         <button mat-menu-item
                 (click)="menuItem.click$.next(menuItem)"
                 [disabled]="menuItem.disabled"
-        
-        >{{menuItem.label}}
+  
+        >
+          <mat-icon>{{menuItem.icon}}</mat-icon>
+          <span>{{menuItem.label}}</span>
+  
         </button>
       </ng-container>
     </ng-template>

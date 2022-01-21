@@ -77,10 +77,10 @@ export class RackEditorComponent extends SubManager implements OnInit {
                         rackedModule
                       }, and, b
                     ]) => {
-        
+  
           const duplicate$ = new Subject<ContextMenuItem>();
           const delete$ = new Subject<ContextMenuItem>();
-        
+  
           this.contextMenu.menuItems$.next([
             {
               id:       'name',
@@ -90,25 +90,49 @@ export class RackEditorComponent extends SubManager implements OnInit {
               click$:   new Subject<ContextMenuItem>()
             },
             {
-              id:       'edit',
+              id:       'duplicate',
+              label:    'Duplicate',
+              icon:     'content_copy',
+              data:     rackedModule,
+              disabled: false,
+              click$:   duplicate$
+            },
+            {
+              id:       'void-spacer',
+              label:    '-',
+              icon:     '',
+              data:     undefined,
+              disabled: true,
+              click$:   new Subject<ContextMenuItem>()
+            },
+            {
+              id:       'void-spacer',
+              label:    '-',
+              icon:     '',
+              data:     undefined,
+              disabled: true,
+              click$:   new Subject<ContextMenuItem>()
+            },
+            {
+              id:       'void-spacer',
+              label:    '-',
+              icon:     '',
+              data:     undefined,
+              disabled: true,
+              click$:   new Subject<ContextMenuItem>()
+            },
+            {
+              id:       'delete',
               label:    'Delete from rack',
               icon:     'delete',
               data:     rackedModule,
               disabled: false,
               click$:   delete$
-            },
-            {
-              id:       'duplicate',
-              label:    'Duplicate',
-              icon:     'edit',
-              data:     rackedModule,
-              disabled: false,
-              click$:   duplicate$
             }
           ]);
-        
+  
           this.contextMenu.open$.next($event);
-        
+  
           this.manageSub(
             duplicate$
               .pipe(
@@ -116,7 +140,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
               )
               .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule))
           );
-        
+  
           this.manageSub(
             delete$
               .pipe(
