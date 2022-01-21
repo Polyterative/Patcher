@@ -14,7 +14,6 @@ export interface ContextMenuItem {
   click$: Subject<ContextMenuItem>;
 }
 
-
 @Injectable()
 export class GeneralContextMenuDataService extends SubManager {
   
@@ -22,19 +21,12 @@ export class GeneralContextMenuDataService extends SubManager {
   
   positionData$ = new BehaviorSubject<{
     x: string,
-    y: string,
+    y: string
   }>({
     x: '0px',
     y: '0px'
   });
   
   open$ = new Subject<MouseEvent>();
-  
-  
-  constructor() {
-    super();
-    
-    
-  }
   
 }
