@@ -7,16 +7,7 @@ import {
   fadeInOnEnterAnimation,
   slideInDownOnEnterAnimation
 }                                  from 'angular-animations';
-import {
-  BehaviorSubject,
-  delay,
-  interval
-}                                  from 'rxjs';
-import {
-  filter,
-  share,
-  take
-}                                  from 'rxjs/operators';
+import { BehaviorSubject }         from 'rxjs';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import {
   CardLinkDataModel,
@@ -79,9 +70,6 @@ export class HomeComponent extends SubManager implements OnDestroy {
     '...'
   ]);
   
-  renderingClock$ = interval(1500)
-    .pipe(delay(0), take(6), share());
-  
   constructor(
     public patchDetailDataService: PatchDetailDataService,
     public rackDetailDataService: RackDetailDataService,
@@ -90,25 +78,16 @@ export class HomeComponent extends SubManager implements OnDestroy {
     private router: Router
   ) {
     super();
+    this.patchDetailDataService.updateSinglePatchData$.next(5);
+    this.rackDetailDataService.updateSingleRackData$.next(7);
+    this.moduleDetailDataService.updateSingleModuleData$.next(1025);
   
-    this.manageSub(
-      this.renderingClock$.pipe(filter(x => x > 1), take(1))
-          .subscribe(x => {
-            this.manageSub(
-              this.backend.get.statistics()
-                  .pipe(
-                  )
-                  .subscribe(value => {
-                    this.statistics$.next(value);
-                  })
-            );
-      
-            this.patchDetailDataService.updateSinglePatchData$.next(5);
-            this.rackDetailDataService.updateSingleRackData$.next(7);
-            this.moduleDetailDataService.updateSingleModuleData$.next(1025);
-          })
-    );
-  
+    this.backend.get.statistics()
+        .pipe(
+        )
+        .subscribe(value => {
+          this.statistics$.next(value);
+        });
   
   }
   

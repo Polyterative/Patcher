@@ -35,23 +35,21 @@
              [@rowC]
           >Manage racks super fast, all in one place ↩</p>
         </div>
-  
+
       </div>
       <mat-divider inset="true"></mat-divider>
 
     </div>
-    <ng-container *ngIf="(renderingClock$|async) as renderCount">
+    <ng-container>
     
       <div class="col gap2"
            style="border-left: 1px solid #ccc; border-right: 1px solid #ccc;"
-           *ngIf="renderCount>0"
       >
         <div class="col gap1"
         >
           <lib-hero-header class="gradientCard"
                            [title]="'Share patches ('+(statistics$|async)[2]+')'"
                            description="I hate writing stuff out by hand! Now I literally only click the mouse"
-                           *ngIf="renderCount>1"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -61,13 +59,11 @@
             </lib-screen-wrapper>
           </lib-hero-header>
           <mat-divider inset="true"
-                       *ngIf="renderCount>1"
           ></mat-divider>
         
           <lib-hero-header class="gradientCard"
                            [title]="'Find modules ('+(statistics$|async)[0]+')'"
                            description="Eurocrack addict? Here you can find all the stuff you need."
-                           *ngIf="renderCount>2"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -82,7 +78,6 @@
           <lib-hero-header class="gradientCard"
                            [title]="'Manage racks ('+(statistics$|async)[1]+')'"
                            description="Plan the next expansion, so you know how much pasta to buy until the next paycheck"
-                           *ngIf="renderCount>3"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -96,7 +91,6 @@
           <lib-hero-header class="gradientCard"
                            title="Wanna try?"
                            description="We have Maths. HAHA get more VCAs! I mean what else do you want. "
-                           *ngIf="renderCount>4"
           >
             <lib-screen-wrapper>
               <div fxFlex="100"
@@ -117,9 +111,6 @@
             </lib-screen-wrapper>
           </lib-hero-header>
         </div>
-        <mat-divider inset="true"
-                     *ngIf="renderCount>4"
-        ></mat-divider>
       </div>
     </ng-container>
 
