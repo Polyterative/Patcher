@@ -31,6 +31,7 @@ import { ScreenWrapperModule }                    from '../../shared-interprojec
 import { MapToModulePipe }                        from './map-to-module.pipe';
 import { RackCreatorComponent }                   from './rack-creator/rack-creator.component';
 import { RackDetailsRemainingIndicatorComponent } from './rack-details/rack-details-remaining-indicator/rack-details-remaining-indicator.component';
+import { HasUnrackedModulesPipe }                 from './rack-editor/rack-visual-model/has-unracked-modules.pipe';
 import { RackVisualModelComponent }               from './rack-editor/rack-visual-model/rack-visual-model.component';
 import { RackedToModulesPipe }                    from './racked-to-modules.pipe';
 import { TotalHpOfModulesPipe }                   from './total-hp-of-modules.pipe';
@@ -51,7 +52,8 @@ import { TotalModulesOfRackPipe }                 from './total-modules-of-rack.
     TotalModulesOfRackPipe,
     MapToModulePipe,
     RackedToModulesPipe,
-    RackVisualModelComponent
+    RackVisualModelComponent,
+    HasUnrackedModulesPipe
   ],
   exports:      [
     RackMinimalComponent,
