@@ -4,7 +4,7 @@
 //font-family: 'Roboto', sans-serif;
 //font-family: 'Roboto Condensed', sans-serif;
 //font-family: 'Roboto Slab', serif;
-
+@import "tools";
 
 //$brand-primary:             darken(rgba(64,97,194, 0.98), 10);
 $brand-primary:             darken(rgba(61, 115, 188, 0.98), 10);
@@ -264,6 +264,10 @@ h3 {
   @media (max-width: 480px) {
     font-size: 1.2rem;
   }
+}
+
+html {
+  @include scrollbars
 }
 
 
