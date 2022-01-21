@@ -39,19 +39,6 @@ export class RackEditorComponent extends SubManager implements OnInit {
   
   moduleRightClick$ = new Subject<ModuleRightClick>();
   
-  constructor(
-    public snackBar: MatSnackBar,
-    public backend: SupabaseService,
-    public dataService: RackDetailDataService,
-    public contextMenu: GeneralContextMenuDataService
-    // userManagerService: UserManagementService
-  ) {
-    super();
-    
-    
-  }
-  
-  
   viewConfig: ModuleMinimalViewConfig = {
     hideLabels:       true,
     hideManufacturer: false,
@@ -61,14 +48,24 @@ export class RackEditorComponent extends SubManager implements OnInit {
     hideDates:        true
   };
   
-  ngOnInit(): void {
+  constructor(
+    public snackBar: MatSnackBar,
+    public backend: SupabaseService,
+    public dataService: RackDetailDataService,
+    public contextMenu: GeneralContextMenuDataService
+    // userManagerService: UserManagementService
+  ) {
+    super();
+    
+  }
   
-    let rightClick$ = this.moduleRightClick$.pipe(withLatestFrom(
+  ngOnInit(): void {
+    
+    const rightClick$ = this.moduleRightClick$.pipe(withLatestFrom(
       this.dataService.isCurrentRackPropertyOfCurrentUser$,
       this.dataService.isCurrentRackEditable$
     ));
-  
-  
+    
     this.manageSub(
       rightClick$
         .pipe(
@@ -129,11 +126,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
           );
         })
     );
-    ;
+    
   }
   
-  onContextMenu($event: MouseEvent, rackedModule: RackedModule): void {
-  
-  
-  }
 }
