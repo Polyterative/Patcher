@@ -28,8 +28,9 @@ import { RackList }               from '../rack-browser-data.service';
   styleUrls:       ['./rack-list.component.scss'],
   animations:      [
     fadeInOnEnterAnimation({
-      anchor:   'enter',
-      duration: 225
+      anchor:          'enter',
+      duration:        225,
+      animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
