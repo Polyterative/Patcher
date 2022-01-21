@@ -1,20 +1,20 @@
-import { moveItemInArray }       from '@angular/cdk/drag-drop';
-import { CdkDragDrop }           from '@angular/cdk/drag-drop/drag-events';
+import { moveItemInArray }         from '@angular/cdk/drag-drop';
+import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
 import {
   ElementRef,
   Injectable
-}                                from '@angular/core';
-import { MatDialog }             from '@angular/material/dialog';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import { Router }                from '@angular/router';
-import _                         from 'lodash';
+}                                  from '@angular/core';
+import { MatDialog }               from '@angular/material/dialog';
+import { MatSnackBar }             from '@angular/material/snack-bar';
+import { Router }                  from '@angular/router';
+import _                           from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
   of,
   ReplaySubject,
   Subject
-}                                from 'rxjs';
+}                                  from 'rxjs';
 import {
   filter,
   map,
@@ -22,9 +22,9 @@ import {
   takeUntil,
   tap,
   withLatestFrom
-}                                from 'rxjs/operators';
-import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService }       from '../../features/backend/supabase.service';
+}                                  from 'rxjs/operators';
+import { UserManagementService }   from '../../features/backbone/login/user-management.service';
+import { SupabaseService }         from '../../features/backend/supabase.service';
 import { RackedModule }            from '../../models/module';
 import {
   Rack,
@@ -204,7 +204,7 @@ export class RackDetailDataService extends SubManager {
           )
           .subscribe(([rackedModule, rackModules, rack]) => {
   
-            this.duplicateRackedModule(rackModules, rackedModule);
+            this.duplicateModule(rackModules, rackedModule);
             this.rowedRackedModules$.next(rackModules);
   
             this.requestRackedModulesDbSync$.next();
@@ -359,16 +359,25 @@ export class RackDetailDataService extends SubManager {
     this.updateModulesColumnIds(rackedModules, rackedModule.rackingData.row);
   }
   
-  private duplicateRackedModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
+  private duplicateModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
     // make a deep copy of the module with lodash
     const deepCopiedRackedModule: RackedModule = _.cloneDeep(rackedModule);
-  
+    
     deepCopiedRackedModule.rackingData.id = undefined;
-  
-    // remove
-    rackedModules[deepCopiedRackedModule.rackingData.row].splice(
-      deepCopiedRackedModule.rackingData.column + 1, 0, deepCopiedRackedModule
-    );
+    
+    const moduleRow: RackedModule[] = rackedModules[deepCopiedRackedModule.rackingData.row];
+    
+    if (moduleRow) {
+      // insert deep copied module into the array close to the original module
+      const columnCoordinate: number = deepCopiedRackedModule.rackingData.column + 1;
+      moduleRow.splice(
+        columnCoordinate, 0, deepCopiedRackedModule
+      );
+    } else {
+      // module to duplicate has not been racked yet
+      // add deep copied module to the last row
+      rackedModules[rackedModules.length - 1].push(deepCopiedRackedModule);
+    }
     this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
 }
