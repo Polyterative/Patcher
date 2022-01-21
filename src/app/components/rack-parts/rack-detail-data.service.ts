@@ -128,15 +128,20 @@ export class RackDetailDataService extends SubManager {
                         }, rackModules, rack
                       ]) => {
   
+            console.log(rackModules);
+  
             const movingUnrackedModule: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
             if (movingUnrackedModule) {
+              module.rackingData.column = 0;
+              this.transferInRow(rackModules, newRow, event);
+    
               // nothing to do, not moving unracked module
               this.snackBar.open(
                 `Please move unracked module to a suitable position inside your rack.
                 Your rack has ${ rack.rows } rows`,
                 null,
                 {duration: 5000});
-  
+    
               return;
             }
   
