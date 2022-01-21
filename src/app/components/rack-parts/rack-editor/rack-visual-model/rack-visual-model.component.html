@@ -9,7 +9,8 @@
   <div class="col gap0 ">
     <ng-container *ngFor="let row of rowedRackedModules; index as rowId"
     >
-      <div class="row x"
+      <div class="row"
+           [class.row-bg]="!(row|hasUnrackedModules)"
            cdkDropList
            cdkDropListOrientation="horizontal"
            (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
@@ -25,7 +26,7 @@
           >
           </app-module-realistic>
         </ng-container>
-    
+  
       </div>
     </ng-container>
   </div>
