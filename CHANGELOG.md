@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.4](https://github.com/Polyterative/Patcher/compare/v3.2.3...v3.2.4) (2022-01-21)
+
+
+### Features
+
+* animations + fixes in the rack builder ([26bdbfb](https://github.com/Polyterative/Patcher/commit/26bdbfb1e8d064c812ce4c1ec574557f40badaeb))
+* animations improvements ([f3dfbca](https://github.com/Polyterative/Patcher/commit/f3dfbca0425871a6760cbcff4b1759423d79d926))
+* custom scrollbars + improved scrolling areas ([66e6f9e](https://github.com/Polyterative/Patcher/commit/66e6f9eb22d9f5fe552ab8417dab1546e489934e))
+* improvements to the rack builder ([942038d](https://github.com/Polyterative/Patcher/commit/942038d1ec0f4821c6513ce3787a6b322729dbd5))
+
 ### [3.2.3](https://github.com/Polyterative/Patcher/compare/v3.2.2...v3.2.3) (2022-01-20)
 
 
