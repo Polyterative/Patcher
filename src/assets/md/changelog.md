@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.2.5](https://github.com/Polyterative/Patcher/compare/v3.2.4...v3.2.5) (2022-01-21)
+
+
+### Features
+
+* animations improvements ([0e4c036](https://github.com/Polyterative/Patcher/commit/0e4c03630f9cde6f058962b6e1a499adc8857684))
+* homepage improvements ([f8ca1b0](https://github.com/Polyterative/Patcher/commit/f8ca1b08cc8fa3c2252b7f64ee111bc58678ca08))
+* rack builder context menu improvements ([718e7a6](https://github.com/Polyterative/Patcher/commit/718e7a68616f48805e363887c84f7df866cddf74))
+
+
+### Bug Fixes
+
+* rack builder module duplication ([92b76f0](https://github.com/Polyterative/Patcher/commit/92b76f0bae2c7e37cf9e448ce3c5cb517de5af7c))
+* rack builder module duplication ([e38d95e](https://github.com/Polyterative/Patcher/commit/e38d95eedaede2a7ae68e4ce6ff835c9e110d412))
+* rack builder now shows unracked module properly ([adabe54](https://github.com/Polyterative/Patcher/commit/adabe5496f9d64c03ec7e4dc05fdb226f4ce3426))
+
 ### [3.2.4](https://github.com/Polyterative/Patcher/compare/v3.2.3...v3.2.4) (2022-01-21)
 
 
