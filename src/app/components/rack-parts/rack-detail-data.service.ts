@@ -1,19 +1,20 @@
-import { moveItemInArray }         from '@angular/cdk/drag-drop';
-import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
+import { moveItemInArray }       from '@angular/cdk/drag-drop';
+import { CdkDragDrop }           from '@angular/cdk/drag-drop/drag-events';
 import {
   ElementRef,
   Injectable
-}                                  from '@angular/core';
-import { MatDialog }               from '@angular/material/dialog';
-import { MatSnackBar }             from '@angular/material/snack-bar';
-import { Router }                  from '@angular/router';
+}                                from '@angular/core';
+import { MatDialog }             from '@angular/material/dialog';
+import { MatSnackBar }           from '@angular/material/snack-bar';
+import { Router }                from '@angular/router';
+import _                         from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
   of,
   ReplaySubject,
   Subject
-}                                  from 'rxjs';
+}                                from 'rxjs';
 import {
   filter,
   map,
@@ -21,9 +22,9 @@ import {
   takeUntil,
   tap,
   withLatestFrom
-}                                  from 'rxjs/operators';
-import { UserManagementService }   from '../../features/backbone/login/user-management.service';
-import { SupabaseService }         from '../../features/backend/supabase.service';
+}                                from 'rxjs/operators';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { SupabaseService }       from '../../features/backend/supabase.service';
 import { RackedModule }            from '../../models/module';
 import {
   Rack,
@@ -134,14 +135,14 @@ export class RackDetailDataService extends SubManager {
             if (movingUnrackedModule) {
               module.rackingData.column = 0;
               this.transferInRow(rackModules, newRow, event);
-    
+  
               // nothing to do, not moving unracked module
               this.snackBar.open(
                 `Please move unracked module to a suitable position inside your rack.
                 Your rack has ${ rack.rows } rows`,
                 null,
                 {duration: 5000});
-    
+  
               return;
             }
   
@@ -359,15 +360,15 @@ export class RackDetailDataService extends SubManager {
   }
   
   private duplicateRackedModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
-    // make a deep copy of the module
-    const deepCopiedtRackedModule = {...rackedModule};
+    // make a deep copy of the module with lodash
+    const deepCopiedRackedModule: RackedModule = _.cloneDeep(rackedModule);
   
-    deepCopiedtRackedModule.rackingData.id = undefined;
+    deepCopiedRackedModule.rackingData.id = undefined;
   
     // remove
-    rackedModules[deepCopiedtRackedModule.rackingData.row].splice(
-      deepCopiedtRackedModule.rackingData.column + 1, 0, deepCopiedtRackedModule
+    rackedModules[deepCopiedRackedModule.rackingData.row].splice(
+      deepCopiedRackedModule.rackingData.column + 1, 0, deepCopiedRackedModule
     );
-    this.updateModulesColumnIds(rackedModules, deepCopiedtRackedModule.rackingData.row);
+    this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
 }
