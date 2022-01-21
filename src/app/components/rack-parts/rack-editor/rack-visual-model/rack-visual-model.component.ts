@@ -17,8 +17,9 @@ import { ModuleRightClick }       from '../rack-editor.component';
   styleUrls:       ['./rack-visual-model.component.scss'],
   animations:      [
     fadeInOnEnterAnimation({
-      duration: 225,
-      anchor:   'enter'
+      duration:        225,
+      anchor:          'enter',
+      animateChildren: 'after'
       // animateChildren: 'before',
     })
   ],
