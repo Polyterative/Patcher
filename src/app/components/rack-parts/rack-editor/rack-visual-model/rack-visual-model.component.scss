@@ -13,6 +13,10 @@
   transition: all 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+.cdk-drop-list-dragging .module:not(.cdk-drag-placeholder) {
+  background-color: #E33636 !important;
+  transition:       transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
 
 .widthRuler {
   border-width:       .1rem;
@@ -29,7 +33,7 @@
 
 }
 
-.row {
+.x {
   @include mat.elevation(2);
 
   $gridColor:       rgba(0, 0, 0, 0.15);

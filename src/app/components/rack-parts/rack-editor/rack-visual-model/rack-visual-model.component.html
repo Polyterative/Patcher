@@ -6,28 +6,26 @@
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
   
-  <div class="col gap0">
+  <div class="col gap0 ">
     <ng-container *ngFor="let row of rowedRackedModules; index as rowId"
     >
-      <div class="row"
+      <div class="row x"
            cdkDropList
            cdkDropListOrientation="horizontal"
            (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
       >
-        
-        <ng-container *ngFor="let rackedModule of row">
-          <div>
-            <app-module-realistic [data]="rackedModule|mapToModule"
-                                  cdkDrag
-                                  [cdkDragData]="rackedModule"
-                                  [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
-                                  (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-            >
-            </app-module-realistic>
-          </div>
-        
+        <ng-container *ngFor="let rackedModule of row; let i = index">
+          <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+                                [data]="rackedModule|mapToModule"
+                                class="module"
+                                cdkDrag
+                                [cdkDragData]="rackedModule"
+                                [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+          >
+          </app-module-realistic>
         </ng-container>
-      
+    
       </div>
     </ng-container>
   </div>
