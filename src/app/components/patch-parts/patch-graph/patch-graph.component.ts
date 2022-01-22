@@ -3,8 +3,10 @@ import {
   Component,
   OnInit
 }                                 from '@angular/core';
+import { fadeInAnimation }        from 'angular-animations';
 import {
   BehaviorSubject,
+  delay,
   forkJoin
 }                                 from 'rxjs';
 import {
@@ -34,6 +36,13 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
   templateUrl:     './patch-graph.component.html',
   styleUrls:       ['./patch-graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations:      [
+    fadeInAnimation({
+      duration: 500,
+      delay:    100,
+      anchor:   'enter'
+    })
+  ],
   providers:       [GraphViewService]
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
@@ -71,7 +80,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   ngOnInit(): void {
     this.manageSub(
-      this.patchDetailDataService.patchesConnections$
+      this.patchDetailDataService.patchConnections$
           .pipe(
             tap(x => this.nodes$.next([])),
             tap(x => this.edges$.next([])),
@@ -82,8 +91,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                                        .pipe(map(m => m.data)))
               )
             ),
-            // delay(50),
-            withLatestFrom(this.patchDetailDataService.patchesConnections$)
+            delay(250),
+            withLatestFrom(this.patchDetailDataService.patchConnections$)
           )
         // .pipe(
         //   withLatestFrom(
