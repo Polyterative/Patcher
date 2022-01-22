@@ -35,7 +35,6 @@ export class UserAvatarComponent {
   backgroundImagePath: string = './default.svg';
   
   constructor() {
-    console.log('UserAvatarComponent.constructor()');
   }
   
 }

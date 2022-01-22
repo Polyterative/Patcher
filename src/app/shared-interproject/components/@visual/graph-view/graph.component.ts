@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   Input,
+  NgZone,
   OnInit,
   ViewChild
 } from '@angular/core';
@@ -62,7 +63,8 @@ export class GraphComponent implements OnInit {
   
   constructor(
     public dataService: GraphViewService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private zone: NgZone
   ) {
     // this.graph = erdosRenyi(Graph, {
     //   order:       50,
@@ -77,15 +79,21 @@ export class GraphComponent implements OnInit {
   ngOnInit() {
     // const renderer = new Sigma(this.graph, this.container.nativeElement);
   
-    this.nodes.forEach(node => {
-      this.graph.mergeNode(node.id, node);
+    this.zone.runOutsideAngular(() => {
+      this.nodes.forEach(node => {
+        this.graph.mergeNode(node.id, node);
+      });
+    
+      this.edges.forEach(link => {
+        this.graph.mergeDirectedEdge(link.from, link.to, link);
+      });
+      this.loaded = true;
+    
+      circularLayout.assign(this.graph, {
+        scale: 1000
+      });
     });
   
-    this.edges.forEach(link => {
-      this.graph.mergeDirectedEdge(link.from, link.to, link);
-    });
-  
-    this.loaded = true;
     // console.log('nodes', this.nodes);
     // console.log('links', this.links);
   
@@ -102,39 +110,47 @@ export class GraphComponent implements OnInit {
     //   settings:   sensibleSettings
     // });
   
-    circularLayout.assign(this.graph, {
-      scale: 1000
-    });
     // this.cd.detectChanges();
   
   }
   
   ngAfterViewInit(): void {
-    if (this.container) {
-      this.sigma = new Sigma(this.graph, this.container.nativeElement);
   
-      this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
+    this.zone.runOutsideAngular(() => {
+      if (this.container) {
+        this.sigma = new Sigma(this.graph, this.container.nativeElement);
+      
+        this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
+      
+        this.fa2.start();
+      
+        // turn off after 2 seconds
+        setTimeout(() => {
+          this.fa2.stop();
+        }, 5000);
+      
+      }
+    });
   
-      this.fa2.start();
-  
-      // turn off after 2 seconds
-      setTimeout(() => {
-        this.fa2.stop();
-      }, 2000);
-  
-    }
   }
   
   ngOnDestroy(): void {
-    if (this.sigma) {
   
-      this.fa2.stop();
-      this.fa2.kill();
+    this.zone.runOutsideAngular(() => {
+      if (this.sigma) {
+      
+        this.fa2.stop();
+        this.fa2.kill();
+      
+        this.graph.clear();
+        // this.graph.();
+        this.sigma.kill();
+      
+        this.graph = undefined;
+        this.sigma = undefined;
+      
+      }
+    });
   
-      this.graph.clear();
-      // this.graph.();
-      this.sigma.kill();
-  
-    }
   }
 }
