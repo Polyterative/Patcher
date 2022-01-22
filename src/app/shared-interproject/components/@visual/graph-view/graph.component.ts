@@ -35,6 +35,18 @@ export interface GraphEdge {
   type: 'arrow' | 'curve' | 'line';
 }
 
+interface State {
+  hoveredNode?: string;
+  searchQuery: string;
+  
+  // State derived from query:
+  selectedNode?: string;
+  suggestions?: Set<string>;
+  
+  // State derived from hovered node:
+  hoveredNeighbors?: Set<string>;
+}
+
 @Component({
   selector:    'lib-graph',
   templateUrl: './graph.component.html',
@@ -48,14 +60,16 @@ export class GraphComponent implements OnInit {
   @Input() edges: GraphEdge[] = [];
   
   @ViewChild('container') container: ElementRef | null = null;
+  // Type and declare internal state:
   
+  state: State = {searchQuery: ''};
   @Input('graph') graph: Graph = new Graph({
     type: 'directed',
     // multi:          true,
     allowSelfLoops: true
   });
   
-  sigma?: Sigma;
+  renderer?: Sigma;
   @Input() settings: FA2LayoutSupervisorParameters = {weighted: true};
   
   fa2?: FA2LayoutSupervisor;
@@ -81,11 +95,11 @@ export class GraphComponent implements OnInit {
   
     this.zone.runOutsideAngular(() => {
       this.nodes.forEach(node => {
-        this.graph.mergeNode(node.id, node);
+        this.graph.addNode(node.id, node);
       });
     
       this.edges.forEach(link => {
-        this.graph.mergeDirectedEdge(link.from, link.to, link);
+        this.graph.addDirectedEdge(link.from, link.to, link);
       });
       this.loaded = true;
     
@@ -118,17 +132,49 @@ export class GraphComponent implements OnInit {
   
     this.zone.runOutsideAngular(() => {
       if (this.container) {
-        this.sigma = new Sigma(this.graph, this.container.nativeElement);
-      
+        this.renderer = new Sigma(this.graph, this.container.nativeElement, {
+          renderLabels:               true,
+          labelFont:                  'Roboto',
+          renderEdgeLabels:           true,
+          stagePadding:               20,
+          hideLabelsOnMove:           false,
+          hideEdgesOnMove:            false,
+          labelGridCellSize:          10,
+          labelRenderedSizeThreshold: 10
+          // nodeReducer:                (node: any) => {
+          //   return {
+          //     ...node,
+          //     label: node.label,
+          //     size:  node.size,
+          //     color: node.color
+          //   };
+          // }
+        });
+  
+        // Bind graph interactions:
+        this.renderer.on('enterNode', ({node}) => {
+          this.zone.run(() => {
+            this.dataService.selectedNode$.next(this.nodes.find(n => n.id === node));
+          });
+        });
+  
+        this.renderer.on('leaveNode', ({node}) => {
+          this.zone.run(() => {
+            this.dataService.selectedNode$.next(undefined);
+          });
+        });
+  
+        // this.sigma.refresh();
+  
         this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
-      
+  
         this.fa2.start();
-      
+  
         // turn off after 2 seconds
         setTimeout(() => {
           this.fa2.stop();
         }, 5000);
-      
+  
       }
     });
   
@@ -137,17 +183,17 @@ export class GraphComponent implements OnInit {
   ngOnDestroy(): void {
   
     this.zone.runOutsideAngular(() => {
-      if (this.sigma) {
+      if (this.renderer) {
       
         this.fa2.stop();
         this.fa2.kill();
       
         this.graph.clear();
         // this.graph.();
-        this.sigma.kill();
+        this.renderer.kill();
       
         this.graph = undefined;
-        this.sigma = undefined;
+        this.renderer = undefined;
       
       }
     });

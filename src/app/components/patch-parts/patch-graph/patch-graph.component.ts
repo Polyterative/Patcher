@@ -51,8 +51,6 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   // clusters$: BehaviorSubject<any[]> = new BehaviorSubject([]);
   edges$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
   
-  private sizeConstant = 3;
-  
   legend = [
     {
       label: 'Module',
@@ -66,8 +64,10 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       label: 'CV in',
       color: '#4483F2'
     }
-  
+
   ];
+  
+  private sizeConstant = 5;
   
   constructor(
     public patchDetailDataService: PatchDetailDataService,
@@ -102,8 +102,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
     
               // inverse proportion between sizeConstant and number of connections
-              this.sizeConstant = this.sizeConstant * (10 / connections.length);
-    
+              this.sizeConstant = this.sizeConstant * ((modules.length / connections.length) / 1.5);
               const nodes: GraphNode[] = [];
               const allModuleJackEdges: GraphEdge[] = [];
     
@@ -153,17 +152,19 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   id:    x.id,
                   from:  x.id,
                   to:    moduleId,
-                  label: `in: ${ x.label } to module: ${ module.name }`,
-                  size:  this.sizeConstant * 1,
-                  type:  'arrow'
+                  label: '',
+                  // label: `in: ${ x.label } to module: ${ module.name }`,
+                  size: this.sizeConstant * 1,
+                  type: 'arrow'
                 }));
                 const outsEdges: GraphEdge[] = outNodes.map(x => ({
                   id:    x.id,
                   from:  moduleId,
                   to:    x.id,
-                  label: `out: ${ x.label } from module: ${ module.name }`,
-                  size:  this.sizeConstant * 1,
-                  type:  'arrow'
+                  label: '',
+                  // label: `out: ${ x.label } from module: ${ module.name }`,
+                  size: this.sizeConstant * 1,
+                  type: 'arrow'
   
                 }));
       
@@ -203,7 +204,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 size:  this.sizeConstant * 2,
                 x:     1,
                 y:     1,
-                label: `from: ${ patch.a.name } to ${ patch.b.name }`
+                label: `${ patch.notes }`
               }));
     
               this.nodes$.next(finalNodes);
@@ -227,11 +228,9 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 ...patchEdges
               ]);
     
-              this.graphViewService.center$.next(true);
-    
             }
           ));
-  
+    
   }
   
   private buildNode(nodeId: string, CV: CVwithModule, color: string): GraphNode {
