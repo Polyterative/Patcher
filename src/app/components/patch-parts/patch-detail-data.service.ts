@@ -32,13 +32,11 @@ import {
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService }       from '../../features/backend/supabase.service';
 import { PatchConnection }       from '../../models/connection';
-import { CVwithModule }          from '../../models/cv';
+import {
+  CVConnectionEntity,
+  CVwithModule
+}                                from '../../models/cv';
 import { Patch }                 from '../../models/patch';
-
-export interface CVConnectionEntity {
-  cv: CVwithModule;
-  kind: 'in' | 'out';
-}
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
