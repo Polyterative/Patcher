@@ -17,16 +17,45 @@
     <div>{{item.label}}</div>
   </div>
 </div>
-<div style="height: 50rem;
-            width: 100%;"
+<div
 >
   <ng-container *ngIf="nodes$|async as nodes">
     <ng-container *ngIf="edges$|async as edges">
-      
-      <lib-graph [nodes]="nodes"
-                 [edges]="edges"
-                 *ngIf="nodes.length>0 && edges.length>0"
-      ></lib-graph>
+      <ng-container *ngIf="patchDetailDataService.patchConnections$|async as patchConnections">
+        <ng-container *ngIf="patchConnections; else noData">
+          
+          <ng-container *ngIf="nodes.length>0 && edges.length>0;else loading">
+            <lib-graph [nodes]="nodes"
+                       [edges]="edges"
+                       style="height: 50rem;width: 100%;"
+                       class="animate-fadein-slowest"
+                       [@enter]
+            ></lib-graph>
+          </ng-container>
+        </ng-container>
+      </ng-container>
     </ng-container>
   </ng-container>
 </div>
+<ng-template #noData>
+  <div fxFlex="100">
+    <div class="col gap1 animate-fadein-slowest"
+    >
+      <mat-card-subtitle fxLayoutAlign="center start"
+                         style="padding: 1rem"
+      >No connections in this patch
+      </mat-card-subtitle>
+    </div>
+  </div>
+</ng-template>
+<ng-template #loading>
+  <div fxFlex="100">
+    <div class="col gap1 animate-fadein-slowest"
+    >
+      <mat-card-subtitle fxLayoutAlign="center start"
+                         style="padding: 4rem"
+      >Building graph...
+      </mat-card-subtitle>
+    </div>
+  </div>
+</ng-template>
