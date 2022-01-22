@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-}                     from 'rxjs';
+import { Injectable }      from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class GraphViewService {
-  readonly center$: Subject<boolean> = new Subject();
+  readonly selectedNode$: BehaviorSubject<any | undefined> = new BehaviorSubject<any>(undefined);
   
-  readonly update$: Subject<boolean> = new Subject();
-  readonly zoomToFit$: Subject<boolean> = new Subject();
-  readonly autoZoom$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-  readonly autoCenter$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  constructor() {
+    this.selectedNode$.subscribe(node => {
+      console.log('selected node', node);
+      
+      if (node) {
+      }
+    });
+  }
 }
