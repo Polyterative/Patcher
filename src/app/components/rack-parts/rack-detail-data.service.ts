@@ -129,7 +129,6 @@ export class RackDetailDataService extends SubManager {
                         }, rackModules, rack
                       ]) => {
   
-            console.log(rackModules);
   
             const movingUnrackedModule: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
             if (movingUnrackedModule) {
