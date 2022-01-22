@@ -58,7 +58,7 @@
                 <app-patch-connection-minimal [data]="{
                                                         a:bag.selectedForConnection.a.cv,
                                                         b:bag.selectedForConnection.b.cv,
-                                                        patch:data
+                                                        patch:dataService.singlePatchData$|async
                                                         }"
                                               isEditing="true"
                                               [isCreator]="true"
