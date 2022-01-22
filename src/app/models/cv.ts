@@ -13,3 +13,8 @@ export interface CV {
   isDCC?: boolean;
   isAudio?: boolean;
 }
+
+export interface CVConnectionEntity {
+  cv: CVwithModule;
+  kind: 'in' | 'out';
+}
