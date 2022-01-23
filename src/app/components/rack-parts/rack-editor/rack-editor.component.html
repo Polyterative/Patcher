@@ -14,10 +14,10 @@
   </div>
   
   <ng-template #yesdata>
-    <lib-hero-content-card [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) in rack'+' /' +
+    <lib-hero-content-card [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) '+' /' +
                             ' '+data.hp+' HP per row'+' / ' +
                              ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically':' / Unlock to make changes')):'')"
+                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options':' / Unlock to make changes')):'')"
                            class="transition-all-long"
                            [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
     >
