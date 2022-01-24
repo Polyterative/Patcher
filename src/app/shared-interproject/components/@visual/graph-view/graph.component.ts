@@ -70,9 +70,16 @@ export class GraphComponent implements OnInit {
   });
   
   renderer?: Sigma;
-  @Input() settings: FA2LayoutSupervisorParameters = {weighted: true};
+  @Input() settings: FA2LayoutSupervisorParameters = {
+    weighted: true,
+    settings: {
+      slowDown: 5,
+      gravity:  1.2
+      // barnesHutOptimize: true,
+    }
+  };
   
-  fa2?: FA2LayoutSupervisor;
+  fa2LayoutSupervisor?: FA2LayoutSupervisor;
   loaded = false;
   
   constructor(
@@ -104,7 +111,7 @@ export class GraphComponent implements OnInit {
       this.loaded = true;
     
       circularLayout.assign(this.graph, {
-        scale: 1000
+        scale: this.nodes.length / 20
       });
     });
   
@@ -152,28 +159,28 @@ export class GraphComponent implements OnInit {
         });
   
         // Bind graph interactions:
-        this.renderer.on('enterNode', ({node}) => {
-          this.zone.run(() => {
-            this.dataService.selectedNode$.next(this.nodes.find(n => n.id === node));
-          });
-        });
-  
-        this.renderer.on('leaveNode', ({node}) => {
-          this.zone.run(() => {
-            this.dataService.selectedNode$.next(undefined);
-          });
-        });
+        // this.renderer.on('enterNode', ({node}) => {
+        //   this.zone.run(() => {
+        //     this.dataService.selectedNode$.next(this.nodes.find(n => n.id === node));
+        //   });
+        // });
+        //
+        // this.renderer.on('leaveNode', ({node}) => {
+        //   this.zone.run(() => {
+        //     this.dataService.selectedNode$.next(undefined);
+        //   });
+        // });
   
         // this.sigma.refresh();
   
-        this.fa2 = new FA2LayoutSupervisor(this.graph, this.settings);
+        this.fa2LayoutSupervisor = new FA2LayoutSupervisor(this.graph, this.settings);
   
-        this.fa2.start();
+        this.fa2LayoutSupervisor.start();
   
         // turn off after 2 seconds
         setTimeout(() => {
-          this.fa2.stop();
-        }, 5000);
+          this.fa2LayoutSupervisor.stop();
+        }, 10000);
   
       }
     });
@@ -184,17 +191,17 @@ export class GraphComponent implements OnInit {
   
     this.zone.runOutsideAngular(() => {
       if (this.renderer) {
-      
-        this.fa2.stop();
-        this.fa2.kill();
-      
+  
+        this.fa2LayoutSupervisor.stop();
+        this.fa2LayoutSupervisor.kill();
+  
         this.graph.clear();
         // this.graph.();
         this.renderer.kill();
-      
+  
         this.graph = undefined;
         this.renderer = undefined;
-      
+  
       }
     });
   
