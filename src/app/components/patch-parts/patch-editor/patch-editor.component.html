@@ -18,6 +18,7 @@
            ngClass.gt-lg="row gap1"
       >
         <div class="col gap1"
+             fxFlex.gt-lg="28rem"
         >
           <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
                                              [updateData$]="dataService.savePatchEditing$"
@@ -67,6 +68,10 @@
                 ></app-patch-connection-minimal>
               </lib-clean-card>
               <ng-template #selectedForConnectionVoidState>
+                <div class="animate-fadein-long">
+                  <app-advice-tooltip>Click on the ins and outs to create connections
+                  </app-advice-tooltip>
+                </div>
                 <div style="height:9rem;width:auto"
                      fxLayoutAlign="center center"
                 >The connection will appear here
@@ -84,15 +89,13 @@
               <!--              <div *ngIf="bag.editorConnections.length<=5"-->
               <div class="col gap0"
               >
-                <ng-container *ngFor="let item of bag.editorConnections.slice().reverse(); let i = index">
-                  <lib-clean-card>
-                    <app-patch-connection-minimal [data]="item"
-                                                  [index]="bag.editorConnections.length-i"
-                                                  [isEditing]="true"
-                                                  (remove$)="dataService.removeConnectionFromEditor$.next($event)"
-                    ></app-patch-connection-minimal>
-                  </lib-clean-card>
-                </ng-container>
+                <lib-clean-card *ngFor="let item of bag.editorConnections.slice().reverse(); let i = index">
+                  <app-patch-connection-minimal [data]="item"
+                                                [index]="bag.editorConnections.length-i"
+                                                [isEditing]="true"
+                                                (remove$)="dataService.removeConnectionFromEditor$.next($event)"
+                  ></app-patch-connection-minimal>
+                </lib-clean-card>
               </div>
   
   
@@ -120,9 +123,12 @@
         <div fxFlex.gt-lg="grow"
              class="col gap1"
         >
-          <app-advice-tooltip>Click on the ins and outs to create connections</app-advice-tooltip>
           <app-user-modules class="modulesBG"
-                            [viewConfig]="{
+                            [userModulesComponentViewConfig]="{
+                                hideAddModulesButton: true
+                              }
+                           "
+                            [modulesViewConfig]="{
                               hideLabels: true,
                               hideManufacturer: true,
                               hideDescription: true,
