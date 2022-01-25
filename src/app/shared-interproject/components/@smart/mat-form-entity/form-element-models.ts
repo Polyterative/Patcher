@@ -1,4 +1,7 @@
-import { AbstractControl, FormControl } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl
+}                  from '@angular/forms';
 import { Strings } from './app-form-utils';
 
 export interface FormLineSetup {
@@ -8,19 +11,20 @@ export interface FormLineSetup {
 
 export enum FormTypes {
   // OKKO                  = 'okko',
-  TEXT = 'text',
-  MULTI_TEXT = 'multi_text',
-  TIME = 'time',
-  EMAIL = 'email',
-  PASSWORD = 'password',
-  NUMBER = 'number',
-  AREA = 'area',
-  DATE = 'date',
-  SELECT = 'select',
-  MULTISELECT = 'multiselect',
-  MULTISELECT_GROUPED = 'multiselect_group',
-  AUTOCOMPLETE = 'autocomplete',
-  AUTOCOMPLETE_GROUPED = 'autocomplete_group',
+  TEXT                  = 'text',
+  MULTI_TEXT            = 'multi_text',
+  TIME                  = 'time',
+  EMAIL                 = 'email',
+  PASSWORD_CURRENT      = 'password_current',  // for autocomplete, password managers
+  PASSWORD_NEW          = 'password_new',  // for autocomplete, password managers
+  NUMBER                = 'number',
+  AREA                  = 'area',
+  DATE                  = 'date',
+  SELECT                = 'select',
+  MULTISELECT           = 'multiselect',
+  MULTISELECT_GROUPED   = 'multiselect_group',
+  AUTOCOMPLETE          = 'autocomplete',
+  AUTOCOMPLETE_GROUPED  = 'autocomplete_group',
   AUTOCOMPLETE_MULTIPLE = 'autocomplete_multiple'
   // AUTOCOMPLETE_MULTIPLE_GROUPED = 'autocomplete_multiple_group' //to finish
 }
@@ -28,32 +32,32 @@ export enum FormTypes {
 export namespace CustomValidators {
   export function onlyIntegers(control: AbstractControl) {
     const valid: boolean = Number.isInteger(Number.parseFloat(control.value));
-    return valid ? null : { [Strings.form.errorCode.custom.numberNotInteger]: true };
+    return valid ? null : {[Strings.form.errorCode.custom.numberNotInteger]: true};
   }
-
+  
   export function atLeastOneObject(control: AbstractControl) {
     const valid: boolean = control.value && control.value.length > 0;
-    return valid ? null : { [Strings.form.errorCode.custom.lessThanOneElement]: true };
+    return valid ? null : {[Strings.form.errorCode.custom.lessThanOneElement]: true};
   }
-
+  
   // @ts-ignore
   function onlyNumbers(control: AbstractControl) {
-    return !(typeof control.value === 'number') ? { [Strings.form.errorCode.custom.numberNot]: true } : null;
+    return !(typeof control.value === 'number') ? {[Strings.form.errorCode.custom.numberNot]: true} : null;
   }
-
+  
   // @ts-ignore
   function onlyPositiveAndInteger(control: AbstractControl) {
     const input = control.value;
-    return input <= 0 || Math.round(input) !== input ? { [Strings.form.errorCode.custom.numberNotPositiveInteger]: true } : null;
+    return input <= 0 || Math.round(input) !== input ? {[Strings.form.errorCode.custom.numberNotPositiveInteger]: true} : null;
   }
-
+  
 }
 
 export enum MatFormAppearences {
-  LEGACY = 'legacy',
+  LEGACY   = 'legacy',
   STANDARD = 'standard',
-  FILL = 'fill',
-  OUTLINE = 'outline'
+  FILL     = 'fill',
+  OUTLINE  = 'outline'
 }
 
 export interface ISelectable {
@@ -69,10 +73,10 @@ export function isOption(value: any): value is ISelectable {
 
 export function findAndApplyOptionForIdInGroup(id: string, control: FormControl, options: ISelectable[]): void {
   const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
-
+  
   const optionForInput: ISelectable | undefined = findOptionForId(id, flattenedOptions);
   if (optionForInput) {control.patchValue(optionForInput); }
-
+  
 }
 
 /**
@@ -84,26 +88,26 @@ export function findAndApplyOptionForIdInGroup(id: string, control: FormControl,
  */
 export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], control: FormControl, options: ISelectable[]): void {
   const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
-
+  
   const optionForInput = input.map(item => flattenedOptions.find(value => value.id === item.id && value.name === item.name));
-
+  
   if (optionForInput) {
     control.patchValue(optionForInput);
   }
-
+  
 }
 
 export function findAndApplyOptionForId(id: string, control: FormControl, options: ISelectable[]): void {
   const optionForInput: ISelectable | undefined = findOptionForId(id, options);
-
+  
   if (optionForInput) {control.patchValue(optionForInput); }
-
+  
 }
 
 export function findAndApplyOptionForName(id: string, control: FormControl, options: ISelectable[]): void {
   const optionForInput: ISelectable | undefined = findOptionForName(id, options);
   if (optionForInput) {control.patchValue(optionForInput); }
-
+  
 }
 
 export function getCleanedValue(control: FormControl): string | ISelectable {
@@ -121,7 +125,7 @@ export function getCleanedValueName(control: FormControl, defaultVal = ''): stri
 export function flatOptionGroupToArray(options: Array<ISelectable>): ISelectable[] {
   const cleanOptions = options.map(x => x.options)
                               .filter((item): item is ISelectable[] => !!item);
-
+  
   return cleanOptions.reduce((accumulator, options) => accumulator.concat(options));
 }
 

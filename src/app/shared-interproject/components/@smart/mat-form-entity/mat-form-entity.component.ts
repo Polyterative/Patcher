@@ -259,7 +259,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     switch (this.type) {
       case FormTypes.EMAIL:
         break;
-      case FormTypes.PASSWORD:
+      case FormTypes.PASSWORD_CURRENT:
+        break;
+      case FormTypes.PASSWORD_NEW:
         break;
       case FormTypes.TEXT:
         if (this.textTransformFunction) {
