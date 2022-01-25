@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.3.0](https://github.com/Polyterative/Patcher/compare/v3.2.6...v3.3.0) (2022-01-25)
+
+
+### Features
+
+* layouts performance improvements ([7eeb2d5](https://github.com/Polyterative/Patcher/commit/7eeb2d5c45b5e1aecc7ae48b6d8a6c2a80459034))
+* patch builder improvements ([b3c30f6](https://github.com/Polyterative/Patcher/commit/b3c30f697efa09cc51e7fd696a49b2e096d907ff))
+* rack builder improvements ([034e47c](https://github.com/Polyterative/Patcher/commit/034e47cc5ec1c6b27626cdc938c21bf8b6e557ab))
+* smoother graph draw ([9fd1180](https://github.com/Polyterative/Patcher/commit/9fd11805052f97d2c6fd3d8ba13d4d88e0dfb2a3))
+
 ### [3.2.6](https://github.com/Polyterative/Patcher/compare/v3.2.5...v3.2.6) (2022-01-22)
 
 
