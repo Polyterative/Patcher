@@ -20,11 +20,11 @@
       <flexbox-row-fast class="limit-height darker-bg"
       >
         <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index">
-          <lib-hero-item-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
-                              [@leave]="{ value: '', params: { delay:  0 }}"
+          <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
+                          [@leave]="{ value: '', params: { delay:  0 }}"
           >
             <app-patch-minimal [data]="item"></app-patch-minimal>
-          </lib-hero-item-card>
+          </lib-clean-card>
         </ng-container>
       </flexbox-row-fast>
     </div>
