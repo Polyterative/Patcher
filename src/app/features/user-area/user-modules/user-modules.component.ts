@@ -8,6 +8,10 @@ import { ModuleMinimalViewConfig } from '../../../components/module-parts/module
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 import { UserAreaDataService }     from '../user-area-data.service';
 
+interface UserModulesComponentViewConfig {
+  hideAddModulesButton: boolean;
+}
+
 @Component({
   selector:        'app-user-modules',
   templateUrl:     './user-modules.component.html',
@@ -15,7 +19,10 @@ import { UserAreaDataService }     from '../user-area-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserModulesComponent extends SubManager {
-  @Input() viewConfig: ModuleMinimalViewConfig;
+  @Input() modulesViewConfig: ModuleMinimalViewConfig;
+  @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = {
+    hideAddModulesButton: false
+  };
   
   constructor(
     public backend: SupabaseService,
@@ -25,6 +32,5 @@ export class UserModulesComponent extends SubManager {
     this.dataService.updateModulesData$.next();
     
   }
-  
   
 }

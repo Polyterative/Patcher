@@ -79,6 +79,17 @@ export class GraphComponent implements OnInit {
     }
   };
   
+  /**
+   * barnesHutOptimize: Barnes Hut optimization, n2 complexity to n.ln(n)
+   * gravity: Attracts nodes to the center. Prevents islands from drifting away
+   * Dissuade Hubs: Distributes attraction along outbound edges. Hubs attract less and thus are pushed to the borders
+   * scalingRatio: How much repulsion you want. More makes a more sparse graph
+   * strongGravityMode: A stronger gravity view
+   * jitterTolerance: How much swinging you allow. Above 1 discouraged. Lower gives less speed and more precision
+   * verbose: Shows a progressbar of iterations completed. Also, shows time taken for different force computations
+   * edgeWeightInfluence: How much influence you give to the edges weight. 0 is "no influence" and 1 is "normal"
+   */
+  
   fa2LayoutSupervisor?: FA2LayoutSupervisor;
   loaded = false;
   
