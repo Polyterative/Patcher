@@ -58,7 +58,7 @@ export class UserSignupDataService {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type:    FormTypes.PASSWORD
+      type: FormTypes.PASSWORD_NEW
     },
     passwordAgain: {
       label:   'Repeat Password',
@@ -69,7 +69,7 @@ export class UserSignupDataService {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type:    FormTypes.PASSWORD
+      type: FormTypes.PASSWORD_NEW
     }
   };
   mailSignClick$ = new Subject<void>();
