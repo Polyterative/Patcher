@@ -27,18 +27,19 @@ import { MatFormEntityModule }                        from 'src/app/shared-inter
 import { RestrictedEntityModule }                     from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent }                   from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule }                   from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { FlexboxRowFastModule }                       from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule }                      from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }                          from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule }                         from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule }                   from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }                           from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }                        from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }                         from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateUranusRoutes }                       from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
-import { LocalDataFilterModule }                      from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
-import { AutoUpdateLoadingIndicatorModule }           from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { ModulePatchesModule }                        from './module-patches/module-patches.module';
+import { FlexboxRowFastModule }             from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroContentCardModule }            from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }                from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroItemCardModule }               from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
+import { LabelValueShowcaseModule }         from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }                 from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }              from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }               from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }             from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { LocalDataFilterModule }            from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
+import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { CleanCardModule }                  from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { ModulePatchesModule }              from './module-patches/module-patches.module';
 
 
 const parentPrefix: string = 'modules';
@@ -108,7 +109,8 @@ const parentPrefix: string = 'modules';
     EmptyStateModule,
     AutoUpdateLoadingIndicatorModule,
     ModulePatchesModule,
-    LocalDataFilterModule
+    LocalDataFilterModule,
+    CleanCardModule
   ],
   exports:      [
     ModuleListComponent,

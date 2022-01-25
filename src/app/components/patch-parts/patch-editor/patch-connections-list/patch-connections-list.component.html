@@ -1,0 +1,32 @@
+<div class="col gap1">
+  <ng-container *ngFor="let item of editorConnections.slice().reverse(); let i = index">
+    <lib-clean-card [@exit]
+    >
+      <app-patch-connection-minimal [data]="item"
+                                    [index]="editorConnections.length-i"
+                                    [isEditing]="true"
+                                    (remove$)="dataService.removeConnectionFromEditor$.next($event)"
+      ></app-patch-connection-minimal>
+    </lib-clean-card>
+  </ng-container>
+</div>
+
+
+<!--              <cdk-virtual-scroll-viewport *ngIf="bag.editorConnections.length>5"-->
+<!--                                           itemSize="175.76"-->
+<!--                                           style="height: 40rem; overflow: auto;"-->
+<!--              -->
+<!--              >-->
+<!--                <div class="col gap1">-->
+<!--                  <ng-container *cdkVirtualFor="let item of bag.editorConnections">-->
+<!--                    <div>-->
+<!--                      <lib-clean-card>-->
+<!--                        <app-patch-connection-minimal [data]="item"-->
+<!--                                                      [isEditing]="true"-->
+<!--                                                      (remove$)="dataService.removeConnectionFromEditor$.next($event)"-->
+<!--                        ></app-patch-connection-minimal>-->
+<!--                      </lib-clean-card>-->
+<!--                    </div>-->
+<!--                  </ng-container>-->
+<!--                </div>-->
+<!--              </cdk-virtual-scroll-viewport>-->

@@ -8,10 +8,10 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
       <div class="col gap1"
       >
         <div>
-          <lib-hero-item-card>
+          <lib-clean-card>
             <app-patch-minimal [data]="data">
             </app-patch-minimal>
-          </lib-hero-item-card>
+          </lib-clean-card>
         </div>
     
         <app-patch-details [data]="data"></app-patch-details>
@@ -25,10 +25,10 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
         <div class="col gap1"
              fxFlex="30rem"
         >
-          <lib-hero-item-card>
+          <lib-clean-card>
             <app-patch-minimal [data]="data">
             </app-patch-minimal>
-          </lib-hero-item-card>
+          </lib-clean-card>
           <lib-screen-wrapper maxSize="36rem">
             <app-comments-root></app-comments-root>
           </lib-screen-wrapper>

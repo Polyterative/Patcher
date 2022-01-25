@@ -11,7 +11,7 @@ data:(dataService.singleModuleData$|async)
         <div class="col gap1"
         >
           <lib-screen-wrapper maxSize="36rem">
-            <lib-hero-item-card>
+            <lib-clean-card>
   
               <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
                                                   [skipFirstData]="true"
@@ -26,21 +26,21 @@ data:(dataService.singleModuleData$|async)
               </ng-template>
 
 
-            </lib-hero-item-card>
+            </lib-clean-card>
           </lib-screen-wrapper>
           <!--          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
           <!--                                              [data$]="dataService.singleModuleData$"-->
           <!--          ></lib-auto-content-loading-indicator>-->
-          <lib-hero-item-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
+          <lib-clean-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
             <app-module-editor
                 [data]="(bag.data)"
             ></app-module-editor>
-          </lib-hero-item-card>
-          <!--          <lib-hero-item-card *ngIf="bag.data">-->
+          </lib-clean-card>
+          <!--          <lib-clean-card *ngIf="bag.data">-->
           <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
-          <!--          </lib-hero-item-card>-->
-
-
+          <!--          </lib-clean-card>-->
+  
+  
           <!--          hidden cause circular dependency-->
           <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
           <!--              stuff-->

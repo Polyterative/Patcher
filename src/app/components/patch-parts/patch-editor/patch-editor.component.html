@@ -85,38 +85,10 @@
                                    description="The connections of the patch you are editing"
                                    [showHelpButton]="true"
             >
-  
-              <!--              <div *ngIf="bag.editorConnections.length<=5"-->
-              <div class="col gap0"
-              >
-                <lib-clean-card *ngFor="let item of bag.editorConnections.slice().reverse(); let i = index">
-                  <app-patch-connection-minimal [data]="item"
-                                                [index]="bag.editorConnections.length-i"
-                                                [isEditing]="true"
-                                                (remove$)="dataService.removeConnectionFromEditor$.next($event)"
-                  ></app-patch-connection-minimal>
-                </lib-clean-card>
-              </div>
-  
-  
-              <!--              <cdk-virtual-scroll-viewport *ngIf="bag.editorConnections.length>5"-->
-              <!--                                           itemSize="175.76"-->
-              <!--                                           style="height: 40rem; overflow: auto;"-->
-              <!--              -->
-              <!--              >-->
-              <!--                <div class="col gap1">-->
-              <!--                  <ng-container *cdkVirtualFor="let item of bag.editorConnections">-->
-              <!--                    <div>-->
-              <!--                      <lib-clean-card>-->
-              <!--                        <app-patch-connection-minimal [data]="item"-->
-              <!--                                                      [isEditing]="true"-->
-              <!--                                                      (remove$)="dataService.removeConnectionFromEditor$.next($event)"-->
-              <!--                        ></app-patch-connection-minimal>-->
-              <!--                      </lib-clean-card>-->
-              <!--                    </div>-->
-              <!--                  </ng-container>-->
-              <!--                </div>-->
-              <!--              </cdk-virtual-scroll-viewport>-->
+      
+              <app-patch-connections-list [editorConnections]="bag.editorConnections"
+              ></app-patch-connections-list>
+    
             </lib-hero-content-card>
           </div>
         </div>

@@ -24,14 +24,14 @@
       >
         <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index"
         >
-          <lib-hero-item-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
-                              [@leave]="{ value: '', params: { delay:  0 }}"
+          <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
+                          [@leave]="{ value: '', params: { delay:  0 }}"
           >
             <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
                                 [data]="item"
                                 [viewConfig]="viewConfig"
             ></app-module-minimal>
-          </lib-hero-item-card>
+          </lib-clean-card>
           <ng-template #fullData>
             <app-module-composite [data]="item"
                                   [viewConfig]="viewConfig"
