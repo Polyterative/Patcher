@@ -62,17 +62,30 @@
       />
     </ng-container>
     
-    <ng-container *ngIf="(type===types.PASSWORD)">
+    <ng-container *ngIf="(type===types.PASSWORD_CURRENT)">
       <input [autocomplete]="!disableBrowserAutocomplete"
              [formControl]="control"
              [placeholder]="placeholder"
              [type]="hidePassword ? 'password' : 'text'"
+             autocomplete="current-password"
              matInput
              style="height: 15.333px"
       />
-    
+
     </ng-container>
-    
+  
+    <ng-container *ngIf="(type===types.PASSWORD_NEW)">
+      <input [autocomplete]="!disableBrowserAutocomplete"
+             [formControl]="control"
+             [placeholder]="placeholder"
+             [type]="hidePassword ? 'password' : 'text'"
+             autocomplete="new-password"
+             matInput
+             style="height: 15.333px"
+      />
+  
+    </ng-container>
+  
     <ng-container *ngIf="(type===types.SELECT)">
       <mat-select [formControl]="control"
                   [placeholder]="placeholder"
@@ -331,8 +344,8 @@
     >
       <mat-icon>close</mat-icon>
     </button>
-    
-    <button *ngIf="type===types.PASSWORD"
+  
+    <button *ngIf="type===types.PASSWORD_CURRENT"
             mat-icon-button
             matSuffix
             (click)="hidePassword = !hidePassword"

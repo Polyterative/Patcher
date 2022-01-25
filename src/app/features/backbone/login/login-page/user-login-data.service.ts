@@ -50,7 +50,7 @@ export class UserLoginDataService {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type:    FormTypes.PASSWORD
+      type: FormTypes.PASSWORD_CURRENT
     }
   };
   public readonly mailLoginClick$ = new Subject<void>();
