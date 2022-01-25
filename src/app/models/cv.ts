@@ -12,6 +12,7 @@ export interface CV {
   isVOCT?: boolean;
   isDCC?: boolean;
   isAudio?: boolean;
+  isApproved?: boolean;
 }
 
 export interface CVConnectionEntity {

@@ -49,8 +49,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
   //
-  addIN$ = new Subject<[string, number, number, number]>();
-  addOUT$ = new Subject<[string, number, number, number]>();
+  addIN$ = new Subject<Partial<CV>>();
+  addOUT$ = new Subject<Partial<CV>>();
   addSwitch$ = new Subject<void>();
   
   types = FormTypes;
@@ -83,18 +83,28 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   ) {
   
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
-        .subscribe(([name, min, max, id]) => {
+        .subscribe(({
+                      name,
+                      min,
+                      max,
+                      id
+                    }) => {
           const x = [
             ...this.INs$.value,
             this.createCV(name, min, max, id)
           ];
-  
+    
           this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
-  
+    
         });
   
     this.addOUT$.pipe(takeUntil(this.destroyEvent$))
-        .subscribe(([name, min, max, id]) => {
+        .subscribe(({
+                      name,
+                      min,
+                      max,
+                      id
+                    }) => {
           const x: any[] = [
             ...this.OUTs$.value,
             this.createCV(name, min, max, id)
@@ -108,7 +118,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(i => {
           const x = this.INs$.value;
           x.splice(i, 1);
-    
+  
           this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
         });
   
@@ -116,7 +126,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(i => {
           const x = this.OUTs$.value;
           x.splice(i, 1);
-    
+  
           this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
         });
   
@@ -145,19 +155,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     
     const ins: CV[] = this.data.ins;
-    ins.forEach(x => this.addIN$.next([
-      x.name,
-      x.min,
-      x.max,
-      x.id
-    ]));
+    ins.forEach(x => this.addIN$.next(x));
     const outs: CV[] = this.data.outs;
-    outs.forEach(x => this.addOUT$.next([
-      x.name,
-      x.min,
-      x.max,
-      x.id
-    ]));
+    outs.forEach(x => this.addOUT$.next(x));
   }
   
   private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
