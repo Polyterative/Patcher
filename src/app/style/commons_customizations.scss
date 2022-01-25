@@ -137,6 +137,10 @@ mat-expansion-panel {
   animation: fadein 1000ms;
 }
 
+.animate-fadein-long {
+  animation: fadein 2000ms;
+}
+
 @keyframes fadein {
   from { opacity: 0; }
   to { opacity: 1; }

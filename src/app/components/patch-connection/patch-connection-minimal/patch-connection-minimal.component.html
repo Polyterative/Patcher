@@ -1,5 +1,5 @@
 <div class="row gap1"
-     fxLayout.lt-md="column"
+     [ngClass.lt-md]="{'column':true}"
 >
   <div fxFlex="grow"
        class="row gap0"
@@ -20,7 +20,7 @@
                         [data]="data.b.module"
                         [viewConfig]="viewConfig"
     >
-    
+  
       <mat-chip-list>
         <app-module-cvitem [data]="data.b"
                            kind="in"
