@@ -1,14 +1,11 @@
-<div fxFlex="100"
-     fxLayout="column"
+<div class="col"
 >
-  <lib-mat-form-entity fxFlex="100"
-                       [dataPack]="dataService.fields.username"
+  <lib-mat-form-entity [dataPack]="dataService.fields.username"
                        hint="Visible by other users"
                        formFieldAppearenceType="fill"
   >
   </lib-mat-form-entity>
-  <lib-mat-form-entity fxFlex="100"
-                       [type]="dataService.fields.email.type"
+  <lib-mat-form-entity [type]="dataService.fields.email.type"
                        [control]="dataService.fields.email.control"
                        [label]="dataService.fields.email.label"
                        hint="NOT visible by other users"
@@ -16,15 +13,13 @@
   >
   </lib-mat-form-entity>
   
-  <lib-mat-form-entity fxFlex="100"
-                       [type]="dataService.fields.password.type"
+  <lib-mat-form-entity [type]="dataService.fields.password.type"
                        [control]="dataService.fields.password.control"
                        [label]="dataService.fields.password.label"
                        formFieldAppearenceType="fill"
   >
   </lib-mat-form-entity>
-  <lib-mat-form-entity fxFlex="100"
-                       [type]="dataService.fields.passwordAgain.type"
+  <lib-mat-form-entity [type]="dataService.fields.passwordAgain.type"
                        [control]="dataService.fields.passwordAgain.control"
                        [label]="dataService.fields.passwordAgain.label"
                        formFieldAppearenceType="fill"
