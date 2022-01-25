@@ -31,7 +31,7 @@ import { ModuleList }              from '../module-browser-data.service';
     fadeInOnEnterAnimation({
       anchor:          'enter',
       duration:        225,
-      animateChildren: 'after'
+      animateChildren: 'none'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',

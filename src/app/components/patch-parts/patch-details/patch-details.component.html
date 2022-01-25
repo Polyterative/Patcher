@@ -21,13 +21,9 @@
       <ng-container *ngIf="bagA.length>0; else noData">
         <lib-hero-content-card [titleNormal]="'Connections graph'"
         >
-          <mat-card>
-            <div class="col gap1 "
-            >
-              <app-patch-graph></app-patch-graph>
-            </div>
-
-          </mat-card>
+          <lib-clean-card>
+            <app-patch-graph></app-patch-graph>
+          </lib-clean-card>
         </lib-hero-content-card>
         <lib-hero-content-card [titleNormal]="bagA.length+' Connections'"
                                *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
@@ -44,7 +40,6 @@
                 ></mat-divider>
               </ng-container>
             </div>
-          
           </lib-clean-card>
         </lib-hero-content-card>
       </ng-container>
