@@ -91,7 +91,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                                        .pipe(map(m => m.data)))
               )
             ),
-            delay(250),
+            delay(500),
             withLatestFrom(this.patchDetailDataService.patchConnections$)
           )
         // .pipe(
