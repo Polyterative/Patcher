@@ -475,11 +475,11 @@ export class SupabaseService {
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs: (data: DbModule) => forkJoin(
+    moduleINsOUTs: (data: DbModule, authorid: string = this.getUser().id) => forkJoin(
       [
-        this.buildCVInserter(data.ins, this.paths.moduleINs, data.id),
+        this.buildCVInserter(data.ins, this.paths.moduleINs, data.id, authorid),
         this.buildCVUpdater(data.ins, this.paths.moduleINs, data.id),
-        this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id),
+        this.buildCVInserter(data.outs, this.paths.moduleOUTs, data.id, authorid),
         this.buildCVUpdater(data.outs, this.paths.moduleOUTs, data.id)
       ]
     )
@@ -601,15 +601,18 @@ export class SupabaseService {
                );
   }
   
-  private buildCVInserter(cvs: CV[], path: string, moduleId: number) {
+  private buildCVInserter(cvs: CV[], path: string, moduleId: number, authorid: string) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
                          .filter(x => x.id == 0)
                          .map(x => {
                            x.id = undefined;
-  
                            return x;
-                         });
-  
+                         })
+                         .map(x => ({
+                           ...x,
+                           authorid
+                         }));
+    
     return rxFrom(
       this.supabase.from(path)
           .upsert(mappedCVs)
