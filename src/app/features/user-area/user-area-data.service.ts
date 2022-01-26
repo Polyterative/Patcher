@@ -102,7 +102,8 @@ export class UserAreaDataService extends SubManager {
             return this.dialog.open(
               RackCreatorComponent,
               {
-                data
+                data,
+                width: '24rem'
                 // disableClose: true
               }
             )

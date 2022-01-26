@@ -52,17 +52,57 @@
            fxLayoutGap="1rem grid"
            fxLayoutAlign="end"
       >
-        <app-brand-primary-button (click$)="addIN$.next([undefined,undefined,undefined,0])">Add IN
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          isApproved: false
+        })"
+        >Add IN
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next([undefined,0,5,0])">Add 0→5V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 0,
+          max: 5,
+          isApproved: false
+        })"
+        >Add 0→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next([undefined,0,8,0])">Add 0→8V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 0,
+          max: 8,
+          isApproved: false
+        })"
+        >Add 0→8V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next([undefined,-5,5,0])">Add -5→5V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: -5,
+          max: 5,
+          isApproved: false
+        })"
+        >Add -5→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next([undefined,-10,10,0])">Add -10→10V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 10,
+          max: 10,
+          isApproved: false
+        })"
+        >Add -10→10V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next([undefined,-12,12,0])">Add -12→12V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 12,
+          max: -12,
+          isApproved: false
+        })"
+        >Add -12→12V
         </app-brand-primary-button>
       </div>
     </div>
@@ -78,7 +118,6 @@
       <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of OUTs$|async; let i = index">
-  
           <div ngClass.sm="col gap1"
                ngClass.gt-sm="row gap1"
           >
@@ -115,17 +154,57 @@
            fxLayoutGap="1rem grid"
            fxLayoutAlign="end"
       >
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,undefined,undefined,0])">Add OUT
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          isApproved: false
+        })"
+        >Add IN
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,0,5,0])">Add 0→5V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 0,
+          max: 5,
+          isApproved: false
+        })"
+        >Add 0→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,0,8,0])">Add 0→8V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 0,
+          max: 8,
+          isApproved: false
+        })"
+        >Add 0→8V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,-5,5,0])">Add -5→5V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: -5,
+          max: 5,
+          isApproved: false
+        })"
+        >Add -5→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,-10,10,0])">Add -10→10V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 10,
+          max: 10,
+          isApproved: false
+        })"
+        >Add -10→10V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next([undefined,-12,12,0])">Add -12→12V
+        <app-brand-primary-button (click$)="addIN$.next({
+          name: '',
+          id: 0,
+          min: 12,
+          max: -12,
+          isApproved: false
+        })"
+        >Add -12→12V
         </app-brand-primary-button>
       </div>
     </div>
@@ -165,7 +244,7 @@
                               [disabled]="!(formGroupA|formValid)||!(formGroupB|formValid)||!(formGroupC|formValid)"
     >
       <mat-icon>save</mat-icon>
-      Save data
+      Save INs and OUTs
     </app-brand-primary-button>
   </lib-auto-update-loading-indicator>
 
