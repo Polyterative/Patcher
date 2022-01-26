@@ -21,8 +21,8 @@ import { SupabaseService }        from '../../backend/supabase.service';
 
 @Injectable()
 export class UserManagementService {
-  user$ = new ReplaySubject<User | undefined>(1);
-  userProfile$ = new ReplaySubject<{ username: string, email: string } | undefined>();
+  loggedUser$ = new ReplaySubject<User | undefined>(1);
+  loggedLserProfile$ = new ReplaySubject<{ username: string, email: string } | undefined>();
   
   constructor(
     public snackBar: MatSnackBar,
@@ -31,12 +31,12 @@ export class UserManagementService {
     public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
-    this.user$.next(undefined);
-    this.userProfile$.next(undefined);
+    this.loggedUser$.next(undefined);
+    this.loggedLserProfile$.next(undefined);
     
     this.checkUserInCookies();
     
-    this.userProfile$
+    this.loggedLserProfile$
         .pipe()
         .subscribe(x => {
       
@@ -46,14 +46,14 @@ export class UserManagementService {
             this.userBoxService.store.user$.next({username: undefined});
           }
         });
-  
-    this.user$
+    
+    this.loggedUser$
         .pipe(
-          tap(x => this.userProfile$.next(undefined)),
+          tap(x => this.loggedLserProfile$.next(undefined)),
           filter(x => !!x),
           switchMap(x => !!x ? this.backend.get.userWithId(x.id) : of(undefined))
         )
-        .subscribe(x => this.userProfile$.next(x.data));
+        .subscribe(x => this.loggedLserProfile$.next(x.data));
     
     userBoxService.logoffButtonClick$.subscribe(x => {
       this.logoff();
@@ -62,7 +62,7 @@ export class UserManagementService {
   
   login(email: string, password: string) {
     return this.backend.login(email, password)
-               .pipe(tap(x => {if (!x.error) {this.user$.next(x.user); } }));
+               .pipe(tap(x => {if (!x.error) {this.loggedUser$.next(x.user); } }));
   }
   
   signup(username: string, email: string, password: string) {
@@ -75,7 +75,7 @@ export class UserManagementService {
   
   logoff(): void {
     console.log('Logging out...');
-    this.user$.next(undefined);
+    this.loggedUser$.next(undefined);
     from(this.backend.logoff())
       .subscribe(x => {
         this.router.navigate(['/auth/login']);
@@ -86,7 +86,7 @@ export class UserManagementService {
   private checkUserInCookies(): void {
     const user: User = this.backend.getUser();
     if (user && user.role === 'authenticated') {
-      this.user$.next(user);
+      this.loggedUser$.next(user);
     }
   }
 }

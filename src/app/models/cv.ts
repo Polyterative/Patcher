@@ -4,6 +4,10 @@ export interface CVwithModule extends CV {
   module: MinimalModule;
 }
 
+export interface CVwithModuleId extends CV {
+  moduleid: number;
+}
+
 export interface CV {
   name: string;
   id: number;

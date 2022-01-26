@@ -24,7 +24,7 @@
         <app-route-clickable-link-list [data$]="mainLinks$"></app-route-clickable-link-list>
       </div>
       <div fxFlex="grow"></div>
-      <app-route-clickable-link-list [data$]="(userService.user$|async)?linksUser$:linksA$"></app-route-clickable-link-list>
+      <app-route-clickable-link-list [data$]="(userService.loggedUser$|async)?linksUser$:linksA$"></app-route-clickable-link-list>
     </div>
   </lib-screen-wrapper>
 </mat-toolbar>
