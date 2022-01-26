@@ -9,7 +9,11 @@ import {
   Observable,
   throwError
 }                                from 'rxjs';
-import { catchError }            from 'rxjs/operators';
+import {
+  catchError,
+  filter,
+  take
+}                                from 'rxjs/operators';
 import { UserManagementService } from './user-management.service';
 
 @Injectable()
@@ -18,19 +22,29 @@ export class ErrorInterceptor implements HttpInterceptor {
   
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request)
-               .pipe(catchError(err => {
-                 if ([
-                       401,
-                       403
-                     ].includes(err.status) && this.authenticationService.loggedUser$.value) {
-                   // auto logout if 401 or 403 response returned from api
-                   this.authenticationService.logoff();
-                 }
+               .pipe(
+                 catchError(err => {
+                   if ([
+                     401,
+                     403
+                   ].includes(err.status)) {
+        
+                     this.authenticationService.loggedUser$
+                         .pipe(
+                           take(1),
+                           filter(user => !!user)
+                         )
+                         .subscribe(value => {
+                           // auto logout if 401 or 403 response returned from api
+                           this.authenticationService.logoff();
+                         });
+        
+                   }
       
-                 const error = (err && err.error && err.error.message) || err.statusText;
-                 console.error(err);
+                   const error = (err && err.error && err.error.message) || err.statusText;
+                   console.error(err);
       
-                 return throwError(error);
-               }));
+                   return throwError(error);
+                 }));
   }
 }
