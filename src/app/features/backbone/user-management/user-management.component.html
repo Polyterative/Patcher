@@ -9,7 +9,7 @@
       >
   
         <ng-container *ngIf="{
-          userProfile:(userManagementService.loggedLserProfile$|async),
+          userProfile:(userManagementService.loggedUserProfile$|async),
           user:(userManagementService.loggedUser$|async)
           } as bag"
         >
