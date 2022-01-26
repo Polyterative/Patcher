@@ -1,0 +1,31 @@
+<div ngClass.sm="col gap1"
+     ngClass.gt-sm="row gap1"
+     *ngIf="!!item"
+>
+  <div fxLayoutAlign="start center">
+    <button mat-icon-button
+            [disabled]="item.id!=0"
+            (click)="removeRequest$.next()"
+    >
+      <mat-icon>
+        delete
+      </mat-icon>
+    </button>
+  </div>
+  <lib-mat-form-entity [type]="types.TEXT"
+                       [control]="item.name"
+                       label="name"
+  ></lib-mat-form-entity>
+  <lib-mat-form-entity [type]="types.NUMBER"
+                       [control]="item.a"
+                       label="Minimum Voltage (V)"
+  ></lib-mat-form-entity>
+  <lib-mat-form-entity [type]="types.NUMBER"
+                       [control]="item.b"
+                       label="Maximum Voltage (V)"
+  ></lib-mat-form-entity>
+  <mat-divider inset="true"
+               fxHide="true"
+               fxShow.lt-md="true"
+  ></mat-divider>
+</div>
