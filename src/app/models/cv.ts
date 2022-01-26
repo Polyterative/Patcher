@@ -17,6 +17,7 @@ export interface CV {
   isDCC?: boolean;
   isAudio?: boolean;
   isApproved?: boolean;
+  authorid?: string;
 }
 
 export interface CVConnectionEntity {
