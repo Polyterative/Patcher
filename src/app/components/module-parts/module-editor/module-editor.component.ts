@@ -25,6 +25,7 @@ import {
 }                                  from 'rxjs/operators';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import { FormTypes }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { UserManagementService }   from '../../../features/backbone/login/user-management.service';
 import { CV }                      from '../../../models/cv';
 import { DbModule }                from '../../../models/module';
 import { ModuleDetailDataService } from '../module-detail-data.service';
@@ -34,6 +35,7 @@ interface FormCV {
   name: FormControl;
   a: FormControl;
   b: FormControl;
+  isApproved: boolean;
 }
 
 @Component({
@@ -49,8 +51,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
   //
-  addIN$ = new Subject<Partial<CV>>();
-  addOUT$ = new Subject<Partial<CV>>();
+  addIN$ = new Subject<CV>();
+  addOUT$ = new Subject<CV>();
   addSwitch$ = new Subject<void>();
   
   types = FormTypes;
@@ -79,19 +81,15 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   constructor(
     public backend: SupabaseService,
     public formBuilder: FormBuilder,
-    public dataService: ModuleDetailDataService
+    public dataService: ModuleDetailDataService,
+    public userManagementService: UserManagementService
   ) {
   
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
-        .subscribe(({
-                      name,
-                      min,
-                      max,
-                      id
-                    }) => {
+        .subscribe(cv => {
           const x = [
             ...this.INs$.value,
-            this.createCV(name, min, max, id)
+            this.createFomCV(cv)
           ];
     
           this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
@@ -99,15 +97,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         });
   
     this.addOUT$.pipe(takeUntil(this.destroyEvent$))
-        .subscribe(({
-                      name,
-                      min,
-                      max,
-                      id
-                    }) => {
+        .subscribe(cv => {
           const x: any[] = [
             ...this.OUTs$.value,
-            this.createCV(name, min, max, id)
+            this.createFomCV(cv)
           ];
     
           this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
@@ -150,6 +143,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
+  
   }
   
   ngOnInit(): void {
@@ -158,12 +152,13 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     ins.forEach(x => this.addIN$.next(x));
     const outs: CV[] = this.data.outs;
     outs.forEach(x => this.addOUT$.next(x));
+  
   }
   
   private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
     subject.next(cvs);
-    
-    for (let key in group.controls) {
+  
+    for (const key in group.controls) {
       group.removeControl(key);
     }
     
@@ -178,25 +173,38 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return JSON.stringify(cvs);
   }
   
-  private createCV(name, min, max, id: number) {
-    return {
-      name: new FormControl(name, this.validatorsName),
-      a:    new FormControl(min, this.validatorsNum),
-      b:    new FormControl(max, this.validatorsNum),
-      id
+  private createFomCV(data: Partial<CV>): FormCV {
+    let toReturn: { a: FormControl; b: FormControl; name: FormControl; id: number; isApproved: boolean } = {
+      name:       new FormControl(data.name, this.validatorsName),
+      a:          new FormControl(data.min, this.validatorsNum),
+      b:          new FormControl(data.max, this.validatorsNum),
+      id:         data.id,
+      isApproved: data.isApproved
     };
+    
+    // disable if not approved yet
+    if (data.isApproved !== undefined && !data.isApproved) {
+      toReturn.name.disable();
+      toReturn.a.disable();
+      toReturn.b.disable();
+    }
+    
+    return toReturn;
   }
   
   private formCVToCV(formCVS: FormCV[]): CV[] {
     const x = formCVS.map(formCV => ({
       name: formCV.name.value,
       // description?: string;
-      id:  formCV.id,
-      min: formCV.a.value,
-      max: formCV.b.value
+      id:         formCV.id,
+      min:        formCV.a.value,
+      max:        formCV.b.value,
+      isApproved: formCV.isApproved ? formCV.isApproved : false
       // isVOCT?: boolean;
     }));
-    
+  
+    console.log(x);
+  
     return x;
   }
   

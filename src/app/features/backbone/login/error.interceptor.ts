@@ -22,7 +22,7 @@ export class ErrorInterceptor implements HttpInterceptor {
                  if ([
                        401,
                        403
-                     ].includes(err.status) && this.authenticationService.user$.value) {
+                     ].includes(err.status) && this.authenticationService.loggedUser$.value) {
                    // auto logout if 401 or 403 response returned from api
                    this.authenticationService.logoff();
                  }

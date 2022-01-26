@@ -9,6 +9,7 @@ import {
   Subject
 }                                   from 'rxjs';
 import {
+  filter,
   switchMap,
   takeUntil,
   tap,
@@ -38,10 +39,10 @@ export class ModuleDetailDataService {
     public userService: UserManagementService,
     public backend: SupabaseService
   ) {
-    
-    merge(this.userService.user$, this.updateSingleModuleData$)
+  
+    merge(this.userService.loggedUser$, this.updateSingleModuleData$)
       .pipe(
-        switchMap(x => this.userService.user$),
+        switchMap(x => this.userService.loggedUser$),
         switchMap(x => !!x ? this.backend.get.userModules() : of([])),
         takeUntil(this.destroyEvent$)
       )
@@ -97,6 +98,17 @@ export class ModuleDetailDataService {
         )
         .subscribe(([a, b]) => {
           this.updateSingleModuleData$.next(b);
+        });
+  
+    this.singleModuleData$.pipe(
+      filter(x => !!x),
+      switchMap(x => this.userService.loggedUser$.pipe(withLatestFrom(of(x)))),
+      takeUntil(this.destroyEvent$)
+    )
+        .subscribe(([user, module]) => {
+          if (user) {
+            this.moduleEditingPanelOpenState$.next(!module.isComplete);
+          }
         });
   
   }

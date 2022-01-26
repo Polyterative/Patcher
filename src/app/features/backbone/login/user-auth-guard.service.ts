@@ -27,14 +27,14 @@ export class UserAuthGuard implements CanActivate {
   ) {
     // get the current user observable from the service and subscribe to it, return true if the user is logged in
   
-    return this.authenticationService.user$.pipe(
+    return this.authenticationService.loggedUser$.pipe(
       tap((user) => {
         if (!user) {
           // this.dialog.open(LoginProposalComponent);
           let snack = this.snackBar.open('Login to use this feature', 'Login now', {
             duration: 10000
           });
-        
+      
           snack.onAction()
                .subscribe(x => this.router.navigate(['/auth/login'], {queryParams: {returnUrl: state.url}}));
         
