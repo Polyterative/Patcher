@@ -34,7 +34,7 @@
         <mat-card-title>OUTs</mat-card-title>
         <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
       </div>
-      <div class="col gap1 leftBorderS opacizeParent"
+      <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of OUTs$|async; let i = index">
           <app-module-editor-cv-form-line [item]="item"
@@ -45,7 +45,6 @@
         </ng-container>
       </div>
       <app-module-editor-adder-line (add$)="addOUT$.next($event)"
-                                    class="opacizeOnHover"
       ></app-module-editor-adder-line>
 
     </div>
