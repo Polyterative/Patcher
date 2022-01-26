@@ -23,63 +23,7 @@
         </ng-container>
 
       </div>
-      <div fxLayout="row wrap"
-           fxLayoutGap="1rem grid"
-           fxLayoutAlign="end"
-      >
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          isApproved: false
-        })"
-        >Add IN
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 5,
-          isApproved: false
-        })"
-        >Add 0→5V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 8,
-          isApproved: false
-        })"
-        >Add 0→8V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          min: -5,
-          max: 5,
-          isApproved: false
-        })"
-        >Add -5→5V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          min: 10,
-          max: 10,
-          isApproved: false
-        })"
-        >Add -10→10V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
-          name: '',
-          id: 0,
-          min: 12,
-          max: -12,
-          isApproved: false
-        })"
-        >Add -12→12V
-        </app-brand-primary-button>
-      </div>
+      <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
     </div>
     <div class="auto col gap1"
     >
@@ -100,63 +44,8 @@
           ></app-module-editor-cv-form-line>
         </ng-container>
       </div>
-      <div fxLayout="row wrap"
-           fxLayoutGap="1rem grid"
-           fxLayoutAlign="end"
-      >
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          isApproved: false
-        })"
-        >Add IN
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 5,
-          isApproved: false
-        })"
-        >Add 0→5V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 8,
-          isApproved: false
-        })"
-        >Add 0→8V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          min: -5,
-          max: 5,
-          isApproved: false
-        })"
-        >Add -5→5V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          min: 10,
-          max: 10,
-          isApproved: false
-        })"
-        >Add -10→10V
-        </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addOUT$.next({
-          name: '',
-          id: 0,
-          min: 12,
-          max: -12,
-          isApproved: false
-        })"
-        >Add -12→12V
-        </app-brand-primary-button>
-      </div>
+      <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
+
     </div>
   </div>
   
