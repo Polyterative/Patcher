@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.1](https://github.com/Polyterative/Patcher/compare/v3.3.0...v3.3.1) (2022-01-26)
+
+
+### Features
+
+* login/signup password manager support ([f7cf334](https://github.com/Polyterative/Patcher/commit/f7cf33443316a1a9b9b6a1e3ee0e7d2724170cd2))
+* login/signup UI clean ([2bcb2ba](https://github.com/Polyterative/Patcher/commit/2bcb2ba4892b113cc4464a8d6cf7da5cdcc254e7))
+* login/signup UI clean ([a2b898d](https://github.com/Polyterative/Patcher/commit/a2b898da4a50608bc52524d1a88fd9f1f6e84003))
+* login/signup UI clean ([f0f6355](https://github.com/Polyterative/Patcher/commit/f0f6355bb6808c2d63287866c8df6694493ea8d9))
+* module CV adder supports approval mechanism ([6e6413e](https://github.com/Polyterative/Patcher/commit/6e6413e8fccea3fb56d14ee6e35dbf6663b85a17))
+* module CV editor improvements ([3414537](https://github.com/Polyterative/Patcher/commit/3414537ff604532bbe7d0e6500c56335706bb20c))
+* module CV editor improvements ([1e90ca0](https://github.com/Polyterative/Patcher/commit/1e90ca06509c16e9be7cab8581dc385329cd06de))
+* module CV editor now saves original contributor's name ([34a5c41](https://github.com/Polyterative/Patcher/commit/34a5c41bea2560db246d866af6b0766cd6c6bb3a))
+* module CV editor supports approval mechanism ([b6fed89](https://github.com/Polyterative/Patcher/commit/b6fed899f3f620f020ec9701bc33e290c6db9d1a))
+* module editor improvements ([6a75200](https://github.com/Polyterative/Patcher/commit/6a752007e2d9dd96c1e641e2ee6c44ac2a06b6ae))
+
+
+### Bug Fixes
+
+* rack creator layout is now displaying properly ([425123b](https://github.com/Polyterative/Patcher/commit/425123b0dbf82b74f278b92c40f55635c17e6aea))
+
 ## [3.3.0](https://github.com/Polyterative/Patcher/compare/v3.2.6...v3.3.0) (2022-01-25)
 
 
