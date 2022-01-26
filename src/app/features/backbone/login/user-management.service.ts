@@ -22,7 +22,7 @@ import { SupabaseService }        from '../../backend/supabase.service';
 @Injectable()
 export class UserManagementService {
   loggedUser$ = new ReplaySubject<User | undefined>(1);
-  loggedLserProfile$ = new ReplaySubject<{ username: string, email: string } | undefined>();
+  loggedUserProfile$ = new ReplaySubject<{ username: string, email: string } | undefined>();
   
   constructor(
     public snackBar: MatSnackBar,
@@ -32,11 +32,11 @@ export class UserManagementService {
     public userBoxService: UserDataHandlerService
   ) {
     this.loggedUser$.next(undefined);
-    this.loggedLserProfile$.next(undefined);
+    this.loggedUserProfile$.next(undefined);
     
     this.checkUserInCookies();
-    
-    this.loggedLserProfile$
+  
+    this.loggedUserProfile$
         .pipe()
         .subscribe(x => {
       
@@ -46,14 +46,14 @@ export class UserManagementService {
             this.userBoxService.store.user$.next({username: undefined});
           }
         });
-    
+  
     this.loggedUser$
         .pipe(
-          tap(x => this.loggedLserProfile$.next(undefined)),
+          tap(x => this.loggedUserProfile$.next(undefined)),
           filter(x => !!x),
           switchMap(x => !!x ? this.backend.get.userWithId(x.id) : of(undefined))
         )
-        .subscribe(x => this.loggedLserProfile$.next(x.data));
+        .subscribe(x => this.loggedUserProfile$.next(x.data));
     
     userBoxService.logoffButtonClick$.subscribe(x => {
       this.logoff();
