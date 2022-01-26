@@ -6,6 +6,7 @@ import {
 }                          from '@angular/core';
 import {
   FormControl,
+  FormGroup,
   Validators
 }                          from '@angular/forms';
 import {
@@ -41,24 +42,24 @@ export interface RackCreatorInModel {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackCreatorComponent implements OnInit {
-  public readonly save$ = new Subject<void>();
+  readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
     hp:   {
-      label:   'hp',
+      label:   'HP (per row)',
       code:    'hp',
       flex:    '6rem',
       control: new FormControl('84', Validators.compose([
         Validators.required,
         Validators.min(2),
-        Validators.max(416),
+        Validators.max(216),
         CustomValidators.onlyIntegers
       ])),
       type:    FormTypes.NUMBER
     },
     rows: {
-      label:   'Rows',
+      label:   'Vertical rows amount',
       code:    'rows',
       flex:    '6rem',
       control: new FormControl('2', Validators.compose([
@@ -83,6 +84,12 @@ export class RackCreatorComponent implements OnInit {
     }
   };
   protected destroyEvent$ = new Subject<void>();
+  
+  formGroup = new FormGroup({
+    [this.fields.hp.code]:   this.fields.hp.control,
+    [this.fields.name.code]: this.fields.name.control,
+    [this.fields.rows.code]: this.fields.rows.control
+  });
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
