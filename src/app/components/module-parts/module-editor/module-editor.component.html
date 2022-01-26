@@ -1,6 +1,5 @@
 <div class="col gap1"
 >
-  
   <div class="col gap1"
   >
     <div class="auto col gap1"
@@ -15,38 +14,14 @@
       <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of INs$|async; let i = index">
-  
-          <div ngClass.sm="col gap1"
-               ngClass.gt-sm="row gap1"
-          >
-            <div fxLayoutAlign="start center">
-              <button mat-icon-button
-                      [disabled]="item.id!=0"
-                      (click)="removeIN$.next(i)"
-              >
-                <mat-icon>
-                  delete
-                </mat-icon>
-              </button>
-            </div>
-            <lib-mat-form-entity [type]="types.TEXT"
-                                 [control]="item.name"
-                                 label="name"
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity [type]="types.NUMBER"
-                                 [control]="item.a"
-                                 label="min V"
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity [type]="types.NUMBER"
-                                 [control]="item.b"
-                                 label="max V"
-            ></lib-mat-form-entity>
-            <mat-divider inset="true"
-                         fxHide="true"
-                         fxShow.lt-md="true"
-            ></mat-divider>
-          </div>
+          <app-module-editor-cv-form-line [item]="item"
+                                          (removeRequest$)="removeIN$.next(i)"
+                                          [@enter]
+                                          [@exit]
+          ></app-module-editor-cv-form-line>
+
         </ng-container>
+
       </div>
       <div fxLayout="row wrap"
            fxLayoutGap="1rem grid"
@@ -118,50 +93,25 @@
       <div class="col gap1 leftBorderS"
       >
         <ng-container *ngFor="let item of OUTs$|async; let i = index">
-          <div ngClass.sm="col gap1"
-               ngClass.gt-sm="row gap1"
-          >
-            <div fxLayoutAlign="start center">
-              <button mat-icon-button
-                      [disabled]="item.id!=0"
-                      (click)="removeOUT$.next(i)"
-              >
-                <mat-icon>
-                  delete
-                </mat-icon>
-              </button>
-            </div>
-            <lib-mat-form-entity [type]="types.TEXT"
-                                 [control]="item.name"
-                                 label="name"
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity [type]="types.NUMBER"
-                                 [control]="item.a"
-                                 label="min V"
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity [type]="types.NUMBER"
-                                 [control]="item.b"
-                                 label="max V"
-            ></lib-mat-form-entity>
-            <mat-divider inset="true"
-                         fxHide="true"
-                         fxShow.lt-md="true"
-            ></mat-divider>
-          </div>
+          <app-module-editor-cv-form-line [item]="item"
+                                          (removeRequest$)="removeOUT$.next(i)"
+                                          [@enter]
+                                          [@exit]
+          ></app-module-editor-cv-form-line>
         </ng-container>
       </div>
       <div fxLayout="row wrap"
            fxLayoutGap="1rem grid"
            fxLayoutAlign="end"
       >
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           isApproved: false
         })"
         >Add IN
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           min: 0,
@@ -170,7 +120,7 @@
         })"
         >Add 0→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           min: 0,
@@ -179,7 +129,7 @@
         })"
         >Add 0→8V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           min: -5,
@@ -188,7 +138,7 @@
         })"
         >Add -5→5V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           min: 10,
@@ -197,7 +147,7 @@
         })"
         >Add -10→10V
         </app-brand-primary-button>
-        <app-brand-primary-button (click$)="addIN$.next({
+        <app-brand-primary-button (click$)="addOUT$.next({
           name: '',
           id: 0,
           min: 12,
@@ -210,28 +160,20 @@
     </div>
   </div>
   
-  <div fxFlex="100"
-       fxLayout="row"
+  
+  <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
+  
+  <div fxLayout="row"
        fxLayout.lt-md="column"
        fxLayoutGap="1rem"
   >
-  
-  
-    <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-  
-    <div fxFlex="100"
-         fxLayout="row"
-         fxLayout.lt-md="column"
-         fxLayoutGap="1rem"
-    >
-      <app-advice-tooltip fxFlex="basis"
-      >Update this only if data is incorrect or some is missing.
-      </app-advice-tooltip>
-      <mat-card-subtitle fxFlex="100"
-                         fxLayoutAlign="end center"
-      >Any changes you make will affect what all other users see
-      </mat-card-subtitle>
-    </div>
+    <app-advice-tooltip fxFlex="basis"
+    >Update this only if data is incorrect or some is missing.
+    </app-advice-tooltip>
+    <mat-card-subtitle fxFlex="100"
+                       fxLayoutAlign="end center"
+    >Any changes you make will affect what all other users see
+    </mat-card-subtitle>
   </div>
   <mat-divider inset="true"></mat-divider>
   <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
@@ -241,7 +183,11 @@
     <app-brand-primary-button (click$)="save$.next()"
                               theme="positive"
                               fxLayoutAlign="end"
-                              [disabled]="!(formGroupA|formValid)||!(formGroupB|formValid)||!(formGroupC|formValid)"
+                              [disabled]="
+                              (!(formGroupA|formValid))||
+                              (!(formGroupB|formValid))||
+                              (!(formGroupC|formValid))
+"
     >
       <mat-icon>save</mat-icon>
       Save INs and OUTs

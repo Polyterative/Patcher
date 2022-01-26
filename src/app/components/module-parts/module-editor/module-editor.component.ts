@@ -13,6 +13,10 @@ import {
   Validators
 }                                  from '@angular/forms';
 import {
+  fadeInExpandOnEnterAnimation,
+  fadeOutCollapseOnLeaveAnimation
+}                                  from 'angular-animations';
+import {
   BehaviorSubject,
   concat,
   Subject
@@ -30,7 +34,7 @@ import { CV }                      from '../../../models/cv';
 import { DbModule }                from '../../../models/module';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
-interface FormCV {
+export interface FormCV {
   id: number;
   name: FormControl;
   a: FormControl;
@@ -42,6 +46,20 @@ interface FormCV {
   selector:        'app-module-editor',
   templateUrl:     './module-editor.component.html',
   styleUrls:       ['./module-editor.component.scss'],
+  animations:      [
+    fadeInExpandOnEnterAnimation(
+      {
+        duration: 250,
+        anchor:   'enter'
+      }
+    ),
+    fadeOutCollapseOnLeaveAnimation(
+      {
+        duration: 250,
+        anchor:   'exit'
+      }
+    )
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleEditorComponent implements OnInit, OnDestroy {
@@ -87,24 +105,30 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(cv => {
-          const x = [
+          const formCVS: FormCV[] = [
             ...this.INs$.value,
             this.createFomCV(cv)
           ];
-    
-          this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
-    
+          this.updateFormGroupAndContainer(
+            formCVS,
+            this.formGroupA,
+            this.INs$
+          );
+  
         });
   
     this.addOUT$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(cv => {
-          const x: any[] = [
+          const formCVS: FormCV[] = [
             ...this.OUTs$.value,
             this.createFomCV(cv)
           ];
-    
-          this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
-    
+          this.updateFormGroupAndContainer(
+            formCVS,
+            this.formGroupB,
+            this.OUTs$
+          );
+  
         });
   
     this.removeIN$.pipe(takeUntil(this.destroyEvent$))
@@ -129,7 +153,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         ins:  this.formCVToCV(this.INs$.value),
         outs: this.formCVToCV(this.OUTs$.value)
       })),
-      // switchMap(x => this.backend.update.module(x)),
       switchMap(x => concat(
         this.backend.update.moduleINsOUTs(x),
         this.backend.update.module(x)
@@ -137,7 +160,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
-        .subscribe(([x, a]) => this.dataService.updateSingleModuleData$.next(a));
+        .subscribe(([x, updateSingleModuleData]) => this.dataService.updateSingleModuleData$.next(
+          updateSingleModuleData)
+        );
   }
   
   ngOnDestroy(): void {
@@ -161,12 +186,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     for (const key in group.controls) {
       group.removeControl(key);
     }
-    
-    cvs.forEach((a, i) => {
-      group.addControl(`name${ i.toString() }`, a.name);
-      group.addControl(`a${ i.toString() }`, a.a);
-      group.addControl(`b${ i.toString() }`, a.b);
-    });
+  
+    // only add CV not yet saved on backend
+    cvs.filter(cv => cv.id === 0)
+       .forEach((a, i) => {
+         group.addControl(`name${ i.toString() }`, a.name);
+         group.addControl(`a${ i.toString() }`, a.a);
+         group.addControl(`b${ i.toString() }`, a.b);
+       });
   }
   
   private serialize(cvs: CV[]): string {
@@ -174,21 +201,21 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   private createFomCV(data: Partial<CV>): FormCV {
-    let toReturn: { a: FormControl; b: FormControl; name: FormControl; id: number; isApproved: boolean } = {
+    const toReturn: { a: FormControl; b: FormControl; name: FormControl; id: number; isApproved: boolean } = {
       name:       new FormControl(data.name, this.validatorsName),
       a:          new FormControl(data.min, this.validatorsNum),
       b:          new FormControl(data.max, this.validatorsNum),
       id:         data.id,
       isApproved: data.isApproved
     };
-    
-    // disable if not approved yet
-    if (data.isApproved !== undefined && !data.isApproved) {
+  
+    // disable if has been uploaded already on the server
+    if (data.id > 0) {
       toReturn.name.disable();
       toReturn.a.disable();
       toReturn.b.disable();
     }
-    
+  
     return toReturn;
   }
   
@@ -202,8 +229,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       isApproved: formCV.isApproved ? formCV.isApproved : false
       // isVOCT?: boolean;
     }));
-  
-    console.log(x);
   
     return x;
   }
