@@ -9,8 +9,8 @@
       >
   
         <ng-container *ngIf="{
-          userProfile:(userManagementService.userProfile$|async),
-          user:(userManagementService.user$|async)
+          userProfile:(userManagementService.loggedLserProfile$|async),
+          user:(userManagementService.loggedUser$|async)
           } as bag"
         >
           <div class="col gap1"

@@ -22,7 +22,10 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { environment }     from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
-import { CV }              from '../../models/cv';
+import {
+  CV,
+  CVwithModuleId
+}                          from '../../models/cv';
 import { DBManufacturer }  from '../../models/manufacturer';
 import {
   DbModule,
@@ -391,7 +394,8 @@ export class SupabaseService {
       data.manufacturer = undefined;
       data.ins = undefined;
       data.outs = undefined;
-  
+      data.tags = undefined; // todo handle tags
+    
       return rxFrom(
         this.supabase.from(this.paths.modules)
             .update(data)
@@ -402,7 +406,7 @@ export class SupabaseService {
     },
     rackedModules: (data: RackedModule[]) => {
       const rackId: number = data[0].rackingData.rackid;
-  
+    
       return rxFrom(
         this.supabase.from(this.paths.rack_modules)
             .upsert(data.filter(x => x.rackingData.id != undefined)
@@ -580,11 +584,11 @@ export class SupabaseService {
     return this.login(email, password)
                .pipe(
                  switchMap(x => rxFrom(
-                   this.supabase
-                       .from(this.paths.profiles)
-                       .update({
-                         confirmed: true,
-                         username
+                     this.supabase
+                         .from(this.paths.profiles)
+                         .update({
+                           confirmed: true,
+                           username
                          })
                          .eq('id', x.user.id)
                    )
@@ -645,12 +649,8 @@ export class SupabaseService {
   }
   
   private getCvMapper(moduleid: number) {
-    const mapper: (cv) => { min: number; id: number; max: number; name: string; moduleid: number } = (roq: CV) => ({
-      max:  roq.max,
-      min:  roq.min,
-      name: roq.name,
-      // id:       roq.id > 0 ? roq.id : undefined, //fix this
-      id: roq.id,
+    const mapper: (cv) => CVwithModuleId = (cv: CV) => ({
+      ...cv,
       moduleid
     });
   

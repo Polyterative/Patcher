@@ -161,7 +161,7 @@ export class RackDetailDataService extends SubManager {
     // track if rack is property of current user
     this.manageSub(
       combineLatest([
-        this.userService.user$,
+        this.userService.loggedUser$,
         this.singleRackData$
       ])
         .pipe(

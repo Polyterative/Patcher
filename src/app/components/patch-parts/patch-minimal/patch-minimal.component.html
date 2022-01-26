@@ -1,6 +1,6 @@
 <ng-container *ngIf="{
   patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
-  user:(userManagerService.user$|async),
+  user:(userManagerService.loggedUser$|async),
   singlePatchData:(dataService.singlePatchData$|async)
   } as bag"
 >

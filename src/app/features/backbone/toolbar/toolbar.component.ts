@@ -98,7 +98,7 @@ export class ToolbarComponent extends SubManager {
     super();
   
     this.manageSub(
-      this.userService.userProfile$
+      this.userService.loggedLserProfile$
           .subscribe(x => {
   
             const element: RouteClickableLink = this.linksUser$.value[1];
