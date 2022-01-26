@@ -12,6 +12,7 @@ import {
   ValidatorFn,
   Validators
 }                                  from '@angular/forms';
+import { MatSnackBar }             from '@angular/material/snack-bar';
 import {
   fadeInExpandOnEnterAnimation,
   fadeOutCollapseOnLeaveAnimation
@@ -80,7 +81,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   formGroupA = this.formBuilder.group({});
   formGroupB = this.formBuilder.group({});
-  formGroupC = this.formBuilder.group({});
+  // formGroupC = this.formBuilder.group({});
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -100,7 +101,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     public backend: SupabaseService,
     public formBuilder: FormBuilder,
     public dataService: ModuleDetailDataService,
-    public userManagementService: UserManagementService
+    public userManagementService: UserManagementService,
+    public snackBar: MatSnackBar
   ) {
   
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
@@ -160,8 +162,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
-        .subscribe(([x, updateSingleModuleData]) => this.dataService.updateSingleModuleData$.next(
-          updateSingleModuleData)
+        .subscribe(([x, updateSingleModuleData]) => {
+            this.dataService.updateSingleModuleData$.next(
+              updateSingleModuleData);
+      
+            this.snackBar.open('The community appreciates your effort, thank you for your contribution', undefined, {
+              duration: 5000
+            });
+          }
         );
   }
   
@@ -181,7 +189,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
-    subject.next(cvs);
   
     for (const key in group.controls) {
       group.removeControl(key);
@@ -194,6 +201,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
          group.addControl(`a${ i.toString() }`, a.a);
          group.addControl(`b${ i.toString() }`, a.b);
        });
+  
+    subject.next(cvs);
+  
   }
   
   private serialize(cvs: CV[]): string {
