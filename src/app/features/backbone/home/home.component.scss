@@ -12,9 +12,14 @@ app-brand-primary-button {
 
 .embedded {
   //margin:      2rem;
-  zoom:        .75;
-  user-select: none;
-  filter:      grayscale(90%);
+  user-select:      none;
+
+  transform:        scale(.75);
+  transform-origin: 0 0;
+
+  //or using “transform” along with “transform-origin: 0 0”.
+
+  filter:           grayscale(20%);
 
 
 }
