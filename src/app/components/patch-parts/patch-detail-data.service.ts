@@ -280,16 +280,23 @@ export class PatchDetailDataService implements OnDestroy {
   
             const data: ConfirmDialogDataInModel = {
               title:       'Deletion',
-              description: 'Are you sure you want to delete this item?',
-              positive:    {label: '✔️ Delete'},
-              negative:    {label: '❌ Cancel'}
+              description: 'Are you sure you want to delete this patch? This action cannot be undone. This will also delete all connections associated with this patch.',
+              positive:    {
+                label: 'Delete',
+                theme: 'warning'
+              },
+              negative:    {
+                label: 'Cancel',
+                theme: 'primary'
+              }
             };
   
             return this.dialog.open(
               ConfirmDialogComponent,
               {
                 data,
-                disableClose: true
+                disableClose: true,
+                width:        '32rem'
               }
             )
                        .afterClosed()

@@ -4,6 +4,7 @@
    [class]="'button'+' '+theme"
    [disabled]="disabled||error"
    [ngClass]='{"disabled": disabled, "error": error }'
+   [cdkTrapFocus]="autoFocus"
    (click)="disabled?doNothing():click$.emit()"
 >
   <ng-content></ng-content>

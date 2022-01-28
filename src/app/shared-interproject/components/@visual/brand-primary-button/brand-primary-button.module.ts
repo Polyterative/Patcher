@@ -1,3 +1,4 @@
+import { A11yModule }                  from '@angular/cdk/a11y';
 import { CommonModule }                from '@angular/common';
 import { NgModule }                    from '@angular/core';
 import { FlexLayoutModule }            from '@angular/flex-layout';
@@ -14,7 +15,8 @@ import { BrandPrimaryButtonComponent } from './brand-primary-button.component';
     FlexLayoutModule,
     MatButtonModule,
     MatIconModule,
-    RouterModule
+    RouterModule,
+    A11yModule
   ],
   exports:      [BrandPrimaryButtonComponent]
 })
