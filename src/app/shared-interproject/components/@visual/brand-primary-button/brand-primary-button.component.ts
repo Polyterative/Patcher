@@ -24,7 +24,7 @@ export class BrandPrimaryButtonComponent {
   @Output() readonly click$ = new EventEmitter<void>();
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | any[] = undefined;
-  
+  @Input() autoFocus = false;
   doNothing() {
     // do not delete this
   }
