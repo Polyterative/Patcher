@@ -1,13 +1,10 @@
-<div class="row gap1"
-     [ngClass.lt-md]="{'column':true}"
->
-  <div fxFlex="grow"
-       class="row gap0"
+<div class="col ">
+  <div class="row gap0"
+       [ngClass.lt-md]="{'column':true}"
   >
     <app-module-minimal fxFlex="100"
                         [data]="data.a.module"
                         [viewConfig]="viewConfig"
-
     >
       <mat-chip-list>
         <app-module-cvitem [data]="data.a"
@@ -20,7 +17,6 @@
                         [data]="data.b.module"
                         [viewConfig]="viewConfig"
     >
-  
       <mat-chip-list>
         <app-module-cvitem [data]="data.b"
                            kind="in"
@@ -29,12 +25,19 @@
     </app-module-minimal>
   </div>
   
-  <ng-container *ngIf="!isEditing">
-    <div fxFlex="25%"
-         class="row gap0"
-    >
+  <lib-mat-form-entity [type]="types.AREA"
+                       [control]="notes.control"
+                       label="Notes"
+                       [disabled]="!isEditing"
+                       *ngIf="isEditing&&!isCreator"
+                       [hint]="notes.control.value.length+'/999'"
+                       [ngClass]="{'padT0':notes.control.value.length>0}"
+  ></lib-mat-form-entity>
   
-      <div fxFlex="grow">
+  <ng-container *ngIf="!isEditing">
+    <div class="row gap0 padT0"
+    >
+      <div class="grow">
         <ng-container *ngIf="data.notes&&data.notes.length>0">
           <mat-card-subtitle style="font-style:italic"
           >
@@ -42,45 +45,41 @@
           </mat-card-subtitle>
         </ng-container>
       </div>
-      <ng-container *ngTemplateOutlet="ordinal"></ng-container>
+      
+      <div>
+        <ng-container *ngTemplateOutlet="ordinal"></ng-container>
+      </div>
     </div>
   </ng-container>
   <ng-container *ngIf="isEditing">
-    <mat-divider [vertical]="true"
-    ></mat-divider>
-    <div class="col gap0"
-    >
-      <ng-container *ngTemplateOutlet="ordinal"></ng-container>
-      <button mat-icon-button
-              [matTooltip]="isCreator?'Clear selection':'Remove connection'"
-              (click)="remove$.next(data)"
-      >
-        <!--        <mat-icon>link_off</mat-icon>-->
-        <mat-icon>delete</mat-icon>
-      </button>
+    <div class="row gap0 padT0">
+      
+      <mat-icon [matTooltip]="isCreator?'Clear selection':'Remove connection'"
+                (click)="remove$.next(data)"
+                class="transparentize-quarter clickable"
+      >close
+      </mat-icon>
       <div fxFlex="grow"></div>
-      <app-brand-primary-button *ngIf="isCreator"
-                                (click)="create$.next(data)"
-      >
-        <!--        <mat-icon>add_link</mat-icon>-->
-        Add
-      </app-brand-primary-button>
+      <div>
+        <app-brand-primary-button *ngIf="isCreator"
+                                  (click)="create$.next(data)"
+        >
+          Add
+        </app-brand-primary-button>
+      </div>
+      <div class="grow">
+        <ng-container *ngTemplateOutlet="ordinal"></ng-container>
+      </div>
     </div>
   </ng-container>
+  
+  <ng-template #ordinal>
+    <mat-card-subtitle *ngIf="index"
+                       fxLayoutAlign="end center"
+                       class="monospace"
+                       [ngClass]="index%5!=0?'fade-ordinal':''"
+    >#{{index}}</mat-card-subtitle>
+  </ng-template>
+  <ng-template #notesT>
+  </ng-template>
 </div>
-<lib-mat-form-entity [type]="types.AREA"
-                     [control]="notes.control"
-                     label="Notes"
-                     [disabled]="!isEditing"
-                     *ngIf="isEditing&&!isCreator"
-                     [hint]="notes.control.value.length+'/999'"
-></lib-mat-form-entity>
-
-
-<ng-template #ordinal>
-  <mat-card-subtitle *ngIf="index"
-                     fxLayoutAlign="end end"
-                     class="monospace"
-                     [ngClass]="index%5!=0?'fade-ordinal':''"
-  >#{{index}}</mat-card-subtitle>
-</ng-template>

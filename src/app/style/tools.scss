@@ -8,6 +8,10 @@
   -webkit-box-direction: normal;
 }
 
+.grow {
+  flex-grow: 1;
+}
+
 .row {
   @include flex;
   display:            inline-flex;
