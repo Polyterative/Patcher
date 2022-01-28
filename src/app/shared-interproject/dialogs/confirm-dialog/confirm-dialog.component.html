@@ -1,49 +1,55 @@
-﻿<!--<div style='min-width:350px '>-->
-<div fxLayout="column "
-     fxLayoutGap="0.2em"
+﻿<div fxFlex="100"
+     fxLayout="column"
+     fxLayoutGap="1rem"
 >
-  <div fxFlex="100"><h1 mat-dialog-title>{{title}}</h1></div>
-  <div fxFlex="100"
-       *ngIf="description"
+  <div fxLayout="column "
+       fxLayoutGap="0.2em"
   >
-    <mat-dialog-content>
-      {{description}}
-    </mat-dialog-content>
-  </div>
-</div>
-
-<mat-dialog-actions>
-  <div fxFlexFill
-       fxLayoutGap="1em"
-       fxLayoutGap.sm="0.5em"
-       fxLayoutGap.xs="0.5em"
-       fxLayout.sm="column"
-       fxLayout.xs="column"
-       fxLayout="row"
-  >
-    <div fxFlex="grow"
-         fxFlex.xs="0"
-         fxFlex.sm="0"
-    ></div>
-    <div fxFlex="100">
-      <button fxFlex="100"
-              mat-flat-button
-              autofocus
-              [mat-dialog-close]="{answer:false}"
-              [disabled]="negative&&negative.disabled?negative.disabled:false"
-      >{{negative && negative.label ? negative.label : "No"}}
-      </button>
-    </div>
-    <div fxFlex="100">
-      <button fxFlex="100"
-              mat-flat-button
-              color="primary"
-              [mat-dialog-close]="{answer:true}"
-              [disabled]="positive&&positive.disabled?positive.disabled:false"
-      >{{positive && positive.label ? positive.label : "Si"}}
-      </button>
+    <div fxFlex="100"><h1 mat-dialog-title>{{title}}</h1></div>
+    <div fxFlex="100"
+         *ngIf="description"
+    >
+      <mat-dialog-content>
+        {{description}}
+      </mat-dialog-content>
     </div>
   </div>
-</mat-dialog-actions>
-<!--</div>-->
-<!--&lt;!&ndash;&ndash;&gt;-->
+  
+  <mat-dialog-actions>
+    <div fxFlexFill
+         fxLayoutGap="1em"
+         fxLayoutGap.sm="0.5em"
+         fxLayoutGap.xs="0.5em"
+         fxLayout.sm="column"
+         fxLayout.xs="column"
+         fxLayout="row"
+    
+    >
+      
+      <div>
+        <app-brand-primary-button (click$)="dialogRef.close({answer:false})"
+                                  [disabled]="negative&&negative.disabled?negative.disabled:false"
+                                  [theme]="negative.theme"
+                                  autoFocus="true"
+        >
+          {{negative && negative.label ? negative.label : "No"}}
+        </app-brand-primary-button>
+      </div>
+      <div fxFlex="grow"
+           fxFlex.xs="0"
+           fxFlex.sm="0"
+      ></div>
+      <div>
+        <app-brand-primary-button (click$)="dialogRef.close({answer:true})"
+                                  [disabled]="positive&&positive.disabled?positive.disabled:false"
+                                  [theme]="positive.theme"
+                                  theme="positive"
+                                  autoFocus="false"
+        >
+          {{positive && positive.label ? positive.label : "Si"}}
+        </app-brand-primary-button>
+      </div>
+    </div>
+  </mat-dialog-actions>
+  <!--</div>-->
+  <!--&lt;!&ndash;&ndash;&gt;--></div>
