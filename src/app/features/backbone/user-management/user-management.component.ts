@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnInit
 }                                from '@angular/core';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SeoAndUtilsService }    from '../seo-and-utils.service';
 
 @Component({
   selector:        'app-user-management',
@@ -12,12 +14,20 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManagementComponent implements OnInit {
+  @Input() ignoreSeo: boolean = false;
   
   constructor(
-    public userManagementService: UserManagementService
+    public userManagementService: UserManagementService,
+    readonly seoAndUtilsService: SeoAndUtilsService
   ) { }
   
   ngOnInit(): void {
+    if (!this.ignoreSeo) {
+      this.seoAndUtilsService.updateSeo({
+        title:       'Account Management',
+        description: 'Personal account management.'
+      }, 'Account Management');
+    }
   }
   
 }
