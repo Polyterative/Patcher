@@ -25,11 +25,13 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     hideDescription:  false,
     hideButtons:      false,
     hideHP:           false,
-    hideDates:        false
+    hideDates:        false,
+    hideTags:         false
   };
   
+  protected destroyEvent$ = new Subject<void>();
+  
   constructor(public dataService: ModuleBrowserDataService) {
-    
     
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
@@ -41,7 +43,6 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
         name: 'Updated ↓'
       });
       
-      
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(10);
     }
@@ -50,10 +51,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // this.dataService.fields.search.control.patchValue('');
     
-    
   }
-  
-  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
