@@ -9,6 +9,7 @@ import { MatPaginator }            from '@angular/material/paginator';
 import { Subject }                 from 'rxjs';
 import { takeUntil }               from 'rxjs/operators';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
+import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-patch-browser-root',
@@ -19,18 +20,25 @@ import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-br
 export class PatchBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   
-  constructor(public dataService: PatchBrowserDataService) {
+  protected destroyEvent$ = new Subject<void>();
+  
+  constructor(
+    public dataService: PatchBrowserDataService,
+    readonly seoAndUtilsService: SeoAndUtilsService
+  ) {
+    
+    this.seoAndUtilsService.updateSeo({description: 'Patches created by patcher.xyz community. Get inspiration and explore new ideas!'}, 'Patches');
+    
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(value => this.paginator.firstPage());
-  
+    
     if (!this.dataService.dirty) {
       this.dataService.fields.order.control.patchValue({
         id:   'updated',
         name: 'Updated ↓'
       });
-    
-    
+      
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(10);
     }
@@ -38,8 +46,6 @@ export class PatchBrowserRootComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
   }
-  
-  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();

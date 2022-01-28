@@ -8,7 +8,6 @@ import {
   slideInDownOnEnterAnimation
 }                                  from 'angular-animations';
 import { BehaviorSubject }         from 'rxjs';
-import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import {
   CardLinkDataModel,
   cleanCardlinkModelObject
@@ -17,6 +16,8 @@ import { ModuleDetailDataService } from '../../../components/module-parts/module
 import { PatchDetailDataService }  from '../../../components/patch-parts/patch-detail-data.service';
 import { RackDetailDataService }   from '../../../components/rack-parts/rack-detail-data.service';
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
+import { SupabaseService }         from '../../backend/supabase.service';
+import { SeoAndUtilsService }      from '../seo-and-utils.service';
 
 @Component({
   selector:    'app-home',
@@ -71,11 +72,12 @@ export class HomeComponent extends SubManager implements OnDestroy {
   ]);
   
   constructor(
-    public patchDetailDataService: PatchDetailDataService,
-    public rackDetailDataService: RackDetailDataService,
-    public moduleDetailDataService: ModuleDetailDataService,
-    public backend: SupabaseService,
-    private router: Router
+    readonly patchDetailDataService: PatchDetailDataService,
+    readonly rackDetailDataService: RackDetailDataService,
+    readonly moduleDetailDataService: ModuleDetailDataService,
+    readonly backend: SupabaseService,
+    private readonly router: Router,
+    readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
     this.patchDetailDataService.updateSinglePatchData$.next(5);
@@ -88,6 +90,8 @@ export class HomeComponent extends SubManager implements OnDestroy {
         .subscribe(value => {
           this.statistics$.next(value);
         });
+  
+    this.seoAndUtilsService.updateSeo({}, 'Home');
   
   }
   

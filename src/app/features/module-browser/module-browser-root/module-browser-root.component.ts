@@ -10,6 +10,7 @@ import { Subject }                  from 'rxjs';
 import { takeUntil }                from 'rxjs/operators';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 import { ModuleMinimalViewConfig }  from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-module-browser-root',
@@ -31,7 +32,10 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$ = new Subject<void>();
   
-  constructor(public dataService: ModuleBrowserDataService) {
+  constructor(
+    public dataService: ModuleBrowserDataService,
+    readonly seoAndUtilsService: SeoAndUtilsService
+  ) {
     
     this.dataService.paginatorToFistPage$
         .pipe(takeUntil(this.destroyEvent$))
@@ -46,6 +50,8 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(10);
     }
+    
+    this.seoAndUtilsService.updateSeo({description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'}, 'Modules');
   }
   
   ngOnInit(): void {
