@@ -41,7 +41,7 @@
 
     </div>
     <ng-container>
-    
+  
       <div class="col gap2"
            style="border-left: 1px solid #ccc; border-right: 1px solid #ccc;"
       >
@@ -54,13 +54,14 @@
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <app-patch-browser-patch-detail-view-root class="embedded"
+                                                          [ignoreSeo]="true"
                 ></app-patch-browser-patch-detail-view-root>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
           <mat-divider inset="true"
           ></mat-divider>
-        
+  
           <lib-hero-header class="gradientCard"
                            [title]="'Find modules ('+(statistics$|async)[0]+')'"
                            description="Eurocrack addict? Here you can find all the stuff you need."
@@ -68,13 +69,14 @@
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <app-module-browser-module-detail-view-root class="embedded"
+                                                            [ignoreSeo]="true"
                 ></app-module-browser-module-detail-view-root>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-        
+  
           <mat-divider inset="true"></mat-divider>
-        
+  
           <lib-hero-header class="gradientCard"
                            [title]="'Manage racks ('+(statistics$|async)[1]+')'"
                            description="Plan the next expansion, so you know how much pasta to buy until the next paycheck"
@@ -82,12 +84,13 @@
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <app-rack-browser-rack-detail-view-root class="embedded"
+                                                        [ignoreSeo]="true"
                 ></app-rack-browser-rack-detail-view-root>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-        
-        
+  
+  
           <lib-hero-header class="gradientCard"
                            title="Wanna try?"
                            description="We have Maths. HAHA get more VCAs! I mean what else do you want. "

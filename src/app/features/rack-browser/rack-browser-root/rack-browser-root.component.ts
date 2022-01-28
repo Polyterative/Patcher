@@ -38,7 +38,7 @@ export class RackBrowserRootComponent implements OnInit, OnDestroy {
         id:   'updated',
         name: 'Updated ↓'
       });
-    
+  
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(10);
     }

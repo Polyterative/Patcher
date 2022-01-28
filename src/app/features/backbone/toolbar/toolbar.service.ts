@@ -15,7 +15,7 @@ export class ToolbarService {
   // };
 
   readonly state = {
-    title:           new BehaviorSubject('Patcher'),
+    title:           new BehaviorSubject('patcher.xyz'),
     toolbarVisible$: new BehaviorSubject(true)
   };
 

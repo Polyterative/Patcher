@@ -7,6 +7,7 @@ import {
 import { UserManagementService }   from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService }         from 'src/app/features/backend/supabase.service';
 import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-user-area-root',
@@ -25,12 +26,22 @@ export class UserAreaRootComponent implements OnInit {
     hideTags:         true
   };
   
+  @Input() ignoreSeo = false;
+  
   constructor(
     public userService: UserManagementService,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    readonly seoAndUtilsService: SeoAndUtilsService
   ) { }
   
   ngOnInit(): void {
+    if (!this.ignoreSeo) {
+      this.seoAndUtilsService.updateSeo({
+        title:       'User collection',
+        description: 'Personal user collection'
+      }, 'User Area');
+    }
+    
   }
   
 }
