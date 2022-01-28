@@ -48,37 +48,9 @@
   //margin-bottom:      20px;
 }
 
-@mixin scrollbars(
-  $size: $standardUnit/2,
-  $foreground-color: rgba(0,0,0,0.25),
-  $background-color: rgba(0,0,0,0.15)
-) {
-  // For Chrome & Safari
-  &::-webkit-scrollbar {
-    width:  $size;
-    height: $size;
-  }
-  &::-webkit-scrollbar-thumb {
-    background:    $foreground-color;
-    border-radius: $size*2;
-  }
-  &::-webkit-scrollbar-track {
-    background: $background-color;
-  }
 
-}
 
-.limit-height {
-  @include scrollbars;
 
-  max-height: 50rem;
-  overflow-x: auto;
-  @media (max-height: 50rem) {
-    max-height:   25rem;
-    overflow-x:   auto;
-    margin-right: $standardUnit/2;
-  }
-}
 
 .darker-bg {
   background-color: rgba(0, 0, 0, 0.05);
