@@ -21,7 +21,7 @@
                            class="transition-all-long"
                            [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
     >
-      <div class="col gap1 transition-all"
+      <div class="col gap1 transition-all scroll custom-scrollbar"
            style="overflow-x: auto;"
            [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
       >
