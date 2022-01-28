@@ -1,5 +1,6 @@
 import {
   Component,
+  Input,
   OnInit
 }                                  from '@angular/core';
 import { ActivatedRoute }          from '@angular/router';
@@ -22,6 +23,7 @@ import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
   
   protected destroyEvent$ = new Subject<void>();
+  @Input() ignoreSeo = false;
   
   constructor(
     public dataService: ModuleDetailDataService,
@@ -29,11 +31,10 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
   
-    seoAndUtilsService.updateSeo({}, 'Module Details');
-  
   }
   
   ngOnInit(): void {
+    if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Module Details'); }
   
     this.route.params
         .pipe(
@@ -46,31 +47,33 @@ export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
           this.dataService.updateSingleModuleData$.next(data);
         });
   
-    this.dataService.singleModuleData$
-        .pipe(
-          filter(x => !!x),
-          take(1)
-        )
-        .subscribe(data => {
-          const tags: string = data.tags.map(x => x.tag.name)
-                                   .join(', ');
-          const seoData: SeoSocialShareData = {
-            title:       `${ data.name } - details. `,
-            description: `${ data.name } - module details.
-              Has ${ data.ins.length } inputs and ${ data.outs.length } outputs.
-              Made by ${ data.manufacturer.name }.
-              Module is ${ data.hp } HP wide.
-              Tagged ${ tags }.
-              `,
-            keywords:    `${ tags }, module, eurorack,${ data.manufacturer.name },${ data.ins.map(x => x.name)
-                                                                                         .join(', ') }, ${ data.outs.map(x => x.name)
-                                                                                                               .join(', ') }`,
-            published:   data.created,
-            modified:    data.updated
-          };
-          this.seoAndUtilsService.updateSeo(seoData,
-            `${ data.name } by ${ data.manufacturer.name } - Module Details`);
-        });
+    if (!this.ignoreSeo) {
+      this.dataService.singleModuleData$
+          .pipe(
+            filter(x => !!x),
+            take(1)
+          )
+          .subscribe(data => {
+            const tags: string = data.tags.map(x => x.tag.name)
+                                     .join(', ');
+            const seoData: SeoSocialShareData = {
+              title:       `${ data.name } - details. `,
+              description: `${ data.name } - module details.
+                Has ${ data.ins.length } inputs and ${ data.outs.length } outputs.
+                Made by ${ data.manufacturer.name }.
+                Module is ${ data.hp } HP wide.
+                Tagged ${ tags }.
+                `,
+              keywords:    `${ tags }, module, eurorack,${ data.manufacturer.name },${ data.ins.map(x => x.name)
+                                                                                           .join(', ') }, ${ data.outs.map(x => x.name)
+                                                                                                                 .join(', ') }`,
+              published:   data.created,
+              modified:    data.updated
+            };
+            this.seoAndUtilsService.updateSeo(seoData,
+              `${ data.name } by ${ data.manufacturer.name } - Module Details`);
+          });
+    }
   
   }
   
