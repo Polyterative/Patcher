@@ -61,7 +61,7 @@
                                                         b:bag.selectedForConnection.b.cv,
                                                         patch:dataService.singlePatchData$|async
                                                         }"
-                                              isEditing="true"
+                                              [isEditing]="true"
                                               [isCreator]="true"
                                               (remove$)="dataService.resetSelectedForConnection$.next()"
                                               (create$)="dataService.confirmSelectedConnection$.next()"
