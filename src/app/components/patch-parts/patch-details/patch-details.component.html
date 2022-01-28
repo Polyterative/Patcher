@@ -29,17 +29,9 @@
                                *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
         >
           <lib-clean-card>
-            <div class="col gap1"
-            >
-              <ng-container *ngFor="let item of bag.connections; let i = index">
-                <app-patch-connection-minimal [data]="item"
-                                              [index]="i+1"
-                ></app-patch-connection-minimal>
-                <mat-divider inset="true"
-                             *ngIf="i!=bagA.length-1"
-                ></mat-divider>
-              </ng-container>
-            </div>
+            <app-patch-connections-list [editorConnections]="bag.connections"
+                                        [isEditing]="false"
+            ></app-patch-connections-list>
           </lib-clean-card>
         </lib-hero-content-card>
       </ng-container>

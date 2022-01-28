@@ -8,8 +8,8 @@ import {
   fadeOutOnLeaveAnimation,
   zoomInOnEnterAnimation
 }                                 from 'angular-animations';
-import { PatchConnection }        from '../../../../models/connection';
-import { PatchDetailDataService } from '../../patch-detail-data.service';
+import { PatchConnection }        from '../../../models/connection';
+import { PatchDetailDataService } from '../patch-detail-data.service';
 
 @Component({
   selector:        'app-patch-connections-list',
@@ -34,6 +34,8 @@ import { PatchDetailDataService } from '../../patch-detail-data.service';
 export class PatchConnectionsListComponent implements OnInit {
   
   @Input() editorConnections: PatchConnection[];
+  
+  @Input() isEditing: boolean = false;
   
   constructor(
     public dataService: PatchDetailDataService

@@ -4,7 +4,7 @@
     >
       <app-patch-connection-minimal [data]="item"
                                     [index]="editorConnections.length-i"
-                                    [isEditing]="true"
+                                    [isEditing]="isEditing"
                                     (remove$)="dataService.removeConnectionFromEditor$.next($event)"
       ></app-patch-connection-minimal>
     </lib-clean-card>
