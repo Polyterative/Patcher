@@ -43,9 +43,11 @@ export class PatchConnectionMinimalComponent implements OnInit {
   notes = {
     control: new FormControl('', Validators.compose([
       Validators.min(0),
-      Validators.max(999)
+      Validators.max(144)
     ]))
   };
+  
+  protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {
     if (this.data.notes) {
@@ -55,9 +57,6 @@ export class PatchConnectionMinimalComponent implements OnInit {
     this.notes.control.valueChanges.subscribe(value => this.data.notes = value);
     
   }
-  
-  
-  protected destroyEvent$ = new Subject<void>();
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
