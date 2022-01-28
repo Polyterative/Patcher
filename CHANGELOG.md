@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.4.0](https://github.com/Polyterative/Patcher/compare/v3.3.1...v3.4.0) (2022-01-28)
+
+
+### Features
+
+* firefox scrollbar improvements ([8cc2cfe](https://github.com/Polyterative/Patcher/commit/8cc2cfe963b870debe0c26f5d1a1f755c5231f2d))
+* home now looks well in firefox ([0ff21dd](https://github.com/Polyterative/Patcher/commit/0ff21dd2bcad45e542f1fca5d619e75adb4b5c93))
+* module list now shows tags ([f36f826](https://github.com/Polyterative/Patcher/commit/f36f82604fee01c90f5f19c0757d9b4c1ed5eca7))
+* now providing basic SEO metatags ([84b69a3](https://github.com/Polyterative/Patcher/commit/84b69a38354bf4e00884401c68a630908965b157))
+* now providing basic SEO metatags ([ac314e7](https://github.com/Polyterative/Patcher/commit/ac314e7544226aaaaf54d522cddbfab3726efcc1))
+* patch editor improved delete dialog ([0d8c9fc](https://github.com/Polyterative/Patcher/commit/0d8c9fc728e171918b9245c15c0a0a316414f359))
+* patch editor improved layout ([3309f60](https://github.com/Polyterative/Patcher/commit/3309f60e7c63f75aaf43dfa9058f03999c93b9e8))
+
 ### [3.3.1](https://github.com/Polyterative/Patcher/compare/v3.3.0...v3.3.1) (2022-01-26)
 
 
