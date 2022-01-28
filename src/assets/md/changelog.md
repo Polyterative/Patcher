@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.4.1](https://github.com/Polyterative/Patcher/compare/v3.4.0...v3.4.1) (2022-01-28)
+
+
+### Features
+
+* sitemap updated with modules ([2bf381f](https://github.com/Polyterative/Patcher/commit/2bf381fd30ebe9b48a2cfede9aeb5d1994396639))
+
 ## [3.4.0](https://github.com/Polyterative/Patcher/compare/v3.3.1...v3.4.0) (2022-01-28)
 
 
