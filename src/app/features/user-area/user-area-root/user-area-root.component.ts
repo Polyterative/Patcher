@@ -21,7 +21,8 @@ export class UserAreaRootComponent implements OnInit {
     hideDescription:  false,
     hideButtons:      true,
     hideHP:           false,
-    hideDates:        true
+    hideDates:        true,
+    hideTags:         true
   };
   
   constructor(

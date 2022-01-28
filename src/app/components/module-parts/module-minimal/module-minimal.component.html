@@ -25,6 +25,7 @@
                                *ngIf="!viewConfig.hideDates"
       ></app-timestamps-relative>
     </div>
+    <app-module-tags [data]="data"></app-module-tags>
     <ng-content></ng-content>
     <ng-container *ngIf="!viewConfig.hideButtons">
       <mat-divider [inset]="true"

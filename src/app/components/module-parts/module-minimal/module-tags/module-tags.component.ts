@@ -3,12 +3,12 @@ import {
   Component,
   Input,
   OnInit
-}                   from '@angular/core';
+}                        from '@angular/core';
 import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
-}                   from 'angular-animations';
-import { DbModule } from '../../../models/module';
+}                        from 'angular-animations';
+import { MinimalModule } from '../../../../models/module';
 
 @Component({
   selector:        'app-module-tags',
@@ -29,7 +29,7 @@ import { DbModule } from '../../../models/module';
 })
 export class ModuleTagsComponent implements OnInit {
   
-  @Input() data: DbModule;
+  @Input() data: MinimalModule;
   
   constructor() { }
   

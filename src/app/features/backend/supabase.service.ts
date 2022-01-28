@@ -216,7 +216,11 @@ export class SupabaseService {
       .pipe(map((x => x.data))),
     modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
       const baseQuery = this.supabase.from(this.paths.modules)
-                            .select('id,name,hp,description,public,standard,manufacturer:manufacturerId(name,id,logo)', {count: 'exact'})
+                            .select(`
+                              id,name,hp,description,public,standard,
+                              ${ this.queryJoins.manufacturer },
+                              ${ this.queryJoins.module_tags }
+                            `, {count: 'exact'})
                             .ilike('name', `%${ name }%`)
                             .filter('public', 'eq', true)
                             .range(from, to)
