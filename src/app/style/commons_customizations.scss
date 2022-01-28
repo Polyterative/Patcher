@@ -229,3 +229,7 @@ mat-expansion-panel {
 .slight-rounding {
   @include slight-rounding;
 }
+
+.clickable {
+  cursor: pointer;
+}
