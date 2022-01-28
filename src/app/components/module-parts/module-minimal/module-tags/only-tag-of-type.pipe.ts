@@ -5,7 +5,7 @@ import {
 import {
   Tag,
   TagType
-} from '../../../models/tag';
+} from '../../../../models/tag';
 
 @Pipe({
   name: 'onlyTagOfType'

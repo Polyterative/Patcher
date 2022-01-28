@@ -1,13 +1,13 @@
 <div class="col gap0"
      *ngIf="data.tags&&data.tags.length>0"
 >
-  <mat-card-subtitle>
-    {{data.tags.length}} Tag(s)
-  </mat-card-subtitle>
+  <!--  <mat-card-subtitle>-->
+  <!--    {{data.tags.length}} Tag(s)-->
+  <!--  </mat-card-subtitle>-->
   <!--  <ng-container *ngFor="let item of data.tags|onlyTagOfType:0">-->
   <!--    {{item.name}}-->
   <!--  </ng-container>-->
-  <mat-chip-list>
+  <mat-chip-list class="padT0 padB0">
     <ng-container *ngFor="let item of data.tags|orderTagsByType; let i = index">
       <mat-chip
           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"

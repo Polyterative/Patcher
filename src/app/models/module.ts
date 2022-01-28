@@ -31,6 +31,7 @@ export interface MinimalModule extends Timestamped {
    *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
    */
   standard: number;
+  tags: { tag: Tag }[];
 }
 
 export interface DbModule extends MinimalModule {
@@ -41,7 +42,6 @@ export interface DbModule extends MinimalModule {
   additional: any;
   isComplete: boolean;
   isDIY: boolean;
-  tags: { tag: Tag }[];
 }
 
 export interface RackedModule {

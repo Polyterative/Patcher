@@ -10,9 +10,9 @@ import {
   FormControl,
   Validators
 }                                  from '@angular/forms';
-import { Subject }         from 'rxjs';
-import { PatchConnection } from '../../../models/connection';
-import { FormTypes }       from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { Subject }                 from 'rxjs';
+import { PatchConnection }         from '../../../models/connection';
+import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
 
 @Component({
@@ -36,7 +36,8 @@ export class PatchConnectionMinimalComponent implements OnInit {
     hideDescription:  true,
     hideButtons:      true,
     hideHP:           true,
-    hideDates:        true
+    hideDates:        true,
+    hideTags:         true
   };
   
   notes = {

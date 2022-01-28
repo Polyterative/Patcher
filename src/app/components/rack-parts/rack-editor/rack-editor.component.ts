@@ -45,7 +45,8 @@ export class RackEditorComponent extends SubManager implements OnInit {
     hideDescription:  false,
     hideButtons:      true,
     hideHP:           false,
-    hideDates:        true
+    hideDates:        true,
+    hideTags:         true
   };
   
   constructor(
