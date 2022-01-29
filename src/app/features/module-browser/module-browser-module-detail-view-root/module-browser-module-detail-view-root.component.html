@@ -1,5 +1,6 @@
 <ng-container *ngIf="{
-data:(dataService.singleModuleData$|async)
+data:(dataService.singleModuleData$|async),
+racksWithThisModule:(dataService.racksWithThisModule$|async)
 } as bag"
 >
   <div class="col gap1"
@@ -52,7 +53,7 @@ data:(dataService.singleModuleData$|async)
             <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
                                                 [data$]="dataService.racksWithThisModule$"
             >
-              <app-module-racks *ngIf="(dataService.racksWithThisModule$|async)&&(dataService.racksWithThisModule$|async).length>0; else noRacks"
+              <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
                                 [data$]="dataService.racksWithThisModule$"
               ></app-module-racks>
             </lib-auto-content-loading-indicator>
