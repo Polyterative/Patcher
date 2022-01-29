@@ -42,9 +42,12 @@
             "main":            "src/main.ts",
             "polyfills":       "src/polyfills.ts",
             "tsConfig":        "src/tsconfig.app.json",
-            "assets":          [
+            "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/robots.txt",
+              "src/sitemap.xml",
+              "src/CNAME"
             ],
             "styles":          [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
@@ -70,9 +73,9 @@
               "optimization":     true,
               "outputHashing":    "all",
               "sourceMap":        false,
-              "namedChunks":      false,
+              "namedChunks":      true,
               "extractLicenses":  true,
-              "vendorChunk":      false,
+              "vendorChunk":      true,
               "buildOptimizer":   true,
               "budgets":          [
                 {
