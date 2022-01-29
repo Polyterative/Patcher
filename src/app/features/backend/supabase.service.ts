@@ -524,8 +524,13 @@ export class SupabaseService {
   private supabase = createClient(environment.supabase.url, environment.supabase.key);
   
   private queryJoins = {
-    // simple syntax: responseObjectName:tableName(*columns*)
-    // advanced syntax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
+    // [simple syntax]: responseObjectName:tableName(*columns*)
+    // [advanced syntax]: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
+    // [specific syntax]: responseObjectName:tableName!foreignKeyName(*columns*,responseObjectName:tableName!foreignKeyName(*columns*))
+    //
+    // a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
+  
+  
     manufacturer:          'manufacturer:manufacturerId(name,id,logo)',
     patch:                 'patch:patches!patch_connections_patchid_fkey(*)',
     author:                'author:authorid(username,id,email)',
