@@ -22,6 +22,8 @@
   </div>
   <!--  </ng-container>-->
   <ng-container *ngIf="!bag.dataLoading">
-    <ng-content></ng-content>
+    <div [@enter]>
+      <ng-content></ng-content>
+    </div>
   </ng-container>
 </ng-container>
