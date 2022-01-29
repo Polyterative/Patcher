@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.4.3](https://github.com/Polyterative/Patcher/compare/v3.4.2...v3.4.3) (2022-01-29)
+
+
+### Features
+
+* loader enter animations ([f918a4a](https://github.com/Polyterative/Patcher/commit/f918a4abd9d9ead9ca2ee4324a89bdcebe3b88a1))
+* module details now wide ([86efde2](https://github.com/Polyterative/Patcher/commit/86efde2a6a9fbf82e22ca779498c809ac3ad9337))
+* module shows which racks use them ([3263cfc](https://github.com/Polyterative/Patcher/commit/3263cfcb3225162737412af108679e116296393d))
+* smoother graph draw ([87afd0d](https://github.com/Polyterative/Patcher/commit/87afd0dbe9f952461362bc5ad571791109464d3d))
+
+
+### Bug Fixes
+
+* more specific foreign key on API calls because now using some views ([2d5cd29](https://github.com/Polyterative/Patcher/commit/2d5cd2961d42d9a9cb280c836cd230d066de48b8))
+
 ### [3.4.2](https://github.com/Polyterative/Patcher/compare/v3.4.1...v3.4.2) (2022-01-29)
 
 ### [3.4.1](https://github.com/Polyterative/Patcher/compare/v3.4.0...v3.4.1) (2022-01-28)
