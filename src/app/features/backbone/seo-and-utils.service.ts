@@ -10,11 +10,6 @@ import {
 })
 export class SeoAndUtilsService {
   
-  constructor(
-    private readonly seoSocialShareService: SeoSocialShareService,
-    private titleService: Title
-  ) { }
-  
   private defaults: { image: string; keywords: string; description: string; title: string } = {
     title:       'patcher.xyz',
     description: 'Manager and database for musicians using modular gear, with a focus on saving, and visualizing patch-notes.',
@@ -23,9 +18,12 @@ export class SeoAndUtilsService {
     // ...
   };
   
+  constructor(
+    private readonly seoSocialShareService: SeoSocialShareService,
+    private titleService: Title
+  ) { }
+  
   updateSeo(data: SeoSocialShareData, appArea: string) {
-    
-    console.log('updateSeo', data);
     
     this.seoSocialShareService.setData(this.defaults);
     this.seoSocialShareService.setData(data);
@@ -39,10 +37,7 @@ export class SeoAndUtilsService {
   
   updatePartialSeo(data: SeoSocialShareData) {
     
-    console.log('updatePartialSeo', data);
-    
     this.seoSocialShareService.setData(data);
-    
     
   }
 }
