@@ -17,6 +17,7 @@
         <app-rack-list fxFlex="grow"
                        [data$]="dataService.rackData$"
                        [showSearch]="true"
+                       [viewConfig]="rackMinimalViewConfig"
                        *ngIf="data.length>0 else voidData"
         ></app-rack-list>
       </ng-container>

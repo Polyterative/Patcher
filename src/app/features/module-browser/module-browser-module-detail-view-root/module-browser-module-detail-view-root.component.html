@@ -24,12 +24,12 @@ data:(dataService.singleModuleData$|async)
               ></app-module-composite>
             </ng-template>
           
-          
           </lib-clean-card>
         </lib-screen-wrapper>
-        <!--          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
-        <!--                                              [data$]="dataService.singleModuleData$"-->
-        <!--          ></lib-auto-content-loading-indicator>-->
+        <!--  -->
+        <!--                  <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
+        <!--                                                      [data$]="dataService.singleModuleData$"-->
+        <!--                  ></lib-auto-content-loading-indicator>-->
         <lib-clean-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
           <app-module-editor
               [data]="(bag.data)"
@@ -38,12 +38,38 @@ data:(dataService.singleModuleData$|async)
         <!--          <lib-clean-card *ngIf="bag.data">-->
         <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
         <!--          </lib-clean-card>-->
-        
-        
+  
+  
         <!--          hidden cause circular dependency-->
         <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
         <!--              stuff-->
+  
+  
+        <lib-screen-wrapper>
+          <lib-hero-content-card titleNormal="Racks using this module">
+      
+      
+            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                [data$]="dataService.racksWithThisModule$"
+            >
+              <app-module-racks *ngIf="(dataService.racksWithThisModule$|async)&&(dataService.racksWithThisModule$|async).length>0; else noRacks"
+                                [data$]="dataService.racksWithThisModule$"
+              ></app-module-racks>
+            </lib-auto-content-loading-indicator>
+          </lib-hero-content-card>
+        </lib-screen-wrapper>
+
       </div>
     </lib-hero-content-card>
   </div>
 </ng-container>
+
+<ng-template #noRacks>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem"
+    >No racks using this module yet. Try adding it to yours!
+    </mat-card-subtitle>
+  </div>
+</ng-template>

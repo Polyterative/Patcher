@@ -9,6 +9,10 @@ import { MatPaginator }           from '@angular/material/paginator';
 import { Subject }                from 'rxjs';
 import { takeUntil }              from 'rxjs/operators';
 import { RackBrowserDataService } from 'src/app/features/rack-browser/rack-browser-data.service';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+}                                 from '../../../components/rack-parts/rack-minimal/rack-minimal.component';
 import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
 
 @Component({
@@ -21,6 +25,8 @@ export class RackBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   
   protected destroyEvent$ = new Subject<void>();
+  
+  viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
   
   constructor(
     public dataService: RackBrowserDataService,

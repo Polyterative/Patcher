@@ -1,0 +1,23 @@
+<div class="col"
+>
+  <app-hero-clickable-title [link]="['/racks/details',data.id]"
+  >{{data.name}}
+  </app-hero-clickable-title>
+  <div class="row gap1"
+  >
+    <app-entity-author [data]="data.author"></app-entity-author>
+    <div fxFlex="100"
+         fxLayout="row"
+         fxLayoutGap="1rem"
+         fxLayoutAlign="end"
+         *ngIf="!viewConfig.hideHP"
+    >
+      <mat-card-subtitle
+      >{{data.hp}} HP - {{data.rows}} rows
+      </mat-card-subtitle>
+    </div>
+  </div>
+</div>
+<app-timestamps-relative [data]="data"
+                         *ngIf="!viewConfig.hideDates"
+></app-timestamps-relative>

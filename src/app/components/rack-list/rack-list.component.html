@@ -23,7 +23,9 @@
           <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
-            <app-rack-minimal [data]="item"></app-rack-minimal>
+            <app-rack-micro [data]="item"
+                            [viewConfig]="viewConfig"
+            ></app-rack-micro>
           </lib-clean-card>
         </ng-container>
       </flexbox-row-fast>

@@ -4,6 +4,10 @@ import {
 }                              from '@angular/core';
 import { MatDialog }           from '@angular/material/dialog';
 import { SupabaseService }     from 'src/app/features/backend/supabase.service';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+}                              from '../../../components/rack-parts/rack-minimal/rack-minimal.component';
 import { UserAreaDataService } from '../user-area-data.service';
 
 @Component({
@@ -13,6 +17,8 @@ import { UserAreaDataService } from '../user-area-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserRacksComponent {
+  rackMinimalViewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
+  
   constructor(
     public dialog: MatDialog,
     public backend: SupabaseService,

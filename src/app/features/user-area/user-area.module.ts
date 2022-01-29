@@ -11,6 +11,7 @@ import { RackBrowserModule }                from 'src/app/features/rack-browser/
 import { UserModulesModule }                from 'src/app/features/user-area/user-modules/user-modules.module';
 import { UserPatchesComponent }             from 'src/app/features/user-area/user-patches/user-patches.component';
 import { UserRacksComponent }               from 'src/app/features/user-area/user-racks/user-racks.component';
+import { RackListModule }                   from '../../components/rack-list/rack-list.module';
 import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { EmptyStateModule }                 from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
 import { BrandPrimaryButtonModule }         from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -29,7 +30,7 @@ import { UserAreaRootComponent }            from './user-area-root/user-area-roo
     UserRacksComponent,
     UserPatchesComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       {
@@ -52,7 +53,8 @@ import { UserAreaRootComponent }            from './user-area-root/user-area-roo
     MatDividerModule,
     LabelValueShowcaseModule,
     CleanCardModule,
-    AutoUpdateLoadingIndicatorModule
+    AutoUpdateLoadingIndicatorModule,
+    RackListModule
   ],
   exports:      [
     UserAreaRootComponent
