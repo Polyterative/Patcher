@@ -5,24 +5,33 @@ import {
   OnDestroy,
   OnInit,
   ViewEncapsulation
-} from '@angular/core';
+}                                 from '@angular/core';
+import { expandOnEnterAnimation } from 'angular-animations';
 import {
   BehaviorSubject,
   merge,
   Observable,
   Subject
-} from 'rxjs';
+}                                 from 'rxjs';
 import {
   filter,
   mapTo,
   skip,
   takeUntil
-} from 'rxjs/operators';
+}                                 from 'rxjs/operators';
 
 @Component({
   selector:        'lib-auto-content-loading-indicator',
   templateUrl:     './auto-content-loading-indicator.component.html',
   styleUrls:       ['./auto-content-loading-indicator.component.scss'],
+  animations:      [
+    expandOnEnterAnimation(
+      {
+        anchor:   'enter',
+        duration: 200
+      }
+    )
+  ],
   encapsulation:   ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
