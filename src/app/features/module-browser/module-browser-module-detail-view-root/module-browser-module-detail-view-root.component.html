@@ -18,24 +18,26 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
                                                 [loadingLines]="5"
             >
             </lib-auto-content-loading-indicator>
-            
-            
+  
+  
             <ng-template #data>
               <app-module-composite [data]="(bag.data)"
               ></app-module-composite>
             </ng-template>
-          
+
+          </lib-clean-card>
+  
+          <lib-clean-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
+            <app-module-editor
+                [data]="(bag.data)"
+            ></app-module-editor>
           </lib-clean-card>
         </lib-screen-wrapper>
         <!--  -->
         <!--                  <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
         <!--                                                      [data$]="dataService.singleModuleData$"-->
         <!--                  ></lib-auto-content-loading-indicator>-->
-        <lib-clean-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
-          <app-module-editor
-              [data]="(bag.data)"
-          ></app-module-editor>
-        </lib-clean-card>
+
         <!--          <lib-clean-card *ngIf="bag.data">-->
         <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
         <!--          </lib-clean-card>-->
