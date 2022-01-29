@@ -125,7 +125,7 @@ export class SupabaseService {
   get = {
     userModules:      () => rxFrom(
       this.supabase.from(this.paths.user_modules)
-          .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
+          .select(`module:modules!user_modules_moduleid_fkey(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
           .filter('profileid', 'eq', this.getUser().id)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
@@ -137,9 +137,9 @@ export class SupabaseService {
         //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
           .select(`
           *,
-          patch:patchid(*),
-          a(*,module:moduleid(*, ${ this.queryJoins.manufacturer })),
-          b(*,module:moduleid(*,${ this.queryJoins.manufacturer }))
+          ${ this.queryJoins.patch },
+          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
+          b(*,module:modules!moduleINs_moduleId_fkey(*,${ this.queryJoins.manufacturer }))
           `)
           .filter('patchid', 'eq', patchid)
           .order('ordinal')
@@ -179,7 +179,7 @@ export class SupabaseService {
       .pipe(map((x => x.data))),
     rackedModules:     (rackid: number) => rxFrom(
       this.supabase.from(this.paths.rack_modules)
-          .select(`*, ${ this.queryJoins.module }`)
+          .select(`*, ${ this.queryJoins.module_fk_rackmodules }`)
         // .order('module.id')
         // .select(`*`)
           .filter('rackid', 'eq', rackid)
@@ -526,15 +526,17 @@ export class SupabaseService {
   private queryJoins = {
     // simple syntax: responseObjectName:tableName(*columns*)
     // advanced syntax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
-    manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
-    author:       'author:authorid(username,id,email)',
-    rack:         'rack:rackid(*,author:authorid(username,id,email))',
-    rack_modules: 'rackModules:rackid(*)',
-    module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
-    module_tags:  `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
-    ins:          `ins:${ this.paths.moduleINs }(*)`,
-    outs:         `outs:${ this.paths.moduleOUTs }(*)`,
-    insOuts:      `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
+    manufacturer:          'manufacturer:manufacturerId(name,id,logo)',
+    patch:                 'patch:patches!patch_connections_patchid_fkey(*)',
+    author:                'author:authorid(username,id,email)',
+    rack:                  'rack:rackid(*,author:authorid(username,id,email))',
+    rack_modules:          'rackModules:rackid(*)',
+    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(*,manufacturer:manufacturerId(name,id,logo))',
+    // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
+    module_tags: `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
+    ins:         `ins:${ this.paths.moduleINs }(*)`,
+    outs:        `outs:${ this.paths.moduleOUTs }(*)`,
+    insOuts:     `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
   };
   
   login(email: string, password: string) {
