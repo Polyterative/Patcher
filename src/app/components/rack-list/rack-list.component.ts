@@ -17,10 +17,10 @@ import {
   filter,
   take
 }                                 from 'rxjs/operators';
-import { PatchDetailDataService } from '../../../components/patch-parts/patch-detail-data.service';
-import { LocalDataFilterService } from '../../../components/shared-atoms/local-data-filter/local-data-filter.service';
-import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
-import { RackList }               from '../rack-browser-data.service';
+import { RackList }               from '../../features/rack-browser/rack-browser-data.service';
+import { SubManager }             from '../../shared-interproject/directives/subscription-manager';
+import { RackMinimalViewConfig }  from '../rack-parts/rack-minimal/rack-minimal.component';
+import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 
 @Component({
   selector:        'app-rack-list',
@@ -45,11 +45,11 @@ export class RackListComponent extends SubManager implements OnInit {
   readonly data$: Observable<RackList>;
   
   @Input() readonly showSearch = false;
+  @Input() viewConfig: RackMinimalViewConfig;
   
   filteredData$ = new BehaviorSubject<RackList>([]);
   
   constructor(
-    public patchingService: PatchDetailDataService,
     public filterService: LocalDataFilterService
   ) {
     super();

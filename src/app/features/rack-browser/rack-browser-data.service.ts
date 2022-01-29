@@ -19,12 +19,12 @@ import {
   takeUntil,
   withLatestFrom
 }                                from 'rxjs/operators';
-import { Rack }                  from '../../models/rack';
+import { RackMinimal }           from '../../models/rack';
 import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
 import { SupabaseService }       from '../backend/supabase.service';
 
-export type RackList = Rack[] | null;
+export type RackList = RackMinimal[] | null;
 
 @Injectable()
 export class RackBrowserDataService implements OnDestroy {

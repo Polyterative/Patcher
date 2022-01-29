@@ -36,7 +36,9 @@
                      showFirstLastButtons
       ></mat-paginator>
   
-      <app-rack-list [data$]="dataService.racksList$"></app-rack-list>
+      <app-rack-list [data$]="dataService.racksList$"
+                     [viewConfig]="viewConfig"
+      ></app-rack-list>
       <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
                                          [updateData$]="dataService.updateRacksList$"
       ></lib-auto-update-loading-indicator>

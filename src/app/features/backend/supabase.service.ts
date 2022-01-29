@@ -239,6 +239,15 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    racksWithModule:   (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
+      this.supabase.from(this.paths.rack_modules_grouped_by_moduleid)
+          .select(`*,${ this.queryJoins.rack }`, {count: 'exact'})
+          .filter('moduleid', 'eq', moduleid)
+        // postgrest show racks only once
+          .range(from, to)
+          .order(orderBy ? orderBy : 'updated', {ascending: orderDirection == 'asc'})
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     moduleWithId:      (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
           .select(`${ columns },
@@ -252,7 +261,7 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patchWithId:        (id: number, columns = '*') => rxFrom(
+    patchWithId:       (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.patches)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .select(`${ columns }, ${ this.queryJoins.author }`)
@@ -496,18 +505,19 @@ export class SupabaseService {
   };
   
   private paths = {
-    modules:           'modules',
-    moduleINs:         'module_ins',
-    moduleOUTs:        'module_outs',
-    manufacturers:     'manufacturers',
-    user_modules:      'user_modules',
-    racks:             'racks',
-    rack_modules:      'rack_modules',
-    patches:           'patches',
-    patch_connections: 'patch_connections',
-    module_tags:       'module_tags',
-    tags:              'tags',
-    profiles:          'profiles'
+    modules:                          'modules',
+    moduleINs:                        'module_ins',
+    moduleOUTs:                       'module_outs',
+    manufacturers:                    'manufacturers',
+    user_modules:                     'user_modules',
+    racks:                            'racks',
+    rack_modules:                     'rack_modules',
+    rack_modules_grouped_by_moduleid: 'rack_modules_grouped_by_moduleid', // this is a view on DB
+    patches:                          'patches',
+    patch_connections:                'patch_connections',
+    module_tags:                      'module_tags',
+    tags:                             'tags',
+    profiles:                         'profiles'
   };
   
   private defaultPag = 20;
@@ -518,6 +528,7 @@ export class SupabaseService {
     // advanced syntax: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
     manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
     author:       'author:authorid(username,id,email)',
+    rack:         'rack:rackid(*,author:authorid(username,id,email))',
     rack_modules: 'rackModules:rackid(*)',
     module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
     module_tags:  `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
