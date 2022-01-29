@@ -164,6 +164,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   from:  x.id,
                   to:    moduleId,
                   label: '',
+                  color: '#c0c0c0',
                   // label: `in: ${ x.label } to module: ${ module.name }`,
                   size: this.sizeConstant,
                   type: 'arrow'
@@ -173,10 +174,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   from:  moduleId,
                   to:    x.id,
                   label: '',
+                  color: '#c0c0c0',
                   // label: `out: ${ x.label } from module: ${ module.name }`,
                   size: this.sizeConstant,
                   type: 'arrow'
-        
+  
                 }));
       
                 insEdges.forEach(edge => allModuleJackEdges[edge.id] = edge);
@@ -230,7 +232,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                                      .filter(x => x !== undefined));
     
               this.edges$.next([
-                ...Object.values(onlyUsedModuleJacksEdges),
+                ...onlyUsedModuleJacksEdges,
                 ...patchEdges
               ]);
     

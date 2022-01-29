@@ -32,6 +32,8 @@ export interface GraphEdge {
   label: string;
   from: string;
   to: string;
+  color: string;
+  size: number;
   type: 'arrow' | 'curve' | 'line';
 }
 
@@ -73,8 +75,9 @@ export class GraphComponent implements OnInit {
   @Input() settings: FA2LayoutSupervisorParameters = {
     weighted: true,
     settings: {
-      slowDown: 5,
-      gravity:  1.2
+      slowDown:            5,
+      gravity:             1.3,
+      edgeWeightInfluence: 3
       // barnesHutOptimize: true,
     }
   };
