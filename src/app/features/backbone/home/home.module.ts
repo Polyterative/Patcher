@@ -24,8 +24,12 @@ import { RackBrowserModule }        from '../../rack-browser/rack-browser.module
 import { HomeComponent }            from './home.component';
 
 @NgModule({
-  declarations: [HomeComponent],
-  exports:      [HomeComponent],
+  declarations: [
+    HomeComponent
+  ],
+  exports:      [
+    HomeComponent
+  ],
   imports:      [
     CommonModule,
     FlexLayoutModule,
