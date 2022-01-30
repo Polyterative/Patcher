@@ -9,7 +9,10 @@ import { MatPaginator }             from '@angular/material/paginator';
 import { Subject }                  from 'rxjs';
 import { takeUntil }                from 'rxjs/operators';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
-import { ModuleMinimalViewConfig }  from '../../../components/module-parts/module-minimal/module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                   from '../../../components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
 
 @Component({
@@ -21,13 +24,14 @@ import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   viewConfig: ModuleMinimalViewConfig = {
-    hideLabels:       false,
-    hideManufacturer: false,
-    hideDescription:  false,
-    hideButtons:      false,
-    hideHP:           false,
+    ...defaultModuleMinimalViewConfig,
+    hideButtons:      true,
     hideDates:        false,
-    hideTags:         false
+    hideDescription:  false,
+    hideHP:           false,
+    hideTags:         false,
+    hideManufacturer: false,
+    hideLabels:       true
   };
   
   protected destroyEvent$ = new Subject<void>();
