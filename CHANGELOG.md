@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.5.0](https://github.com/Polyterative/Patcher/compare/v3.4.3...v3.5.0) (2022-01-30)
+
+
+### Features
+
+* cleaned lists layouts ([0db67d3](https://github.com/Polyterative/Patcher/commit/0db67d36840c451c9cf54b68b4d46e0c00363955))
+* cleaned lists layouts ([b40866c](https://github.com/Polyterative/Patcher/commit/b40866c42c1f31a75a444a0c069e470942ea5079))
+* home now shows videos instead of the actual components (faster) ([1574f7d](https://github.com/Polyterative/Patcher/commit/1574f7d7663dea76d96017ec3ff18cb5994bbecf))
+* showing patches for a module ([49de1ee](https://github.com/Polyterative/Patcher/commit/49de1ee4d5f8dc22eb463ce64ab512496f894d81))
+* user collection improvements ([8572c90](https://github.com/Polyterative/Patcher/commit/8572c9076e713ee2fb0a16d622cebbc67e88736d))
+
+
+### Bug Fixes
+
+* dialogs backdrop ([cd7b495](https://github.com/Polyterative/Patcher/commit/cd7b495479d20929e42f4d8b64fc4167d9755309))
+* height limiter now more relaxed ([37c22ea](https://github.com/Polyterative/Patcher/commit/37c22ea59ed5c9b18862d5dd1c458ce2c87cb6a3))
+* layouts ([7a23330](https://github.com/Polyterative/Patcher/commit/7a233303bfb98f7517aac7bddb576d0eeb2b0b72))
+* miscellaneous ([86c3a5f](https://github.com/Polyterative/Patcher/commit/86c3a5fcfb9d0d27edf08ca9423e29d051858265))
+* module cv adder layout ([4fd30db](https://github.com/Polyterative/Patcher/commit/4fd30db52bf839ef9fac16792d68eb9c2b189708))
+* module cv adder width ([8e93929](https://github.com/Polyterative/Patcher/commit/8e9392974910237c7384e792ffa2cd82084bba7d))
+
 ### [3.4.3](https://github.com/Polyterative/Patcher/compare/v3.4.2...v3.4.3) (2022-01-29)
 
 
