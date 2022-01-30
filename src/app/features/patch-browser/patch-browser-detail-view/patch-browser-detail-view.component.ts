@@ -16,6 +16,10 @@ import {
   take
 }                                 from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+}                                 from '../../../components/patch-parts/patch-minimal/patch-minimal.component';
 import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
 
@@ -29,6 +33,10 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   
   protected destroyEvent$ = new Subject<void>();
   @Input() ignoreSeo = false;
+  viewConfig: PatchMinimalViewConfig = {
+    ...defaultPatchMinimalViewConfig,
+    hideButtons: false
+  };
   
   constructor(
     public dataService: PatchDetailDataService,
@@ -40,7 +48,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Patch Details'); }
-  
+    
     this.route.params
         .pipe(
           map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
@@ -51,7 +59,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           // debugger
           this.dataService.updateSinglePatchData$.next(data);
         });
-  
+    
     if (!this.ignoreSeo) {
       combineLatest([
           this.dataService.singlePatchData$,
@@ -65,19 +73,19 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
         .subscribe(([patchData, patchConnections]) => {
           const modulesInPatch: string[] = patchConnections.map(x => x.a.module.name)
                                                            .concat(patchConnections.map(x => x.b.module.name));
-        
+  
           // remove duplicates
           const uniqueModulesInPatch = [...new Set(modulesInPatch)];
-        
+  
           const joined: string = uniqueModulesInPatch.join(', ');
-        
+  
           const seoData: SeoSocialShareData = {
             title:       `${ patchData.name } - details. `,
             description: `${ patchData.name } - patch details. Used modules: ${ joined }, for a total of ${ joined.length } connections.`,
             keywords:    `${ patchConnections.map(x => x.a.name)
                                              .join(', ') },${ patchConnections.map(x => x.a.name)
                                                                               .join(', ') },${ joined }, patch, eurorack`,
-          
+    
             published: patchData.created,
             modified:  patchData.updated
           };
@@ -85,7 +93,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
             `${ patchData.name } - Patch Details`);
         });
     }
-  
+    
   }
   
   ngOnDestroy(): void {
