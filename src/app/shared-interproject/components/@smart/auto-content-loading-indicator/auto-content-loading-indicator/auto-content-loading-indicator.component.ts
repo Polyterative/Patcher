@@ -6,7 +6,7 @@ import {
   OnInit,
   ViewEncapsulation
 }                                 from '@angular/core';
-import { expandOnEnterAnimation } from 'angular-animations';
+import { fadeInOnEnterAnimation } from 'angular-animations';
 import {
   BehaviorSubject,
   merge,
@@ -25,10 +25,10 @@ import {
   templateUrl:     './auto-content-loading-indicator.component.html',
   styleUrls:       ['./auto-content-loading-indicator.component.scss'],
   animations:      [
-    expandOnEnterAnimation(
+    fadeInOnEnterAnimation(
       {
         anchor:   'enter',
-        duration: 200
+        duration: 500
       }
     )
   ],
