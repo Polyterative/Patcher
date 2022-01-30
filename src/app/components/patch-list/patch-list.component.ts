@@ -17,14 +17,13 @@ import {
   filter,
   take
 }                                 from 'rxjs/operators';
+import { PatchList }              from '../../features/patch-browser/patch-browser-data.service';
+import { SubManager }             from '../../shared-interproject/directives/subscription-manager';
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
-}                                 from '../../../components/patch-parts/patch-minimal/patch-minimal.component';
-import { LocalDataFilterService } from '../../../components/shared-atoms/local-data-filter/local-data-filter.service';
-import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
-import { PatchList }              from '../patch-browser-data.service';
-
+}                                 from '../patch-parts/patch-minimal/patch-minimal.component';
+import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 
 @Component({
   selector:        'app-patch-list',

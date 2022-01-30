@@ -20,39 +20,36 @@ import { PatchBrowserDataService }           from 'src/app/features/patch-browse
 import { PatchBrowserDetailViewComponent }   from 'src/app/features/patch-browser/patch-browser-detail-view/patch-browser-detail-view.component';
 import { PatchBrowserRootComponent }         from 'src/app/features/patch-browser/patch-browser-root/patch-browser-root.component';
 import { PatchCompositeComponent }           from 'src/app/features/patch-browser/patch-composite/patch-composite.component';
-import { PatchListComponent }                from 'src/app/features/patch-browser/patch-list/patch-list.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { DevOnlyWindowModule }               from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { EmptyStateModule }                  from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { MatFormEntityModule }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }            from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
-import { UserDataHandlerComponent }          from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
-import { BrandPrimaryButtonModule }          from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { FlexboxRowFastModule }              from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
-import { HeroContentCardModule }             from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
-import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule }                from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule }          from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }                  from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }               from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }                from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateUranusRoutes }              from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
-import { CommentsModule }                    from '../../components/shared-atoms/comments/comments.module';
-import { LocalDataFilterModule }             from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
-import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
+import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { FlexboxRowFastModule }     from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { HeroContentCardModule }    from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
+import { HeroInfoBoxModule }        from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
+import { HeroItemCardModule }       from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
+import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }         from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }      from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }       from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }     from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { PatchListModule }          from '../../components/patch-list/patch-list.module';
+import { CommentsModule }           from '../../components/shared-atoms/comments/comments.module';
+import { LocalDataFilterModule }    from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
+import { CleanCardModule }          from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 
 const parentPrefix = 'patches';
 
 @NgModule({
   declarations: [
-    PatchListComponent,
     PatchBrowserDetailViewComponent,
     PatchCompositeComponent,
-    PatchBrowserRootComponent,
-    PatchListComponent
+    PatchBrowserRootComponent
   ],
   exports:      [
-    PatchListComponent,
     PatchBrowserDetailViewComponent
   ],
   providers:    [PatchBrowserDataService],
@@ -114,7 +111,8 @@ const parentPrefix = 'patches';
     EmptyStateModule,
     CommentsModule,
     LocalDataFilterModule,
-    CleanCardModule
+    CleanCardModule,
+    PatchListModule
   ]
 })
 export class PatchBrowserModule {}

@@ -11,6 +11,7 @@ import { RackBrowserModule }                from 'src/app/features/rack-browser/
 import { UserModulesModule }                from 'src/app/features/user-area/user-modules/user-modules.module';
 import { UserPatchesComponent }             from 'src/app/features/user-area/user-patches/user-patches.component';
 import { UserRacksComponent }               from 'src/app/features/user-area/user-racks/user-racks.component';
+import { PatchListModule }                  from '../../components/patch-list/patch-list.module';
 import { RackListModule }                   from '../../components/rack-list/rack-list.module';
 import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { EmptyStateModule }                 from '../../shared-interproject/components/@smart/empty-state/empty-state.module';
@@ -54,7 +55,8 @@ import { UserAreaRootComponent }            from './user-area-root/user-area-roo
     LabelValueShowcaseModule,
     CleanCardModule,
     AutoUpdateLoadingIndicatorModule,
-    RackListModule
+    RackListModule,
+    PatchListModule
   ],
   exports:      [
     UserAreaRootComponent
