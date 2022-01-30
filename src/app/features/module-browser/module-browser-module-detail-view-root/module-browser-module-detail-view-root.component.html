@@ -26,12 +26,8 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
             </ng-template>
 
           </lib-clean-card>
-  
-          <lib-clean-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async">
-            <app-module-editor
-                [data]="(bag.data)"
-            ></app-module-editor>
-          </lib-clean-card>
+
+
         </lib-screen-wrapper>
         <!--  -->
         <!--                  <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
@@ -49,6 +45,14 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
   
   
         <lib-screen-wrapper>
+          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
+                                 titleNormal="CV Editor"
+          >
+            <app-module-editor
+                [data]="(bag.data)"
+            ></app-module-editor>
+          </lib-hero-content-card>
+    
           <lib-hero-content-card titleNormal="Racks using this module">
       
       
