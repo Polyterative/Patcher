@@ -1,6 +1,7 @@
 <ng-container *ngIf="{
 data:(dataService.singleModuleData$|async),
-racksWithThisModule:(dataService.racksWithThisModule$|async)
+racksWithThisModule:(dataService.racksWithThisModule$|async),
+patchesWithThisModule:(dataService.patchesWithThisModule$|async)
 } as bag"
 >
   <div class="col gap1"
@@ -37,8 +38,8 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
         <!--          <lib-clean-card *ngIf="bag.data">-->
         <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
         <!--          </lib-clean-card>-->
-  
-  
+
+
         <!--          hidden cause circular dependency-->
         <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
         <!--              stuff-->
@@ -52,18 +53,37 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
                 [data]="(bag.data)"
             ></app-module-editor>
           </lib-hero-content-card>
-    
-          <lib-hero-content-card titleNormal="Racks using this module">
-      
-      
-            <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                [data$]="dataService.racksWithThisModule$"
+          <div fxLayoutGap="1rem"
+               fxLayout.lt-md="column"
+               fxLayout.gt-md="row"
+          >
+            <lib-hero-content-card fxFlex
+                                   titleNormal="Racked in"
             >
-              <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
-                                [data$]="dataService.racksWithThisModule$"
-              ></app-module-racks>
-            </lib-auto-content-loading-indicator>
-          </lib-hero-content-card>
+        
+        
+              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                  [data$]="dataService.racksWithThisModule$"
+              >
+                <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
+                                  [data$]="dataService.racksWithThisModule$"
+                ></app-module-racks>
+              </lib-auto-content-loading-indicator>
+            </lib-hero-content-card>
+            <lib-hero-content-card fxFlex
+                                   titleNormal="Patched in"
+            >
+        
+        
+              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                  [data$]="dataService.patchesWithThisModule$"
+              >
+                <app-module-patches *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
+                                    [data$]="dataService.patchesWithThisModule$"
+                ></app-module-patches>
+              </lib-auto-content-loading-indicator>
+            </lib-hero-content-card>
+          </div>
         </lib-screen-wrapper>
 
       </div>
@@ -77,6 +97,15 @@ racksWithThisModule:(dataService.racksWithThisModule$|async)
     <mat-card-subtitle fxLayoutAlign="center start"
                        style="padding: 1rem"
     >No racks using this module yet. Try adding it to yours!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
+<ng-template #noPatches>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem"
+    >No patches using this module yet. Try adding it to yours!
     </mat-card-subtitle>
   </div>
 </ng-template>
