@@ -9,6 +9,10 @@ import { MatPaginator }            from '@angular/material/paginator';
 import { Subject }                 from 'rxjs';
 import { takeUntil }               from 'rxjs/operators';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+}                                  from '../../../components/patch-parts/patch-minimal/patch-minimal.component';
 import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 
 @Component({
@@ -19,6 +23,11 @@ import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 })
 export class PatchBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  viewConfig: PatchMinimalViewConfig = {
+    ...defaultPatchMinimalViewConfig,
+    hideButtons: true,
+    hideDates:   false
+  };
   
   protected destroyEvent$ = new Subject<void>();
   

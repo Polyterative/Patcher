@@ -9,7 +9,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
       >
         <div>
           <lib-clean-card>
-            <app-patch-minimal [data]="data">
+            <app-patch-minimal [data]="data"
+                               [viewConfig]="viewConfig"
+            >
             </app-patch-minimal>
           </lib-clean-card>
         </div>
@@ -26,7 +28,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
              fxFlex="30rem"
         >
           <lib-clean-card>
-            <app-patch-minimal [data]="data">
+            <app-patch-minimal [data]="data"
+                               [viewConfig]="viewConfig"
+            >
             </app-patch-minimal>
           </lib-clean-card>
           <lib-screen-wrapper maxSize="36rem">
