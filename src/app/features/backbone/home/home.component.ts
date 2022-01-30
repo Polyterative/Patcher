@@ -1,23 +1,20 @@
 import {
   Component,
   OnDestroy
-}                                  from '@angular/core';
-import { Router }                  from '@angular/router';
+}                             from '@angular/core';
+import { Router }             from '@angular/router';
 import {
   fadeInOnEnterAnimation,
   slideInDownOnEnterAnimation
-}                                  from 'angular-animations';
-import { BehaviorSubject }         from 'rxjs';
+}                             from 'angular-animations';
+import { BehaviorSubject }    from 'rxjs';
 import {
   CardLinkDataModel,
   cleanCardlinkModelObject
-}                                  from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
-import { ModuleDetailDataService } from '../../../components/module-parts/module-detail-data.service';
-import { PatchDetailDataService }  from '../../../components/patch-parts/patch-detail-data.service';
-import { RackDetailDataService }   from '../../../components/rack-parts/rack-detail-data.service';
-import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
-import { SupabaseService }         from '../../backend/supabase.service';
-import { SeoAndUtilsService }      from '../seo-and-utils.service';
+}                             from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+import { SubManager }         from '../../../shared-interproject/directives/subscription-manager';
+import { SupabaseService }    from '../../backend/supabase.service';
+import { SeoAndUtilsService } from '../seo-and-utils.service';
 
 @Component({
   selector:    'app-home',
@@ -72,17 +69,17 @@ export class HomeComponent extends SubManager implements OnDestroy {
   ]);
   
   constructor(
-    readonly patchDetailDataService: PatchDetailDataService,
-    readonly rackDetailDataService: RackDetailDataService,
-    readonly moduleDetailDataService: ModuleDetailDataService,
+    // readonly patchDetailDataService: PatchDetailDataService,
+    // readonly rackDetailDataService: RackDetailDataService,
+    // readonly moduleDetailDataService: ModuleDetailDataService,
     readonly backend: SupabaseService,
     private readonly router: Router,
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
-    this.patchDetailDataService.updateSinglePatchData$.next(5);
-    this.rackDetailDataService.updateSingleRackData$.next(7);
-    this.moduleDetailDataService.updateSingleModuleData$.next(1025);
+    // this.patchDetailDataService.updateSinglePatchData$.next(5);
+    // this.rackDetailDataService.updateSingleRackData$.next(7);
+    // this.moduleDetailDataService.updateSingleModuleData$.next(1025);
   
     this.backend.get.statistics()
         .pipe(
