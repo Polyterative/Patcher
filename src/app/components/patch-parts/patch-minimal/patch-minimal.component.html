@@ -17,74 +17,66 @@
         ></lib-mat-form-entity>
       </div>
     </ng-container>
-    <app-hero-clickable-title *ngIf="!bag.patchEditingPanelOpenState"
-                              [link]="['/patches/details',data.id]"
-                              infoBox
-                              infoText="Patch name"
-    >{{data.name}}
-    </app-hero-clickable-title>
-    <div class="row gap1 spaceBetween description"
-         *ngIf="bag.singlePatchData&&!viewConfig.hideDescription&&!bag.patchEditingPanelOpenState"
-    >
-      <mat-card-subtitle>{{bag.singlePatchData.description}}</mat-card-subtitle>
-    </div>
-    <app-entity-author [data]="data.author"></app-entity-author>
-    <app-timestamps-relative [data]="data"></app-timestamps-relative>
-    <!--    </div>-->
+    <app-patch-micro *ngIf="!bag.patchEditingPanelOpenState"
+                     [data]="data"
+                     [viewConfig]="viewConfig"
+    ></app-patch-micro>
     <ng-content></ng-content>
-    <mat-divider [inset]="true"
-                 style="margin-top:.5rem"
-    ></mat-divider>
-    <div class="row buttons opacizeOnHover"
-    >
-      <a mat-icon-button
-         matTooltip="Share patch"
-         (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+    <ng-container *ngIf="!viewConfig.hideButtons">
+      <mat-divider [inset]="true"
+                   style="margin-top:.5rem"
+      ></mat-divider>
+      <div class="row buttons opacizeOnHover"
       >
-        <mat-icon>share</mat-icon>
-      </a>
-      <a mat-icon-button
-         matTooltip="Copy patch text coming soon"
-         [disabled]="true"
-      >
-        <mat-icon>speaker_notes</mat-icon>
-      </a>
-      <div fxFlex="grow"></div>
-      <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
-        <button mat-icon-button
-                matTooltip="Delete patch"
-                [disabled]="!bag.user"
-                (click)="dataService.deletePatch$.next(data.id)"
+        <a mat-icon-button
+           matTooltip="Share patch"
+           (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
         >
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-  
+          <mat-icon>share</mat-icon>
+        </a>
+        <a mat-icon-button
+           matTooltip="Copy patch text coming soon"
+           [disabled]="true"
+        >
+          <mat-icon>speaker_notes</mat-icon>
+        </a>
+        <div fxFlex="grow"></div>
+        <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
           <button mat-icon-button
-                  matTooltip="Edit patch"
+                  matTooltip="Delete patch"
                   [disabled]="!bag.user"
-                  (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
+                  (click)="dataService.deletePatch$.next(data.id)"
           >
-            <mat-icon>edit</mat-icon>
+            <mat-icon>delete_forever</mat-icon>
           </button>
+          <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
+          
+            <button mat-icon-button
+                    matTooltip="Edit patch"
+                    [disabled]="!bag.user"
+                    (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          </ng-container>
+          <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)">
+            <button mat-icon-button
+                    matTooltip="Close editor"
+                    [disabled]="!bag.user"
+                    (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </ng-container>
         </ng-container>
-        <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)">
-          <button mat-icon-button
-                  matTooltip="Close editor"
-                  [disabled]="!bag.user"
-                  (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        </ng-container>
-      </ng-container>
       
-      <a mat-icon-button
-         matTooltip="Show details"
-         [routerLink]="['/patches/details',data.id]"
-      >
-        <mat-icon>info</mat-icon>
-      </a>
-    </div>
+        <a mat-icon-button
+           matTooltip="Show details"
+           [routerLink]="['/patches/details',data.id]"
+        >
+          <mat-icon>info</mat-icon>
+        </a>
+      </div>
+    </ng-container>
   </div>
 </ng-container>

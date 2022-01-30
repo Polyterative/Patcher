@@ -155,7 +155,7 @@ export class SupabaseService {
     // ),
     patchesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.patches)
-          .select(`id,name,description,${ this.queryJoins.author } `, {count: 'exact'})
+          .select(`id,name,description,${ this.queryJoins.author },updated,created `, {count: 'exact'})
           .ilike('name', `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})

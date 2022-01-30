@@ -2,13 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 }                                 from '@angular/core';
 import { Subject }                from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { UserManagementService }  from 'src/app/features/backbone/login/user-management.service';
-import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
-import { PatchMinimal }      from '../../../models/patch';
+import { UrlCreatorService }      from 'src/app/features/backend/url-creator.service';
+import { PatchMinimal }           from '../../../models/patch';
 
 @Component({
   selector:        'app-patch-minimal',
@@ -16,9 +17,11 @@ import { PatchMinimal }      from '../../../models/patch';
   styleUrls:       ['./patch-minimal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PatchMinimalComponent implements OnInit {
+export class PatchMinimalComponent implements OnInit, OnDestroy {
   @Input() data: PatchMinimal;
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+  
+  protected destroyEvent$ = new Subject<void>();
   
   // isInCollection$: Observable<boolean>;
   
@@ -37,17 +40,13 @@ export class PatchMinimalComponent implements OnInit {
     //                            );
   }
   
-  protected destroyEvent$ = new Subject<void>();
-  
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     
   }
   
-  
 }
-
 
 export interface PatchMinimalViewConfig {
   hideLabels: boolean;
@@ -62,7 +61,7 @@ export const defaultPatchMinimalViewConfig: PatchMinimalViewConfig = {
   hideLabels:       false,
   hideManufacturer: false,
   hideDescription:  false,
-  hideButtons:      false,
+  hideButtons:      true,
   hideHP:           false,
   hideDates:        false
 };
