@@ -36,7 +36,9 @@
                      showFirstLastButtons
       ></mat-paginator>
   
-      <app-patch-list [data$]="dataService.patchesList$"></app-patch-list>
+      <app-patch-list [data$]="dataService.patchesList$"
+                      [viewConfig]="viewConfig"
+      ></app-patch-list>
       <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
                                           [updateData$]="dataService.updatePatchesList$"
       ></lib-auto-content-loading-indicator>
