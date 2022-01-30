@@ -103,8 +103,8 @@ export class UserAreaDataService extends SubManager {
               RackCreatorComponent,
               {
                 data,
-                width: '24rem'
-                // disableClose: true
+                width:        '24rem',
+                disableClose: false
               }
             )
                        .afterClosed();
