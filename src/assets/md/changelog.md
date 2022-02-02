@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.6.0](https://github.com/Polyterative/Patcher/compare/v3.5.0...v3.6.0) (2022-02-02)
+
+
+### Features
+
+*  patch CV list on the left ([2388706](https://github.com/Polyterative/Patcher/commit/23887060ff2a784d48c6a43ef67b0b5e0652fca5))
+* comments placeholder active ([aae0815](https://github.com/Polyterative/Patcher/commit/aae08153b525a07daf32688af33e84bf35781eee))
+* less padding in patch CV list and overall ([15c71ff](https://github.com/Polyterative/Patcher/commit/15c71ff7b7c18f5d44aa2b02f7cf6665c1db040c))
+* reduced spacing between elements in lists ([0357ee1](https://github.com/Polyterative/Patcher/commit/0357ee13c9d179a48c7780a9db4a632e20ba57b5))
+
 ## [3.5.0](https://github.com/Polyterative/Patcher/compare/v3.4.3...v3.5.0) (2022-01-30)
 
 
