@@ -39,7 +39,7 @@
   <app-brand-primary-button (click$)="add$.next({
           name: '',
           id: 0,
-          min: 10,
+          min: -10,
           max: 10,
           isApproved: false
         })"
@@ -48,8 +48,8 @@
   <app-brand-primary-button (click$)="add$.next({
           name: '',
           id: 0,
-          min: 12,
-          max: -12,
+          min: -12,
+          max: 12,
           isApproved: false
         })"
   >Add -12→12V
