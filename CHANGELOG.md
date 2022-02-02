@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.2](https://github.com/Polyterative/Patcher/compare/v3.6.1...v3.6.2) (2022-02-02)
+
+
+### Bug Fixes
+
+* sitemap priority ([47cfc85](https://github.com/Polyterative/Patcher/commit/47cfc854036aa975963b8a77c0205edaf80315e8))
+
 ### [3.6.1](https://github.com/Polyterative/Patcher/compare/v3.6.0...v3.6.1) (2022-02-02)
 
 
