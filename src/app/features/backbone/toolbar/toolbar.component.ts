@@ -25,8 +25,8 @@ export class ToolbarComponent extends SubManager {
       disabled: false
     },
     {
-      label:      '',
-      href:       'https://docs.patcher.xyz/',
+      label:      'Help',
+      href:       'https://docs.patcher.xyz/quick-start/',
       hrefNewTab: true,
       icon:       'help_outline',
       disabled:   false
