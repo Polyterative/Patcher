@@ -15,8 +15,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             </app-patch-minimal>
           </lib-clean-card>
         </div>
-    
+  
         <app-patch-details [data]="data"></app-patch-details>
+        <ng-template *ngTemplateOutlet="connectionList"></ng-template>
         <app-comments-root></app-comments-root>
       </div>
     </div>
@@ -33,9 +34,9 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             >
             </app-patch-minimal>
           </lib-clean-card>
-          <lib-screen-wrapper maxSize="36rem">
-            <app-comments-root></app-comments-root>
-          </lib-screen-wrapper>
+          <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+          <app-comments-root></app-comments-root>
+  
         </div>
         <div class="col gap1"
              fxFlex="grow"
@@ -43,10 +44,30 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
           <app-patch-details fxFlex="grow"
                              [data]="data"
           ></app-patch-details>
-    
-    
         </div>
       </div>
     </ng-container>
   </ng-container>
+  
+  
+  <ng-template #connectionList>
+    <ng-container *ngIf="{
+          connections:(dataService.patchConnections$|async)
+          } as bagA"
+    >
+      
+      <ng-container *ngIf="data&&bagA.connections&&bagA.connections.length>0">
+        <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
+                               *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
+        >
+          <!--          <lib-clean-card>-->
+          <app-patch-connections-list [editorConnections]="bagA.connections"
+                                      [isEditing]="false"
+          ></app-patch-connections-list>
+          <!--          </lib-clean-card>-->
+        </lib-hero-content-card>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
 </ng-container>
