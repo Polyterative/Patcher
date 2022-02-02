@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.4](https://github.com/Polyterative/Patcher/compare/v3.6.3...v3.6.4) (2022-02-02)
+
+
+### Bug Fixes
+
+* voltage adder values ([c8b8d32](https://github.com/Polyterative/Patcher/commit/c8b8d3270c17cb6d62e702a9b5228b0449701ad4))
+
 ### [3.6.3](https://github.com/Polyterative/Patcher/compare/v3.6.2...v3.6.3) (2022-02-02)
 
 
