@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.3](https://github.com/Polyterative/Patcher/compare/v3.6.2...v3.6.3) (2022-02-02)
+
+
+### Bug Fixes
+
+* scrollbar back to .5rem ([916e4d0](https://github.com/Polyterative/Patcher/commit/916e4d03a94b63ad28ee4ec14d0018fc06fafeef))
+
 ### [3.6.2](https://github.com/Polyterative/Patcher/compare/v3.6.1...v3.6.2) (2022-02-02)
 
 
