@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.1](https://github.com/Polyterative/Patcher/compare/v3.6.0...v3.6.1) (2022-02-02)
+
+
+### Features
+
+* producthunt badge ([ab38d7d](https://github.com/Polyterative/Patcher/commit/ab38d7d7283babc87a53f3ee3ef7ec90e89092d1))
+
 ## [3.6.0](https://github.com/Polyterative/Patcher/compare/v3.5.0...v3.6.0) (2022-02-02)
 
 
