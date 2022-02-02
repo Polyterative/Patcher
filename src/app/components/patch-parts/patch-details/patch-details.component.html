@@ -28,11 +28,11 @@
         <lib-hero-content-card [titleNormal]="bagA.length+' Connections'"
                                *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
         >
-          <lib-clean-card>
+          <!--          <lib-clean-card>-->
             <app-patch-connections-list [editorConnections]="bag.connections"
                                         [isEditing]="false"
             ></app-patch-connections-list>
-          </lib-clean-card>
+          <!--          </lib-clean-card>-->
         </lib-hero-content-card>
       </ng-container>
     </ng-container>
