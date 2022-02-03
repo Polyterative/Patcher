@@ -4,12 +4,13 @@
 >
   <div fxLayoutAlign="start center">
     <button mat-icon-button
-            [disabled]="item.id!=0"
+            [disabled]="!(item.id==0)"
             (click)="removeRequest$.next()"
     >
-      <mat-icon>
-        delete
-      </mat-icon>
+      <ng-container *ngIf="item.isApproved!==undefined&&item.isApproved; else deleteIcon"
+      >
+        <mat-icon>check</mat-icon>
+      </ng-container>
     </button>
   </div>
   <lib-mat-form-entity [type]="types.TEXT"
@@ -29,3 +30,10 @@
                fxShow.lt-md="true"
   ></mat-divider>
 </div>
+
+<ng-template #deleteIcon>
+  <mat-icon>
+    delete
+  </mat-icon>
+
+</ng-template>

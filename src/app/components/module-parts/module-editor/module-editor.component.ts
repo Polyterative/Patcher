@@ -14,10 +14,6 @@ import {
 }                                  from '@angular/forms';
 import { MatSnackBar }             from '@angular/material/snack-bar';
 import {
-  fadeInExpandOnEnterAnimation,
-  fadeOutCollapseOnLeaveAnimation
-}                                  from 'angular-animations';
-import {
   BehaviorSubject,
   concat,
   Subject
@@ -47,19 +43,19 @@ export interface FormCV {
   selector:        'app-module-editor',
   templateUrl:     './module-editor.component.html',
   styleUrls:       ['./module-editor.component.scss'],
-  animations:      [
-    fadeInExpandOnEnterAnimation(
-      {
-        duration: 250,
-        anchor:   'enter'
-      }
-    ),
-    fadeOutCollapseOnLeaveAnimation(
-      {
-        duration: 250,
-        anchor:   'exit'
-      }
-    )
+  animations: [
+    // fadeInExpandOnEnterAnimation(
+    //   {
+    //     duration: 250,
+    //     anchor:   'enter'
+    //   }
+    // ),
+    // fadeOutCollapseOnLeaveAnimation(
+    //   {
+    //     duration: 250,
+    //     anchor:   'exit'
+    //   }
+    // )
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -165,8 +161,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(
               updateSingleModuleData);
-      
-            this.snackBar.open('The community appreciates your effort, thank you for your contribution', undefined, {
+    
+            this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
+                               'You will be remembered.', undefined, {
               duration: 5000
             });
           }
@@ -194,8 +191,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       group.removeControl(key);
     }
   
-    // only add CV not yet saved on backend
-    cvs.filter(cv => cv.id === 0)
+    // only add CV if not approved
+    cvs.filter(cv => cv.isApproved === undefined || cv.isApproved === false)
        .forEach((a, i) => {
          group.addControl(`name${ i.toString() }`, a.name);
          group.addControl(`a${ i.toString() }`, a.a);
@@ -219,8 +216,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       isApproved: data.isApproved
     };
   
-    // disable if has been uploaded already on the server
-    if (data.id > 0) {
+    // disable if has been uploaded already on the server and approved
+    if (data.id > 0 && data.isApproved) {
       toReturn.name.disable();
       toReturn.a.disable();
       toReturn.b.disable();
