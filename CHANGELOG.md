@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.6.7](https://github.com/Polyterative/Patcher/compare/v3.6.6...v3.6.7) (2022-02-03)
+
+
+### Features
+
+* cv editor improvements ([6b9f662](https://github.com/Polyterative/Patcher/commit/6b9f6625fb8817f018dcb785c20dfa028dc94ed3))
+* Now CV Editor shows which CVs have been approved (usually the ones with full data) ([12d34cb](https://github.com/Polyterative/Patcher/commit/12d34cbd45b653252ad6fabbff14c88520261362))
+
 ### [3.6.6](https://github.com/Polyterative/Patcher/compare/v3.6.5...v3.6.6) (2022-02-03)
 
 
