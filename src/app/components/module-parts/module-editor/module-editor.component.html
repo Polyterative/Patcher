@@ -17,8 +17,6 @@
           <ng-container *ngFor="let item of INs$|async; let i = index">
             <app-module-editor-cv-form-line [item]="item"
                                             (removeRequest$)="removeIN$.next(i)"
-                                            [@enter]
-                                            [@exit]
             ></app-module-editor-cv-form-line>
           
           </ng-container>
@@ -40,24 +38,23 @@
           <ng-container *ngFor="let item of OUTs$|async; let i = index">
             <app-module-editor-cv-form-line [item]="item"
                                             (removeRequest$)="removeOUT$.next(i)"
-                                            [@enter]
-                                            [@exit]
             ></app-module-editor-cv-form-line>
           </ng-container>
         </div>
         <app-module-editor-adder-line (add$)="addOUT$.next($event)"
         ></app-module-editor-adder-line>
-      
+
       </div>
     </div>
-    
-    
+  
+  
     <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-    <ng-container *ngIf="
-  ((INs$|async)|onlyNotSavedFormCVsLength)!== 0 ||
-  ((OUTs$|async)|onlyNotSavedFormCVsLength) !== 0
-"
-    >
+    <!--    <ng-container *ngIf="-->
+    <!--  ((INs$|async)|onlyNotSavedFormCVsLength)!== 0 ||-->
+    <!--  ((OUTs$|async)|onlyNotSavedFormCVsLength) !== 0-->
+    <!--"-->
+    <!--    >-->
+    <ng-container>
       <div fxLayout="row"
            fxLayout.lt-md="column"
            fxLayoutGap="1rem"
