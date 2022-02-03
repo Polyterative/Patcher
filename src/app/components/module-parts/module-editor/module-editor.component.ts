@@ -16,9 +16,11 @@ import { MatSnackBar }             from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   concat,
+  of,
   Subject
 }                                  from 'rxjs';
 import {
+  filter,
   map,
   switchMap,
   takeUntil,
@@ -146,10 +148,46 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         });
   
     this.save$.pipe(
-      map(() => ({
+      map(() => ([
+        this.formCVToCV(this.INs$.value),
+        this.formCVToCV(this.OUTs$.value)
+      ])),
+      filter(([ins, outs]) => {
+      
+        if (ins.length === 0 && outs.length === 0) {
+          this.snackBar.open('Nothing to save', null, {
+            duration: 2000
+          });
+          this.reload();
+        
+          return false;
+        }
+      
+        // avoid saving if all are approved
+        const approvedIns = ins.filter(cv => cv.isApproved);
+        const approvedOuts = outs.filter(cv => cv.isApproved);
+      
+        const sameApproved: boolean = approvedIns.length === this.data.ins.length && approvedOuts.length === this.data.outs.length;
+      
+        const sameUnapproved: boolean = ins.length === this.data.ins.length && outs.length === this.data.outs.length;
+      
+        if (sameApproved && sameUnapproved) {
+          this.snackBar.open('All CV\'s are approved. Nothing to save.', null, {
+            duration: 3000
+          });
+        
+          this.reload();
+        
+          return false;
+        } else {
+          return true;
+        }
+      
+      }),
+      map(([ins, outs]) => ({
         ...this.data,
-        ins:  this.formCVToCV(this.INs$.value),
-        outs: this.formCVToCV(this.OUTs$.value)
+        ins,
+        outs
       })),
       switchMap(x => concat(
         this.backend.update.moduleINsOUTs(x),
@@ -161,8 +199,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(
               updateSingleModuleData);
-    
-            this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
+  
+          this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
                                'You will be remembered.', undefined, {
               duration: 5000
             });
@@ -182,15 +220,25 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     ins.forEach(x => this.addIN$.next(x));
     const outs: CV[] = this.data.outs;
     outs.forEach(x => this.addOUT$.next(x));
+    
+  }
   
+  private reload(): void {
+    of(null)
+      .pipe(
+        withLatestFrom(this.dataService.updateSingleModuleData$)
+      )
+      .subscribe(([_, x]) => {
+        this.dataService.updateSingleModuleData$.next(x);
+      });
   }
   
   private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
-  
+    
     for (const key in group.controls) {
       group.removeControl(key);
     }
-  
+    
     // only add CV if not approved
     cvs.filter(cv => cv.isApproved === undefined || cv.isApproved === false)
        .forEach((a, i) => {
@@ -198,9 +246,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
          group.addControl(`a${ i.toString() }`, a.a);
          group.addControl(`b${ i.toString() }`, a.b);
        });
-  
+    
     subject.next(cvs);
-  
+    
   }
   
   private serialize(cvs: CV[]): string {
