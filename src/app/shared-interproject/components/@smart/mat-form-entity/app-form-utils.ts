@@ -17,6 +17,7 @@ export class AppFormUtils {
            input.hasError(Strings.form.errorCode.custom.numberNotInteger) ? StringsIT.form.error_numberNotInteger :
            input.hasError(Strings.form.errorCode.custom.numberNotPositiveInteger) ? StringsIT.form.error_numberNotPositiveInteger :
            input.hasError(Strings.form.errorCode.custom.numberBiggerThanInterval) ? StringsIT.form.error_numberBiggerThanInterval :
+           input.hasError(Strings.form.errorCode.custom.doesNotContainHttps) ? StringsIT.form.error_doesNotContainHttps :
            input.hasError(Strings.form.errorCode.min) ? StringsIT.form.error_min : noErrorMessageChar;
     
   }
@@ -39,7 +40,8 @@ export class Strings {
         numberNotInteger:         'numberNotInteger',
         numberNotPositiveInteger: 'numberNotPositiveInteger',
         notInOptions:             'notInOptions',
-        numberBiggerThanInterval: 'numberBiggerThanOffset'
+        numberBiggerThanInterval: 'numberBiggerThanOffset',
+        doesNotContainHttps:      'doesNotContainHttps'
       }
     }
   };
@@ -58,6 +60,7 @@ export class StringsIT {
     error_numberNot:                'The entered value is not a number',
     error_numberNotInteger:         'The number entered is not an integer',
     error_numberNotPositiveInteger: 'The number entered is not a positive integer',
+    error_doesNotContainHttps:      'The entered URL does not contain https',
     error_numberBiggerThanInterval: 'The number entered is greater than the interval'
   };
   
