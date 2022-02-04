@@ -1,0 +1,99 @@
+<div class="col gap1"
+>
+  <lib-hero-content-card titleBig="Add a module"
+                         class="modulesBG"
+  >
+    <div class="col gap1"
+    >
+      <lib-screen-wrapper maxSize="86rem">
+        <div ngClass.gt-md="row gap2"
+             ngClass.lt-lg="col gap2"
+        >
+          <lib-hero-content-card titleNormal="Submit a module"
+                                 [descriptionAlign]="'start'"
+                                 description="Please do not submit panel variations. We don't treat them as separate modules. If your manufacturer is missing, please contact us via Discord or mail. Submitted modules will be usable after approval."
+          >
+      
+            <lib-clean-card class="col gap1 padB1">
+        
+              <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
+                                   [disableVoidSelection]="true"
+              ></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="dataService.formData.name"
+              ></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="dataService.formData.description"
+              ></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="dataService.formData.manual"
+              ></lib-mat-form-entity>
+              <div class="row gap1">
+                <lib-mat-form-entity [dataPack]="dataService.formData.hp"
+                                     fxFlex
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity [dataPack]="dataService.formData.standard"
+                                     [disableVoidSelection]="true"
+                                     fxFlex
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity [dataPack]="dataService.formData.diy"
+                                     [disableVoidSelection]="true"
+                                     fxFlex
+                ></lib-mat-form-entity>
+              </div>
+            </lib-clean-card>
+      
+            <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
+                                      (click$)="dataService.submitModuleForm$.next()"
+            >
+              Confirm request to add module
+            </app-brand-primary-button>
+    
+          </lib-hero-content-card>
+          <lib-hero-content-card titleNormal="Similar modules (name/manufacturer)"
+                                 description="Check out the modules that are similar to the one you are adding"
+                                 fxFlex="grow"
+          >
+            <lib-auto-update-loading-indicator [data$]="dataService.similarModulesData$"
+                                               [updateData$]="dataService.updateModulesList$"
+            >
+              <ng-container *ngIf="(dataService.similarModulesData$|async) as data">
+                <app-module-list fxFlex="grow"
+                                 [data$]="dataService.similarModulesData$"
+                                 [showSearch]="false"
+                                 [viewConfig]="viewConfig"
+                                 *ngIf="data.length>0&&dataService.formData.name.control.value.length > 0 else voidData"
+                ></app-module-list>
+              </ng-container>
+            </lib-auto-update-loading-indicator>
+          </lib-hero-content-card>
+        </div>
+      </lib-screen-wrapper>
+    
+    </div>
+  </lib-hero-content-card>
+</div>
+
+<ng-template #noRacks>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem"
+    >No racks using this module yet. Try adding it to yours!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
+<ng-template #noPatches>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem"
+    >No patches using this module yet. Try adding it to yours!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
+<ng-template #voidData>
+  <div fxFlex="100"
+       class="pad"
+  >
+    <mat-card-subtitle fxLayoutAlign="center center">Nothing similar found on database!
+    </mat-card-subtitle>
+  </div>
+</ng-template>

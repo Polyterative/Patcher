@@ -3,25 +3,28 @@ import {
   Component,
   Input,
   OnInit
-}                                  from '@angular/core';
+}                                 from '@angular/core';
 import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
-}                                  from 'angular-animations';
+}                                 from 'angular-animations';
 import {
   BehaviorSubject,
   combineLatest,
   Observable
-}                                  from 'rxjs';
+}                                 from 'rxjs';
 import {
   filter,
   take
-}                                  from 'rxjs/operators';
-import { PatchDetailDataService }  from 'src/app/components/patch-parts/patch-detail-data.service';
-import { ModuleMinimalViewConfig } from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { LocalDataFilterService }  from '../../../components/shared-atoms/local-data-filter/local-data-filter.service';
-import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
-import { ModuleList }              from '../module-browser-data.service';
+}                                 from 'rxjs/operators';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                 from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { LocalDataFilterService } from '../../../components/shared-atoms/local-data-filter/local-data-filter.service';
+import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
+import { ModuleList }             from '../module-browser-data.service';
 
 @Component({
   selector:        'app-module-list',
@@ -43,7 +46,7 @@ import { ModuleList }              from '../module-browser-data.service';
 })
 export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<ModuleList>;
-  @Input() readonly viewConfig: ModuleMinimalViewConfig;
+  @Input() readonly viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
   
   @Input() readonly showSearch = false;
   
