@@ -16,8 +16,8 @@
     </div>
   </ng-container>
   
-  <div *ngIf="description&&!hideDescription&&!showHelpButton"
-       fxLayoutAlign="end end"
+  <div *ngIf="description&&!showHelpButton"
+       [fxLayoutAlign]="descriptionAlign"
   >
     <mat-card-subtitle *ngIf="description"
                        class="description pad"
