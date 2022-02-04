@@ -60,6 +60,7 @@ export interface IMatFormEntityConfig {
   flex: string;
   // options?: ISelectable[];
   options$?: Observable<ISelectable[]>;
+  hint?: string;
 }
 
 /**
@@ -233,6 +234,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       this.type = this.dataPack.type;
       if (this.dataPack.options$) {
         this.options$ = this.dataPack.options$;
+      }
+      if (this.dataPack.hint) {
+        this.hint = this.dataPack.hint;
       }
     }
     

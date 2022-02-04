@@ -1,6 +1,7 @@
 import {
   AbstractControl,
-  FormControl
+  FormControl,
+  Validators
 }                  from '@angular/forms';
 import { Strings } from './app-form-utils';
 
@@ -30,6 +31,15 @@ export enum FormTypes {
 }
 
 export namespace CustomValidators {
+  export function includesHttps(control: AbstractControl) {
+    control.hasValidator(Validators.required);
+  
+    if (!(control.value.length > 0)) {return null;}
+  
+    const valid: boolean = control.value.includes('https://');
+    return valid ? null : {[Strings.form.errorCode.custom.doesNotContainHttps]: true};
+  }
+  
   export function onlyIntegers(control: AbstractControl) {
     const valid: boolean = Number.isInteger(Number.parseFloat(control.value));
     return valid ? null : {[Strings.form.errorCode.custom.numberNotInteger]: true};

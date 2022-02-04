@@ -91,7 +91,10 @@ export class SupabaseService {
     modules: (data: DbModule[]) => rxFrom(
       this.supabase
           .from(this.paths.modules)
-          .upsert(data)
+          .upsert(data.map(x => ({
+            ...x,
+            submitter: this.getUser().id
+          })))
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
     ,
@@ -214,22 +217,29 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number) => {
-      const baseQuery = this.supabase.from(this.paths.modules)
-                            .select(`
+    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
+      let baseQuery = this.supabase.from(this.paths.modules)
+                          .select(`
                               id,name,hp,description,public,standard,
                               ${ this.queryJoins.manufacturer },
                               ${ this.queryJoins.module_tags }
                             `, {count: 'exact'})
-                            .ilike('name', `%${ name }%`)
-                            .filter('public', 'eq', true)
-                            .range(from, to)
-                            .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'});
+                          .ilike('name', `%${ name }%`);
+    
+      if (onlyPublic) {
+        baseQuery = baseQuery.filter('public', 'eq', true);
+      }
+    
+      // append range and order
+      baseQuery = baseQuery.range(from, to)
+                           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'});
+    
       return rxFrom(
         manufacturerId ? baseQuery.eq('manufacturerId', manufacturerId) :
         baseQuery
       )
-        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
+        .pipe(
+          switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar));
     },
     racksMinimal:       (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.racks)
@@ -297,8 +307,8 @@ export class SupabaseService {
                   .pipe(map(x => x.data))
               )
             );
-        
-            return x.data.length > 0 ? getPatchData$ : of([]);
+  
+          return x.data.length > 0 ? getPatchData$ : of([]);
           }
         )
       );
@@ -327,6 +337,11 @@ export class SupabaseService {
           .select(columns)
           .range(from, to)
           .order(orderBy ? orderBy : 'name')
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    standards:          () => rxFrom(
+      this.supabase.from(this.paths.standards)
+          .select('*')
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     userWithId:         (id: string, columns = '*') => rxFrom(
@@ -542,6 +557,7 @@ export class SupabaseService {
     patch_connections:                'patch_connections',
     module_tags:                      'module_tags',
     tags:                             'tags',
+    standards:                        'standards',
     profiles:                         'profiles'
   };
   
