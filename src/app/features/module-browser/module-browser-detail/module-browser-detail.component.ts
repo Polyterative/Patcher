@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnInit
@@ -15,12 +16,12 @@ import { ModuleDetailDataService } from 'src/app/components/module-parts/module-
 import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 
 @Component({
-  selector:    'app-module-browser-module-detail-view-root',
-  templateUrl: './module-browser-module-detail-view-root.component.html',
-  styleUrls:   ['./module-browser-module-detail-view-root.component.scss']
-  // changeDetection: ChangeDetectionStrategy.OnPush
+  selector:        'app-module-browser-detail',
+  templateUrl:     './module-browser-detail.component.html',
+  styleUrls:       ['./module-browser-detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ModuleBrowserModuleDetailViewRootComponent implements OnInit {
+export class ModuleBrowserDetailComponent implements OnInit {
   
   protected destroyEvent$ = new Subject<void>();
   @Input() ignoreSeo = false;
