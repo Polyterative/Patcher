@@ -37,7 +37,8 @@ export class UserLoginDataService {
       flex:    '6rem',
       control: new FormControl('', Validators.compose([
         Validators.email,
-        Validators.required
+        Validators.required,
+        Validators.minLength(3)
       ])),
       type:    FormTypes.EMAIL
     },
