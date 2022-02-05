@@ -227,7 +227,7 @@ export class SupabaseService {
     modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
       let baseQuery = this.supabase.from(this.paths.modules)
                           .select(`
-                              id,name,hp,description,public,
+                              id,name,hp,description,public,created,updated,
                               ${ this.queryJoins.manufacturer },
                               ${ this.queryJoins.standard },
                               ${ this.queryJoins.module_tags }
@@ -251,7 +251,7 @@ export class SupabaseService {
     },
     racksMinimal:       (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(this.paths.racks)
-          .select(`id,name,hp,rows,description,authorid,${ this.queryJoins.author }`, {count: 'exact'})
+          .select(`id,name,hp,rows,description,created,updated,authorid,${ this.queryJoins.author }`, {count: 'exact'})
           .ilike(`name,hp,rows, ${ this.queryJoins.author }`, `%${ name }%`)
           .range(from, to)
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'})
