@@ -2,6 +2,7 @@
 //@import '@angular/material/theming';
 @import "~src/app/style/brand-resources";
 @import "~src/app/style/commons_customizations";
+
 mat-card {
   padding: 0
 }
@@ -96,14 +97,21 @@ mat-card {
 
 .description {
   //@include unselectable;
-  font-size:  small;
-  text-align: start;
+  font-size: small;
+  padding:   .5rem;
   //border: 0.1rem solid white;
   //padding: 1rem;
   //background-color: white;
   //color: $brand-primary;
 }
 
+.alignTextStart {
+  text-align: start;
+}
+
+.alignTextEnd {
+  text-align: end;
+}
 
 .supporting-top {
   @include darkBG;

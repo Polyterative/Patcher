@@ -126,9 +126,15 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    userModules:      () => rxFrom(
+    userModules:       () => rxFrom(
       this.supabase.from(this.paths.user_modules)
-          .select(`module:modules!user_modules_moduleid_fkey(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
+          .select(`
+          module:modules!user_modules_moduleid_fkey(
+            *,
+            ${ this.queryJoins.manufacturer },
+            ${ this.queryJoins.insOuts }
+          )
+            `)
           .filter('profileid', 'eq', this.getUser().id)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
@@ -180,7 +186,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    rackedModules:      (rackid: number) => rxFrom(
+    rackedModules:     (rackid: number) => rxFrom(
       this.supabase.from(this.paths.rack_modules)
           .select(`*, ${ this.queryJoins.module_fk_rackmodules }`)
         // .order('module.id')
@@ -218,7 +224,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
+    modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
       let baseQuery = this.supabase.from(this.paths.modules)
                           .select(`
                               id,name,hp,description,public,
@@ -285,7 +291,7 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patchesWithModule:  (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
+    patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
       const patchIdList$ = rxFrom(
         this.supabase.from(this.paths.patches_for_modules)
             .select('*', {count: 'exact'})
@@ -310,8 +316,8 @@ export class SupabaseService {
                   .pipe(map(x => x.data))
               )
             );
-    
-            return x.data.length > 0 ? getPatchData$ : of([]);
+  
+          return x.data.length > 0 ? getPatchData$ : of([]);
           }
         )
       );
@@ -580,7 +586,7 @@ export class SupabaseService {
     author:                'author:authorid(username,id,email)',
     rack:                  'rack:rackid(*,author:authorid(username,id,email))',
     rack_modules:          'rackModules:rackid(*)',
-    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(*,manufacturer:manufacturerId(name,id,logo))',
+    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standard!modules_standards_id_fk(name,id))',
     // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
     module_tags: `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
     ins:         `ins:${ this.paths.moduleINs }(*)`,
