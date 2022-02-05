@@ -205,6 +205,7 @@ export class SupabaseService {
           .select(`${ columns },
           ${ this.queryJoins.manufacturer },
           ${ this.queryJoins.insOuts },
+          ${ this.queryJoins.standard },
           ${ this.queryJoins.module_tags }
           `)
           .range(from, to)
@@ -220,20 +221,21 @@ export class SupabaseService {
     modulesMinimal:     (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
       let baseQuery = this.supabase.from(this.paths.modules)
                           .select(`
-                              id,name,hp,description,public,standard,
+                              id,name,hp,description,public,
                               ${ this.queryJoins.manufacturer },
+                              ${ this.queryJoins.standard },
                               ${ this.queryJoins.module_tags }
                             `, {count: 'exact'})
                           .ilike('name', `%${ name }%`);
-    
+  
       if (onlyPublic) {
         baseQuery = baseQuery.filter('public', 'eq', true);
       }
-    
+  
       // append range and order
       baseQuery = baseQuery.range(from, to)
                            .order(orderBy ? orderBy : 'name', {ascending: orderDirection == 'asc'});
-    
+  
       return rxFrom(
         manufacturerId ? baseQuery.eq('manufacturerId', manufacturerId) :
         baseQuery
@@ -262,6 +264,7 @@ export class SupabaseService {
       this.supabase.from(this.paths.modules)
           .select(`${ columns },
            ${ this.queryJoins.manufacturer },
+            ${ this.queryJoins.standard },
             ${ this.queryJoins.insOuts },
             ${ this.queryJoins.module_tags }
             `)
@@ -307,8 +310,8 @@ export class SupabaseService {
                   .pipe(map(x => x.data))
               )
             );
-  
-          return x.data.length > 0 ? getPatchData$ : of([]);
+    
+            return x.data.length > 0 ? getPatchData$ : of([]);
           }
         )
       );
@@ -572,6 +575,7 @@ export class SupabaseService {
     // a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
   
     manufacturer:          'manufacturer:manufacturerId(name,id,logo)',
+    standard:              'standard:standard!modules_standards_id_fk(name,id)',
     patch:                 'patch:patches!patch_connections_patchid_fkey(*)',
     author:                'author:authorid(username,id,email)',
     rack:                  'rack:rackid(*,author:authorid(username,id,email))',

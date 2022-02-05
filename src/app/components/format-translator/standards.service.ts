@@ -14,7 +14,7 @@ import { SubManager }      from '../../shared-interproject/directives/subscripti
 @Injectable({
   providedIn: 'root'
 })
-export class FormatTranslatorService extends SubManager {
+export class StandardsService extends SubManager {
   readonly standards = {
     update$: new Subject<void>(),
     data$:   new BehaviorSubject<Standard[] | undefined>(undefined)
