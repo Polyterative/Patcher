@@ -9,43 +9,52 @@
         <div ngClass.gt-md="row gap2"
              ngClass.lt-lg="col gap2"
         >
-          <lib-hero-content-card titleNormal="Submit a module"
-                                 [descriptionAlign]="'start'"
-                                 description="Please do not submit panel variations. We don't treat them as separate modules. If your manufacturer is missing, please contact us via Discord or mail. Submitted modules will be usable after approval."
+          <lib-hero-content-card titleNormal="Data"
+                                 description="If your manufacturer is missing, please contact us via Discord or mail.
+                                 Submitted modules will be usable after approval."
           >
-      
-            <lib-clean-card class="col gap1 padB1">
-        
-              <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
-                                   [disableVoidSelection]="true"
-              ></lib-mat-form-entity>
-              <lib-mat-form-entity [dataPack]="dataService.formData.name"
-              ></lib-mat-form-entity>
-              <lib-mat-form-entity [dataPack]="dataService.formData.description"
-              ></lib-mat-form-entity>
-              <lib-mat-form-entity [dataPack]="dataService.formData.manual"
-              ></lib-mat-form-entity>
-              <div class="row gap1">
-                <lib-mat-form-entity [dataPack]="dataService.formData.hp"
-                                     fxFlex
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity [dataPack]="dataService.formData.standard"
-                                     [disableVoidSelection]="true"
-                                     fxFlex
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity [dataPack]="dataService.formData.diy"
-                                     [disableVoidSelection]="true"
-                                     fxFlex
-                ></lib-mat-form-entity>
+            <div class="col gap1">
+              <div fxLayout="column"
+                   fxLayout.gt-md="row"
+                   fxLayoutGap="1rem"
+              >
+                <app-advice-tooltip>
+                  Please do not submit panel variations.
+                  We don't treat them as separate modules.
+                </app-advice-tooltip>
+                <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
+                                          (click$)="dataService.submitModuleForm$.next()"
+                                          fxLayoutAlign="end start"
+                >
+                  Submit module
+                </app-brand-primary-button>
               </div>
-            </lib-clean-card>
-      
-            <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
-                                      (click$)="dataService.submitModuleForm$.next()"
-            >
-              Confirm request to add module
-            </app-brand-primary-button>
-    
+              <lib-clean-card class="col gap1">
+        
+                <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
+                                     [disableVoidSelection]="true"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity [dataPack]="dataService.formData.name"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity [dataPack]="dataService.formData.description"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity [dataPack]="dataService.formData.manual"
+                ></lib-mat-form-entity>
+                <div fxLayout="column"
+                     fxLayout.gt-md="row"
+                     fxLayoutGap="1rem"
+                >
+                  <lib-mat-form-entity [dataPack]="dataService.formData.hp"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity [dataPack]="dataService.formData.standard"
+                                       [disableVoidSelection]="true"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity [dataPack]="dataService.formData.diy"
+                                       [disableVoidSelection]="true"
+                  ></lib-mat-form-entity>
+                </div>
+              </lib-clean-card>
+            </div>
           </lib-hero-content-card>
           <lib-hero-content-card titleNormal="Similar modules (name/manufacturer)"
                                  description="Check out the modules that are similar to the one you are adding"

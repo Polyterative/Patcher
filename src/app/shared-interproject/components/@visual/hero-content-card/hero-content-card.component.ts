@@ -36,7 +36,6 @@ export class HeroContentCardComponent {
   @Input() top = false;
   @Input() bottom = false;
   @Input() description: string;
-  @Input() descriptionAlign: string = 'end end';
   @Input() showHelpButton = false;
   @Input() icon: string;
   @Input() titleStyle?: { [param: string]: any };

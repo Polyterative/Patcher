@@ -30,18 +30,19 @@ import { BrandPrimaryButtonModule }          from 'src/app/shared-interproject/c
 import { FlexboxRowFastModule }              from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroContentCardModule }             from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule }                 from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
-import { HeroItemCardModule }               from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
-import { LabelValueShowcaseModule }         from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
-import { PageHeaderModule }                 from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
-import { ScreenWrapperModule }              from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
-import { WidthLimiterModule }               from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
-import { generateUranusRoutes }             from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
-import { ModulePatchesModule }              from '../../components/module-patches/module-patches.module';
-import { ModuleRacksModule }                from '../../components/module-racks/module-racks.module';
-import { LocalDataFilterModule }            from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
-import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
-import { CleanCardModule }                  from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
-import { ModuleBrowserAdderComponent }      from './module-browser-adder/module-browser-adder.component';
+import { HeroItemCardModule }                from 'src/app/shared-interproject/components/@visual/hero-item-card/hero-item-card.module';
+import { LabelValueShowcaseModule }          from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { PageHeaderModule }                  from 'src/app/shared-interproject/components/@visual/page-header/page-header.module';
+import { ScreenWrapperModule }               from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { WidthLimiterModule }                from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
+import { generateUranusRoutes }              from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { ModulePatchesModule }               from '../../components/module-patches/module-patches.module';
+import { ModuleRacksModule }                 from '../../components/module-racks/module-racks.module';
+import { LocalDataFilterModule }             from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
+import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { AdviceTooltipModule }               from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+import { ModuleBrowserAdderComponent }       from './module-browser-adder/module-browser-adder.component';
 
 const parentPrefix = 'modules';
 
@@ -57,7 +58,7 @@ const parentPrefix = 'modules';
   imports:      [
     CommonModule,
     RouterModule.forChild([
-  
+      
       {
         path:      `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
@@ -117,7 +118,8 @@ const parentPrefix = 'modules';
     LocalDataFilterModule,
     CleanCardModule,
     ModuleRacksModule,
-    ModulePatchesModule
+    ModulePatchesModule,
+    AdviceTooltipModule
   ],
   exports:      [
     ModuleListComponent,
