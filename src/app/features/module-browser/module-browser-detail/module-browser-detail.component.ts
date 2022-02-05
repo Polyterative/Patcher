@@ -13,6 +13,10 @@ import {
   take
 }                                  from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                  from '../../../components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 
 @Component({
@@ -25,6 +29,10 @@ export class ModuleBrowserDetailComponent implements OnInit {
   
   protected destroyEvent$ = new Subject<void>();
   @Input() ignoreSeo = false;
+  @Input() viewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    ellipseDescription: false
+  };
   
   constructor(
     public dataService: ModuleDetailDataService,
@@ -36,7 +44,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Module Details'); }
-  
+    
     this.route.params
         .pipe(
           map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
@@ -47,7 +55,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
           // debugger
           this.dataService.updateSingleModuleData$.next(data);
         });
-  
+    
     if (!this.ignoreSeo) {
       this.dataService.singleModuleData$
           .pipe(
@@ -75,7 +83,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
               `${ data.name } by ${ data.manufacturer.name } - Module Details`);
           });
     }
-  
+    
   }
   
   ngOnDestroy(): void {
