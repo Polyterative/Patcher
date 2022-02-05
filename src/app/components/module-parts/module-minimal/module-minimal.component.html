@@ -20,6 +20,7 @@
       </div>
       <app-module-part-description [data]="data"
                                    *ngIf="!viewConfig.hideDescription"
+                                   [viewConfig]="viewConfig"
       ></app-module-part-description>
       <app-timestamps-relative [data]="data"
                                *ngIf="!viewConfig.hideDates"
