@@ -25,7 +25,9 @@
                                *ngIf="!viewConfig.hideDates"
       ></app-timestamps-relative>
     </div>
-    <app-module-tags [data]="data"></app-module-tags>
+    <app-module-tags [data]="data"
+                     *ngIf="!viewConfig.hideTags"
+    ></app-module-tags>
     <ng-content></ng-content>
     <ng-container *ngIf="!viewConfig.hideButtons">
       <mat-divider [inset]="true"
@@ -59,8 +61,8 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-      
-      
+        
+        
           <button mat-icon-button
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
@@ -70,7 +72,7 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-    
+      
         </div>
         <div fxFlex="grow"></div>
         <div class="row gap1">
@@ -115,8 +117,8 @@
             </a>
 
           </ng-container>
-      
-      
+  
+  
           <ng-container *ngIf="!bag.singleModuleData">
             <a mat-icon-button
                matTooltip="Show details"
@@ -124,9 +126,9 @@
             >
               <mat-icon>info</mat-icon>
             </a>
-      
+  
           </ng-container>
-    
+
         </div>
       </div>
     </ng-container>
