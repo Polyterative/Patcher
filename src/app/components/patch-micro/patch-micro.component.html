@@ -4,14 +4,16 @@
                             infoText="Patch name"
   >{{data.name}}
   </app-hero-clickable-title>
+  <app-entity-author [data]="data.author"></app-entity-author>
+  
+  <app-timestamps-relative [data]="data"
+                           *ngIf="!viewConfig.hideDates"
+  ></app-timestamps-relative>
   <div class="row gap1 spaceBetween description"
        *ngIf="!viewConfig.hideDescription"
   >
     <mat-card-subtitle>{{data.description}}</mat-card-subtitle>
   </div>
-  <app-entity-author [data]="data.author"></app-entity-author>
-  <app-timestamps-relative [data]="data"
-                           *ngIf="!viewConfig.hideDates"
-  ></app-timestamps-relative>
+
 </div>
 <!--{{viewConfig|json}}-->
