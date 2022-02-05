@@ -132,7 +132,7 @@ export class ModuleDetailDataService {
     )
         .subscribe(([user, module]) => {
           if (user) {
-            this.moduleEditingPanelOpenState$.next(!module.isComplete);
+            this.moduleEditingPanelOpenState$.next(!module.isComplete && module.manufacturer.id !== 10000);
           }
         });
     

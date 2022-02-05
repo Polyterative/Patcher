@@ -44,7 +44,7 @@
             <button mat-icon-button
                     matTooltip="Add to your collection"
                     *ngIf="(bag.singleModuleData)"
-                    [disabled]="!bag.user"
+                    [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
                     [title]="!bag.user ? 'Login to add to modules your collection':''"
                     (click)="dataService.addModuleToCollection$.next(data.id)"
             >
@@ -55,7 +55,7 @@
             <button mat-icon-button
                     matTooltip="Remove from your collection"
                     *ngIf="(bag.singleModuleData)"
-                    [disabled]="!bag.user"
+                    [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
                     (click)="dataService.removeModuleFromCollection$.next(data.id)"
             >
               <mat-icon>eject</mat-icon>
@@ -67,7 +67,7 @@
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
                   *ngIf="(bag.singleModuleData)"
-                  [disabled]="(!bag.user)"
+                  [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
                   (click)="dataService.requestAddModuleToRack$.next(data)"
           >
             <mat-icon>playlist_add</mat-icon>
@@ -80,7 +80,7 @@
             <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
               <button mat-icon-button
                       matTooltip="Edit module"
-                      [disabled]="(!bag.user)||bag.singleModuleData.isComplete"
+                      [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
                       (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
               >
                 <mat-icon>edit</mat-icon>
