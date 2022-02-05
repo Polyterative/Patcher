@@ -55,8 +55,8 @@ export class ModuleAdderDataService {
       ])),
       type:    FormTypes.TEXT
     },
-    description:  {
-      label:   'Description',
+    description: {
+      label:   'Description (brief)',
       code:    'description',
       flex:    '6rem',
       hint:    'Example: Analog computer designed for musical purposes',
@@ -266,6 +266,9 @@ export class ModuleAdderDataService {
         .subscribe(x => {
   
           this.formData.name.control.setValue('');
+          this.formData.description.control.setValue('');
+          this.formData.manual.control.setValue('');
+          this.formData.hp.control.setValue('');
   
           // inform user that the module was added
           this.snackBar.open(
