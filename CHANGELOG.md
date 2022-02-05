@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.7.0](https://github.com/Polyterative/Patcher/compare/v3.6.7...v3.7.0) (2022-02-05)
+
+
+### Features
+
+* add a module page ([d35686a](https://github.com/Polyterative/Patcher/commit/d35686a70fffb1bec285b2aff57ccb89fccd60a3))
+* **moduleAdder:** label changes ([87381b3](https://github.com/Polyterative/Patcher/commit/87381b389f9b3bcea8b5ccdda9a0e6289c85a611))
+* **moduleAdder:** label changes ([aeedab0](https://github.com/Polyterative/Patcher/commit/aeedab06bf4050cdfd3ed97d6bce42217b72867c))
+* **moduleAdder:** layout improvements ([3d4c089](https://github.com/Polyterative/Patcher/commit/3d4c0898b69a5d82b9e180ac79bbd11d5864e4e7))
+
+
+### Bug Fixes
+
+* **abstract modules:** initial special support ([4ee6a4c](https://github.com/Polyterative/Patcher/commit/4ee6a4c74f8a2f1b5fe5aa70461851ee9b836347))
+* **lists:** labels order ([756fa09](https://github.com/Polyterative/Patcher/commit/756fa09488721397b159b1b3940cfc9fadf49786))
+* **moduleAdder:** tab title ([f150bfe](https://github.com/Polyterative/Patcher/commit/f150bfe5d57488226d40083550ad972816827e02))
+* **module:** max length in description ([b31bdbe](https://github.com/Polyterative/Patcher/commit/b31bdbef65087e27f95970a47879ecdf9af50db9))
+* **moduleslist/rackslist:** fixed dates ([a1a86dd](https://github.com/Polyterative/Patcher/commit/a1a86ddaa941da78908e36547ec6a407847af510))
+* **rack builder:** modules height ([d4816ae](https://github.com/Polyterative/Patcher/commit/d4816ae748f9d5509b8278a12302c6e4b4da6754))
+
 ### [3.6.7](https://github.com/Polyterative/Patcher/compare/v3.6.6...v3.6.7) (2022-02-03)
 
 
