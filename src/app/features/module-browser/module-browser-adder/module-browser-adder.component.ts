@@ -64,12 +64,12 @@ export class ModuleBrowserAdderComponent implements OnInit {
   
   private updateSeo(): void {
     const seoData: SeoSocialShareData = {
-      title:       'Add a module',
-      description: 'Add a module - details',
-      keywords:    'add, module, eurorack,'
+      title:       'Submit a module',
+      description: 'Submit a module - details',
+      keywords:    'add,submit, module, eurorack,'
     };
     this.seoAndUtilsService.updateSeo(seoData,
-      'Add a module');
+      'Submit a module');
   }
   
 }
