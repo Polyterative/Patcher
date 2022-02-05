@@ -18,13 +18,14 @@
                             [data]="data"
         ></app-module-part-hp>
       </div>
+      <app-timestamps-relative [data]="data"
+                               *ngIf="!viewConfig.hideDates"
+      ></app-timestamps-relative>
       <app-module-part-description [data]="data"
                                    *ngIf="!viewConfig.hideDescription"
                                    [viewConfig]="viewConfig"
       ></app-module-part-description>
-      <app-timestamps-relative [data]="data"
-                               *ngIf="!viewConfig.hideDates"
-      ></app-timestamps-relative>
+
     </div>
     <app-module-tags [data]="data"
                      *ngIf="!viewConfig.hideTags"
@@ -62,8 +63,8 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-        
-        
+  
+  
           <button mat-icon-button
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
@@ -73,7 +74,7 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-      
+
         </div>
         <div fxFlex="grow"></div>
         <div class="row gap1">
