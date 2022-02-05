@@ -70,7 +70,9 @@ export class RackEditorComponent extends SubManager implements OnInit {
     this.manageSub(
       rightClick$
         .pipe(
-          filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) => isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable)
+          filter(([, isCurrentRackPropertyOfCurrentUser, isCurrentRackEditable]) =>
+            isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
+          )
         )
         .subscribe(([
                       {

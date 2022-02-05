@@ -18,6 +18,7 @@
                             ' '+data.hp+' HP per row'+' / ' +
                              ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
                              (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options':' / Unlock to make changes')):'')"
+                           descriptionAlign="alignTextEnd"
                            class="transition-all-long"
                            [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
     >

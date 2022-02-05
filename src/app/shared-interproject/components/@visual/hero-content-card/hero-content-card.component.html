@@ -16,14 +16,11 @@
     </div>
   </ng-container>
   
-  <div *ngIf="description&&!showHelpButton"
-       fxLayoutAlign="start start"
-  >
-    <mat-card-subtitle *ngIf="description"
-                       class="description pad"
-                       [@description]
-    >{{description}}</mat-card-subtitle>
-  </div>
+  <mat-card-subtitle *ngIf="description&&!showHelpButton"
+                     class="description"
+                     [ngClass]="descriptionAlign"
+                     [@description]
+  >{{description}}</mat-card-subtitle>
   
   <div class="content col"
   >
