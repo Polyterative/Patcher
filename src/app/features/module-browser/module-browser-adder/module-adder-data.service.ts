@@ -129,11 +129,11 @@ export class ModuleAdderDataService {
       ),
       type:     FormTypes.SELECT
     },
-    diy:          {
+    diy: {
       label:    'DIY/Commercial',
       code:     'diy',
       flex:     '6rem',
-      hint:     'Commercial or DIY',
+      hint:     '',
       control:  new FormControl({
         id:   '0',
         name: 'Commercial'
