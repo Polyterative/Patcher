@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.2](https://github.com/Polyterative/Patcher/compare/v3.7.1...v3.7.2) (2022-02-05)
+
+
+### Bug Fixes
+
+* **module adder:** format default order ([0280325](https://github.com/Polyterative/Patcher/commit/02803250de19f7b1cac67a5ed16bd9de23830d67))
+
 ### [3.7.1](https://github.com/Polyterative/Patcher/compare/v3.7.0...v3.7.1) (2022-02-05)
 
 
