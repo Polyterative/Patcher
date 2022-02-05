@@ -58,14 +58,16 @@ export interface ModuleMinimalViewConfig {
   hideHP: boolean;
   hideDates: boolean;
   hideTags: boolean;
+  ellipseDescription: boolean;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
-  hideLabels:       false,
-  hideManufacturer: false,
-  hideDescription:  false,
-  hideButtons:      false,
-  hideHP:           false,
-  hideDates:        false,
-  hideTags:         false
+  hideLabels:         false,
+  hideManufacturer:   false,
+  hideDescription:    false,
+  hideButtons:        false,
+  hideHP:             false,
+  hideDates:          false,
+  ellipseDescription: true,
+  hideTags:           false
 };

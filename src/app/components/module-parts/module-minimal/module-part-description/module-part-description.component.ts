@@ -3,8 +3,9 @@ import {
   Component,
   Input,
   OnInit
-}                        from '@angular/core';
-import { MinimalModule } from '../../../../models/module';
+}                                  from '@angular/core';
+import { MinimalModule }           from '../../../../models/module';
+import { ModuleMinimalViewConfig } from '../module-minimal.component';
 
 @Component({
   selector:        'app-module-part-description',
@@ -15,6 +16,7 @@ import { MinimalModule } from '../../../../models/module';
 export class ModulePartDescriptionComponent implements OnInit {
   
   @Input() data: MinimalModule;
+  @Input() viewConfig: ModuleMinimalViewConfig;
   
   constructor() { }
   
