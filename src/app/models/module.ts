@@ -5,6 +5,7 @@ import {
 }                      from './manufacturer';
 import { Timestamped } from './models';
 import { RackingData } from './rack';
+import { Standard }    from './standard';
 import { Switch }      from './switch';
 import { Tag }         from './tag';
 
@@ -30,7 +31,7 @@ export interface MinimalModule extends Timestamped {
   /**
    *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
    */
-  standard: number;
+  standard: Standard;
   tags: { tag: Tag }[];
 }
 
