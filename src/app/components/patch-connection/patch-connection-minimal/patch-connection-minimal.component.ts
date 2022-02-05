@@ -5,15 +5,18 @@ import {
   Input,
   OnInit,
   Output
-}                                  from '@angular/core';
+}                          from '@angular/core';
 import {
   FormControl,
   Validators
-}                                  from '@angular/forms';
-import { Subject }                 from 'rxjs';
-import { PatchConnection }         from '../../../models/connection';
-import { FormTypes }               from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
+}                          from '@angular/forms';
+import { Subject }         from 'rxjs';
+import { PatchConnection } from '../../../models/connection';
+import { FormTypes }       from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                          from '../../module-parts/module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-patch-connection-minimal',
@@ -31,6 +34,7 @@ export class PatchConnectionMinimalComponent implements OnInit {
   types = FormTypes;
   
   @Input() viewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
     hideLabels:       false,
     hideManufacturer: true,
     hideDescription:  true,
