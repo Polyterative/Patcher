@@ -6,6 +6,7 @@ import { ModuleBrowserModule }        from 'src/app/features/module-browser/modu
 import { PatchBrowserModule }         from 'src/app/features/patch-browser/patch-browser.module';
 import { RackBrowserModule }          from 'src/app/features/rack-browser/rack-browser.module';
 import { UserAreaModule }             from 'src/app/features/user-area/user-area.module';
+import { InfoPagesModule }            from './info-pages/info-pages.module';
 
 @NgModule({
   declarations: [],
@@ -25,7 +26,8 @@ import { UserAreaModule }             from 'src/app/features/user-area/user-area
     PatchBrowserModule,
     RackBrowserModule,
     ModuleBrowserModule,
-    UserAreaModule
+    UserAreaModule,
+    InfoPagesModule
   ]
 })
 export class AppFeaturesModule {}
