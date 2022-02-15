@@ -152,7 +152,9 @@
     </ng-container>
     
     <ng-container *ngIf="(type===types.MULTI_TEXT)">
-      <mat-chip-list #chipList>
+      <mat-chip-list #chipList
+                     [formControl]="control"
+      >
         <mat-chip (removed)="removeFromChips(chip)"
                   *ngFor="let chip of control.value"
                   [removable]="true"
@@ -173,10 +175,12 @@
       </mat-chip-list>
     
     </ng-container>
-    
+  
     <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE)">
-      <mat-chip-list #chipList>
-        
+      <mat-chip-list #chipList
+                     [formControl]="control"
+      >
+      
         <ng-container *ngFor="let chip of control.value">
           <mat-chip (removed)="removeFromChips(chip)"
                     [removable]="!control.disabled"
