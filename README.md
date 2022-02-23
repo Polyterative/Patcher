@@ -1,14 +1,21 @@
 # Patcher
 
-[![Build and deploy](https://github.com/Polyterative/Patcher/actions/workflows/firebase-hosting-deploy.yml/badge.svg?branch=master)](https://github.com/Polyterative/Patcher/actions/workflows/firebase-hosting-deploy.yml)
-
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.3.
+This project was originally generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.3. Current is angular 13
 
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically
 reload if you change any of the source files.
 
-## DB
+# Develop branch is where code gets advanced
+production branch gets directly uploaded via automated tools. Beware
 
-![image](https://user-images.githubusercontent.com/16295552/147859895-e65b8675-7a6f-4a08-a046-dc68db8f0729.png)
+## ATTENTION
+Be aware that currently there is no DEV environment. Any change made with the dev code running is working directly with the production database!!!
+Be sure on what API calls you make.
+
+
+## DB Model
+
+![image](https://user-images.githubusercontent.com/16295552/155419090-3e3a0cd6-77b9-4d3b-91be-d525ef43dd03.png)
+
