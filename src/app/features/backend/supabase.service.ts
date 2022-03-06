@@ -294,11 +294,11 @@ export class SupabaseService {
     patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
       const patchIdList$ = rxFrom(
         this.supabase.from(this.paths.patches_for_modules)
-            .select('*', {count: 'exact'})
-            .order('updated', {
-              ascending:    false,
-              foreignTable: this.paths.patch_connections
-            })
+            .select('moduleid,patchid', {count: 'exact'})
+          // .order('updated', {
+          //   ascending:    false,
+          //   foreignTable: this.paths.patch_connections
+          // })
             .filter('moduleid', 'eq', moduleid)
             .range(from, to)
       )
