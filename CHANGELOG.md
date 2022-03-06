@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.8.0](https://github.com/Polyterative/Patcher/compare/v3.7.2...v3.8.0) (2022-03-06)
+
+
+### Bug Fixes
+
+* **app:** now using Yarn ([4dd0475](https://github.com/Polyterative/Patcher/commit/4dd04755873ae42d78b1211a3be86d7d7221f911))
+* **app:** removed unused firebase references ([5cb44b5](https://github.com/Polyterative/Patcher/commit/5cb44b5a590afd8bca074e443d31c2bf3e131dc8))
+* **changelog page:** initial work ([5b68653](https://github.com/Polyterative/Patcher/commit/5b68653bbf142b32172693d916894c05b883cad7))
+* **libs:** completely removed anything related to firebase ([1ee8223](https://github.com/Polyterative/Patcher/commit/1ee8223c31d506655700cebe2fb90feb29332df3))
+* **libs:** mat form entity chips disabling ([ac75201](https://github.com/Polyterative/Patcher/commit/ac75201e0243680a85333e60d924de6674956a71))
+* **libs:** updated version ([3a3aa35](https://github.com/Polyterative/Patcher/commit/3a3aa35f8990c9ea1943a919e292f0cd9f425e45))
+* **libs:** updated versions ([f4a2713](https://github.com/Polyterative/Patcher/commit/f4a2713fbc09e60e25333b409ef6c60759c128d2))
+* **supabase:** fixed call involving foreign table in view ([cef611d](https://github.com/Polyterative/Patcher/commit/cef611db12fd33a371adbd34ed1c7db8e29749df))
+
 ### [3.7.2](https://github.com/Polyterative/Patcher/compare/v3.7.1...v3.7.2) (2022-02-05)
 
 
