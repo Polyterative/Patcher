@@ -22,13 +22,16 @@ import { ModuleBrowserModule }      from '../../module-browser/module-browser.mo
 import { PatchBrowserModule }       from '../../patch-browser/patch-browser.module';
 import { RackBrowserModule }        from '../../rack-browser/rack-browser.module';
 import { HomeComponent }            from './home.component';
+import { PfiveContainerComponent }  from './pfive-container/pfive-container.component';
 
 @NgModule({
   declarations: [
-    HomeComponent
+    HomeComponent,
+    PfiveContainerComponent
   ],
   exports:      [
-    HomeComponent
+    HomeComponent,
+    PfiveContainerComponent
   ],
   imports:      [
     CommonModule,
