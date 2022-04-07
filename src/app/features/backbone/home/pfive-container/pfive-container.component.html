@@ -1,2 +1,12 @@
-<div id="digital-watch-canvas">
+<div fxFlex="auto"
+     fxLayout="column"
+     fxLayoutGap="1rem"
+>
+  <div fxFlex="auto">
+    frame:{{interval$| async}}
+  </div>
+  <div fxFlex="auto">
+    <div id="canvas">
+    </div>
+  </div>
 </div>
