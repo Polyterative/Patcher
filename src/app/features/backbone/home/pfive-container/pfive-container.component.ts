@@ -7,9 +7,9 @@ import {
 import p5 from 'p5';
 import {
   BehaviorSubject,
-  bufferCount,
   interval,
-  Subject
+  Subject,
+  throttleTime
 }         from 'rxjs';
 import {
   share,
@@ -18,7 +18,7 @@ import {
 }         from 'rxjs/operators';
 
 interface MyGenerator {
-  life: number;
+  remainingLife: number;
   birthTime: number;
   
   draw(p: p5, time: number): void;
@@ -34,7 +34,7 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
   fps = 144;
   
   // rxjs clock
-  interval$ = interval(1000 / this.fps)
+  interval$ = interval(1000 / this.fps / 10)
     .pipe(share());
   
   private p5: p5;
@@ -90,11 +90,11 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
           this.seed = x;
       
           generators.forEach(generator => {
-            generator.life = generator.life - 1;
+            generator.remainingLife = generator.remainingLife - 1;
           });
       
           // remove dead generators
-          generators = generators.filter(generator => generator.life > 0);
+          generators = generators.filter(generator => generator.remainingLife > 0);
       
           // clear canvas
           this.p5.background(0);
@@ -110,11 +110,11 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
     this.generators$.next([
       this.circleAlgo(this.seed)
     ]);
-    
-    // add generator every 5 seconds
+  
+    // add generator every x seconds
     this.interval$
         .pipe(
-          bufferCount(this.secondsToFrames(1)),
+          throttleTime(this.secondsToFrames(0.001)),
           takeUntil(this.destroy$)
         )
         .subscribe(() => {
@@ -136,24 +136,32 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
   }
   
   private circleAlgo(birthTime: number): MyGenerator {
+  
+    // generate random between -1 and 1
+    const randomX: number = Math.random() * 2 - 1;
+    const randomY: number = Math.random() * 2 - 1;
+  
+    const remainingLife: number = this.secondsToFrames(2);
     return {
       draw: p => {
         // p.background(0);
-        
-        p.stroke(100);
-        // draw a circle in the center
-        p.ellipse(this.origin.x, this.origin.y, this.unit, this.unit);
-        
+      
+        // color is remainingLife from white to black
+        const color = p.map(remainingLife, 0, this.secondsToFrames(2), 255, 0);
+        p.stroke(color);
+      
+        const x = p.windowWidth / 2 + this.unit * randomX * 40;
+        const y = p.windowHeight / 2 + this.unit * randomY * 40;
+      
+        // size is inverse of remainingLife from 40 to 1
+        const size = p.map(remainingLife, 0, this.secondsToFrames(2), 40, 10);
+      
+        p.ellipse(x, y, size, size);
+      
         const localSeed: number = this.seed - birthTime;
-        p.ellipse(
-          p.windowWidth / 2,
-          p.windowWidth / 2,
-          this.unit * localSeed / 10,
-          this.unit * localSeed / 10
-        );
-        
+      
       },
-      life: this.secondsToFrames(1),
+      remainingLife,
       birthTime
     };
   }
@@ -208,4 +216,10 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
     // };
   }
   
+}
+
+function lifeToColor(arg0: number): string {
+  const life: number = arg0;
+  const lifeColor: number = Math.floor(life * 255);
+  return `rgb(${ lifeColor }, ${ lifeColor }, ${ lifeColor })`;
 }
