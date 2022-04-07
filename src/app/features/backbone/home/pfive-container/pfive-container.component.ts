@@ -18,8 +18,8 @@ import {
 }         from 'rxjs/operators';
 
 interface MyGenerator {
-  
   life: number;
+  birthTime: number;
   
   draw(p: p5, time: number): void;
 }
@@ -100,7 +100,7 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
           this.p5.background(0);
       
           generators.forEach(generator => {
-            generator.draw(this.p5, this.seed);
+            generator.draw(this.p5, this.seed - generator.birthTime);
           });
       
           this.generators$.next(generators);
@@ -108,7 +108,7 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
         });
     
     this.generators$.next([
-      this.circleAlgo()
+      this.circleAlgo(this.seed)
     ]);
     
     // add generator every 5 seconds
@@ -120,7 +120,7 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           this.generators$.next([
             ...this.generators$.value,
-            this.circleAlgo()
+            this.circleAlgo(this.seed)
           ]);
         });
   }
@@ -135,7 +135,7 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
     // unsubscribe
   }
   
-  private circleAlgo(): { draw(p): void; life: number } {
+  private circleAlgo(birthTime: number): MyGenerator {
     return {
       draw: p => {
         // p.background(0);
@@ -144,15 +144,17 @@ export class PfiveContainerComponent implements OnInit, OnDestroy {
         // draw a circle in the center
         p.ellipse(this.origin.x, this.origin.y, this.unit, this.unit);
         
+        const localSeed: number = this.seed - birthTime;
         p.ellipse(
           p.windowWidth / 2,
           p.windowWidth / 2,
-          this.unit * this.seed / 10,
-          this.unit * this.seed / 10
+          this.unit * localSeed / 10,
+          this.unit * localSeed / 10
         );
         
       },
-      life: this.secondsToFrames(0.5)
+      life: this.secondsToFrames(1),
+      birthTime
     };
   }
   
