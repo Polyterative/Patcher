@@ -1,5 +1,4 @@
 <div class="scroll custom-scrollbar"
-     style="padding-top:.5rem; padding-bottom:.5rem"
 >
   <div fxFlex="auto"
        fxLayoutAlign="center center"
@@ -8,17 +7,20 @@
     <!--         style="max-height: 12rem"-->
     <!--         src="https://www.modulargrid.net/img/modcache/7859.f.jpg"-->
     <!--    >-->
-    <img [ngStyle]="{maxWidth:(data.hp/1.5+'rem')}"
-         style="max-height: 12rem"
-         src="https://www.modulargrid.net/img/modcache/39372.f.jpg"
+    <img *ngIf="data.panel"
+         style="max-height: 16rem;max-width:100%;"
+         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+data.panel"
     >
+  
+    <lib-screen-wrapper *ngIf="!data.panel"
+                        [maxSize]="data.hp/2+'rem'"
+    >
+      <div [fxFlex]="data.hp/2+'rem'"
+           [ngStyle]="{height:((data.standard|getModuleHeightForStandard)/2+'rem'),backgroundColor: '#ffffff'}"
+           style="background-color: rgba(0,0,0,0.1)"
+      >
+      </div>
+    </lib-screen-wrapper>
   </div>
   
-  <!--  <lib-screen-wrapper [maxSize]="data.hp/2+'rem'">-->
-  <!--    <div [fxFlex]="data.hp/2+'rem'"-->
-  <!--         [ngStyle]="{height:((data.standard|getModuleHeightForStandard)/2+'rem'),backgroundColor: '#ffffff'}"-->
-  <!--         style="background-color: rgba(0,0,0,0.1)"-->
-  <!--    >-->
-  <!--    </div>-->
-  <!--  </lib-screen-wrapper>-->
 </div>
