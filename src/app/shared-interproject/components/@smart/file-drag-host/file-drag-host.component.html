@@ -1,74 +1,93 @@
 <ng-container *ngIf="{files: service.files$|async} as bag">
-  <ngx-dropzone
-    (change)="service.fileAdd$.emit($event)"
-    [accept]="acceptedFileType"
-    [multiple]="multipleFilesMode"
-    [expandable]="true"
-    class="dropzone"
+  <div fxFlex="auto"
+       fxLayout="column"
+       fxLayoutGap=".5rem"
   >
-    <ngx-dropzone-label [@fadeIn]
-                        *ngIf="bag.files.length===0"
-                        style="padding: 1rem"
+    
+    <ngx-dropzone
+        (change)="service.fileAdd$.emit($event)"
+        [accept]="acceptedFileType"
+        [multiple]="multipleFilesMode"
+        [expandable]="true"
+        class="dropzone"
     >
-      <div fxFlex="100"
-           fxLayout="column"
-           fxLayoutGap="2rem"
-           fxLayoutGap.xs="0rem"
+      <ngx-dropzone-label [@fadeIn]
+                          *ngIf="bag.files.length===0"
+                          style="padding: 1rem"
       >
         <div fxFlex="100"
-             style="font-size: 3.5rem"
-        >{{multipleFilesMode ? "🗃️" : "📁"}}
-        </div>
-  
-        <div fxFlex="100">{{"Trascina " +
-        (multipleFilesMode ? "i" : "il")
-        + " file qui oppure clicca per selezionare"}}</div>
-      </div>
-    </ngx-dropzone-label>
-
-
-    <ng-container *ngIf="!isImageOnlyMode">
-      <ngx-dropzone-preview *ngFor="let file of bag.files"
-                            [removable]="true"
-                            (removed)="service.removeFile$.emit(file)"
-                            [file]="file"
-                            [@fadeInOut]
-      >
-        <mat-card-subtitle class="label">
-          {{ file.name|shorten:144: '...' }}
-          <br>
-          {{ file.lastModified|date }}</mat-card-subtitle>
-      </ngx-dropzone-preview>
-    </ng-container>
-    <ng-container *ngIf="isImageOnlyMode">
-      <ng-container *ngFor="let file of bag.files">
-        <div fxFlex="100"
-             fxLayout="row"
-             fxLayoutGap="1rem"
+             fxLayout="column"
+             fxLayoutGap="2rem"
+             fxLayoutGap.xs="0rem"
         >
-          <ngx-dropzone-image-preview ngProjectAs="ngx-dropzone-preview"
-                                      [file]="file"
-                                      [removable]="true"
-                                      (removed)="service.removeFile$.emit(file)"
-          >
-          </ngx-dropzone-image-preview>
           <div fxFlex="100"
-               fxLayout="column"
-               fxLayoutGap="1rem"
-               class="label"
-          >
-            <mat-card-subtitle fxFlex="100"
-            >{{ file.name|shorten:144: '...' }}</mat-card-subtitle>
-            <mat-card-subtitle fxFlex="100"
-            >[{{ file.type }}]
-            </mat-card-subtitle>
-            <mat-card-subtitle fxFlex="100"
-            >{{ file.lastModified|date }}</mat-card-subtitle>
+               style="font-size: 3.5rem"
+          >{{isImageOnlyMode ? "📷" : multipleFilesMode ? "🗃️" : "📁"}}
           </div>
+          
+          <div fxFlex="100">{{"Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one"}}</div>
         </div>
-
+      </ngx-dropzone-label>
+      
+      
+      <ng-container *ngIf="!isImageOnlyMode">
+        <ngx-dropzone-preview *ngFor="let file of bag.files"
+                              [removable]="true"
+                              (removed)="service.removeFile$.emit(file)"
+                              [file]="file"
+                              [@fadeInOut]
+        >
+          <mat-card-subtitle class="label">
+            {{ file.name|shorten:144: '...' }}
+            <br>
+            {{ file.lastModified|date }}</mat-card-subtitle>
+        </ngx-dropzone-preview>
       </ng-container>
-    </ng-container>
-
-  </ngx-dropzone>
+      <ng-container *ngIf="isImageOnlyMode">
+        <ng-container *ngFor="let file of bag.files">
+          <div fxFlex="100"
+               fxLayout="row"
+               fxLayoutGap="1rem"
+          >
+            <ngx-dropzone-image-preview ngProjectAs="ngx-dropzone-preview"
+                                        [file]="file"
+                                        [removable]="true"
+                                        (removed)="service.removeFile$.emit(file)"
+            >
+            </ngx-dropzone-image-preview>
+            <div fxFlex="100"
+                 fxLayout="column"
+                 fxLayoutGap="1rem"
+                 class="label"
+            >
+              <mat-card-subtitle fxFlex="100"
+              >{{ file.name|shorten:144: '...' }}</mat-card-subtitle>
+              <mat-card-subtitle fxFlex="100"
+              >[{{ file.type }}]
+              </mat-card-subtitle>
+              <mat-card-subtitle fxFlex="100"
+              >{{ file.lastModified|date }}</mat-card-subtitle>
+            </div>
+          </div>
+        
+        </ng-container>
+      </ng-container>
+    
+    </ngx-dropzone>
+    <!--    <ng-container *ngFor="let item of bag.files;">-->
+    <!--      <div fxFlex="auto"-->
+    <!--           fxLayout="column"-->
+    <!--           fxLayoutGap=".5rem"-->
+    <!--      >-->
+    <!--        <mat-card-subtitle>-->
+    <!--          {{item.name}}-->
+    <!--        </mat-card-subtitle>-->
+    <!--        <ngx-dropzone-image-preview ngProjectAs="ngx-dropzone-preview"-->
+    <!--                                    [file]="item"-->
+    <!--        >-->
+    <!--        </ngx-dropzone-image-preview>-->
+    <!--      </div>-->
+    <!--    </ng-container>-->
+  
+  </div>
 </ng-container>

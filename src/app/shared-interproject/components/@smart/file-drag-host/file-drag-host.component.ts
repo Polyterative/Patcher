@@ -1,30 +1,25 @@
-import {
-    animate,
-    style,
-    transition,
-    trigger
-}                              from '@angular/animations';
-import {
-    Component,
-    Input
-}                              from '@angular/core';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { merge, takeUntil } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { SubManager } from '../../../directives/subscription-manager';
 import { FileDragHostService } from './file-drag-host.service';
 
 @Component({
-  selector:        'lib-file-drag-host',
-  templateUrl:     './file-drag-host.component.html',
-  styleUrls:       ['./file-drag-host.component.scss'],
-  // changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  selector: 'lib-file-drag-host',
+  templateUrl: './file-drag-host.component.html',
+  styleUrls: ['./file-drag-host.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
     trigger('fadeInOut', [
       transition(':enter', [   // :enter is alias to 'void => *'
         style({
           opacity: 0,
-          height:  0.01
+          height: 0.01
         }),
         animate('225ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
         style(
-          {opacity: 1}
+          { opacity: 1 }
         )
       ]),
       transition(':leave', [   // :leave is alias to '* => void'
@@ -43,14 +38,14 @@ import { FileDragHostService } from './file-drag-host.service';
         }),
         animate('225ms 500ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
         style(
-          {opacity: 1}
+          { opacity: 1 }
         )
       ])
     ])
   ]
 
 })
-export class FileDragHostComponent {
+export class FileDragHostComponent extends SubManager implements OnInit {
   @Input()
   acceptedFileType: string;
 
@@ -61,8 +56,24 @@ export class FileDragHostComponent {
   readonly isImageOnlyMode: boolean = false;
 
   constructor(
-    public service: FileDragHostService
+    public service: FileDragHostService,
+    public changeDetectorRef: ChangeDetectorRef
   ) {
+    super();
+  }
+
+  ngOnInit(): void {
+    merge(
+      this.service.files$,
+      this.service.fileAdd$,
+      this.service.removeFile$,
+      this.service.removeAllFiles$
+    )
+      .pipe(
+        debounceTime(50),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(_ => this.changeDetectorRef.detectChanges())
   }
 
 }

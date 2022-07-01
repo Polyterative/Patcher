@@ -1,21 +1,8 @@
-import {
-  EventEmitter,
-  Injectable,
-  OnDestroy
-}                                 from '@angular/core';
-import { MatSnackBar }            from '@angular/material/snack-bar';
+import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgxDropzoneChangeEvent } from 'ngx-dropzone';
-import {
-  BehaviorSubject,
-  Subject
-}                                 from 'rxjs';
-import {
-  filter,
-  map,
-  takeUntil,
-  tap,
-  withLatestFrom
-}                                 from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, map, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 
 type FileArray = File[];
 
@@ -59,7 +46,7 @@ export class FileDragHostService implements OnDestroy {
           withLatestFrom(this.files$),
           tap(([newFiles, oldPool]) => {
             if (newFiles.length === 0) {
-              this.snackBar.open('💔 File non valido, riprova', undefined, {duration: 8000});
+              this.snackBar.open('💔 File not valid, try again', undefined, { duration: 8000 });
             }
           }),
           filter(([newFiles, oldPool]) => newFiles.length > 0),
