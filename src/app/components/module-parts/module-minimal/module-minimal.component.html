@@ -27,14 +27,9 @@
       ></app-module-part-description>
 
     </div>
-    <div style="max-width:100%;overflow:auto; padding:0.5rem;"
-         fxLayoutAlign="center center"
-    >
-      <div [fxFlex]="data.hp/2+'rem'"
-           style="background-color: rgba(0,0,0,0.1);height:16rem"
-      >
-      </div>
-    </div>
+  
+    <app-module-part-image [data]="data"></app-module-part-image>
+  
     <app-module-tags [data]="data"
                      *ngIf="!viewConfig.hideTags"
     ></app-module-tags>
