@@ -193,6 +193,10 @@ $secondary-font:            'Noto Sans';
   @include scrollbars;
 }
 
+.scroll {
+  overflow-x: auto
+}
+
 html {
   @include content-font;
   font-size:             100%;
