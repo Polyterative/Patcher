@@ -26,6 +26,7 @@
     <app-module-part-name [data]="data"
                           [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                           [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
+                          [textSize]="(1/(data.name.length/12)*1*(data.hp/14))+.5"
     ></app-module-part-name>
   </div>
   <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
