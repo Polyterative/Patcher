@@ -2,7 +2,7 @@
      class="col root"
 >
   <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
-  <div [ngStyle]="{height:data.standard.id==0?'22rem':'6rem',backgroundColor: '#ffffff'}"
+  <div [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem'),backgroundColor: '#ffffff'}"
        style="padding-right: .5rem;padding-left: .5rem;"
        class="col gap1 parent"
   >

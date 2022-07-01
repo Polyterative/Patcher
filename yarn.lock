@@ -6090,6 +6090,13 @@ next-tick@~1.0.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
+ngx-dropzone@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ngx-dropzone/-/ngx-dropzone-3.1.0.tgz#f2045a9ca90903fa96304f1b2aa33a922f14b15a"
+  integrity sha512-5RBaEl07QUcY6sv/BBPyIxN6nbWY/KqTGheEKgbuGS0N1QPFY7NJUo8+X3fYUwQgLS+wjJeqPiR37dd0YNDtWA==
+  dependencies:
+    tslib "^2.0.0"
+
 ngx-lottie@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/ngx-lottie/-/ngx-lottie-8.0.1.tgz#5a0a21ffd2749a80b744254c7204e44bd672ddaa"
@@ -6107,6 +6114,13 @@ ngx-markdown@^13.1.0:
     katex "^0.15.1"
     marked "^4.0.10"
     prismjs "^1.25.0"
+    tslib "^2.3.0"
+
+ngx-pipes@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ngx-pipes/-/ngx-pipes-3.0.0.tgz#cf8c8b06a565d0a23abfedf2cb2c445b4bae7c74"
+  integrity sha512-JK1E/QqVceCkEBoRQoZriR5GZEDd5aTC/+Zv9UlUbIRAzeSfA18n8XYJKLM3rpy8Y4uGBU1pAp0pvvdJiK/XDA==
+  dependencies:
     tslib "^2.3.0"
 
 ngx-seo@^5.3.0:
