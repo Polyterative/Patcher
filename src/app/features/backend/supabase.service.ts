@@ -1,48 +1,27 @@
-import {
-  EventEmitter,
-  Injectable
-}                          from '@angular/core';
-import { MatSnackBar }     from '@angular/material/snack-bar';
-import { ActivatedRoute }  from '@angular/router';
-import { createClient }    from '@supabase/supabase-js';
-import {
-  forkJoin,
-  from as rxFrom,
-  of,
-  ReplaySubject,
-  throwError,
-  zip
-}                          from 'rxjs';
-import {
-  map,
-  switchMap,
-  tap,
-  withLatestFrom
-}                          from 'rxjs/operators';
+import { EventEmitter, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { createClient } from '@supabase/supabase-js';
+import { forkJoin, from as rxFrom, of, ReplaySubject, throwError, zip } from 'rxjs';
+import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { environment }     from 'src/environments/environment';
+import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
-import {
-  CV,
-  CVwithModuleId
-}                          from '../../models/cv';
-import { DBManufacturer }  from '../../models/manufacturer';
-import {
-  DbModule,
-  RackedModule
-}                          from '../../models/module';
-import { Patch }           from '../../models/patch';
-import { RackMinimal }     from '../../models/rack';
-import { Tag }             from '../../models/tag';
+import { CV, CVwithModuleId } from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
+import { DbModule, RackedModule } from '../../models/module';
+import { Patch } from '../../models/patch';
+import { RackMinimal } from '../../models/rack';
+import { Tag } from '../../models/tag';
 
 @Injectable()
 export class SupabaseService {
   user = {
-    user$:   new ReplaySubject(),
-    login$:  new EventEmitter<void>(),
+    user$: new ReplaySubject(),
+    login$: new EventEmitter<void>(),
     logout$: new EventEmitter<void>()
   };
-  
+
   add = {
     module_tags: (data: Tag[]) => rxFrom(
       this.supabase
@@ -227,7 +206,7 @@ export class SupabaseService {
     modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
       let baseQuery = this.supabase.from(this.paths.modules)
                           .select(`
-                              id,name,hp,description,public,created,updated,
+                              id,name,hp,description,public,created,updated,panel,
                               ${ this.queryJoins.manufacturer },
                               ${ this.queryJoins.standard },
                               ${ this.queryJoins.module_tags }
