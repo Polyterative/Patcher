@@ -1,33 +1,42 @@
 <div [fxFlex]="data.hp*1+'rem'"
      class="col root"
 >
-  <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
-  <div [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem'),backgroundColor: '#ffffff'}"
-       style="padding-right: .5rem;padding-left: .5rem;"
-       class="col gap1 parent"
-  >
-    <app-module-part-hp [data]="data"
-                        *ngIf="data.hp>3"
-    ></app-module-part-hp>
-    <app-module-part-manufacturer [data]="data"
-                                  *ngIf="data.hp>3&&data.standard.id==0"
-                                  [ngClass]="{'rotated':data.hp<6}"
-                                  [fxLayoutAlign]="data.hp<=6?'end center':'center center'"
-                                  fxLayoutAlign="center center"
-    ></app-module-part-manufacturer>
-    <div fxFlex="grow"
-         *ngIf="data.standard.id==0"
-    ></div>
-    <ng-content></ng-content>
-    <div fxFlex="grow"
-         *ngIf="data.standard.id==0"
-    ></div>
+  <ng-container *ngIf="!showPanelImages">
+    <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
+    <div [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem'),backgroundColor: '#ffffff'}"
+         style="padding-right: .5rem;padding-left: .5rem;"
+         class="col gap1 parent"
+    >
+      <app-module-part-hp [data]="data"
+                          *ngIf="data.hp>3"
+      ></app-module-part-hp>
+      <app-module-part-manufacturer [data]="data"
+                                    *ngIf="data.hp>3&&data.standard.id==0"
+                                    [ngClass]="{'rotated':data.hp<6}"
+                                    [fxLayoutAlign]="data.hp<=6?'end center':'center center'"
+                                    fxLayoutAlign="center center"
+      ></app-module-part-manufacturer>
+      <div fxFlex="grow"
+           *ngIf="data.standard.id==0"
+      ></div>
+      <ng-content></ng-content>
+      <div fxFlex="grow"
+           *ngIf="data.standard.id==0"
+      ></div>
+      
+      <app-module-part-name [data]="data"
+                            [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
+                            [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
+                            [textSize]="(1/(data.name.length/12)*1*(data.hp/14))+.5"
+      ></app-module-part-name>
+    </div>
+    <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
+  </ng-container>
   
-    <app-module-part-name [data]="data"
-                          [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
-                          [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
-                          [textSize]="(1/(data.name.length/12)*1*(data.hp/14))+.5"
-    ></app-module-part-name>
-  </div>
-  <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
+  <ng-container *ngIf="showPanelImages">
+    <app-module-part-image [data]="data"
+                           [containImage]="false"
+    ></app-module-part-image>
+  </ng-container>
+
 </div>

@@ -36,6 +36,7 @@ export class ModuleDetailDataService {
   //
   racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
+  modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
   protected destroyEvent$ = new Subject<void>();
   
@@ -82,6 +83,16 @@ export class ModuleDetailDataService {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.patchesWithThisModule$.next(x));
+  
+    // get modules by same manufacturer
+    this.singleModuleData$
+        .pipe(
+          tap(x => this.modulesBySameManufacturer$.next(undefined)),
+          filter(x => !!x && !!x.manufacturer),
+          switchMap(x => this.backend.get.modulesBySameManufacturer(x.manufacturerId)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(x => this.modulesBySameManufacturer$.next(x));
   
     // hidden cause circular dependency
     // this.updateSingleModuleData$

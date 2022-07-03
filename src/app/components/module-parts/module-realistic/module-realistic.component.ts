@@ -17,13 +17,15 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 export class ModuleRealisticComponent implements OnInit {
   @Input() data: MinimalModule;
   
+  @Input() showPanelImages: boolean = false;
+  
   constructor(
     public rackDetailDataService: RackDetailDataService,
     public moduleDetailDataService: ModuleDetailDataService
   ) { }
   
   ngOnInit(): void {
-  
+    
   }
   
 }
