@@ -18,6 +18,7 @@
         <ng-container *ngFor="let rackedModule of row; let i = index">
           <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
                                 [data]="rackedModule|mapToModule"
+                                [showPanelImages]="rackDetailDataService.shouldShowPanelImages$ | async"
                                 class="module"
                                 cdkDrag
                                 [cdkDragData]="rackedModule"

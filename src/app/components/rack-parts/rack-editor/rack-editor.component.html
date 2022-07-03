@@ -25,14 +25,24 @@
       <div class="col gap1 transition-all scroll custom-scrollbar"
            [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
       >
-        <lib-screen-wrapper [maxSize]="data.hp+'rem'">
-          <app-rack-visual-model [rackData]="data"
-                                 [rowedRackedModules]="bag.rowedRackedModules"
-                                 [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
-                                 [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                 [rackDetailDataService]="dataService"
-                                 [moduleRightClick$]="moduleRightClick$"
-          ></app-rack-visual-model>
+        <lib-screen-wrapper [maxSize]="data.hp+'rem'"
+        >
+          <div class="col gap1"
+          >
+      
+            <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
+                              (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
+            >
+              Show panels as images
+            </mat-slide-toggle>
+            <app-rack-visual-model [rackData]="data"
+                                   [rowedRackedModules]="bag.rowedRackedModules"
+                                   [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
+                                   [isCurrentRackEditable]="bag.isCurrentRackEditable"
+                                   [rackDetailDataService]="dataService"
+                                   [moduleRightClick$]="moduleRightClick$"
+            ></app-rack-visual-model>
+          </div>
         </lib-screen-wrapper>
       </div>
     </lib-hero-content-card>

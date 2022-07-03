@@ -85,6 +85,45 @@
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>
     </ng-container>
-  
+
+  </div>
+  <mat-divider [inset]="true"></mat-divider>
+  <div class="col gap1"
+  >
+    <div class="col gap1"
+    >
+      <div class="auto col gap1"
+      ></div>
+    </div>
+    
+    
+    <ng-container>
+      <div class="row gap1"
+           fxLayoutAlign="center center"
+      >
+        <lib-file-drag-host fxFlex="40rem"
+                            [isImageOnlyMode]="true"
+                            [multipleFilesMode]="false"
+                            acceptedFileType="image/jpeg,image/jpg"
+        ></lib-file-drag-host>
+        <lib-mat-form-entity fxFlex="8rem"
+                             [dataPack]="panelType"
+                             [disableVoidSelection]="true"
+        ></lib-mat-form-entity>
+      </div>
+      <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
+                                         [updateData$]="savePanels$"
+                                         loadingLabel="Saving data"
+      >
+        <app-brand-primary-button (click$)="savePanels$.next()"
+                                  [disabled]="!((formGroupPanel|formValid)||((fileDragHostService.files$|async).length>0))"
+                                  theme="positive"
+                                  fxLayoutAlign="end"
+        >
+          <mat-icon>save</mat-icon>
+          Add panel
+        </app-brand-primary-button>
+      </lib-auto-update-loading-indicator>
+    </ng-container>
   </div>
 </lib-clean-card>
