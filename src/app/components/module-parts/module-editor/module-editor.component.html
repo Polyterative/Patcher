@@ -1,60 +1,60 @@
 <lib-clean-card>
   <div class="col gap1"
   >
-    <div class="col gap1"
-    >
-      <div class="auto col gap1"
+    <div class="col gap1">
+      <div class="col gap1"
       >
-        <div fxLayout="row"
-             fxLayoutGap="1rem"
-             fxLayoutAlign="space-between"
+        <div class="auto col gap1"
         >
-          <mat-card-title>INs</mat-card-title>
-          <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
-        </div>
-        <div class="col gap1 leftBorderS"
-        >
-          <ng-container *ngFor="let item of INs$|async; let i = index">
-            <app-module-editor-cv-form-line [item]="item"
-                                            (removeRequest$)="removeIN$.next(i)"
-            ></app-module-editor-cv-form-line>
+          <div fxLayout="row"
+               fxLayoutGap="1rem"
+               fxLayoutAlign="space-between"
+          >
+            <mat-card-title>INs</mat-card-title>
+            <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
+          </div>
+          <div class="col gap1 leftBorderS"
+          >
+            <ng-container *ngFor="let item of INs$|async; let i = index">
+              <app-module-editor-cv-form-line [item]="item"
+                                              (removeRequest$)="removeIN$.next(i)"
+              ></app-module-editor-cv-form-line>
           
-          </ng-container>
+            </ng-container>
         
+          </div>
+          <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
         </div>
-        <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
-      </div>
-      <div class="auto col gap1"
-      >
-        <div fxLayout="row"
-             fxLayoutGap="1rem"
-             fxLayoutAlign="space-between"
+        <div class="auto col gap1"
         >
-          <mat-card-title>OUTs</mat-card-title>
-          <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
+          <div fxLayout="row"
+               fxLayoutGap="1rem"
+               fxLayoutAlign="space-between"
+          >
+            <mat-card-title>OUTs</mat-card-title>
+            <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
+          </div>
+          <div class="col gap1 leftBorderS"
+          >
+            <ng-container *ngFor="let item of OUTs$|async; let i = index">
+              <app-module-editor-cv-form-line [item]="item"
+                                              (removeRequest$)="removeOUT$.next(i)"
+              ></app-module-editor-cv-form-line>
+            </ng-container>
+          </div>
+          <app-module-editor-adder-line (add$)="addOUT$.next($event)"
+          ></app-module-editor-adder-line>
+      
         </div>
-        <div class="col gap1 leftBorderS"
-        >
-          <ng-container *ngFor="let item of OUTs$|async; let i = index">
-            <app-module-editor-cv-form-line [item]="item"
-                                            (removeRequest$)="removeOUT$.next(i)"
-            ></app-module-editor-cv-form-line>
-          </ng-container>
-        </div>
-        <app-module-editor-adder-line (add$)="addOUT$.next($event)"
-        ></app-module-editor-adder-line>
-
       </div>
-    </div>
-  
-  
-    <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
-    <!--    <ng-container *ngIf="-->
-    <!--  ((INs$|async)|onlyNotSavedFormCVsLength)!== 0 ||-->
-    <!--  ((OUTs$|async)|onlyNotSavedFormCVsLength) !== 0-->
-    <!--"-->
-    <!--    >-->
-    <ng-container>
+    
+    
+      <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
+      <!--    <ng-container *ngIf="-->
+      <!--  ((INs$|async)|onlyNotSavedFormCVsLength)!== 0 ||-->
+      <!--  ((OUTs$|async)|onlyNotSavedFormCVsLength) !== 0-->
+      <!--"-->
+      <!--    >-->
       <div fxLayout="row"
            fxLayout.lt-md="column"
            fxLayoutGap="1rem"
@@ -84,33 +84,34 @@
           Save INs and OUTs
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>
-    </ng-container>
-
-  </div>
-  <mat-divider [inset]="true"></mat-divider>
-  <div class="col gap1"
-  >
+    </div>
+    <mat-divider [inset]="true"></mat-divider>
     <div class="col gap1"
     >
-      <div class="auto col gap1"
-      ></div>
-    </div>
+      <div fxLayout="row"
+           fxLayoutGap="1rem"
+           fxLayoutAlign="space-between"
+      >
+        <mat-card-title>Panel</mat-card-title>
+        <!--        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>-->
+      </div>
     
-    
-    <ng-container>
       <div class="row gap1"
            fxLayoutAlign="center center"
       >
-        <lib-file-drag-host fxFlex="40rem"
+        <lib-file-drag-host fxFlex="30rem"
                             [isImageOnlyMode]="true"
                             [multipleFilesMode]="false"
                             acceptedFileType="image/jpeg,image/jpg"
         ></lib-file-drag-host>
-        <lib-mat-form-entity fxFlex="8rem"
+      </div>
+      <div fxFlex="16rem">
+        <lib-mat-form-entity fxFlex="grow"
                              [dataPack]="panelType"
                              [disableVoidSelection]="true"
         ></lib-mat-form-entity>
       </div>
+      <mat-divider inset="true"></mat-divider>
       <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
                                          [updateData$]="savePanels$"
                                          loadingLabel="Saving data"
@@ -124,6 +125,7 @@
           Add panel
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>
-    </ng-container>
+    </div>
   </div>
+
 </lib-clean-card>

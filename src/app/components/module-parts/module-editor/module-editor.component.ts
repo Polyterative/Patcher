@@ -284,13 +284,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           file.type
         ]))))),
       switchMap(([file, [filename, fileType]]) => {
-        let extension: string = `${ filename.split('.')
-                                            .pop() }`;
-        let name: string = `${ this.data.name.replace(/[^a-z0-9]/gi, 'X') }-
-        ${ this.data.manufacturer.name.replace(/[^a-z0-9]/gi, 'X') }-
-        ${ this.panelType.control.value.name }-
-        ${ this.data.standard.name }
-        `;
+        let extension: string = filename.split('.').pop();
+        let name: string = `${ this.data.name.replace(/[^a-z0-9]/gi, '_') }-${ this.data.manufacturer.name.replace(/[^a-z0-9]/gi, '_') }-${ this.panelType.control.value.name }-${ this.data.standard.name }`;
         let filenameAndExtension: string = `${ name }.${ extension }`;
         return this.backend.storage.uploadModulePanel(
           file,
