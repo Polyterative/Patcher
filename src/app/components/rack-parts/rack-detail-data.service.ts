@@ -44,13 +44,14 @@ export class RackDetailDataService extends SubManager {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
-  shouldShowPanelImages$ = new BehaviorSubject<boolean>(false);
+  shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
   rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
+  userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   //
   requestRackEditableStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();

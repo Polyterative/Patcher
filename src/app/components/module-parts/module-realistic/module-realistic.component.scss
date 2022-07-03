@@ -14,8 +14,6 @@
   background-color: rgba(255, 255, 255, 0.96);
   //transition:       all .25s ease-in-out;
 
-  cursor:           pointer;
-
   &:hover {
     @include mat.elevation(2);
     background-color: rgba(255, 255, 255, 0.6);
@@ -25,4 +23,12 @@
 
 .button {
   //transform: scale(0.75);
+}
+
+.hole-left-padding {
+  padding-left: 1rem;
+}
+
+.hole-right-padding {
+  padding-right: 1rem;
 }
