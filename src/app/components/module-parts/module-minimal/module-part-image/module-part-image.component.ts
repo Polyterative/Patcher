@@ -16,7 +16,7 @@ export class ModulePartImageComponent implements OnInit {
   
   @Input() data: MinimalModule;
   
-  panelPath: string | undefined;
+  filename: string | undefined;
   
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
@@ -27,9 +27,9 @@ export class ModulePartImageComponent implements OnInit {
   
   ngOnInit(): void {
     if (this.data.panels && this.data.panels.length > 0) {
-      this.panelPath = this.data.panels[0].filename;
+      this.filename = this.data.panels.pop().filename;
     } else {
-      this.panelPath = undefined;
+      this.filename = undefined;
     }
     
     if (this.big) {

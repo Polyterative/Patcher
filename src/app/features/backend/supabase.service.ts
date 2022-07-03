@@ -280,6 +280,11 @@ export class SupabaseService {
             ${ this.queryJoins.module_panels }
             `)
           .filter('id', 'eq', id)
+          // .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true)
+          // .order(`color`, {
+          //   foreignTable: this.paths.module_panels,
+          //   ascending:    true
+          // })
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
@@ -336,6 +341,11 @@ export class SupabaseService {
           ${ this.queryJoins.module_tags }
           `)
           .filter('manufacturerId', 'eq', manufacturerId)
+          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true)
+          .order(`color`, {
+            foreignTable: this.paths.module_panels,
+            ascending:    true
+          })
           .order('updated', {ascending: false})
           .range(from, to)
     )
