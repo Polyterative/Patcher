@@ -44,6 +44,7 @@ export class RackDetailDataService extends SubManager {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
+  shouldShowPanelImages$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
