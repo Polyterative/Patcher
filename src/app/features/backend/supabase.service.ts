@@ -332,9 +332,11 @@ export class SupabaseService {
           .select(`${ columns },
           ${ this.queryJoins.manufacturer },
           ${ this.queryJoins.standard },
+          ${ this.queryJoins.module_panels },
           ${ this.queryJoins.module_tags }
           `)
           .filter('manufacturerId', 'eq', manufacturerId)
+          .order('updated', {ascending: false})
           .range(from, to)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
