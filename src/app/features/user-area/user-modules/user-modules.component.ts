@@ -23,7 +23,7 @@ export class UserModulesComponent extends SubManager {
   @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = {
     hideAddModulesButton: false
   };
-  
+  @Input() readonly encloseVertically = true;
   constructor(
     public backend: SupabaseService,
     public dataService: UserAreaDataService

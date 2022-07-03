@@ -38,7 +38,11 @@ export class ModuleBrowserDetailComponent implements OnInit {
   @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: true,
-    hideButtons:        true
+    hideButtons:        true,
+    hideDates:          true,
+    hideManufacturer:   true,
+    hideLabels:         true,
+    hideDescription:    true
   };
   
   constructor(

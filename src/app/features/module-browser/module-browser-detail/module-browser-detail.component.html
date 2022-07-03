@@ -91,7 +91,7 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             </div>
       
             <lib-hero-content-card fxFlex
-                                   *ngIf="bag.data?.manufacturer&&false"
+                                   *ngIf="bag.data?.manufacturer"
                                    [titleNormal]="'Others by '+(bag.data.manufacturer.name) "
             >
         
