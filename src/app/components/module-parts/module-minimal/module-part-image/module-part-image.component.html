@@ -8,13 +8,13 @@
     <!--         style="max-height: 12rem"-->
     <!--         src="https://www.modulargrid.net/img/modcache/7859.f.jpg"-->
     <!--    >-->
-    <img *ngIf="panelPath"
+    <img *ngIf="filename"
          style="max-width:100%;"
          [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
-         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+panelPath"
+         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
     >
     
-    <lib-screen-wrapper *ngIf="!panelPath"
+    <lib-screen-wrapper *ngIf="!filename"
                         [maxSize]="data.hp/sizeDivider/2+'rem'"
     >
       <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
@@ -30,9 +30,9 @@
 
 <ng-container *ngIf="!containImage">
   <div fxLayoutAlign="center center">
-    <img *ngIf="panelPath"
+    <img *ngIf="filename"
          [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
-         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+panelPath"
+         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
     >
   </div>
 </ng-container>
