@@ -1,11 +1,20 @@
 <div [fxFlex]="data.hp*1+'rem'"
+     [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem')}"
      class="col root"
+     [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
+  <!--  [ngStyle]="{'background-image': 'url('+('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+data.panels[0].filename)+')'}"-->
+  
   <ng-container *ngIf="!showPanelImages">
-    <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
-    <div [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem'),backgroundColor: '#ffffff'}"
-         style="padding-right: .5rem;padding-left: .5rem;"
-         class="col gap1 parent"
+    <app-module-realistic-holeline [data]="data"
+                                   class="hole-left-padding"
+    >
+    
+    </app-module-realistic-holeline>
+    <div class="col gap1 parent"
+         fxFlex="grow"
+         style="padding-right: .5rem;padding-left: .5rem;background-color: #ffffff"
+    
     >
       <app-module-part-hp [data]="data"
                           *ngIf="data.hp>3"
@@ -27,15 +36,18 @@
       <app-module-part-name [data]="data"
                             [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                             [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
-                            [textSize]="(1/(data.name.length/12)*1*(data.hp/14))+.5"
+                            [textSize]="(1/(data.name.length/12)*(data.hp/14))+(data.standard.id===0?0.5:-0.5)"
       ></app-module-part-name>
     </div>
-    <app-module-realistic-holeline [data]="data"></app-module-realistic-holeline>
+    <app-module-realistic-holeline [data]="data"
+                                   class="hole-right-padding"
+    ></app-module-realistic-holeline>
   </ng-container>
   
   <ng-container *ngIf="showPanelImages">
     <app-module-part-image [data]="data"
                            [containImage]="false"
+                           [matTooltip]="data.name+' ('+data.manufacturer.name+', '+data.standard.name+', '+data.hp+'HP)'"
     ></app-module-part-image>
   </ng-container>
 

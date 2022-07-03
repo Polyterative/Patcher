@@ -575,8 +575,7 @@ export class SupabaseService {
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
-      filenameAndExtension = filenameAndExtension.replace(/\s/g, '_')
-                                                 .toLowerCase()
+      filenameAndExtension = filenameAndExtension.toLowerCase()
                                                  .trim();
       
       return rxFrom(
