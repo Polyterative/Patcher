@@ -1,7 +1,8 @@
 <ng-container *ngIf="{
 data:(dataService.singleModuleData$|async),
 racksWithThisModule:(dataService.racksWithThisModule$|async),
-patchesWithThisModule:(dataService.patchesWithThisModule$|async)
+patchesWithThisModule:(dataService.patchesWithThisModule$|async),
+modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
 } as bag"
 >
   <div class="col gap1"
@@ -47,41 +48,61 @@ patchesWithThisModule:(dataService.patchesWithThisModule$|async)
   
   
         <lib-screen-wrapper>
-          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
-                                 titleNormal="CV Editor"
+    
+          <div fxLayout="column"
           >
-            <app-module-editor
-                [data]="(bag.data)"
-            ></app-module-editor>
-          </lib-hero-content-card>
-          <div fxLayoutGap="1rem"
-               fxLayout.lt-md="column"
-               fxLayout.gt-md="row"
-          >
-            <lib-hero-content-card fxFlex
-                                   titleNormal="Racked in"
+            <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
+                                   titleNormal="Module Editor"
             >
-  
-  
-              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                  [data$]="dataService.racksWithThisModule$"
-              >
-                <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
-                                  [data$]="dataService.racksWithThisModule$"
-                ></app-module-racks>
-              </lib-auto-content-loading-indicator>
+              <app-module-editor [data]="(bag.data)"
+              ></app-module-editor>
             </lib-hero-content-card>
-            <lib-hero-content-card fxFlex
-                                   titleNormal="Patched in"
+      
+            <div fxLayoutGap="1rem"
+                 fxLayout.lt-md="column"
+                 fxLayout.gt-md="row"
             >
-  
-  
-              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                  [data$]="dataService.patchesWithThisModule$"
+              <lib-hero-content-card fxFlex
+                                     titleNormal="Racked in"
               >
-                <app-module-patches *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
-                                    [data$]="dataService.patchesWithThisModule$"
-                ></app-module-patches>
+          
+          
+                <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                    [data$]="dataService.racksWithThisModule$"
+                >
+                  <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
+                                    [data$]="dataService.racksWithThisModule$"
+                  ></app-module-racks>
+                </lib-auto-content-loading-indicator>
+              </lib-hero-content-card>
+              <lib-hero-content-card fxFlex
+                                     titleNormal="Patched in"
+              >
+          
+          
+                <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                    [data$]="dataService.patchesWithThisModule$"
+                >
+                  <app-module-patches *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
+                                      [data$]="dataService.patchesWithThisModule$"
+                  ></app-module-patches>
+                </lib-auto-content-loading-indicator>
+              </lib-hero-content-card>
+            </div>
+      
+            <lib-hero-content-card fxFlex
+                                   *ngIf="bag.data?.manufacturer&&false"
+                                   [titleNormal]="'Others by '+(bag.data.manufacturer.name) "
+            >
+        
+        
+              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
+                                                  [data$]="dataService.modulesBySameManufacturer$"
+              >
+                <app-module-list *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
+                                 [data$]="dataService.modulesBySameManufacturer$"
+                                 [viewConfig]="bySameManufacturerViewConfig"
+                ></app-module-list>
               </lib-auto-content-loading-indicator>
             </lib-hero-content-card>
           </div>
@@ -107,6 +128,16 @@ patchesWithThisModule:(dataService.patchesWithThisModule$|async)
     <mat-card-subtitle fxLayoutAlign="center start"
                        style="padding: 1rem"
     >No patches using this module yet. Try adding it to yours!
+    </mat-card-subtitle>
+  </div>
+</ng-template>
+
+<ng-template #noModulesWithSameManufacturer>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem"
+    >No more modules by this manufacturer yet.
     </mat-card-subtitle>
   </div>
 </ng-template>

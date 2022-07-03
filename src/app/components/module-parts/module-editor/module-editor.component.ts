@@ -1,3 +1,4 @@
+import { HttpClient }              from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,10 +17,13 @@ import { MatSnackBar }             from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   concat,
+  from,
+  NEVER,
   of,
   Subject
 }                                  from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   switchMap,
@@ -31,6 +35,8 @@ import { FormTypes }               from 'src/app/shared-interproject/components/
 import { UserManagementService }   from '../../../features/backbone/login/user-management.service';
 import { CV }                      from '../../../models/cv';
 import { DbModule }                from '../../../models/module';
+import { FileDragHostService }     from '../../../shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import { IMatFormEntityConfig }    from '../../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 export interface FormCV {
@@ -41,11 +47,16 @@ export interface FormCV {
   isApproved: boolean;
 }
 
+let URLReg = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';
+
 @Component({
   selector:        'app-module-editor',
   templateUrl:     './module-editor.component.html',
   styleUrls:       ['./module-editor.component.scss'],
-  animations: [
+  providers:       [
+    FileDragHostService
+  ],
+  animations:      [
     // fadeInExpandOnEnterAnimation(
     //   {
     //     duration: 250,
@@ -64,6 +75,7 @@ export interface FormCV {
 export class ModuleEditorComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   readonly save$ = new Subject<void>();
+  readonly savePanels$ = new Subject<void>();
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
@@ -80,7 +92,60 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   formGroupA = this.formBuilder.group({});
   formGroupB = this.formBuilder.group({});
   // formGroupC = this.formBuilder.group({});
-  
+  //
+  panelURL: IMatFormEntityConfig = {
+    code:    'url',
+    label:   'URL',
+    type:    FormTypes.TEXT,
+    control: new FormControl('', [
+      Validators.pattern(URLReg),
+      Validators.required
+    ]),
+    flex:    'auto'
+  };
+  panelType: IMatFormEntityConfig = {
+    code:     'panelType',
+    label:    'Panel Type',
+    type:     FormTypes.SELECT,
+    control:  new FormControl({
+      name:  'Light',
+      value: 1,
+      id:    '0'
+    }, [Validators.required]),
+    options$: of([
+      {
+        name:  'Light',
+        value: 1,
+        id:    '0'
+      },
+      {
+        name:  'Dark',
+        value: 2,
+        id:    '1'
+      },
+      {
+        name:  'Special edition',
+        value: 3,
+        id:    '1'
+      },
+      {
+        name:  'Limited edition',
+        value: 4,
+        id:    '1'
+      }
+      // {
+      //   name:  'Silver',
+      //   value: 4,
+      //   id:    '1'
+      // }
+    ]),
+    flex:     'auto'
+  };
+  formGroupPanel = this.formBuilder.group({
+    'url':  this.panelURL.control,
+    'type': this.panelType.control
+  });
+  //
   protected destroyEvent$ = new Subject<void>();
   
   private validatorsNum: ValidatorFn = Validators.compose([
@@ -100,9 +165,11 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     public formBuilder: FormBuilder,
     public dataService: ModuleDetailDataService,
     public userManagementService: UserManagementService,
-    public snackBar: MatSnackBar
+    public snackBar: MatSnackBar,
+    public fileDragHostService: FileDragHostService,
+    public HttpClient: HttpClient
   ) {
-  
+    
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(cv => {
           const formCVS: FormCV[] = [
@@ -114,9 +181,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             this.formGroupA,
             this.INs$
           );
-  
+      
         });
-  
+    
     this.addOUT$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(cv => {
           const formCVS: FormCV[] = [
@@ -128,61 +195,61 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             this.formGroupB,
             this.OUTs$
           );
-  
+      
         });
-  
+    
     this.removeIN$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(i => {
           const x = this.INs$.value;
           x.splice(i, 1);
-  
+      
           this.updateFormGroupAndContainer(x, this.formGroupA, this.INs$);
         });
-  
+    
     this.removeOUT$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(i => {
           const x = this.OUTs$.value;
           x.splice(i, 1);
-  
+      
           this.updateFormGroupAndContainer(x, this.formGroupB, this.OUTs$);
         });
-  
+    
     this.save$.pipe(
       map(() => ([
         this.formCVToCV(this.INs$.value),
         this.formCVToCV(this.OUTs$.value)
       ])),
       filter(([ins, outs]) => {
-      
+        
         if (ins.length === 0 && outs.length === 0) {
           this.snackBar.open('Nothing to save', null, {
             duration: 2000
           });
           this.reload();
-        
+          
           return false;
         }
-      
+        
         // avoid saving if all are approved
         const approvedIns = ins.filter(cv => cv.isApproved);
         const approvedOuts = outs.filter(cv => cv.isApproved);
-      
+        
         const sameApproved: boolean = approvedIns.length === this.data.ins.length && approvedOuts.length === this.data.outs.length;
-      
+        
         const sameUnapproved: boolean = ins.length === this.data.ins.length && outs.length === this.data.outs.length;
-      
+        
         if (sameApproved && sameUnapproved) {
           this.snackBar.open('All CV\'s are approved. Nothing to save.', null, {
             duration: 3000
           });
-        
+          
           this.reload();
-        
+          
           return false;
         } else {
           return true;
         }
-      
+        
       }),
       map(([ins, outs]) => ({
         ...this.data,
@@ -199,19 +266,67 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(
               updateSingleModuleData);
-  
-          this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
+        
+            this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
                                'You will be remembered.', undefined, {
               duration: 5000
             });
           }
         );
+    
+    
+    // on savePanels$ upload image to server
+    this.savePanels$.pipe(
+      map(() => this.fileDragHostService.files$.value[0]),
+      switchMap(file => (from(file.arrayBuffer())
+        .pipe(withLatestFrom(of([
+          file.name,
+          file.type
+        ]))))),
+      switchMap(([file, [filename, fileType]]) => {
+        let extension: string = `${ filename.split('.')
+                                            .pop() }`;
+        let name: string = `${ this.data.name.replace(/[^a-z0-9]/gi, 'X') }-
+        ${ this.data.manufacturer.name.replace(/[^a-z0-9]/gi, 'X') }-
+        ${ this.panelType.control.value.name }-
+        ${ this.data.standard.name }
+        `;
+        let filenameAndExtension: string = `${ name }.${ extension }`;
+        return this.backend.storage.uploadModulePanel(
+          file,
+          filenameAndExtension,
+          fileType
+        );
+      }),
+      switchMap(dbFilename => this.backend.add.panel([
+        {
+          filename: dbFilename,
+          color:    +this.panelType.control.value.value,
+          moduleid: this.data.id
+        }
+      ])),
+      catchError(() => {
+          this.snackBar.open('Something went wrong during the upload, please try again');
+          return of(NEVER);
+        }
+      ),
+      switchMap(() => this.backend.update.module(this.data))
+    )
+        .subscribe(x => {
+          // feedback to user
+          this.snackBar.open('Panel added, thanks! Will be available as soon as reviewed and approved.', undefined, {
+            duration: 10000
+          });
+      
+          // reload data
+          this.dataService.updateSingleModuleData$.next(this.data.id);
+        });
   }
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
-  
+    
   }
   
   ngOnInit(): void {
@@ -263,14 +378,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       id:         data.id,
       isApproved: data.isApproved
     };
-  
+    
     // disable if has been uploaded already on the server and approved
     if (data.id > 0 && data.isApproved) {
       toReturn.name.disable();
       toReturn.a.disable();
       toReturn.b.disable();
     }
-  
+    
     return toReturn;
   }
   
@@ -284,7 +399,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       isApproved: formCV.isApproved ? formCV.isApproved : false
       // isVOCT?: boolean;
     }));
-  
+    
     return x;
   }
   

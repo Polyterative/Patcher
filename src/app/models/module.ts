@@ -1,10 +1,13 @@
-import { CV } from './cv';
-import { Manufacturer, MinimalManufacturer } from './manufacturer';
+import { CV }          from './cv';
+import {
+  Manufacturer,
+  MinimalManufacturer
+}                      from './manufacturer';
 import { Timestamped } from './models';
 import { RackingData } from './rack';
-import { Standard } from './standard';
-import { Switch } from './switch';
-import { Tag } from './tag';
+import { Standard }    from './standard';
+import { Switch }      from './switch';
+import { Tag }         from './tag';
 
 export interface Module {
   name: string;
@@ -29,8 +32,8 @@ export interface MinimalModule extends Timestamped {
    *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
    */
   standard: Standard;
-  tags: { tag: Tag }[]
-  panel?: string
+  tags: { tag: Tag }[];
+  panels: ModulePanel[];
 }
 
 export interface DbModule extends MinimalModule {
@@ -46,4 +49,12 @@ export interface DbModule extends MinimalModule {
 export interface RackedModule {
   rackingData: RackingData;
   module: DbModule;
+}
+
+export interface ModulePanel {
+  // module: DbModule;
+  moduleid: number;
+  color: number;
+  filename: string;
+  id: number;
 }

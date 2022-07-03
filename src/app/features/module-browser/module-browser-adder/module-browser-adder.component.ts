@@ -1,20 +1,26 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { SeoSocialShareData } from 'ngx-seo';
-import { Subject } from 'rxjs';
-import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import {
-  defaultModuleMinimalViewConfig, ModuleMinimalViewConfig
-} from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+}                                 from '@angular/core';
+import { ActivatedRoute }         from '@angular/router';
+import { SeoSocialShareData }     from 'ngx-seo';
+import { Subject }                from 'rxjs';
+import { FileDragHostService }    from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                 from '../../../components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
 import { ModuleAdderDataService } from './module-adder-data.service';
 
 @Component({
-  selector: 'app-module-browser-adder',
-  templateUrl: './module-browser-adder.component.html',
-  styleUrls: ['./module-browser-adder.component.scss'],
+  selector:        'app-module-browser-adder',
+  templateUrl:     './module-browser-adder.component.html',
+  styleUrls:       ['./module-browser-adder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
+  providers:       [
     ModuleAdderDataService,
     FileDragHostService
   ]

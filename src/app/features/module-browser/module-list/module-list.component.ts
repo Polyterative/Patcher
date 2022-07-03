@@ -49,6 +49,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
   
   @Input() readonly showSearch = false;
+  @Input() readonly encloseVertically = true;
   
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
