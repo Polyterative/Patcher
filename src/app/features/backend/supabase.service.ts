@@ -236,6 +236,14 @@ export class SupabaseService {
                               ${ this.queryJoins.module_panels },
                               ${ this.queryJoins.module_tags }
                             `, {count: 'exact'})
+                          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+                          .order(`color`, {                                // order panel by color 
+                            foreignTable: this.paths.module_panels,
+                            ascending:    true
+                          })
+                          .limit(1, {                                // take only one panel
+                            foreignTable: this.paths.module_panels
+                          })
                           .ilike('name', `%${ name }%`);
   
       if (onlyPublic) {
@@ -280,11 +288,14 @@ export class SupabaseService {
             ${ this.queryJoins.module_panels }
             `)
           .filter('id', 'eq', id)
-          // .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true)
-          // .order(`color`, {
-          //   foreignTable: this.paths.module_panels,
-          //   ascending:    true
-          // })
+          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .order(`color`, {                                // order panel by color 
+            foreignTable: this.paths.module_panels,
+            ascending:    true
+          })
+        // .limit(1, {                                // take only one panel
+        //   foreignTable: this.paths.module_panels
+        // })
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
@@ -341,8 +352,11 @@ export class SupabaseService {
           ${ this.queryJoins.module_tags }
           `)
           .filter('manufacturerId', 'eq', manufacturerId)
-          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true)
-          .order(`color`, {
+          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .limit(1, {                                                         // take only one panel
+            foreignTable: this.paths.module_panels
+          })
+          .order(`color`, {                                // order panel by color 
             foreignTable: this.paths.module_panels,
             ascending:    true
           })

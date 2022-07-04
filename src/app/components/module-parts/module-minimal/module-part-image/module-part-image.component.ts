@@ -23,11 +23,12 @@ export class ModulePartImageComponent implements OnInit {
   
   sizeDivider: number = 2;
   
-  constructor() { }
+  constructor(
+  ) { }
   
   ngOnInit(): void {
     if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels.pop().filename;
+      this.filename = this.data.panels[this.data.panels.length - 1].filename;
     } else {
       this.filename = undefined;
     }
