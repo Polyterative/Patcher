@@ -79,6 +79,18 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
+  
+  
+          <ng-container *ngIf="rackDataService.singleRackData$|async as rackData">
+            <button mat-icon-button
+                    [matTooltip]="'Add to '+rackData.name"
+                    [title]="!bag.user ? 'Login to add to modules your rack':''"
+                    *ngIf="rackDataService.isCurrentRackEditable$|async"
+                    (click)="rackDataService.addModuleToRack$.next(data)"
+            >
+              <mat-icon>playlist_add</mat-icon>
+            </button>
+          </ng-container>
 
         </div>
         <div fxFlex="grow"></div>

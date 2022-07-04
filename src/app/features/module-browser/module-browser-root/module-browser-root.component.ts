@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnDestroy,
   OnInit,
   ViewChild
@@ -23,7 +24,7 @@ import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  viewConfig: ModuleMinimalViewConfig = {
+  @Input() readonly moduleViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideButtons:      true,
     hideDates:        false,
