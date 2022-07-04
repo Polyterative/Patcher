@@ -1,16 +1,29 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnInit
-}                        from '@angular/core';
-import { MinimalModule } from '../../../../models/module';
+}                                 from '@angular/core';
+import { fadeInOnEnterAnimation } from 'angular-animations';
+import {
+  delay,
+  of
+}                                 from 'rxjs';
+import { MinimalModule }          from '../../../../models/module';
 
 @Component({
   selector:        'app-module-part-image',
   templateUrl:     './module-part-image.component.html',
   styleUrls:       ['./module-part-image.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations:      [
+    fadeInOnEnterAnimation({
+      anchor:          'enter',
+      duration:        225,
+      animateChildren: 'after'
+    })
+  ]
 })
 export class ModulePartImageComponent implements OnInit {
   
@@ -24,15 +37,25 @@ export class ModulePartImageComponent implements OnInit {
   sizeDivider: number = 2;
   
   constructor(
+    public changeDetection: ChangeDetectorRef
   ) { }
   
   ngOnInit(): void {
-    if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[this.data.panels.length - 1].filename;
-    } else {
-      this.filename = undefined;
-    }
-    
+    of(undefined)
+      .pipe(
+        delay(500)
+        // take(1)
+      )
+      .subscribe(value => {
+        if (this.data.panels && this.data.panels.length > 0) {
+          this.filename = this.data.panels[this.data.panels.length - 1].filename;
+        } else {
+          this.filename = undefined;
+        }
+      
+        this.changeDetection.detectChanges();
+      });
+  
     if (this.big) {
       this.sizeDivider = 1;
     }
