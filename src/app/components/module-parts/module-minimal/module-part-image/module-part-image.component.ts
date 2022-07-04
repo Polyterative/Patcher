@@ -17,7 +17,7 @@ import { MinimalModule }          from '../../../../models/module';
   animations:      [
     fadeInOnEnterAnimation({
       anchor:          'enter',
-      duration:        525,
+      duration:        725,
       animateChildren: 'after'
     })
   ]
@@ -44,11 +44,11 @@ export class ModulePartImageComponent implements OnInit, AfterViewInit {
       this.filename = undefined;
     }
   
-    this.changeDetection.detectChanges();
-  
     if (this.big) {
       this.sizeDivider = 1;
     }
+  
+    this.changeDetection.detectChanges();
   }
   
   ngAfterViewInit(): void {
