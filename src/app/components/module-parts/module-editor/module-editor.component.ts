@@ -266,11 +266,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       takeUntil(this.destroyEvent$)
     )
         .subscribe(([x, updateSingleModuleData]) => {
-            this.dataService.updateSingleModuleData$.next(
-              updateSingleModuleData);
+            this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
     
-            this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
-                               'You will be remembered.', undefined, {
+            let message: string = `The community appreciates your effort, thank you for your contribution. Your efforts will be remembered.`;
+            this.snackBar.open(message, undefined, {
               duration: 5000
             });
           }
