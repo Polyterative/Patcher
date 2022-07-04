@@ -15,8 +15,8 @@
       >
       
       <lib-screen-wrapper *ngIf="!filename"
-                          [maxSize]="data.hp/sizeDivider/2+'rem'"
                           class="img"
+                          [@enter]
       >
         <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
              [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
