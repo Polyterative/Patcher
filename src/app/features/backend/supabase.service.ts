@@ -127,21 +127,31 @@ export class SupabaseService {
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    userModules:               () => rxFrom(
-      this.supabase.from(this.paths.user_modules)
-          .select(`
-          module:modules!user_modules_moduleid_fkey(
-            *,
-            ${ this.queryJoins.module_panels },
-            ${ this.queryJoins.manufacturer },
-            ${ this.queryJoins.insOuts }
-          )
-            `)
-          .filter('profileid', 'eq', this.getUser().id)
-    )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-      .pipe(map((x => x.data.map(y => y.module)))),
-    patchConnections:          (patchid: number) => rxFrom(
+    userModules:      () => {
+      let prefix = `module`;
+      let panelsTable: string = `${ prefix }.${ this.paths.module_panels }`;
+      return rxFrom(
+        this.supabase.from(this.paths.user_modules)
+            .select(`
+            ${ prefix }:modules!user_modules_moduleid_fkey(
+              *,
+              ${ this.queryJoins.module_panels },
+              ${ this.queryJoins.manufacturer },
+              ${ this.queryJoins.insOuts }
+            )
+              `)
+            .filter(`${ prefix }.${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+            .order(`color`, {                                            // order panel by color 
+              foreignTable: panelsTable,
+              ascending:    true
+            })
+            .limit(1, {foreignTable: panelsTable})
+            .filter('profileid', 'eq', this.getUser().id)
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+        .pipe(map((x => x.data.map(y => y.module))));
+    },
+    patchConnections: (patchid: number) => rxFrom(
       this.supabase.from(this.paths.patch_connections)
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
         //   .select(`*,a(*,${ this.queryJoins.module })`)
