@@ -1,41 +1,38 @@
-<div class="scroll custom-scrollbar"
-     *ngIf="containImage"
+<ng-container *ngIf="{
+  height:data.standard|getModuleHeightForStandard
+  } as bag"
 >
-  <div fxFlex="auto"
+  <div *ngIf="containImage"
        fxLayoutAlign="center center"
   >
-    <!--    <img [ngStyle]="{maxWidth:(data.hp/1.5+'rem')}"-->
-    <!--         style="max-height: 12rem"-->
-    <!--         src="https://www.modulargrid.net/img/modcache/7859.f.jpg"-->
-    <!--    >-->
     <img *ngIf="filename"
-         style="max-width:100%;"
+         class="img"
          [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+         [@enter]
     >
     
     <lib-screen-wrapper *ngIf="!filename"
                         [maxSize]="data.hp/sizeDivider/2+'rem'"
+                        [@enter]
     >
       <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
-           [ngStyle]="{height:((data.standard|getModuleHeightForStandard)/sizeDivider/2+'rem'),backgroundColor: '#ffffff'}"
-           style="background-color: rgba(0,0,0,0.1)"
+           [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
+           class="preview"
            fxLayoutAlign="center center"
       >
       </div>
     </lib-screen-wrapper>
   </div>
-
-</div>
-
-<ng-container *ngIf="!containImage">
-  <div fxLayoutAlign="center center">
-    <img *ngIf="filename"
-         [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
-         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
-    >
-  </div>
+  
+  
+  <ng-container *ngIf="!containImage">
+    <div fxLayoutAlign="center center">
+      <img *ngIf="filename"
+           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+           [@enter]
+      >
+    </div>
+  </ng-container>
 </ng-container>
-<!--<ng-template #img>-->
-<!--  -->
-<!--</ng-template>-->
