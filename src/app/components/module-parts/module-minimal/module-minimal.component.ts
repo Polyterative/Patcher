@@ -58,8 +58,9 @@ export interface ModuleMinimalViewConfig {
   hideHP: boolean;
   hideDates: boolean;
   hideTags: boolean;
-  ellipseDescription: boolean;
+  hidePanelsOptions: boolean;
   bigPanelImage: boolean;
+  ellipseDescription: boolean;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
@@ -69,7 +70,8 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   hideButtons:        false,
   hideHP:             false,
   hideDates:          false,
-  ellipseDescription: true,
+  hideTags:           false,
+  hidePanelsOptions:  true,
   bigPanelImage:      false,
-  hideTags:           false
+  ellipseDescription: true
 };
