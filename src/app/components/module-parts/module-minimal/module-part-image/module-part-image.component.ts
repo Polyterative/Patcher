@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -6,10 +7,6 @@ import {
   OnInit
 }                                 from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import {
-  delay,
-  of
-}                                 from 'rxjs';
 import { MinimalModule }          from '../../../../models/module';
 
 @Component({
@@ -20,12 +17,12 @@ import { MinimalModule }          from '../../../../models/module';
   animations:      [
     fadeInOnEnterAnimation({
       anchor:          'enter',
-      duration:        225,
+      duration:        525,
       animateChildren: 'after'
     })
   ]
 })
-export class ModulePartImageComponent implements OnInit {
+export class ModulePartImageComponent implements OnInit, AfterViewInit {
   
   @Input() data: MinimalModule;
   
@@ -41,24 +38,34 @@ export class ModulePartImageComponent implements OnInit {
   ) { }
   
   ngOnInit(): void {
-    of(undefined)
-      .pipe(
-        delay(500)
-        // take(1)
-      )
-      .subscribe(value => {
-        if (this.data.panels && this.data.panels.length > 0) {
-          this.filename = this.data.panels[this.data.panels.length - 1].filename;
-        } else {
-          this.filename = undefined;
-        }
-      
-        this.changeDetection.detectChanges();
-      });
+    if (this.data.panels && this.data.panels.length > 0) {
+      this.filename = this.data.panels[this.data.panels.length - 1].filename;
+    } else {
+      this.filename = undefined;
+    }
+  
+    this.changeDetection.detectChanges();
   
     if (this.big) {
       this.sizeDivider = 1;
     }
+  }
+  
+  ngAfterViewInit(): void {
+    // of(undefined)
+    //   .pipe(
+    //     delay(250),
+    //     take(1)
+    //   )
+    //   .subscribe(value => {
+    //     if (this.data.panels && this.data.panels.length > 0) {
+    //       this.filename = this.data.panels[this.data.panels.length - 1].filename;
+    //     } else {
+    //       this.filename = undefined;
+    //     }
+    //
+    //     this.changeDetection.detectChanges();
+    //   });
   }
   
 }
