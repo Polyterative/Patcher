@@ -39,7 +39,7 @@ export class ModulePartImageComponent implements OnInit, AfterViewInit {
   
   ngOnInit(): void {
     if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[this.data.panels.length - 1].filename;
+      this.filename = this.data.panels[0].filename;
     } else {
       this.filename = undefined;
     }
