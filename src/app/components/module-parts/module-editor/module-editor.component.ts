@@ -26,6 +26,7 @@ import {
   catchError,
   filter,
   map,
+  startWith,
   switchMap,
   takeUntil,
   withLatestFrom
@@ -93,13 +94,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   formGroupB = this.formBuilder.group({});
   // formGroupC = this.formBuilder.group({});
   //
-  panelURL: IMatFormEntityConfig = {
-    code:    'url',
-    label:   'URL',
+  panelDescription: IMatFormEntityConfig = {
+    code:    'panelDescription',
+    label:   'Panel Description',
     type:    FormTypes.TEXT,
     control: new FormControl('', [
-      Validators.pattern(URLReg),
-      Validators.required
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(144)
     ]),
     flex:    'auto'
   };
@@ -142,8 +144,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     flex:     'auto'
   };
   formGroupPanel = this.formBuilder.group({
-    'url':  this.panelURL.control,
-    'type': this.panelType.control
+    'panelDescription': this.panelDescription.control,
+    'panelType':        this.panelType.control
   });
   //
   protected destroyEvent$ = new Subject<void>();
@@ -266,15 +268,33 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(
               updateSingleModuleData);
-        
+    
             this.snackBar.open('The community appreciates your effort, thank you for your contribution. ' +
                                'You will be remembered.', undefined, {
               duration: 5000
             });
           }
         );
+  
+  
+    // write default description on changes
+    this.panelType.control.valueChanges
+        .pipe(
+          takeUntil(this.destroyEvent$),
+          startWith(this.panelType.control.value),
+          withLatestFrom(this.panelType.options$)
+        )
+        .subscribe(([panelTypeValue, options]) => {
+          let descValue: string = this.panelDescription.control.value;
+          let isValueADefaultOptionDerivedOne = options.map(x => x.name)
+                                                       .includes(descValue);
     
-    
+          if (descValue === '' || isValueADefaultOptionDerivedOne
+          ) {
+            this.panelDescription.control.patchValue(panelTypeValue.name);
+          }
+        });
+  
     // on savePanels$ upload image to server
     this.savePanels$.pipe(
       map(() => this.fileDragHostService.files$.value[0]),
@@ -284,7 +304,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           file.type
         ]))))),
       switchMap(([file, [filename, fileType]]) => {
-        let extension: string = filename.split('.').pop();
+        let extension: string = filename.split('.')
+                                        .pop();
         let name: string = `${ this.data.name.replace(/[^a-z0-9]/gi, '_') }-${ this.data.manufacturer.name.replace(/[^a-z0-9]/gi, '_') }-${ this.panelType.control.value.name }-${ this.data.standard.name }`;
         let filenameAndExtension: string = `${ name }.${ extension }`;
         return this.backend.storage.uploadModulePanel(
@@ -295,9 +316,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       }),
       switchMap(dbFilename => this.backend.add.panel([
         {
-          filename: dbFilename,
-          color:    +this.panelType.control.value.value,
-          moduleid: this.data.id
+          filename:    dbFilename,
+          color:       +this.panelType.control.value.value,
+          description: this.panelDescription.control.value,
+          moduleid:    this.data.id
         }
       ])),
       catchError(() => {

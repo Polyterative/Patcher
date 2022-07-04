@@ -56,5 +56,6 @@ export interface ModulePanel {
   moduleid: number;
   color: number;
   filename: string;
+  description: string;
   id: number;
 }
