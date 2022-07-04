@@ -123,9 +123,10 @@ const parentPrefix = 'modules';
     AdviceTooltipModule,
     FileDragHostModule
   ],
-  exports:      [
+  exports: [
     ModuleListComponent,
-    ModuleBrowserDetailComponent
+    ModuleBrowserDetailComponent,
+    ModuleBrowserRootComponent
   ]
 })
 export class ModuleBrowserModule {}
