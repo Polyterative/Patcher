@@ -47,7 +47,7 @@
       ></mat-paginator>
   
       <app-module-list [data$]="dataService.modulesList$"
-                       [viewConfig]="viewConfig"
+                       [viewConfig]="moduleViewConfig"
                        [encloseVertically]="false"
       ></app-module-list>
       <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"

@@ -25,7 +25,10 @@ import {
 }                                  from 'rxjs/operators';
 import { UserManagementService }   from '../../features/backbone/login/user-management.service';
 import { SupabaseService }         from '../../features/backend/supabase.service';
-import { RackedModule }            from '../../models/module';
+import {
+  MinimalModule,
+  RackedModule
+}                                  from '../../models/module';
 import {
   Rack,
   RackMinimal
@@ -44,6 +47,7 @@ export class RackDetailDataService extends SubManager {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
+  addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
@@ -277,6 +281,21 @@ export class RackDetailDataService extends SubManager {
     //       snackBar.open('Removed', undefined, {duration: 1000});
     //       this.updateSingleRackData$.next(b);
     //     });
+  
+    // add module from bottom picker
+    this.addModuleToRack$
+        .pipe(
+          switchMap(module => this.backend.add.rackModule(
+            module.id,
+            this.singleRackData$.value.id
+          )),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(moduleToAdd => {
+          snackBar.open('✅ Added', undefined, {duration: 4000});
+    
+          this.updateSingleRackData$.next(this.singleRackData$.value.id);
+        });
   
   }
   
