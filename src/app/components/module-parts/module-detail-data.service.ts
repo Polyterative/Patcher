@@ -10,6 +10,7 @@ import {
 }                                   from 'rxjs';
 import {
   filter,
+  map,
   switchMap,
   takeUntil,
   tap,
@@ -89,7 +90,11 @@ export class ModuleDetailDataService {
         .pipe(
           tap(x => this.modulesBySameManufacturer$.next(undefined)),
           filter(x => !!x && !!x.manufacturer),
-          switchMap(x => this.backend.get.modulesBySameManufacturer(x.manufacturerId)),
+          switchMap(singleModuleData => this.backend.get.modulesBySameManufacturer(singleModuleData.manufacturerId)
+                                            .pipe(
+                                              map(x => x.filter(module => module.id !== singleModuleData.id))
+                                            )
+          ),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.modulesBySameManufacturer$.next(x));
