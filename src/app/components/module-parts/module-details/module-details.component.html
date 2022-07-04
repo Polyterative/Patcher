@@ -13,8 +13,10 @@
       <!--      </mat-chip-list>-->
     </div>
   </ng-container>
-  <mat-accordion *ngIf="data.panels.length>1">
-    <mat-expansion-panel hideToggle>
+  <mat-accordion *ngIf="(data.panels.length>1)&&(!viewConfig.hidePanelsOptions)">
+    <mat-expansion-panel hideToggle
+                         style="padding-top: 1rem"
+    >
       <mat-expansion-panel-header>
         <mat-panel-title>
           Available in {{data.panels.length}} versions

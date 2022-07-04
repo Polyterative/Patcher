@@ -12,7 +12,15 @@ import {
 import { Subject }                from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService }        from 'src/app/features/backend/supabase.service';
+import {
+  UserModulesComponentViewConfig,
+  userModulesDefaultViewConfig
+}                                 from 'src/app/features/user-area/user-modules/user-modules.component';
 import { Patch }                  from '../../../models/patch';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                 from '../../module-parts/module-minimal/module-minimal.component';
 
 interface FormCV {
   id: number;
@@ -29,6 +37,22 @@ interface FormCV {
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
+  //
+  modulesViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideLabels:        true,
+    hideManufacturer:  true,
+    hideDescription:   true,
+    hideButtons:       true,
+    hideHP:            true,
+    hideDates:         true,
+    hidePanelsOptions: true
+  };
+  //
+  userModulesComponentViewConfig: UserModulesComponentViewConfig = {
+    ...userModulesDefaultViewConfig,
+    hideAddModulesButton: true
+  };
   protected destroyEvent$ = new Subject<void>();
   
   constructor(

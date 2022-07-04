@@ -32,7 +32,8 @@ export class ModuleBrowserDetailComponent implements OnInit {
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: false,
-    bigPanelImage:      true
+    bigPanelImage:      true,
+    hidePanelsOptions:  false
   };
   
   @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {
