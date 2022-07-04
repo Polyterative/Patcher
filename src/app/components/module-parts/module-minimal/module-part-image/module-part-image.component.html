@@ -1,38 +1,38 @@
-<ng-container *ngIf="{
+<div fxLayoutAlign="center center"
+     class="scroll custom-scrollbar"
+>
+  <ng-container *ngIf="{
   height:data.standard|getModuleHeightForStandard
   } as bag"
->
-  <div *ngIf="containImage"
-       fxLayoutAlign="center center"
   >
-    <img *ngIf="filename"
-         class="img"
-         [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
-         [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
-         [@enter]
+    <ng-container *ngIf="containImage"
     >
-    
-    <lib-screen-wrapper *ngIf="!filename"
-                        [maxSize]="data.hp/sizeDivider/2+'rem'"
-                        [@enter]
-    >
-      <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
-           [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
-           class="preview"
-           fxLayoutAlign="center center"
+      <img *ngIf="filename"
+           class="img"
+           [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+           [@enter]
       >
-      </div>
-    </lib-screen-wrapper>
-  </div>
-  
-  
-  <ng-container *ngIf="!containImage">
-    <div fxLayoutAlign="center center">
+      
+      <lib-screen-wrapper *ngIf="!filename"
+                          [maxSize]="data.hp/sizeDivider/2+'rem'"
+                          class="img"
+      >
+        <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
+             [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
+             class="preview img"
+        >
+        </div>
+      </lib-screen-wrapper>
+    </ng-container>
+    
+    
+    <ng-container *ngIf="!containImage">
       <img *ngIf="filename"
            [ngStyle]="{maxHeight:((bag.height)+'rem')}"
            [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
            [@enter]
       >
-    </div>
+    </ng-container>
   </ng-container>
-</ng-container>
+</div>
