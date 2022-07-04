@@ -95,7 +95,7 @@
         <mat-card-title>Panel</mat-card-title>
         <!--        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>-->
       </div>
-    
+  
       <div class="row gap1"
            fxLayoutAlign="center center"
       >
@@ -105,10 +105,13 @@
                             acceptedFileType="image/jpeg,image/jpg"
         ></lib-file-drag-host>
       </div>
-      <div fxFlex="16rem">
-        <lib-mat-form-entity fxFlex="grow"
+      <div class="row gap1">
+        <lib-mat-form-entity fxFlex="33%"
                              [dataPack]="panelType"
                              [disableVoidSelection]="true"
+        ></lib-mat-form-entity>
+        <lib-mat-form-entity fxFlex="auto"
+                             [dataPack]="panelDescription"
         ></lib-mat-form-entity>
       </div>
       <mat-divider inset="true"></mat-divider>
