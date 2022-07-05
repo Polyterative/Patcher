@@ -1,5 +1,6 @@
 <div fxLayoutAlign="center center"
-     class="scroll custom-scrollbar"
+     [routerLink]="['/modules/details',data.id]"
+     class="clickable"
 >
   <ng-container *ngIf="{
   height:data.standard|getModuleHeightForStandard
