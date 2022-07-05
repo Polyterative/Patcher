@@ -3,6 +3,7 @@ import { MatDialog }                from '@angular/material/dialog';
 import { MatSnackBar }              from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
+  delay,
   merge,
   of,
   ReplaySubject,
@@ -71,15 +72,17 @@ export class ModuleDetailDataService {
     this.updateSingleModuleData$
         .pipe(
           tap(x => this.racksWithThisModule$.next(undefined)),
+          delay(150),
           switchMap(x => this.backend.get.racksWithModule(x)),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(x => this.racksWithThisModule$.next(x.data.map(y => y.rack)));
   
-    // get patces with this module
+    // get patches with this module
     this.updateSingleModuleData$
         .pipe(
           tap(x => this.patchesWithThisModule$.next(undefined)),
+          delay(200),
           switchMap(x => this.backend.get.patchesWithModule(x)),
           takeUntil(this.destroyEvent$)
         )
@@ -88,8 +91,9 @@ export class ModuleDetailDataService {
     // get modules by same manufacturer
     this.singleModuleData$
         .pipe(
-          tap(x => this.modulesBySameManufacturer$.next(undefined)),
           filter(x => !!x && !!x.manufacturer),
+          tap(x => this.modulesBySameManufacturer$.next(undefined)),
+          delay(250),
           switchMap(singleModuleData => this.backend.get.modulesBySameManufacturer(singleModuleData.manufacturerId)
                                             .pipe(
                                               map(x => x.filter(module => module.id !== singleModuleData.id))
