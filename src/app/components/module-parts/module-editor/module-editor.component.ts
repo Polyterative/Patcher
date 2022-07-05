@@ -7,9 +7,9 @@ import {
   OnInit
 }                                  from '@angular/core';
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   ValidatorFn,
   Validators
 }                                  from '@angular/forms';
@@ -42,9 +42,9 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 
 export interface FormCV {
   id: number;
-  name: FormControl;
-  a: FormControl;
-  b: FormControl;
+  name: UntypedFormControl;
+  a: UntypedFormControl;
+  b: UntypedFormControl;
   isApproved: boolean;
 }
 
@@ -98,7 +98,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     code:    'panelDescription',
     label:   'Panel Description',
     type:    FormTypes.TEXT,
-    control: new FormControl('', [
+    control: new UntypedFormControl('', [
       Validators.required,
       Validators.minLength(3),
       Validators.maxLength(144)
@@ -109,7 +109,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     code:     'panelType',
     label:    'Panel Type',
     type:     FormTypes.SELECT,
-    control:  new FormControl({
+    control: new UntypedFormControl({
       name:  'Light',
       value: 1,
       id:    '0'
@@ -164,7 +164,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   constructor(
     public backend: SupabaseService,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     public dataService: ModuleDetailDataService,
     public userManagementService: UserManagementService,
     public snackBar: MatSnackBar,
@@ -364,7 +364,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       });
   }
   
-  private updateFormGroupAndContainer(cvs: FormCV[], group: FormGroup, subject: BehaviorSubject<FormCV[]>): void {
+  private updateFormGroupAndContainer(cvs: FormCV[], group: UntypedFormGroup, subject: BehaviorSubject<FormCV[]>): void {
     
     for (const key in group.controls) {
       group.removeControl(key);
@@ -387,14 +387,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   private createFomCV(data: Partial<CV>): FormCV {
-    const toReturn: { a: FormControl; b: FormControl; name: FormControl; id: number; isApproved: boolean } = {
-      name:       new FormControl(data.name, this.validatorsName),
-      a:          new FormControl(data.min, this.validatorsNum),
-      b:          new FormControl(data.max, this.validatorsNum),
+    const toReturn: { a: UntypedFormControl; b: UntypedFormControl; name: UntypedFormControl; id: number; isApproved: boolean } = {
+      name:       new UntypedFormControl(data.name, this.validatorsName),
+      a:          new UntypedFormControl(data.min, this.validatorsNum),
+      b:          new UntypedFormControl(data.max, this.validatorsNum),
       id:         data.id,
       isApproved: data.isApproved
     };
-    
+  
     // disable if has been uploaded already on the server and approved
     if (data.id > 0 && data.isApproved) {
       toReturn.name.disable();

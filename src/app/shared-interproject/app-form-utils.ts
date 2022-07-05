@@ -1,11 +1,11 @@
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 export class AppFormUtils {
-
-  static getErrors(input: FormControl): string {
-
+  
+  static getErrors(input: UntypedFormControl): string {
+    
     const noErrorMessageChar = '';
-
+    
     return input.hasError(Strings.form.errorCode.required) ? StringsIT.form.error_required :
            input.hasError(Strings.form.errorCode.minlength) ? StringsIT.form.error_minLength :
            input.hasError(Strings.form.errorCode.maxlength) ? StringsIT.form.error_maxLength :

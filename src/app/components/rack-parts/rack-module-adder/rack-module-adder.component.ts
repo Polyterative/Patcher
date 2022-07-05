@@ -5,7 +5,7 @@ import {
   OnInit
 }                                from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                                from '@angular/forms';
 import {
@@ -60,7 +60,7 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
       label:    'Choose rack',
       code:     'rack',
       flex:     '6rem',
-      control:  new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required
       ])),
       options$: this.buildOptions(),

@@ -1,9 +1,9 @@
-import { Injectable }   from '@angular/core';
-import { FormControl }  from '@angular/forms';
-import { Subject }      from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { FormTypes }    from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SubManager }   from '../../../shared-interproject/directives/subscription-manager';
+import { Injectable }         from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
+import { Subject }            from 'rxjs';
+import { debounceTime }       from 'rxjs/operators';
+import { FormTypes }          from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SubManager }         from '../../../shared-interproject/directives/subscription-manager';
 
 @Injectable()
 export class LocalDataFilterService extends SubManager {
@@ -14,7 +14,7 @@ export class LocalDataFilterService extends SubManager {
     label:   'Search ...',
     code:    'search',
     flex:    '6rem',
-    control: new FormControl(''),
+    control: new UntypedFormControl(''),
     type:    FormTypes.TEXT
   };
   

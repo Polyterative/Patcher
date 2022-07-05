@@ -1,5 +1,7 @@
-import { moveItemInArray }         from '@angular/cdk/drag-drop';
-import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
+import {
+  CdkDragDrop,
+  moveItemInArray
+}                                  from '@angular/cdk/drag-drop';
 import {
   ElementRef,
   Injectable

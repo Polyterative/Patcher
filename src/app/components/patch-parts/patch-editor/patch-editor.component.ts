@@ -6,8 +6,8 @@ import {
   OnInit
 }                                 from '@angular/core';
 import {
-  FormBuilder,
-  FormControl
+  UntypedFormBuilder,
+  UntypedFormControl
 }                                 from '@angular/forms';
 import { Subject }                from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
@@ -24,9 +24,9 @@ import {
 
 interface FormCV {
   id: number;
-  name: FormControl;
-  a: FormControl;
-  b: FormControl;
+  name: UntypedFormControl;
+  a: UntypedFormControl;
+  b: UntypedFormControl;
 }
 
 @Component({
@@ -57,7 +57,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   constructor(
     public backend: SupabaseService,
-    public formBuilder: FormBuilder,
+    public formBuilder: UntypedFormBuilder,
     public dataService: PatchDetailDataService
   ) {
   }
