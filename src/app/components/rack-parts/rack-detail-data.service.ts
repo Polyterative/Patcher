@@ -93,7 +93,7 @@ export class RackDetailDataService extends SubManager {
     this.manageSub(
       this.updateSingleRackData$
           .pipe(
-            tap(x => this.singleRackData$.next(undefined)),
+            // tap(x => this.singleRackData$.next(undefined)),
             switchMap(x => this.backend.get.rackWithId(x))
           )
           .subscribe(x => this.singleRackData$.next(x.data))
@@ -146,7 +146,7 @@ export class RackDetailDataService extends SubManager {
                 `Please move unracked module to a suitable position inside your rack.
                 Your rack has ${ rack.rows } rows`,
                 null,
-                {duration: 5000});
+                {duration: 8000});
   
               return;
             }
