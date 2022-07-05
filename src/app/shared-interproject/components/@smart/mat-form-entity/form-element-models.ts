@@ -1,6 +1,6 @@
 import {
   AbstractControl,
-  FormControl,
+  UntypedFormControl,
   Validators
 }                  from '@angular/forms';
 import { Strings } from './app-form-utils';
@@ -81,7 +81,7 @@ export function isOption(value: any): value is ISelectable {
   return value && value.id && typeof (value.id) === 'string' && value.name && typeof (value.name) === 'string';
 }
 
-export function findAndApplyOptionForIdInGroup(id: string, control: FormControl, options: ISelectable[]): void {
+export function findAndApplyOptionForIdInGroup(id: string, control: UntypedFormControl, options: ISelectable[]): void {
   const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
   
   const optionForInput: ISelectable | undefined = findOptionForId(id, flattenedOptions);
@@ -96,7 +96,7 @@ export function findAndApplyOptionForIdInGroup(id: string, control: FormControl,
  * @param control
  * @param options
  */
-export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], control: FormControl, options: ISelectable[]): void {
+export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], control: UntypedFormControl, options: ISelectable[]): void {
   const flattenedOptions: ISelectable[] = flatOptionGroupToArray(options);
   
   const optionForInput = input.map(item => flattenedOptions.find(value => value.id === item.id && value.name === item.name));
@@ -107,28 +107,28 @@ export function findAndApplyOptionsForSelectablesInGroup(input: ISelectable[], c
   
 }
 
-export function findAndApplyOptionForId(id: string, control: FormControl, options: ISelectable[]): void {
+export function findAndApplyOptionForId(id: string, control: UntypedFormControl, options: ISelectable[]): void {
   const optionForInput: ISelectable | undefined = findOptionForId(id, options);
   
   if (optionForInput) {control.patchValue(optionForInput); }
   
 }
 
-export function findAndApplyOptionForName(id: string, control: FormControl, options: ISelectable[]): void {
+export function findAndApplyOptionForName(id: string, control: UntypedFormControl, options: ISelectable[]): void {
   const optionForInput: ISelectable | undefined = findOptionForName(id, options);
   if (optionForInput) {control.patchValue(optionForInput); }
   
 }
 
-export function getCleanedValue(control: FormControl): string | ISelectable {
+export function getCleanedValue(control: UntypedFormControl): string | ISelectable {
   return isOption(control.value) ? control.value : control.value.toString() as string;
 }
 
-export function getCleanedValueId(control: FormControl, defaultVal = ''): string {
+export function getCleanedValueId(control: UntypedFormControl, defaultVal = ''): string {
   return isOption(control.value) ? control.value.id : defaultVal;
 }
 
-export function getCleanedValueName(control: FormControl, defaultVal = ''): string {
+export function getCleanedValueName(control: UntypedFormControl, defaultVal = ''): string {
   return isOption(control.value) ? control.value.name : defaultVal;
 }
 

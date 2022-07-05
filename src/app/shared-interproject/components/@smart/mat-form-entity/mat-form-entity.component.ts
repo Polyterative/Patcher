@@ -13,9 +13,9 @@ import {
 import {
   AbstractControl,
   AsyncValidatorFn,
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   ValidatorFn
 }                                       from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -54,7 +54,7 @@ import {
 
 export interface IMatFormEntityConfig {
   type: FormTypes;
-  control: FormControl;
+  control: UntypedFormControl;
   label: string;
   code: string;
   flex: string;
@@ -79,7 +79,7 @@ export interface IMatFormEntityConfig {
 export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
   
   constructor(
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     super();
@@ -114,19 +114,19 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    * Types reference, do not use from outside
    */
   types = FormTypes;
-  @Input() formGroupRoot: FormGroup = this.formBuilder.group({});
+  @Input() formGroupRoot: UntypedFormGroup = this.formBuilder.group({});
   @Input() styleOptions: { hideRequired: boolean, floatLabel: FloatLabelType } = {
     hideRequired: false,
     floatLabel:   'auto' // can be auto|always|never
   };
-  @Input() control: FormControl;
+  @Input() control: UntypedFormControl;
   @Input() hint ?: string;
   @Input() warning ?: string;
   /**
    * internal, DO NOT USE
    * It's function is to receive user input for filtering multicomplete options
    */
-  ghostControl: FormControl;
+  ghostControl: UntypedFormControl;
   @Input() textTransformFunction!: (x: string) => string;
   /**
    * The Angular Material tooltip provides a text label that is displayed when the user hovers over or longpresses an element.
@@ -214,7 +214,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    *
    * }
    */
-  @Input() errorProvider: (formControl: FormControl) => string = (x: FormControl) => AppFormUtils.getErrors(x);
+  @Input() errorProvider: (formControl: UntypedFormControl) => string = (x: UntypedFormControl) => AppFormUtils.getErrors(x);
   
   /**
    * DO NOT STATICIZE, USED IN HTML
@@ -477,9 +477,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
         
         break;
       case FormTypes.AUTOCOMPLETE_MULTIPLE:
-        
+  
         this.checkOptions();
-        this.ghostControl = new FormControl('');
+        this.ghostControl = new UntypedFormControl('');
         
         if (hostControl.value === '') {
           console.error('Input for multicomplete must be an array ');

@@ -1,7 +1,7 @@
 import { Injectable }       from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators
 }                           from '@angular/forms';
 import { MatDialog }        from '@angular/material/dialog';
@@ -48,7 +48,7 @@ export class ModuleAdderDataService {
       code:    'name',
       flex:    '6rem',
       hint:    'Example: Maths',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(144)
@@ -60,7 +60,7 @@ export class ModuleAdderDataService {
       code:    'description',
       flex:    '6rem',
       hint:    'Example: Analog computer designed for musical purposes',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         // Validators.required,
         Validators.minLength(1),
         Validators.maxLength(144 * 4)
@@ -72,7 +72,7 @@ export class ModuleAdderDataService {
       code:     'manufacturer',
       flex:     '6rem',
       hint:     'Example: Doepfer',
-      control:  new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required
       ])),
       type:     FormTypes.AUTOCOMPLETE,
@@ -91,7 +91,7 @@ export class ModuleAdderDataService {
       label:   'HP',
       code:    'hp',
       flex:    '6rem',
-      control: new FormControl('8', Validators.compose([
+      control: new UntypedFormControl('8', Validators.compose([
         Validators.required,
         Validators.min(1),
         Validators.max(216),
@@ -104,7 +104,7 @@ export class ModuleAdderDataService {
       code:    'manual',
       flex:    '6rem',
       hint:    'PDF if available, include \'https://\')',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.minLength('https://'.length + 1),
         Validators.maxLength(999),
         CustomValidators.includesHttps
@@ -115,7 +115,7 @@ export class ModuleAdderDataService {
       label:    'Format',
       code:     'format',
       flex:     '6rem',
-      control:  new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required
       ])),
       options$: this.formatTranslatorService.standards.data$.pipe(
@@ -134,7 +134,7 @@ export class ModuleAdderDataService {
       code:     'diy',
       flex:     '6rem',
       hint:     '',
-      control:  new FormControl({
+      control: new UntypedFormControl({
         id:   '0',
         name: 'Commercial'
       }, Validators.compose([
@@ -154,7 +154,7 @@ export class ModuleAdderDataService {
     }
   };
   
-  formGroup = new FormGroup({
+  formGroup = new UntypedFormGroup({
     name:         this.formData.name.control,
     description:  this.formData.description.control,
     manufacturer: this.formData.manufacturer.control,

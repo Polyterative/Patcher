@@ -2,7 +2,7 @@ import {
   Injectable,
   OnDestroy
 }                                from '@angular/core';
-import { FormControl }           from '@angular/forms';
+import { UntypedFormControl }    from '@angular/forms';
 import { PageEvent }             from '@angular/material/paginator';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
@@ -53,15 +53,15 @@ export class PatchBrowserDataService implements OnDestroy {
       label:   'search',
       code:    'search',
       flex:    '6rem',
-      control: new FormControl(''),
+      control: new UntypedFormControl(''),
       type:    FormTypes.TEXT
-      
+  
     },
     order:  {
       label:    'order',
       code:     'order',
       flex:     '6rem',
-      control:  new FormControl({
+      control: new UntypedFormControl({
         id:   'updated',
         name: 'Updated'
       }),

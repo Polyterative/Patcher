@@ -1,8 +1,8 @@
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 export class AppFormUtils {
   
-  static getErrors(input: FormControl): string {
+  static getErrors(input: UntypedFormControl): string {
     
     const noErrorMessageChar = '';
     
