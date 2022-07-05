@@ -3,7 +3,7 @@ import {
   OnDestroy
 }                                from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                                from '@angular/forms';
 import { MatDialog }             from '@angular/material/dialog';
@@ -50,14 +50,14 @@ export class PatchDetailDataService implements OnDestroy {
   //
   formData = {
     name:        {
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.min(3),
         Validators.maxLength(144)
       ]))
     },
     description: {
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.min(0),
         Validators.maxLength(144)
       ]))

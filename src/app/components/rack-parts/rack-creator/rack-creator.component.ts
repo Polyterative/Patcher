@@ -5,8 +5,8 @@ import {
   OnInit
 }                          from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators
 }                          from '@angular/forms';
 import {
@@ -50,7 +50,7 @@ export class RackCreatorComponent implements OnInit {
       label:   'HP (per row)',
       code:    'hp',
       flex:    '6rem',
-      control: new FormControl('84', Validators.compose([
+      control: new UntypedFormControl('84', Validators.compose([
         Validators.required,
         Validators.min(2),
         Validators.max(216),
@@ -62,7 +62,7 @@ export class RackCreatorComponent implements OnInit {
       label:   'Vertical rows amount',
       code:    'rows',
       flex:    '6rem',
-      control: new FormControl('2', Validators.compose([
+      control: new UntypedFormControl('2', Validators.compose([
         Validators.required,
         Validators.min(1),
         Validators.max(10),
@@ -74,7 +74,7 @@ export class RackCreatorComponent implements OnInit {
       label:   'Name',
       code:    'name',
       flex:    '6rem',
-      control: new FormControl('My new rack', Validators.compose([
+      control: new UntypedFormControl('My new rack', Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(32)
@@ -85,7 +85,7 @@ export class RackCreatorComponent implements OnInit {
   };
   protected destroyEvent$ = new Subject<void>();
   
-  formGroup = new FormGroup({
+  formGroup = new UntypedFormGroup({
     [this.fields.hp.code]:   this.fields.hp.control,
     [this.fields.name.code]: this.fields.name.control,
     [this.fields.rows.code]: this.fields.rows.control
