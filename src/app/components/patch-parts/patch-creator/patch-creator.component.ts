@@ -5,7 +5,7 @@ import {
   OnInit
 }                          from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                          from '@angular/forms';
 import {
@@ -70,7 +70,7 @@ export class PatchCreatorComponent implements OnInit {
       label:   'Name',
       code:    'name',
       flex:    '6rem',
-      control: new FormControl('My new patch', Validators.compose([
+      control: new UntypedFormControl('My new patch', Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(32)

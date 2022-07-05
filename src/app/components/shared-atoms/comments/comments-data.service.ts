@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                     from '@angular/forms';
 import { FormTypes }  from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -16,7 +16,7 @@ export class CommentsDataService {
       label:   'Add a comment',
       code:    'submit',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(144)

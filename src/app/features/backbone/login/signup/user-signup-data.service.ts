@@ -1,6 +1,6 @@
 import { Injectable }            from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                                from '@angular/forms';
 import { MatSnackBar }           from '@angular/material/snack-bar';
@@ -32,7 +32,7 @@ export class UserSignupDataService {
       label:   'Username',
       code:    'username',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.maxLength(128),
         Validators.minLength(3)
@@ -43,7 +43,7 @@ export class UserSignupDataService {
       label:   'Email',
       code:    'email',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.email
       ])),
@@ -53,7 +53,7 @@ export class UserSignupDataService {
       label:   'Password',
       code:    'pass',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(8),
         Validators.maxLength(30)
@@ -64,7 +64,7 @@ export class UserSignupDataService {
       label:   'Repeat Password',
       code:    'pass-pass',
       flex:    '6rem',
-      control: new FormControl('', Validators.compose([
+      control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(8),
         Validators.maxLength(30)
