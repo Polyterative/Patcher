@@ -330,7 +330,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     )
         .subscribe(x => {
           // feedback to user
-          this.snackBar.open('Panel added, thanks! Will be available as soon as reviewed and approved.', undefined, {
+          this.snackBar.open('✔ Panel added, thanks! Will be available as soon as reviewed and approved.', undefined, {
             duration: 10000
           });
       
