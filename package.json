@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "3.8.0",
+  "version": "4.0.0",
   "scripts": {
     "start": "angular-build-info && ng serve --hmr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
