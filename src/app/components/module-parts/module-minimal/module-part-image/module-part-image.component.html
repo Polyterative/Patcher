@@ -1,0 +1,39 @@
+<div fxLayoutAlign="center center"
+     [routerLink]="['/modules/details',data.id]"
+     class="clickable"
+>
+  <ng-container *ngIf="{
+  height:data.standard|getModuleHeightForStandard
+  } as bag"
+  >
+    <ng-container *ngIf="containImage"
+    >
+      <img *ngIf="filename"
+           class="img"
+           [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+           [@enter]
+      >
+      
+      <lib-screen-wrapper *ngIf="!filename"
+                          class="img"
+                          [@enter]
+      >
+        <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
+             [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
+             class="preview img"
+        >
+        </div>
+      </lib-screen-wrapper>
+    </ng-container>
+    
+    
+    <ng-container *ngIf="!containImage">
+      <img *ngIf="filename"
+           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+           [@enter]
+      >
+    </ng-container>
+  </ng-container>
+</div>

@@ -18,10 +18,17 @@
                    fxLayout.gt-md="row"
                    fxLayoutGap="1rem"
               >
-                <app-advice-tooltip>
-                  Please do not submit panel variations.
-                  We don't treat them as separate modules.
-                </app-advice-tooltip>
+                <ul>
+                  <li>
+                    Check the panel on the right for duplicate of the one you are submitting
+                  </li>
+                  <li>
+                    Please do not submit panel variations, we don't treat them as separate modules
+                  </li>
+                  <li>
+                    You will be able to add the panel image file once the module is approved
+                  </li>
+                </ul>
                 <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
                                           (click$)="dataService.submitModuleForm$.next()"
                                           fxLayoutAlign="end start"
@@ -53,6 +60,10 @@
                                        [disableVoidSelection]="true"
                   ></lib-mat-form-entity>
                 </div>
+                <!--                <lib-file-drag-host [isImageOnlyMode]="true"-->
+                <!--                                    [multipleFilesMode]="false"-->
+                <!--                                    acceptedFileType="image/jpeg,image/jpg,image/png"-->
+                <!--                ></lib-file-drag-host>-->
               </lib-clean-card>
             </div>
           </lib-hero-content-card>

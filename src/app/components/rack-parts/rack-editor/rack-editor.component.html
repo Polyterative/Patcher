@@ -1,7 +1,8 @@
 <ng-container *ngIf="{
   rowedRackedModules:((dataService.rowedRackedModules$|async)),
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
-  isCurrentRackEditable:(dataService.isCurrentRackEditable$|async)
+  isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
+  userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async)
   } as bag"
 >
   <div class="col gap1"
@@ -20,20 +21,45 @@
                              (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options':' / Unlock to make changes')):'')"
                            descriptionAlign="alignTextEnd"
                            class="transition-all-long"
-                           [ngClass]="{'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))}"
+                           [ngClass]="{
+                           'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 
+                           'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
+                           }"
+  
     >
       <div class="col gap1 transition-all scroll custom-scrollbar"
-           style="overflow-x: auto;"
            [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
+    
       >
-        <lib-screen-wrapper [maxSize]="data.hp+'rem'">
-          <app-rack-visual-model [rackData]="data"
-                                 [rowedRackedModules]="bag.rowedRackedModules"
-                                 [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
-                                 [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                 [rackDetailDataService]="dataService"
-                                 [moduleRightClick$]="moduleRightClick$"
-          ></app-rack-visual-model>
+        <lib-screen-wrapper [maxSize]="data.hp+'rem'"
+        >
+          <div class="col gap1"
+        
+          >
+            <div class="row gap1">
+              <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
+                                (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
+              >
+                Show panels as images
+              </mat-slide-toggle>
+              <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
+                                (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
+              >
+                I've got many modules
+              </mat-slide-toggle>
+            </div>
+            <app-rack-visual-model [rackData]="data"
+                                   [rowedRackedModules]="bag.rowedRackedModules"
+                                   [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
+                                   [isCurrentRackEditable]="bag.isCurrentRackEditable"
+                                   [rackDetailDataService]="dataService"
+                                   [moduleRightClick$]="moduleRightClick$"
+                                   class="transition-all-long"
+                                   [ngClass]="{
+                                     'smallerScale':bag.userRequestedSmallerScale
+                                   }"
+            ></app-rack-visual-model>
+          </div>
         </lib-screen-wrapper>
       </div>
     </lib-hero-content-card>

@@ -5,6 +5,7 @@ import { MatButtonModule }                   from '@angular/material/button';
 import { MatCardModule }                     from '@angular/material/card';
 import { MatChipsModule }                    from '@angular/material/chips';
 import { MatDividerModule }                  from '@angular/material/divider';
+import { MatExpansionModule }                from '@angular/material/expansion';
 import { MatIconModule }                     from '@angular/material/icon';
 import { MatMenuModule }                     from '@angular/material/menu';
 import { MatTooltipModule }                  from '@angular/material/tooltip';
@@ -15,6 +16,7 @@ import { HeroClickableTitleModule }          from 'src/app/shared-interproject/c
 import { SharedPipesModule }                 from 'src/app/shared-interproject/pipes/shared-pipes.module';
 import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { FileDragHostModule }                from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
 import { MatFormEntityModule }               from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { RestrictedEntityModule }            from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { AdviceTooltipModule }               from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
@@ -22,6 +24,8 @@ import { BrandPrimaryButtonModule }          from '../../shared-interproject/com
 import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroInfoBoxModule }                 from '../../shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { LabelValueShowcaseModule }          from '../../shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
+import { ScreenWrapperModule }               from '../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { GetModuleHeightForStandardPipe }    from './get-module-height-for-standard.pipe';
 import { ModuleCvIconComponent }             from './module-cv-icon/module-cv-icon.component';
 import { ModuleCVItemComponent }             from './module-cvitem/module-cvitem.component';
 import { ModuleCVsComponent }                from './module-cvs/module-cvs.component';
@@ -34,6 +38,7 @@ import { OnlyNotSavedFormCVsLengthPipe }     from './module-editor/only-not-save
 import { ModuleMinimalComponent }            from './module-minimal/module-minimal.component';
 import { ModulePartDescriptionComponent }    from './module-minimal/module-part-description/module-part-description.component';
 import { ModulePartHpComponent }             from './module-minimal/module-part-hp/module-part-hp.component';
+import { ModulePartImageComponent }          from './module-minimal/module-part-image/module-part-image.component';
 import { ModulePartManufacturerComponent }   from './module-minimal/module-part-manufacturer/module-part-manufacturer.component';
 import { ModulePartNameComponent }           from './module-minimal/module-part-name/module-part-name.component';
 import { ModuleTagsComponent }               from './module-minimal/module-tags/module-tags.component';
@@ -61,12 +66,14 @@ import { ModuleRealisticComponent }          from './module-realistic/module-rea
     OrderTagsByTypePipe,
     ModuleEditorCvFormLineComponent,
     ModuleEditorAdderLineComponent,
-    OnlyNotSavedFormCVsLengthPipe
+    OnlyNotSavedFormCVsLengthPipe,
+    GetModuleHeightForStandardPipe,
+    ModulePartImageComponent
   ],
   providers:    [
     ModuleDetailDataService
   ],
-  imports:      [
+  imports: [
     CommonModule,
     TimeagoModule.forChild(),
     MatCardModule,
@@ -89,7 +96,10 @@ import { ModuleRealisticComponent }          from './module-realistic/module-rea
     AutoUpdateLoadingIndicatorModule,
     CleanCardModule,
     MatMenuModule,
-    LabelValueShowcaseModule
+    LabelValueShowcaseModule,
+    ScreenWrapperModule,
+    MatExpansionModule,
+    FileDragHostModule
   ],
   exports:      [
     ModuleCVItemComponent,
@@ -106,7 +116,8 @@ import { ModuleRealisticComponent }          from './module-realistic/module-rea
     ModuleRealisticHolelineComponent,
     ModuleTagsComponent,
     ModuleEditorCvFormLineComponent,
-    ModuleEditorAdderLineComponent
+    ModuleEditorAdderLineComponent,
+    ModulePartImageComponent
   ]
 })
 export class ModulePartsModule {}

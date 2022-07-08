@@ -4,13 +4,13 @@ import {
   PipeTransform
 }                    from '@angular/core';
 import {
-  FormControl,
-  FormGroup
+  UntypedFormControl,
+  UntypedFormGroup
 }                    from '@angular/forms';
 import { Subject }   from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-type LocalType = FormControl | FormGroup;
+type LocalType = UntypedFormControl | UntypedFormGroup;
 
 @Pipe({
   name: 'formValid',

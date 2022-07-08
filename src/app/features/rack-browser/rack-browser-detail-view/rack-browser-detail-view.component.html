@@ -23,5 +23,8 @@ data:(dataService.singleRackData$|async)
         </div>
       </ng-container>
     </lib-hero-content-card>
+    <app-module-browser-root *ngIf="(dataService.isCurrentRackEditable$|async)&&(dataService.isCurrentRackPropertyOfCurrentUser$|async)"
+                             [moduleViewConfig]="moduleViewConfig"
+    ></app-module-browser-root>
   </div>
 </ng-container>

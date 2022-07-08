@@ -7,7 +7,7 @@ import {
   Output
 }                          from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 }                          from '@angular/forms';
 import { Subject }         from 'rxjs';
@@ -45,7 +45,7 @@ export class PatchConnectionMinimalComponent implements OnInit {
   };
   
   notes = {
-    control: new FormControl('', Validators.compose([
+    control: new UntypedFormControl('', Validators.compose([
       Validators.min(0),
       Validators.max(144)
     ]))

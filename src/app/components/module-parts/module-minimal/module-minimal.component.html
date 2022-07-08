@@ -8,6 +8,10 @@
   >
     <div class="col"
     >
+      <app-module-part-image [data]="data"
+                             [big]="viewConfig.bigPanelImage"
+                             class="panel"
+      ></app-module-part-image>
       <app-module-part-name [data]="data"></app-module-part-name>
       <div class="row gap1 spaceBetween"
       >
@@ -27,6 +31,7 @@
       ></app-module-part-description>
 
     </div>
+  
     <app-module-tags [data]="data"
                      *ngIf="!viewConfig.hideTags"
     ></app-module-tags>
@@ -74,6 +79,18 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
+  
+  
+          <ng-container *ngIf="rackDataService.singleRackData$|async as rackData">
+            <button mat-icon-button
+                    [matTooltip]="'Add to '+rackData.name"
+                    [title]="!bag.user ? 'Login to add to modules your rack':''"
+                    *ngIf="rackDataService.isCurrentRackEditable$|async"
+                    (click)="rackDataService.addModuleToRack$.next(data)"
+            >
+              <mat-icon>playlist_add</mat-icon>
+            </button>
+          </ng-container>
 
         </div>
         <div fxFlex="grow"></div>
