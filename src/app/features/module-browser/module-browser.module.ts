@@ -40,6 +40,7 @@ import { ModulePatchesModule }               from '../../components/module-patch
 import { ModuleRacksModule }                 from '../../components/module-racks/module-racks.module';
 import { LocalDataFilterModule }             from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
 import { AutoUpdateLoadingIndicatorModule }  from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { FileDragHostModule }                from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
 import { AdviceTooltipModule }               from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { CleanCardModule }                   from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserAdderComponent }       from './module-browser-adder/module-browser-adder.component';
@@ -119,11 +120,13 @@ const parentPrefix = 'modules';
     CleanCardModule,
     ModuleRacksModule,
     ModulePatchesModule,
-    AdviceTooltipModule
+    AdviceTooltipModule,
+    FileDragHostModule
   ],
-  exports:      [
+  exports: [
     ModuleListComponent,
-    ModuleBrowserDetailComponent
+    ModuleBrowserDetailComponent,
+    ModuleBrowserRootComponent
   ]
 })
 export class ModuleBrowserModule {}

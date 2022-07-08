@@ -31,7 +31,19 @@ export class ModuleBrowserDetailComponent implements OnInit {
   @Input() ignoreSeo = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
-    ellipseDescription: false
+    ellipseDescription: false,
+    bigPanelImage:      true,
+    hidePanelsOptions:  false
+  };
+  
+  @Input() bySameManufacturerViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    ellipseDescription: true,
+    hideButtons:        true,
+    hideDates:          true,
+    hideManufacturer:   true,
+    hideLabels:         true,
+    hideDescription:    true
   };
   
   constructor(
@@ -39,7 +51,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
     public route: ActivatedRoute,
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
-  
+    
   }
   
   ngOnInit(): void {
@@ -48,8 +60,8 @@ export class ModuleBrowserDetailComponent implements OnInit {
     this.route.params
         .pipe(
           map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-          filter(x => x > 0),
-          take(1)
+          filter(x => x > 0)
+          // take(1)
         )
         .subscribe(data => {
           // debugger

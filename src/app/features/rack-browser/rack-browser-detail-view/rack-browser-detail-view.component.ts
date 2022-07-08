@@ -15,6 +15,10 @@ import {
   take
 }                                from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                from '../../../components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService }    from '../../backbone/seo-and-utils.service';
 
 @Component({
@@ -24,6 +28,16 @@ import { SeoAndUtilsService }    from '../../backbone/seo-and-utils.service';
   // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackBrowserDetailViewComponent implements OnInit {
+  @Input() readonly moduleViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideButtons:      false,
+    hideDates:        false,
+    hideDescription:  false,
+    hideHP:           false,
+    hideTags:         false,
+    hideManufacturer: false,
+    hideLabels:       true
+  };
   
   protected destroyEvent$ = new Subject<void>();
   

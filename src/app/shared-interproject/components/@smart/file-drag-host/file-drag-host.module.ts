@@ -6,7 +6,6 @@ import { NgxDropzoneModule }     from 'ngx-dropzone';
 import { NgPipesModule }         from 'ngx-pipes';
 import { FileDragHostComponent } from './file-drag-host.component';
 
-
 @NgModule({
   declarations: [FileDragHostComponent],
   imports:      [

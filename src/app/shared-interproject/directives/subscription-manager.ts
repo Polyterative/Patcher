@@ -1,18 +1,22 @@
 import {
   Directive,
   OnDestroy
-}                       from '@angular/core';
-import { Subscription } from 'rxjs';
-
+} from '@angular/core';
+import {
+  Subject,
+  Subscription
+} from 'rxjs';
 
 /**
  * Utility class to manage the subscriptions.
  * Can be extended by a component to dispose all the subscription on OnDestroy
  */
 @Directive()
-// tslint:disable-next-line: directive-class-suffix
+// eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class SubManager implements OnDestroy {
   protected _subscriptions: Subscription[] = [];
+  
+  destroy$ = new Subject<void>();
   
   /**
    * Add a new subscription to manage.
@@ -23,13 +27,15 @@ export class SubManager implements OnDestroy {
       this._subscriptions.push(subscription);
     }
   }
-  
+
   /** Unsubscribe from all the subscriptions */
   unsubscribeAll() {
     this.unsubscribeArray(this._subscriptions);
   }
   
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.unsubscribeAll();
   }
   
@@ -48,5 +54,4 @@ export class SubManager implements OnDestroy {
       arrayOfSubscriptions.length = 0;
     }
   }
-  
 }

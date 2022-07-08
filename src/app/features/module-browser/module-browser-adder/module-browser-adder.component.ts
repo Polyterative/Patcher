@@ -7,6 +7,7 @@ import {
 import { ActivatedRoute }         from '@angular/router';
 import { SeoSocialShareData }     from 'ngx-seo';
 import { Subject }                from 'rxjs';
+import { FileDragHostService }    from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -19,7 +20,10 @@ import { ModuleAdderDataService } from './module-adder-data.service';
   templateUrl:     './module-browser-adder.component.html',
   styleUrls:       ['./module-browser-adder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers:       [ModuleAdderDataService]
+  providers:       [
+    ModuleAdderDataService,
+    FileDragHostService
+  ]
 })
 export class ModuleBrowserAdderComponent implements OnInit {
   

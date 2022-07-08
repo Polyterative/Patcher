@@ -13,6 +13,39 @@
       <!--      </mat-chip-list>-->
     </div>
   </ng-container>
+  <mat-accordion *ngIf="(data.panels.length>1)&&(!viewConfig.hidePanelsOptions)">
+    <mat-expansion-panel hideToggle
+                         style="padding-top: 1rem"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Available in {{data.panels.length}} versions
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div fxFlex="auto"
+           fxLayout="row wrap"
+           fxLayoutGap=".5rem grid"
+      >
+        <ng-container *ngFor="let item of data.panels; let i = index">
+          <div fxFlex="auto"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            <div fxFlex="auto">
+              <img *ngIf="item.filename"
+                   [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
+                   [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
+              >
+            </div>
+            <!--            <mat-chip>-->
+            <!--              {{item.filename}}-->
+            <!--            </mat-chip>-->
+          </div>
+        </ng-container>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+  
   
   <p fxLayoutAlign="end"
      style="font-size: 1rem"

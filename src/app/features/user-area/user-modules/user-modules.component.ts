@@ -8,9 +8,13 @@ import { ModuleMinimalViewConfig } from '../../../components/module-parts/module
 import { SubManager }              from '../../../shared-interproject/directives/subscription-manager';
 import { UserAreaDataService }     from '../user-area-data.service';
 
-interface UserModulesComponentViewConfig {
+export interface UserModulesComponentViewConfig {
   hideAddModulesButton: boolean;
 }
+
+export const userModulesDefaultViewConfig: UserModulesComponentViewConfig = {
+  hideAddModulesButton: false
+};
 
 @Component({
   selector:        'app-user-modules',
@@ -20,10 +24,8 @@ interface UserModulesComponentViewConfig {
 })
 export class UserModulesComponent extends SubManager {
   @Input() modulesViewConfig: ModuleMinimalViewConfig;
-  @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = {
-    hideAddModulesButton: false
-  };
-  
+  @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = userModulesDefaultViewConfig;
+  @Input() readonly encloseVertically = true;
   constructor(
     public backend: SupabaseService,
     public dataService: UserAreaDataService

@@ -14,6 +14,7 @@ import {
 }                                  from 'rxjs/operators';
 import { UserManagementService }   from 'src/app/features/backbone/login/user-management.service';
 import { MinimalModule }           from '../../../models/module';
+import { RackDetailDataService }   from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({
@@ -30,7 +31,8 @@ export class ModuleMinimalComponent implements OnInit {
   
   constructor(
     public userManagerService: UserManagementService,
-    public dataService: ModuleDetailDataService
+    public dataService: ModuleDetailDataService,
+    public rackDataService: RackDetailDataService
   ) {}
   
   ngOnInit(): void {
@@ -58,6 +60,8 @@ export interface ModuleMinimalViewConfig {
   hideHP: boolean;
   hideDates: boolean;
   hideTags: boolean;
+  hidePanelsOptions: boolean;
+  bigPanelImage: boolean;
   ellipseDescription: boolean;
 }
 
@@ -68,6 +72,8 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   hideButtons:        false,
   hideHP:             false,
   hideDates:          false,
-  ellipseDescription: true,
-  hideTags:           false
+  hideTags:           false,
+  hidePanelsOptions:  true,
+  bigPanelImage:      false,
+  ellipseDescription: true
 };

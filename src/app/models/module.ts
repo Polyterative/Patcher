@@ -33,6 +33,7 @@ export interface MinimalModule extends Timestamped {
    */
   standard: Standard;
   tags: { tag: Tag }[];
+  panels: ModulePanel[];
 }
 
 export interface DbModule extends MinimalModule {
@@ -48,4 +49,13 @@ export interface DbModule extends MinimalModule {
 export interface RackedModule {
   rackingData: RackingData;
   module: DbModule;
+}
+
+export interface ModulePanel {
+  // module: DbModule;
+  moduleid: number;
+  color: number;
+  filename: string;
+  description: string;
+  id: number;
 }

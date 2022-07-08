@@ -1,18 +1,18 @@
-﻿import { Injectable }    from '@angular/core';
-import { MediaObserver } from '@angular/flex-layout';
-import { FormControl }   from '@angular/forms';
+﻿import { Injectable }         from '@angular/core';
+import { MediaObserver }      from '@angular/flex-layout';
+import { UntypedFormControl } from '@angular/forms';
 import {
   ReplaySubject,
   Subject
-}                        from 'rxjs';
+}                             from 'rxjs';
 import {
   debounceTime,
   map,
   startWith,
   takeUntil
-}                        from 'rxjs/operators';
-import { environment }   from '../../environments/environment';
-import { AppFormUtils }  from './app-form-utils';
+}                             from 'rxjs/operators';
+import { environment }        from '../../environments/environment';
+import { AppFormUtils }       from './app-form-utils';
 
 @Injectable()
 export class AppStateService {
@@ -22,7 +22,7 @@ export class AppStateService {
    *
    */
   readonly globalUtils = {
-    errorProvider: (formControl: FormControl) => AppFormUtils.getErrors(formControl)
+    errorProvider: (formControl: UntypedFormControl) => AppFormUtils.getErrors(formControl)
   };
   
   readonly isDev = !environment.production;

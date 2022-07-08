@@ -34,7 +34,7 @@ import { ModuleList }             from '../module-browser-data.service';
     fadeInOnEnterAnimation({
       anchor:          'enter',
       duration:        225,
-      animateChildren: 'none'
+      animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
       anchor:   'leave',
@@ -49,6 +49,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
   
   @Input() readonly showSearch = false;
+  @Input() readonly encloseVertically = true;
   
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
