@@ -29,11 +29,14 @@ import {
 import { DBManufacturer }  from '../../models/manufacturer';
 import {
   DbModule,
+  ModulePanel,
   RackedModule
 }                          from '../../models/module';
 import { Patch }           from '../../models/patch';
 import { RackMinimal }     from '../../models/rack';
 import { Tag }             from '../../models/tag';
+
+export type SupabaseStorageFile = ArrayBuffer | ArrayBufferView | Blob | Buffer | File | FormData | ReadableStream | ReadableStream | URLSearchParams | string;
 
 @Injectable()
 export class SupabaseService {
@@ -44,13 +47,13 @@ export class SupabaseService {
   };
   
   add = {
-    module_tags: (data: Tag[]) => rxFrom(
+    module_tags:   (data: Tag[]) => rxFrom(
       this.supabase
           .from(this.paths.module_tags)
           .upsert(data)
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    userModule:  (moduleId: number) => rxFrom(
+    userModule:    (moduleId: number) => rxFrom(
       this.supabase
           .from(this.paths.user_modules)
           .insert({
@@ -58,9 +61,8 @@ export class SupabaseService {
             profileid: this.getUser().id
           })
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    rackModule: (moduleId: number, rackid: number) => rxFrom(
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    rackModule:    (moduleId: number, rackid: number) => rxFrom(
       this.supabase
           .from(this.paths.rack_modules)
           .insert({
@@ -68,17 +70,14 @@ export class SupabaseService {
             rackid
           })
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    rack: (data: { name: string, authorid: string, rows: number, hp: number, locked: boolean }) =>
-            rxFrom(
-              this.supabase
-                  .from(this.paths.racks)
-                  .insert(data)
-            )
-              .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    patch: (data: { name: string }) => rxFrom(
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    rack:          (data: { name: string, authorid: string, rows: number, hp: number, locked: boolean }) => rxFrom(
+      this.supabase
+          .from(this.paths.racks)
+          .insert(data)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    patch:         (data: { name: string }) => rxFrom(
       this.supabase
           .from(this.paths.patches)
           .insert({
@@ -86,9 +85,8 @@ export class SupabaseService {
             authorid: this.getUser().id
           })
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    modules: (data: DbModule[]) => rxFrom(
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    modules:       (data: DbModule[]) => rxFrom(
       this.supabase
           .from(this.paths.modules)
           .upsert(data.map(x => ({
@@ -96,9 +94,8 @@ export class SupabaseService {
             submitter: this.getUser().id
           })))
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    moduleINs: (data: CV[], moduleid: number) => rxFrom(
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    moduleINs:     (data: CV[], moduleid: number) => rxFrom(
       this.supabase
           .from(this.paths.moduleINs)
           .insert(data.map(x => ({
@@ -106,9 +103,8 @@ export class SupabaseService {
             moduleid
           })))
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
-    moduleOUTs: (data: CV[], moduleid: number) => rxFrom(
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    moduleOUTs:    (data: CV[], moduleid: number) => rxFrom(
       this.supabase
           .from(this.paths.moduleOUTs)
           .insert(data.map(x => ({
@@ -116,29 +112,45 @@ export class SupabaseService {
             moduleid
           })))
     )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-    ,
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
     manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
       this.supabase
           .from(this.paths.manufacturers)
           .insert(data)
     )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
+    panel:         (data: Partial<ModulePanel>[]) => rxFrom(
+      this.supabase
+          .from(this.paths.module_panels)
+          .insert(data)
+    )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
   };
   get = {
-    userModules:       () => rxFrom(
-      this.supabase.from(this.paths.user_modules)
-          .select(`
-          module:modules!user_modules_moduleid_fkey(
-            *,
-            ${ this.queryJoins.manufacturer },
-            ${ this.queryJoins.insOuts }
-          )
-            `)
-          .filter('profileid', 'eq', this.getUser().id)
-    )
-      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
-      .pipe(map((x => x.data.map(y => y.module)))),
+    userModules:      () => {
+      let prefix = `module`;
+      let panelsTable: string = `${ prefix }.${ this.paths.module_panels }`;
+      return rxFrom(
+        this.supabase.from(this.paths.user_modules)
+            .select(`
+            ${ prefix }:modules!user_modules_moduleid_fkey(
+              *,
+              ${ this.queryJoins.module_panels },
+              ${ this.queryJoins.manufacturer },
+              ${ this.queryJoins.insOuts }
+            )
+              `)
+            .filter(`${ prefix }.${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+            .order(`color`, {                                            // order panel by color 
+              foreignTable: panelsTable,
+              ascending:    true
+            })
+            .limit(1, {foreignTable: panelsTable})
+            .filter('profileid', 'eq', this.getUser().id)
+      )
+        .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+        .pipe(map((x => x.data.map(y => y.module))));
+    },
     patchConnections: (patchid: number) => rxFrom(
       this.supabase.from(this.paths.patch_connections)
         // .select(`module:moduleid(*, ${ this.queryJoins.manufacturer }, ${ this.queryJoins.insOuts })`)
@@ -147,8 +159,8 @@ export class SupabaseService {
           .select(`
           *,
           ${ this.queryJoins.patch },
-          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
-          b(*,module:modules!moduleINs_moduleId_fkey(*,${ this.queryJoins.manufacturer }))
+          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer },${ this.queryJoins.module_panels })),
+          b(*,module:modules!moduleINs_moduleId_fkey(*,${ this.queryJoins.manufacturer },${ this.queryJoins.module_panels }))
           `)
           .filter('patchid', 'eq', patchid)
           .order('ordinal')
@@ -206,13 +218,14 @@ export class SupabaseService {
           rackid:   y.rackid
         }
       })))),
-    modulesFull:        (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    modulesFull:               (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
           .select(`${ columns },
           ${ this.queryJoins.manufacturer },
           ${ this.queryJoins.insOuts },
           ${ this.queryJoins.standard },
-          ${ this.queryJoins.module_tags }
+          ${ this.queryJoins.module_tags },
+          ${ this.queryJoins.module_panels }
           `)
           .range(from, to)
     )
@@ -224,14 +237,23 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
       .pipe(map((x => x.data))),
-    modulesMinimal:    (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
+    modulesMinimal:            (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
       let baseQuery = this.supabase.from(this.paths.modules)
                           .select(`
                               id,name,hp,description,public,created,updated,
                               ${ this.queryJoins.manufacturer },
                               ${ this.queryJoins.standard },
+                              ${ this.queryJoins.module_panels },
                               ${ this.queryJoins.module_tags }
                             `, {count: 'exact'})
+                          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+                          .order(`color`, {                                // order panel by color 
+                            foreignTable: this.paths.module_panels,
+                            ascending:    true
+                          })
+                          .limit(1, {                                // take only one panel
+                            foreignTable: this.paths.module_panels
+                          })
                           .ilike('name', `%${ name }%`);
   
       if (onlyPublic) {
@@ -266,15 +288,24 @@ export class SupabaseService {
           .order(orderBy ? orderBy : 'updated', {ascending: orderDirection == 'asc'})
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    moduleWithId:       (id: number, columns = '*') => rxFrom(
+    moduleWithId:              (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.modules)
           .select(`${ columns },
            ${ this.queryJoins.manufacturer },
             ${ this.queryJoins.standard },
             ${ this.queryJoins.insOuts },
-            ${ this.queryJoins.module_tags }
+            ${ this.queryJoins.module_tags },
+            ${ this.queryJoins.module_panels }
             `)
           .filter('id', 'eq', id)
+          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .order(`color`, {                                // order panel by color 
+            foreignTable: this.paths.module_panels,
+            ascending:    true
+          })
+        // .limit(1, {                                // take only one panel
+        //   foreignTable: this.paths.module_panels
+        // })
           .order('id', {foreignTable: this.paths.moduleINs})
           .order('id', {foreignTable: this.paths.moduleOUTs})
           .single()
@@ -291,7 +322,7 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
+    patchesWithModule:         (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
       const patchIdList$ = rxFrom(
         this.supabase.from(this.paths.patches_for_modules)
             .select('moduleid,patchid', {count: 'exact'})
@@ -316,13 +347,35 @@ export class SupabaseService {
                   .pipe(map(x => x.data))
               )
             );
-  
-          return x.data.length > 0 ? getPatchData$ : of([]);
+    
+            return x.data.length > 0 ? getPatchData$ : of([]);
           }
         )
       );
     },
-    rackWithId:         (id: number, columns = '*') => rxFrom(
+    modulesBySameManufacturer: (manufacturerId, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+      this.supabase.from(this.paths.modules)
+          .select(`${ columns },
+          ${ this.queryJoins.manufacturer },
+          ${ this.queryJoins.standard },
+          ${ this.queryJoins.module_panels },
+          ${ this.queryJoins.module_tags }
+          `)
+          .filter('manufacturerId', 'eq', manufacturerId)
+          .filter(`${ this.paths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .limit(1, {                                                         // take only one panel
+            foreignTable: this.paths.module_panels
+          })
+          .order(`color`, {                                // order panel by color 
+            foreignTable: this.paths.module_panels,
+            ascending:    true
+          })
+          .order('updated', {ascending: false})
+          .range(from, to)
+    )
+      .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar))
+      .pipe(map((x => x.data))),
+    rackWithId:                (id: number, columns = '*') => rxFrom(
       this.supabase.from(this.paths.racks)
         // .select(`${ columns }, manufacturer:manufacturerId(name), ${ this.queryJoins.insOuts }`)
           .select(`${ columns }, ${ this.queryJoins.author }`)
@@ -333,7 +386,7 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+    manufacturerWithId:        (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
       this.supabase.from(this.paths.manufacturers)
           .select(columns)
           .range(from, to)
@@ -341,7 +394,7 @@ export class SupabaseService {
           .single()
     )
       .pipe(switchMap(x => (!!x.error ? throwError(new Error()) : of(x))), SharedConstants.errorHandlerOperation(this.snackBar)),
-    manufacturers:      (from = 0, to = this.defaultPag, columns = '*', orderBy?: string) => rxFrom(
+    manufacturers:             (from = 0, to = this.defaultPag, columns = '*', orderBy?: string) => rxFrom(
       this.supabase.from(this.paths.manufacturers)
           .select(columns)
           .range(from, to)
@@ -456,7 +509,9 @@ export class SupabaseService {
       data.ins = undefined;
       data.outs = undefined;
       data.tags = undefined; // todo handle tags
-    
+  
+      data.updated = new Date().toISOString();
+  
       return rxFrom(
         this.supabase.from(this.paths.modules)
             .update(data)
@@ -551,6 +606,25 @@ export class SupabaseService {
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
                                                        .pipe(tap(x => {SharedConstants.showSuccessUpdate(this.snackBar); }))
   };
+  storage = {
+    uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
+      
+      filenameAndExtension = filenameAndExtension.toLowerCase()
+                                                 .trim();
+      
+      return rxFrom(
+        this.supabase
+            .storage
+            .from('module-panels')
+            .upload('' + filenameAndExtension, file, {
+              cacheControl: '3600',
+              upsert:       false,
+              contentType:  contentType
+            })
+      )
+        .pipe(map(x => filenameAndExtension));
+    }
+  };
   
   private paths = {
     modules:                          'modules',
@@ -565,6 +639,7 @@ export class SupabaseService {
     patches:                          'patches',
     patch_connections:                'patch_connections',
     module_tags:                      'module_tags',
+    module_panels:                    'module_panels',
     tags:                             'tags',
     standards:                        'standards',
     profiles:                         'profiles'
@@ -586,12 +661,13 @@ export class SupabaseService {
     author:                'author:authorid(username,id,email)',
     rack:                  'rack:rackid(*,author:authorid(username,id,email))',
     rack_modules:          'rackModules:rackid(*)',
-    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standard!modules_standards_id_fk(name,id))',
+    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standard!modules_standards_id_fk(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
     // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
-    module_tags: `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
-    ins:         `ins:${ this.paths.moduleINs }(*)`,
-    outs:        `outs:${ this.paths.moduleOUTs }(*)`,
-    insOuts:     `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
+    module_tags:   `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
+    module_panels: `panels:${ this.paths.module_panels }!module_panels_moduleid_fkey(*)`,
+    ins:           `ins:${ this.paths.moduleINs }(*)`,
+    outs:          `outs:${ this.paths.moduleOUTs }(*)`,
+    insOuts:       `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
   };
   
   login(email: string, password: string) {

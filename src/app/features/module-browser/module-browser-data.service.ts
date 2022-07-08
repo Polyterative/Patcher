@@ -2,7 +2,7 @@ import {
   Injectable,
   OnDestroy
 }                                from '@angular/core';
-import { FormControl }           from '@angular/forms';
+import { UntypedFormControl }    from '@angular/forms';
 import { PageEvent }             from '@angular/material/paginator';
 import { MatSnackBar }           from '@angular/material/snack-bar';
 import {
@@ -45,7 +45,7 @@ export class ModuleBrowserDataService implements OnDestroy {
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
-    take$:   new BehaviorSubject<number>(10),
+    take$:   new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
     sort$:   new BehaviorSubject<[string, string]>([
       '',
@@ -63,14 +63,14 @@ export class ModuleBrowserDataService implements OnDestroy {
       label:   'Search module...',
       code:    'search',
       flex:    '6rem',
-      control: new FormControl(''),
+      control: new UntypedFormControl(''),
       type:    FormTypes.TEXT
     },
     order:         {
       label:    'order',
       code:     'order',
       flex:     '6rem',
-      control:  new FormControl({
+      control: new UntypedFormControl({
         id:   'name',
         name: 'Name'
       }),
@@ -127,7 +127,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       label:    '...made by',
       code:     'manufacturers',
       flex:     '6rem',
-      control:  new FormControl(),
+      control:  new UntypedFormControl(),
       type:     FormTypes.AUTOCOMPLETE,
       options$: this.backend.get.manufacturers(0, 9999, 'id,name')
                     .pipe(

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Input,
   OnDestroy,
   OnInit,
   ViewChild
@@ -23,7 +24,7 @@ import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  viewConfig: ModuleMinimalViewConfig = {
+  @Input() readonly moduleViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideButtons:      true,
     hideDates:        false,
@@ -52,7 +53,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
       });
       
       this.dataService.serversideTableRequestData.skip$.next(0);
-      this.dataService.serversideTableRequestData.take$.next(10);
+      this.dataService.serversideTableRequestData.take$.next(20);
     }
     
     this.seoAndUtilsService.updateSeo({description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'}, 'Modules');

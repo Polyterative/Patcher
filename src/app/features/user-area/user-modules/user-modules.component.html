@@ -39,6 +39,7 @@
                          [data$]="dataService.modulesData$"
                          [viewConfig]="modulesViewConfig"
                          [showSearch]="true"
+                         [encloseVertically]="encloseVertically"
                          *ngIf="data.length>0 else voidData"
         ></app-module-list>
       </ng-container>
@@ -46,4 +47,3 @@
   
   </div>
 </ng-template>
-

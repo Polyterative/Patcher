@@ -97,18 +97,8 @@
              class="col gap1"
         >
           <app-user-modules class="modulesBG"
-                            [userModulesComponentViewConfig]="{
-                                hideAddModulesButton: true
-                              }
-                           "
-                            [modulesViewConfig]="{
-                              hideLabels: true,
-                              hideManufacturer: true,
-                              hideDescription: true,
-                              hideButtons: true,
-                              hideHP: true,
-                              hideDates: true
-  }"
+                            [userModulesComponentViewConfig]="userModulesComponentViewConfig"
+                            [modulesViewConfig]="modulesViewConfig"
           ></app-user-modules>
         </div>
       </div>

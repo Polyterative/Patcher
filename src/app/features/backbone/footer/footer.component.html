@@ -4,28 +4,43 @@
     <div fxLayout="column"
          class="root"
     >
-      <div fxFlex="100"
+      <div fxFlex="auto"
            fxLayout="row wrap"
            fxLayout.lt-sm="column"
            fxLayoutGap="1rem"
       >
-        <app-label-value-showcase fxFlex="18rem"
-                                  fxFlex.lt-sm="auto"
-                                  label="Something wrong?"
-                                  [bigText]="false"
-        >
-          <p>This project is in beta! Please report any issues on the discord server</p>
-        </app-label-value-showcase>
-        <app-build-info fxFlex="18rem"
+        <app-build-info fxFlex="auto"
                         fxFlex.lt-sm="auto"
         ></app-build-info>
-        <app-discord-widget fxFlex="18rem"
+        <div fxFlex="auto"
+             fxFlex.lt-sm="auto"
+        >
+          <app-label-value-showcase label="New in v4.0"
+                                    [bigText]="false"
+          >
+            <div class="col gap1">
+              <div>
+                • Panel images for modules in details and search
+              </div>
+              <div>
+                • Panel images in rack view
+              </div>
+              <div>
+                • Add modules to rack from below the rack
+              </div>
+              <div>
+                • Submit multiple panels for a module
+              </div>
+            </div>
+          </app-label-value-showcase>
+        </div>
+        <app-discord-widget fxFlex="auto"
                             fxFlex.lt-sm="auto"
         ></app-discord-widget>
-        <app-feedback-box fxFlex="18rem"
+        <app-feedback-box fxFlex="auto"
                           fxFlex.lt-sm="auto"
         ></app-feedback-box>
-        <div fxFlex="18rem"
+        <div fxFlex="auto"
              fxFlex.lt-sm="auto"
         >
           <app-producthunt-badge></app-producthunt-badge>

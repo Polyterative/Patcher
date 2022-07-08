@@ -1,5 +1,7 @@
-import { moveItemInArray }         from '@angular/cdk/drag-drop';
-import { CdkDragDrop }             from '@angular/cdk/drag-drop/drag-events';
+import {
+  CdkDragDrop,
+  moveItemInArray
+}                                  from '@angular/cdk/drag-drop';
 import {
   ElementRef,
   Injectable
@@ -25,7 +27,10 @@ import {
 }                                  from 'rxjs/operators';
 import { UserManagementService }   from '../../features/backbone/login/user-management.service';
 import { SupabaseService }         from '../../features/backend/supabase.service';
-import { RackedModule }            from '../../models/module';
+import {
+  MinimalModule,
+  RackedModule
+}                                  from '../../models/module';
 import {
   Rack,
   RackMinimal
@@ -44,12 +49,15 @@ export class RackDetailDataService extends SubManager {
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
+  addModuleToRack$ = new Subject<MinimalModule>();
+  shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
   rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
+  userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   //
   requestRackEditableStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
@@ -87,7 +95,7 @@ export class RackDetailDataService extends SubManager {
     this.manageSub(
       this.updateSingleRackData$
           .pipe(
-            tap(x => this.singleRackData$.next(undefined)),
+            // tap(x => this.singleRackData$.next(undefined)),
             switchMap(x => this.backend.get.rackWithId(x))
           )
           .subscribe(x => this.singleRackData$.next(x.data))
@@ -140,7 +148,7 @@ export class RackDetailDataService extends SubManager {
                 `Please move unracked module to a suitable position inside your rack.
                 Your rack has ${ rack.rows } rows`,
                 null,
-                {duration: 5000});
+                {duration: 8000});
   
               return;
             }
@@ -275,6 +283,21 @@ export class RackDetailDataService extends SubManager {
     //       snackBar.open('Removed', undefined, {duration: 1000});
     //       this.updateSingleRackData$.next(b);
     //     });
+  
+    // add module from bottom picker
+    this.addModuleToRack$
+        .pipe(
+          switchMap(module => this.backend.add.rackModule(
+            module.id,
+            this.singleRackData$.value.id
+          )),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(moduleToAdd => {
+          snackBar.open('✅ Added', undefined, {duration: 4000});
+    
+          this.updateSingleRackData$.next(this.singleRackData$.value.id);
+        });
   
   }
   
