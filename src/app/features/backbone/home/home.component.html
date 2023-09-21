@@ -1,131 +1,128 @@
 <lib-screen-wrapper>
-  <div class="col gap1"
-  >
-    <div class="col gap2 homeBG"
-         style=" padding-top: 4rem; padding-bottom: 8rem; padding-left: 2rem; padding-right: 2rem;"
+  <div class="col gap1">
+    <div
+      class="col gap2 homeBG"
+      style="
+        padding-top: 4rem;
+        padding-bottom: 8rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+      "
     >
-      <h1 fxLayoutAlign="start center"
-          [@titleEnter]
-      > PATCHER.XYZ</h1>
-      <h1 fxLayoutAlign="start center"
-          [@subtitleEnter]
-      > the modern way to manage everything modular</h1>
+      <h1 fxLayoutAlign="start center" [@titleEnter]>PATCHER.XYZ</h1>
+      <h1 fxLayoutAlign="start center" [@subtitleEnter]>
+        the modern way to manage everything modular
+      </h1>
       <mat-divider inset="true"></mat-divider>
       <div class="row gap1">
-        <div class="col gap1"
-             fxFlex="grow"
-             [fxHide.lt-sm]="true"
-        >
+        <div class="col gap1" fxFlex="grow" [fxHide.lt-sm]="true">
           <div fxFlex="grow"></div>
-          <h1 fxFlex="100"
-              style="margin: 0"
-              [@arrow]
-          >↓</h1></div>
-        <div class="col gap1"
-             fxFlex="100"
-             style="font-size: 2rem;"
-        >
-          <p fxLayoutAlign="end center"
-             [@rowA]
-          >Share patch notes without manually writing them out ↩</p>
-          <p fxLayoutAlign="end center"
-             [@rowB]
-          >Keep track of your modules and discover new ones ↩</p>
-          <p fxLayoutAlign="end center"
-             [@rowC]
-          >Manage racks super fast, all in one place ↩</p>
+          <h1 fxFlex="100" style="margin: 0" [@arrow]>↓</h1>
         </div>
-
+        <div class="col gap1" fxFlex="100" style="font-size: 2rem">
+          <p fxLayoutAlign="end center" [@rowA]>
+            Share patch notes without manually writing them out ↩
+          </p>
+          <p fxLayoutAlign="end center" [@rowB]>
+            Keep track of your modules and discover new ones ↩
+          </p>
+          <p fxLayoutAlign="end center" [@rowC]>
+            Manage racks super fast, all in one place ↩
+          </p>
+        </div>
       </div>
       <mat-divider inset="true"></mat-divider>
-
     </div>
     <ng-container>
-  
-      <div class="col gap2"
-           style="border-left: 1px solid #ccc; border-right: 1px solid #ccc;"
+      <div
+        class="col gap2"
+        style="border-left: 1px solid #ccc; border-right: 1px solid #ccc"
       >
-        <div class="col gap1"
-        >
-          <lib-hero-header class="gradientCard"
-                           [title]="'Share patches ('+(statistics$|async)[2]+')'"
-                           description="I hated writing stuff out by hand! Now I literally only click the mouse and stuff happens."
+        <div class="col gap1">
+          <lib-hero-header
+            class="gradientCard"
+            [title]="'Share patches (' + (statistics$ | async)[2] + ')'"
+            description="'Easily share your patches. Current count: '+(statistics$|async)[2]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <!--                <app-patch-browser-patch-detail-view-root class="embedded"-->
                 <!--                                                          [ignoreSeo]="true"-->
                 <!--                ></app-patch-browser-patch-detail-view-root>-->
-                <video src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/3_fast.mp4"
-                       autoplay
-                       loop
-                       muted
-                       fxFlex="100"
+                <video
+                  src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/3_fast.mp4"
+                  autoplay
+                  loop
+                  muted
+                  fxFlex="100"
                 ></video>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-          <mat-divider inset="true"
-          ></mat-divider>
-  
-          <lib-hero-header class="gradientCard"
-                           [title]="'Find modules ('+(statistics$|async)[0]+')'"
-                           description="Eurocrack addict? Here you can find all the stuff you need."
+          <mat-divider inset="true"></mat-divider>
+
+          <lib-hero-header
+            class="gradientCard"
+            [title]="'Find modules (' + (statistics$ | async)[0] + ')'"
+            description="'Looking for eurorack modules? Find everything you need here. Current count: '+(statistics$|async)[0]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <!--                <app-module-browser-module-detail-view-root class="embedded"-->
                 <!--                                                            [ignoreSeo]="true"-->
                 <!--                ></app-module-browser-module-detail-view-root>-->
-                <video src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/2_fast.mp4"
-                       autoplay
-                       loop
-                       muted
-                       fxFlex="100"
+                <video
+                  src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/2_fast.mp4"
+                  autoplay
+                  loop
+                  muted
+                  fxFlex="100"
                 ></video>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-  
+
           <mat-divider inset="true"></mat-divider>
-  
-          <lib-hero-header class="gradientCard"
-                           [title]="'Manage racks ('+(statistics$|async)[1]+')'"
-                           description="Plan the next expansion, so you know how much pasta to buy until the next paycheck"
+
+          <lib-hero-header
+            class="gradientCard"
+            [title]="'Manage racks (' + (statistics$ | async)[1] + ')'"
+            description="'Manage your racks efficiently. Plan your next expansion knowing exactly what you need. Current count: '+(statistics$|async)[1]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
                 <!--                <app-rack-browser-rack-detail-view-root class="embedded"-->
                 <!--                                                        [ignoreSeo]="true"-->
                 <!--                ></app-rack-browser-rack-detail-view-root>-->
-                <video src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/1_fast.mp4"
-                       autoplay
-                       loop
-                       muted
-                       fxFlex="100"
+                <video
+                  src="https://sozmatmywjpstwidzlss.supabase.in/storage/v1/object/public/home-resources/1_fast.mp4"
+                  autoplay
+                  loop
+                  muted
+                  fxFlex="100"
                 ></video>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-  
-  
-          <lib-hero-header class="gradientCard"
-                           title="Wanna try?"
-                           description="We have Maths. HAHA get more VCAs! I mean what else do you want. "
+
+          <lib-hero-header
+            class="gradientCard"
+            title="Wanna try?"
+            description="'Ready to get started? We have Maths. And yes, more VCAs! What else could you possibly need?'"
           >
             <lib-screen-wrapper>
-              <div fxFlex="100"
-                   fxLayout="column"
-                   fxLayoutGap="1rem"
-              >
-                <div fxFlex="100"
-                     fxLayout="row wrap"
-                     fxLayoutGap="1rem"
-                     fxLayoutAlign="start center"
+              <div fxFlex="100" fxLayout="column" fxLayoutGap="1rem">
+                <div
+                  fxFlex="100"
+                  fxLayout="row wrap"
+                  fxLayoutGap="1rem"
+                  fxLayoutAlign="start center"
                 >
-                  <app-brand-primary-button routerLink="/auth/signup">Create an account
+                  <app-brand-primary-button routerLink="/auth/signup"
+                    >Create an account
                   </app-brand-primary-button>
-                  <app-brand-primary-button routerLink="/auth/login">Login
+                  <app-brand-primary-button routerLink="/auth/login"
+                    >Login
                   </app-brand-primary-button>
                 </div>
               </div>
@@ -134,8 +131,6 @@
         </div>
       </div>
     </ng-container>
-
-
   </div>
   <!--  <app-lottie-container fxLayoutAlign="center center"-->
   <!--                        [options]="{path: '/assets/json/animation.json'}"-->
