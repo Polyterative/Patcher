@@ -72,17 +72,17 @@ export class HomeComponent extends SubManager implements OnDestroy {
 }
   
   constructor(
-    // readonly patchDetailDataService: PatchDetailDataService,
-    // readonly rackDetailDataService: RackDetailDataService,
-    // readonly moduleDetailDataService: ModuleDetailDataService,
-    readonly supabaseService: SupabaseService,
-    private readonly router: Router,
-    readonly seoService: SeoAndUtilsService
-  ) {
-    super();
-    // this.patchDetailDataService.updateSinglePatchData$.next(5);
-    // this.rackDetailDataService.updateSingleRackData$.next(7);
-    // this.moduleDetailDataService.updateSingleModuleData$.next(1025);
+      readonly patchDetailDataService: PatchDetailDataService,
+      readonly rackDetailDataService: RackDetailDataService,
+      readonly moduleDetailDataService: ModuleDetailDataService,
+      readonly supabaseService: SupabaseService,
+      private readonly router: Router,
+      readonly seoService: SeoAndUtilsService
+    ) {
+      super();
+      this.patchDetailDataService.updateSinglePatchData$.next(5);
+      this.rackDetailDataService.updateSingleRackData$.next(7);
+      this.moduleDetailDataService.updateSingleModuleData$.next(1025);
   
     this.supabaseService.getStatistics()
         .pipe(
