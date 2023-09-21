@@ -8,7 +8,7 @@
         fxLayoutAlign="center center"
         [fxHide.xs]="true"
       >
-        {{ service.state.title | async }}
+        {{ toolbarService.state.title | async }}
       </a>
       <!--      <app-brand-logo></app-brand-logo>-->
       <div fxFlex="grow" [fxHide.xs]="true"></div>
@@ -18,12 +18,12 @@
         ></app-route-clickable-link-list>
         <mat-divider vertical="true"></mat-divider>
         <app-route-clickable-link-list
-          [data$]="mainLinks$"
+          [data$]="toolbarLinks$"
         ></app-route-clickable-link-list>
       </div>
       <div fxFlex="grow"></div>
       <app-route-clickable-link-list
-        [data$]="(userService.loggedUser$ | async) ? linksUser$ : linksA$"
+        [data$]="(authService.currentUser$ | async) ? userLinks$ : anonymousLinks$"
       ></app-route-clickable-link-list>
       <a
         mat-button
