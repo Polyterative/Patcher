@@ -57,20 +57,7 @@ let URLReg = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';
   providers:       [
     FileDragHostService
   ],
-  animations:      [
-    // fadeInExpandOnEnterAnimation(
-    //   {
-    //     duration: 250,
-    //     anchor:   'enter'
-    //   }
-    // ),
-    // fadeOutCollapseOnLeaveAnimation(
-    //   {
-    //     duration: 250,
-    //     anchor:   'exit'
-    //   }
-    // )
-  ],
+  animations:      [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleEditorComponent implements OnInit, OnDestroy {
@@ -135,11 +122,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         value: 4,
         id:    '1'
       }
-      // {
-      //   name:  'Silver',
-      //   value: 4,
-      //   id:    '1'
-      // }
     ]),
     flex:     'auto'
   };
