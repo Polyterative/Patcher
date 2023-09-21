@@ -22,10 +22,14 @@ describe('ModuleBrowserAdderComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should have addModule method and modules array', () => {
+    expect(component.addModule).toBeDefined();
+    expect(component.modules).toBeDefined();
+  });
+  
   it('should add a new module', () => {
-    // Assuming addModule is a method in the component that adds a new module
+    const initialModulesLength = component.modules.length;
     component.addModule();
-    // Assuming modules is an array in the component that holds the modules
-    expect(component.modules.length).toBeGreaterThan(0);
+    expect(component.modules.length).toBe(initialModulesLength + 1);
   });
 });
