@@ -14,4 +14,6 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Change working directory
+        run: cd ${{ github.workspace }}
       - run: npm test
