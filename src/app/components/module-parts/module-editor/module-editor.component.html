@@ -1,134 +1,127 @@
 <lib-clean-card>
-  <div class="col gap1"
-  >
+  <div class="col gap1">
     <div class="col gap1">
-      <div class="col gap1"
-      >
-        <div class="auto col gap1"
-        >
-          <div fxLayout="row"
-               fxLayoutGap="1rem"
-               fxLayoutAlign="space-between"
-          >
-            <mat-card-title>INs</mat-card-title>
-            <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
+      <div class="col gap1">
+        <div class="auto col gap1">
+          <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="space-between">
+            <mat-card-title>Input Fields</mat-card-title>
+            <mat-card-subtitle
+              >Leave fields blank if information is not
+              available</mat-card-subtitle
+            >
           </div>
-          <div class="col gap1 leftBorderS"
-          >
-            <ng-container *ngFor="let item of INs$|async; let i = index">
-              <app-module-editor-cv-form-line [item]="item"
-                                              (removeRequest$)="removeIN$.next(i)"
-              ></app-module-editor-cv-form-line>
-          
-            </ng-container>
-        
-          </div>
-          <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
-        </div>
-        <div class="auto col gap1"
-        >
-          <div fxLayout="row"
-               fxLayoutGap="1rem"
-               fxLayoutAlign="space-between"
-          >
-            <mat-card-title>OUTs</mat-card-title>
-            <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
-          </div>
-          <div class="col gap1 leftBorderS"
-          >
-            <ng-container *ngFor="let item of OUTs$|async; let i = index">
-              <app-module-editor-cv-form-line [item]="item"
-                                              (removeRequest$)="removeOUT$.next(i)"
+          <div class="col gap1 leftBorderS">
+            <ng-container *ngFor="let item of INs$ | async; let i = index">
+              <app-module-editor-cv-form-line
+                [item]="item"
+                (removeRequest$)="removeIN$.next(i)"
               ></app-module-editor-cv-form-line>
             </ng-container>
           </div>
-          <app-module-editor-adder-line (add$)="addOUT$.next($event)"
+          <app-module-editor-adder-line
+            (add$)="addIN$.next($event)"
           ></app-module-editor-adder-line>
-      
+        </div>
+        <div class="auto col gap1">
+          <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="space-between">
+            <mat-card-title>Output Fields</mat-card-title>
+            <mat-card-subtitle
+              >Leave fields blank if information is not
+              available</mat-card-subtitle
+            >
+          </div>
+          <div class="col gap1 leftBorderS">
+            <ng-container *ngFor="let item of OUTs$ | async; let i = index">
+              <app-module-editor-cv-form-line
+                [item]="item"
+                (removeRequest$)="removeOUT$.next(i)"
+              ></app-module-editor-cv-form-line>
+            </ng-container>
+          </div>
+          <app-module-editor-adder-line
+            (add$)="addOUT$.next($event)"
+          ></app-module-editor-adder-line>
         </div>
       </div>
-    
-    
+
       <!--    <app-brand-primary-button>Add SWITCH</app-brand-primary-button>-->
       <!--    <ng-container *ngIf="-->
       <!--  ((INs$|async)|onlyNotSavedFormCVsLength)!== 0 ||-->
       <!--  ((OUTs$|async)|onlyNotSavedFormCVsLength) !== 0-->
       <!--"-->
       <!--    >-->
-      <div fxLayout="row"
-           fxLayout.lt-md="column"
-           fxLayoutGap="1rem"
-      >
+      <div fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="1rem">
         <app-advice-tooltip fxFlex="basis"
-        >Update this only if data is incorrect or some is missing.
+          >Update this section only if the data is incorrect or incomplete.
         </app-advice-tooltip>
-        <mat-card-subtitle fxFlex="100"
-                           fxLayoutAlign="end center"
-        >Any changes you make will affect what all other users see
+        <mat-card-subtitle fxFlex="100" fxLayoutAlign="end center"
+          >Any changes you make will be visible to all other users.
         </mat-card-subtitle>
       </div>
       <mat-divider inset="true"></mat-divider>
-      <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
-                                         [updateData$]="save$"
-                                         loadingLabel="Saving data"
+      <lib-auto-update-loading-indicator
+        [data$]="dataService.singleModuleData$"
+        [updateData$]="save$"
+        loadingLabel="Saving data"
       >
-        <app-brand-primary-button (click$)="save$.next()"
-                                  theme="positive"
-                                  fxLayoutAlign="end"
-                                  [disabled]="
-                              (!(formGroupA|formValid))||
-                              (!(formGroupB|formValid))
-"
+        <app-brand-primary-button
+          (click$)="save$.next()"
+          theme="positive"
+          fxLayoutAlign="end"
+          [disabled]="!(formGroupA | formValid) || !(formGroupB | formValid)"
         >
           <mat-icon>save</mat-icon>
-          Save INs and OUTs
+          Save Input and Output Fields
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>
     </div>
     <mat-divider [inset]="true"></mat-divider>
-    <div class="col gap1"
-    >
-      <div fxLayout="row"
-           fxLayoutGap="1rem"
-           fxLayoutAlign="space-between"
-      >
+    <div class="col gap1">
+      <div fxLayout="row" fxLayoutGap="1rem" fxLayoutAlign="space-between">
         <mat-card-title>Panel</mat-card-title>
         <!--        <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>-->
       </div>
-  
-      <div class="row gap1"
-           fxLayoutAlign="center center"
-      >
-        <lib-file-drag-host fxFlex="30rem"
-                            [isImageOnlyMode]="true"
-                            [multipleFilesMode]="false"
-                            acceptedFileType="image/jpeg,image/jpg"
+
+      <div class="row gap1" fxLayoutAlign="center center">
+        <lib-file-drag-host
+          fxFlex="30rem"
+          [isImageOnlyMode]="true"
+          [multipleFilesMode]="false"
+          acceptedFileType="image/jpeg,image/jpg"
         ></lib-file-drag-host>
       </div>
       <div class="row gap1">
-        <lib-mat-form-entity fxFlex="33%"
-                             [dataPack]="panelType"
-                             [disableVoidSelection]="true"
+        <lib-mat-form-entity
+          fxFlex="33%"
+          [dataPack]="panelType"
+          [disableVoidSelection]="true"
         ></lib-mat-form-entity>
-        <lib-mat-form-entity fxFlex="auto"
-                             [dataPack]="panelDescription"
+        <lib-mat-form-entity
+          fxFlex="auto"
+          [dataPack]="panelDescription"
         ></lib-mat-form-entity>
       </div>
       <mat-divider inset="true"></mat-divider>
-      <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
-                                         [updateData$]="savePanels$"
-                                         loadingLabel="Saving data"
+      <lib-auto-update-loading-indicator
+        [data$]="dataService.singleModuleData$"
+        [updateData$]="savePanels$"
+        loadingLabel="Saving data"
       >
-        <app-brand-primary-button (click$)="savePanels$.next()"
-                                  [disabled]="!((formGroupPanel|formValid)||((fileDragHostService.files$|async).length>0))"
-                                  theme="positive"
-                                  fxLayoutAlign="end"
+        <app-brand-primary-button
+          (click$)="savePanels$.next()"
+          [disabled]="
+            !(
+              (formGroupPanel | formValid) ||
+              (fileDragHostService.files$ | async).length > 0
+            )
+          "
+          theme="positive"
+          fxLayoutAlign="end"
         >
           <mat-icon>save</mat-icon>
-          Add panel
+          Add Panel Information
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>
     </div>
   </div>
-
 </lib-clean-card>
