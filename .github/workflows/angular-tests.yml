@@ -2,8 +2,7 @@ name: Angular Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [ '*' ]
 
 permissions:
   contents: read
