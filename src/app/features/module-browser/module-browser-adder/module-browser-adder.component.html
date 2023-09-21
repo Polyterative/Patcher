@@ -29,12 +29,22 @@
                     You will be able to add the panel image file once the module is approved
                   </li>
                 </ul>
-                <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
-                                          (click$)="dataService.submitModuleForm$.next()"
-                                          fxLayoutAlign="end start"
+                <div fxLayout="column"
+                     fxLayout.gt-md="row"
+                     fxLayoutGap="1rem"
                 >
-                  Submit module
-                </app-brand-primary-button>
+                  <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
+                                            (click$)="dataService.submitModuleForm$.next()"
+                                            fxLayoutAlign="end start"
+                  >
+                    Submit module
+                  </app-brand-primary-button>
+                  <a href="https://docs.patcher.xyz/learn-patcher.xyz/modules" 
+                     style="opacity: 0.6; font-size: 0.8em; align-self: center;"
+                  >
+                    Help
+                  </a>
+                </div>
               </div>
               <lib-clean-card class="col gap1">
         
