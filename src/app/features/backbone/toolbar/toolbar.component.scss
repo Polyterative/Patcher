@@ -1,4 +1,4 @@
-﻿@use '@angular/material' as mat;
+﻿@use "@angular/material" as mat;
 @import "../../../app.component";
 @import "~src/app/style/brand-resources.scss";
 
@@ -12,30 +12,33 @@ mat-toolbar-row {
   //padding-left:  2em;
 
   //opacity:           0;
-  $appearTime:       250ms;
-  $color:            rgb(255, 255, 255);
-  color:             $color;
+  $appearTime: 250ms;
+  $color: rgb(255, 255, 255);
+  color: $color;
   //text-decoration: underline;
 
   &:visited {
     color: $color;
     //text-decoration: underline dotted;
-
   }
 
   @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   -webkit-animation: fadein $appearTime; /* Safari, Chrome and Opera > 12.1 */
-  -moz-animation:    fadein $appearTime; /* Firefox < 16 */
-  -o-animation:      fadein $appearTime; /* Opera < 12.1 */
-  animation:         fadein $appearTime;
+  -moz-animation: fadein $appearTime; /* Firefox < 16 */
+  -o-animation: fadein $appearTime; /* Opera < 12.1 */
+  animation: fadein $appearTime;
 
   //padding-x: 0.5em;
 
-  font-size:         1rem;
+  font-size: 1rem;
 }
 
 .titleTextBig {
@@ -43,7 +46,8 @@ mat-toolbar-row {
 }
 
 .titleTextSmall {
-  font-size: 1.5em;
+  font-size: 1.2em;
+  opacity: 0.6;
 }
 
 mat-toolbar-row > .subtitle {
@@ -63,8 +67,8 @@ mat-divider {
 }
 
 .selectedLink {
-  color:            rgba(255, 255, 255, 0.7);
-  background-color: rgba(255, 255, 255, 0.1)
+  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .toolbar {
@@ -76,6 +80,6 @@ mat-divider {
   //background-color: mat.get-color-from-palette($nga-background, card);
   position: sticky;
   position: -webkit-sticky; /* For macOS/iOS Safari */
-  top:      0; /* Sets the sticky toolbar to be on top */
-  z-index:  1000; /* Ensure that your app's content doesn't overlap the toolbar */
+  top: 0; /* Sets the sticky toolbar to be on top */
+  z-index: 1000; /* Ensure that your app's content doesn't overlap the toolbar */
 }
