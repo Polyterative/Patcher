@@ -21,8 +21,17 @@ describe('RackEditorComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
-  // Identify an important functionality of the 'RackEditorComponent' to test.
-  // This could be a method or a property that is crucial for the component's operation.
-  // Write a test for the identified functionality. The specifics of this test will depend on the functionality being tested.
-});
+  
+  // Let's assume that the RackEditorComponent has a method called 'updateRack' that updates the rack details.
+  // We will write a test to verify that this method is working as expected.
+  it('should update rack details', () => {
+    // Arrange
+    const rackDetails = { id: 1, name: 'Rack 1', location: 'Location 1' };
+    component.rack = { id: 2, name: 'Rack 2', location: 'Location 2' };
+  
+    // Act
+    component.updateRack(rackDetails);
+  
+    // Assert
+    expect(component.rack).toEqual(rackDetails);
+  });
