@@ -11,7 +11,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '${{ env.NODE_VERSION }}'
+        node-version: '14.x'
 
     - name: Cache dependencies
       uses: actions/cache@v2
@@ -28,4 +28,4 @@ jobs:
       run: npm run test
 
     - name: Deploy to Vercel
-      run: npx vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
+      run: npx vercel --token ${{ secrets.VERCEL_DEPLOYMENT_TOKEN }} --prod
