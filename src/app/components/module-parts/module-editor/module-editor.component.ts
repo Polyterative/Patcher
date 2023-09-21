@@ -224,7 +224,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       filter(([ins, outs]) => {
         
         if (ins.length === 0 && outs.length === 0) {
-          this.snackBar.open('Nothing to save', null, {
+          this.snackBar.open('No changes detected. Nothing to save.', null, {
             duration: 2000
           });
           this.reload();
@@ -241,7 +241,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         const sameUnapproved: boolean = ins.length === this.data.ins.length && outs.length === this.data.outs.length;
         
         if (sameApproved && sameUnapproved) {
-          this.snackBar.open('All CV\'s are approved. Nothing to save.', null, {
+          this.snackBar.open('All CVs are already approved. No changes to save.', null, {
             duration: 3000
           });
           
@@ -268,7 +268,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
     
-            let message: string = `The community appreciates your effort, thank you for your contribution. Your efforts will be remembered.`;
+            let message: string = `The community appreciates your effort. Thank you for your contribution. Your efforts will be remembered and valued.`;
             this.snackBar.open(message, undefined, {
               duration: 5000
             });
@@ -322,7 +322,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }
       ])),
       catchError(() => {
-          this.snackBar.open('Something went wrong during the upload, please try again');
+          this.snackBar.open('An error occurred during the upload process. Please try again.');
           return of(NEVER);
         }
       ),
@@ -330,7 +330,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     )
         .subscribe(x => {
           // feedback to user
-          this.snackBar.open('✔ Panel added, thanks! Will be available as soon as reviewed and approved.', undefined, {
+          this.snackBar.open('✔ Panel added successfully! It will be available as soon as it is reviewed and approved.', undefined, {
             duration: 10000
           });
       
