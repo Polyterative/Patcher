@@ -3,33 +3,38 @@
 <!--           [clusters]="clusters$|async"-->
 <!--           fxFlex="grow"-->
 <!--&gt;</lib-graph>-->
-<div class="row gap0"
-     fxLayoutAlign="end center"
-     style="position: absolute;background-color: rgba(255,255,255,0.8)!important;z-index: 5;"
+<div
+  class="row gap0"
+  fxLayoutAlign="end center"
+  style="
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    z-index: 5;
+  "
 >
-  
-  <div class="row gap0"
-       *ngFor="let item of legend"
-  >
-    <div class="circle"
-         [style]="{backgroundColor:item.color}"
-    ></div>
-    <div>{{item.label}}</div>
+  <div class="row gap0" *ngFor="let item of legend">
+    <div class="circle" [style]="{ backgroundColor: item.color }"></div>
+    <div>{{ item.label }}</div>
   </div>
 </div>
-<div
->
-  <ng-container *ngIf="nodes$|async as nodes">
-    <ng-container *ngIf="edges$|async as edges">
-      <ng-container *ngIf="patchDetailDataService.patchConnections$|async as patchConnections">
+<div>
+  <ng-container *ngIf="nodes$ | async as nodes">
+    <ng-container *ngIf="edges$ | async as edges">
+      <ng-container
+        *ngIf="
+          patchDetailDataService.patchConnections$ | async as patchConnections
+        "
+      >
         <ng-container *ngIf="patchConnections; else noData">
-          
-          <ng-container *ngIf="nodes.length>0 && edges.length>0;else loading">
-            <lib-graph [nodes]="nodes"
-                       [edges]="edges"
-                       style="height: 53.5rem;width: 100%;"
-                       class="animate-fadein-slowest"
-                       [@enter]
+          <ng-container
+            *ngIf="nodes.length > 0 && edges.length > 0; else loading"
+          >
+            <lib-graph
+              [nodes]="nodes"
+              [edges]="edges"
+              style="height: 53.5rem; width: 100%"
+              class="animate-fadein-slowest"
+              [@enter]
             ></lib-graph>
           </ng-container>
         </ng-container>
@@ -39,22 +44,18 @@
 </div>
 <ng-template #noData>
   <div fxFlex="100">
-    <div class="col gap1 animate-fadein-slowest"
-    >
-      <mat-card-subtitle fxLayoutAlign="center start"
-                         style="padding: 1rem"
-      >No connections in this patch
+    <div class="col gap1 animate-fadein-slowest">
+      <mat-card-subtitle fxLayoutAlign="center start" style="padding: 1rem"
+        >There are no connections in this patch currently.
       </mat-card-subtitle>
     </div>
   </div>
 </ng-template>
 <ng-template #loading>
   <div fxFlex="100">
-    <div class="col gap1 animate-fadein-slowest"
-    >
-      <mat-card-subtitle fxLayoutAlign="center start"
-                         style="padding: 4rem"
-      >Building graph...
+    <div class="col gap1 animate-fadein-slowest">
+      <mat-card-subtitle fxLayoutAlign="center start" style="padding: 4rem"
+        >The graph is currently being built. Please wait...
       </mat-card-subtitle>
     </div>
   </div>
