@@ -1,6 +1,6 @@
 # Patcher
 
-Patcher is a dynamic and robust project designed to provide efficient and reliable patching solutions. It is built with the latest technologies to ensure high performance and scalability. This project was originally generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.3. The current version is Angular 13.
+Patcher is the modern eurorack helper. This project was originally generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.3. The current version is Angular 13.
 
 ## Setting Up the Project Locally
 
