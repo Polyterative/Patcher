@@ -55,26 +55,26 @@ import { SeoAndUtilsService } from '../seo-and-utils.service';
 })
 
 export class HomeComponent extends SubManager implements OnDestroy {
-  iconColor = '#041E50';
+  homeIconColor = '#041E50';
   
   readonly linksData: CardLinkDataModel = {
     ...cleanCardlinkModelObject,
     links: []
   };
   
-  statistics$ = new BehaviorSubject<Array<number | string>>([
-    '...',
-    '...',
-    '...'
+  homeStatistics$ = new BehaviorSubject<Array<number | string>>([
+    'Loading...',
+    'Loading...',
+    'Loading...'
   ]);
   
   constructor(
     // readonly patchDetailDataService: PatchDetailDataService,
     // readonly rackDetailDataService: RackDetailDataService,
     // readonly moduleDetailDataService: ModuleDetailDataService,
-    readonly backend: SupabaseService,
+    readonly supabaseService: SupabaseService,
     private readonly router: Router,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoService: SeoAndUtilsService
   ) {
     super();
     // this.patchDetailDataService.updateSinglePatchData$.next(5);
