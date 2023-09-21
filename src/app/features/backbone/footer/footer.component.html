@@ -1,68 +1,58 @@
 <div class="col gap2">
   <mat-divider inset="true"></mat-divider>
   <div class="col">
-    <div fxLayout="column"
-         class="root"
-    >
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayout.lt-sm="column"
-           fxLayoutGap="1rem"
+    <div fxLayout="column" class="root">
+      <div
+        fxFlex="auto"
+        fxLayout="row wrap"
+        fxLayout.lt-sm="column"
+        fxLayoutGap="1rem"
       >
-        <app-build-info fxFlex="auto"
-                        fxFlex.lt-sm="auto"
-        ></app-build-info>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
-          <app-label-value-showcase label="New in v4.0"
-                                    [bigText]="false"
+        <app-build-info fxFlex="auto" fxFlex.lt-sm="auto"></app-build-info>
+        <div fxFlex="auto" fxFlex.lt-sm="auto">
+          <app-label-value-showcase
+            label="Documentation and Help"
+            [bigText]="false"
           >
+            <a [href]="helpUrl">{{ helpUrl }}</a>
+          </app-label-value-showcase>
+        </div>
+        <div fxFlex="auto" fxFlex.lt-sm="auto">
+          <app-label-value-showcase label="New in v4.0" [bigText]="false">
             <div class="col gap1">
-              <div>
-                • Panel images for modules in details and search
-              </div>
-              <div>
-                • Panel images in rack view
-              </div>
-              <div>
-                • Add modules to rack from below the rack
-              </div>
-              <div>
-                • Submit multiple panels for a module
-              </div>
+              <div>• Panel images for modules in details and search</div>
+              <div>• Panel images in rack view</div>
+              <div>• Add modules to rack from below the rack</div>
+              <div>• Submit multiple panels for a module</div>
             </div>
           </app-label-value-showcase>
         </div>
-        <app-discord-widget fxFlex="auto"
-                            fxFlex.lt-sm="auto"
+        <app-discord-widget
+          fxFlex="auto"
+          fxFlex.lt-sm="auto"
         ></app-discord-widget>
-        <app-feedback-box fxFlex="auto"
-                          fxFlex.lt-sm="auto"
-        ></app-feedback-box>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <app-feedback-box fxFlex="auto" fxFlex.lt-sm="auto"></app-feedback-box>
+        <div fxFlex="auto" fxFlex.lt-sm="auto">
           <app-producthunt-badge></app-producthunt-badge>
         </div>
       </div>
       <mat-divider inset="true"></mat-divider>
-      <div class="row gap1"
-           fxLayout.lt-sm="column"
-      >
-        <app-lottie-container fxLayoutAlign="start end"
-                              fxFlex="100"
-                              class="transparentize-half"
-                              style="max-width: 20rem; margin:-.75rem;"
-                              [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
+      <div class="row gap1" fxLayout.lt-sm="column">
+        <app-lottie-container
+          fxLayoutAlign="start end"
+          fxFlex="100"
+          class="transparentize-half"
+          style="max-width: 20rem; margin: -0.75rem"
+          [options]="{
+            path: '/assets/json/lottie/QR Border Icon.json',
+            loop: true,
+            autoplay: true
+          }"
         ></app-lottie-container>
-        <h3 fxLayoutAlign="end center"
-            fxFlex="grow"
-            class="tagline"
-        >
-          THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
+        <h3 fxLayoutAlign="end center" fxFlex="grow" class="tagline">
+          THE MODERN WAY TO MANAGE EVERYTHING MODULAR
+        </h3>
       </div>
     </div>
-  
   </div>
 </div>
