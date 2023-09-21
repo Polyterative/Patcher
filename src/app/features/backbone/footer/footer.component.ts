@@ -11,6 +11,7 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FooterComponent implements OnInit {
+    helpUrl: string = 'https://docs.patcher.xyz/quick-start/';
     
     constructor() { }
     
