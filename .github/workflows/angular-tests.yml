@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-
+      
       - name: Print environment variables
         run: printenv
 
@@ -32,3 +32,4 @@ jobs:
 
       - name: Run tests
         run: ng test --verbose
+
