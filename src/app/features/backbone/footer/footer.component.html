@@ -4,15 +4,15 @@
     <div fxLayout="column" class="root">
       <div
         fxFlex="auto"
-        fxLayout="row wrap"
+        fxLayout="row"
         fxLayout.lt-sm="column"
         fxLayoutGap="1rem"
       >
         <app-build-info fxFlex="auto" fxFlex.lt-sm="auto"></app-build-info>
         <div fxFlex="auto" fxFlex.lt-sm="auto">
-          <app-label-value-showcase label="Help Section" [bigText]="false">
+          <app-label-value-showcase label="Documentation and help" [bigText]="false">
             <div class="col gap1">
-              <div>• {{ helpUrl }}</div>
+              <a [href]="helpUrl">• {{ helpUrl }}</a>
             </div>
           </app-label-value-showcase>
         </div>
@@ -34,9 +34,9 @@
         <app-producthunt-badge></app-producthunt-badge>
       </div>
       <div fxFlex="auto" fxFlex.lt-sm="auto">
-        <app-label-value-showcase label="Help Section" [bigText]="false">
+        <app-label-value-showcase label="Documentation and help" [bigText]="false">
           <div class="col gap1">
-            <div>• {{ helpUrl }}</div>
+            <a [href]="helpUrl">• {{ helpUrl }}</a>
           </div>
         </app-label-value-showcase>
       </div>
