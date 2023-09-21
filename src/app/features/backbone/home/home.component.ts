@@ -67,6 +67,9 @@ export class HomeComponent extends SubManager implements OnDestroy {
     'Loading...',
     'Loading...'
   ]);
+
+  statistics$ = new BehaviorSubject<any>(null);
+}
   
   constructor(
     // readonly patchDetailDataService: PatchDetailDataService,
@@ -81,7 +84,7 @@ export class HomeComponent extends SubManager implements OnDestroy {
     // this.rackDetailDataService.updateSingleRackData$.next(7);
     // this.moduleDetailDataService.updateSingleModuleData$.next(1025);
   
-    this.backend.get.statistics()
+    this.supabaseService.getStatistics()
         .pipe(
         )
         .subscribe(value => {
