@@ -28,7 +28,11 @@ jobs:
       run: yarn cache clean
 
     - name: Install dependencies
-      run: yarn install
+      uses: nick-invision/retry@v2
+      with:
+        timeout_minutes: 10
+        max_attempts: 3
+        command: yarn install
 
     - name: Run tests
       run: ng test --browsers=ChromeHeadless
