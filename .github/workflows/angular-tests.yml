@@ -1,0 +1,23 @@
+name: Angular Tests and Deploy
+on: push
+permissions: read-all
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npm ci
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run deploy
