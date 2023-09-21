@@ -57,15 +57,15 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   legend = [
     {
-      label: 'Module',
+      label: 'Module Node',
       color: '#8974E4'
     },
     {
-      label: 'CV out',
+      label: 'Control Voltage Output',
       color: '#E2523C'
     },
     {
-      label: 'CV in',
+      label: 'Control Voltage Input',
       color: '#4483F2'
     }
 
@@ -140,7 +140,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   size:  this.sizeConstant * 5,
                   x:     1,
                   y:     1,
-                  label: `${ module.name } ${ jack.name }`
+                  label: `Output of ${ module.name }: ${ jack.name }`
                 }));
       
                 const inNodes: GraphNode[] = module.ins.map(jack => ({
@@ -149,7 +149,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                   size:  this.sizeConstant * 5,
                   x:     1,
                   y:     1,
-                  label: `${ module.name } ${ jack.name }`
+                  label: `Input of ${ module.name }: ${ jack.name }`
                 }));
       
                 inNodes.forEach(edge => insModuleJackNodes[edge.id] = edge);
@@ -215,7 +215,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
                 size:  this.sizeConstant * 2,
                 x:     1,
                 y:     1,
-                label: `${ patch.notes }`
+                label: `Connection Notes: ${ patch.notes }`
               }));
     
               const onlyUsedModuleJacksEdges: GraphEdge[] = Object.values(allModuleJackEdges)
@@ -247,8 +247,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   private buildNode(nodeId: string, CV: CVwithModule, color: string): GraphNode {
     return {
       id: nodeId,
-      // label: `${ CV.name }  (${ CV.module.name })`,
-      label: `${ CV.name }`,
+      label: `Control Voltage: ${ CV.name }`,
       color,
       size:  this.sizeConstant * 4,
       x:     1,
