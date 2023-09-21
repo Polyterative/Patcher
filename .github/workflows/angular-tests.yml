@@ -1,38 +1,19 @@
 name: Angular Tests
 on: [push]
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14.x'
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
     
-    - name: Install Angular CLI
-      run: npm install -g @angular/cli
-
-    - name: Cache dependencies
-      uses: actions/cache@v2
+    - name: test action
+      uses: colbyhill21/angular-full-ci/@v1.0
       with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
-
-    - name: Clear Yarn Cache
-      run: yarn cache clean
-
-    - name: Install dependencies
-      uses: nick-invision/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 3
-        command: yarn install
-
-    - name: Run tests
-      run: ng test --browsers=ChromeHeadless
+        testcommand: run test:ci
