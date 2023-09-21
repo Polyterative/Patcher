@@ -24,6 +24,9 @@ export class ToolbarComponent extends SubManager {
       icon:     'home',
       disabled: false
     },
+  ]);
+
+  public helpDocumentationUrl: string;
     {
       label:      'Help',
       href:       'https://docs.patcher.xyz/quick-start/',
@@ -110,6 +113,23 @@ export class ToolbarComponent extends SubManager {
           })
     );
   
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        switch (event.urlAfterRedirects) {
+          case '/modules/browser':
+            this.helpDocumentationUrl = 'https://docs.patcher.xyz/modules/';
+            break;
+          case '/racks/browser':
+            this.helpDocumentationUrl = 'https://docs.patcher.xyz/racks/';
+            break;
+          case '/patches/browser':
+            this.helpDocumentationUrl = 'https://docs.patcher.xyz/patches/';
+            break;
+          default:
+            this.helpDocumentationUrl = 'https://docs.patcher.xyz/';
+        }
+      }
+    });
   }
   
 }
