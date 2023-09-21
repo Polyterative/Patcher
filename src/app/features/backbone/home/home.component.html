@@ -42,7 +42,7 @@
           <lib-hero-header
             class="gradientCard"
             [title]="'Share patches (' + (statistics$ | async)[2] + ')'"
-            description="'Easily share your patches. Current count: '+(statistics$|async)[2]"
+            description="'Easily share your patches. Current count: ' + (statistics$|async)[2]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -64,7 +64,7 @@
           <lib-hero-header
             class="gradientCard"
             [title]="'Find modules (' + (statistics$ | async)[0] + ')'"
-            description="'Looking for eurorack modules? Find everything you need here. Current count: '+(statistics$|async)[0]"
+            description="'Looking for eurorack modules? Find everything you need here. Current count: ' + (statistics$|async)[0]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -87,7 +87,7 @@
           <lib-hero-header
             class="gradientCard"
             [title]="'Manage racks (' + (statistics$ | async)[1] + ')'"
-            description="'Manage your racks efficiently. Plan your next expansion knowing exactly what you need. Current count: '+(statistics$|async)[1]"
+            description="'Manage your racks efficiently. Plan your next expansion knowing exactly what you need. Current count: ' + (statistics$|async)[1]"
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
