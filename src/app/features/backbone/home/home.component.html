@@ -30,19 +30,7 @@
             Manage racks super fast, all in one place ↩
           </p>
         </div>
-        <div
-          fxFlex="100"
-          fxLayout="row wrap"
-          fxLayoutGap="1rem"
-          fxLayoutAlign="start center"
-        >
-          <app-brand-primary-button routerLink="/auth/signup"
-            >Create an account
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login"
-            >Login
-          </app-brand-primary-button>
-        </div>
+        <!-- Removed login and create account buttons -->
       </div>
       <mat-divider inset="true"></mat-divider>
     </div>
@@ -52,6 +40,20 @@
         style="border-left: 1px solid #ccc; border-right: 1px solid #ccc"
       >
         <div class="col gap1">
+          <!-- Added login and create account buttons -->
+          <div
+            fxFlex="100"
+            fxLayout="row wrap"
+            fxLayoutGap="1rem"
+            fxLayoutAlign="start center"
+          >
+            <app-brand-primary-button routerLink="/auth/signup"
+              >Create an account
+            </app-brand-primary-button>
+            <app-brand-primary-button routerLink="/auth/login"
+              >Login
+            </app-brand-primary-button>
+          </div>
           <lib-hero-header
             class="gradientCard"
             [title]="'Share patches (' + (statistics$ | async)[2] + ')'"
