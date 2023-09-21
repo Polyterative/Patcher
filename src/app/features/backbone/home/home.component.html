@@ -48,7 +48,7 @@
         <div class="col gap1"
         >
           <lib-hero-header class="gradientCard"
-                           [title]="'Share patches ('+(statistics$|async)[2]+')'"
+                           [title]="'Share patches ('+(homeStatistics$|async)[2]+')'"
                            description="I hated writing stuff out by hand! Now I literally only click the mouse and stuff happens."
           >
             <lib-screen-wrapper maxSize="75rem">
@@ -69,7 +69,7 @@
           ></mat-divider>
   
           <lib-hero-header class="gradientCard"
-                           [title]="'Find modules ('+(statistics$|async)[0]+')'"
+                           [title]="'Find modules ('+(homeStatistics$|async)[0]+')'"
                            description="Eurocrack addict? Here you can find all the stuff you need."
           >
             <lib-screen-wrapper maxSize="75rem">
@@ -90,7 +90,7 @@
           <mat-divider inset="true"></mat-divider>
   
           <lib-hero-header class="gradientCard"
-                           [title]="'Manage racks ('+(statistics$|async)[1]+')'"
+                           [title]="'Manage racks ('+(homeStatistics$|async)[1]+')'"
                            description="Plan the next expansion, so you know how much pasta to buy until the next paycheck"
           >
             <lib-screen-wrapper maxSize="75rem">
