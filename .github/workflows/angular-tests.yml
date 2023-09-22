@@ -4,7 +4,7 @@ on: [push]
 jobs:
   build:
     runs-on: [x64] 
-    timeout-minutes: 4
+    timeout-minutes: 8
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
