@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: [self-hosted, Windows, ubuntu] 
+    runs-on: [x64] 
     timeout-minutes: 4
     steps:
       - name: Checkout code
