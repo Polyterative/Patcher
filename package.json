@@ -15,7 +15,7 @@
     "release:minor": "standard-version  --release-as minor --commit-all  && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major --commit-all  && git push --follow-tags origin production",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
-    "test": "ng test --browsers=ChromeHeadlessNoSandbox",
+    "test": "ng test --browsers=ChromeHeadless",
     "test-headless": "ng test --browsers=ChromeHeadless --watch=false",
     "lint": "ng lint",
     "e2e": "ng e2e"
