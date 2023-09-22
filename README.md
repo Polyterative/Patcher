@@ -17,14 +17,6 @@ The `develop` branch is where the code gets advanced. The `production` branch ge
 
 To use the project's features, navigate to the appropriate section of the interface and follow the prompts. If you encounter any issues, refer to the documentation or raise an issue on Github.
 
-## DB Model
-
-The database model for the project is as follows:
-
-![image](https://user-images.githubusercontent.com/16295552/155419090-3e3a0cd6-77b9-4d3b-91be-d525ef43dd03.png) 2. Clone the forked repository to your local machine. 3. Create a new branch for your changes. Name it something descriptive. 4. Make your changes in this branch. 5. Push your changes to your forked repository. 6. Create a pull request from your forked repository to the original repository.
-
-**ATTENTION:** Be aware that currently there is no DEV environment. Any change made with the dev code running is working directly with the production database!!! Be sure on what API calls you make.
-
 ## Project Dependencies
 
 The project uses the following tools and libraries:
