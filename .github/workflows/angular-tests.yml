@@ -35,5 +35,10 @@ jobs:
         max_attempts: 3
         command: yarn install
 
+    - name: Install Puppeteer
+      run: npm install puppeteer
+
     - name: Run tests
       run: npm run test
+      env:
+        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
