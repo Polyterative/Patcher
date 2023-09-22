@@ -289,10 +289,6 @@ export class ModuleAdderDataService {
             });
         });
   
-  alwaysTrue(): boolean {
-    return true;
-  }
-
   }
   
 }
