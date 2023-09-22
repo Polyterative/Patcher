@@ -6,39 +6,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14.x'
-    
-    - name: Install Angular CLI
-      run: npm install -g @angular/cli
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
 
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
+      - name: Install Angular CLI
+        run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
-    - name: Clear Yarn Cache
-      run: yarn cache clean
+      - name: Cache Yarn dependencies # Change from npm to Yarn caching
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }} # Update the key for Yarn
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
-    - name: Install dependencies
-      uses: nick-invision/retry@v2
-      with:
-        timeout_minutes: 10
-        max_attempts: 3
-        command: yarn install
+      - name: Clear Yarn Cache
+        run: yarn cache clean
 
-    - name: Install Puppeteer
-      run: npm install puppeteer
+      - name: Install dependencies
+        run: yarn install # Use Yarn to install dependencies
 
-    - name: Run tests
-      run: npm run test
-      env:
-        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+      - name: Run tests
+        run: yarn test-headless # Use Yarn to run tests

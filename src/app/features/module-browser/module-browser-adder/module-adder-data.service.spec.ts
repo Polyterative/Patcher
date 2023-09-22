@@ -1,8 +1,9 @@
-import { TestBed } from '@angular/core/testing';
 
 describe('trueTest', () => {
   
   it('should always return true', () => {
-    expect(true).toBeTrue();
+    let test = true;
+    expect(test)
+      .toBeTrue();
   });
 });
