@@ -1,0 +1,4 @@
+# .gitignore
+
+# Exclude the package-lock.json file
+package-lock.json
