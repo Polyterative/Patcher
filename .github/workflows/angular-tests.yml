@@ -3,8 +3,8 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 4
+    runs-on: [x64] 
+    timeout-minutes: 8
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -12,7 +12,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: "16.x"
 
       - name: Install Angular CLI
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
