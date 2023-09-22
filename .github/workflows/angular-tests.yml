@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ${{ runner.os == 'Windows' ? 'custom-runner' : 'windows-latest' }}
+    runs-on: [self-hosted, ubuntu-latest] 
     timeout-minutes: 4
     steps:
       - name: Checkout code
