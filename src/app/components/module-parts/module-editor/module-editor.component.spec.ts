@@ -18,7 +18,7 @@ describe('ModuleEditorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should do something', () => {
+  it('should accurately test the important functionality of the component', () => {
     // Write your test case here
   });
 });
