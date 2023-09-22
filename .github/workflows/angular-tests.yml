@@ -36,4 +36,4 @@ jobs:
         command: yarn install
 
     - name: Run tests
-      run: ng test --browsers=ChromeHeadless
+      run: npm run test
