@@ -8,7 +8,7 @@ To set up the project locally, follow the steps below:
 
 1. Clone the repository to your local machine using `git clone <repository_url>`.
 2. Navigate to the project directory using `cd Patcher`.
-3. Install the necessary dependencies using `npm install`.
+3. Install the necessary dependencies using `yarn install`. **Note:** We use Yarn as our package manager. Please do not generate a `package-lock.json` file.
 4. Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Using the Project
