@@ -13,6 +13,8 @@ To set up the project locally, follow the steps below:
 
 ## Using the Project
 
+[![Angular Tests](https://img.shields.io/badge/tests-Angular-brightgreen)](https://github.com/angular/angular-cli)
+
 The `develop` branch is where the code gets advanced. The `production` branch gets directly uploaded via automated tools. Be aware of this when navigating the project.
 
 To use the project's features, navigate to the appropriate section of the interface and follow the prompts. If you encounter any issues, refer to the documentation or raise an issue on Github.
