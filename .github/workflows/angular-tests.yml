@@ -4,10 +4,10 @@ on: [push]
 jobs:
   build:
     runs-on: [ubuntu-latest, x64]
-        timeout-minutes: 8
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v2
+    timeout-minutes: 8
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
