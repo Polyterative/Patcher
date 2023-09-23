@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: [x64] 
+    runs-on: [x64]
     timeout-minutes: 8
     steps:
       - name: Checkout code
