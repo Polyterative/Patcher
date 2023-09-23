@@ -3,11 +3,11 @@ on: [push]
 
 jobs:
   build:
-    runs-on: [x64]
-    timeout-minutes: 8
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    runs-on: ubuntu-latest
+        timeout-minutes: 8
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
