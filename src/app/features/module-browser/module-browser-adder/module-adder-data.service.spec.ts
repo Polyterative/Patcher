@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute } from '@angular/router';
 
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { SupabaseService } from '../../backend/supabase.service';
@@ -10,7 +11,7 @@ describe('ModuleAdderDataService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ModuleAdderDataService, SupabaseService]
+      providers: [ModuleAdderDataService, SupabaseService, ActivatedRoute]
     });
     service = TestBed.inject(ModuleAdderDataService);
   });
