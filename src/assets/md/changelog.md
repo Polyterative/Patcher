@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.7.3](https://github.com/Polyterative/Patcher/compare/v3.7.2...v3.7.3) (2023-09-26)
+
+
+### Features
+
+* Add GitHub issue template for Sweep issues ([#8](https://github.com/Polyterative/Patcher/issues/8)) ([6a93cbb](https://github.com/Polyterative/Patcher/commit/6a93cbb9b85085f4dd79632ec84bfc015e05899b))
+* **dependencies:** migrated to angular 14 / material 14 + updated dependencies ([2bf3d69](https://github.com/Polyterative/Patcher/commit/2bf3d697419f485e4a849dd5b55e0cdbc780ae82))
+* Exclude package-lock.json from tracked files ([#56](https://github.com/Polyterative/Patcher/issues/56)) ([470b988](https://github.com/Polyterative/Patcher/commit/470b98827fbc4114a7f0de4a4ff65e0aeb03c041))
+* **footer:** added app changes ([ee5c7fb](https://github.com/Polyterative/Patcher/commit/ee5c7fbc8a78a8b37076ceb2ea8a1b8d69739982))
+* **module:** better animations ([fc1b1b9](https://github.com/Polyterative/Patcher/commit/fc1b1b904c5bbf1ccb4a26f75b24538d3daf7616))
+* **module:** better related modules links ([22fa018](https://github.com/Polyterative/Patcher/commit/22fa018c7d548ef9770d702b0f1a3419873bf549))
+* **module:** minor improvement ([39beba5](https://github.com/Polyterative/Patcher/commit/39beba5d16b5c79f4299d7b5ea91bb1b615c4b74))
+* **module:** related modules by same manufacturer list in UI ([cad49e9](https://github.com/Polyterative/Patcher/commit/cad49e9d27c0ec006fa6e41903c6a31e98a26926))
+* **modules:** module panel image preview ([a60a86f](https://github.com/Polyterative/Patcher/commit/a60a86ff16f1cf2f465c64d409b4dcd437cc0fdd))
+* **modules:** module panel image preview ([e22f760](https://github.com/Polyterative/Patcher/commit/e22f760de3d0add3fde1f62089c26023415628cb))
+* **module:** smoother details loading ([ef52e6b](https://github.com/Polyterative/Patcher/commit/ef52e6b49dfecee84f35804a7eb26af2ddab8900))
+* **module:** smoother loading ([814086d](https://github.com/Polyterative/Patcher/commit/814086da7814a15869df3fc627d4b3fed9f2704e))
+* **modules:** smoother appear animations ([e82b574](https://github.com/Polyterative/Patcher/commit/e82b5744036e2492e9a816ebe5a96449658d97e6))
+* **module:** working related modules links ([b8082cc](https://github.com/Polyterative/Patcher/commit/b8082ccdb180d02f133bbe1f53e3aea4579715b2))
+* **panels:** api calls improvements ([eaa0d9e](https://github.com/Polyterative/Patcher/commit/eaa0d9ead0f70f1c661842652c4cd5479d308612))
+* **panels:** better feedback message ([16797d1](https://github.com/Polyterative/Patcher/commit/16797d1d3bd133c19db25d87f7b89ca78d3c9f4b))
+* **panels:** images click now opens module detail ([a10fccc](https://github.com/Polyterative/Patcher/commit/a10fccc80c3bc4d008290d05e188cb93dc8e7fdf))
+* **panels:** module panel description in DB ([b9a94d6](https://github.com/Polyterative/Patcher/commit/b9a94d69ea29df8fac03a2ddb527695be2c2951f))
+* **panels:** module panel image upload ([96201cc](https://github.com/Polyterative/Patcher/commit/96201cc1d8ee6949bc2f379535973e986077a215))
+* **patch:** better UI ([ce33b38](https://github.com/Polyterative/Patcher/commit/ce33b38b31dfafd49a9b0f5649e6d8011efe1cc2))
+* **rack:** cleaner reloading ([161a9b6](https://github.com/Polyterative/Patcher/commit/161a9b6593c63c2b3f4e78bffc87c8419c08f976))
+* **rack:** modules picker below rack editor ([a80b2f1](https://github.com/Polyterative/Patcher/commit/a80b2f1f62413e4a241f2a18e94f83a6840358b6))
+* **rack:** panel images in rack ([f798416](https://github.com/Polyterative/Patcher/commit/f7984164a826050cde88a8fa64961f58c8ecbac5))
+* **style:** less horizontal padding in app root ([bac4750](https://github.com/Polyterative/Patcher/commit/bac47501971fe999534dca150b085eb9ed2710af))
+* **system:** cleanup ([426871c](https://github.com/Polyterative/Patcher/commit/426871cee305c4a7a985c066f3e139c4c0ca7a70))
+* **system:** libs update ([83995f2](https://github.com/Polyterative/Patcher/commit/83995f2cdecbe25258fcebbfe86e5d4dc859bb1f))
+* **ui:** browsers now full width ([fd637bb](https://github.com/Polyterative/Patcher/commit/fd637bb8ed5b3d88923d39773baf5f36e35dc008))
+* Updated README.md ([#41](https://github.com/Polyterative/Patcher/issues/41)) ([a559ed4](https://github.com/Polyterative/Patcher/commit/a559ed4c0236b12fda5f6d5159a694da4e71135e))
+
+
+### Bug Fixes
+
+* **app:** now using Yarn ([4dd0475](https://github.com/Polyterative/Patcher/commit/4dd04755873ae42d78b1211a3be86d7d7221f911))
+* **app:** removed unused firebase references ([5cb44b5](https://github.com/Polyterative/Patcher/commit/5cb44b5a590afd8bca074e443d31c2bf3e131dc8))
+* **changelog page:** initial work ([5b68653](https://github.com/Polyterative/Patcher/commit/5b68653bbf142b32172693d916894c05b883cad7))
+* **libs:** completely removed anything related to firebase ([1ee8223](https://github.com/Polyterative/Patcher/commit/1ee8223c31d506655700cebe2fb90feb29332df3))
+* **libs:** mat form entity chips disabling ([ac75201](https://github.com/Polyterative/Patcher/commit/ac75201e0243680a85333e60d924de6674956a71))
+* **libs:** updated version ([3a3aa35](https://github.com/Polyterative/Patcher/commit/3a3aa35f8990c9ea1943a919e292f0cd9f425e45))
+* **libs:** updated versions ([f4a2713](https://github.com/Polyterative/Patcher/commit/f4a2713fbc09e60e25333b409ef6c60759c128d2))
+* **panels:** filtering of approved in call ([54fe6fd](https://github.com/Polyterative/Patcher/commit/54fe6fd4d7a0fc294852b473998bee198a1c96bc))
+* **supabase:** fixed call involving foreign table in view ([cef611d](https://github.com/Polyterative/Patcher/commit/cef611db12fd33a371adbd34ed1c7db8e29749df))
+
 ### [3.7.2](https://github.com/Polyterative/Patcher/compare/v3.7.1...v3.7.2) (2022-02-05)
 
 
