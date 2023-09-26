@@ -33,3 +33,9 @@ jobs:
 
       - name: Run tests
         run: yarn test-headless # Use Yarn to run tests
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
