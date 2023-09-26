@@ -24,6 +24,12 @@ describe('HomeComponent', () => {
   });
 
   it('should display the homepage correctly', () => {
-    // Add test logic here to check if the homepage is displayed correctly
+    // Access necessary elements in the component's HTML template
+    const homepageElement = fixture.nativeElement.querySelector('.homepage');
+    const titleElement = fixture.nativeElement.querySelector('.title');
+  
+    // Assert presence or values of elements
+    expect(homepageElement).toBeTruthy();
+    expect(titleElement.textContent).toEqual('Welcome to the Homepage');
   });
 });
