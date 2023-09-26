@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "4.0.1",
+  "version": "3.7.3",
   "scripts": {
     "start": "angular-build-info && ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -15,7 +15,8 @@
     "release:minor": "standard-version  --release-as minor --commit-all  && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major --commit-all  && git push --follow-tags origin production",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
-    "test": "ng test",
+    "test": "ng test --browsers=ChromeHeadless",
+    "test-headless": "ng test --browsers=ChromeHeadless --watch=false",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
@@ -46,6 +47,7 @@
     "angular-animations": "^0.11.0",
     "angular-html-parser": "^1.8.0",
     "core-js": "^3.23.3",
+    "eslint": "^8.19.0",
     "graphology": "^0.24.1",
     "graphology-generators": "^0.11.2",
     "graphology-layout": "^0.5.0",
@@ -65,7 +67,6 @@
     "rxjs": "^7.5.5",
     "sigma": "^2.2.0",
     "tslib": "^2.3.1",
-    "eslint": "^8.19.0",
     "zone.js": "~0.11.6"
   },
   "devDependencies": {
