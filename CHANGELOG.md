@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.2](https://github.com/Polyterative/Patcher/compare/v4.0.1...v4.0.2) (2023-09-28)
+
+
+### Features
+
+* Add GitHub issue template for Sweep issues ([#8](https://github.com/Polyterative/Patcher/issues/8)) ([6a93cbb](https://github.com/Polyterative/Patcher/commit/6a93cbb9b85085f4dd79632ec84bfc015e05899b))
+* Exclude package-lock.json from tracked files ([#56](https://github.com/Polyterative/Patcher/issues/56)) ([470b988](https://github.com/Polyterative/Patcher/commit/470b98827fbc4114a7f0de4a4ff65e0aeb03c041))
+* **system:** cleanup ([426871c](https://github.com/Polyterative/Patcher/commit/426871cee305c4a7a985c066f3e139c4c0ca7a70))
+* **system:** libs update ([83995f2](https://github.com/Polyterative/Patcher/commit/83995f2cdecbe25258fcebbfe86e5d4dc859bb1f))
+* Updated README.md ([#41](https://github.com/Polyterative/Patcher/issues/41)) ([a559ed4](https://github.com/Polyterative/Patcher/commit/a559ed4c0236b12fda5f6d5159a694da4e71135e))
+
 ### [4.0.1](https://github.com/Polyterative/Patcher/compare/v4.0.0...v4.0.1) (2022-07-08)
 
 
