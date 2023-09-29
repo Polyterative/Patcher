@@ -9,15 +9,46 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let mockSupabaseService;
 
-  beforeEach(async () => {
-    mockSupabaseService = { get: { statistics: () => of([]) } };
+  import { TestBed, ComponentFixture } from '@angular/core/testing';
+  import { HomeComponent } from './home.component';
+  import { By } from '@angular/platform-browser';
+  import { SupabaseService } from '../../backend/supabase.service';
+  import { of } from 'rxjs';
+  import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+  import { MatDividerModule } from '@angular/material/divider';
+  import { HeroHeaderModule } from '../../../shared-interproject/components/@visual/hero-header/hero-header.module';
+  import { DeviceFrameWrapperModule } from '../../../shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
+  import { BrandPrimaryButtonModule } from '../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
   
-    await TestBed.configureTestingModule({
-      declarations: [HomeComponent],
-      providers: [
-        { provide: SupabaseService, useValue: mockSupabaseService }
-      ]
-    }).compileComponents();
+  describe('HomeComponent', () => {
+    let component: HomeComponent;
+    let fixture: ComponentFixture<HomeComponent>;
+    let mockSupabaseService;
+  
+    beforeEach(async () => {
+      mockSupabaseService = { get: { statistics: () => of([]) } };
+    
+      await TestBed.configureTestingModule({
+        declarations: [HomeComponent],
+        imports: [
+          ScreenWrapperModule,
+          MatDividerModule,
+          HeroHeaderModule,
+          DeviceFrameWrapperModule,
+          BrandPrimaryButtonModule
+        ],
+        providers: [
+          { provide: SupabaseService, useValue: mockSupabaseService }
+        ]
+      }).compileComponents();
+    });
+  
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+    });
+    
+    // ... rest of the code
   });
 
   beforeEach(() => {
