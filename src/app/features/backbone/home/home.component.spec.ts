@@ -9,8 +9,8 @@ describe('HomeComponent', () => {
   let mockSupabaseService;
 
   beforeEach(async () => {
-    mockSupabaseService = jasmine.createSpyObj(['get']);
-
+    mockSupabaseService = { get: { statistics: () => of([]) } };
+  
     await TestBed.configureTestingModule({
       declarations: [HomeComponent],
       providers: [
@@ -22,11 +22,11 @@ describe('HomeComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
-
+  
   it('should create the HomeComponent', () => {
     expect(component).toBeTruthy();
+    fixture.detectChanges();
   });
 
   it('should display the correct title', () => {
