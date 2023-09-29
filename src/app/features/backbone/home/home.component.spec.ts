@@ -15,36 +15,32 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
   let mockSupabaseService;
 
-  describe('HomeComponent', () => {
-    let component: HomeComponent;
-    let fixture: ComponentFixture<HomeComponent>;
-    let mockSupabaseService;
+  beforeEach(async () => {
+    mockSupabaseService = jasmine.createSpyObj('SupabaseService', ['get']);
   
-    beforeEach(async () => {
-      mockSupabaseService = { get: { statistics: () => of([]) } };
-    
-      await TestBed.configureTestingModule({
-        declarations: [HomeComponent],
-        imports: [
-          ScreenWrapperModule,
-          MatDividerModule,
-          HeroHeaderModule,
-          DeviceFrameWrapperModule,
-          BrandPrimaryButtonModule
-        ],
-        providers: [
-          { provide: SupabaseService, useValue: mockSupabaseService }
-        ]
-      }).compileComponents();
-    });
-  
-    beforeEach(() => {
-      fixture = TestBed.createComponent(HomeComponent);
-      component = fixture.componentInstance;
-    });
-    
-    // ... rest of the code
+    await TestBed.configureTestingModule({
+      declarations: [HomeComponent],
+      imports: [
+        ScreenWrapperModule,
+        MatDividerModule,
+        HeroHeaderModule,
+        DeviceFrameWrapperModule,
+        BrandPrimaryButtonModule
+      ],
+      providers: [
+        { provide: SupabaseService, useValue: mockSupabaseService }
+      ]
+    }).compileComponents();
   });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(HomeComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+  
+  // ... rest of the code
+});
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HomeComponent);
