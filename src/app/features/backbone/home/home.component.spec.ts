@@ -10,37 +10,38 @@ import { HomeComponent } from './home.component';
 import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { SupabaseService } from '../../backend/supabase.service';
   
-describe('HomeComponent', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
-  let mockSupabaseService;
+""
 
-  beforeEach(async () => {
-    mockSupabaseService = jasmine.createSpyObj('SupabaseService', ['get']);
+  describe('HomeComponent', () => {
+    let component: HomeComponent;
+    let fixture: ComponentFixture<HomeComponent>;
+    let mockSupabaseService;
   
-    await TestBed.configureTestingModule({
-      declarations: [HomeComponent],
-      imports: [
-        ScreenWrapperModule,
-        MatDividerModule,
-        HeroHeaderModule,
-        DeviceFrameWrapperModule,
-        BrandPrimaryButtonModule
-      ],
-      providers: [
-        { provide: SupabaseService, useValue: mockSupabaseService }
-      ]
-    }).compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(HomeComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    beforeEach(async () => {
+      mockSupabaseService = { get: { statistics: () => of([]) } };
+    
+      await TestBed.configureTestingModule({
+        declarations: [HomeComponent],
+        imports: [
+          ScreenWrapperModule,
+          MatDividerModule,
+          HeroHeaderModule,
+          DeviceFrameWrapperModule,
+          BrandPrimaryButtonModule
+        ],
+        providers: [SupabaseService]
+      }).compileComponents();
+    });
   
-  // ... rest of the code
-});
+    beforeEach(() => {
+      fixture = TestBed.createComponent(HomeComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+      spyOn(mockSupabaseService, 'get').and.callThrough();
+    });
+    
+    // ... rest of the code
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HomeComponent);
