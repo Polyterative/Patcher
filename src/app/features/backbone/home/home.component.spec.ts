@@ -29,7 +29,7 @@ import { SupabaseService } from '../../backend/supabase.service';
           DeviceFrameWrapperModule,
           BrandPrimaryButtonModule
         ],
-        providers: [SupabaseService]
+        providers: [{ provide: SupabaseService, useValue: mockSupabaseService }]
       }).compileComponents();
     });
   
@@ -43,10 +43,7 @@ import { SupabaseService } from '../../backend/supabase.service';
     // ... rest of the code
   });
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(HomeComponent);
-    component = fixture.componentInstance;
-  });
+  ""
   
   it('should create the HomeComponent', () => {
     expect(component).toBeTruthy();
