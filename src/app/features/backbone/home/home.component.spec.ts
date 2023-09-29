@@ -4,11 +4,6 @@ import { By } from '@angular/platform-browser';
 import { SupabaseService } from '../../backend/supabase.service';
 import { of } from 'rxjs';
 
-describe('HomeComponent', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
-  let mockSupabaseService;
-
   import { TestBed, ComponentFixture } from '@angular/core/testing';
   import { HomeComponent } from './home.component';
   import { By } from '@angular/platform-browser';
@@ -20,6 +15,11 @@ describe('HomeComponent', () => {
   import { DeviceFrameWrapperModule } from '../../../shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
   import { BrandPrimaryButtonModule } from '../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
   
+describe('HomeComponent', () => {
+  let component: HomeComponent;
+  let fixture: ComponentFixture<HomeComponent>;
+  let mockSupabaseService;
+
   describe('HomeComponent', () => {
     let component: HomeComponent;
     let fixture: ComponentFixture<HomeComponent>;
