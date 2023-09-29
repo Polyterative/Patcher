@@ -16,7 +16,7 @@ describe('HomeComponent', () => {
   let mockSupabaseService;
   
     beforeEach(async () => {
-      mockSupabaseService = { get: { statistics: () => of([]) } };
+      mockSupabaseService = { get: jasmine.createSpy('get').and.returnValue(of([])) };
     
       await TestBed.configureTestingModule({
         declarations: [HomeComponent],
@@ -61,4 +61,3 @@ describe('HomeComponent', () => {
   it('should call SupabaseService correctly', () => {
     expect(mockSupabaseService.get).toHaveBeenCalled();
   });
-});
