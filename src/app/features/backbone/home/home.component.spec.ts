@@ -10,13 +10,13 @@ import { HomeComponent } from './home.component';
 import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { SupabaseService } from '../../backend/supabase.service';
 
-describe('HomeComponent', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
-  let mockSupabaseService;
-  
-    beforeEach(async () => {
-      mockSupabaseService = { get: jasmine.createSpy('get').and.returnValue(of([])) };
+beforeEach(() => {
+  fixture = TestBed.createComponent(HomeComponent);
+  component = fixture.componentInstance;
+  fixture.detectChanges();
+  spyOn(mockSupabaseService, 'get').and.callThrough();
+  mockSupabaseService.get();
+});
     
       await TestBed.configureTestingModule({
         declarations: [HomeComponent],
