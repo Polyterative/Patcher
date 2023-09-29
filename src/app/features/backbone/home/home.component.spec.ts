@@ -9,13 +9,11 @@ import { HeroHeaderModule } from '../../../shared-interproject/components/@visua
 import { HomeComponent } from './home.component';
 import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { SupabaseService } from '../../backend/supabase.service';
-  
-""
 
-  describe('HomeComponent', () => {
-    let component: HomeComponent;
-    let fixture: ComponentFixture<HomeComponent>;
-    let mockSupabaseService;
+describe('HomeComponent', () => {
+  let component: HomeComponent;
+  let fixture: ComponentFixture<HomeComponent>;
+  let mockSupabaseService;
   
     beforeEach(async () => {
       mockSupabaseService = { get: { statistics: () => of([]) } };
