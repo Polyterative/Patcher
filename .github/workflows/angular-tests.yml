@@ -1,5 +1,9 @@
 name: Angular Tests
-on: [push]
+  #on: [push]
+  
+  # Run workflow manually
+on:  
+  workflow_dispatch:
 
 jobs:
   build:
