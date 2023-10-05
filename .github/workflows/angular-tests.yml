@@ -9,10 +9,18 @@ jobs:
   build:
     runs-on: [x64]
     timeout-minutes: 8
+    if: github.event_name == 'push'  # Only trigger on pushes
     steps:
       - name: Check if this is the latest commit
         id: latest_commit_check
-        run: echo ::set-output name=is_latest_commit::$(if [ "$(git rev-parse HEAD)" == "$(git rev-parse $(git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | awk 'NR==1{print $2}'))" ]; then echo "true"; else echo "false"; fi)
+        run: |
+          latestCommit=$(git rev-parse HEAD)
+          latestRef=$(git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | awk 'NR==1{print $2}')
+          if [[ $latestCommit == $latestRef ]]; then
+            echo "::set-output name=is_latest_commit::true"
+          else
+            echo "::set-output name=is_latest_commit::false"
+          }
 
       - name: Paths Changes Filter
         uses: dorny/paths-filter@v2.11.1
@@ -25,7 +33,7 @@ jobs:
         if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'  # Enclose the version in single quotes
+          node-version: '16.x'  
 
       - name: Install Angular CLI
         if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
