@@ -14,14 +14,14 @@ jobs:
       - name: Check if this is the latest commit
         id: latest_commit_check
         run: |
-          # Use double square brackets for comparison
+          # Use regular parentheses for comparison in PowerShell
           latestCommit=$(git rev-parse HEAD)
           latestRef=$(git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | awk 'NR==1{print $2}')
-          if [[ $latestCommit == $latestRef ]]; then
+          if ($latestCommit -eq $latestRef) {
             echo "::set-output name=is_latest_commit::true"
-          else
+          } else {
             echo "::set-output name=is_latest_commit::false"
-          fi
+          }
 
       - name: Paths Changes Filter
         uses: dorny/paths-filter@v2.11.1
