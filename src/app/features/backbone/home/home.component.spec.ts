@@ -1,3 +1,6 @@
+let fixture: ComponentFixture<HomeComponent>;
+let component: HomeComponent;
+let mockSupabaseService = jasmine.createSpyObj('SupabaseService', ['get']);
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatDividerModule } from '@angular/material/divider';
@@ -10,32 +13,25 @@ import { HomeComponent } from './home.component';
 import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { SupabaseService } from '../../backend/supabase.service';
 
-beforeEach(() => {
-  fixture = TestBed.createComponent(HomeComponent);
-  component = fixture.componentInstance;
-  fixture.detectChanges();
-  spyOn(mockSupabaseService, 'get').and.callThrough();
-  mockSupabaseService.get();
+beforeAll(async () => {
+  await TestBed.configureTestingModule({
+    declarations: [HomeComponent],
+    imports: [
+      ScreenWrapperModule,
+      MatDividerModule,
+      HeroHeaderModule,
+      DeviceFrameWrapperModule,
+      BrandPrimaryButtonModule
+    ],
+    providers: [{ provide: SupabaseService, useValue: mockSupabaseService }]
+  }).compileComponents();
 });
-    
-      await TestBed.configureTestingModule({
-        declarations: [HomeComponent],
-        imports: [
-          ScreenWrapperModule,
-          MatDividerModule,
-          HeroHeaderModule,
-          DeviceFrameWrapperModule,
-          BrandPrimaryButtonModule
-        ],
-        providers: [{ provide: SupabaseService, useValue: mockSupabaseService }]
-      }).compileComponents();
     });
   
     beforeEach(() => {
       fixture = TestBed.createComponent(HomeComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
-      spyOn(mockSupabaseService, 'get').and.callThrough();
     });
     
     // ... rest of the code
