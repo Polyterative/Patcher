@@ -1,13 +1,19 @@
 name: Angular Tests
-  #on: [push]
-  
-  # Run workflow manually
-on:  
-  workflow_dispatch:
+
+on:
+  push:
+    branches:
+      - '*'  # Trigger on all branches
+    paths:
+      - 'src/**'  # Trigger on changes within the ./src directory
+
+# Uncomment the following lines if you want to run the workflow manually
+#on:
+#  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: [x64] 
+    runs-on: ubuntu-latest  # Change the runner OS if needed
     timeout-minutes: 8
     steps:
       - name: Checkout code
