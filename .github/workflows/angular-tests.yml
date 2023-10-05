@@ -18,9 +18,9 @@ jobs:
           $latestCommit = git rev-parse HEAD
           $latestRef = git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | Select-Object -First 1 | ForEach-Object { $_.Split(" ")[1] }
           if ($latestCommit -eq $latestRef) {
-            echo "::set-output name=is_latest_commit::true"
+            echo "is_latest_commit=true" >> $GITHUB_ENV
           } else {
-            echo "::set-output name=is_latest_commit::false"
+            echo "is_latest_commit=false" >> $GITHUB_ENV
           }
 
       - name: Paths Changes Filter
@@ -31,17 +31,17 @@ jobs:
               - 'src/**'
 
       - name: Setup Node.js
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         uses: actions/setup-node@v2
         with:
           node-version: '16.x'  
 
       - name: Install Angular CLI
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
       - name: Cache Yarn dependencies
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         uses: actions/cache@v2
         with:
           path: ~/.cache/yarn
@@ -50,13 +50,13 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Clear Yarn Cache
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         run: yarn cache clean
 
       - name: Install dependencies
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         run: yarn install # Use Yarn to install dependencies
 
       - name: Run tests
-        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
+        if: env.is_latest_commit == 'true'
         run: yarn test-headless # Use Yarn to run tests
