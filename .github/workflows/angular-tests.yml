@@ -5,11 +5,7 @@ on:
     branches:
       - '*'  # Trigger on all branches
     paths:
-      - 'src/**'  # Trigger on changes within the ./src directory
-
-# Uncomment the following lines if you want to run the workflow manually
-#on:
-#  workflow_dispatch:
+      - './src/**'  # Trigger on changes within the ./src directory
 
 jobs:
   build:
@@ -22,16 +18,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16.x"
+          node-version: '16.x'  # Enclose the version in single quotes
 
       - name: Install Angular CLI
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
-      - name: Cache Yarn dependencies # Change from npm to Yarn caching
+      - name: Cache Yarn dependencies
         uses: actions/cache@v2
         with:
           path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }} # Update the key for Yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
 
