@@ -63,6 +63,31 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
     });
     return patchText;
   }
+  import { TestBed } from '@angular/core/testing';
+  import { PatchMinimalComponent } from './patch-minimal.component';
+  
+  describe('PatchMinimalComponent', () => {
+  let component: PatchMinimalComponent;
+  
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      // provide the component's constructor with the necessary dependencies
+    });
+    component = TestBed.inject(PatchMinimalComponent);
+    component.data = {
+      name: 'Test Patch',
+      connections: [
+        { source: 'Source 1', target: 'Target 1' },
+        { source: 'Source 2', target: 'Target 2' },
+      ],
+    };
+  });
+  
+  it('should generate patch text correctly', () => {
+    const expectedPatchText = `Patch name "Test Patch"\nSource 1 => Target 1\nSource 2 => Target 2\n`;
+    expect(component.generatePatchText()).toEqual(expectedPatchText);
+  });
+  });
 }
 
 export interface PatchMinimalViewConfig {
