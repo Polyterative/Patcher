@@ -10,18 +10,29 @@ jobs:
     runs-on: [x64]
     timeout-minutes: 8
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check if this is the latest commit
+        id: latest_commit_check
+        run: echo ::set-output name=is_latest_commit::$(if [ "$(git rev-parse HEAD)" == "$(git rev-parse $(git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | awk 'NR==1{print $2}'))" ]; then echo "true"; else echo "false"; fi)
+
+      - name: Paths Changes Filter
+        uses: dorny/paths-filter@v2.11.1
+        with:
+          filters: |
+            src:
+              - 'src/**'
 
       - name: Setup Node.js
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         uses: actions/setup-node@v2
         with:
           node-version: '16.x'  # Enclose the version in single quotes
 
       - name: Install Angular CLI
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
       - name: Cache Yarn dependencies
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         uses: actions/cache@v2
         with:
           path: ~/.cache/yarn
@@ -30,10 +41,13 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Clear Yarn Cache
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         run: yarn cache clean
 
       - name: Install dependencies
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         run: yarn install # Use Yarn to install dependencies
 
       - name: Run tests
+        if: steps.latest_commit_check.outputs.is_latest_commit == 'true'
         run: yarn test-headless # Use Yarn to run tests
