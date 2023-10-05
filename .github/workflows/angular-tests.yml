@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - '*'  # Trigger on all branches
-    paths:
-      - './src/**'  # Trigger on changes within the ./src directory
 
 jobs:
   build:
