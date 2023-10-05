@@ -4,26 +4,44 @@ on:
   push:
     branches:
       - '*'  # Trigger on all branches
-    paths:
-      - './src/**'  # Trigger on changes within the ./src directory
 
 jobs:
   build:
     runs-on: [x64]
     timeout-minutes: 8
+    if: github.event_name == 'push'  # Only trigger on pushes
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Check if this is the latest commit
+        id: latest_commit_check
+        run: |
+          # Use PowerShell syntax for executing commands
+          $latestCommit = git rev-parse HEAD
+          $latestRef = git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | Select-Object -First 1 | ForEach-Object { $_.Split(" ")[1] }
+          if ($latestCommit -eq $latestRef) {
+            echo "is_latest_commit=true" >> $GITHUB_ENV
+          } else {
+            echo "is_latest_commit=false" >> $GITHUB_ENV
+          }
+
+      - name: Paths Changes Filter
+        uses: dorny/paths-filter@v2.11.1
+        with:
+          filters: |
+            src:
+              - 'src/**'
 
       - name: Setup Node.js
+        if: env.is_latest_commit == 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'  # Enclose the version in single quotes
+          node-version: '16.x'  
 
       - name: Install Angular CLI
+        if: env.is_latest_commit == 'true'
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
       - name: Cache Yarn dependencies
+        if: env.is_latest_commit == 'true'
         uses: actions/cache@v2
         with:
           path: ~/.cache/yarn
@@ -32,10 +50,13 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Clear Yarn Cache
+        if: env.is_latest_commit == 'true'
         run: yarn cache clean
 
       - name: Install dependencies
+        if: env.is_latest_commit == 'true'
         run: yarn install # Use Yarn to install dependencies
 
       - name: Run tests
+        if: env.is_latest_commit == 'true'
         run: yarn test-headless # Use Yarn to run tests
