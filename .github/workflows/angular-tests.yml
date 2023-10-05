@@ -9,14 +9,14 @@ jobs:
   build:
     runs-on: [x64]
     timeout-minutes: 8
-    if: github.event_name == 'push'  # Only trigger on pushes
+    if: github.event_name -eq 'push'  # Only trigger on pushes
     steps:
       - name: Check if this is the latest commit
         id: latest_commit_check
         run: |
-          # Use regular parentheses for comparison in PowerShell
-          latestCommit=$(git rev-parse HEAD)
-          latestRef=$(git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | awk 'NR==1{print $2}')
+          # Use PowerShell syntax for executing commands
+          $latestCommit = git rev-parse HEAD
+          $latestRef = git for-each-ref --sort=-committerdate refs/heads/ --format '%(objectname)%(refname)' | Select-Object -First 1 | ForEach-Object { $_.Split(" ")[1] }
           if ($latestCommit -eq $latestRef) {
             echo "::set-output name=is_latest_commit::true"
           } else {
