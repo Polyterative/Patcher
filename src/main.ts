@@ -11,7 +11,8 @@ let sentry;
 
 if (environment.production) {
   enableProdMode();
-  
+
+  // sentry
   sentry = {
     environment:      'production',
     release:          'patcher@' + build.version,
