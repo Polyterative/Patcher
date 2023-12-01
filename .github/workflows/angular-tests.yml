@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: [x64]
+    runs-on: [x64,ubuntu-latest]
     timeout-minutes: 8
     if: github.event_name == 'push'  # Only trigger on pushes
     steps:
