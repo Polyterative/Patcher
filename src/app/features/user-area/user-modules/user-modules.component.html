@@ -31,7 +31,23 @@
       <mat-divider inset="true"></mat-divider>
     </ng-container>
   
-    <lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
+    <mat-form-field appearance="fill">
+  <mat-label>Sort by</mat-label>
+  <mat-select (selectionChange)="onSortChange($event.value)">
+    <mat-option value="name">Name</mat-option>
+    <mat-option value="type">Type</mat-option>
+    <mat-option value="manufacturer">Manufacturer</mat-option>
+  </mat-select>
+</mat-form-field>
+<mat-form-field appearance="fill">
+  <mat-label>Group by</mat-label>
+  <mat-select (selectionChange)="onGroupChange($event.value)">
+    <mat-option value="none">None</mat-option>
+    <mat-option value="type">Type</mat-option>
+    <mat-option value="manufacturer">Manufacturer</mat-option>
+  </mat-select>
+</mat-form-field>
+<lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
                                        [updateData$]="dataService.updateModulesData$"
     >
       <ng-container *ngIf="(dataService.modulesData$|async) as data">
