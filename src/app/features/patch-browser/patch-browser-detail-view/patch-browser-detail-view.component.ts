@@ -1,27 +1,12 @@
-import {
-  Component,
-  Input,
-  OnDestroy,
-  OnInit
-}                                 from '@angular/core';
-import { ActivatedRoute }         from '@angular/router';
-import { SeoSocialShareData }     from 'ngx-seo';
-import {
-  combineLatest,
-  Subject
-}                                 from 'rxjs';
-import {
-  filter,
-  map,
-  take
-}                                 from 'rxjs/operators';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
+import { combineLatest, Subject } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import {
-  defaultPatchMinimalViewConfig,
-  PatchMinimalViewConfig
-}                                 from '../../../components/patch-parts/patch-minimal/patch-minimal.component';
-import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
-import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
+import { defaultPatchMinimalViewConfig, PatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:    'app-patch-browser-patch-detail-view-root',

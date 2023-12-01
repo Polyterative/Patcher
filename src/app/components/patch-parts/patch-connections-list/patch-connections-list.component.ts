@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
-import {
-  fadeOutOnLeaveAnimation,
-  zoomInOnEnterAnimation
-}                                 from 'angular-animations';
-import { PatchConnection }        from '../../../models/connection';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { fadeOutOnLeaveAnimation, zoomInOnEnterAnimation } from 'angular-animations';
+import { PatchConnection } from 'src/app/models/connection';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 
 @Component({

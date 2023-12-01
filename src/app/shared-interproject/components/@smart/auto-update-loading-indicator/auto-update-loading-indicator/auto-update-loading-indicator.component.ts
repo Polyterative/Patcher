@@ -1,22 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
-import {
-  BehaviorSubject,
-  merge,
-  Observable,
-  Subject
-} from 'rxjs';
-import {
-  filter,
-  mapTo,
-  skip,
-  takeUntil
-} from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, merge, Observable, Subject } from 'rxjs';
+import { filter, mapTo, skip, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector:        'lib-auto-update-loading-indicator',

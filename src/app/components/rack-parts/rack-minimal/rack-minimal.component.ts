@@ -1,13 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                from '@angular/core';
-import { Subject }               from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { RackMinimal }           from '../../../models/rack';
+import { RackMinimal } from 'src/app/models/rack';
 
 @Component({
   selector:        'app-rack-minimal',

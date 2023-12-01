@@ -1,23 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output
-}                                 from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-}                                 from 'angular-animations';
-import { Subject }                from 'rxjs';
-import {
-  filter,
-  takeUntil
-}                                 from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { CV }                     from '../../../models/cv';
-import { DbModule }               from '../../../models/module';
+import { CV } from 'src/app/models/cv';
+import { DbModule } from 'src/app/models/module';
 
 @Component({
   selector:        'app-module-cvs',

@@ -1,56 +1,15 @@
-import {
-  COMMA,
-  ENTER
-}                                       from '@angular/cdk/keycodes';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit
-}                                       from '@angular/core';
-import {
-  AbstractControl,
-  AsyncValidatorFn,
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup,
-  ValidatorFn
-}                                       from '@angular/forms';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { AbstractControl, AsyncValidatorFn, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatChipInputEvent }            from '@angular/material/chips';
-import {
-  FloatLabelType,
-  MatFormFieldAppearance
-}                                       from '@angular/material/form-field';
-import { TooltipPosition }              from '@angular/material/tooltip';
-import {
-  BehaviorSubject,
-  merge,
-  NEVER,
-  Observable,
-  of
-}                                       from 'rxjs';
-import {
-  debounceTime,
-  filter,
-  map,
-  tap,
-  withLatestFrom
-}                                       from 'rxjs/operators';
-import { SubManager }                   from '../../../directives/subscription-manager';
-import {
-  AppFormUtils,
-  Strings
-}                                       from './app-form-utils';
-import {
-  findOptionForId,
-  flatOptionGroupToArray,
-  FormTypes,
-  ISelectable,
-  isOption
-}                                       from './form-element-models';
+import { MatChipInputEvent } from '@angular/material/chips';
+import { FloatLabelType, MatFormFieldAppearance } from '@angular/material/form-field';
+import { TooltipPosition } from '@angular/material/tooltip';
+import { BehaviorSubject, merge, NEVER, Observable, of } from 'rxjs';
+import { debounceTime, filter, map, tap, withLatestFrom } from 'rxjs/operators';
+import { SubManager } from '../../../directives/subscription-manager';
+import { AppFormUtils, Strings } from './app-form-utils';
+import { findOptionForId, flatOptionGroupToArray, FormTypes, ISelectable, isOption } from './form-element-models';
 
 export interface IMatFormEntityConfig {
   type: FormTypes;
@@ -205,7 +164,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    *   const voidChar = '';
    *
    *   toReturn =
-   *       toBeChecked.hasError(Strings.form.errorCode.min) ? Strings_it.form.error_min : toBeChecked.hasError(Strings.form.errorCode.max) ? Strings_it.form.error_max : toBeChecked.hasError(Strings.form.errorCode.custom.operation_notInRange) ? Strings_it.form.error_operation_notInRange : toBeChecked.hasError(Strings.form.errorCode.custom.staff_notInRange) ? Strings_it.form.error_staff_notInRange : voidChar;
+   *       toBeChecked.hasError(Strings.form.errorCode.min) ? Strings_it.form.error_min : toBeChecked.hasError(Strings.form.errorCode.max) ? Strings_it.form.error_max :
+   * toBeChecked.hasError(Strings.form.errorCode.custom.operation_notInRange) ? Strings_it.form.error_operation_notInRange : toBeChecked.hasError(Strings.form.errorCode.custom.staff_notInRange) ?
+   * Strings_it.form.error_staff_notInRange : voidChar;
    *
    *   if (toReturn === voidChar) {
    *       toReturn = super.getDefaultErrors(toBeChecked);

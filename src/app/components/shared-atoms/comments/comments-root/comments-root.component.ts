@@ -1,10 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input
-}                              from '@angular/core';
-import { DbComment }           from '../../../../models/comment';
-import { AppStateService }     from '../../../../shared-interproject/app-state.service';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { DbComment } from 'src/app/models/comment';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { CommentsDataService } from '../comments-data.service';
 
 @Component({

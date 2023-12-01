@@ -1,21 +1,8 @@
-import {
-  EventEmitter,
-  Injectable,
-  OnDestroy
-}                                 from '@angular/core';
-import { MatSnackBar }            from '@angular/material/snack-bar';
+import { EventEmitter, Injectable, OnDestroy } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgxDropzoneChangeEvent } from 'ngx-dropzone';
-import {
-  BehaviorSubject,
-  Subject
-}                                 from 'rxjs';
-import {
-  filter,
-  map,
-  takeUntil,
-  tap,
-  withLatestFrom
-}                                 from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, map, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 
 type FileArray = File[];
 

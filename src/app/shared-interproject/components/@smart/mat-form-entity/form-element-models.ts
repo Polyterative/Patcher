@@ -1,8 +1,4 @@
-import {
-  AbstractControl,
-  UntypedFormControl,
-  Validators
-}                  from '@angular/forms';
+import { AbstractControl, UntypedFormControl, Validators } from '@angular/forms';
 import { Strings } from './app-form-utils';
 
 export interface FormLineSetup {

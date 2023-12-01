@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                  from '@angular/core';
-import { MinimalModule }           from '../../../models/module';
-import { RackDetailDataService }   from '../../rack-parts/rack-detail-data.service';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { MinimalModule } from 'src/app/models/module';
+import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 @Component({

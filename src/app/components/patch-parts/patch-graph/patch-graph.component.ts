@@ -1,34 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit
-}                                 from '@angular/core';
-import { fadeInAnimation }        from 'angular-animations';
-import {
-  BehaviorSubject,
-  delay,
-  forkJoin
-}                                 from 'rxjs';
-import {
-  filter,
-  map,
-  switchMap,
-  tap,
-  withLatestFrom
-}                                 from 'rxjs/operators';
-import { SupabaseService }        from 'src/app/features/backend/supabase.service';
-import { PatchConnection }        from '../../../models/connection';
-import { CVwithModule }           from '../../../models/cv';
-import {
-  DbModule,
-  MinimalModule
-}                                 from '../../../models/module';
-import { GraphViewService }       from '../../../shared-interproject/components/@visual/graph-view/graph-view.service';
-import {
-  GraphEdge,
-  GraphNode
-}                                 from '../../../shared-interproject/components/@visual/graph-view/graph.component';
-import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { fadeInAnimation } from 'angular-animations';
+import { BehaviorSubject, delay, forkJoin } from 'rxjs';
+import { filter, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { PatchConnection } from 'src/app/models/connection';
+import { CVwithModule } from 'src/app/models/cv';
+import { DbModule, MinimalModule } from 'src/app/models/module';
+import { GraphViewService } from 'src/app/shared-interproject/components/@visual/graph-view/graph-view.service';
+import { GraphEdge, GraphNode } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 
 interface NodesDictionary {[id: string]: GraphNode;}

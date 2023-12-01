@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                      from '@angular/core';
-import { DbModule }    from '../../../../models/module';
-import { RackMinimal } from '../../../../models/rack';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { DbModule } from 'src/app/models/module';
+import { RackMinimal } from 'src/app/models/rack';
 
 @Component({
   selector:        'app-rack-details-remaining-indicator',

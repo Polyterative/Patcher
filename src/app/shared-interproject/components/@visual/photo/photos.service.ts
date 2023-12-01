@@ -1,9 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-}                     from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 interface UnsplashResponse {
   urls: {

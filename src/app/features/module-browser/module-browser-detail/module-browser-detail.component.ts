@@ -1,23 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                  from '@angular/core';
-import { ActivatedRoute }          from '@angular/router';
-import { SeoSocialShareData }      from 'ngx-seo';
-import { Subject }                 from 'rxjs';
-import {
-  filter,
-  map,
-  take
-}                                  from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
+import { Subject } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-}                                  from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
+import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-module-browser-detail',

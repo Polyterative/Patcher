@@ -1,10 +1,6 @@
-import { HttpClient }      from '@angular/common/http';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit
-}                          from '@angular/core';
-import { Subject }         from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 import { SupabaseService } from '../supabase.service';
 
 @Component({

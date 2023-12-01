@@ -1,18 +1,7 @@
-import {
-    CommonModule,
-    registerLocaleData
-}               from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
 import localeIt from '@angular/common/locales/it';
-import {
-    InjectionToken,
-    LOCALE_ID,
-    NgModule
-}               from '@angular/core';
-import {
-    MAT_DATE_FORMATS,
-    MAT_DATE_LOCALE
-}               from '@angular/material/core';
-
+import { InjectionToken, LOCALE_ID, NgModule } from '@angular/core';
+import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  LOCALE_ID,
