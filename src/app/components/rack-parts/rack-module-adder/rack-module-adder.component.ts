@@ -1,37 +1,16 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnInit
-}                                from '@angular/core';
-import {
-  UntypedFormControl,
-  Validators
-}                                from '@angular/forms';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef
-}                                from '@angular/material/dialog';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import { TimeagoPipe }           from 'ngx-timeago';
-import {
-  BehaviorSubject,
-  Subject
-}                                from 'rxjs';
-import {
-  filter,
-  map,
-  share,
-  startWith,
-  switchMap
-}                                from 'rxjs/operators';
-import { SupabaseService }       from 'src/app/features/backend/supabase.service';
-import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }       from 'src/app/shared-interproject/SharedConstants';
-import { UserAreaDataService }   from '../../../features/user-area/user-area-data.service';
-import { DbModule }              from '../../../models/module';
-import { SubManager }            from '../../../shared-interproject/directives/subscription-manager';
+import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TimeagoPipe } from 'ngx-timeago';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, map, share, startWith, switchMap } from 'rxjs/operators';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { UserAreaDataService } from 'src/app/features/user-area/user-area-data.service';
+import { DbModule } from 'src/app/models/module';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from '../rack-detail-data.service';
 
 export interface RackModuleAdderOutModel {

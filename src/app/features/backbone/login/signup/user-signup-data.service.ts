@@ -1,24 +1,11 @@
-import { Injectable }            from '@angular/core';
-import {
-  UntypedFormControl,
-  Validators
-}                                from '@angular/forms';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import {
-  ActivatedRoute,
-  Router
-}                                from '@angular/router';
-import {
-  of,
-  Subject
-}                                from 'rxjs';
-import {
-  filter,
-  switchMap,
-  takeUntil
-}                                from 'rxjs/operators';
-import { FormTypes }             from '../../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }       from '../../../../shared-interproject/SharedConstants';
+import { Injectable } from '@angular/core';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of, Subject } from 'rxjs';
+import { filter, switchMap, takeUntil } from 'rxjs/operators';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 
 @Injectable()

@@ -1,13 +1,6 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { MinimalModule }          from '../../../../models/module';
+import { MinimalModule } from 'src/app/models/module';
 
 @Component({
   selector:        'app-module-part-image',

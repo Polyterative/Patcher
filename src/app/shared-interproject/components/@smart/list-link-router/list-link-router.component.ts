@@ -1,16 +1,5 @@
-import {
-    ChangeDetectionStrategy,
-    Component,
-    EventEmitter,
-    Input,
-    OnDestroy,
-    OnInit
-} from '@angular/core';
-import {
-    CardLink,
-    CardLinkDataModel,
-    cleanCardlinkModelObject
-} from './clickable-list-card-base';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
+import { CardLink, CardLinkDataModel, cleanCardlinkModelObject } from './clickable-list-card-base';
 
 /**
  *  SMART COMPONENT

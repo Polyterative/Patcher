@@ -1,15 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { Subject }                from 'rxjs';
-import { RackedModule }           from '../../../../models/module';
-import { RackMinimal }            from '../../../../models/rack';
-import { RackDetailDataService }  from '../../rack-detail-data.service';
-import { ModuleRightClick }       from '../rack-editor.component';
+import { Subject } from 'rxjs';
+import { RackedModule } from 'src/app/models/module';
+import { RackMinimal } from 'src/app/models/rack';
+import { RackDetailDataService } from '../../rack-detail-data.service';
+import { ModuleRightClick } from '../rack-editor.component';
 
 @Component({
   selector:        'app-rack-visual-model',

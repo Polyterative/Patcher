@@ -1,10 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Router }     from '@angular/router';
-import {
-  ReplaySubject,
-  Subject
-}                     from 'rxjs';
+import { Router } from '@angular/router';
+import { ReplaySubject, Subject } from 'rxjs';
 
 interface UserModel {
   username: string | undefined;

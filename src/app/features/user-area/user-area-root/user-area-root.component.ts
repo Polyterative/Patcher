@@ -1,16 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { SupabaseService }       from 'src/app/features/backend/supabase.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-}                                from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService }    from '../../backbone/seo-and-utils.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-user-area-root',

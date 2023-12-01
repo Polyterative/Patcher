@@ -1,18 +1,10 @@
-﻿import { Injectable }         from '@angular/core';
-import { MediaObserver }      from '@angular/flex-layout';
+﻿import { Injectable } from '@angular/core';
+import { MediaObserver } from '@angular/flex-layout';
 import { UntypedFormControl } from '@angular/forms';
-import {
-  ReplaySubject,
-  Subject
-}                             from 'rxjs';
-import {
-  debounceTime,
-  map,
-  startWith,
-  takeUntil
-}                             from 'rxjs/operators';
-import { environment }        from '../../environments/environment';
-import { AppFormUtils }       from './app-form-utils';
+import { ReplaySubject, Subject } from 'rxjs';
+import { debounceTime, map, startWith, takeUntil } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
+import { AppFormUtils } from './app-form-utils';
 
 @Injectable()
 export class AppStateService {

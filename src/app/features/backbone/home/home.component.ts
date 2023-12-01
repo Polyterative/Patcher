@@ -1,19 +1,10 @@
-import {
-  Component,
-  OnDestroy
-}                             from '@angular/core';
-import { Router }             from '@angular/router';
-import {
-  fadeInOnEnterAnimation,
-  slideInDownOnEnterAnimation
-}                             from 'angular-animations';
-import { BehaviorSubject }    from 'rxjs';
-import {
-  CardLinkDataModel,
-  cleanCardlinkModelObject
-}                             from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
-import { SubManager }         from '../../../shared-interproject/directives/subscription-manager';
-import { SupabaseService }    from '../../backend/supabase.service';
+import { Component, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
+import { fadeInOnEnterAnimation, slideInDownOnEnterAnimation } from 'angular-animations';
+import { BehaviorSubject } from 'rxjs';
+import { CardLinkDataModel, cleanCardlinkModelObject } from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SupabaseService } from '../../backend/supabase.service';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 
 @Component({

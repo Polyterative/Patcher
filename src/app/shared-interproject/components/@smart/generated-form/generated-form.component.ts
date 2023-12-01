@@ -1,19 +1,8 @@
-import {
-    animate,
-    query,
-    stagger,
-    style,
-    transition,
-    trigger
-}                          from '@angular/animations';
-import {
-    ChangeDetectionStrategy,
-    Component,
-    Input
-}                          from '@angular/core';
+import { animate, query, stagger, style, transition, trigger } from '@angular/animations';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { AppStateService } from '../../../app-state.service';
-import { FormTypes }       from '../mat-form-entity/form-element-models';
-import { GeneratedForm }   from './generated-form-models';
+import { FormTypes } from '../mat-form-entity/form-element-models';
+import { GeneratedForm } from './generated-form-models';
 import AutoFormEntity = GeneratedForm.AutoFormEntity;
 
 @Component({

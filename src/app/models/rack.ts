@@ -1,5 +1,5 @@
 import { Timestamped } from './models';
-import { PublicUser }  from './user';
+import { PublicUser } from './user';
 
 export interface RackingData {
   id: number;

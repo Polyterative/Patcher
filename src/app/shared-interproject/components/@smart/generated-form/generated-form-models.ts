@@ -1,8 +1,5 @@
 ﻿import { FormControl } from '@angular/forms';
-import {
-    FormTypes,
-    ISelectable
-}                      from '../mat-form-entity/form-element-models';
+import { FormTypes, ISelectable } from '../mat-form-entity/form-element-models';
 
 export namespace GeneratedForm {
   export interface AutoFormEntity {

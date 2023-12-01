@@ -1,47 +1,18 @@
-import {
-  CdkDragDrop,
-  moveItemInArray
-}                                  from '@angular/cdk/drag-drop';
-import {
-  ElementRef,
-  Injectable
-}                                  from '@angular/core';
-import { MatDialog }               from '@angular/material/dialog';
-import { MatSnackBar }             from '@angular/material/snack-bar';
-import { Router }                  from '@angular/router';
-import _                           from 'lodash';
-import {
-  BehaviorSubject,
-  combineLatest,
-  of,
-  ReplaySubject,
-  Subject
-}                                  from 'rxjs';
-import {
-  filter,
-  map,
-  switchMap,
-  takeUntil,
-  tap,
-  withLatestFrom
-}                                  from 'rxjs/operators';
-import { UserManagementService }   from '../../features/backbone/login/user-management.service';
-import { SupabaseService }         from '../../features/backend/supabase.service';
-import {
-  MinimalModule,
-  RackedModule
-}                                  from '../../models/module';
-import {
-  Rack,
-  RackMinimal
-}                                  from '../../models/rack';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogDataInModel,
-  ConfirmDialogDataOutModel
-}                                  from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
-import { SubManager }              from '../../shared-interproject/directives/subscription-manager';
-import { SharedConstants }         from '../../shared-interproject/SharedConstants';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { ElementRef, Injectable } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import _ from 'lodash';
+import { BehaviorSubject, combineLatest, of, ReplaySubject, Subject } from 'rxjs';
+import { filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { MinimalModule, RackedModule } from '../../models/module';
+import { Rack, RackMinimal } from '../../models/rack';
+import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SubManager } from '../../shared-interproject/directives/subscription-manager';
+import { SharedConstants } from '../../shared-interproject/SharedConstants';
 import { ModuleDetailDataService } from '../module-parts/module-detail-data.service';
 
 @Injectable()

@@ -1,10 +1,6 @@
-import { EventEmitter }     from '@angular/core';
+import { EventEmitter } from '@angular/core';
 import { NavigationExtras } from '@angular/router';
-import {
-    Observable,
-    ReplaySubject
-}                           from 'rxjs';
-
+import { Observable, ReplaySubject } from 'rxjs';
 
 export interface CardLink {
   label: string;
@@ -51,4 +47,3 @@ export const cleanCardlinkModelObject: CardLinkDataModel = {
   selected$: new ReplaySubject<CardLink>(),
   click$:    new EventEmitter<CardLink>()
 };
-

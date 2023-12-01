@@ -1,28 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnInit
-}                          from '@angular/core';
-import {
-  UntypedFormControl,
-  Validators
-}                          from '@angular/forms';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef
-}                          from '@angular/material/dialog';
-import { MatSnackBar }     from '@angular/material/snack-bar';
-import {
-  BehaviorSubject,
-  Subject
-}                          from 'rxjs';
-import {
-  switchMap,
-  takeUntil
-}                          from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { FormTypes }       from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 export interface PatchCreatorOutModel {

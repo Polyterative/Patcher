@@ -1,16 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
-import { PatchDetailDataService } from '../../../components/patch-parts/patch-detail-data.service';
-import {
-  defaultPatchMinimalViewConfig,
-  PatchMinimalViewConfig
-}                                 from '../../../components/patch-parts/patch-minimal/patch-minimal.component';
-import { Patch }                  from '../../../models/patch';
-import { AppStateService }        from '../../../shared-interproject/app-state.service';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { defaultPatchMinimalViewConfig, PatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
+import { Patch } from 'src/app/models/patch';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 @Component({
   selector:        'app-patch-composite',

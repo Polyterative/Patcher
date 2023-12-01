@@ -1,11 +1,5 @@
-import {
-  Directive,
-  OnDestroy
-} from '@angular/core';
-import {
-  Subject,
-  Subscription
-} from 'rxjs';
+import { Directive, OnDestroy } from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
 
 /**
  * Utility class to manage the subscriptions.

@@ -1,19 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild
-}                                 from '@angular/core';
-import { MatPaginator }           from '@angular/material/paginator';
-import { Subject }                from 'rxjs';
-import { takeUntil }              from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { defaultRackMinimalViewConfig, RackMinimalViewConfig } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
 import { RackBrowserDataService } from 'src/app/features/rack-browser/rack-browser-data.service';
-import {
-  defaultRackMinimalViewConfig,
-  RackMinimalViewConfig
-}                                 from '../../../components/rack-parts/rack-minimal/rack-minimal.component';
-import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-rack-browser-root',

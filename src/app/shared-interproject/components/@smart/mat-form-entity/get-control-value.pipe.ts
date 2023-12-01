@@ -1,17 +1,6 @@
-import {
-  ChangeDetectorRef,
-  OnDestroy,
-  Pipe,
-  PipeTransform
-}                    from '@angular/core';
-import {
-  FormControl,
-  FormGroup
-}                    from '@angular/forms';
-import {
-  ReplaySubject,
-  Subject
-}                    from 'rxjs';
+import { ChangeDetectorRef, OnDestroy, Pipe, PipeTransform } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { ReplaySubject, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 type LocalType = FormControl | FormGroup;

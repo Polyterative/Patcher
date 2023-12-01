@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  ViewChild
-}                                        from '@angular/core';
-import { MatMenuTrigger }                from '@angular/material/menu';
-import { SubManager }                    from '../../../directives/subscription-manager';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild } from '@angular/core';
+import { MatMenuTrigger } from '@angular/material/menu';
+import { SubManager } from '../../../directives/subscription-manager';
 import { GeneralContextMenuDataService } from './general-context-menu-data.service';
 
 @Component({

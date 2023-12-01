@@ -1,9 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit
-}                                from '@angular/core';
-import { ActivatedRoute }        from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UserSignupDataService } from './user-signup-data.service';
 
 @Component({
