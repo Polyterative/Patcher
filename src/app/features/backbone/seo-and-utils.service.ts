@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Title }      from '@angular/platform-browser';
-import {
-  SeoSocialShareData,
-  SeoSocialShareService
-}                     from 'ngx-seo';
+import { Title } from '@angular/platform-browser';
+import { SeoSocialShareData, SeoSocialShareService } from 'ngx-seo';
 
 @Injectable({
   providedIn: 'root'

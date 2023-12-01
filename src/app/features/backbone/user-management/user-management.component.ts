@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { SeoAndUtilsService }    from '../seo-and-utils.service';
+import { SeoAndUtilsService } from '../seo-and-utils.service';
 
 @Component({
   selector:        'app-user-management',

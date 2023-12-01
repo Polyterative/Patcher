@@ -1,15 +1,9 @@
-import { Injectable }      from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-}                          from 'rxjs';
-import {
-  switchMap,
-  tap
-}                          from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { switchMap, tap } from 'rxjs/operators';
 import { SupabaseService } from '../../features/backend/supabase.service';
-import { Standard }        from '../../models/standard';
-import { SubManager }      from '../../shared-interproject/directives/subscription-manager';
+import { Standard } from '../../models/standard';
+import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 
 @Injectable({
   providedIn: 'root'

@@ -1,43 +1,16 @@
-import { HttpClient }              from '@angular/common/http';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit
-}                                  from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup,
-  ValidatorFn,
-  Validators
-}                                  from '@angular/forms';
-import { MatSnackBar }             from '@angular/material/snack-bar';
-import {
-  BehaviorSubject,
-  concat,
-  from,
-  NEVER,
-  of,
-  Subject
-}                                  from 'rxjs';
-import {
-  catchError,
-  filter,
-  map,
-  startWith,
-  switchMap,
-  takeUntil,
-  withLatestFrom
-}                                  from 'rxjs/operators';
-import { SupabaseService }         from 'src/app/features/backend/supabase.service';
-import { FormTypes }               from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { UserManagementService }   from '../../../features/backbone/login/user-management.service';
-import { CV }                      from '../../../models/cv';
-import { DbModule }                from '../../../models/module';
-import { FileDragHostService }     from '../../../shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
-import { IMatFormEntityConfig }    from '../../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
+import { HttpClient } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, concat, from, NEVER, of, Subject } from 'rxjs';
+import { catchError, filter, map, startWith, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { CV } from 'src/app/models/cv';
+import { DbModule } from 'src/app/models/module';
+import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
 export interface FormCV {

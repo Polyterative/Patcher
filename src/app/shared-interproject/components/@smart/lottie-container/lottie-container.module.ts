@@ -1,9 +1,6 @@
-import { CommonModule }             from '@angular/common';
-import { NgModule }                 from '@angular/core';
-import {
-  LottieCacheModule,
-  LottieModule
-}                                   from 'ngx-lottie';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { LottieCacheModule, LottieModule } from 'ngx-lottie';
 import { LottieContainerComponent } from './lottie-container.component';
 
 // Note we need a separate function as it's required

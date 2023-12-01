@@ -1,11 +1,10 @@
-import { CommonModule }      from '@angular/common';
-import { NgModule }          from '@angular/core';
-import { FlexLayoutModule }  from '@angular/flex-layout';
-import { MatCardModule }     from '@angular/material/card';
-import { RouterModule }      from '@angular/router';
-import { EmptyStateModule }  from '../../../shared-interproject/components/@smart/empty-state/empty-state.module';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatCardModule } from '@angular/material/card';
+import { RouterModule } from '@angular/router';
+import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { NotFoundComponent } from './not-found.component';
-
 
 @NgModule({
     declarations: [

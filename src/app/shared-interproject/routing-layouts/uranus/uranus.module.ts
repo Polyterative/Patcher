@@ -1,14 +1,10 @@
-import { CommonModule }        from '@angular/common';
-import { NgModule }            from '@angular/core';
-import { FlexLayoutModule }    from '@angular/flex-layout';
-import { MatToolbarModule }    from '@angular/material/toolbar';
-import {
-  Route,
-  RouterModule,
-  Routes
-}                              from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { Route, RouterModule, Routes } from '@angular/router';
 import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
-import { UranusComponent }     from './uranus.component';
+import { UranusComponent } from './uranus.component';
 
 @NgModule({
   declarations: [UranusComponent],

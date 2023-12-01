@@ -1,11 +1,7 @@
 import { CommonModule } from '@angular/common';
-import {
-  APP_INITIALIZER,
-  ErrorHandler,
-  NgModule
-}                       from '@angular/core';
-import { Router }       from '@angular/router';
-import * as Sentry      from '@sentry/angular';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
+import { Router } from '@angular/router';
+import * as Sentry from '@sentry/angular';
 
 @NgModule({
   declarations: [],
