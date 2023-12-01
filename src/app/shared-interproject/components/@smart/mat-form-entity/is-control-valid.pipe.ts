@@ -1,13 +1,6 @@
-import {
-  ChangeDetectorRef,
-  Pipe,
-  PipeTransform
-}                    from '@angular/core';
-import {
-  UntypedFormControl,
-  UntypedFormGroup
-}                    from '@angular/forms';
-import { Subject }   from 'rxjs';
+import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 type LocalType = UntypedFormControl | UntypedFormGroup;

@@ -20,17 +20,17 @@
                           *ngIf="data.hp>3"
       ></app-module-part-hp>
       <app-module-part-manufacturer [data]="data"
-                                    *ngIf="data.hp>3&&data.standard.id==0"
+                                    *ngIf="data.hp>3&&data.standard.id===0"
                                     [ngClass]="{'rotated':data.hp<6}"
                                     [fxLayoutAlign]="data.hp<=6?'end center':'center center'"
                                     fxLayoutAlign="center center"
       ></app-module-part-manufacturer>
       <div fxFlex="grow"
-           *ngIf="data.standard.id==0"
+           *ngIf="data.standard.id===0"
       ></div>
       <ng-content></ng-content>
       <div fxFlex="grow"
-           *ngIf="data.standard.id==0"
+           *ngIf="data.standard.id===0"
       ></div>
       
       <app-module-part-name [data]="data"

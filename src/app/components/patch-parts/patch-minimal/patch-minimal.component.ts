@@ -1,15 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit
-}                                 from '@angular/core';
-import { Subject }                from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { UserManagementService }  from 'src/app/features/backbone/login/user-management.service';
-import { UrlCreatorService }      from 'src/app/features/backend/url-creator.service';
-import { PatchMinimal }           from '../../../models/patch';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
+import { PatchMinimal } from 'src/app/models/patch';
 
 @Component({
   selector:        'app-patch-minimal',

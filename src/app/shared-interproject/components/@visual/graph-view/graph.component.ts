@@ -1,20 +1,12 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  Input,
-  NgZone,
-  OnInit,
-  ViewChild
-} from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, NgZone, OnInit, ViewChild } from '@angular/core';
 
-import Graph                                                  from 'graphology';
+import Graph from 'graphology';
 import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
 // import erdosRenyi                                             from 'graphology-generators/random/erdos-renyi';
 // import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
-import circularLayout                                         from 'graphology-layout/circular';
+import circularLayout from 'graphology-layout/circular';
 
-import { Sigma }            from 'sigma';
+import { Sigma } from 'sigma';
 import { GraphViewService } from './graph-view.service';
 
 export interface GraphNode {

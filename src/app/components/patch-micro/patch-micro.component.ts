@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
-import { PatchMinimal }           from '../../models/patch';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { PatchMinimal } from '../../models/patch';
 import { PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
 
 @Component({

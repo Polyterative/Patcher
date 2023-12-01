@@ -1,10 +1,10 @@
-import { enableProdMode }         from '@angular/core';
+import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import * as Sentry                from '@sentry/angular';
-import { Integrations }           from '@sentry/tracing';
+import * as Sentry from '@sentry/angular';
+import { Integrations } from '@sentry/tracing';
 
-import { AppModule }   from './app/app.module';
-import build           from './build';
+import { AppModule } from './app/app.module';
+import build from './build';
 import { environment } from './environments/environment';
 
 let sentry;

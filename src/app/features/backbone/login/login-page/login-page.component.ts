@@ -1,11 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit
-}                                from '@angular/core';
-import { ActivatedRoute }        from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UserManagementService } from '../user-management.service';
-import { UserLoginDataService }  from './user-login-data.service';
+import { UserLoginDataService } from './user-login-data.service';
 
 @Component({
   selector:        'app-login-page',

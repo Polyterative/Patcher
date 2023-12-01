@@ -1,30 +1,12 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-}                                 from 'angular-animations';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable
-}                                 from 'rxjs';
-import {
-  filter,
-  take
-}                                 from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
+import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
+import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-}                                 from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { LocalDataFilterService } from '../../../components/shared-atoms/local-data-filter/local-data-filter.service';
-import { SubManager }             from '../../../shared-interproject/directives/subscription-manager';
-import { ModuleList }             from '../module-browser-data.service';
+import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { ModuleList } from '../module-browser-data.service';
 
 @Component({
   selector:        'app-module-list',

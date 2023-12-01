@@ -1,19 +1,7 @@
-import {
-    Component,
-    forwardRef,
-    Input,
-    OnDestroy,
-    OnInit
-}                       from '@angular/core';
-import {
-    ControlValueAccessor,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    NG_VALUE_ACCESSOR
-}                       from '@angular/forms';
+import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
+import { ControlValueAccessor, FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { map }          from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector:    'lib-days-in-week-picker',

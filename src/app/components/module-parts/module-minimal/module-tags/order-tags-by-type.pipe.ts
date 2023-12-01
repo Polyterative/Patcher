@@ -1,8 +1,5 @@
-import {
-  Pipe,
-  PipeTransform
-}              from '@angular/core';
-import { Tag } from '../../../../models/tag';
+import { Pipe, PipeTransform } from '@angular/core';
+import { Tag } from 'src/app/models/tag';
 
 @Pipe({
   name: 'orderTagsByType'

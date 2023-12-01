@@ -1,24 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation
-}                                 from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import {
-  BehaviorSubject,
-  merge,
-  Observable,
-  Subject
-}                                 from 'rxjs';
-import {
-  filter,
-  mapTo,
-  skip,
-  takeUntil
-}                                 from 'rxjs/operators';
+import { BehaviorSubject, merge, Observable, Subject } from 'rxjs';
+import { filter, mapTo, skip, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector:        'lib-auto-content-loading-indicator',

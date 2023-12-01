@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  UntypedFormControl,
-  Validators
-}                     from '@angular/forms';
-import { FormTypes }  from '../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 @Injectable()
 export class CommentsDataService {

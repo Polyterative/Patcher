@@ -1,42 +1,16 @@
-import {
-  Injectable,
-  OnDestroy
-}                                from '@angular/core';
-import {
-  UntypedFormControl,
-  Validators
-}                                from '@angular/forms';
-import { MatDialog }             from '@angular/material/dialog';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import { Router }                from '@angular/router';
-import {
-  BehaviorSubject,
-  ReplaySubject,
-  Subject
-}                                from 'rxjs';
-import {
-  filter,
-  map,
-  pairwise,
-  switchMap,
-  take,
-  takeUntil,
-  tap,
-  withLatestFrom
-}                                from 'rxjs/operators';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogDataInModel,
-  ConfirmDialogDataOutModel
-}                                from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { Injectable, OnDestroy } from '@angular/core';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
+import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService }       from '../../features/backend/supabase.service';
-import { PatchConnection }       from '../../models/connection';
-import {
-  CVConnectionEntity,
-  CVwithModule
-}                                from '../../models/cv';
-import { Patch }                 from '../../models/patch';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { PatchConnection } from '../../models/connection';
+import { CVConnectionEntity, CVwithModule } from '../../models/cv';
+import { Patch } from '../../models/patch';
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {

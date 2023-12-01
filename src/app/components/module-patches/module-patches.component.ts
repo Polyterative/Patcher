@@ -1,15 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                       from '@angular/core';
-import { Observable }   from 'rxjs';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { PatchMinimal } from '../../models/patch';
-import {
-  defaultPatchMinimalViewConfig,
-  PatchMinimalViewConfig
-}                       from '../patch-parts/patch-minimal/patch-minimal.component';
+import { defaultPatchMinimalViewConfig, PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
 
 @Component({
   selector:        'app-module-patches',
