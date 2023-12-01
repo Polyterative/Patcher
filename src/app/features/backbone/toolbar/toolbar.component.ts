@@ -1,13 +1,10 @@
-﻿import {
-  ChangeDetectionStrategy,
-  Component
-}                                from '@angular/core';
-import { Router }                from '@angular/router';
-import { BehaviorSubject }       from 'rxjs';
+﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { RouteClickableLink }    from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
-import { SubManager }            from '../../../shared-interproject/directives/subscription-manager';
-import { ToolbarService }        from './toolbar.service';
+import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { ToolbarService } from './toolbar.service';
 
 @Component({
   selector:        'app-toolbar',

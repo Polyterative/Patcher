@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                     from '@angular/core';
-import { PublicUser } from '../../../models/user';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { PublicUser } from 'src/app/models/user';
 
 @Component({
   selector:        'app-entity-author',

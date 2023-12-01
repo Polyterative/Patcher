@@ -1,7 +1,4 @@
-import {
-  Pipe,
-  PipeTransform
-}                   from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import { DbModule } from '../../models/module';
 
 @Pipe({

@@ -1,9 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component
-}                              from '@angular/core';
-import { MatDialog }           from '@angular/material/dialog';
-import { SupabaseService }     from 'src/app/features/backend/supabase.service';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from '../user-area-data.service';
 
 @Component({

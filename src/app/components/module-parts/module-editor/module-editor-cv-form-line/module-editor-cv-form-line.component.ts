@@ -1,13 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output
-}                    from '@angular/core';
-import { FormTypes } from '../../../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { FormCV }    from '../module-editor.component';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { FormCV } from '../module-editor.component';
 
 @Component({
   selector:        'app-module-editor-cv-form-line',

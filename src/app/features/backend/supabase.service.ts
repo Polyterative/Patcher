@@ -1,18 +1,18 @@
-import {EventEmitter, Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ActivatedRoute} from '@angular/router';
-import {createClient} from '@supabase/supabase-js';
-import {forkJoin, from as rxFrom, of, ReplaySubject, throwError, zip} from 'rxjs';
-import {map, switchMap, tap, withLatestFrom} from 'rxjs/operators';
-import {SharedConstants} from 'src/app/shared-interproject/SharedConstants';
-import {environment} from 'src/environments/environment';
-import {PatchConnection} from '../../models/connection';
-import {CV, CVwithModuleId} from '../../models/cv';
-import {DBManufacturer} from '../../models/manufacturer';
-import {DbModule, ModulePanel, RackedModule} from '../../models/module';
-import {Patch} from '../../models/patch';
-import {RackMinimal} from '../../models/rack';
-import {Tag} from '../../models/tag';
+import { EventEmitter, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { createClient } from '@supabase/supabase-js';
+import { forkJoin, from as rxFrom, of, ReplaySubject, throwError, zip } from 'rxjs';
+import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment } from 'src/environments/environment';
+import { PatchConnection } from '../../models/connection';
+import { CV, CVwithModuleId } from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
+import { DbModule, ModulePanel, RackedModule } from '../../models/module';
+import { Patch } from '../../models/patch';
+import { RackMinimal } from '../../models/rack';
+import { Tag } from '../../models/tag';
 
 export type SupabaseStorageFile = ArrayBuffer | ArrayBufferView | Blob | Buffer | File | FormData | ReadableStream | ReadableStream | URLSearchParams | string;
 

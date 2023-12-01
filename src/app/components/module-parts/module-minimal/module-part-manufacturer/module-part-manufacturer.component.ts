@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                        from '@angular/core';
-import { MinimalModule } from '../../../../models/module';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { MinimalModule } from 'src/app/models/module';
 
 @Component({
   selector:        'app-module-part-manufacturer',

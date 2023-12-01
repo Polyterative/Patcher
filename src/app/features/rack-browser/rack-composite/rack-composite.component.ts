@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}               from '@angular/core';
-import { Rack } from '../../../models/rack';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { Rack } from 'src/app/models/rack';
 
 @Component({
   selector:        'app-rack-composite',

@@ -1,18 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                                 from '@angular/core';
-import { ActivatedRoute }         from '@angular/router';
-import { SeoSocialShareData }     from 'ngx-seo';
-import { Subject }                from 'rxjs';
-import { FileDragHostService }    from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-}                                 from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
+import { Subject } from 'rxjs';
+import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleAdderDataService } from './module-adder-data.service';
 
 @Component({

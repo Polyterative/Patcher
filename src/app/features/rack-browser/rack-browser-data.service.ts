@@ -1,28 +1,13 @@
-import {
-  Injectable,
-  OnDestroy
-}                                from '@angular/core';
-import { UntypedFormControl }    from '@angular/forms';
-import { PageEvent }             from '@angular/material/paginator';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import {
-  BehaviorSubject,
-  combineLatest,
-  of,
-  Subject
-}                                from 'rxjs';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  startWith,
-  switchMap,
-  takeUntil,
-  withLatestFrom
-}                                from 'rxjs/operators';
-import { RackMinimal }           from '../../models/rack';
-import { FormTypes }             from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { Injectable, OnDestroy } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
+import { PageEvent } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BehaviorSubject, combineLatest, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, startWith, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
+import { RackMinimal } from '../../models/rack';
+import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { UserManagementService } from '../backbone/login/user-management.service';
-import { SupabaseService }       from '../backend/supabase.service';
+import { SupabaseService } from '../backend/supabase.service';
 
 export type RackList = RackMinimal[] | null;
 

@@ -1,9 +1,6 @@
-import {
-  CV,
-  CVwithModule
-}                   from './cv';
+import { CV, CVwithModule } from './cv';
 import { DbModule } from './module';
-import { Patch }    from './patch';
+import { Patch } from './patch';
 
 export interface Connection {
   from: DbModule;

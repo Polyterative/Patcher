@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { MatDividerModule } from '@angular/material/divider';
-import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
 
-import { BrandPrimaryButtonModule } from '../../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
-import { DeviceFrameWrapperModule } from '../../../shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
-import { HeroHeaderModule } from '../../../shared-interproject/components/@visual/hero-header/hero-header.module';
-import { HomeComponent } from './home.component';
-import { ScreenWrapperModule } from '../../../shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
+import { HeroHeaderModule } from 'src/app/shared-interproject/components/@visual/hero-header/hero-header.module';
+import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { SupabaseService } from '../../backend/supabase.service';
+import { HomeComponent } from './home.component';
 
 let fixture: ComponentFixture<HomeComponent>;
 let component: HomeComponent;

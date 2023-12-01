@@ -1,16 +1,8 @@
-import { Injectable }            from '@angular/core';
-import { MatDialog }             from '@angular/material/dialog';
-import { MatSnackBar }           from '@angular/material/snack-bar';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  Router,
-  RouterStateSnapshot
-}                                from '@angular/router';
-import {
-  map,
-  tap
-}                                from 'rxjs';
+import { Injectable } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { map, tap } from 'rxjs';
 import { UserManagementService } from './user-management.service';
 
 @Injectable()

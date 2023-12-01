@@ -1,22 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output
-}                                 from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-}                                 from 'rxjs';
-import {
-  map,
-  takeUntil
-}                                 from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { CV }                     from '../../../models/cv';
-import { AppStateService }        from '../../../shared-interproject/app-state.service';
+import { CV } from 'src/app/models/cv';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 @Component({
   selector:        'app-module-cvitem',

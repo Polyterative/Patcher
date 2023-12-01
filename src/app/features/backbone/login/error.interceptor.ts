@@ -1,19 +1,7 @@
-import {
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest
-}                                from '@angular/common/http';
-import { Injectable }            from '@angular/core';
-import {
-  Observable,
-  throwError
-}                                from 'rxjs';
-import {
-  catchError,
-  filter,
-  take
-}                                from 'rxjs/operators';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
+import { catchError, filter, take } from 'rxjs/operators';
 import { UserManagementService } from './user-management.service';
 
 @Injectable()
