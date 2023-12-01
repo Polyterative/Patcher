@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  OnInit,
-  Output
-}             from '@angular/core';
-import { CV } from '../../../../models/cv';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { CV } from 'src/app/models/cv';
 
 @Component({
   selector:        'app-module-editor-adder-line',

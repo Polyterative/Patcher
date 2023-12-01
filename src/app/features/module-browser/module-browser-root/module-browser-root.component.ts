@@ -1,20 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild
-}                                   from '@angular/core';
-import { MatPaginator }             from '@angular/material/paginator';
-import { Subject }                  from 'rxjs';
-import { takeUntil }                from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
-import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-}                                   from '../../../components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService }       from '../../backbone/seo-and-utils.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 
 @Component({
   selector:        'app-module-browser-root',

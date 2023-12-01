@@ -1,8 +1,5 @@
-import {
-  Pipe,
-  PipeTransform
-}                       from '@angular/core';
-import { RackedModule } from '../../../../models/module';
+import { Pipe, PipeTransform } from '@angular/core';
+import { RackedModule } from 'src/app/models/module';
 
 @Pipe({
   name: 'hasUnrackedModules'

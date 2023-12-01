@@ -1,33 +1,26 @@
-import { registerLocaleData }      from '@angular/common';
-import localeItExtra               from '@angular/common/locales/extra/it';
-import localeIt                    from '@angular/common/locales/it';
-import {
-  InjectionToken,
-  LOCALE_ID,
-  NgModule
-}                                  from '@angular/core';
-import { FlexLayoutModule }        from '@angular/flex-layout';
-import { MatCardModule }           from '@angular/material/card';
-import {
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE
-}                                  from '@angular/material/core';
-import { MatDividerModule }        from '@angular/material/divider';
-import { MatToolbarModule }        from '@angular/material/toolbar';
-import { BrowserModule }           from '@angular/platform-browser';
+import { registerLocaleData } from '@angular/common';
+import localeItExtra from '@angular/common/locales/extra/it';
+import localeIt from '@angular/common/locales/it';
+import { InjectionToken, LOCALE_ID, NgModule } from '@angular/core';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatCardModule } from '@angular/material/card';
+import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule }            from '@angular/router';
-import { AdviceTooltipModule }     from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
-import build                       from 'src/build';
-import { environment }             from 'src/environments/environment';
+import { RouterModule } from '@angular/router';
+import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
+import build from 'src/build';
+import { environment } from 'src/environments/environment';
 
-import { AppComponent }        from './app.component';
-import { AppFeaturesModule }   from './features/app-features.module';
-import { BackboneModule }      from './features/backbone/backbone.module';
-import { FeedbackBoxModule }   from './features/backbone/feedback-box/feedback-box.module';
-import { UserAuthGuard }       from './features/backbone/login/user-auth-guard.service';
-import { ToolbarModule }       from './features/backbone/toolbar/toolbar.module';
-import { PageHeaderModule }    from './shared-interproject/components/@visual/page-header/page-header.module';
+import { AppComponent } from './app.component';
+import { AppFeaturesModule } from './features/app-features.module';
+import { BackboneModule } from './features/backbone/backbone.module';
+import { FeedbackBoxModule } from './features/backbone/feedback-box/feedback-box.module';
+import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service';
+import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
+import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {

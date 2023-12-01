@@ -1,7 +1,6 @@
-import { CommonModule }         from '@angular/common';
-import { NgModule }             from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { LoginGoogleComponent } from './login-google.component';
-
 
 @NgModule({
   declarations: [

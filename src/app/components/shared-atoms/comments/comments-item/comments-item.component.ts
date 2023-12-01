@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                    from '@angular/core';
-import { DbComment } from '../../../../models/comment';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { DbComment } from 'src/app/models/comment';
 
 @Component({
   selector:        'app-comments-item',

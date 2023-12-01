@@ -1,9 +1,6 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  EMPTY,
-  Observable
-}                      from 'rxjs';
-import { catchError }  from 'rxjs/operators';
+import { EMPTY, Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export class SharedConstants {
   

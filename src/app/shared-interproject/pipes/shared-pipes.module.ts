@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { NgModule }     from '@angular/core';
+import { NgModule } from '@angular/core';
 import { EllipsisPipe } from './ellipsis.pipe';
-
 
 @NgModule({
   declarations: [

@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                          from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { PhotosService }   from 'src/app/shared-interproject/components/@visual/photo/photos.service';
+import { PhotosService } from 'src/app/shared-interproject/components/@visual/photo/photos.service';
 
 @Component({
   selector:        'lib-photo',
