@@ -3,7 +3,7 @@ import { ElementRef, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import _ from 'lodash';
+import { cloneDeep } from 'lodash';
 import { BehaviorSubject, combineLatest, of, ReplaySubject, Subject } from 'rxjs';
 import { filter, map, switchMap, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
@@ -51,6 +51,14 @@ export class RackDetailDataService extends SubManager {
     this.manageSub(
       this.requestRackEditableStatusChange$
           .pipe(
+  requestRackDuplication$ = new Subject<RackMinimal>();
+  }
+    super();
+    
+    // when user toggles locked status of rack, update backend
+    this.manageSub(
+      this.requestRackEditableStatusChange$
+          .pipe(
             withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
             map(([_, x, y]) => {
               const editable: boolean = !y;
@@ -84,6 +92,14 @@ export class RackDetailDataService extends SubManager {
       this.singleRackData$.pipe(
         tap(x => this.rowedRackedModules$.next(null)),
         filter(x => !!x),
+    this.manageSub(
+      this.requestRackDuplication$
+        .pipe(switchMap(rack => this.duplicateRack(rack)))
+        .subscribe(newRack => {
+          this.snackBar.open('Rack duplicated', undefined, {duration: 4000});
+          this.updateSingleRackData$.next(newRack.id);
+        })
+    );
         switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
         withLatestFrom(this.singleRackData$)
       )
