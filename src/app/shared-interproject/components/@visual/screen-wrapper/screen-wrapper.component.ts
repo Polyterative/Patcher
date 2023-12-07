@@ -1,8 +1,4 @@
-import {
-  Component,
-  Input,
-  OnInit
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 /**
  * questo componente ti aiuta a tenere sotto controllo le dimensioni

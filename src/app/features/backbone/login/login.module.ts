@@ -1,11 +1,10 @@
-import { NgModule }              from '@angular/core';
-import { RouterModule }          from '@angular/router';
-import { LoginPageComponent }    from './login-page/login-page.component';
-import { LoginPageModule }       from './login-page/login-page.module';
-import { SignupPageComponent }   from './signup/signup-page.component';
-import { SignupPageModule }      from './signup/signup-page.module';
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { LoginPageComponent } from './login-page/login-page.component';
+import { LoginPageModule } from './login-page/login-page.module';
+import { SignupPageComponent } from './signup/signup-page.component';
+import { SignupPageModule } from './signup/signup-page.module';
 import { UserManagementService } from './user-management.service';
-
 
 @NgModule({
   declarations: [],

@@ -1,7 +1,7 @@
 import { PlatformLocation } from '@angular/common';
-import { Injectable }       from '@angular/core';
-import { MatSnackBar }      from '@angular/material/snack-bar';
-import { Router }           from '@angular/router';
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class UrlCreatorService {

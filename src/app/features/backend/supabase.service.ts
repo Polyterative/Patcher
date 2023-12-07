@@ -1,18 +1,18 @@
-import {EventEmitter, Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ActivatedRoute} from '@angular/router';
-import {createClient} from '@supabase/supabase-js';
-import {forkJoin, from as rxFrom, of, ReplaySubject, throwError, zip} from 'rxjs';
-import {map, switchMap, tap, withLatestFrom} from 'rxjs/operators';
-import {SharedConstants} from 'src/app/shared-interproject/SharedConstants';
-import {environment} from 'src/environments/environment';
-import {PatchConnection} from '../../models/connection';
-import {CV, CVwithModuleId} from '../../models/cv';
-import {DBManufacturer} from '../../models/manufacturer';
-import {DbModule, ModulePanel, RackedModule} from '../../models/module';
-import {Patch} from '../../models/patch';
-import {RackMinimal} from '../../models/rack';
-import {Tag} from '../../models/tag';
+import { EventEmitter, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { createClient } from '@supabase/supabase-js';
+import { forkJoin, from as rxFrom, of, ReplaySubject, throwError, zip } from 'rxjs';
+import { map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { environment } from 'src/environments/environment';
+import { PatchConnection } from '../../models/connection';
+import { CV, CVwithModuleId } from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
+import { DbModule, ModulePanel, RackedModule } from '../../models/module';
+import { Patch } from '../../models/patch';
+import { RackMinimal } from '../../models/rack';
+import { Tag } from '../../models/tag';
 
 export type SupabaseStorageFile = ArrayBuffer | ArrayBufferView | Blob | Buffer | File | FormData | ReadableStream | ReadableStream | URLSearchParams | string;
 
@@ -634,12 +634,12 @@ export class SupabaseService {
     // a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
   
     manufacturer:          'manufacturer:manufacturerId(name,id,logo)',
-    standard:              'standard:standard!modules_standards_id_fk(name,id)',
+    standard:              'standard:standards!modules_standards_id_fk(name,id)',
     patch:                 'patch:patches!patch_connections_patchid_fkey(*)',
     author:                'author:authorid(username,id,email)',
     rack:                  'rack:rackid(*,author:authorid(username,id,email))',
     rack_modules:          'rackModules:rackid(*)',
-    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standard!modules_standards_id_fk(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
+    module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standards_id_fk(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
     // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
     module_tags:   `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
     module_panels: `panels:${ this.paths.module_panels }!module_panels_moduleid_fkey(*)`,

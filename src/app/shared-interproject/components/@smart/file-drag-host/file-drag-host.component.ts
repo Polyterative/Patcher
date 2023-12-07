@@ -1,22 +1,8 @@
-import {
-  animate,
-  style,
-  transition,
-  trigger
-}                              from '@angular/animations';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit
-}                              from '@angular/core';
-import {
-  merge,
-  takeUntil
-}                              from 'rxjs';
-import { debounceTime }        from 'rxjs/operators';
-import { SubManager }          from '../../../directives/subscription-manager';
+import { animate, style, transition, trigger } from '@angular/animations';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { merge, takeUntil } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { SubManager } from '../../../directives/subscription-manager';
 import { FileDragHostService } from './file-drag-host.service';
 
 @Component({

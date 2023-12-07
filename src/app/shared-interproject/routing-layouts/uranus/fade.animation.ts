@@ -1,12 +1,6 @@
 // fade.animation.ts
 
-import {
-  animate,
-  query,
-  style,
-  transition,
-  trigger
-} from '@angular/animations';
+import { animate, query, style, transition, trigger } from '@angular/animations';
 
 export const fadeAnimation = trigger('routeAnimations', [
   

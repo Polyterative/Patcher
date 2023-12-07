@@ -1,14 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit
-}                        from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-}                        from 'angular-animations';
-import { MinimalModule } from '../../../../models/module';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
+import { MinimalModule } from 'src/app/models/module';
 
 @Component({
   selector:        'app-module-tags',

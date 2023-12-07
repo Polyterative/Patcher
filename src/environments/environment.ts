@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 import { EnvironmentModel } from 'src/environments/environment.model';
-import { firebaseConfig }   from 'src/environments/firebase';
+import { firebaseConfig } from 'src/environments/firebase';
 
 export const environment: EnvironmentModel = {
   production: false,

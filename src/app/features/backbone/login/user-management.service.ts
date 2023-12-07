@@ -1,23 +1,12 @@
-import { Injectable }             from '@angular/core';
-import { MatSnackBar }            from '@angular/material/snack-bar';
-import {
-  ActivatedRoute,
-  Router
-}                                 from '@angular/router';
-import { User }                   from '@supabase/supabase-js';
-import {
-  from,
-  of,
-  ReplaySubject
-}                                 from 'rxjs';
-import {
-  filter,
-  switchMap,
-  tap
-}                                 from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { User } from '@supabase/supabase-js';
+import { from, of, ReplaySubject } from 'rxjs';
+import { filter, switchMap, tap } from 'rxjs/operators';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
-import { SharedConstants }        from 'src/app/shared-interproject/SharedConstants';
-import { SupabaseService }        from '../../backend/supabase.service';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { SupabaseService } from '../../backend/supabase.service';
 
 @Injectable()
 export class UserManagementService {
