@@ -12,36 +12,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2  # This step checks out your repository's code
-        run: echo "Code checked out"
 
       - name: Fetch develop branch
-        run: |
-          echo "Fetching develop branch"
-          git fetch origin develop
+        run: git fetch origin develop
 
       - name: Check for changes in ./src
         id: check_changes
         run: |
-          echo "Checking for changes in ./src"
-          git diff --quiet origin/develop -- ./src && echo "::set-output name=changes_detected::false" || echo "::set-output name=changes_detected::true"
-
+          git diff --quiet origin/develop -- ./src || echo "::set-output name=changes_detected::true"
+      
       - name: Skip if no changes in ./src
-        run: |
-          if [ "${{ steps.check_changes.outputs.changes_detected }}" != "true" ]; then
-            echo "No changes detected in ./src, skipping further steps"
-            exit 1
-          fi
+        run: exit 1
+        if: steps.check_changes.outputs.changes_detected != 'true'
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20.x'  # Updated Node.js version
-        run: echo "Node.js set up"
 
       - name: Install Angular CLI
-        run: |
-          echo "Installing Angular CLI"
-          yarn global add @angular/cli # Use Yarn to install Angular CLI
+        run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
       - name: Cache Yarn dependencies
         uses: actions/cache@v2
@@ -50,19 +40,12 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-        run: echo "Yarn dependencies cached"
 
       - name: Clear Yarn Cache
-        run: |
-          echo "Clearing Yarn cache"
-          yarn cache clean
+        run: yarn cache clean
 
       - name: Install dependencies
-        run: |
-          echo "Installing dependencies"
-          yarn install # Use Yarn to install dependencies
+        run: yarn install # Use Yarn to install dependencies
 
       - name: Run tests
-        run: |
-          echo "Running tests"
-          yarn test-headless # Use Yarn to run tests
+        run: yarn test-headless # Use Yarn to run tests
