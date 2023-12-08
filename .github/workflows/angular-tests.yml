@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # This step checks out your repository's code
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
