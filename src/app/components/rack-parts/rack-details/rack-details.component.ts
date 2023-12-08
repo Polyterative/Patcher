@@ -28,3 +28,6 @@ export class RackDetailsComponent extends SubManager implements OnInit {
   
   
 }
+  duplicateRack(): void {
+    this.dataService.requestRackDuplication$.next();
+  }
