@@ -20,9 +20,9 @@ jobs:
         id: check_changes
         run: |
           git diff --quiet origin/develop -- ./src || echo "::set-output name=changes_detected::true"
-      
+
       - name: Skip if no changes in ./src
-        run: exit 1
+        run: exit 0
         if: steps.check_changes.outputs.changes_detected != 'true'
 
       - name: Setup Node.js
