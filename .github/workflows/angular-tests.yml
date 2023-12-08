@@ -10,13 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Paths Changes Filter
-        uses: dorny/paths-filter@v2.11.1
-        with:
-          filters: |
-            src:
-              - 'src/**'
-
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
