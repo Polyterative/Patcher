@@ -51,6 +51,7 @@ export class RackDetailDataService extends SubManager {
     this.manageSub(
       this.requestRackEditableStatusChange$
           .pipe(
+  requestRackDuplication$ = new Subject<void>();
             withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
             map(([_, x, y]) => {
               const editable: boolean = !y;
@@ -65,6 +66,19 @@ export class RackDetailDataService extends SubManager {
     
     this.manageSub(
       this.updateSingleRackData$
+    // when user requests rack duplication, duplicate the rack and update the local rack data
+    this.manageSub(
+      this.requestRackDuplication$
+          .pipe(
+            withLatestFrom(this.singleRackData$, this.rowedRackedModules$),
+            switchMap(([_, rack, modules]) => this.backend.duplicateRack(rack, modules)),
+            tap(newRackId => {
+              this.singleRackData$.next(newRackId);
+              this.snackBar.open('Rack duplicated successfully', undefined, {duration: 4000});
+            })
+          )
+          .subscribe()
+    );
           .pipe(
             // tap(x => this.singleRackData$.next(undefined)),
             switchMap(x => this.backend.get.rackWithId(x))
