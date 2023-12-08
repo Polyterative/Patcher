@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '20.x'  # Updated Node.js version
 
       - name: Install Angular CLI
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
