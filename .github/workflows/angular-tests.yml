@@ -13,6 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2  # This step checks out your repository's code
 
+      - name: Fetch develop branch
+        run: git fetch origin develop
+
+      - name: Check for changes in ./src
+        id: check_changes
+        run: |
+          git diff --quiet origin/develop -- ./src || echo "::set-output name=changes_detected::true"
+      
+      - name: Skip if no changes in ./src
+        run: exit 1
+        if: steps.check_changes.outputs.changes_detected != 'true'
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
