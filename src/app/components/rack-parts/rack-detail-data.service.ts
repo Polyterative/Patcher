@@ -17,6 +17,19 @@ import { ModuleDetailDataService } from '../module-parts/module-detail-data.serv
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
+
+  updateRackHeight(newHeight: number): void {
+    const currentRackData = this.singleRackData$.value;
+    if (currentRackData) {
+      this.backend.update.rack({...currentRackData, height: newHeight}).subscribe({
+        next: updatedRack => {
+          this.singleRackData$.next(updatedRack);
+          this.snackBar.open('Rack height updated successfully', 'Close', { duration: 3000 });
+        },
+        error: () => this.snackBar.open('Failed to update rack height', 'Close', { duration: 3000 })
+      });
+    }
+  }
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
