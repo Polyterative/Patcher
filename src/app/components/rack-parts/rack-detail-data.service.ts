@@ -18,6 +18,12 @@ import {
 import {SubManager} from '../../shared-interproject/directives/subscription-manager';
 import {SharedConstants} from '../../shared-interproject/SharedConstants';
 import {ModuleDetailDataService} from '../module-parts/module-detail-data.service';
+import {
+  InputDialogComponent,
+  InputDialogDataInModel, InputDialogDataOutModel
+} from "../../shared-interproject/dialogs/input-dialog/input-dialog.component";
+import {FormControl, Validators} from "@angular/forms";
+import {FormTypes} from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
@@ -25,6 +31,7 @@ export class RackDetailDataService extends SubManager {
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
+  renameCurrentRack$ = new Subject<void>();
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
@@ -53,29 +60,84 @@ export class RackDetailDataService extends SubManager {
     super();
     
     // when user toggles locked status of rack, update backend
-    this.manageSub(
-      this.requestRackEditableStatusChange$
-        .pipe(
-          withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
-          map(([_, x, y]) => {
-            const editable: boolean = !y;
-            this.isCurrentRackEditable$.next(editable);
-            x.locked = !editable;
-            return x;
-          }),
-          switchMap(x => this.backend.update.rack(x))
-        )
-        .subscribe()
-    );
+    this.requestRackEditableStatusChange$
+      .pipe(
+        withLatestFrom(this.singleRackData$, this.isCurrentRackEditable$),
+        map(([_, x, y]) => {
+          const editable: boolean = !y;
+          this.isCurrentRackEditable$.next(editable);
+          x.locked = !editable;
+          return x;
+        }),
+        switchMap(x => this.backend.update.rack(x)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
     
-    this.manageSub(
-      this.updateSingleRackData$
-        .pipe(
-          // tap(x => this.singleRackData$.next(undefined)),
-          switchMap(x => this.backend.get.rackWithId(x))
-        )
-        .subscribe(x => this.singleRackData$.next(x.data))
-    );
+    // when user renames rack, ask user for input and update local data and backend 
+    this.renameCurrentRack$
+      .pipe(
+        withLatestFrom(this.singleRackData$),
+        switchMap(([_, rack]) => {
+          
+          let formControl = new FormControl(rack.name);
+          
+          //add validation
+          formControl.addValidators(
+            [
+              Validators.required,
+              Validators.minLength(3),
+              Validators.maxLength(30),
+              // name cannot be empty characters
+              Validators.pattern('^(?!\\s*$).+')
+            ]
+          )
+          
+          
+          const data: InputDialogDataInModel = {
+            title: 'Rename Rack',
+            description: 'Please enter a new name for your rack',
+            type: FormTypes.TEXT,
+            control: formControl,
+            label: 'New Name'
+          };
+          
+          return this.dialog.open(
+            InputDialogComponent,
+            {
+              data,
+              disableClose: true
+            }
+          )
+            .afterClosed()
+            .pipe(
+              filter((x: InputDialogDataOutModel) => !!x.result),
+              map((x: InputDialogDataOutModel) => ({
+                newName: x.result,
+                rack
+              })),
+            );
+        }),
+        // properly destructuring the array
+        map(({newName, rack}) => {
+          rack.name = newName;
+          this.singleRackData$.next(rack);
+          return rack;
+        }),
+        switchMap(x => this.backend.update.rack(x)),
+        // request update of local data
+        tap(x => this.updateSingleRackData$.next(x.data[0].id)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe()
+    
+    this.updateSingleRackData$
+      .pipe(
+        // tap(x => this.singleRackData$.next(undefined)),
+        switchMap(x => this.backend.get.rackWithId(x)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(x => this.singleRackData$.next(x.data))
     
     // when updated rack data is received, update locked status observable
     this.manageSub(
@@ -87,7 +149,7 @@ export class RackDetailDataService extends SubManager {
     // when updated rack data is received, update rowedRackedModules$
     this.manageSub(
       this.singleRackData$.pipe(
-        tap(x => this.rowedRackedModules$.next(null)),
+        tap(() => this.rowedRackedModules$.next(null)),
         filter(x => !!x),
         switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
         withLatestFrom(this.singleRackData$)
