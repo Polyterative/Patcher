@@ -219,7 +219,8 @@ export class RackDetailDataService extends SubManager {
               title:       'Deletion',
               description: 'Are you sure you want to delete this item?',
               positive:    {label: '✔️ Delete'},
-              negative:    {label: '❌ Cancel'}
+              negative:    {label: '❌ Cancel'},
+              autofocusPositive: true
             };
   
             return this.dialog.open(
