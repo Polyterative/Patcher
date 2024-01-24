@@ -1,6 +1,6 @@
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { EMPTY, Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {EMPTY, Observable} from 'rxjs';
+import {catchError} from 'rxjs/operators';
 
 export class SharedConstants {
   
@@ -27,19 +27,23 @@ export class SharedConstants {
   
   static errorHandlerOperation<T>(snackBar: MatSnackBar) {
     return catchError<T, Observable<never>>(err => {
-      snackBar.open('❌ Operation failed', undefined, {duration: 8000});
+      snackBar.open('❌ Operation failed, please try again', undefined, {duration: 8000});
       return EMPTY;
     });
   }
   
   static errorSignup<T>(snackBar: MatSnackBar, msg?: string) {
-    return snackBar.open(`❌ Signup not possible \n ${ msg }`, undefined, {duration: 5000});
+    return snackBar.open(`❌ Signup not possible \n ${msg}`, undefined, {duration: 5000});
     
   }
   
   static errorLogin<T>(snackBar: MatSnackBar, msg?: string) {
-    return snackBar.open(`❌ Login  not possible ${ msg }`, undefined, {duration: 5000});
+    return snackBar.open(`❌ Login  not possible ${msg}`, undefined, {duration: 5000});
+    
+  }
   
+  static successCustom(snackBar: MatSnackBar, msg?: string) {
+    snackBar.open('✅ '+msg, undefined, {duration: 4000});
   }
   
   static successDelete(snackBar: MatSnackBar) {
