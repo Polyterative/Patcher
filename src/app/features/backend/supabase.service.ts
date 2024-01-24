@@ -528,10 +528,11 @@ export class SupabaseService {
         );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    rack:          (data: RackMinimal) => {
+    rack:          (data: RackMinimal, height: number) => {
       return rxFrom(
         this.supabase.from(this.paths.racks)
             .upsert({
+              height,
               id:          data.id,
               authorid:    data.author.id,
               name:        data.name,
