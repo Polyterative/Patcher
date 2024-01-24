@@ -19,27 +19,42 @@
     } as bag"
     >
       <ng-container *ngIf="bag.isCurrentRackPropertyOfCurrentUser">
-        <a mat-icon-button
-           matTooltip="Toggle rack lock"
-           (click)="dataService.requestRackEditableStatusChange$.next()"
+        <button mat-icon-button
+                matTooltip="Toggle rack lock"
+                (click)="dataService.requestRackEditableStatusChange$.next()"
         >
-          <mat-icon>{{bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline'}}</mat-icon>
-        </a>
-        <a mat-icon-button
-           [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
-           [disabled]="!bag.isCurrentRackEditable"
-           (click)="dataService.deleteRack$.next(data)"
+          <mat-icon>{{ bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline' }}</mat-icon>
+        </button>
+        <button mat-icon-button
+                [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Unlock rack to rename'"
+                [disabled]="!bag.isCurrentRackEditable"
+                (click)="dataService.renameCurrentRack$.next()"
+        >
+          <mat-icon>mode_edit</mat-icon>
+        </button>
+        <button mat-icon-button
+                [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
+                [disabled]="!bag.isCurrentRackEditable"
+                (click)="dataService.deleteRack$.next(data)"
         >
           <mat-icon>delete_forever</mat-icon>
-        </a>
+        </button>
+
       </ng-container>
     </ng-container>
     <div fxFlex="grow"></div>
-    <a mat-icon-button
-       matTooltip="Show details"
-       [routerLink]="['/racks/details',data.id]"
+    <button mat-icon-button
+            [matTooltip]="'Duplicate rack'"
+            [disabled]="false"
+            (click)="dataService.duplicateRack$.next(data)"
     >
-      <mat-icon>info</mat-icon>
-    </a>
+      <mat-icon>file_copy</mat-icon>
+    </button>
+    <!--    <button mat-icon-button-->
+    <!--       matTooltip="Show details"-->
+    <!--       [routerLink]="['/racks/details',data.id]"-->
+    <!--    >-->
+    <!--      <mat-icon>info</mat-icon>-->
+    <!--    </button>-->
   </div>
 </div>
