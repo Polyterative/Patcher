@@ -12,6 +12,7 @@ import { RackDetailDataService } from '../rack-detail-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackDetailsComponent extends SubManager implements OnInit {
+  newHeight: number;
   @Input() data: RackMinimal;
   
   constructor(
@@ -28,3 +29,11 @@ export class RackDetailsComponent extends SubManager implements OnInit {
   
   
 }
+  updateRackHeight(): void {
+    if (this.newHeight && this.data && this.data.id) {
+      this.backend.update.rack({ ...this.data, height: this.newHeight }).subscribe({
+        next: () => this.snackBar.open('Rack height updated successfully', 'Close', { duration: 3000 }),
+        error: () => this.snackBar.open('Failed to update rack height', 'Close', { duration: 3000 })
+      });
+    }
+  }
