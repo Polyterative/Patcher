@@ -46,7 +46,6 @@ export class RackBrowserDetailViewComponent implements OnInit {
           take(1)
         )
         .subscribe(data => {
-          // debugger
           this.dataService.updateSingleRackData$.next(data);
         });
     

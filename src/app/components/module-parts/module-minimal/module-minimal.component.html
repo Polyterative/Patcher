@@ -31,7 +31,7 @@
       ></app-module-part-description>
 
     </div>
-  
+
     <app-module-tags [data]="data"
                      *ngIf="!viewConfig.hideTags"
     ></app-module-tags>
@@ -68,8 +68,8 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-  
-  
+
+
           <button mat-icon-button
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
@@ -79,8 +79,8 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-  
-  
+
+
           <ng-container *ngIf="rackDataService.singleRackData$|async as rackData">
             <button mat-icon-button
                     [matTooltip]="'Add to '+rackData.name"

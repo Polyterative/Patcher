@@ -1,14 +1,20 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
-import { filter, takeUntil, withLatestFrom } from 'rxjs/operators';
-import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { RackedModule } from 'src/app/models/module';
-import { RackMinimal } from 'src/app/models/rack';
-import { ContextMenuItem, GeneralContextMenuDataService } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
-import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {Subject} from 'rxjs';
+import {filter, takeUntil, withLatestFrom} from 'rxjs/operators';
+import {RackDetailDataService} from 'src/app/components/rack-parts/rack-detail-data.service';
+import {SupabaseService} from 'src/app/features/backend/supabase.service';
+import {RackedModule} from 'src/app/models/module';
+import {RackMinimal} from 'src/app/models/rack';
+import {
+  ContextMenuItem,
+  GeneralContextMenuDataService
+} from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
+import {SubManager} from 'src/app/shared-interproject/directives/subscription-manager';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from '../../module-parts/module-minimal/module-minimal.component';
 
 export interface ModuleRightClick {
   $event: MouseEvent;
@@ -16,11 +22,11 @@ export interface ModuleRightClick {
 }
 
 @Component({
-  selector:        'app-rack-editor',
-  templateUrl:     './rack-editor.component.html',
-  styleUrls:       ['./rack-editor.component.scss'],
+  selector: 'app-rack-editor',
+  templateUrl: './rack-editor.component.html',
+  styleUrls: ['./rack-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers:       [GeneralContextMenuDataService]
+  providers: [GeneralContextMenuDataService]
 })
 export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
@@ -29,13 +35,13 @@ export class RackEditorComponent extends SubManager implements OnInit {
   
   viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
-    hideLabels:       true,
+    hideLabels: true,
     hideManufacturer: false,
-    hideDescription:  false,
-    hideButtons:      true,
-    hideHP:           false,
-    hideDates:        true,
-    hideTags:         true
+    hideDescription: false,
+    hideButtons: true,
+    hideHP: false,
+    hideDates: true,
+    hideTags: true
   };
   
   constructor(
@@ -69,72 +75,72 @@ export class RackEditorComponent extends SubManager implements OnInit {
                         rackedModule
                       }, and, b
                     ]) => {
-  
-          const duplicate$ = new Subject<ContextMenuItem>();
-          const delete$ = new Subject<ContextMenuItem>();
-  
+          
+          const duplicateModule$ = new Subject<ContextMenuItem>();
+          const deleteModule$ = new Subject<ContextMenuItem>();
+          
           this.contextMenu.menuItems$.next([
             {
-              id:       'name',
-              label:    `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ rackedModule.module.hp } HP)`,
-              data:     rackedModule,
+              id: 'name',
+              label: `${rackedModule.module.name} (${rackedModule.module.manufacturer.name}, ${rackedModule.module.hp} HP)`,
+              data: rackedModule,
               disabled: true,
-              click$:   new Subject<ContextMenuItem>()
+              click$: new Subject<ContextMenuItem>()
             },
             {
-              id:       'duplicate',
-              label:    'Duplicate',
-              icon:     'content_copy',
-              data:     rackedModule,
+              id: 'duplicate',
+              label: 'Duplicate',
+              icon: 'content_copy',
+              data: rackedModule,
               disabled: false,
-              click$:   duplicate$
+              click$: duplicateModule$
             },
             {
-              id:       'void-spacer',
-              label:    '-',
-              icon:     '',
-              data:     undefined,
+              id: 'void-spacer',
+              label: '-',
+              icon: '',
+              data: undefined,
               disabled: true,
-              click$:   new Subject<ContextMenuItem>()
+              click$: new Subject<ContextMenuItem>()
             },
             {
-              id:       'void-spacer',
-              label:    '-',
-              icon:     '',
-              data:     undefined,
+              id: 'void-spacer',
+              label: '-',
+              icon: '',
+              data: undefined,
               disabled: true,
-              click$:   new Subject<ContextMenuItem>()
+              click$: new Subject<ContextMenuItem>()
             },
             {
-              id:       'void-spacer',
-              label:    '-',
-              icon:     '',
-              data:     undefined,
+              id: 'void-spacer',
+              label: '-',
+              icon: '',
+              data: undefined,
               disabled: true,
-              click$:   new Subject<ContextMenuItem>()
+              click$: new Subject<ContextMenuItem>()
             },
             {
-              id:       'delete',
-              label:    'Delete from rack',
-              icon:     'delete',
-              data:     rackedModule,
+              id: 'delete',
+              label: 'Delete from rack',
+              icon: 'delete',
+              data: rackedModule,
               disabled: false,
-              click$:   delete$
+              click$: deleteModule$
             }
           ]);
-  
+          
           this.contextMenu.open$.next($event);
-  
+          
           this.manageSub(
-            duplicate$
+            duplicateModule$
               .pipe(
                 takeUntil(this.contextMenu.open$)
               )
               .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule))
           );
-  
+          
           this.manageSub(
-            delete$
+            deleteModule$
               .pipe(
                 takeUntil(this.contextMenu.open$)
               )
