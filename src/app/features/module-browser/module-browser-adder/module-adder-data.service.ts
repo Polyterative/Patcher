@@ -211,7 +211,8 @@ export class ModuleAdderDataService {
               negative:    {
                 label: 'Cancel',
                 theme: 'negative'
-              }
+              },
+              autofocusPositive: true
             };
   
             return this.dialog.open(
