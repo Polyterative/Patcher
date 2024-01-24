@@ -7,6 +7,7 @@ import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-
 import { DialogBase } from '../DialogBase';
 import { DialogDataInModelBase } from '../DialogDataStructures';
 import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
+import {takeUntil} from "rxjs/operators";
 
 export interface InputDialogDataInModel extends DialogDataInModelBase {
   control: FormControl,
@@ -34,6 +35,14 @@ export class InputDialogComponent extends DialogBase {
     public appState: AppStateService
   ) {
     super(data);
+    
+    this.data.control.valueChanges
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe((value) => {
+      this.isValid$.next(this.data.control.valid);
+    });
   }
 
 }

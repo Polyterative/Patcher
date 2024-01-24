@@ -15,6 +15,8 @@ export class SubManager implements OnDestroy {
   /**
    * Add a new subscription to manage.
    * @param {Subscription} [subscription] Subscription to add.
+   * deprecated
+   * @deprecated Use the takeUntil operator instead
    */
   manageSub(subscription?: Subscription) {
     if (subscription) {

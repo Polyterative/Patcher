@@ -142,6 +142,8 @@ export class ModuleDetailDataService {
           }
         });
     
+    
+    
   }
   
   ngOnDestroy(): void {
