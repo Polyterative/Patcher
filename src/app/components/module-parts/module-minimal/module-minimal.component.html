@@ -132,21 +132,21 @@
                rel="noopener noreferrer"
                [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' '+bag.singleModuleData.manufacturer.name"
             >
-              <mat-icon>search</mat-icon>
+              <mat-icon>open_in_new</mat-icon>
             </a>
 
           </ng-container>
-  
-  
-          <ng-container *ngIf="!bag.singleModuleData">
-            <a mat-icon-button
-               matTooltip="Show details"
-               [routerLink]="['/modules/details',data.id]"
-            >
-              <mat-icon>info</mat-icon>
-            </a>
-  
-          </ng-container>
+
+
+          <!--          <ng-container *ngIf="!bag.singleModuleData">-->
+          <!--            <a mat-icon-button-->
+          <!--               matTooltip="Show details"-->
+          <!--               [routerLink]="['/modules/details',data.id]"-->
+          <!--            >-->
+          <!--              <mat-icon>info</mat-icon>-->
+          <!--            </a>-->
+          <!--  -->
+          <!--          </ng-container>-->
 
         </div>
       </div>
