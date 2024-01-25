@@ -125,12 +125,19 @@
             >
               <mat-icon>menu_book</mat-icon>
             </a>
-  
+
+            <a mat-icon-button
+               matTooltip="Copy module name to clipboard"
+               (click)="dataService.copyModuleNameAndManufacturer$.next()"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </a>
+
             <a mat-icon-button
                matTooltip="Seach on Google"
                target="_blank"
                rel="noopener noreferrer"
-               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' '+bag.singleModuleData.manufacturer.name"
+               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' by '+bag.singleModuleData.manufacturer.name"
             >
               <mat-icon>open_in_new</mat-icon>
             </a>

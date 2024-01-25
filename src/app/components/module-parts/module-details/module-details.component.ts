@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+}                                 from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { DbModule } from 'src/app/models/module';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from '../module-minimal/module-minimal.component';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { SupabaseService }        from 'src/app/features/backend/supabase.service';
+import { DbModule }               from 'src/app/models/module';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+}                                 from '../module-minimal/module-minimal.component';
 
 @Component({
   selector:        'app-module-details',
@@ -26,7 +33,6 @@ export class ModuleDetailsComponent implements OnInit {
   
   constructor(
     public backend: SupabaseService,
-    private clipboard: Clipboard
     // userManagerService: UserManagementService
   ) {
     // console.error(patchService);
@@ -35,9 +41,4 @@ export class ModuleDetailsComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  copyModuleNameAndManufacturer(): void {
-    const textToCopy = `${this.data.name} by ${this.data.manufacturer.name}`;
-    this.clipboard.copy(textToCopy);
-  }
-  
 }
