@@ -14,11 +14,11 @@
   >
     <ng-container *ngIf="{
       isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
-      isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async)
-
+      isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
+      user:(userManagerService.loggedUser$|async)
     } as bag"
     >
-      <ng-container *ngIf="bag.isCurrentRackPropertyOfCurrentUser">
+      <ng-container *ngIf="bag.user&&bag.isCurrentRackPropertyOfCurrentUser">
         <button mat-icon-button
                 matTooltip="Toggle rack lock"
                 (click)="dataService.requestRackEditableStatusChange$.next()"
@@ -44,8 +44,8 @@
     </ng-container>
     <div fxFlex="grow"></div>
     <button mat-icon-button
-            [matTooltip]="'Duplicate rack'"
-            [disabled]="false"
+            [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+            [disabled]="!(userManagerService.loggedUser$|async)"
             (click)="dataService.duplicateRack$.next(data)"
     >
       <mat-icon>file_copy</mat-icon>
