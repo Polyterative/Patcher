@@ -8,7 +8,6 @@ import build from 'src/build';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BuildInfoComponent implements OnInit {
-  data = build;
   
   constructor() { }
   
