@@ -31,7 +31,7 @@
       ></app-module-part-description>
 
     </div>
-  
+
     <app-module-tags [data]="data"
                      *ngIf="!viewConfig.hideTags"
     ></app-module-tags>
@@ -68,8 +68,8 @@
               <mat-icon>eject</mat-icon>
             </button>
           </ng-container>
-  
-  
+
+
           <button mat-icon-button
                   matTooltip="Add to rack"
                   [title]="!bag.user ? 'Login to add to modules your rack':''"
@@ -79,8 +79,8 @@
           >
             <mat-icon>playlist_add</mat-icon>
           </button>
-  
-  
+
+
           <ng-container *ngIf="rackDataService.singleRackData$|async as rackData">
             <button mat-icon-button
                     [matTooltip]="'Add to '+rackData.name"
@@ -125,28 +125,35 @@
             >
               <mat-icon>menu_book</mat-icon>
             </a>
-  
+
+            <a mat-icon-button
+               matTooltip="Copy module name to clipboard"
+               (click)="dataService.copyModuleNameAndManufacturer$.next()"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </a>
+
             <a mat-icon-button
                matTooltip="Seach on Google"
                target="_blank"
                rel="noopener noreferrer"
-               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' '+bag.singleModuleData.manufacturer.name"
+               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' by '+bag.singleModuleData.manufacturer.name"
             >
-              <mat-icon>search</mat-icon>
+              <mat-icon>open_in_new</mat-icon>
             </a>
 
           </ng-container>
-  
-  
-          <ng-container *ngIf="!bag.singleModuleData">
-            <a mat-icon-button
-               matTooltip="Show details"
-               [routerLink]="['/modules/details',data.id]"
-            >
-              <mat-icon>info</mat-icon>
-            </a>
-  
-          </ng-container>
+
+
+          <!--          <ng-container *ngIf="!bag.singleModuleData">-->
+          <!--            <a mat-icon-button-->
+          <!--               matTooltip="Show details"-->
+          <!--               [routerLink]="['/modules/details',data.id]"-->
+          <!--            >-->
+          <!--              <mat-icon>info</mat-icon>-->
+          <!--            </a>-->
+          <!--  -->
+          <!--          </ng-container>-->
 
         </div>
       </div>

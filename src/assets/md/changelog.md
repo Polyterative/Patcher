@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.1](https://github.com/Polyterative/Patcher/compare/v4.1.0...v4.1.1) (2024-01-25)
+
+
+### Bug Fixes
+
+* **cards:** correct labels for buttons when not logged ([ba58179](https://github.com/Polyterative/Patcher/commit/ba58179d017bc3f188f5ef36348ebba60cffe9f5))
+
+## [4.1.0](https://github.com/Polyterative/Patcher/compare/v4.0.3...v4.1.0) (2024-01-24)
+
 ### [4.0.3](https://github.com/Polyterative/Patcher/compare/v4.0.2...v4.0.3) (2023-12-01)
 
 ### [4.0.2](https://github.com/Polyterative/Patcher/compare/v4.0.1...v4.0.2) (2023-09-28)

@@ -28,18 +28,18 @@
       ></mat-divider>
       <div class="row buttons opacizeOnHover"
       >
-        <a mat-icon-button
-           matTooltip="Share patch"
-           (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+        <button mat-icon-button
+                matTooltip="Share patch"
+                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
         >
           <mat-icon>share</mat-icon>
-        </a>
-        <a mat-icon-button
-           matTooltip="Copy patch text coming soon"
-           [disabled]="true"
+        </button>
+        <button mat-icon-button
+                matTooltip="Copy patch text coming soon"
+                [disabled]="true"
         >
           <mat-icon>speaker_notes</mat-icon>
-        </a>
+        </button>
         <div fxFlex="grow"></div>
         <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
           <button mat-icon-button
@@ -50,7 +50,7 @@
             <mat-icon>delete_forever</mat-icon>
           </button>
           <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-          
+
             <button mat-icon-button
                     matTooltip="Edit patch"
                     [disabled]="!bag.user"
@@ -69,13 +69,13 @@
             </button>
           </ng-container>
         </ng-container>
-      
-        <a mat-icon-button
-           matTooltip="Show details"
-           [routerLink]="['/patches/details',data.id]"
-        >
-          <mat-icon>info</mat-icon>
-        </a>
+
+        <!--        <button mat-icon-button-->
+        <!--                matTooltip="Show details"-->
+        <!--                [routerLink]="['/patches/details',data.id]"-->
+        <!--        >-->
+        <!--          <mat-icon>info</mat-icon>-->
+        <!--        </button>-->
       </div>
     </ng-container>
   </div>

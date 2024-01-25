@@ -2,12 +2,12 @@
 <div fxLayout="column "
      fxLayoutGap="1rem"
 >
-  <div fxFlex="100"><h1 mat-dialog-title>{{title}}</h1></div>
+  <div fxFlex="100"><h1 mat-dialog-title>{{ title }}</h1></div>
   <div fxFlex="100"
        *ngIf="description"
   >
     <mat-dialog-content>
-      {{description}}
+      {{ description }}
     </mat-dialog-content>
   </div>
   <lib-mat-form-entity fxFlex="100"
@@ -22,19 +22,20 @@
   >
     <app-brand-primary-button fxFlex="100"
                               (click$)="dialogRef.close({result: undefined})"
-    >Annulla
+    >Cancel
     </app-brand-primary-button>
     <div fxFlex="grow"></div>
     <app-brand-primary-button fxFlex="100"
                               (click$)="dialogRef.close({result: data.control.value})"
-                              [error]="!data.control.valid"
-    >Conferma
+                              [disabled]="!(isValid$ | async)"
+
+    >Confirm
     </app-brand-primary-button>
 
   </div>
-  <mat-progress-bar mode="indeterminate"
-                    [style.visibility]="data.control.valid ? 'hidden' : 'visible' "
-  ></mat-progress-bar>
+  <!--  <mat-progress-bar mode="indeterminate"-->
+  <!--                    [style.visibility]="data.control.valid ? 'hidden' : 'visible' "-->
+  <!--  ></mat-progress-bar>-->
 
 </div>
 <!--</div>-->
