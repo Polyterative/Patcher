@@ -5,7 +5,8 @@
          class="root"
     >
       <div fxFlex="auto"
-           fxLayout="row wrap"
+           class=" gap1"
+           fxLayout="row wrap "
            fxLayout.lt-sm="column"
            fxLayoutGap="1rem"
       >
@@ -34,17 +35,30 @@
             </div>
           </app-label-value-showcase>
         </div>
+        <div fxFlex="auto"
+             fxFlex.lt-sm="auto"
+        >
+          <app-label-value-showcase label="Need help?"
+                                    [bigText]="false"
+          >
+            <div class="col gap1">
+              <div>
+                • Check out the <a href="https://docs.patcher.xyz/what-is-this/readme" target="_blank">documentation</a>
+              </div>
+              <div>
+                • Join the <a href="https://discord.gg/3WvZsQX" target="_blank">Discord</a> server
+              </div>
+
+            </div>
+          </app-label-value-showcase>
+        </div>
         <app-discord-widget fxFlex="auto"
                             fxFlex.lt-sm="auto"
         ></app-discord-widget>
         <app-feedback-box fxFlex="auto"
                           fxFlex.lt-sm="auto"
         ></app-feedback-box>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
-          <app-producthunt-badge></app-producthunt-badge>
-        </div>
+
       </div>
       <mat-divider inset="true"></mat-divider>
       <div class="row gap1"
@@ -63,6 +77,6 @@
           THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
       </div>
     </div>
-  
+
   </div>
 </div>
