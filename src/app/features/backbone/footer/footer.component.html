@@ -4,15 +4,18 @@
     <div fxLayout="column"
          class="root"
     >
+      <!--      all equidistant-->
       <div fxFlex="auto"
-           class=" gap1"
-           fxLayout="row wrap "
+           class="gap2"
+           fxLayout="row wrap"
            fxLayout.lt-sm="column"
-           fxLayoutGap="1rem"
       >
-        <div class="col gap1">
-          <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
-          <app-label-value-showcase label="Version">{{ data.version }}</app-label-value-showcase>
+        <div fxFlex="auto"
+             fxFlex.lt-sm="auto">
+          <div class="col gap1">
+            <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
+            <app-label-value-showcase label="Version">{{ data.version }}</app-label-value-showcase>
+          </div>
         </div>
 
         <div fxFlex="auto"
