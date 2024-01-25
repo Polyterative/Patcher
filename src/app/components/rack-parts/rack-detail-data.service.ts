@@ -364,10 +364,18 @@ export class RackDetailDataService extends SubManager {
     // add module from bottom picker
     this.addModuleToRack$
       .pipe(
-        switchMap(module => this.backend.add.rackModule(
-          module.id,
-          this.singleRackData$.value.id
-        )),
+        withLatestFrom(this.userService.loggedUser$, this.singleRackData$),
+        switchMap(([module, user, rack]) => {
+          if (!this.isAuthorizedToAddModule(user, rack)) {
+            this.snackBar.open('Unauthorized to add module to rack', null, {duration: 2000});
+            return throwError('Unauthorized to add module to rack');
+          }
+          if (!this.isValidModuleId(module.id) || !this.isValidRackId(rack.id)) {
+            this.snackBar.open('Invalid module or rack ID', null, {duration: 2000});
+            return throwError('Invalid module or rack ID');
+          }
+          return this.backend.add.rackModule(module.id, rack.id);
+        }),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(moduleToAdd => {
@@ -397,6 +405,20 @@ export class RackDetailDataService extends SubManager {
   private createNewRackOnBackendForCurrentUser() {
     return this.backend.add.rack(
       {
+private isAuthorizedToAddModule(user: User, rack: Rack): boolean {
+  // Replace with actual authorization logic
+  return user && rack && user.id === rack.author.id;
+}
+
+private isValidModuleId(moduleId: number): boolean {
+  // Replace with actual validation logic
+  return typeof moduleId === 'number' && moduleId > 0;
+}
+
+private isValidRackId(rackId: number): boolean {
+  // Replace with actual validation logic
+  return typeof rackId === 'number' && rackId > 0;
+}
         authorid: this.backend.getUser().id,
         name: this.bumpUpVersionInNameOfOfRack(),
         hp: this.singleRackData$.value.hp,
