@@ -1,11 +1,22 @@
-﻿import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject
+}                     from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef
+}                     from '@angular/material/dialog';
 import { DialogBase } from '../DialogBase';
-import { DialogDataInModelBase, DialogLabelDefinition } from '../DialogDataStructures';
+import {
+  DialogDataInModelBase,
+  DialogLabelDefinition
+}                     from '../DialogDataStructures';
 
 export interface ConfirmDialogDataInModel extends DialogDataInModelBase {
   positive?: DialogLabelDefinition,
   negative?: DialogLabelDefinition;
+  autofocusPositive?: boolean;
 }
 
 export interface ConfirmDialogDataOutModel {

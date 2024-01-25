@@ -1,14 +1,38 @@
-import { Injectable } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, merge, of, Subject } from 'rxjs';
-import { filter, map, share, startWith, switchMap, tap } from 'rxjs/operators';
+import { Injectable }       from '@angular/core';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators
+}                           from '@angular/forms';
+import { MatDialog }        from '@angular/material/dialog';
+import { MatSnackBar }      from '@angular/material/snack-bar';
+import {
+  BehaviorSubject,
+  merge,
+  of,
+  Subject
+}                           from 'rxjs';
+import {
+  filter,
+  map,
+  share,
+  startWith,
+  switchMap,
+  tap
+}                           from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
-import { MinimalModule } from 'src/app/models/module';
-import { CustomValidators, FormTypes, getCleanedValueId } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
-import { SupabaseService } from '../../backend/supabase.service';
+import { MinimalModule }    from 'src/app/models/module';
+import {
+  CustomValidators,
+  FormTypes,
+  getCleanedValueId
+}                           from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+}                           from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SupabaseService }  from '../../backend/supabase.service';
 
 @Injectable()
 export class ModuleAdderDataService {
