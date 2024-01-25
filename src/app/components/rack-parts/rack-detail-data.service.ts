@@ -279,7 +279,23 @@ export class RackDetailDataService extends SubManager {
     // on rack delete, ask for confirmation and delete rack on backend
     this.deleteRack$
       .pipe(
-        switchMap(x => {
+        withLatestFrom(this.singleRackData$),
+        switchMap(([x, rack]) => {
+          // Authorization and validation check
+          if (!this.isAuthorizedToDelete(rack) || !this.isValidRackId(rack.id)) {
+            this.snackBar.open('Unauthorized or invalid rack ID', null, {duration: 2000});
+            return throwError('Unauthorized or invalid rack ID');
+          }
+
+          // Confirmation dialog update
+          const data: ConfirmDialogDataInModel = {
+            title: 'Confirm Deletion',
+            description: 'Deleting a rack is irreversible.\nAre you absolutely sure you want to delete this rack?',
+            positive: {label: 'Confirm Delete'},
+            negative: {label: 'Cancel'}
+          };
+
+          return this.dialog.open(ConfirmDialogComponent, {data, disableClose: true})
           
           const data: ConfirmDialogDataInModel = {
             title: 'Deletion',
