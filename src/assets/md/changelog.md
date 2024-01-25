@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.2](https://github.com/Polyterative/Patcher/compare/v4.1.1...v4.1.2) (2024-01-25)
+
+
+### Features
+
+* **footer:** cleanup + add links ([ee813d1](https://github.com/Polyterative/Patcher/commit/ee813d13a45b5a022c3d488a90c3e3d4fec733aa))
+
 ### [4.1.1](https://github.com/Polyterative/Patcher/compare/v4.1.0...v4.1.1) (2024-01-25)
 
 
