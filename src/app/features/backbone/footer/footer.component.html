@@ -10,9 +10,11 @@
            fxLayout.lt-sm="column"
            fxLayoutGap="1rem"
       >
-        <app-build-info fxFlex="auto"
-                        fxFlex.lt-sm="auto"
-        ></app-build-info>
+        <div class="col gap1">
+          <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
+          <app-label-value-showcase label="Version">{{ data.version }}</app-label-value-showcase>
+        </div>
+
         <div fxFlex="auto"
              fxFlex.lt-sm="auto"
         >
@@ -48,7 +50,9 @@
               <div>
                 • Join the <a href="https://discord.gg/3WvZsQX" target="_blank">Discord</a> server
               </div>
-
+              <div>
+                • <a href="https://patcher.statuspage.io/" target="_blank">Status page</a>
+              </div>
             </div>
           </app-label-value-showcase>
         </div>
@@ -73,41 +77,60 @@
         <div fxFlex="auto"
              fxFlex.lt-sm="auto"
         >
-          <app-label-value-showcase label="Links"
+          <app-label-value-showcase label="Learn Patcher"
                                     [bigText]="false"
           >
+            <!--            LEARN PATCHER.XYZ-->
+            <!--            Patches-->
+            <!--            Modules-->
+            <!--            Racks-->
+            <!--            Collection-->
             <div class="col gap1">
               <div>
-                • <a href="https://docs.patcher.xyz/what-is-this/readme" target="_blank">Quick Start</a>
+                • <a href="https://docs.patcher.xyz/what-is-this/readme" target="_blank">Patcher Quick Start</a>
               </div>
               <div>
-                • <a href="https://docs.patcher.xyz/the-project/the-project" target="_blank">Frequently Asked
-                Questions</a>
+                • <a href="https://docs.patcher.xyz/the-project/the-project" target="_blank">FAQ</a>
               </div>
               <div>
-                • <a href="https://docs.patcher.xyz/learn/modular-glossary" target="_blank">Modular Glossary</a>
+                • <a href="https://docs.patcher.xyz/learn-patcher.xyz/modules" target="_blank">Modules</a>
+              </div>
+              <div>
+                • <a href="https://docs.patcher.xyz/learn-patcher.xyz/racks" target="_blank">Racks</a>
+              </div>
+              <div>
+                • <a href="https://docs.patcher.xyz/learn-patcher.xyz/patches" target="_blank">Patches</a>
+              </div>
+              <div>
+                • <a href="https://docs.patcher.xyz/learn-patcher.xyz/collection" target="_blank">Collection</a>
+              </div>
+              <div>
+                • <a href="https://docs.patcher.xyz/learn/modular-glossary" target="_blank">Learn Modular Concepts</a>
               </div>
             </div>
           </app-label-value-showcase>
         </div>
 
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
-          <app-label-value-showcase label="Partners"
+        <div class="col gap1">
+          <app-label-value-showcase label="Want to follow the project and suggest features?">
+
+            <a href="https://discord.gg/pYz3gagUDA">
+              Join the Discord server
+            </a>
+          </app-label-value-showcase>
+          <app-label-value-showcase label="Want to chat?">
+            <a
+              href="mailto:europatcher@outlook.com?subject=My%20great%20idea&body=Hello!%20I%20have%20an%20awesome%20idea%3A%0D%0A...">Contact
+              us</a>
+          </app-label-value-showcase>
+          <app-label-value-showcase label="Partners and Sponsors"
           >
             <div class="col gap1">
               <a href="mailto:europatcher@outlook.com" target="_blank">Become a Partner</a>
             </div>
           </app-label-value-showcase>
-        </div>
 
-        <app-discord-widget fxFlex="auto"
-                            fxFlex.lt-sm="auto"
-        ></app-discord-widget>
-        <app-feedback-box fxFlex="auto"
-                          fxFlex.lt-sm="auto"
-        ></app-feedback-box>
+        </div>
 
       </div>
       <mat-divider inset="true"></mat-divider>
