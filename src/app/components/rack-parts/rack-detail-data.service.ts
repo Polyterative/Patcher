@@ -1,29 +1,63 @@
-import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
-import {ElementRef, Injectable} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {Router} from '@angular/router';
+import {
+  CdkDragDrop,
+  moveItemInArray
+} from '@angular/cdk/drag-drop';
+import {
+  ElementRef,
+  Injectable
+} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import _ from 'lodash';
-import {BehaviorSubject, combineLatest, of, ReplaySubject, Subject} from 'rxjs';
-import {catchError, filter, map, switchMap, take, takeUntil, tap, withLatestFrom} from 'rxjs/operators';
-import {UserManagementService} from '../../features/backbone/login/user-management.service';
-import {SupabaseService} from '../../features/backend/supabase.service';
-import {MinimalModule, RackedModule} from '../../models/module';
-import {Rack, RackMinimal} from '../../models/rack';
+import {
+  BehaviorSubject,
+  combineLatest,
+  from,
+  of,
+  ReplaySubject,
+  Subject
+} from 'rxjs';
+import {
+  catchError,
+  filter,
+  map,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  withLatestFrom
+} from 'rxjs/operators';
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import {
+  MinimalModule,
+  RackedModule
+} from '../../models/module';
+import {
+  Rack,
+  RackMinimal
+} from '../../models/rack';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,
   ConfirmDialogDataOutModel
 } from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
-import {SubManager} from '../../shared-interproject/directives/subscription-manager';
-import {SharedConstants} from '../../shared-interproject/SharedConstants';
-import {ModuleDetailDataService} from '../module-parts/module-detail-data.service';
+import { SubManager } from '../../shared-interproject/directives/subscription-manager';
+import { SharedConstants } from '../../shared-interproject/SharedConstants';
+import { ModuleDetailDataService } from '../module-parts/module-detail-data.service';
 import {
   InputDialogComponent,
-  InputDialogDataInModel, InputDialogDataOutModel
+  InputDialogDataInModel,
+  InputDialogDataOutModel
 } from "../../shared-interproject/dialogs/input-dialog/input-dialog.component";
-import {FormControl, Validators} from "@angular/forms";
-import {FormTypes} from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
+import {
+  FormControl,
+  Validators
+} from "@angular/forms";
+import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
+import domtoimage from 'dom-to-image';
+
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
@@ -32,12 +66,30 @@ export class RackDetailDataService extends SubManager {
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
   renameCurrentRack$ = new Subject<void>();
+  // @ViewChild('screen') screen: ElementRef;
+  // @ViewChild('canvas') canvas: ElementRef;
+  downloadRackImageToUserComputer$ = new Subject<{
+    // screen: ElementRef,
+    canvas: ElementRef,
+    download: ElementRef
+  }>();
+  //
+  currentDownloadElementRef$: BehaviorSubject<{
+    screen: ElementRef,
+  } | undefined> = new BehaviorSubject<{
+    screen: ElementRef,
+  }>(undefined);
+  
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
-  rackOrderChange$ = new Subject<{ event: CdkDragDrop<ElementRef>, newRow: number, module: RackedModule }>();
+  rackOrderChange$ = new Subject<{
+    event: CdkDragDrop<ElementRef>,
+    newRow: number,
+    module: RackedModule
+  }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
   userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
@@ -46,6 +98,7 @@ export class RackDetailDataService extends SubManager {
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
   requestRackedModulesDbSync$ = new Subject<void>();
+  //
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -58,6 +111,36 @@ export class RackDetailDataService extends SubManager {
     private moduleDetailDataService: ModuleDetailDataService
   ) {
     super();
+    
+    // when user requests to download rack image, download it using HTML2Canvas
+    this.downloadRackImageToUserComputer$.pipe(
+      tap(x => this.snackBar.open('Downloading image...', undefined, {duration: 4000})),
+      withLatestFrom(this.currentDownloadElementRef$),
+      switchMap(([_, references]) => from(
+        domtoimage.toJpeg(<any>references.screen.nativeElement, {
+          quality: 0.9,
+          bgcolor: '#ffffff',
+        })
+      )),
+      withLatestFrom(this.singleRackData$),
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(
+        ([imageData, rackData]) => {
+          
+          const link = document.createElement('a');
+          let downloadName = `${ rackData.name } by ${ rackData.author.username } - ${ rackData.hp } HP - ${ rackData.rows } rows - ${ new Date().toLocaleDateString() }`;
+          link.download = `${ downloadName }.jpeg`;
+          // replace any characters that make use problems in the download filename
+          link.download = link.download.replace(/[/\\?%*:|"<>]/g, '-');
+          link.href = imageData;
+          link.click();
+          link.remove();
+          
+          this.snackBar.open('Image downloaded: ' + downloadName, undefined, {duration: 5000});
+        }
+      );
+    
     
     // when user toggles locked status of rack, update backend
     this.requestRackEditableStatusChange$
@@ -140,11 +223,12 @@ export class RackDetailDataService extends SubManager {
       .subscribe(x => this.singleRackData$.next(x.data))
     
     // when updated rack data is received, update locked status observable
-    this.manageSub(
-      this.singleRackData$
-        .pipe(filter(x => !!x))
-        .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
-    );
+    this.singleRackData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
     
     // when updated rack data is received, update rowedRackedModules$
     this.manageSub(
@@ -184,7 +268,7 @@ export class RackDetailDataService extends SubManager {
             // nothing to do, not moving unracked module
             this.snackBar.open(
               `Please move unracked module to a suitable position inside your rack.
-                Your rack has ${rack.rows} rows`,
+                Your rack has ${ rack.rows } rows`,
               null,
               {duration: 8000});
             
@@ -315,17 +399,17 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         switchMap(() => this.askForConfirmationWhenDuplicatingRack()),
         tap(() => this.snackBar.open('Creating new rack...', undefined,)),
-        withLatestFrom(this.duplicateRack$),
+        withLatestFrom(this.duplicateRack$, this.userService.loggedUser$),
         // create new rack, to the current user, with the same modules, but with an_updated_name, 
-        switchMap(() => {
+        switchMap(([_, __, user]) => {
           // create new rack on the backend,with a new author: current user
-          return this.createNewRackOnBackendForCurrentUser().pipe(
+          return this.createNewRackOnBackendForCurrentUser(user.id).pipe(
             map(x => (x.data[0].id))
           );
         }),
         // wait for the new rack id to arrive, then update the rack modules with the new rack id,
         switchMap(newlyCreatedRackId => {
-            history.replaceState({}, '', `/racks/details/${newlyCreatedRackId}`);
+          history.replaceState({}, '', `/racks/details/${ newlyCreatedRackId }`);
             
             const rackModules = this.removeInformationFromModulesOfCurrentRack(newlyCreatedRackId);
             
@@ -378,10 +462,10 @@ export class RackDetailDataService extends SubManager {
     return rackModules;
   }
   
-  private createNewRackOnBackendForCurrentUser() {
+  private createNewRackOnBackendForCurrentUser(userId: string) {
     return this.backend.add.rack(
       {
-        authorid: this.backend.getUser().id,
+        authorid: userId,
         name: this.bumpUpVersionInNameOfOfRack(),
         hp: this.singleRackData$.value.hp,
         rows: this.singleRackData$.value.rows,
@@ -419,10 +503,10 @@ export class RackDetailDataService extends SubManager {
     const versionMatch = originalName.match(versionRegex);
     if (versionMatch) {
       const versionNumber = parseInt(versionMatch[1], 10);
-      return originalName.replace(versionRegex, `V${versionNumber + 1}`);
+      return originalName.replace(versionRegex, `V${ versionNumber + 1 }`);
     } else {
       // if original name does not end with version "V" something you with a number, add version "V2"
-      return `${originalName} V2`;
+      return `${ originalName } V2`;
     }
   }
   
@@ -439,8 +523,8 @@ export class RackDetailDataService extends SubManager {
   
   /*
    check if there are modules without racking id, because they have not been synced with the backend yet,
-    probably because they are new, and have not been saved to the backend yet 
-  */
+   probably because they are new, and have not been saved to the backend yet 
+   */
   private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
     return rackModules.flatMap(row => row)
       .filter(module => module.rackingData.id === undefined).length > 0;
@@ -542,4 +626,6 @@ export class RackDetailDataService extends SubManager {
     }
     this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
+  
+  
 }

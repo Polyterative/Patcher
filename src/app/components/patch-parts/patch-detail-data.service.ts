@@ -1,16 +1,43 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import {
+  Injectable,
+  OnDestroy
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
-import { filter, map, pairwise, switchMap, take, takeUntil, tap, withLatestFrom } from 'rxjs/operators';
-import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import {
+  BehaviorSubject,
+  ReplaySubject,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  map,
+  pairwise,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+  withLatestFrom
+} from 'rxjs/operators';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
 import { PatchConnection } from '../../models/connection';
-import { CVConnectionEntity, CVwithModule } from '../../models/cv';
+import {
+  CVConnectionEntity,
+  CVwithModule
+} from '../../models/cv';
 import { Patch } from '../../models/patch';
+
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
@@ -23,7 +50,7 @@ export class PatchDetailDataService implements OnDestroy {
   removePatchFromCollection$ = new Subject<number>();
   //
   formData = {
-    name:        {
+    name: {
       control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.min(3),
@@ -40,7 +67,10 @@ export class PatchDetailDataService implements OnDestroy {
   //
   clickOnModuleCV$ = new Subject<CVConnectionEntity>();
   resetSelectedForConnection$ = new Subject<void>();
-  selectedForConnection$ = new BehaviorSubject<{ a: CVConnectionEntity | null, b: CVConnectionEntity | null }>({
+  selectedForConnection$ = new BehaviorSubject<{
+    a: CVConnectionEntity | null,
+    b: CVConnectionEntity | null
+  }>({
     a: null,
     b: null
   });
@@ -70,222 +100,236 @@ export class PatchDetailDataService implements OnDestroy {
     //   });
     
     this.updateSinglePatchData$
-        .pipe(
-          tap(x => this.singlePatchData$.next(undefined)),
-          tap(x => this.patchConnections$.next(null)),
-          tap(x => this.editorConnections$.next(null)),
-          switchMap(x => this.backend.get.patchWithId(x)),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => this.singlePatchData$.next(x.data));
+      .pipe(
+        tap(x => this.singlePatchData$.next(undefined)),
+        tap(x => this.patchConnections$.next(null)),
+        tap(x => this.editorConnections$.next(null)),
+        switchMap(x => this.backend.get.patchWithId(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => this.singlePatchData$.next(x.data));
     
     this.removePatchFromCollection$
-        .pipe(
-          switchMap(x => this.backend.delete.userPatch(x)),
-          withLatestFrom(this.updateSinglePatchData$),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(([a, b]) => {
-          snackBar.open('Removed', undefined, {duration: 1000});
-          this.updateSinglePatchData$.next(b);
-        });
+      .pipe(
+        switchMap(x => this.backend.delete.userPatch(x)),
+        withLatestFrom(this.updateSinglePatchData$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([a, b]) => {
+        snackBar.open('Removed', undefined, {duration: 1000});
+        this.updateSinglePatchData$.next(b);
+      });
     
     this.formData.name.control.valueChanges
-        .pipe(
-          filter(x => !!this.singlePatchData$.value),
-          filter(x => this.formData.name.control.valid),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(input => this.singlePatchData$.value.name = input);
+      .pipe(
+        filter(x => !!this.singlePatchData$.value),
+        filter(x => this.formData.name.control.valid),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(input => this.singlePatchData$.value.name = input);
     //
     this.formData.description.control.valueChanges
-        .pipe(
-          filter(x => !!this.singlePatchData$.value),
-          filter(x => this.formData.description.control.valid),
-          filter(x => !!this.formData.description.control.value || this.formData.description.control.value == ''),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(input => this.singlePatchData$.value.description = input);
+      .pipe(
+        filter(x => !!this.singlePatchData$.value),
+        filter(x => this.formData.description.control.valid),
+        filter(x => !!this.formData.description.control.value || this.formData.description.control.value == ''),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(input => this.singlePatchData$.value.description = input);
     
     this.singlePatchData$
-        .pipe(
-          filter(x => !!this.singlePatchData$.value),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(data => {
-          this.formData.name.control.reset();
-          this.formData.description.control.reset();
-  
-          this.formData.name.control.patchValue(data.name);
-  
-          if (!!data.description) {
-            this.formData.description.control.patchValue(data.description);
-          }
-        });
-  
+      .pipe(
+        filter(x => !!this.singlePatchData$.value),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => {
+        this.formData.name.control.reset();
+        this.formData.description.control.reset();
+        
+        this.formData.name.control.patchValue(data.name);
+        
+        if (!!data.description) {
+          this.formData.description.control.patchValue(data.description);
+        }
+      });
+    
     this.singlePatchData$
-        .pipe(
-          filter(x => !!x),
-          switchMap(x => this.backend.get.patchConnections(x.id)),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(data => this.patchConnections$.next(data));
-  
+      .pipe(
+        filter(x => !!x),
+        switchMap(x => this.backend.get.patchConnections(x.id)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => this.patchConnections$.next(data));
+    
+    // if patch is owned by logged-in user, open editing panel on patch load
     this.singlePatchData$
-        .pipe(
-          filter(x => !!x),
-          filter(x => !!this.backend.getUser()),
-          take(1),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(data => {
-          this.patchEditingPanelOpenState$.next(
-            !!data && data.author && this.backend.getUser() && this.backend.getUser().id == data.author.id
-          );
-        });
+      .pipe(
+        filter(x => !!x),
+        // check if patch is owned by logged-in user
+        withLatestFrom(this.backend.getUserSession$()),
+        filter(([patch, user]) => !!patch && !!user && patch.author.id == user.id),
+        // check data integrity and if ids exist
+        filter(([patch, user]) => !!patch && !!patch.id && user && !!user.id),
+        take(1),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([patch, user]) => {
+        // open editing panel only if patch is owned by logged-in user
+        this.patchEditingPanelOpenState$.next(
+          patch.author.id == user.id
+        );
+        
+      });
     
     this.patchEditingPanelOpenState$
-        .pipe(
-          filter(x => !x),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(value => this.resetSelectedForConnection$.next());
+      .pipe(
+        filter(x => !x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(value => this.resetSelectedForConnection$.next());
     
     this.patchEditingPanelOpenState$
-        .pipe(
-          pairwise(),
-          filter(x => x[0] == true && x[1] == false),
-          filter(x => !!this.singlePatchData$.value),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
+      .pipe(
+        pairwise(),
+        filter(x => x[0] == true && x[1] == false),
+        filter(x => !!this.singlePatchData$.value),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
     this.resetSelectedForConnection$
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(value => this.selectedForConnection$.next({
-          a: null,
-          b: null
-        }));
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(value => this.selectedForConnection$.next({
+        a: null,
+        b: null
+      }));
     
     this.clickOnModuleCV$
-        .pipe(
-          withLatestFrom(this.selectedForConnection$),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(([x, z]) => {
-  
-          switch (x.kind) {
-            case 'in':
-              this.selectedForConnection$.next({
-                a: z.a,
-                b: x
-              });
-              break;
-            case 'out':
-  
-              this.selectedForConnection$.next({
-                a: x,
-                b: z.b
-              });
-              break;
-          }
-  
-        });
+      .pipe(
+        withLatestFrom(this.selectedForConnection$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([x, z]) => {
+        
+        switch (x.kind) {
+          case 'in':
+            this.selectedForConnection$.next({
+              a: z.a,
+              b: x
+            });
+            break;
+          case 'out':
+            
+            this.selectedForConnection$.next({
+              a: x,
+              b: z.b
+            });
+            break;
+        }
+        
+      });
     
     this.confirmSelectedConnection$
-        .pipe(
-          withLatestFrom(this.editorConnections$),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(([_, patchConnections]) => {
-          const selectedForConnection: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } = this.selectedForConnection$.value;
-  
-          const patch: Patch = this.singlePatchData$.value;
-  
-          const newConnection: { patch: Patch; a: CVwithModule; b: CVwithModule } = {
-            a: selectedForConnection.a.cv,
-            b: selectedForConnection.b.cv,
-            patch
-          };
-  
-          const isAlreadyInList: boolean = !!patchConnections.find(connection => {
-            return connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id;
-          });
-  
-          if (!isAlreadyInList) {
-            this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
-            this.editorConnections$.next([
-              ...patchConnections,
-              newConnection
-            ]);
-          } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
-  
+      .pipe(
+        withLatestFrom(this.editorConnections$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([_, patchConnections]) => {
+        const selectedForConnection: {
+          a: CVConnectionEntity | null;
+          b: CVConnectionEntity | null
+        } = this.selectedForConnection$.value;
+        
+        const patch: Patch = this.singlePatchData$.value;
+        
+        const newConnection: {
+          patch: Patch;
+          a: CVwithModule;
+          b: CVwithModule
+        } = {
+          a: selectedForConnection.a.cv,
+          b: selectedForConnection.b.cv,
+          patch
+        };
+        
+        const isAlreadyInList: boolean = !!patchConnections.find(connection => {
+          return connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id;
         });
-  
+        
+        if (!isAlreadyInList) {
+          this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
+          this.editorConnections$.next([
+            ...patchConnections,
+            newConnection
+          ]);
+        } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
+        
+      });
+    
     this.patchConnections$
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(x => this.editorConnections$.next(x));
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(x => this.editorConnections$.next(x));
     
     this.removeConnectionFromEditor$
-        .pipe(
-          withLatestFrom(this.editorConnections$),
-          takeUntil(this.destroyEvent$)
+      .pipe(
+        withLatestFrom(this.editorConnections$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([x, data]) => this.editorConnections$.next(
+          data.filter(
+            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
         )
-        .subscribe(([x, data]) => this.editorConnections$.next(
-            data.filter(
-              connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
-          )
-        );
+      );
     
     this.savePatchEditing$
-        .pipe(
-          withLatestFrom(this.editorConnections$, this.singlePatchData$),
-          switchMap(([a, patchConnections, patch]) => this.backend.update.patchConnections(patchConnections)
-                                                          .pipe(switchMap(x => this.backend.update.patch(patch)))),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(value => {
-          this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
-        });
+      .pipe(
+        withLatestFrom(this.editorConnections$, this.singlePatchData$),
+        switchMap(([a, patchConnections, patch]) => this.backend.update.patchConnections(patchConnections)
+          .pipe(switchMap(x => this.backend.update.patch(patch)))),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(value => {
+        this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
+      });
     
     this.deletePatch$
-        .pipe(
-          switchMap(x => {
-  
-            const data: ConfirmDialogDataInModel = {
-              title:       'Deletion',
-              description: 'Are you sure you want to delete this patch? This action cannot be undone. This will also delete all connections associated with this patch.',
-              positive:    {
-                label: 'Delete',
-                theme: 'warning'
-              },
-              negative:    {
-                label: 'Cancel',
-                theme: 'primary'
-              }
-            };
-  
-            return this.dialog.open(
-              ConfirmDialogComponent,
-              {
-                data,
-                disableClose: true,
-                width:        '32rem'
-              }
-            )
-                       .afterClosed()
-                       .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
-                       );
-          }),
-          withLatestFrom(this.deletePatch$),
-          switchMap(([z, x]) => this.backend.delete.patchConnectionsForPatch(x)
-                                    .pipe(map(() => x))),
-          switchMap((x) => this.backend.delete.patch(x)),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(value => {
-          this.router.navigate(['/user/area']);
-        });
+      .pipe(
+        switchMap(x => {
+          
+          const data: ConfirmDialogDataInModel = {
+            title: 'Deletion',
+            description: 'Are you sure you want to delete this patch? This action cannot be undone. This will also delete all connections associated with this patch.',
+            positive: {
+              label: 'Delete',
+              theme: 'warning'
+            },
+            negative: {
+              label: 'Cancel',
+              theme: 'primary'
+            }
+          };
+          
+          return this.dialog.open(
+            ConfirmDialogComponent,
+            {
+              data,
+              disableClose: true,
+              width: '32rem'
+            }
+          )
+            .afterClosed()
+            .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
+            );
+        }),
+        withLatestFrom(this.deletePatch$),
+        switchMap(([z, x]) => this.backend.delete.patchConnectionsForPatch(x)
+          .pipe(map(() => x))),
+        switchMap((x) => this.backend.delete.patch(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(value => {
+        this.router.navigate(['/user/area']);
+      });
     
   }
   
