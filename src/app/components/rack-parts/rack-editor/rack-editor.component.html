@@ -18,23 +18,24 @@
     <lib-hero-content-card [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) '+' /' +
                             ' '+data.hp+' HP per row'+' / ' +
                              ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options':' / Unlock to make changes')):'')"
+                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options / Add modules from below':' / Unlock to make changes')):'')"
                            descriptionAlign="alignTextEnd"
                            class="transition-all-long"
                            [ngClass]="{
                            'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 
                            'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
                            }"
-  
+    
     >
       <div class="col gap1 transition-all scroll custom-scrollbar"
            [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
-    
+      
       >
         <lib-screen-wrapper [maxSize]="data.hp+'rem'"
+        
         >
           <div class="col gap1"
-        
+          
           >
             <div class="row gap1">
               <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
@@ -47,7 +48,17 @@
               >
                 I've got many modules
               </mat-slide-toggle>
+              
+              <!--              create space between these-->
+              <div fxFlex="1 1 auto"></div>
+              <app-brand-primary-button
+                (click)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
+              >
+                Download as image
+              </app-brand-primary-button>
             </div>
+            
+            
             <app-rack-visual-model [rackData]="data"
                                    [rowedRackedModules]="bag.rowedRackedModules"
                                    [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
@@ -78,3 +89,9 @@
   </ng-template>
 
 </ng-container>
+
+
+<div id="download">
+  <img #canvas>
+  <a #download></a>
+</div>

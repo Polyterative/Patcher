@@ -1,8 +1,21 @@
-import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError, filter, take } from 'rxjs/operators';
+import {
+  Observable,
+  throwError
+} from 'rxjs';
+import {
+  catchError,
+  filter,
+  take
+} from 'rxjs/operators';
 import { UserManagementService } from './user-management.service';
+
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -24,7 +37,7 @@ export class ErrorInterceptor implements HttpInterceptor {
                          )
                          .subscribe(value => {
                            // auto logout if 401 or 403 response returned from api
-                           this.authenticationService.logoff();
+                           this.authenticationService.logoff$();
                          });
         
                    }
