@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/Polyterative/Patcher/compare/v4.1.2...v4.2.0) (2024-01-28)
+
+
+### Features
+
+* **backend:** now using version 2 of the backend library + total ove… ([#118](https://github.com/Polyterative/Patcher/issues/118)) ([cb41977](https://github.com/Polyterative/Patcher/commit/cb41977c30d1d3c9c3d9346f8825b8b578d0c2dc))
+
 ### [4.1.2](https://github.com/Polyterative/Patcher/compare/v4.1.1...v4.1.2) (2024-01-25)
 
 
