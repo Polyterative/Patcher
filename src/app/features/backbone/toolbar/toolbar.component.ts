@@ -1,10 +1,14 @@
-﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
+﻿import {
+  ChangeDetectionStrategy,
+  Component
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ToolbarService } from './toolbar.service';
+
 
 @Component({
   selector:        'app-toolbar',
@@ -93,9 +97,9 @@ export class ToolbarComponent extends SubManager {
     public router: Router
   ) {
     super();
-  
+
     this.manageSub(
-      this.userService.loggedUserProfile$
+      this.userService.loggedUserFullProfile$
           .subscribe(x => {
   
             const element: RouteClickableLink = this.linksUser$.value[1];
