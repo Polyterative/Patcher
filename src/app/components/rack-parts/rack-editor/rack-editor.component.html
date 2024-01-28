@@ -52,7 +52,12 @@
               <!--              create space between these-->
               <div fxFlex="1 1 auto"></div>
               <app-brand-primary-button
-                (click)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
+                (click)="dataService.updateRackImage$.next()"
+              >
+                Update preview
+              </app-brand-primary-button>
+              <app-brand-primary-button
+                (click)="dataService.downloadRackImageToUserComputer$.next()"
               >
                 Download as image
               </app-brand-primary-button>

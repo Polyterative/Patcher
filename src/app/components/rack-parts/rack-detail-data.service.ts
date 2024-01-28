@@ -45,7 +45,6 @@ import {
 } from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
-import { ModuleDetailDataService } from '../module-parts/module-detail-data.service';
 import {
   InputDialogComponent,
   InputDialogDataInModel,
@@ -66,13 +65,9 @@ export class RackDetailDataService extends SubManager {
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
   renameCurrentRack$ = new Subject<void>();
-  // @ViewChild('screen') screen: ElementRef;
-  // @ViewChild('canvas') canvas: ElementRef;
-  downloadRackImageToUserComputer$ = new Subject<{
-    // screen: ElementRef,
-    canvas: ElementRef,
-    download: ElementRef
-  }>();
+  //
+  updateRackImage$ = new Subject<void>();
+  downloadRackImageToUserComputer$ = new Subject<void>();
   //
   currentDownloadElementRef$: BehaviorSubject<{
     screen: ElementRef,
@@ -108,7 +103,7 @@ export class RackDetailDataService extends SubManager {
     private backend: SupabaseService,
     private dialog: MatDialog,
     private router: Router,
-    private moduleDetailDataService: ModuleDetailDataService
+    // private moduleDetailDataService: ModuleDetailDataService
   ) {
     super();
     
@@ -137,9 +132,116 @@ export class RackDetailDataService extends SubManager {
           link.click();
           link.remove();
           
-          this.snackBar.open('Image downloaded: ' + downloadName, undefined, {duration: 5000});
+          this.snackBar.open('Image downloaded', undefined, {duration: 5000});
         }
       );
+    
+    // when user requests to update the preview image, upload an image to the server that will be used as a preview
+    this.updateRackImage$.pipe(
+      tap(x => this.snackBar.open('Updating image...', undefined, {duration: 4000})),
+      withLatestFrom(this.currentDownloadElementRef$),
+      // create image from HTML element using dom-to-image library
+      switchMap(([_, references]) => from(
+        domtoimage.toBlob(<any>references.screen.nativeElement, {
+          quality: 0.2,
+          bgcolor: '#ffffff',
+          
+        })
+      )),
+      withLatestFrom(this.singleRackData$, this.userService.loggedUser$),
+      switchMap(([blob, rack, user]) => {
+        
+        // convert canvas to blob
+        return this.backend.storage.uploadRack(
+          blob,
+          rack.id.toString() + '.jpeg'
+        ).pipe(
+        
+        );
+        
+        
+      }),
+      filter(x => false),
+      // update rack data with the new image url
+      // switchMap(({rack, user, filename}) => {
+      //   // rack.imageurl = `${ user.id }/${ filename }`;
+      //   return this.backend.update.rack(rack);
+      // }),
+      takeUntil(this.destroyEvent$),
+    )
+      .subscribe();
+    
+    // when user stays still for a while in the page,upload an image to the server that will be used as a preview
+    // this.singleRackData$.pipe(
+    //   filter(x => !!x),
+    //   // the currently opened rack should be of the currently logged user
+    //   withLatestFrom(this.userService.loggedUser$),
+    //   filter(([rack, user]) => rack.author.id === user.id),
+    //   // we should also make sure that we are in the rack editor page
+    //   filter(([rack, user]) => this.router.url.includes('racks/details')),
+    //   // wait for a while before uploading image, so that we do not upload too many images
+    //   switchMap((data) => of(data).pipe(
+    //       debounceTime(5000),
+    //       // create image from HTML element using dom-to-image library
+    //       withLatestFrom(this.currentDownloadElementRef$),
+    //       switchMap(([data, references]) => from(
+    //         domtoimage.toJpeg(<any>references.screen.nativeElement, {
+    //           quality: 0.6,
+    //           bgcolor: '#ffffff',
+    //         })
+    //       ).pipe(
+    //         map(imageData => ({
+    //           imageData,
+    //           rack: data[0],
+    //           user: data[1]
+    //         }))
+    //       )),
+    //       //   at this point, we have waited for a while, and the user has not navigated away from the rack editor page,
+    //       //   so we can upload the image to the server
+    //       switchMap(({imageData, rack, user}) => {
+    //
+    //         const filename = `${ rack.name } by ${ rack.author.username } - ${ rack.hp } HP - ${ rack.rows } rows - ${ new Date().toLocaleDateString() }`;
+    //         // replace any characters that make use problems in the download filename
+    //         const sanitizedFilename = filename.replace(/[/\\?%*:|"<>]/g, '-');
+    //
+    //         return this.backend.storage.uploadRack(
+    //           imageData,
+    //           sanitizedFilename
+    //         ).pipe(
+    //           map(x => ({
+    //             rack,
+    //             user,
+    //             filename: sanitizedFilename
+    //           }))
+    //         );
+    //       }),
+    //       // update rack data with the new image url
+    //       switchMap(({rack, user, filename}) => {
+    //         rack.imageurl = `${ user.id }/${ filename }`;
+    //         return this.backend.update.rack(rack);
+    //       }),
+    //
+    //       take(1),
+    //       // we have some events that can trigger the cancelation of the upload, so we need to keep track of them
+    //       takeUntil(
+    //         combineLatest([
+    //             this.destroyEvent$,
+    //             this.singleRackData$,
+    //             // if user navigates away from the rack editor page, stop uploading image
+    //             this.router.events.pipe(
+    //               take(1),
+    //             )
+    //           ]
+    //         )
+    //       )
+    //     )
+    //   ),
+    //
+    //   takeUntil(this.destroyEvent$),
+    // )
+    //   .subscribe();
+    
+    // when user requests to update the preview image, upload an image to the server that will be used as a preview
     
     
     // when user toggles locked status of rack, update backend

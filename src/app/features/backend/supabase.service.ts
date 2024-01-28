@@ -10,6 +10,7 @@ import {
   User
 } from '@supabase/supabase-js';
 import {
+  delay,
   forkJoin,
   from,
   from as rxFrom,
@@ -771,15 +772,25 @@ export class SupabaseService {
       
       filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
       
-      return rxFrom(
-        this.supabase
+      // if rack already has an image, delete it, then upload new image, otherwise just upload new image
+      
+      const delete$ = this.supabase
+        .storage
+        .from('racks')
+        .remove([filenameAndExtension]);
+      
+      
+      return rxFrom(delete$).pipe(
+        delay(1000),
+        switchMap(x => this.supabase
           .storage
           .from('racks')
           .upload('' + filenameAndExtension, file, {
             cacheControl: '36000',
             upsert: false,
             contentType: 'image/jpeg'
-          })
+          })),
+        map(x => filenameAndExtension)
       )
         .pipe(map(x => filenameAndExtension));
     },
