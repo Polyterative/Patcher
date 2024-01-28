@@ -1,12 +1,37 @@
-import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators
+} from '@angular/forms';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef
+} from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  map,
+  switchMap,
+  takeUntil,
+  withLatestFrom
+} from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { CustomValidators, FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  CustomValidators,
+  FormTypes
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+
 
 export interface RackCreatorOutModel {
 }
@@ -15,9 +40,9 @@ export interface RackCreatorInModel {
 }
 
 @Component({
-  selector:        'app-rack-creator',
-  templateUrl:     './rack-creator.component.html',
-  styleUrls:       ['./rack-creator.component.scss'],
+  selector: 'app-rack-creator',
+  templateUrl: './rack-creator.component.html',
+  styleUrls: ['./rack-creator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackCreatorComponent implements OnInit {
@@ -25,47 +50,47 @@ export class RackCreatorComponent implements OnInit {
   data$ = new BehaviorSubject<[]>([]);
   
   fields = {
-    hp:   {
-      label:   'HP (per row)',
-      code:    'hp',
-      flex:    '6rem',
+    hp: {
+      label: 'HP (per row)',
+      code: 'hp',
+      flex: '6rem',
       control: new UntypedFormControl('84', Validators.compose([
         Validators.required,
         Validators.min(2),
         Validators.max(216),
         CustomValidators.onlyIntegers
       ])),
-      type:    FormTypes.NUMBER
+      type: FormTypes.NUMBER
     },
     rows: {
-      label:   'Vertical rows amount',
-      code:    'rows',
-      flex:    '6rem',
+      label: 'Vertical rows amount',
+      code: 'rows',
+      flex: '6rem',
       control: new UntypedFormControl('2', Validators.compose([
         Validators.required,
         Validators.min(1),
         Validators.max(10),
         CustomValidators.onlyIntegers
       ])),
-      type:    FormTypes.NUMBER
+      type: FormTypes.NUMBER
     },
     name: {
-      label:   'Name',
-      code:    'name',
-      flex:    '6rem',
+      label: 'Name',
+      code: 'name',
+      flex: '6rem',
       control: new UntypedFormControl('My new rack', Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(32)
         // Validators.max(12)
       ])),
-      type:    FormTypes.TEXT
+      type: FormTypes.TEXT
     }
   };
   protected destroyEvent$ = new Subject<void>();
   
   formGroup = new UntypedFormGroup({
-    [this.fields.hp.code]:   this.fields.hp.control,
+    [this.fields.hp.code]: this.fields.hp.control,
     [this.fields.name.code]: this.fields.name.control,
     [this.fields.rows.code]: this.fields.rows.control
   });
@@ -84,23 +109,28 @@ export class RackCreatorComponent implements OnInit {
   ) {
     
     this.save$
-        .pipe(
-          switchMap(x => this.backend.add.rack(
-            {
-              authorid: this.backend.getUser().id,
-              name:     this.fields.name.control.value,
-              hp:       this.fields.hp.control.value,
-              rows:     this.fields.rows.control.value,
-              locked:   false
-            }
-          )),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(value => {
-          SharedConstants.successSave(this.snackBar);
-  
-          this.dialogRef.close();
-        });
+      .pipe(
+        withLatestFrom(this.backend.getUserSession$()),
+        // check if user is logged in
+        filter(([_, user]) => !!user),
+        map(([_, user]) => user),
+        // create rack in database
+        switchMap(user => this.backend.add.rack(
+          {
+            authorid: user.id,
+            name: this.fields.name.control.value,
+            hp: this.fields.hp.control.value,
+            rows: this.fields.rows.control.value,
+            locked: false
+          }
+        )),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(value => {
+        SharedConstants.successSave(this.snackBar);
+        
+        this.dialogRef.close();
+      });
   }
   
   ngOnInit(): void {

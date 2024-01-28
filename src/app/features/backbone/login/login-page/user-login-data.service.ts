@@ -1,12 +1,27 @@
 import { Injectable } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, interval, Subject } from 'rxjs';
-import { switchMap, take, takeUntil } from 'rxjs/operators';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+import {
+  BehaviorSubject,
+  interval,
+  Subject
+} from 'rxjs';
+import {
+  switchMap,
+  take,
+  takeUntil
+} from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
+
 
 @Injectable()
 export class UserLoginDataService {
@@ -17,21 +32,21 @@ export class UserLoginDataService {
   // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
   
   fields = {
-    user:     {
-      label:   'Email',
-      code:    'email',
-      flex:    '6rem',
+    user: {
+      label: 'Email',
+      code: 'email',
+      flex: '6rem',
       control: new UntypedFormControl('', Validators.compose([
         Validators.email,
         Validators.required,
         Validators.minLength(3)
       ])),
-      type:    FormTypes.EMAIL
+      type: FormTypes.EMAIL
     },
     password: {
-      label:   'Password',
-      code:    'pass',
-      flex:    '6rem',
+      label: 'Password',
+      code: 'pass',
+      flex: '6rem',
       control: new UntypedFormControl('', Validators.compose([
         Validators.required,
         Validators.minLength(8),
@@ -52,24 +67,20 @@ export class UserLoginDataService {
   ) {
     
     this.mailLoginClick$
-        .pipe(
-          switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => {
-          if (!!x.error) {
-            SharedConstants.errorLogin(snackBar, x.error.message);
-          } else {
-            SharedConstants.successLogin(snackBar);
-            this.loginImage$.next(this.postLoginImage);
-            interval(1000)
-              .pipe(take(1))
-              .subscribe(z => {
-                this.loginSuccessful$.next();
-                this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
-              });
-          }
-        });
+      .pipe(
+        switchMap(x => this.loginInteraction.login$(this.fields.user.control.value, this.fields.password.control.value)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        SharedConstants.successLogin(snackBar);
+        this.loginImage$.next(this.postLoginImage);
+        interval(1000)
+          .pipe(take(1))
+          .subscribe(z => {
+            this.loginSuccessful$.next();
+            this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
+          });
+      });
     
     // this.mailSignClick$
     //     .pipe(
