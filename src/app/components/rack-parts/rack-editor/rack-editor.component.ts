@@ -1,20 +1,32 @@
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {Subject} from 'rxjs';
-import {filter, takeUntil, withLatestFrom} from 'rxjs/operators';
-import {RackDetailDataService} from 'src/app/components/rack-parts/rack-detail-data.service';
-import {SupabaseService} from 'src/app/features/backend/supabase.service';
-import {RackedModule} from 'src/app/models/module';
-import {RackMinimal} from 'src/app/models/rack';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject } from 'rxjs';
+import {
+  filter,
+  takeUntil,
+  withLatestFrom
+} from 'rxjs/operators';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { RackedModule } from 'src/app/models/module';
+import { RackMinimal } from 'src/app/models/rack';
 import {
   ContextMenuItem,
   GeneralContextMenuDataService
 } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
-import {SubManager} from 'src/app/shared-interproject/directives/subscription-manager';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
+
 
 export interface ModuleRightClick {
   $event: MouseEvent;
@@ -43,7 +55,12 @@ export class RackEditorComponent extends SubManager implements OnInit {
     hideDates: true,
     hideTags: true
   };
+  //
+  @ViewChild('screen') screenReference: ElementRef;
+  @ViewChild('canvas') canvasReference: ElementRef;
+  @ViewChild('download') downloadReference: ElementRef;
   
+  //
   constructor(
     public snackBar: MatSnackBar,
     public backend: SupabaseService,

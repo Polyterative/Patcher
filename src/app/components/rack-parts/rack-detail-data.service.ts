@@ -13,6 +13,7 @@ import _ from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
+  from,
   of,
   ReplaySubject,
   Subject
@@ -55,6 +56,7 @@ import {
   Validators
 } from "@angular/forms";
 import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
+import domtoimage from 'dom-to-image';
 
 
 @Injectable()
@@ -64,6 +66,20 @@ export class RackDetailDataService extends SubManager {
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
   renameCurrentRack$ = new Subject<void>();
+  // @ViewChild('screen') screen: ElementRef;
+  // @ViewChild('canvas') canvas: ElementRef;
+  downloadRackImageToUserComputer$ = new Subject<{
+    // screen: ElementRef,
+    canvas: ElementRef,
+    download: ElementRef
+  }>();
+  //
+  currentDownloadElementRef$: BehaviorSubject<{
+    screen: ElementRef,
+  } | undefined> = new BehaviorSubject<{
+    screen: ElementRef,
+  }>(undefined);
+  
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   
@@ -82,6 +98,7 @@ export class RackDetailDataService extends SubManager {
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
   requestRackedModulesDbSync$ = new Subject<void>();
+  //
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -94,6 +111,36 @@ export class RackDetailDataService extends SubManager {
     private moduleDetailDataService: ModuleDetailDataService
   ) {
     super();
+    
+    // when user requests to download rack image, download it using HTML2Canvas
+    this.downloadRackImageToUserComputer$.pipe(
+      tap(x => this.snackBar.open('Downloading image...', undefined, {duration: 4000})),
+      withLatestFrom(this.currentDownloadElementRef$),
+      switchMap(([_, references]) => from(
+        domtoimage.toJpeg(<any>references.screen.nativeElement, {
+          quality: 0.9,
+          bgcolor: '#ffffff',
+        })
+      )),
+      withLatestFrom(this.singleRackData$),
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(
+        ([imageData, rackData]) => {
+          
+          const link = document.createElement('a');
+          let downloadName = `${ rackData.name } by ${ rackData.author.username } - ${ rackData.hp } HP - ${ rackData.rows } rows - ${ new Date().toLocaleDateString() }`;
+          link.download = `${ downloadName }.jpeg`;
+          // replace any characters that make use problems in the download filename
+          link.download = link.download.replace(/[/\\?%*:|"<>]/g, '-');
+          link.href = imageData;
+          link.click();
+          link.remove();
+          
+          this.snackBar.open('Image downloaded: ' + downloadName, undefined, {duration: 5000});
+        }
+      );
+    
     
     // when user toggles locked status of rack, update backend
     this.requestRackEditableStatusChange$
@@ -579,4 +626,6 @@ export class RackDetailDataService extends SubManager {
     }
     this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
+  
+  
 }

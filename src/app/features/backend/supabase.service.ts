@@ -753,23 +753,42 @@ export class SupabaseService {
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
-      filenameAndExtension = filenameAndExtension.toLowerCase()
-        .trim();
+      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
       
       return rxFrom(
         this.supabase
           .storage
           .from('module-panels')
           .upload('' + filenameAndExtension, file, {
-            cacheControl: '3600',
+            cacheControl: '36000', // 10 hours
             upsert: false,
             contentType: contentType
           })
       )
         .pipe(map(x => filenameAndExtension));
-    }
+    },
+    uploadRack: (file: SupabaseStorageFile, filenameAndExtension: string) => {
+      
+      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
+      
+      return rxFrom(
+        this.supabase
+          .storage
+          .from('racks')
+          .upload('' + filenameAndExtension, file, {
+            cacheControl: '36000',
+            upsert: false,
+            contentType: 'image/jpeg'
+          })
+      )
+        .pipe(map(x => filenameAndExtension));
+    },
   };
   
+  
+  private cleanUpFileName(filenameAndExtension: string) {
+    return filenameAndExtension.toLowerCase().trim()
+  }
   
   login$(email: string, password: string): Observable<SupabaseLoginResponse> {
     const params$ = of('')

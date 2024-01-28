@@ -1,10 +1,22 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  Observable,
+  Subject
+} from 'rxjs';
+import {
+  map,
+  takeUntil
+} from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { MinimalModule } from 'src/app/models/module';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
+
 
 @Component({
   selector:        'app-module-minimal',
