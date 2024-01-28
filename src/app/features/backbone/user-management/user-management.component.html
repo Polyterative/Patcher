@@ -9,7 +9,7 @@
       >
   
         <ng-container *ngIf="{
-          userProfile:(userManagementService.loggedUserProfile$|async),
+          userProfile:(userManagementService.loggedUserFullProfile$|async),
           user:(userManagementService.loggedUser$|async)
           } as bag"
         >
@@ -19,7 +19,7 @@
             <app-brand-primary-button fxFlex="100"
                                       innerFlex="fill"
                                       style="padding-bottom:4rem"
-                                      (click$)="userManagementService.logoff()"
+                                      (click$)="userManagementService.logoff$()"
                                       theme="warning"
             >Logout
             </app-brand-primary-button>

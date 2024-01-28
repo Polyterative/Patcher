@@ -6,7 +6,7 @@
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
   
-  <div class="col gap0 ">
+  <div class="col gap0 " #screen id="screen">
     <ng-container *ngFor="let row of rowedRackedModules; index as rowId"
     >
       <div class="row"
@@ -30,6 +30,9 @@
   
       </div>
     </ng-container>
+    <!--    small watermark,in style of powered by patcher.xyz on center-->
+    <div class="watermark" fxLayoutAlign="center center">Planned on patcher.xyz</div>
+  
   </div>
   <div fxFlex="100"></div>
 </div>

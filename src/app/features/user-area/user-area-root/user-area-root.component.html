@@ -1,5 +1,5 @@
 <ng-container *ngIf="{
-  userProfile:(userService.loggedUserProfile$|async)
+  userProfile:(userService.loggedUserFullProfile$|async)
   } as bag"
 >
   <lib-screen-wrapper maxSize="110rem">
