@@ -72,8 +72,9 @@
                 }
               ],
               "optimization":     true,
+              "aot": true,
               "outputHashing":    "all",
-              "sourceMap":        true,
+              "sourceMap": false,
               "namedChunks":      true,
               "extractLicenses":  true,
               "vendorChunk":      true,
