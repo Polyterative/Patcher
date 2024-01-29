@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.2](https://github.com/Polyterative/Patcher/compare/v4.2.1...v4.2.2) (2024-01-29)
+
+
+### Features
+
+* **core:** security improvement of output of deployment ([e3e9090](https://github.com/Polyterative/Patcher/commit/e3e9090320e7f9275d65365d124e93f8fa8f7b6f))
+
+
+### Bug Fixes
+
+* **backend:** stronger racked modules insert and update ([d00bf9f](https://github.com/Polyterative/Patcher/commit/d00bf9f00ab9f158d75724ab3dd3732ec080d9a7))
+
 ### [4.2.1](https://github.com/Polyterative/Patcher/compare/v4.2.0...v4.2.1) (2024-01-28)
+
+## [4.3.0](https://github.com/Polyterative/Patcher/compare/v4.2.0...v4.3.0) (2024-01-29)
 
 ## [4.2.0](https://github.com/Polyterative/Patcher/compare/v4.1.2...v4.2.0) (2024-01-28)
 
