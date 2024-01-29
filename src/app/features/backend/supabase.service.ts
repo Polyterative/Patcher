@@ -41,7 +41,10 @@ import {
   RackedModule
 } from '../../models/module';
 import { Patch } from '../../models/patch';
-import { RackMinimal } from '../../models/rack';
+import {
+  RackingData,
+  RackMinimal
+} from '../../models/rack';
 import { Tag } from '../../models/tag';
 import {
   DbPaths,
@@ -130,7 +133,8 @@ export class SupabaseService {
     }) => rxFrom(
       this.supabase
         .from(DbPaths.racks)
-        .insert(data),
+        .insert(data)
+        .select('id'),
     )
       .pipe(
         tap(x => /*errorHandling*/ x),
@@ -667,22 +671,36 @@ export class SupabaseService {
     rackedModules: (data: RackedModule[]) => {
       const rackId: number = data[0].rackingData.rackid;
       
+      
+      // upload all modules that already have an id
+      const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
+        .map(rackedModule => rackedModule.rackingData);
+      
       return rxFrom(
-        this.supabase.from(DbPaths.rack_modules)
-          .upsert(data.filter(x => x.rackingData.id !== undefined)
-            .map(rackedModule => rackedModule.rackingData))
+        // keep this an upsert, because otherwise you need to put an update parameter and send requests one by one
+        this.supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
       )
         .pipe(
-          // insert where id is undefined
+          // insert where id is undefined, meaning they are new and have not been inserted yet
           switchMap(x => {
-            const newRackedModules = data.filter(x => x.rackingData.id === undefined)
-              .map(rackedModule => rackedModule.rackingData);
-            const insertNew = rxFrom(
+            
+            // we need to avoid passing an id in the object to the insert, otherwise it will fail
+            const newRackedModules: Omit<RackingData, 'id'>[] = data
+              .filter(x => x.rackingData.id === undefined)
+              .map(rackedModule => ({
+                moduleid: rackedModule.rackingData.moduleid,
+                rackid: rackedModule.rackingData.rackid,
+                row: rackedModule.rackingData.row,
+                column: rackedModule.rackingData.column
+              }));
+            
+            const insertNew$ = rxFrom(
               this.supabase.from(DbPaths.rack_modules)
-                .upsert(newRackedModules)
+                .insert(newRackedModules)
             );
+            
             // call database for insert if there is any to insert
-            return newRackedModules.length > 0 ? insertNew : of(x);
+            return newRackedModules.length > 0 ? insertNew$ : of(x);
           })
           // this updated rack after its modules are updated
           // switchMap(x => this.supabase.from(DatabasePaths.racks)
