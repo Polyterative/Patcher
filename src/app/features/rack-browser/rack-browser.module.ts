@@ -41,6 +41,8 @@ import { LocalDataFilterModule } from '../../components/shared-atoms/local-data-
 import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserModule } from '../module-browser/module-browser.module';
+import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+
 
 const parentPrefix: string = 'racks';
 
@@ -54,31 +56,31 @@ const parentPrefix: string = 'racks';
     RackBrowserDetailViewComponent
   ],
   providers:    [RackBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       
       {
-        path:      `${ parentPrefix }/details/:id`,
+        path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
         component: RackBrowserDetailViewComponent
         // children:  []
       },
       generateUranusRoutes(parentPrefix, [
         {
-          path:      'browser',
+          path: 'browser',
           component: RackBrowserRootComponent
           // canActivate: [LocalAuthGuardService],
         },
         {
-          path:      '',
+          path: '',
           component: CommonSidebarComponent,
-          outlet:    'sidebar'
+          outlet: 'sidebar'
         },
         {
-          path:      '',
+          path: '',
           component: UserDataHandlerComponent,
-          outlet:    'user'
+          outlet: 'user'
         }
       ])
     ]),
@@ -114,7 +116,8 @@ const parentPrefix: string = 'racks';
     LocalDataFilterModule,
     CleanCardModule,
     RackListModule,
-    ModuleBrowserModule
+    ModuleBrowserModule,
+    StatisticsModule
   ]
 })
 export class RackBrowserModule {}
