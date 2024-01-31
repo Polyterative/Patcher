@@ -77,6 +77,11 @@ export class RackDetailDataService extends SubManager {
   
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
+  // name and value
+  rackStatistics$ = new BehaviorSubject<{
+    name: string,
+    value: string
+  }[] | null>(null);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
@@ -132,9 +137,11 @@ export class RackDetailDataService extends SubManager {
           link.click();
           link.remove();
           
-          this.snackBar.open('Image downloaded', undefined, {duration: 5000});
+          this.snackBar.open('Image downloaded: ' + downloadName, undefined, {duration: 5000});
         }
       );
+    
+    
     
     // when user requests to update the preview image, upload an image to the server that will be used as a preview
     this.updateRackImage$.pipe(
@@ -546,6 +553,68 @@ export class RackDetailDataService extends SubManager {
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     
+    
+    // when rack data changes update statistics
+    this.singleRackData$.pipe(
+      // clear statistics when rack data is undefined
+      tap(x => {
+        if (!x) {
+          this.rackStatistics$.next(null);
+        }
+      }),
+      filter(x => !!x),
+      switchMap(x => this.rowedRackedModules$.pipe(
+        filter(y => !!y),
+        take(1),
+      )),
+      withLatestFrom(this.singleRackData$),
+      takeUntil(this.destroy$),
+    )
+      .subscribe(([rows, rack]) => {
+        // let patchPoints = {
+        //   name: 'Total Patch Points',
+        //   value: rows
+        //     .flatMap(row => row).map(module => module.module.ins.length + module.module.outs.length)
+        //     .reduce((a, b) => a + b, 0)
+        //     .toString()
+        // };
+        
+        const byHPCount: {
+          name: string;
+          value: string
+        }[] = [];
+        
+        // count how many different kinds of HP have
+        rows
+          .flatMap(row => row)
+          // exclude 3u modules
+          .filter(module => module.module.standard.id === 0)
+          .map(module => module.module.hp)
+          .forEach(hp => {
+            const existingEntry = byHPCount.find(x => x.name === hp.toString() + "HP count");
+            if (existingEntry) {
+              existingEntry.value = (parseInt(existingEntry.value, 10) + 1).toString();
+            } else {
+              byHPCount.push({
+                name: hp.toString() + "HP count",
+                value: '1'
+              });
+            }
+          });
+        
+        // sort by hp
+        byHPCount.sort((a, b) => {
+          const aHP = parseInt(a.name.split('HP')[0], 10);
+          const bHP = parseInt(b.name.split('HP')[0], 10);
+          return aHP - bHP;
+        });
+        
+        this.rackStatistics$.next([
+          // patchPoints,
+          ...byHPCount
+        ]);
+      });
+    
   }
   
   private removeInformationFromModulesOfCurrentRack(newlyCreatedRackId: number) {
@@ -625,7 +694,7 @@ export class RackDetailDataService extends SubManager {
   
   /*
    check if there are modules without racking id, because they have not been synced with the backend yet,
-   probably because they are new, and have not been saved to the backend yet 
+   probably because they are new, and have not been saved to the backend yet
    */
   private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
     return rackModules.flatMap(row => row)
