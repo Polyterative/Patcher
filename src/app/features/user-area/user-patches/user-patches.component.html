@@ -8,11 +8,14 @@
   >
     <div class="col gap1"
     >
-      <app-brand-primary-button
+      <div class="row gap1 end"
+      >
+        <app-brand-primary-button
           (click$)="dataService.addPatch$.next()"
           fxLayoutAlign="end"
-      >Create patch
-      </app-brand-primary-button>
+        >Create patch
+        </app-brand-primary-button>
+      </div>
       <mat-divider inset="true"></mat-divider>
       <ng-container *ngIf="(dataService.patchesData$|async) as data">
         <app-patch-list fxFlex="grow"

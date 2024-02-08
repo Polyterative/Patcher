@@ -24,10 +24,17 @@
   <div class="col gap1"
   >
     <ng-container *ngIf="!(userModulesComponentViewConfig.hideAddModulesButton)">
-      <app-brand-primary-button routerLink="/modules/browser"
-                                fxLayoutAlign="end"
-      >Add modules to collection
-      </app-brand-primary-button>
+      <div class="row gap1 end"
+      >
+        <app-brand-primary-button routerLink="/modules/add"
+                                  fxLayoutAlign="end"
+        >Submit NEW
+        </app-brand-primary-button>
+        <app-brand-primary-button routerLink="/modules/browser"
+                                  fxLayoutAlign="end"
+        >Add modules to collection
+        </app-brand-primary-button>
+      </div>
       <mat-divider inset="true"></mat-divider>
     </ng-container>
   
