@@ -8,10 +8,13 @@
   >
     <div class="col gap1"
     >
-      <app-brand-primary-button (click$)="dataService.addRack$.next()"
-                                fxLayoutAlign="end"
-      >Create rack
-      </app-brand-primary-button>
+      <div class="row gap1 end"
+      >
+        <app-brand-primary-button (click$)="dataService.addRack$.next()"
+                                  fxLayoutAlign="end"
+        >Create rack
+        </app-brand-primary-button>
+      </div>
       <mat-divider inset="true"></mat-divider>
       <ng-container *ngIf="(dataService.rackData$|async) as data">
         <app-rack-list fxFlex="grow"
