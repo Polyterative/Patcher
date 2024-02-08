@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.3](https://github.com/Polyterative/Patcher/compare/v4.2.2...v4.2.3) (2024-02-08)
+
+
+### Features
+
+* **app:** added buttons for feature discoverability ([2a780e5](https://github.com/Polyterative/Patcher/commit/2a780e5aff672d2e3bdebbbc2a916c86a1774efa))
+* **rack:** statistics ([#120](https://github.com/Polyterative/Patcher/issues/120)) ([539f604](https://github.com/Polyterative/Patcher/commit/539f60476d8a5a4c1325ac1a8f8aeeee5e5cf910))
+
+
+### Bug Fixes
+
+* **footer:** discord invite renew ([16d993f](https://github.com/Polyterative/Patcher/commit/16d993f733b5cc60812e5ccdc123c9c26f2caed3))
+
 ### [4.2.2](https://github.com/Polyterative/Patcher/compare/v4.2.1...v4.2.2) (2024-01-29)
 
 
