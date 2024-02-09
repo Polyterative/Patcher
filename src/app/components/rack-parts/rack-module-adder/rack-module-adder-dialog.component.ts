@@ -1,10 +1,31 @@
-import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef
+} from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TimeagoPipe } from 'ngx-timeago';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { filter, map, share, startWith, switchMap } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  map,
+  share,
+  startWith,
+  switchMap
+} from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/user-area/user-area-data.service';
 import { DbModule } from 'src/app/models/module';
@@ -12,6 +33,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from '../rack-detail-data.service';
+
 
 export interface RackModuleAdderOutModel {
 }
@@ -22,15 +44,15 @@ export interface RackModuleAdderInModel {
 
 @Component({
   selector:        'app-rack-module-adder',
-  templateUrl:     './rack-module-adder.component.html',
-  styleUrls:       ['./rack-module-adder.component.scss'],
+  templateUrl: './rack-module-adder-dialog.component.html',
+  styleUrls:   ['./rack-module-adder-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers:       [
     UserAreaDataService,
     TimeagoPipe
   ]
 })
-export class RackModuleAdderComponent extends SubManager implements OnInit {
+export class RackModuleAdderDialogComponent extends SubManager implements OnInit {
   readonly saveRackedModule$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
@@ -47,8 +69,8 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
     }
   };
   
-  static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel> {
-    return dialog.open(RackModuleAdderComponent, {
+  static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel> {
+    return dialog.open(RackModuleAdderDialogComponent, {
       data,
       width:    '70%',
       maxWidth: '40rem'
@@ -60,7 +82,7 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
     public backend: SupabaseService,
     public timeagoPipe: TimeagoPipe,
     public userAreaDataService: UserAreaDataService,
-    public dialogRef: MatDialogRef<RackModuleAdderComponent, RackModuleAdderOutModel>,
+    public dialogRef: MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>,
     public rackDetailDataService: RackDetailDataService,
     @Inject(MAT_DIALOG_DATA) public data: RackModuleAdderInModel
   ) {
@@ -68,17 +90,17 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
     
     this.manageSub(
       this.saveRackedModule$
-          .pipe(
-            switchMap(x => this.backend.add.rackModule(
-              this.data.module.id,
-              this.fields.rack.control.value.id
-            ))
-          )
-          .subscribe(value => {
-            SharedConstants.successSave(this.snackBar);
-        
-            this.dialogRef.close();
-          })
+        .pipe(
+          switchMap(x => this.backend.add.rackModule(
+            this.data.module.id,
+            this.fields.rack.control.value.id
+          ))
+        )
+        .subscribe(value => {
+          SharedConstants.successSave(this.snackBar);
+          
+          this.dialogRef.close();
+        })
     );
     
     this.userAreaDataService.updateRackData$.next(undefined);
@@ -92,7 +114,10 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
     return this.userAreaDataService.rackData$.pipe(
       filter(x => !!x),
       map(x => {
-          const mapFunction: (row) => { name: string; id: string } = row => {
+        const mapFunction: (row) => {
+          name: string;
+          id: string
+        } = row => {
             const name = `${ row.name } ( ${ row.hp } HP , ${ row.rows } row(s) , ${ this.timeagoPipe.transform(new Date(row.updated)) } )`;
             
             return {
@@ -100,14 +125,20 @@ export class RackModuleAdderComponent extends SubManager implements OnInit {
               name
             };
           };
-          const options: { name: string; id: string }[] = x.map(mapFunction);
+        const options: {
+          name: string;
+          id: string
+        }[] = x.map(mapFunction);
           
           // add lastly updated rack if not already empty
           if (options.length > 0) {
             const lastUpdatedRack = x.sort((a, b) =>
               new Date(b.updated).getTime() - new Date(a.updated).getTime())[0];
             
-            const firstRackAsOption: { name: string; id: string } = [lastUpdatedRack].map(mapFunction)[0];
+            const firstRackAsOption: {
+              name: string;
+              id: string
+            } = [lastUpdatedRack].map(mapFunction)[0];
             
             this.fields.rack.control.patchValue(firstRackAsOption);
           }
