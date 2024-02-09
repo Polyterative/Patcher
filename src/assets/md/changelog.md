@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.3.0](https://github.com/Polyterative/Patcher/compare/v4.2.3...v4.3.0) (2024-02-09)
+
+
+### Features
+
+* **app:** better names ([9abff3f](https://github.com/Polyterative/Patcher/commit/9abff3f5af782359588ea894f37a9a69f7758157))
+* **app:** more buttons ([2b6af76](https://github.com/Polyterative/Patcher/commit/2b6af76af597fd58d2facc25181cc779db86e461))
+* **app:** new live interactive home ([2280297](https://github.com/Polyterative/Patcher/commit/2280297164013d554e69b322dae22aaac8d3f231))
+* **home:** better copy ([d51f2f4](https://github.com/Polyterative/Patcher/commit/d51f2f4a6e18282956ece25a4485ced58896082c))
+* **submit:** better UI ([0716f82](https://github.com/Polyterative/Patcher/commit/0716f8288008a2613b07ee0c1c8c27e2bccce0f7))
+* **submit:** fixed security flaw ([fb2199f](https://github.com/Polyterative/Patcher/commit/fb2199f215572b70158f54ee3a1942604e90e42e))
+
 ### [4.2.3](https://github.com/Polyterative/Patcher/compare/v4.2.2...v4.2.3) (2024-02-08)
 
 
