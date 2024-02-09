@@ -1,28 +1,36 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'ngx-seo';
-import { combineLatest, Subject } from 'rxjs';
-import { filter, map, take } from 'rxjs/operators';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  combineLatest,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  map,
+  take
+} from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+} from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
+
 
 @Component({
-  selector:    'app-rack-browser-rack-detail-view-root',
+  selector: 'app-rack-browser-rack-detail',
   templateUrl: './rack-browser-detail-view.component.html',
-  styleUrls:   ['./rack-browser-detail-view.component.scss']
+  styleUrls: ['./rack-browser-detail-view.component.scss']
   // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackBrowserDetailViewComponent implements OnInit {
-  @Input() readonly moduleViewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig,
-    hideButtons:      false,
-    hideDates:        false,
-    hideDescription:  false,
-    hideHP:           false,
-    hideTags:         false,
-    hideManufacturer: false,
-    hideLabels:       true
+  @Input() readonly viewConfig: RackMinimalViewConfig = {
+    ...defaultRackMinimalViewConfig
   };
   
   protected destroyEvent$ = new Subject<void>();
@@ -38,16 +46,16 @@ export class RackBrowserDetailViewComponent implements OnInit {
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Rack Details'); }
-  
+    
     this.route.params
-        .pipe(
-          map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-          filter(x => x > 0),
-          take(1)
-        )
-        .subscribe(data => {
-          this.dataService.updateSingleRackData$.next(data);
-        });
+      .pipe(
+        map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
+        filter(x => x > 0),
+        take(1)
+      )
+      .subscribe(data => {
+        this.dataService.updateSingleRackData$.next(data);
+      });
     
     if (!this.ignoreSeo) {
       combineLatest([
@@ -67,12 +75,12 @@ export class RackBrowserDetailViewComponent implements OnInit {
           const joined: string = uniqueRowedFlatted.join(', ');
           
           const seoData: SeoSocialShareData = {
-            title:       `${ rackData.name } - details. `,
+            title: `${ rackData.name } - details. `,
             description: `${ rackData.name } - rack details. Used modules: ${ joined }, for a total of ${ joined.length }.`,
-            keywords:    `${ joined }, rack, eurorack`,
+            keywords: `${ joined }, rack, eurorack`,
             
             published: rackData.created,
-            modified:  rackData.updated
+            modified: rackData.updated
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ rackData.name } - Rack Details`);
