@@ -17,7 +17,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
-import { PatchBrowserDetailViewComponent } from 'src/app/features/patch-browser/patch-browser-detail-view/patch-browser-detail-view.component';
+import { PatchBrowserDetailViewComponent } from 'src/app/features/patch-browser/patch-browser-detail/patch-browser-detail-view.component';
 import { PatchBrowserRootComponent } from 'src/app/features/patch-browser/patch-browser-root/patch-browser-root.component';
 import { PatchCompositeComponent } from 'src/app/features/patch-browser/patch-composite/patch-composite.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
@@ -40,6 +40,7 @@ import { PatchListModule } from '../../components/patch-list/patch-list.module';
 import { CommentsModule } from '../../components/shared-atoms/comments/comments.module';
 import { LocalDataFilterModule } from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
+
 
 const parentPrefix = 'patches';
 

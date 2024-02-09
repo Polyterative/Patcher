@@ -17,7 +17,7 @@ import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { RackBrowserDataService } from 'src/app/features/rack-browser/rack-browser-data.service';
-import { RackBrowserDetailViewComponent } from 'src/app/features/rack-browser/rack-browser-detail-view/rack-browser-detail-view.component';
+import { RackBrowserDetailViewComponent } from 'src/app/features/rack-browser/rack-browser-detail/rack-browser-detail-view.component';
 import { RackBrowserRootComponent } from 'src/app/features/rack-browser/rack-browser-root/rack-browser-root.component';
 import { RackCompositeComponent } from 'src/app/features/rack-browser/rack-composite/rack-composite.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
