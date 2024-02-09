@@ -1,30 +1,49 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+} from 'angular-animations';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable
+} from 'rxjs';
+import {
+  filter,
+  take
+} from 'rxjs/operators';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
 
+
 @Component({
-  selector:        'app-module-list',
-  templateUrl:     './module-list.component.html',
-  styleUrls:       ['./module-list.component.scss'],
-  animations:      [
+  selector:      'app-module-list',
+  templateUrl:   './module-list.component.html',
+  styleUrls:     ['./module-list.component.scss'],
+  animations:    [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        225,
+      anchor:   'enter',
+      duration: 225,
       animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
-      anchor:   'leave',
+      anchor: 'leave',
       duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders:   [LocalDataFilterService]
+  viewProviders: [LocalDataFilterService]
 })
 export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<ModuleList>;
@@ -55,13 +74,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
-  
+    
     this.manageSub(
       this.data$
-          .pipe(take(1))
-          .subscribe(x => this.filteredData$.next(x))
+        .pipe(take(1))
+        .subscribe(x => this.filteredData$.next(x))
     );
-  
+    
     if (this.showSearch) {
       this.manageSub(
         combineLatest([
@@ -70,13 +89,13 @@ export class ModuleListComponent extends SubManager implements OnInit {
         ])
           .subscribe(([data, query]) => {
             const result = data.filter(item => item.name.toLowerCase()
-                                                   .includes(query.toLowerCase()));
+              .includes(query.toLowerCase()));
             this.filteredData$.next(result);
           })
       );
-    
+      
     }
-  
+    
   }
   
 }
