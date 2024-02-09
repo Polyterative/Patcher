@@ -13,7 +13,7 @@
                                  description="If your manufacturer is missing, please contact us via Discord or mail.
                                  Submitted modules will be usable after approval."
           >
-            <div class="col gap1">
+            <div class="col gap2">
               <div fxLayout="column"
                    fxLayout.gt-md="row"
                    fxLayoutGap="1rem"
@@ -29,28 +29,8 @@
                     You will be able to add the panel image file once the module is approved
                   </li>
                 </ul>
-                <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
-                                          *ngIf="(!!((userService.loggedUser$|async)?.id)) else noUser"
-                                          (click$)="dataService.submitModuleForm$.next()"
-                                          fxLayoutAlign="end start"
-                >
-                  Submit module
-                </app-brand-primary-button>
-                <ng-template #noUser>
-                  <div class="col gap0"
-                  >
-                    <mat-card-subtitle fxLayoutAlign="center start"
-                                       style="padding: 1rem; color: #F44336"
-                    >You need to be logged in to submit a module
-                    </mat-card-subtitle>
-                    
-                    <app-brand-primary-button routerLink="/auth/login"
-                                              fxLayoutAlign="end start"
-                    >
-                      Login
-                    </app-brand-primary-button>
-                  </div>
-                </ng-template>
+              
+              
               </div>
               <lib-clean-card class="col gap1">
         
@@ -81,10 +61,21 @@
                 <!--                                    acceptedFileType="image/jpeg,image/jpg,image/png"-->
                 <!--                ></lib-file-drag-host>-->
               </lib-clean-card>
+              <div class="col center"
+              >
+                <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
+                                          *ngIf="(!!((userService.loggedUser$|async)?.id)) else noUser"
+                                          (click$)="dataService.submitModuleForm$.next()"
+                                          fxLayoutAlign="end start"
+                                          style="margin-top: 1rem; margin-bottom: 1rem"
+                >
+                  Submit module
+                </app-brand-primary-button>
+              </div>
             </div>
           </lib-hero-content-card>
           <lib-hero-content-card titleNormal="Similar modules (name/manufacturer)"
-                                 description="This list will update with similar to the one you are adding."
+                                 description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
                                  fxFlex="grow"
           >
             <lib-auto-update-loading-indicator [data$]="dataService.similarModulesData$"
@@ -107,29 +98,28 @@
   </lib-hero-content-card>
 </div>
 
-<ng-template #noRacks>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem"
-    >No racks using this module yet. Try adding it to yours!
-    </mat-card-subtitle>
-  </div>
-</ng-template>
-<ng-template #noPatches>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem"
-    >No patches using this module yet. Try adding it to yours!
-    </mat-card-subtitle>
-  </div>
-</ng-template>
 <ng-template #voidData>
   <div fxFlex="100"
        class="pad"
   >
-    <mat-card-subtitle fxLayoutAlign="center center">Nothing similar found on database!
+    <mat-card-subtitle fxLayoutAlign="center center" style="padding: 2rem; color: #0D7023!important"
+    >Nothing similar found on database! You can submit it maybe?
     </mat-card-subtitle>
+  </div>
+</ng-template>
+
+<ng-template #noUser>
+  <div class="col gap0" style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336!important"
+  >
+    <mat-card-subtitle fxLayoutAlign="center start"
+                       style="padding: 1rem; color: #F44336!important"
+    >You need to be logged in to submit a module
+    </mat-card-subtitle>
+    
+    <app-brand-primary-button routerLink="/auth/login"
+                              fxLayoutAlign="end start"
+    >
+      Login
+    </app-brand-primary-button>
   </div>
 </ng-template>
