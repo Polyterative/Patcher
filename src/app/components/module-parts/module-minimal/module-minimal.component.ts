@@ -26,7 +26,7 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 })
 export class ModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;
-  @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
+  @Input() viewConfig: ModuleMinimalViewConfig;
   
   isInCollection$: Observable<boolean>;
   
@@ -64,6 +64,9 @@ export interface ModuleMinimalViewConfig {
   hidePanelsOptions: boolean;
   bigPanelImage: boolean;
   ellipseDescription: boolean;
+  hidePatchedIn: boolean;
+  hideRackedIn: boolean;
+  hideBySameManufacturer: boolean;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
@@ -76,5 +79,8 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   hideTags:           false,
   hidePanelsOptions:  true,
   bigPanelImage:      false,
-  ellipseDescription: true
+  ellipseDescription: true,
+  hidePatchedIn: false,
+  hideRackedIn: false,
+  hideBySameManufacturer: false
 };

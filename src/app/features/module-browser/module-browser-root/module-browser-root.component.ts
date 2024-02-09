@@ -1,10 +1,21 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+
 
 @Component({
   selector:        'app-module-browser-root',
@@ -14,8 +25,9 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  @Input() readonly moduleViewConfig: ModuleMinimalViewConfig = {
+  @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
+    // hiding all buttons by default in classic module browser list view
     hideButtons:      true,
     hideDates:        false,
     hideDescription:  false,
@@ -33,8 +45,8 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   ) {
     
     this.dataService.paginatorToFistPage$
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(value => this.paginator.firstPage());
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(value => this.paginator.firstPage());
     
     if (!this.dataService.dirty) {
       this.dataService.fields.order.control.patchValue({

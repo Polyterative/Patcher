@@ -7,8 +7,8 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
 >
   <div class="col gap1"
   >
-    <lib-hero-content-card titleBig="Module details"
-                           class="modulesBG"
+    <lib-hero-content-card class="modulesBG"
+                           titleBig="Module details"
     >
       <div class="col gap1"
       >
@@ -16,39 +16,39 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
           <lib-clean-card>
             
             <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
-                                                [skipFirstData]="true"
                                                 [loadingLines]="5"
+                                                [skipFirstData]="true"
             >
             </lib-auto-content-loading-indicator>
-  
-  
+            
+            
             <ng-template #data>
               <app-module-composite [data]="(bag.data)"
                                     [viewConfig]="viewConfig"
               ></app-module-composite>
             </ng-template>
-
+          
           </lib-clean-card>
-
-
+        
+        
         </lib-screen-wrapper>
         <!--  -->
         <!--                  <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
         <!--                                                      [data$]="dataService.singleModuleData$"-->
         <!--                  ></lib-auto-content-loading-indicator>-->
-
+        
         <!--          <lib-clean-card *ngIf="bag.data">-->
         <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
         <!--          </lib-clean-card>-->
-
-
+        
+        
         <!--          hidden cause circular dependency-->
         <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
         <!--              stuff-->
-  
-  
+        
+        
         <lib-screen-wrapper>
-    
+          
           <div fxLayout="column"
           >
             <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
@@ -57,57 +57,59 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
               <app-module-editor [data]="(bag.data)"
               ></app-module-editor>
             </lib-hero-content-card>
-      
-            <div fxLayoutGap="1rem"
+            
+            <div fxLayout.gt-md="row"
                  fxLayout.lt-md="column"
-                 fxLayout.gt-md="row"
+                 fxLayoutGap="1rem"
             >
-              <lib-hero-content-card fxFlex
+              <lib-hero-content-card *ngIf="viewConfig.hideRackedIn===false"
+                                     fxFlex
                                      titleNormal="Racked in"
               >
-          
-          
-                <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                    [data$]="dataService.racksWithThisModule$"
+                <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
+                                                    [updateData$]="dataService.updateSingleModuleData$"
                 >
                   <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
                                     [data$]="dataService.racksWithThisModule$"
                   ></app-module-racks>
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
-              <lib-hero-content-card fxFlex
+              <lib-hero-content-card *ngIf="viewConfig.hidePatchedIn===false"
+                                     fxFlex
                                      titleNormal="Patched in"
               >
-          
-          
-                <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                    [data$]="dataService.patchesWithThisModule$"
+                
+                
+                <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
+                                                    [updateData$]="dataService.updateSingleModuleData$"
                 >
-                  <app-module-patches *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
-                                      [data$]="dataService.patchesWithThisModule$"
+                  <app-module-patches
+                    *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
+                    [data$]="dataService.patchesWithThisModule$"
                   ></app-module-patches>
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
             </div>
-      
-            <lib-hero-content-card fxFlex
-                                   *ngIf="bag.data?.manufacturer"
+            
+            <lib-hero-content-card *ngIf="bag.data?.manufacturer&&viewConfig.hideBySameManufacturer===false"
                                    [titleNormal]="'Others by '+(bag.data.manufacturer.name) "
+                                   fxFlex
             >
-        
-        
-              <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"
-                                                  [data$]="dataService.modulesBySameManufacturer$"
+              
+              
+              <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
+                                                  [updateData$]="dataService.updateSingleModuleData$"
               >
-                <app-module-list *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
-                                 [data$]="dataService.modulesBySameManufacturer$"
-                                 [viewConfig]="bySameManufacturerViewConfig"
+                <app-module-list
+                  *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
+                  [data$]="dataService.modulesBySameManufacturer$"
+                  [viewConfig]="bySameManufacturerViewConfig"
                 ></app-module-list>
               </lib-auto-content-loading-indicator>
             </lib-hero-content-card>
           </div>
         </lib-screen-wrapper>
-
+      
       </div>
     </lib-hero-content-card>
   </div>
