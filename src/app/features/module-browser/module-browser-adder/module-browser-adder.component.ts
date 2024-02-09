@@ -1,11 +1,21 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'ngx-seo';
 import { Subject } from 'rxjs';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleAdderDataService } from './module-adder-data.service';
+import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
+
 
 @Component({
   selector:        'app-module-browser-adder',
@@ -31,7 +41,8 @@ export class ModuleBrowserAdderComponent implements OnInit {
   constructor(
     public dataService: ModuleAdderDataService,
     public route: ActivatedRoute,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    public userService: UserManagementService,
   ) {
   
   }

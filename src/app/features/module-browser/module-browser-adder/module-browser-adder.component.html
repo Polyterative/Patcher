@@ -30,11 +30,27 @@
                   </li>
                 </ul>
                 <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
+                                          *ngIf="(!!((userService.loggedUser$|async)?.id)) else noUser"
                                           (click$)="dataService.submitModuleForm$.next()"
                                           fxLayoutAlign="end start"
                 >
                   Submit module
                 </app-brand-primary-button>
+                <ng-template #noUser>
+                  <div class="col gap0"
+                  >
+                    <mat-card-subtitle fxLayoutAlign="center start"
+                                       style="padding: 1rem; color: #F44336"
+                    >You need to be logged in to submit a module
+                    </mat-card-subtitle>
+                    
+                    <app-brand-primary-button routerLink="/auth/login"
+                                              fxLayoutAlign="end start"
+                    >
+                      Login
+                    </app-brand-primary-button>
+                  </div>
+                </ng-template>
               </div>
               <lib-clean-card class="col gap1">
         
