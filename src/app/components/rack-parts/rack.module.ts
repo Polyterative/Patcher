@@ -15,7 +15,7 @@ import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail
 import { RackDetailsComponent } from 'src/app/components/rack-parts/rack-details/rack-details.component';
 import { RackEditorComponent } from 'src/app/components/rack-parts/rack-editor/rack-editor.component';
 import { RackMinimalComponent } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { RackModuleAdderComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder.component';
+import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
@@ -48,7 +48,7 @@ import { StatisticsModule } from "src/app/components/shared-atoms/statistics/sta
     RackEditorComponent,
     RackMinimalComponent,
     RackCreatorComponent,
-    RackModuleAdderComponent,
+    RackModuleAdderDialogComponent,
     RackDetailsComponent,
     TotalHpOfModulesPipe,
     RackDetailsRemainingIndicatorComponent,
@@ -63,7 +63,7 @@ import { StatisticsModule } from "src/app/components/shared-atoms/statistics/sta
     RackMinimalComponent,
     RackEditorComponent,
     RackCreatorComponent,
-    RackModuleAdderComponent,
+    RackModuleAdderDialogComponent,
     RackDetailsComponent,
     RackDetailsRemainingIndicatorComponent,
     RackVisualModelComponent
