@@ -42,6 +42,7 @@ import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/comp
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserModule } from '../module-browser/module-browser.module';
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { MatInputModule } from "@angular/material/input";
 
 
 const parentPrefix: string = 'racks';
@@ -73,12 +74,12 @@ const parentPrefix: string = 'racks';
           // canActivate: [LocalAuthGuardService],
         },
         {
-          path: '',
+          path:   '',
           component: CommonSidebarComponent,
           outlet: 'sidebar'
         },
         {
-          path: '',
+          path:   '',
           component: UserDataHandlerComponent,
           outlet: 'user'
         }
@@ -117,7 +118,8 @@ const parentPrefix: string = 'racks';
     CleanCardModule,
     RackListModule,
     ModuleBrowserModule,
-    StatisticsModule
+    StatisticsModule,
+    MatInputModule
   ]
 })
 export class RackBrowserModule {}

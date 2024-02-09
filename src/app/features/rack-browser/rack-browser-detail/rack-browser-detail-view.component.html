@@ -4,11 +4,11 @@ data:(dataService.singleRackData$|async)
 >
   <div class="col gap1"
   >
-    <lib-hero-content-card titleBig="Rack details"
-                           class="racksBG"
+    <lib-hero-content-card class="racksBG"
+                           titleBig="Rack details"
     >
-      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleRackData$"
-                                          [data$]="dataService.singleRackData$"
+      <lib-auto-content-loading-indicator [data$]="dataService.singleRackData$"
+                                          [updateData$]="dataService.updateSingleRackData$"
       ></lib-auto-content-loading-indicator>
       <ng-container *ngIf="bag.data"
       >
@@ -17,15 +17,39 @@ data:(dataService.singleRackData$|async)
           ></app-rack-composite>
           <lib-clean-card>
             <app-rack-editor
-                [data]="(bag.data)"
+              [data]="(bag.data)"
             ></app-rack-editor>
           </lib-clean-card>
         
         </div>
       </ng-container>
     </lib-hero-content-card>
-    <app-module-browser-root *ngIf="(dataService.isCurrentRackEditable$|async)&&(dataService.isCurrentRackPropertyOfCurrentUser$|async)"
-                             [viewConfig]="viewConfig"
-    ></app-module-browser-root>
+    <ng-container *ngIf="dataService.isCurrentRackPropertyOfCurrentUser$|async">
+      <app-module-browser-root *ngIf="(dataService.isCurrentRackEditable$|async) else noBrowserOpen"
+                               [viewConfig]="viewConfig"
+      ></app-module-browser-root>
+    </ng-container>
   </div>
 </ng-container>
+<!--template if no browser open-->
+<ng-template #noBrowserOpen
+>
+  <div class="col gap4 center"
+       style="
+      font-size: 1.5em;
+      padding: 3em;
+"
+  >
+    <mat-label
+    
+    >
+      Unlock to add modules or make changes
+    </mat-label>
+    
+    <app-brand-primary-button (click)="dataService.requestRackEditableStatusChange$.next()"
+    >
+      Unlock rack now
+    </app-brand-primary-button>
+  </div>
+
+</ng-template>
