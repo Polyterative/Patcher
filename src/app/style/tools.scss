@@ -39,6 +39,14 @@
   gap: $standardUnit*2 $standardUnit*2
 }
 
+.gap3 {
+  gap: $standardUnit*3 $standardUnit*3
+}
+
+.gap4 {
+  gap: $standardUnit*4 $standardUnit*4
+}
+
 .col {
   @include flex;
   flex-direction:     column;
@@ -51,6 +59,16 @@
 //align flex to end
 .end {
   align-items: flex-end;
+}
+
+//align flex to center
+.center {
+  align-items: center;
+}
+
+//align flex to start
+.start {
+  align-items: flex-start;
 }
 
 
