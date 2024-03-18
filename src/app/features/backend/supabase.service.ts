@@ -13,6 +13,7 @@ import {
   forkJoin,
   from,
   from as rxFrom,
+  NEVER,
   Observable,
   ObservedValueOf,
   of,
@@ -22,12 +23,14 @@ import {
   zip
 } from 'rxjs';
 import {
+  catchError,
   map,
   switchMap,
   tap,
   withLatestFrom
 } from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
 import {
@@ -49,8 +52,7 @@ import { Tag } from '../../models/tag';
 import {
   DbPaths,
   QueryJoins
-} from "./DatabaseStrings";
-import { Database } from "src/backend/database.types";
+} from './DatabaseStrings';
 
 
 export type SupabaseStorageFile =
@@ -657,14 +659,14 @@ export class SupabaseService {
       data.ins = undefined;
       data.outs = undefined;
       data.tags = undefined; // todo handle tags
-      
+      data.panels = undefined;
       data.updated = new Date().toISOString();
       
       return rxFrom(
         this.supabase.from(DbPaths.modules)
           .update(data)
           .eq('id', data.id)
-          .single()
+        // .single()
       )
         .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
@@ -753,21 +755,31 @@ export class SupabaseService {
       )
         .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
-    moduleINsOUTs: (data: DbModule, authorid: string = '') => this.getUserSession$()
-      .pipe(
-        switchMap(user => forkJoin(
-          [
-            this.buildCVInserter(data.ins, DbPaths.moduleINs, data.id, authorid || user.id),
-            this.buildCVUpdater(data.ins, DbPaths.moduleINs, data.id),
-            this.buildCVInserter(data.outs, DbPaths.moduleOUTs, data.id, authorid || user.id),
-            this.buildCVUpdater(data.outs, DbPaths.moduleOUTs, data.id)
-          ]
-        )),
-        tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
-      ),
+    moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
+      return this.getUserSession$()
+        .pipe(
+          switchMap(user => {
+            const controlVoltageUpdates$ = [
+              this.buildCVInserter(ins, DbPaths.moduleINs, moduleId, authorid || user.id),
+              this.buildCVUpdater(ins, DbPaths.moduleINs, moduleId),
+              this.buildCVInserter(outs, DbPaths.moduleOUTs, moduleId, authorid || user.id),
+              this.buildCVUpdater(outs, DbPaths.moduleOUTs, moduleId)
+            ].flatMap(x => x);
+            return forkJoin(controlVoltageUpdates$);
+          }),
+          catchError(err => this.standardErrorMessageAndBlock()),
+          tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+        );
+    },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
   };
+  
+  private standardErrorMessageAndBlock(): Observable<never> {
+    SharedConstants.errorHandlerOperation(this.snackBar);
+    return NEVER;
+  }
+  
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
@@ -957,27 +969,6 @@ export class SupabaseService {
       );
   }
   
-  private buildCVInserter(cvs: CV[], path: string, moduleId: number, authorid: string) {
-    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
-      .filter(x => x.id === 0)
-      .map(x => {
-        x.id = undefined;
-        return x;
-      })
-      .map(x => ({
-        ...x,
-        authorid
-      }));
-    
-    return rxFrom(
-      this.supabase.from(path).upsert(mappedCVs)
-    )
-      .pipe(
-        // take(1),
-        tap(x => /*errorHandling*/ x)
-      );
-  }
-  
   private buildPatchConnectionInserter(connections: PatchConnection[]) {
     
     const toInsert = connections.map((conn, i) => ({
@@ -1015,17 +1006,33 @@ export class SupabaseService {
     return mapper;
   }
   
+  private buildCVInserter(cvs: CV[], path: string, moduleId: number, authorid: string) {
+    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
+      .filter(x => x.id === 0)
+      .map(x => {
+        x.id = undefined;
+        return x;
+      })
+      .map(x => ({
+        ...x,
+        authorid
+      }));
+    
+    // create an array of  requests to insert each cv one by one
+    // doing it this way because of a limitation of supabase
+    return mappedCVs.map(x => rxFrom(this.supabase.from(path)
+      .insert(x)));
+  }
+  
   private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
       .filter(x => x.id > 0);
     
-    return rxFrom(
-      this.supabase.from(path)
-        .upsert(mappedCVs)
-    )
-      .pipe(
-        tap(x => /*errorHandling*/ x)
-      );
+    // create an array of  requests to insert each cv one by one
+    // doing it this way because of a limitation of supabase
+    return mappedCVs.map(x => rxFrom(this.supabase.from(path)
+      .update(x)
+      .eq('id', x.id)));
   }
   
 }
