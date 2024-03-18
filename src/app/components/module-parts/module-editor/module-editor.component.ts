@@ -1,9 +1,36 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, concat, from, NEVER, of, Subject } from 'rxjs';
-import { catchError, filter, map, startWith, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  concat,
+  from,
+  NEVER,
+  of,
+  Subject
+} from 'rxjs';
+import {
+  catchError,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  takeUntil,
+  withLatestFrom
+} from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { CV } from 'src/app/models/cv';
@@ -12,6 +39,7 @@ import { FileDragHostService } from 'src/app/shared-interproject/components/@sma
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
+
 
 export interface FormCV {
   id: number;
@@ -226,15 +254,17 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }
         
       }),
-      map(([ins, outs]) => ({
-        ...this.data,
-        ins,
-        outs
-      })),
-      switchMap(x => concat(
-        this.backend.update.moduleINsOUTs(x),
-        this.backend.update.module(x)
-      )),
+      switchMap(([ins, outs]) => {
+        const module = this.data;
+        return concat(
+          this.backend.update.moduleINsOUTs(
+            module.id,
+            ins,
+            outs
+          ),
+          this.backend.update.module(module)
+        );
+      }),
       withLatestFrom(this.dataService.updateSingleModuleData$),
       takeUntil(this.destroyEvent$)
     )
