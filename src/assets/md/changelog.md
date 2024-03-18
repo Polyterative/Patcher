@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.2](https://github.com/Polyterative/Patcher/compare/v4.3.1...v4.3.2) (2024-03-18)
+
+
+### Bug Fixes
+
+* **modules:** sending control voltages no longer avoids saving data ([785f689](https://github.com/Polyterative/Patcher/commit/785f6892451108248afe500dd4fbcf3b6e4ba7b3))
+
 ### [4.3.1](https://github.com/Polyterative/Patcher/compare/v4.3.0...v4.3.1) (2024-03-17)
 
 
