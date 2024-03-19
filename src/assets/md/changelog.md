@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.3](https://github.com/Polyterative/Patcher/compare/v4.3.2...v4.3.3) (2024-03-19)
+
+
+### Bug Fixes
+
+* **module adder:** sending new modules no longer avoids saving data ([ae7c0bb](https://github.com/Polyterative/Patcher/commit/ae7c0bb38ebd0170326bcfe68e135ef7c32dce34))
+
 ### [4.3.2](https://github.com/Polyterative/Patcher/compare/v4.3.1...v4.3.2) (2024-03-18)
 
 
