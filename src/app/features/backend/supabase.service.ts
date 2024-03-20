@@ -1,7 +1,14 @@
-import {EventEmitter, Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {ActivatedRoute} from '@angular/router';
-import {AuthError, createClient, User} from '@supabase/supabase-js';
+import {
+  EventEmitter,
+  Injectable
+} from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import {
+  AuthError,
+  createClient,
+  User
+} from '@supabase/supabase-js';
 import {
   forkJoin,
   from,
@@ -15,18 +22,37 @@ import {
   throwError,
   zip
 } from 'rxjs';
-import {catchError, map, switchMap, tap, withLatestFrom} from 'rxjs/operators';
-import {SharedConstants} from 'src/app/shared-interproject/SharedConstants';
-import {Database} from 'src/backend/database.types';
-import {environment} from 'src/environments/environment';
-import {PatchConnection} from '../../models/connection';
-import {CV, CVwithModuleId} from '../../models/cv';
-import {DBManufacturer} from '../../models/manufacturer';
-import {DbModule, ModulePanel, RackedModule} from '../../models/module';
-import {Patch} from '../../models/patch';
-import {RackingData, RackMinimal} from '../../models/rack';
-import {Tag} from '../../models/tag';
-import {DbPaths, QueryJoins} from './DatabaseStrings';
+import {
+  catchError,
+  map,
+  switchMap,
+  tap,
+  withLatestFrom
+} from 'rxjs/operators';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { Database } from 'src/backend/database.types';
+import { environment } from 'src/environments/environment';
+import { PatchConnection } from '../../models/connection';
+import {
+  CV,
+  CVwithModuleId
+} from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
+import {
+  DbModule,
+  ModulePanel,
+  RackedModule
+} from '../../models/module';
+import { Patch } from '../../models/patch';
+import {
+  RackingData,
+  RackMinimal
+} from '../../models/rack';
+import { Tag } from '../../models/tag';
+import {
+  DbPaths,
+  QueryJoins
+} from './DatabaseStrings';
 
 
 export type SupabaseStorageFile =
@@ -338,8 +364,18 @@ export class SupabaseService {
     )
       .pipe(tap(x => /*errorHandling*/ x))
       .pipe(map((x => x.data))),
-    modulesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string, manufacturerId?: number, onlyPublic = true) => {
-      let baseQuery = this.supabase.from(DbPaths.modules)
+    modulesMinimal: (
+      from = 0,
+      to: number = this.defaultPag,
+      name?: string,
+      orderBy?: string,
+      orderDirection?: string,
+      manufacturerId?: number,
+      withHP?: number,
+      withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
+      onlyPublic = true
+    ) => {
+      let query = this.supabase.from(DbPaths.modules)
         .select(`
                               id,name,hp,description,public,created,updated,
                               ${QueryJoins.manufacturer},
@@ -347,27 +383,47 @@ export class SupabaseService {
                               ${QueryJoins.module_panels},
                               ${QueryJoins.module_tags}
                             `, {count: 'exact'})
-        .filter(`${DbPaths.module_panels}.isApproved`, 'eq', true) // only approved panels
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
-        .limit(1, {                                // take only one panel
-          foreignTable: DbPaths.module_panels
-        })
-        .ilike('name', `%${name}%`);
-
+      
       if (onlyPublic) {
-        baseQuery = baseQuery.filter('public', 'eq', true);
+        query = query.filter('public', 'eq', true);
       }
-
-      // append range and order
-      baseQuery = baseQuery.range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
-
+      
+      if (withHP) {
+        if (withHpCondition === '=' || withHpCondition === undefined) {
+          query = query.filter('hp', 'eq', withHP);
+        } else if (withHpCondition === '>') {
+          query = query.filter('hp', 'gt', withHP);
+        } else if (withHpCondition === '<') {
+          query = query.filter('hp', 'lt', withHP);
+        } else if (withHpCondition === '>=') {
+          query = query.filter('hp', 'gte', withHP);
+        } else if (withHpCondition === '<=') {
+          query = query.filter('hp', 'lte', withHP);
+        } else if (withHpCondition === '!=') {
+          query = query.filter('hp', 'neq', withHP);
+        } else {
+          query = query.filter('hp', 'eq', withHP);
+        }
+      }
+      
+      if (manufacturerId) {
+        query = query.filter('manufacturerId', 'eq', manufacturerId);
+      }
+      
+      
       return rxFrom(
-        manufacturerId ? baseQuery.eq('manufacturerId', manufacturerId) :
-          baseQuery
+        query
+          .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .order(`color`, {                                // order panel by color
+            foreignTable: DbPaths.module_panels,
+            ascending: true
+          })
+          .limit(1, {                                // take only one panel
+            foreignTable: DbPaths.module_panels
+          })
+          .ilike('name', `%${ name }%`)
+          .range(from, to)
+          .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
       )
         .pipe(
           tap(x => /*errorHandling*/ x),
