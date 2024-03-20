@@ -45,10 +45,10 @@ export class ModuleBrowserDataService implements OnDestroy {
   
   ////
   serversideTableRequestData = {
-    skip$:   new BehaviorSubject<number>(0),
-    take$:   new BehaviorSubject<number>(20),
+    skip$: new BehaviorSubject<number>(0),
+    take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$:   new BehaviorSubject<[string, string]>([
+    sort$: new BehaviorSubject<[string, string]>([
       '',
       ''
     ]) // { example:  "active": "name",// "direction": "desc"// }
@@ -57,88 +57,88 @@ export class ModuleBrowserDataService implements OnDestroy {
     itemsCount$: new BehaviorSubject<number>(0)
   };
   
-  formTypes = FormTypes;
+  orderStartingValue = {
+    id: 'updated',
+    name: 'Updated ↓'
+  };
   
   fields = {
-    search:        {
-      label:   'Search module...',
-      code:    'search',
-      flex:    '14rem',
+    search: {
+      label: 'Search module...',
+      code: 'search',
+      flex: '14rem',
       control: new UntypedFormControl(''),
-      type:    FormTypes.TEXT
+      type: FormTypes.TEXT
     },
-    order:         {
+    order: {
       label: 'Order by',
-      code:     'order',
-      flex:     '10rem',
-      control: new UntypedFormControl({
-        id:   'name',
-        name: 'Name'
-      }),
-      type:     FormTypes.SELECT,
+      code: 'order',
+      flex: '10rem',
+      control: new UntypedFormControl(this.orderStartingValue),
+      type: FormTypes.SELECT,
       options$: of([
         {
-          id:   'name',
+          id: 'name',
           name: 'Name ↑'
         },
         {
-          id:   'name',
+          id: 'name',
           name: 'Name ↓'
         },
         {
-          id:   'hp',
+          id: 'hp',
           name: 'HP ↑'
         },
         {
-          id:   'hp',
+          id: 'hp',
           name: 'HP ↓'
         },
         {
-          id:   'manufacturerId',
+          id: 'manufacturerId',
           name: 'Manufacturer ↑'
         },
         {
-          id:   'manufacturerId',
+          id: 'manufacturerId',
           name: 'Manufacturer ↓'
         },
         {
-          id:   'created',
+          id: 'created',
           name: 'Created ↑'
         },
         {
-          id:   'created',
+          id: 'created',
           name: 'Created ↓'
         },
         {
-          id:   'updated',
+          id: 'updated',
           name: 'Updated ↑'
         },
         {
-          id:   'updated',
+          id: 'updated',
           name: 'Updated ↓'
         },
         {
-          id:   'isComplete',
+          id: 'isComplete',
           name: 'Data Complete ↓'
         }
       ])
     },
     manufacturers: {
-      label:    'Made by...',
-      code:     'manufacturers',
-      flex:     '12rem',
-      control:  new UntypedFormControl(),
-      type:     FormTypes.AUTOCOMPLETE,
+      label: 'Made by...',
+      code: 'manufacturers',
+      flex: '12rem',
+      control: new UntypedFormControl(),
+      type: FormTypes.AUTOCOMPLETE,
       options$: this.backend.get.manufacturers(0, 9999, 'id,name')
-                    .pipe(
-                      map(x => x.data.map(z => ({
-                        id:   z.id.toString(),
-                        name: z.name
-                      }))),
-                      startWith([]),
-                      takeUntil(this.destroyEvent$),
-                      share()
-                    )
+        .pipe(
+          map(x => x.data.map(z => ({
+            id: z.id.toString(),
+            name: z.name
+          }))),
+          startWith([]),
+          takeUntil(this.destroyEvent$),
+          share()
+        )
       
     },
     hp: {
@@ -159,7 +159,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       code: 'hpCondition',
       flex: '8rem',
       control: new UntypedFormControl({
-        id:   '=',
+        id: '=',
         name: 'exactly'
       }),
       type: FormTypes.SELECT,
@@ -173,11 +173,11 @@ export class ModuleBrowserDataService implements OnDestroy {
           name: 'different than'
         },
         {
-          id:   '>',
+          id: '>',
           name: 'more than'
         },
         {
-          id:   '<',
+          id: '<',
           name: 'less than'
         },
         {
@@ -188,7 +188,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           id: '<=',
           name: 'less or exactly'
         },
-        
+      
       ])
     }
   };
@@ -228,35 +228,35 @@ export class ModuleBrowserDataService implements OnDestroy {
     // private snackBar: MatSnackBar,
     private backend: SupabaseService
   ) {
-  
+    
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
-  
+    
     this.updateModulesList$
-        .pipe(
-          withLatestFrom(this.serversideDataPackage$),
-          switchMap(([z, [skip, take, filter, sort]]) => {
-            const sortColumnName: string = sort[0] ? sort[0] : null;
-            const sortDirection = sort[1];
-  
-            return this.backend.get.modulesMinimal(
-              skip,
-              (skip + take) - 1,
-              filter,
-              sortColumnName,
-              sortDirection,
-              parseInt(getCleanedValueId(this.fields.manufacturers.control)),
-              parseInt(this.fields.hp.control.value),
-              this.fields.hpCondition.control.value.id
-            );
-          }),
-          takeUntil(this.destroyEvent$)
-        )
-        .subscribe(x => {
-          this.serversideAdditionalData.itemsCount$.next(x.count);
-          this.modulesList$.next(x.data);
-  
-          this.dirty = true;
-        });
+      .pipe(
+        withLatestFrom(this.serversideDataPackage$),
+        switchMap(([z, [skip, take, filter, sort]]) => {
+          const sortColumnName: string = sort[0] ? sort[0] : null;
+          const sortDirection = sort[1];
+          
+          return this.backend.get.modulesMinimal(
+            skip,
+            (skip + take) - 1,
+            filter,
+            sortColumnName,
+            sortDirection,
+            parseInt(getCleanedValueId(this.fields.manufacturers.control)),
+            parseInt(this.fields.hp.control.value),
+            this.fields.hpCondition.control.value.id
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        this.serversideAdditionalData.itemsCount$.next(x.count);
+        this.modulesList$.next(x.data);
+        
+        this.dirty = true;
+      });
     
     this.resetForm$
       .pipe(
@@ -264,10 +264,8 @@ export class ModuleBrowserDataService implements OnDestroy {
       )
       .subscribe(() => {
           this.fields.search.control.setValue('');
-          this.fields.order.control.setValue({
-            id: 'created',
-            name: 'Created ↓'
-          });
+          
+          this.fields.order.control.setValue(this.orderStartingValue);
           this.fields.manufacturers.control.setValue('');
           this.fields.hp.control.setValue('');
           this.fields.hpCondition.control.setValue({
@@ -276,28 +274,32 @@ export class ModuleBrowserDataService implements OnDestroy {
           });
         }
       );
-  
-    this.fields.search.control.valueChanges.pipe(
-      takeUntil(this.destroyEvent$)
-    )
-        .subscribe(x => {
-          this.paginatorToFistPage$.next();
-          this.onFilterEvent(x);
-        });
     
-    this.fields.manufacturers.control.valueChanges.pipe(
-      takeUntil(this.destroyEvent$)
-    )
+    this.fields.search.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        this.paginatorToFistPage$.next();
+        this.onFilterEvent(x);
+      });
+    
+    this.fields.manufacturers.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
       .subscribe(() => this.updateModulesList$.next());
     
-    this.fields.hp.control.valueChanges.pipe(
-      takeUntil(this.destroyEvent$)
-    )
+    this.fields.hp.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
       .subscribe(() => this.updateModulesList$.next());
     
-    this.fields.hpCondition.control.valueChanges.pipe(
-      takeUntil(this.destroyEvent$)
-    )
+    this.fields.hpCondition.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
       .subscribe(() => this.updateModulesList$.next());
   }
   
