@@ -20,14 +20,34 @@
                              [label]="dataService.fields.manufacturers.label"
         ></lib-mat-form-entity>
         
-        <lib-mat-form-entity
-            [control]="dataService.fields.order.control"
-            [options$]="dataService.fields.order.options$"
-            [type]="dataService.fields.order.type"
-            [disableVoidSelection]="true"
-            label="Order modules by"
+        <lib-mat-form-entity [control]="dataService.fields.hpCondition.control"
+                             [type]="dataService.fields.hpCondition.type"
+                             [label]="dataService.fields.hpCondition.label"
+                             [options$]="dataService.fields.hpCondition.options$"
+                             [disableVoidSelection]="false"
         ></lib-mat-form-entity>
-  
+        <lib-mat-form-entity [control]="dataService.fields.hp.control"
+                             [type]="dataService.fields.hp.type"
+                             [label]="dataService.fields.hp.label"
+        ></lib-mat-form-entity>
+        
+        <lib-mat-form-entity [control]="dataService.fields.order.control"
+                             [options$]="dataService.fields.order.options$"
+                             [type]="dataService.fields.order.type"
+                             [disableVoidSelection]="true"
+                             [label]="dataService.fields.order.label"
+        ></lib-mat-form-entity>
+        
+        <div>
+          <button mat-icon-button
+                  (click)="dataService.resetForm$.next()"
+                  [matTooltip]="'Reset form'"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+        
+        
         <div fxFlex="100"
              fxLayoutAlign="end start"
         >

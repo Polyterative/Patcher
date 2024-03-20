@@ -46,19 +46,23 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(value => this.paginator.firstPage());
+      .subscribe(() => this.paginator.firstPage());
     
     if (!this.dataService.dirty) {
       this.dataService.fields.order.control.patchValue({
-        id:   'updated',
-        name: 'Updated ↓'
+        id: 'created',
+        name: 'Created ↓'
       });
       
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(20);
+      
+      // this.dataService.dirty = false;
     }
     
-    this.seoAndUtilsService.updateSeo({description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'}, 'Modules');
+    this.seoAndUtilsService.updateSeo({
+      description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'
+    }, 'Modules');
   }
   
   ngOnInit(): void {
