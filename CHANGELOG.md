@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.4.0](https://github.com/Polyterative/Patcher/compare/v4.3.3...v4.4.0) (2024-03-20)
+
+
+### Features
+
+* **module-browser:** search add filter options ([d865290](https://github.com/Polyterative/Patcher/commit/d865290cc8493b92ed8854f9f7aff95344cfd6d6))
+
 ### [4.3.3](https://github.com/Polyterative/Patcher/compare/v4.3.2...v4.3.3) (2024-03-19)
 
 
