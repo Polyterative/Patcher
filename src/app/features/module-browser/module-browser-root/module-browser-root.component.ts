@@ -49,10 +49,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
       .subscribe(() => this.paginator.firstPage());
     
     if (!this.dataService.dirty) {
-      this.dataService.fields.order.control.patchValue({
-        id: 'created',
-        name: 'Created ↓'
-      });
+      this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue);
       
       this.dataService.serversideTableRequestData.skip$.next(0);
       this.dataService.serversideTableRequestData.take$.next(20);
