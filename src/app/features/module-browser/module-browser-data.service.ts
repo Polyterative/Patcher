@@ -1,13 +1,37 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import {
+  Injectable,
+  OnDestroy
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, combineLatest, of, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, share, startWith, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
-import { DbModule, MinimalModule } from '../../models/module';
-import { FormTypes, getCleanedValueId } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { UserManagementService } from '../backbone/login/user-management.service';
+import {
+  BehaviorSubject,
+  combineLatest,
+  of,
+  Subject
+} from 'rxjs';
+import {
+  distinctUntilChanged,
+  map,
+  share,
+  startWith,
+  switchMap,
+  takeUntil,
+  withLatestFrom
+} from 'rxjs/operators';
+import {
+  DbModule,
+  MinimalModule
+} from '../../models/module';
+import {
+  FormTypes,
+  getCleanedValueId
+} from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../backend/supabase.service';
+
 
 export type ModuleList = MinimalModule[] | null;
 
@@ -39,14 +63,14 @@ export class ModuleBrowserDataService implements OnDestroy {
     search:        {
       label:   'Search module...',
       code:    'search',
-      flex:    '6rem',
+      flex:    '14rem',
       control: new UntypedFormControl(''),
       type:    FormTypes.TEXT
     },
     order:         {
-      label:    'order',
+      label: 'Order by',
       code:     'order',
-      flex:     '6rem',
+      flex:     '10rem',
       control: new UntypedFormControl({
         id:   'name',
         name: 'Name'
@@ -98,12 +122,11 @@ export class ModuleBrowserDataService implements OnDestroy {
           name: 'Data Complete ↓'
         }
       ])
-      
     },
     manufacturers: {
-      label:    '...made by',
+      label:    'Made by...',
       code:     'manufacturers',
-      flex:     '6rem',
+      flex:     '12rem',
       control:  new UntypedFormControl(),
       type:     FormTypes.AUTOCOMPLETE,
       options$: this.backend.get.manufacturers(0, 9999, 'id,name')
@@ -117,6 +140,56 @@ export class ModuleBrowserDataService implements OnDestroy {
                       share()
                     )
       
+    },
+    hp: {
+      label: 'HP',
+      code: 'hp',
+      flex: '6rem',
+      control: new UntypedFormControl('',
+        Validators.compose([
+          Validators.min(1),
+          // only integers
+          Validators.pattern(/^-?\d+$/),
+        ])
+      ),
+      type: FormTypes.NUMBER
+    },
+    hpCondition: {
+      label: 'HP must be...',
+      code: 'hpCondition',
+      flex: '8rem',
+      control: new UntypedFormControl({
+        id:   '=',
+        name: 'exactly'
+      }),
+      type: FormTypes.SELECT,
+      options$: of([
+        {
+          id: '=',
+          name: 'exactly'
+        },
+        {
+          id: '!=',
+          name: 'different than'
+        },
+        {
+          id:   '>',
+          name: 'more than'
+        },
+        {
+          id:   '<',
+          name: 'less than'
+        },
+        {
+          id: '>=',
+          name: 'more or exactly'
+        },
+        {
+          id: '<=',
+          name: 'less or exactly'
+        },
+        
+      ])
     }
   };
   
@@ -128,6 +201,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
   ]);
+  resetForm$: Subject<void> = new Subject<void>();
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
@@ -150,8 +224,8 @@ export class ModuleBrowserDataService implements OnDestroy {
   }
   
   constructor(
-    private userService: UserManagementService,
-    private snackBar: MatSnackBar,
+    // private userService: UserManagementService,
+    // private snackBar: MatSnackBar,
     private backend: SupabaseService
   ) {
   
@@ -165,8 +239,14 @@ export class ModuleBrowserDataService implements OnDestroy {
             const sortDirection = sort[1];
   
             return this.backend.get.modulesMinimal(
-              skip, (skip + take) - 1, filter, sortColumnName, sortDirection,
-              parseInt(getCleanedValueId(this.fields.manufacturers.control))
+              skip,
+              (skip + take) - 1,
+              filter,
+              sortColumnName,
+              sortDirection,
+              parseInt(getCleanedValueId(this.fields.manufacturers.control)),
+              parseInt(this.fields.hp.control.value),
+              this.fields.hpCondition.control.value.id
             );
           }),
           takeUntil(this.destroyEvent$)
@@ -177,20 +257,48 @@ export class ModuleBrowserDataService implements OnDestroy {
   
           this.dirty = true;
         });
+    
+    this.resetForm$
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
+          this.fields.search.control.setValue('');
+          this.fields.order.control.setValue({
+            id: 'created',
+            name: 'Created ↓'
+          });
+          this.fields.manufacturers.control.setValue('');
+          this.fields.hp.control.setValue('');
+          this.fields.hpCondition.control.setValue({
+            id: '=',
+            name: 'exactly'
+          });
+        }
+      );
   
     this.fields.search.control.valueChanges.pipe(
-      debounceTime(500),
       takeUntil(this.destroyEvent$)
     )
         .subscribe(x => {
           this.paginatorToFistPage$.next();
           this.onFilterEvent(x);
         });
-  
-    this.fields.manufacturers.control.valueChanges.pipe(takeUntil(this.destroyEvent$))
-        .subscribe(x => {
-          this.updateModulesList$.next();
-        });
+    
+    this.fields.manufacturers.control.valueChanges.pipe(
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(() => this.updateModulesList$.next());
+    
+    this.fields.hp.control.valueChanges.pipe(
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(() => this.updateModulesList$.next());
+    
+    this.fields.hpCondition.control.valueChanges.pipe(
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(() => this.updateModulesList$.next());
   }
   
   ngOnDestroy(): void {

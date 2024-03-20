@@ -1,14 +1,39 @@
 import { Injectable } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, merge, of, Subject } from 'rxjs';
-import { filter, map, share, startWith, switchMap, tap } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  merge,
+  of,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  map,
+  share,
+  startWith,
+  switchMap,
+  tap
+} from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
 import { MinimalModule } from 'src/app/models/module';
-import { CustomValidators, FormTypes, getCleanedValueId } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import {
+  CustomValidators,
+  FormTypes,
+  getCleanedValueId
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SupabaseService } from '../../backend/supabase.service';
+
 
 @Injectable()
 export class ModuleAdderDataService {
@@ -188,8 +213,15 @@ export class ModuleAdderDataService {
           tap(() => this.similarModulesData$.next(undefined)),
           filter(() => this.formData.name.control.value.length !== '' || this.formData.manufacturer.control.value.length !== ''),
           switchMap(() => this.backend.get.modulesMinimal(
-            0, (10) - 1, this.formData.name.control.value, undefined, undefined,
-            parseInt(getCleanedValueId(this.formData.manufacturer.control)), false
+            0,
+            (10) - 1,
+            this.formData.name.control.value,
+            undefined,
+            undefined,
+            parseInt(getCleanedValueId(this.formData.manufacturer.control)),
+            undefined,
+            undefined,
+            false,
           ))
         )
         .subscribe(x => {
