@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { UserSignupDataService } from './user-signup-data.service';
+import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
+
 
 @Component({
   selector:        'app-signup-page',
@@ -13,9 +19,11 @@ export class SignupPageComponent implements OnInit {
   
   constructor(
     public activated: ActivatedRoute,
-    public dataService: UserSignupDataService
+    public dataService: UserSignupDataService,
+    readonly seoAndUtilsService: SeoAndUtilsService
+  
   ) {
-    
+    this.seoAndUtilsService.updateSeo({}, 'Signup');
   }
   
   ngOnInit(): void {

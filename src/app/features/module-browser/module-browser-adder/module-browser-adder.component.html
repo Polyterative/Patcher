@@ -32,34 +32,36 @@
               
               
               </div>
-              <lib-clean-card class="col gap1">
-        
-                <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
-                                     [disableVoidSelection]="true"
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity [dataPack]="dataService.formData.name"
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity [dataPack]="dataService.formData.description"
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity [dataPack]="dataService.formData.manual"
-                ></lib-mat-form-entity>
-                <div fxLayout="column"
-                     fxLayout.gt-md="row"
-                     fxLayoutGap="1rem"
-                >
-                  <lib-mat-form-entity [dataPack]="dataService.formData.hp"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity [dataPack]="dataService.formData.standard"
+              <lib-clean-card>
+                <div class="col gap1">
+                  
+                  <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
                                        [disableVoidSelection]="true"
                   ></lib-mat-form-entity>
-                  <lib-mat-form-entity [dataPack]="dataService.formData.diy"
-                                       [disableVoidSelection]="true"
+                  <lib-mat-form-entity [dataPack]="dataService.formData.name"
                   ></lib-mat-form-entity>
+                  <lib-mat-form-entity [dataPack]="dataService.formData.description"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity [dataPack]="dataService.formData.manual"
+                  ></lib-mat-form-entity>
+                  <div fxLayout="column"
+                       fxLayout.gt-md="row"
+                       fxLayoutGap="1rem"
+                  >
+                    <lib-mat-form-entity [dataPack]="dataService.formData.hp"
+                    ></lib-mat-form-entity>
+                    <lib-mat-form-entity [dataPack]="dataService.formData.standard"
+                                         [disableVoidSelection]="true"
+                    ></lib-mat-form-entity>
+                    <lib-mat-form-entity [dataPack]="dataService.formData.diy"
+                                         [disableVoidSelection]="true"
+                    ></lib-mat-form-entity>
+                  </div>
+                  <!--                <lib-file-drag-host [isImageOnlyMode]="true"-->
+                  <!--                                    [multipleFilesMode]="false"-->
+                  <!--                                    acceptedFileType="image/jpeg,image/jpg,image/png"-->
+                  <!--                ></lib-file-drag-host>-->
                 </div>
-                <!--                <lib-file-drag-host [isImageOnlyMode]="true"-->
-                <!--                                    [multipleFilesMode]="false"-->
-                <!--                                    acceptedFileType="image/jpeg,image/jpg,image/png"-->
-                <!--                ></lib-file-drag-host>-->
               </lib-clean-card>
               <div class="col center"
               >

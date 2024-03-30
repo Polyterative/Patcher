@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import {
+  FormControl,
+  FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
   Validators
 } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   merge,
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -43,127 +46,73 @@ export class ModuleAdderDataService {
   //
   submitModuleForm$ = new Subject<void>();
   
-  formData = {
-    name:         {
-      label:   'Name',
-      code:    'name',
-      flex:    '6rem',
-      hint:    'Example: Maths',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required,
-        Validators.minLength(1),
-        Validators.maxLength(144)
-      ])),
-      type:    FormTypes.TEXT
-    },
-    description: {
-      label:   'Description (brief)',
-      code:    'description',
-      flex:    '6rem',
-      hint:    'Example: Analog computer designed for musical purposes',
-      control: new UntypedFormControl('', Validators.compose([
-        // Validators.required,
-        Validators.minLength(1),
-        Validators.maxLength(144 * 4)
-      ])),
-      type:    FormTypes.AREA
-    },
-    manufacturer: {
-      label:    'Manufacturer',
-      code:     'manufacturer',
-      flex:     '6rem',
-      hint:     'Example: Doepfer',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required
-      ])),
-      type:     FormTypes.AUTOCOMPLETE,
-      options$: this.backend.get.manufacturers(0, 99999, 'id,name')
-                    .pipe(
-                      map(x => x.data.map(z => ({
-                        id:   z.id.toString(),
-                        name: z.name
-                      }))),
-                      startWith([]),
-                      share() // protects against multiple network requests
-                    )
-  
-    },
-    hp:           {
-      label:   'HP',
-      code:    'hp',
-      flex:    '6rem',
-      control: new UntypedFormControl('8', Validators.compose([
-        Validators.required,
-        Validators.min(1),
-        Validators.max(216),
-        CustomValidators.onlyIntegers
-      ])),
-      type:    FormTypes.NUMBER
-    },
-    manual:       {
-      label:   'Manual URL',
-      code:    'manual',
-      flex:    '6rem',
-      hint:    'PDF if available, include \'https://\')',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.minLength('https://'.length + 1),
-        Validators.maxLength(999),
-        CustomValidators.includesHttps
-      ])),
-      type:    FormTypes.TEXT
-    },
-    standard:     {
-      label:    'Format',
-      code:     'format',
-      flex:     '6rem',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required
-      ])),
-      options$: this.formatTranslatorService.standards.data$.pipe(
-        filter(x => x !== undefined),
-        map(x => x.map(y => ({
-          id:   y.id,
-          name: y.name
-        }))),
-        startWith([]),
-        share() // protects against multiple network requests
-      ),
-      type:     FormTypes.SELECT
-    },
+  formData: {
+    standard: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      options$: Observable<any[] | {
+        name: string;
+        id: number
+      }[]>;
+      type: FormTypes
+    };
     diy: {
-      label:    'DIY/Commercial',
-      code:     'diy',
-      flex:     '6rem',
-      hint:     '',
-      control: new UntypedFormControl({
-        id:   '0',
-        name: 'Commercial'
-      }, Validators.compose([
-        Validators.required
-      ])),
-      options$: of([
-        {
-          id:   '0',
-          name: 'Commercial'
-        },
-        {
-          id:   '1',
-          name: 'DIY'
-        }
-      ]),
-      type:     FormTypes.SELECT
+      code: string;
+      flex: string;
+      hint: string;
+      control: FormControl<any>;
+      label: string;
+      options$: Observable<({
+        name: string;
+        id: string
+      })[]>;
+      type: FormTypes
+    };
+    name: {
+      code: string;
+      flex: string;
+      hint: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    hp: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    description: {
+      code: string;
+      flex: string;
+      hint: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    manual: {
+      code: string;
+      flex: string;
+      hint: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    manufacturer: {
+      code: string;
+      flex: string;
+      hint: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes;
+      options$: Observable<any>
     }
   };
   
-  formGroup = new UntypedFormGroup({
-    name:         this.formData.name.control,
-    description:  this.formData.description.control,
-    manufacturer: this.formData.manufacturer.control,
-    hp:           this.formData.hp.control,
-    format:       this.formData.standard.control,
-    manual:       this.formData.manual.control,
-    diy:          this.formData.diy.control
-  });
+  formGroup: FormGroup;
   
   constructor(
     readonly formatTranslatorService: StandardsService,
@@ -171,7 +120,129 @@ export class ModuleAdderDataService {
     public dialog: MatDialog,
     public snackBar: MatSnackBar
   ) {
-  
+    this.formData = {
+      name: {
+        label: 'Name',
+        code: 'name',
+        flex: '6rem',
+        hint: 'Example: Maths',
+        control: new UntypedFormControl('', Validators.compose([
+          Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(144)
+        ])),
+        type: FormTypes.TEXT
+      },
+      description: {
+        label: 'Description (brief)',
+        code: 'description',
+        flex: '6rem',
+        hint: 'Example: Analog computer designed for musical purposes',
+        control: new UntypedFormControl('', Validators.compose([
+          // Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(144 * 4)
+        ])),
+        type: FormTypes.AREA
+      },
+      manufacturer: {
+        label: 'Manufacturer',
+        code: 'manufacturer',
+        flex: '6rem',
+        hint: 'Example: Doepfer',
+        control: new UntypedFormControl('', Validators.compose([
+          Validators.required
+        ])),
+        type: FormTypes.AUTOCOMPLETE,
+        options$: this.backend.get.manufacturers(0, 99999, 'id,name')
+          .pipe(
+            map(x => x.data.map(z => ({
+              id: z.id.toString(),
+              name: z.name
+            }))),
+            startWith([]),
+            share() // protects against multiple network requests
+          )
+        
+      },
+      hp: {
+        label: 'HP',
+        code: 'hp',
+        flex: '6rem',
+        control: new UntypedFormControl('8', Validators.compose([
+          Validators.required,
+          Validators.min(1),
+          Validators.max(216),
+          CustomValidators.onlyIntegers
+        ])),
+        type: FormTypes.NUMBER
+      },
+      manual: {
+        label: 'Manual URL',
+        code: 'manual',
+        flex: '6rem',
+        hint: 'PDF if available, include \'https://\')',
+        control: new UntypedFormControl('', Validators.compose([
+          Validators.minLength('https://'.length + 1),
+          Validators.maxLength(999),
+          CustomValidators.includesHttps
+        ])),
+        type: FormTypes.TEXT
+      },
+      standard: {
+        label: 'Format',
+        code: 'format',
+        flex: '6rem',
+        control: new UntypedFormControl('', Validators.compose([
+          Validators.required
+        ])),
+        options$: this.formatTranslatorService.standards.data$.pipe(
+          filter(x => x !== undefined),
+          map(x => x.map(y => ({
+            id: y.id,
+            name: y.name
+          }))),
+          startWith([]),
+          share() // protects against multiple network requests
+        ),
+        type: FormTypes.SELECT
+      },
+      diy: {
+        label: 'DIY/Commercial',
+        code: 'diy',
+        flex: '6rem',
+        hint: '',
+        control: new UntypedFormControl({
+          id: '0',
+          name: 'Commercial'
+        }, Validators.compose([
+          Validators.required
+        ])),
+        options$: of([
+          {
+            id: '0',
+            name: 'Commercial'
+          },
+          {
+            id: '1',
+            name: 'DIY'
+          }
+        ]),
+        type: FormTypes.SELECT
+      }
+    }
+    
+    
+    this.formGroup = new UntypedFormGroup({
+      name: this.formData.name.control,
+      description: this.formData.description.control,
+      manufacturer: this.formData.manufacturer.control,
+      hp: this.formData.hp.control,
+      format: this.formData.standard.control,
+      manual: this.formData.manual.control,
+      diy: this.formData.diy.control
+    });
+    
     // apply default on init
     this.formData.standard.options$.pipe(
       tap(() => this.formData.standard.control.disable()),

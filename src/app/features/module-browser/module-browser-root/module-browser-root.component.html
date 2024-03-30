@@ -3,7 +3,7 @@
   <lib-hero-content-card titleBig="Modules"
                          class="modulesBG"
   >
-    <div class="col gap1"
+    <div class="col"
     >
       <div fxLayout="row"
            fxLayout.lt-md="column"
@@ -61,7 +61,6 @@
       <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
                      [pageSizeOptions]="[20,25,50,100]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
-  
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
       ></mat-paginator>

@@ -1,9 +1,9 @@
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import {
   EMPTY,
   Observable
 } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 
 export class SharedConstants {
@@ -55,7 +55,7 @@ export class SharedConstants {
   }
   
   static successSave(snackBar: MatSnackBar) {
-    snackBar.open('✅ Saved data', undefined, {duration: 4000});
+    snackBar.open('✅ Data saved', undefined, {duration: 4000});
   }
   
   static successSaveShort(snackBar: MatSnackBar) {
@@ -63,11 +63,11 @@ export class SharedConstants {
   }
   
   static successLogin(snackBar: MatSnackBar) {
-    snackBar.open('✅ Login Successful ', undefined, {duration: 5000});
+    snackBar.open('✅ Welcome! ', undefined, {duration: 2000});
   }
   
   static successLogout(snackBar: MatSnackBar) {
-    snackBar.open('✅ Logged out', undefined, {duration: 5000});
+    snackBar.open('✅ Logged out', undefined, {duration: 2000});
   }
   
   static confirmMail(snackBar: MatSnackBar) {
@@ -75,7 +75,7 @@ export class SharedConstants {
   }
   
   static successSignup(snackBar: MatSnackBar) {
-    snackBar.open('✅ Signup Successful, welcome!', undefined, {duration: 5000});
+    snackBar.open('✅ Signed up, welcome!', undefined, {duration: 3000});
   }
   
   static showSuccessUpdate(snackBar: MatSnackBar) {

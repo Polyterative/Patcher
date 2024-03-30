@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 import { RouterModule } from '@angular/router';
 import { LuxonModule } from 'luxon-angular';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
@@ -25,7 +24,6 @@ import { SupabaseService } from './supabase.service';
   ],
   imports:      [
     CommonModule,
-    MatSnackBarModule,
     LuxonModule,
     RouterModule.forRoot([
       {
