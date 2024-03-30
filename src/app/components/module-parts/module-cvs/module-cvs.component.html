@@ -6,7 +6,7 @@
     <mat-card-subtitle>
       {{outs.length}} OUTs ↗
     </mat-card-subtitle>
-    <mat-chip-list>
+    <mat-chip-listbox>
       <ng-container *ngFor="let item of outs; let i = index">
         <app-module-cvitem [data]="item"
                            kind="out"
@@ -15,7 +15,7 @@
                            [@leave]="{ value: '', params: { delay:  0 }}"
         ></app-module-cvitem>
       </ng-container>
-    </mat-chip-list>
+    </mat-chip-listbox>
   </div>
   <div class="col gap0 ins"
        *ngIf="ins.length>0"
@@ -23,7 +23,7 @@
     <mat-card-subtitle>
       {{ins.length}} INs ↘
     </mat-card-subtitle>
-    <mat-chip-list>
+    <mat-chip-listbox>
       <ng-container *ngFor="let item of ins; let i = index">
         <app-module-cvitem [data]="item"
                            kind="in"
@@ -32,6 +32,6 @@
                            [@leave]="{ value: '', params: { delay:  5 }}"
         ></app-module-cvitem>
       </ng-container>
-    </mat-chip-list>
+    </mat-chip-listbox>
   </div>
 </div>

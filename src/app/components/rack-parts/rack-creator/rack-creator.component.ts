@@ -5,15 +5,12 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  FormControl,
+  FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
   Validators
 } from '@angular/forms';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef
-} from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import {
   BehaviorSubject,
   Subject
@@ -30,7 +27,11 @@ import {
   CustomValidators,
   FormTypes
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef
+} from "@angular/material/dialog";
 
 
 export interface RackCreatorOutModel {
@@ -49,51 +50,32 @@ export class RackCreatorComponent implements OnInit {
   readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
-  fields = {
+  fields: {
     hp: {
-      label: 'HP (per row)',
-      code: 'hp',
-      flex: '6rem',
-      control: new UntypedFormControl('84', Validators.compose([
-        Validators.required,
-        Validators.min(2),
-        Validators.max(216),
-        CustomValidators.onlyIntegers
-      ])),
-      type: FormTypes.NUMBER
-    },
-    rows: {
-      label: 'Vertical rows amount',
-      code: 'rows',
-      flex: '6rem',
-      control: new UntypedFormControl('2', Validators.compose([
-        Validators.required,
-        Validators.min(1),
-        Validators.max(10),
-        CustomValidators.onlyIntegers
-      ])),
-      type: FormTypes.NUMBER
-    },
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
     name: {
-      label: 'Name',
-      code: 'name',
-      flex: '6rem',
-      control: new UntypedFormControl('My new rack', Validators.compose([
-        Validators.required,
-        Validators.minLength(1),
-        Validators.maxLength(32)
-        // Validators.max(12)
-      ])),
-      type: FormTypes.TEXT
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    rows: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
     }
   };
   protected destroyEvent$ = new Subject<void>();
   
-  formGroup = new UntypedFormGroup({
-    [this.fields.hp.code]: this.fields.hp.control,
-    [this.fields.name.code]: this.fields.name.control,
-    [this.fields.rows.code]: this.fields.rows.control
-  });
+  formGroup: FormGroup;
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
@@ -107,6 +89,52 @@ export class RackCreatorComponent implements OnInit {
     public dialogRef: MatDialogRef<RackCreatorComponent, RackCreatorOutModel>,
     @Inject(MAT_DIALOG_DATA) public data: RackCreatorInModel
   ) {
+    
+    this.fields = {
+      hp: {
+        label: 'HP (per row)',
+        code: 'hp',
+        flex: '6rem',
+        control: new UntypedFormControl('84', Validators.compose([
+          Validators.required,
+          Validators.min(2),
+          Validators.max(216),
+          CustomValidators.onlyIntegers
+        ])),
+        type: FormTypes.NUMBER
+      },
+      rows: {
+        label: 'Vertical rows amount',
+        code: 'rows',
+        flex: '6rem',
+        control: new UntypedFormControl('2', Validators.compose([
+          Validators.required,
+          Validators.min(1),
+          Validators.max(10),
+          CustomValidators.onlyIntegers
+        ])),
+        type: FormTypes.NUMBER
+      },
+      name: {
+        label: 'Name',
+        code: 'name',
+        flex: '6rem',
+        control: new UntypedFormControl('My new rack', Validators.compose([
+          Validators.required,
+          Validators.minLength(1),
+          Validators.maxLength(32)
+          // Validators.max(12)
+        ])),
+        type: FormTypes.TEXT
+      }
+    };
+    
+    this.formGroup = new UntypedFormGroup({
+      [this.fields.hp.code]: this.fields.hp.control,
+      [this.fields.name.code]: this.fields.name.control,
+      [this.fields.rows.code]: this.fields.rows.control
+    });
+    
     
     this.save$
       .pipe(
@@ -126,8 +154,15 @@ export class RackCreatorComponent implements OnInit {
         )),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => {
-        SharedConstants.successSave(this.snackBar);
+      .subscribe(() => {
+        // success and open the new rack action
+        this.snackBar.open('Rack created', undefined, {
+          duration: 3000
+        })
+          .onAction()
+          .subscribe(() => {
+            // this.router.navigate(['rack', value.id]);
+          });
         
         this.dialogRef.close();
       });

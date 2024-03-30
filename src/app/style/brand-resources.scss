@@ -217,15 +217,17 @@ h1, h2, h3, h4, h5, h6 {
   @include content-font;
 }
 
-mat-card-title {
+.mat-mdc-card-title {
   @include title-font;
-  color: rgba(0, 0, 0, 0.7);
+  font-family: 'GangsterGrotesk', ', ', sans-serif;
+  //font-size: 2.5rem;
+  //color: rgba(0, 0, 0, 0.7);
 }
 
-mat-card-subtitle, p {
-  //font-family: 'GangsterGrotesk', ', ', sans-serif;
-  color: rgba(0, 0, 0, 0.9) !important;
-  //font-weight: 500;
+.mat-mdc-card-subtitle, p {
+  font-family: 'GangsterGrotesk', ', ', sans-serif;
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 500;
 }
 
 p {

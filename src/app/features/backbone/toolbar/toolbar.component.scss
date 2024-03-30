@@ -8,8 +8,10 @@ mat-toolbar-row {
 }
 
 .title {
-  //padding-right: 2em;
-  //padding-left:  2em;
+
+  font: 500 20px / 32px Roboto, Helvetica Neue, sans-serif;
+  letter-spacing: normal;
+  margin: 0;
 
   //opacity:           0;
   $appearTime:       250ms;

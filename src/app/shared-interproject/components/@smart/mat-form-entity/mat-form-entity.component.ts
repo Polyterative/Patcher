@@ -18,13 +18,7 @@ import {
   UntypedFormGroup,
   ValidatorFn
 } from '@angular/forms';
-import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
-import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
-import {
-  LegacyFloatLabelType as FloatLabelType,
-  MatLegacyFormFieldAppearance as MatFormFieldAppearance
-} from '@angular/material/legacy-form-field';
-import { LegacyTooltipPosition as TooltipPosition } from '@angular/material/legacy-tooltip';
+import { MatChipInputEvent } from '@angular/material/chips';
 import {
   BehaviorSubject,
   merge,
@@ -51,6 +45,12 @@ import {
   ISelectable,
   isOption
 } from './form-element-models';
+import {
+  FloatLabelType,
+  MatFormFieldAppearance
+} from "@angular/material/form-field";
+import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
+import { TooltipPosition } from "@angular/material/tooltip";
 
 
 export interface IMatFormEntityConfig {
@@ -141,7 +141,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    * The Angular Material tooltip provides a text label that is displayed when the user hovers over or longpresses an element.
    */
   @Input() tooltip = '';
-  @Input() formFieldAppearenceType: MatFormFieldAppearance = 'standard';
+  @Input() formFieldAppearanceType: MatFormFieldAppearance = 'outline';
   @Input() disableBrowserAutocomplete = false;
   /**
    * In autocomplete mode Validate input basing on options, INVALID if not found

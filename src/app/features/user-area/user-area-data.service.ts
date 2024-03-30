@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {
   BehaviorSubject,
   Subject
 } from 'rxjs';
 import {
   switchMap,
+  takeUntil,
   tap
 } from 'rxjs/operators';
 import {
@@ -21,6 +21,7 @@ import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
+import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()
@@ -40,80 +41,66 @@ export class UserAreaDataService extends SubManager {
   ) {
     super();
     
-    this.manageSub(
-      this.updateModulesData$
-          .pipe(
-            tap(x => this.modulesData$.next(undefined)),
-            switchMap(x => this.backend.get.userModules())
-          )
-          .subscribe(x => this.modulesData$.next(x))
-    );
+    this.updateModulesData$
+      .pipe(
+        tap(() => this.modulesData$.next(undefined)),
+        switchMap(() => this.backend.get.userModules()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(x => this.modulesData$.next(x))
     
-    this.manageSub(
-      this.updatePatchesData$
-          .pipe(
-            tap(x => this.patchesData$.next(undefined)),
-            switchMap(x => this.backend.get.userPatches())
-          )
-          .subscribe(x => this.patchesData$.next(x))
-    );
+    this.updatePatchesData$
+      .pipe(
+        tap(() => this.patchesData$.next(undefined)),
+        switchMap(() => this.backend.get.userPatches()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(x => this.patchesData$.next(x))
     
-    this.manageSub(
-      this.updateRackData$
-          .pipe(
-            tap(x => this.rackData$.next(undefined)),
-            switchMap(x => this.backend.get.userRacks())
-          )
-          .subscribe(x => this.rackData$.next(x)));
+    this.updateRackData$
+      .pipe(
+        tap(() => this.rackData$.next(undefined)),
+        switchMap(() => this.backend.get.userRacks()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(x => this.rackData$.next(x))
     
-    this.manageSub(
-      this.addPatch$
-          .pipe(
-            switchMap(x => {
-              const data: PatchCreatorInModel = {
-                // description: 'Stai per eliminare questo elemento, procedere?',
-                // positive:    {label: '✔️ Conferma'},
-                // negative:    {label: '❌ Annulla'}
-              };
+    this.addPatch$
+      .pipe(
+        switchMap(() => {
+          const data: PatchCreatorInModel = {};
           
-              return this.dialog.open(
-                PatchCreatorComponent,
-                {
-                  data
-                  // disableClose: true
-                }
-              )
-                         .afterClosed();
-              // .pipe(filter((x: CalendarCreateDialogDataOutModel) => x.editedStuff)
-              // );
-            })
+          return this.dialog.open(
+            PatchCreatorComponent,
+            {
+              data,
+              width: '24rem',
+            }
           )
-          .subscribe(x => this.updatePatchesData$.next())
-    );
+            .afterClosed();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.updatePatchesData$.next())
     
     this.addRack$
-        .pipe(
-          switchMap(x => {
-            const data: RackCreatorInModel = {
-              // description: 'Stai per eliminare questo elemento, procedere?',
-              // positive:    {label: '✔️ Conferma'},
-              // negative:    {label: '❌ Annulla'}
-            };
-        
-            return this.dialog.open(
-              RackCreatorComponent,
-              {
-                data,
-                width:        '24rem',
-                disableClose: false
-              }
-            )
-                       .afterClosed();
-            // .pipe(filter((x: CalendarCreateDialogDataOutModel) => x.editedStuff)
-            // );
-          })
-        )
-        .subscribe(x => this.updateRackData$.next(undefined));
+      .pipe(
+        switchMap(() => {
+          const data: RackCreatorInModel = {};
+          
+          return this.dialog.open(
+            RackCreatorComponent,
+            {
+              data,
+              width: '24rem',
+              disableClose: false
+            }
+          )
+            .afterClosed();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.updateRackData$.next(undefined));
     
   }
 }

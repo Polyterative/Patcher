@@ -3,13 +3,9 @@ import {
   UntypedFormControl,
   Validators
 } from '@angular/forms';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { Router } from '@angular/router';
 import {
-  ActivatedRoute,
-  Router
-} from '@angular/router';
-import {
-  BehaviorSubject,
   interval,
   Subject
 } from 'rxjs';
@@ -26,10 +22,6 @@ import { UserManagementService } from '../user-management.service';
 @Injectable()
 export class UserLoginDataService {
   public readonly updateData$ = new Subject<void>();
-  private preLoginImage = 'assets/doorc.png';
-  private postLoginImage = 'assets/dooro.png';
-  public readonly loginImage$ = new BehaviorSubject<string>(this.preLoginImage);
-  // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
   
   fields = {
     user: {
@@ -56,28 +48,25 @@ export class UserLoginDataService {
     }
   };
   public readonly mailLoginClick$ = new Subject<void>();
-  public readonly mailSignClick$ = new Subject<void>();
-  public readonly loginSuccessful$ = new Subject<void>();
+  
+  // public readonly mailSignClick$ = new Subject<void>();
   
   constructor(
     public router: Router,
-    public activated: ActivatedRoute,
     public loginInteraction: UserManagementService,
-    snackBar: MatSnackBar
+    private snackBar: MatSnackBar
   ) {
     
     this.mailLoginClick$
       .pipe(
-        switchMap(x => this.loginInteraction.login$(this.fields.user.control.value, this.fields.password.control.value)),
+        switchMap(() => this.loginInteraction.login$(this.fields.user.control.value, this.fields.password.control.value)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        SharedConstants.successLogin(snackBar);
-        this.loginImage$.next(this.postLoginImage);
+        SharedConstants.successLogin(this.snackBar);
         interval(1000)
           .pipe(take(1))
-          .subscribe(z => {
-            this.loginSuccessful$.next();
+          .subscribe(() => {
             this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
           });
       });

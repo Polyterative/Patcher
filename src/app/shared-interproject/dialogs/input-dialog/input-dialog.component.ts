@@ -3,17 +3,17 @@ import {
   Inject
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef
-} from '@angular/material/legacy-dialog';
-import { BehaviorSubject } from 'rxjs';
 import { AppStateService } from '../../app-state.service';
 import { FormTypes } from '../../components/@smart/mat-form-entity/form-element-models';
 import { DialogBase } from '../DialogBase';
 import { DialogDataInModelBase } from '../DialogDataStructures';
 import { ReadOnlyDialogComponent } from '../read-only-dialog/read-only-dialog.component';
 import { takeUntil } from "rxjs/operators";
+import { BehaviorSubject } from "rxjs";
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef
+} from "@angular/material/dialog";
 
 
 export interface InputDialogDataInModel extends DialogDataInModelBase {
@@ -47,7 +47,7 @@ export class InputDialogComponent extends DialogBase {
       .pipe(
         takeUntil(this.destroy$)
       )
-      .subscribe((value) => {
+      .subscribe(() => {
       this.isValid$.next(this.data.control.valid);
     });
   }

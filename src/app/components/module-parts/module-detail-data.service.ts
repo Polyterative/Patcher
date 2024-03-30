@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   delay,
@@ -23,6 +22,7 @@ import { SupabaseService } from '../../features/backend/supabase.service';
 import { DbModule } from '../../models/module';
 import { PatchMinimal } from '../../models/patch';
 import { RackMinimal } from '../../models/rack';
+import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()

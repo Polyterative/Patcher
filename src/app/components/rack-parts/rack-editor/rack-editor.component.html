@@ -40,18 +40,24 @@
             <div class="row gap1">
               <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
                                 (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
+                                style="align-self: center;"
               >
-                Show panels as images
+                <div style="cursor: pointer;">
+                  Show panels as images
+                </div>
               </mat-slide-toggle>
               <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
                                 (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
+                                style="align-self: center;"
               >
+                <div style="cursor: pointer;">
                 I've got many modules
+                </div>
               </mat-slide-toggle>
               
               <!--              create space between these-->
               <div fxFlex="1 1 auto"></div>
-              <app-brand-primary-button
+              <app-brand-primary-button style="padding: 1rem 0;"
                 (click)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
               >
                 Download as image

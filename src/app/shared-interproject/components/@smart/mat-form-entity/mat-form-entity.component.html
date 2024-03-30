@@ -3,7 +3,7 @@
   } as bag"
 >
   <mat-form-field *ngIf="!(type===types.DATE)"
-                  [appearance]="formFieldAppearenceType"
+                  [appearance]="formFieldAppearanceType"
                   [floatLabel]="styleOptions.floatLabel"
                   [hideRequiredMarker]="styleOptions.hideRequired"
                   [matTooltipPosition]="tooltipPosition"
@@ -152,13 +152,12 @@
     </ng-container>
     
     <ng-container *ngIf="(type===types.MULTI_TEXT)">
-      <mat-chip-list #chipList
+      <mat-chip-grid #chipList
                      [formControl]="control"
       >
         <mat-chip (removed)="removeFromChips(chip)"
                   *ngFor="let chip of control.value"
                   [removable]="true"
-                  [selectable]="true"
         >
           {{ chip.name }}
           <mat-icon *ngIf="true"
@@ -172,19 +171,18 @@
                [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
                [placeholder]="placeholder"
         >
-      </mat-chip-list>
+      </mat-chip-grid>
     
     </ng-container>
   
     <ng-container *ngIf="(type===types.AUTOCOMPLETE_MULTIPLE)">
-      <mat-chip-list #chipList
+      <mat-chip-grid #chipList
                      [formControl]="control"
       >
       
         <ng-container *ngFor="let chip of control.value">
           <mat-chip (removed)="removeFromChips(chip)"
                     [removable]="!control.disabled"
-                    [selectable]="!control.disabled"
           >
             {{ chip.name }}
             <mat-icon *ngIf="!control.disabled"
@@ -202,7 +200,7 @@
                [placeholder]="placeholder"
                matInput
         />
-      </mat-chip-list>
+      </mat-chip-grid>
       <mat-autocomplete #autocomplete="matAutocomplete"
                         (optionSelected)="addToMultiComplete($event)"
                         [displayWith]="autocomplete_displayFunction"
@@ -332,8 +330,7 @@
       >{{ ((errors$|async)) }}</mat-hint>
     </ng-container>
     <!--  <mat-hint *ngIf='control.invalid$'>{{errors}}</mat-hint>-->
-    <button mat-button
-            *ngIf="(!disableClearButton)&&
+    <button *ngIf="(!disableClearButton)&&
           ((type===types.TEXT)
           ||(type===types.AREA)
           ||(type===types.NUMBER)
@@ -362,7 +359,7 @@
   </mat-form-field>
   
   <mat-form-field *ngIf="(type===types.DATE)"
-                  [appearance]="formFieldAppearenceType"
+                  [appearance]="formFieldAppearanceType"
                   [floatLabel]="styleOptions.floatLabel"
                   [hideRequiredMarker]="styleOptions.hideRequired"
                   [matTooltipPosition]="tooltipPosition"

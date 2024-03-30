@@ -1,4 +1,6 @@
-﻿@import "reset";
+﻿@use '@angular/material' as mat;
+
+@import "reset";
 @import "brand-resources";
 //@import 'material-design-icons-iconfont/dist/material-design-icons.css';
 //@import 'typeface-roboto/index.css';
@@ -6,10 +8,60 @@
 
 
 body {
-  margin:                 0 !important;
+  margin: 0 !important;
   //padding:                0 !important;
-  text-rendering:         optimizelegibility;
+  text-rendering: optimizelegibility;
   -webkit-font-smoothing: antialiased;
+  //@include mat.core();
+
+}
+
+.mat-button, .mat-raised-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button, .mat-fab, .mat-mini-fab {
+  //font-family: "Roboto Condensed", Helvetica Neue, sans-serif!important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.mat-button, .mat-raised-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button, .mat-fab, .mat-mini-fab {
+  line-height: 36px;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 64px;
+  padding: 0 16px;
+}
+
+.mat-card-title {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.mat-card-subtitle, .mat-card-content {
+  font-size: 14px;
+}
+
+.mat-paginator, .mat-paginator-page-size .mat-select-trigger {
+  font-family: Roboto, Helvetica Neue, sans-serif;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+  background-color: rgba(255, 255, 255, 0.67);
+}
+
+.mat-paginator-container {
+  min-height: 56px;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 1rem 1.5rem !important;
+  //justify-content: var(--mat-dialog-actions-alignment, start);
+}
+
+.mat-mdc-paginator {
+  background: rgba(255, 255, 255, 0);
+  //color: rgba(0, 0, 0, .87);
+}
+
+.mdc-button {
+  letter-spacing: 0;
 }
 
 *, *:before, *:after {
@@ -17,11 +69,11 @@ body {
 }
 
 * {
-  box-sizing:              border-box;
-  text-rendering:          optimizeLegibility;
-  -webkit-font-smoothing:  antialiased;
+  box-sizing: border-box;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-kerning:            auto;
+  font-kerning: auto;
 
   //transition:25ms;
 }
@@ -59,7 +111,7 @@ mat-card-subtitle {
 }
 
 ::selection {
-  background:  rgba(255, 167, 38, 0.39);
+  background: rgba(255, 167, 38, 0.39);
   text-shadow: none;
 }
 
@@ -68,11 +120,11 @@ fieldset {
 }
 
 fieldset > legend {
-  $amount:       0.5em;
+  $amount: 0.5em;
   padding-right: $amount;
-  padding-left:  $amount;
+  padding-left: $amount;
 
-  text-align:    center;
+  text-align: center;
 }
 
 
@@ -88,7 +140,7 @@ $roundingRadius: .5em;
 
 @mixin round_less {
   $border-radius: $roundingRadius/2;
-  border-radius:  $border-radius;
+  border-radius: $border-radius;
 }
 
 mat-expansion-panel {
@@ -119,17 +171,17 @@ mat-expansion-panel {
 
 .ellipsisfade {
   position: relative;
-  height:   3.6em; /* exactly three lines */
+  height: 3.6em; /* exactly three lines */
 }
 
 .ellipsisfade:after {
-  content:    "";
+  content: "";
   text-align: right;
-  position:   absolute;
-  bottom:     0;
-  right:      0;
-  width:      70%;
-  height:     1.2em;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 70%;
+  height: 1.2em;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
 }
 
@@ -142,8 +194,12 @@ mat-expansion-panel {
 }
 
 @keyframes fadein {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 
@@ -164,21 +220,21 @@ mat-expansion-panel {
 }
 
 .parent:hover > .opacizeOnHover {
-  opacity:            1;
+  opacity: 1;
   -webkit-transition: opacity 125ms ease-in-out;
-  -moz-transition:    opacity 125ms ease-in-out;
-  -ms-transition:     opacity 125ms ease-in-out;
-  -o-transition:      opacity 125ms ease-in-out;
-  transition:         opacity 125ms ease-in-out;
+  -moz-transition: opacity 125ms ease-in-out;
+  -ms-transition: opacity 125ms ease-in-out;
+  -o-transition: opacity 125ms ease-in-out;
+  transition: opacity 125ms ease-in-out;
 }
 
 .parent:hover > .showOnHover {
-  opacity:            1;
+  opacity: 1;
   -webkit-transition: opacity 125ms ease-in-out;
-  -moz-transition:    opacity 125ms ease-in-out;
-  -ms-transition:     opacity 125ms ease-in-out;
-  -o-transition:      opacity 125ms ease-in-out;
-  transition:         opacity 125ms ease-in-out;
+  -moz-transition: opacity 125ms ease-in-out;
+  -ms-transition: opacity 125ms ease-in-out;
+  -o-transition: opacity 125ms ease-in-out;
+  transition: opacity 125ms ease-in-out;
 }
 
 
@@ -195,26 +251,26 @@ mat-expansion-panel {
   }
 
   .opacizeParent:hover > .opacizeOnHover {
-    opacity:            1;
+    opacity: 1;
     -webkit-transition: opacity 125ms ease-in-out;
-    -moz-transition:    opacity 125ms ease-in-out;
-    -o-transition:      opacity 125ms ease-in-out;
-    transition:         opacity 125ms ease-in-out;
+    -moz-transition: opacity 125ms ease-in-out;
+    -o-transition: opacity 125ms ease-in-out;
+    transition: opacity 125ms ease-in-out;
   }
 
   .opacizeParent:hover > .showOnHover {
-    opacity:            1;
+    opacity: 1;
     -webkit-transition: opacity 125ms ease-in-out;
-    -moz-transition:    opacity 125ms ease-in-out;
-    -o-transition:      opacity 125ms ease-in-out;
-    transition:         opacity 125ms ease-in-out;
+    -moz-transition: opacity 125ms ease-in-out;
+    -o-transition: opacity 125ms ease-in-out;
+    transition: opacity 125ms ease-in-out;
   }
 }
 
 
 @mixin item-description {
   font-style: italic;
-  color:      rgba(0, 0, 0, 0.5);
+  color: rgba(0, 0, 0, 0.5);
   @include condensed-font
 }
 

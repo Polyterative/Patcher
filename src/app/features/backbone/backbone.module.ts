@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from "@angular/material/card";
 import { MatDividerModule } from '@angular/material/divider';
 import { TimeagoModule } from 'ngx-timeago';
 import { UserManagementModule } from 'src/app/features/backbone/user-management/user-management.module';

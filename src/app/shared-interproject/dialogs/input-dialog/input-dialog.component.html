@@ -1,42 +1,37 @@
-<!--<div style='min-width:350px '>-->
-<div fxLayout="column "
-     fxLayoutGap="1rem"
->
-  <div fxFlex="100"><h1 mat-dialog-title>{{ title }}</h1></div>
-  <div fxFlex="100"
-       *ngIf="description"
+<h1 mat-dialog-title>{{ title }}</h1>
+<mat-dialog-content>
+  <div class="col gap1"
   >
-    <mat-dialog-content>
+    <div *ngIf="description">
       {{ description }}
-    </mat-dialog-content>
+    </div>
+    <lib-mat-form-entity [label]="data.label"
+                         [type]="data.type"
+                         [control]="data.control"
+                         [errorProvider]="appState.globalUtils.errorProvider"
+                         formFieldAppearanceType="outline"
+                         style="margin-top: 2rem;"
+    ></lib-mat-form-entity>
   </div>
-  <lib-mat-form-entity fxFlex="100"
-                       [label]="data.label"
-                       [type]="data.type"
-                       [control]="data.control"
-                       [errorProvider]="appState.globalUtils.errorProvider"
-                       formFieldAppearenceType="outline"
-  ></lib-mat-form-entity>
-  <div fxLayout="row"
-       fxFlex="100"
-  >
-    <app-brand-primary-button fxFlex="100"
-                              (click$)="dialogRef.close({result: undefined})"
-    >Cancel
-    </app-brand-primary-button>
-    <div fxFlex="grow"></div>
-    <app-brand-primary-button fxFlex="100"
-                              (click$)="dialogRef.close({result: data.control.value})"
+</mat-dialog-content>
+<mat-dialog-actions>
+  <div>
+    <!--      <app-brand-primary-button (click$)="dialogRef.close({result: undefined})"-->
+    <!--                                theme="negative"-->
+    <!--      >Cancel-->
+    <!--      </app-brand-primary-button>-->
+    <app-brand-primary-button (click$)="dialogRef.close({result: data.control.value})"
                               [disabled]="!(isValid$ | async)"
-
+                              theme="positive"
+                              style="align-self: flex-end;"
     >Confirm
     </app-brand-primary-button>
-
+  
   </div>
+</mat-dialog-actions>
   <!--  <mat-progress-bar mode="indeterminate"-->
   <!--                    [style.visibility]="data.control.valid ? 'hidden' : 'visible' "-->
   <!--  ></mat-progress-bar>-->
 
-</div>
 <!--</div>-->
 <!--&lt;!&ndash;&ndash;&gt;-->

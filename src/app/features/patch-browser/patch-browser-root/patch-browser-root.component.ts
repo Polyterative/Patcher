@@ -5,7 +5,6 @@ import {
   OnInit,
   ViewChild
 } from '@angular/core';
-import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
@@ -14,6 +13,7 @@ import {
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { MatPaginator } from "@angular/material/paginator";
 
 
 @Component({

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -12,6 +11,7 @@ import {
   tap
 } from 'rxjs';
 import { UserManagementService } from './user-management.service';
+import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()

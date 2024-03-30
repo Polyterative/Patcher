@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,13 +6,14 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  FormGroup,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   concat,
@@ -31,7 +31,6 @@ import {
   takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
@@ -91,63 +90,13 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   INs$: BehaviorSubject<FormCV[]> = new BehaviorSubject([]);
   OUTs$: BehaviorSubject<FormCV[]> = new BehaviorSubject([]);
   
-  formGroupA = this.formBuilder.group({});
-  formGroupB = this.formBuilder.group({});
+  formGroupA: FormGroup;
+  formGroupB: FormGroup;
   // formGroupC = this.formBuilder.group({});
   //
-  panelDescription: IMatFormEntityConfig = {
-    code:    'panelDescription',
-    label:   'Panel Description',
-    type:    FormTypes.TEXT,
-    control: new UntypedFormControl('', [
-      Validators.required,
-      Validators.minLength(3),
-      Validators.maxLength(144)
-    ]),
-    flex:    'auto'
-  };
-  panelType: IMatFormEntityConfig = {
-    code:     'panelType',
-    label:    'Panel Type',
-    type:     FormTypes.SELECT,
-    control: new UntypedFormControl({
-      name:  'Light',
-      value: 1,
-      id:    '0'
-    }, [Validators.required]),
-    options$: of([
-      {
-        name:  'Light',
-        value: 1,
-        id:    '0'
-      },
-      {
-        name:  'Dark',
-        value: 2,
-        id:    '1'
-      },
-      {
-        name:  'Special edition',
-        value: 3,
-        id:    '1'
-      },
-      {
-        name:  'Limited edition',
-        value: 4,
-        id:    '1'
-      }
-      // {
-      //   name:  'Silver',
-      //   value: 4,
-      //   id:    '1'
-      // }
-    ]),
-    flex:     'auto'
-  };
-  formGroupPanel = this.formBuilder.group({
-    'panelDescription': this.panelDescription.control,
-    'panelType':        this.panelType.control
-  });
+  panelDescription: IMatFormEntityConfig
+  panelType: IMatFormEntityConfig;
+  formGroupPanel: FormGroup
   //
   protected destroyEvent$ = new Subject<void>();
   
@@ -167,11 +116,71 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     public backend: SupabaseService,
     public formBuilder: UntypedFormBuilder,
     public dataService: ModuleDetailDataService,
-    public userManagementService: UserManagementService,
+    // public userManagementService: UserManagementService,
     public snackBar: MatSnackBar,
     public fileDragHostService: FileDragHostService,
-    public HttpClient: HttpClient
+    // public HttpClient: HttpClient
   ) {
+    
+    this.panelDescription = {
+      code: 'panelDescription',
+      label: 'Panel Description',
+      type: FormTypes.TEXT,
+      control: new UntypedFormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(144)
+      ]),
+      flex: 'auto'
+    };
+    
+    this.panelType = {
+      code: 'panelType',
+      label: 'Panel Type',
+      type: FormTypes.SELECT,
+      control: new UntypedFormControl({
+        name: 'Light',
+        value: 1,
+        id: '0'
+      }, [Validators.required]),
+      options$: of([
+        {
+          name: 'Light',
+          value: 1,
+          id: '0'
+        },
+        {
+          name: 'Dark',
+          value: 2,
+          id: '1'
+        },
+        {
+          name: 'Special edition',
+          value: 3,
+          id: '1'
+        },
+        {
+          name: 'Limited edition',
+          value: 4,
+          id: '1'
+        }
+        // {
+        //   name:  'Silver',
+        //   value: 4,
+        //   id:    '1'
+        // }
+      ]),
+      flex: 'auto'
+    };
+    
+    
+    this.formGroupPanel = this.formBuilder.group({
+      'panelDescription': this.panelDescription.control,
+      'panelType': this.panelType.control
+    });
+    
+    this.formGroupA = this.formBuilder.group({});
+    this.formGroupB = this.formBuilder.group({});
     
     this.addIN$.pipe(takeUntil(this.destroyEvent$))
         .subscribe(cv => {

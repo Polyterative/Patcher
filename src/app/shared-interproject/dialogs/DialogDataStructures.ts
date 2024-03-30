@@ -1,7 +1,10 @@
-﻿export interface DialogLabelDefinition {
+﻿import { BrandPrimaryButtonTheme } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component";
+
+
+export interface DialogLabelDefinition {
   label?: string;
   disabled?: boolean;
-  theme?: 'primary' | 'warning' | 'positive' | 'negative' | 'light';
+  theme?: BrandPrimaryButtonTheme;
 }
 
 export interface DialogDataInModelBase {
