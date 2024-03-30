@@ -5,7 +5,6 @@
     "start": "angular-build-info && ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
     "build": "angular-build-info && ng build --configuration production",
-    "deploy": "angular-build-info && ng build --configuration production && firebase deploy",
     "copyChangelog": "copyfiles changelog.md assets/md/",
     "updateMinors": "npm update --save/--save-dev",
     "updateAll": "ncu -u",
@@ -19,6 +18,7 @@
     "test": "ng test --browsers=ChromeHeadless",
     "test-headless": "ng test --browsers=ChromeHeadless --watch=false",
     "lint": "ng lint",
+    "cli-version": "ng --version",
     "e2e": "ng e2e"
   },
   "standard-version": {
@@ -76,7 +76,7 @@
     "@angular-eslint/builder": "^14.0.0",
     "@angular-eslint/eslint-plugin": "^14.0.0",
     "@angular-eslint/eslint-plugin-template": "^14.0.0",
-    "@angular-eslint/schematics": "^14.0.0",
+    "@angular-eslint/schematics": "^15.2.2-alpha.26",
     "@angular-eslint/template-parser": "^14.0.0",
     "@angular/cli": "^14.0.4",
     "@angular/compiler-cli": "^14.0.4",
