@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild } from '@angular/core';
-import { MatMenuTrigger } from '@angular/material/menu';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { SubManager } from '../../../directives/subscription-manager';
 import { GeneralContextMenuDataService } from './general-context-menu-data.service';
+
 
 @Component({
   selector:        'app-general-context-menu',

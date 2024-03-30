@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 import { RouterModule } from '@angular/router';
 import { LuxonModule } from 'luxon-angular';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
@@ -11,6 +11,7 @@ import { AdminGuardService } from './admin-guard.service';
 import { AdminPanelRootComponent } from './admin-panel-root/admin-panel-root.component';
 import { LocalStorageService } from './local-storage.service';
 import { SupabaseService } from './supabase.service';
+
 
 @NgModule({
   declarations: [
