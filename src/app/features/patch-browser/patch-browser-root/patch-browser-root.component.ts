@@ -1,10 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { defaultPatchMinimalViewConfig, PatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+} from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+
 
 @Component({
   selector:        'app-patch-browser-root',

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,6 +23,7 @@ import { ScreenWrapperModule } from '../../shared-interproject/components/@visua
 import { ModuleBrowserModule } from '../module-browser/module-browser.module';
 import { UserAreaDataService } from './user-area-data.service';
 import { UserAreaRootComponent } from './user-area-root/user-area-root.component';
+
 
 @NgModule({
   declarations: [
