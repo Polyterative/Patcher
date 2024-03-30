@@ -5,18 +5,15 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  FormControl,
   UntypedFormControl,
   Validators
 } from '@angular/forms';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef
-} from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { TimeagoPipe } from 'ngx-timeago';
 import {
   BehaviorSubject,
+  Observable,
   Subject
 } from 'rxjs';
 import {
@@ -24,7 +21,8 @@ import {
   map,
   share,
   startWith,
-  switchMap
+  switchMap,
+  takeUntil
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserAreaDataService } from 'src/app/features/user-area/user-area-data.service';
@@ -32,7 +30,11 @@ import { DbModule } from 'src/app/models/module';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { RackDetailDataService } from '../rack-detail-data.service';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef
+} from "@angular/material/dialog";
 
 
 export interface RackModuleAdderOutModel {
@@ -56,18 +58,19 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
   readonly saveRackedModule$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
-  fields = {
+  fields: {
     rack: {
-      label:    'Choose rack',
-      code:     'rack',
-      flex:     '6rem',
-      control: new UntypedFormControl('', Validators.compose([
-        Validators.required
-      ])),
-      options$: this.buildOptions(),
-      type:     FormTypes.AUTOCOMPLETE
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      options$: Observable<any[] | {
+        name: string;
+        id: string
+      }[]>;
+      type: FormTypes
     }
-  };
+  }
   
   static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel> {
     return dialog.open(RackModuleAdderDialogComponent, {
@@ -83,25 +86,36 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
     public timeagoPipe: TimeagoPipe,
     public userAreaDataService: UserAreaDataService,
     public dialogRef: MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>,
-    public rackDetailDataService: RackDetailDataService,
     @Inject(MAT_DIALOG_DATA) public data: RackModuleAdderInModel
   ) {
     super();
     
-    this.manageSub(
+    this.fields = {
+      rack: {
+        label: 'Choose rack',
+        code: 'rack',
+        flex: '6rem',
+        control: new UntypedFormControl('', Validators.compose([
+          Validators.required
+        ])),
+        options$: this.buildOptions(),
+        type: FormTypes.AUTOCOMPLETE
+      }
+    };
+    
       this.saveRackedModule$
         .pipe(
-          switchMap(x => this.backend.add.rackModule(
+          switchMap(() => this.backend.add.rackModule(
             this.data.module.id,
             this.fields.rack.control.value.id
-          ))
+          )),
+          takeUntil(this.destroy$)
         )
-        .subscribe(value => {
+        .subscribe(() => {
           SharedConstants.successSave(this.snackBar);
           
           this.dialogRef.close();
         })
-    );
     
     this.userAreaDataService.updateRackData$.next(undefined);
     

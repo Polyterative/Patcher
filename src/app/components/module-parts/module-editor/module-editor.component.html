@@ -13,7 +13,10 @@
             <mat-card-title>INs</mat-card-title>
             <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
           </div>
+          <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
+          
           <div class="col gap1 leftBorderS"
+               style="margin-top: 1rem;"
           >
             <ng-container *ngFor="let item of INs$|async; let i = index">
               <app-module-editor-cv-form-line [item]="item"
@@ -23,7 +26,6 @@
             </ng-container>
         
           </div>
-          <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
         </div>
         <div class="auto col gap1"
         >
@@ -34,7 +36,9 @@
             <mat-card-title>OUTs</mat-card-title>
             <mat-card-subtitle>leave fields blank if unknown</mat-card-subtitle>
           </div>
+          <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
           <div class="col gap1 leftBorderS"
+               style="margin-top: 1rem;"
           >
             <ng-container *ngFor="let item of OUTs$|async; let i = index">
               <app-module-editor-cv-form-line [item]="item"
@@ -42,9 +46,8 @@
               ></app-module-editor-cv-form-line>
             </ng-container>
           </div>
-          <app-module-editor-adder-line (add$)="addOUT$.next($event)"
-          ></app-module-editor-adder-line>
-      
+        
+        
         </div>
       </div>
     
@@ -59,9 +62,6 @@
            fxLayout.lt-md="column"
            fxLayoutGap="1rem"
       >
-        <app-advice-tooltip fxFlex="basis"
-        >Update this only if data is incorrect or some is missing.
-        </app-advice-tooltip>
         <mat-card-subtitle fxFlex="100"
                            fxLayoutAlign="end center"
         >Any changes you make will affect what all other users see
@@ -72,17 +72,24 @@
                                          [updateData$]="save$"
                                          loadingLabel="Saving data"
       >
-        <app-brand-primary-button (click$)="save$.next()"
-                                  theme="positive"
-                                  fxLayoutAlign="end"
-                                  [disabled]="
-                              (!(formGroupA|formValid))||
-                              (!(formGroupB|formValid))
-"
-        >
-          <mat-icon>save</mat-icon>
-          Save INs and OUTs
-        </app-brand-primary-button>
+        <div class="row gap2">
+          
+          <app-advice-tooltip fxFlex="basis"
+          >Please update data only if it is incorrect or missing.
+            If you are unsure, leave it as is.
+          </app-advice-tooltip>
+          <app-brand-primary-button (click$)="save$.next()"
+                                    theme="positive"
+                                    fxLayoutAlign="end"
+                                    [disabled]="
+                                (!(formGroupA|formValid))||
+                                (!(formGroupB|formValid))
+  "
+          >
+            <!--          <mat-icon>save</mat-icon>-->
+            Save INs and OUTs
+          </app-brand-primary-button>
+        </div>
       </lib-auto-update-loading-indicator>
     </div>
     <mat-divider [inset]="true"></mat-divider>
@@ -99,20 +106,21 @@
       <div class="row gap1"
            fxLayoutAlign="center center"
       >
-        <lib-file-drag-host fxFlex="30rem"
+        <lib-file-drag-host fxFlex="40%"
                             [isImageOnlyMode]="true"
                             [multipleFilesMode]="false"
                             acceptedFileType="image/jpeg,image/jpg"
         ></lib-file-drag-host>
-      </div>
-      <div class="row gap1">
-        <lib-mat-form-entity fxFlex="33%"
-                             [dataPack]="panelType"
-                             [disableVoidSelection]="true"
-        ></lib-mat-form-entity>
-        <lib-mat-form-entity fxFlex="auto"
-                             [dataPack]="panelDescription"
-        ></lib-mat-form-entity>
+        
+        <div class="col gap1">
+          <lib-mat-form-entity
+            [dataPack]="panelType"
+            [disableVoidSelection]="true"
+          ></lib-mat-form-entity>
+          <lib-mat-form-entity
+            [dataPack]="panelDescription"
+          ></lib-mat-form-entity>
+        </div>
       </div>
       <mat-divider inset="true"></mat-divider>
       <lib-auto-update-loading-indicator [data$]="dataService.singleModuleData$"
@@ -124,7 +132,7 @@
                                   theme="positive"
                                   fxLayoutAlign="end"
         >
-          <mat-icon>save</mat-icon>
+          <!--          <mat-icon>save</mat-icon>-->
           Add panel
         </app-brand-primary-button>
       </lib-auto-update-loading-indicator>

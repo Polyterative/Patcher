@@ -58,7 +58,7 @@
 
 //align flex to end
 .end {
-  align-items: flex-end;
+  margin-left: auto;
 }
 
 //align flex to center
@@ -68,7 +68,7 @@
 
 //align flex to start
 .start {
-  align-items: flex-start;
+  margin-right: auto;
 }
 
 
@@ -100,7 +100,7 @@
   flex: 1 1 auto;
 }
 
-.spaceBetween {
+.space-between {
   justify-content: space-between;
 }
 
@@ -110,10 +110,6 @@
 
 .shrink {
   flex: 0 1 auto;
-}
-
-.end {
-  justify-content: flex-end;
 }
 
 

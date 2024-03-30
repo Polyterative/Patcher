@@ -1,32 +1,37 @@
 @import "src/app/style/brand-resources";
 @import "src/app/style/commons_customizations";
 
-.button {
+.brand-button {
   @extend .slight-rounding;
 
+  line-height: 36px;
+  white-space: nowrap;
+
+  font-family: Roboto, Helvetica Neue, sans-serif;
+  padding: 0 16px;
+
   //font-weight: bolder;
-  text-transform:   uppercase;
+  text-transform: uppercase;
   //font-weight: bolder;
   //letter-spacing: 0.06rem;
   //color: white;
   background-color: white;
-  color:            $brand-primary;
-  border:           0.2rem solid $brand-primary;
+  color: $brand-primary;
+  border: 0.2rem solid $brand-primary;
   //border-radius:    0;
-  @extend .slight-rounding;
 
-  transition:       125ms;
+  transition: 125ms;
 
   &:hover {
     background-color: $brand-secondary !important;
-    color:            white !important;
+    color: white !important;
     //border:           0.2rem solid white !important;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
   }
 
   &.error {
     //background-color: $brand-secondary !important;
-    color:  rgba(255, 255, 255, 0.81) !important;
+    color: rgba(255, 255, 255, 0.81) !important;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
     border: 0.2rem solid $brand-error !important;
@@ -36,35 +41,35 @@
 
   &.warning {
     background-color: $brand-warning-background;
-    color:            $brand-warning;
+    color: $brand-warning;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
-    border:           0.2rem solid $brand-warning;
+    border: 0.2rem solid $brand-warning;
     //cursor:           ;
   }
 
   &.positive {
     background-color: $brand-positive-background;
-    color:            $brand-positive;
+    color: $brand-positive;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
-    border:           0.2rem solid $brand-positive;
+    border: 0.2rem solid $brand-positive;
     //cursor:           not-allowed;
   }
 
   &.negative {
     background-color: $brand-negative-background;
-    color:            $brand-negative;
+    color: $brand-negative;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
-    border:           0.2rem solid $brand-negative;
+    border: 0.2rem solid $brand-negative;
     //cursor:           not-allowed;
   }
 
 
   &.light {
     //background-color: white;
-    color:  $brand-secondary;
+    color: $brand-secondary;
     border: 0.2rem solid $brand-secondary;
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
@@ -80,11 +85,11 @@
 
   &.disabled {
     background-color: lighten($brand-secondary, 20%);
-    color:            rgba(255, 255, 255, 0.81);
+    color: rgba(255, 255, 255, 0.81);
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;
-    border:           0.2rem solid white;
-    cursor:           not-allowed;
+    border: 0.2rem solid white;
+    cursor: not-allowed;
   }
 
 
