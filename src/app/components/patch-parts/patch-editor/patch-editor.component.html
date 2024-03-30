@@ -38,8 +38,12 @@
                                           fxLayoutAlign="end"
                                           [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
                 >
-                  <mat-icon>save</mat-icon>
-                  Save patch
+                  <div class="row gap">
+                    <!--                    <mat-icon>save</mat-icon>-->
+                    <div>
+                      Save patch
+                    </div>
+                  </div>
                 </app-brand-primary-button>
               </div>
 

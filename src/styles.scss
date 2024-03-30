@@ -1,6 +1,6 @@
-@import "./src/app/style/commons_customizations";
-@import "./src/app/style/tools";
-@import "./src/app/style/brand-resources";
+@import "src/app/style/commons_customizations";
+@import "src/app/style/tools";
+@import "src/app/style/brand-resources";
 //body {
 //  font-family: Roboto, "Helvetica Neue", sans-serif;
 //}
@@ -32,3 +32,6 @@ $bgGradientBG:  rgb(223, 223, 223);
   background: $bgGradientBG;
   background: linear-gradient(135deg, transparentize(rgb(229, 155, 155), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
 }
+
+//html, body { height: 100%; }
+//body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

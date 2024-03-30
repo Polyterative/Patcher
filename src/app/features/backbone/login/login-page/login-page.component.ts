@@ -1,7 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { UserManagementService } from '../user-management.service';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
 import { UserLoginDataService } from './user-login-data.service';
+import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
+
 
 @Component({
   selector:        'app-login-page',
@@ -12,10 +16,11 @@ import { UserLoginDataService } from './user-login-data.service';
 export class LoginPageComponent implements OnInit {
   
   constructor(
-    public activated: ActivatedRoute,
     public dataService: UserLoginDataService,
-    public integrationService: UserManagementService
+    private seoAndUtilsService: SeoAndUtilsService
+    
   ) {
+    this.seoAndUtilsService.updateSeo({}, 'Login');
   
     // this.activated.url.subscribe(x => {
     //   console.log(x);

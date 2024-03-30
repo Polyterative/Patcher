@@ -7,7 +7,6 @@ import {
   UntypedFormControl,
   Validators
 } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import {
   BehaviorSubject,
   combineLatest,
@@ -33,6 +32,7 @@ import {
   getCleanedValueId
 } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../backend/supabase.service';
+import { PageEvent } from "@angular/material/paginator";
 
 
 export type ModuleList = MinimalModule[] | null;

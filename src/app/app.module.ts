@@ -29,6 +29,7 @@ import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service
 import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { MatDialogRef } from "@angular/material/dialog";
 
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
@@ -80,7 +81,11 @@ const matDatepickerLocaleIT = {
     italianLocale,
     matDatepickerLocale,
     matDatepickerLocaleIT,
-    UserAuthGuard
+    UserAuthGuard,
+    {
+      provide: MatDialogRef,
+      useValue: {}
+    }
   ],
   bootstrap:    [AppComponent]
 })

@@ -7,12 +7,12 @@
   <!--  <ng-container *ngFor="let item of data.tags|onlyTagOfType:0">-->
   <!--    {{item.name}}-->
   <!--  </ng-container>-->
-  <mat-chip-list class="padT0 padB0">
+  <mat-chip-listbox class="padT0 padB0">
     <ng-container *ngFor="let item of data.tags|orderTagsByType; let i = index">
       <mat-chip
           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
           [@leave]="{ value: '', params: { delay:  5 }}"
       >{{item.tag.name}}</mat-chip>
     </ng-container>
-  </mat-chip-list>
+  </mat-chip-listbox>
 </div>

@@ -6,8 +6,7 @@ import {
   ElementRef,
   Injectable
 } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import _ from 'lodash';
 import {
@@ -56,6 +55,7 @@ import {
 } from "@angular/forms";
 import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
 import domtoimage from 'dom-to-image';
+import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()
@@ -223,7 +223,7 @@ export class RackDetailDataService extends SubManager {
           
           const data: InputDialogDataInModel = {
             title: 'Rename Rack',
-            description: 'Please enter a new name for your rack',
+            description: `Please enter a new name for your rack "${ rack.name }"`,
             type: FormTypes.TEXT,
             control: formControl,
             label: 'New Name'
@@ -233,12 +233,12 @@ export class RackDetailDataService extends SubManager {
             InputDialogComponent,
             {
               data,
-              disableClose: true
+              disableClose: false
             }
           )
             .afterClosed()
             .pipe(
-              filter((x: InputDialogDataOutModel) => !!x.result),
+              filter((x: InputDialogDataOutModel) => !!x),
               map((x: InputDialogDataOutModel) => ({
                 newName: x.result,
                 rack
@@ -468,7 +468,7 @@ export class RackDetailDataService extends SubManager {
         SharedConstants.successCustom(this.snackBar, 'Rack Duplicated');
       });
     
-    // add module from bottom picker
+    // add a module from bottom picker
     this.addModuleToRack$
       .pipe(
         switchMap(module => this.backend.add.rackModule(
@@ -578,16 +578,16 @@ export class RackDetailDataService extends SubManager {
   private askForConfirmationWhenDuplicatingRack() {
     const data: ConfirmDialogDataInModel = {
       title: 'Duplicate rack',
-      description: 'Are you sure you want to create a new rack in your profile with the same modules?',
-      positive: {label: '✔️ Duplicate'},
-      negative: {label: '❌ Cancel'}
+      description: 'Confirm rack duplication? You will be able to change its name and content later',
+      positive: {label: 'Confirm'},
+      // negative: {label: '❌ Cancel'}
     };
     
     return this.dialog.open(
       ConfirmDialogComponent,
       {
         data,
-        disableClose: true
+        disableClose: false
       }
     )
       .afterClosed()
