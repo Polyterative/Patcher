@@ -289,7 +289,8 @@ export class ModuleAdderDataService {
             Module requested! ✅
             It will be available as soon as an admin can approve it.
             Please be patient.
-            Submitting the module again will not be helpful.
+            Submitting the module again will not be speed up the process.
+            Thank you very much for your contribution! 🙏
             `,
             '',
             {
