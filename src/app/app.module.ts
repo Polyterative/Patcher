@@ -1,10 +1,17 @@
 import { registerLocaleData } from '@angular/common';
 import localeItExtra from '@angular/common/locales/extra/it';
 import localeIt from '@angular/common/locales/it';
-import { InjectionToken, LOCALE_ID, NgModule } from '@angular/core';
+import {
+  InjectionToken,
+  LOCALE_ID,
+  NgModule
+} from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from '@angular/material/card';
-import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import {
+  MAT_DATE_FORMATS,
+  MAT_DATE_LOCALE
+} from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
@@ -22,6 +29,7 @@ import { UserAuthGuard } from './features/backbone/login/user-auth-guard.service
 import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+
 
 const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  LOCALE_ID,
