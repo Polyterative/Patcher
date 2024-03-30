@@ -1,7 +1,15 @@
-﻿import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject
+} from '@angular/core';
 import { DialogBase } from '../DialogBase';
 import { DialogDataInModelBase } from '../DialogDataStructures';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef
+} from "@angular/material/dialog";
+
 
 export interface ReadOnlyDialogDataInModel extends DialogDataInModelBase {
 }

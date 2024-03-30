@@ -1,14 +1,27 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
-import { PatchCreatorComponent, PatchCreatorInModel } from '../../components/patch-parts/patch-creator/patch-creator.component';
-import { RackCreatorComponent, RackCreatorInModel } from '../../components/rack-parts/rack-creator/rack-creator.component';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
+import {
+  switchMap,
+  tap
+} from 'rxjs/operators';
+import {
+  PatchCreatorComponent,
+  PatchCreatorInModel
+} from '../../components/patch-parts/patch-creator/patch-creator.component';
+import {
+  RackCreatorComponent,
+  RackCreatorInModel
+} from '../../components/rack-parts/rack-creator/rack-creator.component';
 import { MinimalModule } from '../../models/module';
 import { Patch } from '../../models/patch';
 import { Rack } from '../../models/rack';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
+
 
 @Injectable()
 export class UserAreaDataService extends SubManager {

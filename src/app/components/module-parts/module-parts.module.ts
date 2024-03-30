@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatLegacyMenuModule as MatMenuModule } from '@angular/material/legacy-menu';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
 import { RouterModule } from '@angular/router';
 import { TimeagoModule } from 'ngx-timeago';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
@@ -46,6 +46,7 @@ import { OnlyTagOfTypePipe } from './module-minimal/module-tags/only-tag-of-type
 import { OrderTagsByTypePipe } from './module-minimal/module-tags/order-tags-by-type.pipe';
 import { ModuleRealisticHolelineComponent } from './module-realistic/module-realistic-holeline/module-realistic-holeline.component';
 import { ModuleRealisticComponent } from './module-realistic/module-realistic.component';
+
 
 @NgModule({
   declarations: [
