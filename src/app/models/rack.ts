@@ -1,6 +1,7 @@
 import { Timestamped } from './models';
 import { PublicUser } from './user';
 
+
 export interface RackingData {
   id: number;
   rackid: number;
@@ -8,6 +9,7 @@ export interface RackingData {
   row: number;
   column: number;
 }
+
 
 export interface Rack extends RackMinimal {
   // hp: number;

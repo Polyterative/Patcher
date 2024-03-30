@@ -95,11 +95,12 @@ export class RackEditorComponent extends SubManager implements OnInit {
           
           const duplicateModule$ = new Subject<ContextMenuItem>();
           const deleteModule$ = new Subject<ContextMenuItem>();
+          const replaceWithBlank$ = new Subject<ContextMenuItem>();
           
           this.contextMenu.menuItems$.next([
             {
               id: 'name',
-              label: `${rackedModule.module.name} (${rackedModule.module.manufacturer.name}, ${rackedModule.module.hp} HP)`,
+              label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ rackedModule.module.hp } HP)`,
               data: rackedModule,
               disabled: true,
               click$: new Subject<ContextMenuItem>()
@@ -129,12 +130,12 @@ export class RackEditorComponent extends SubManager implements OnInit {
               click$: new Subject<ContextMenuItem>()
             },
             {
-              id: 'void-spacer',
-              label: '-',
-              icon: '',
-              data: undefined,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
+              id: 'replace-with-blank',
+              label: 'Replace with blank',
+              icon: 'copy_all',
+              data: rackedModule,
+              disabled: false,
+              click$: replaceWithBlank$
             },
             {
               id: 'delete',
@@ -148,21 +149,26 @@ export class RackEditorComponent extends SubManager implements OnInit {
           
           this.contextMenu.open$.next($event);
           
-          this.manageSub(
-            duplicateModule$
-              .pipe(
-                takeUntil(this.contextMenu.open$)
-              )
-              .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule))
-          );
+          duplicateModule$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule))
           
-          this.manageSub(
-            deleteModule$
-              .pipe(
-                takeUntil(this.contextMenu.open$)
-              )
-              .subscribe(_ => this.dataService.requestRackedModuleRemoval$.next(rackedModule))
-          );
+          deleteModule$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleRemoval$.next(rackedModule))
+          
+          replaceWithBlank$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule))
         })
     );
     

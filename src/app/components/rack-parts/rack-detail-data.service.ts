@@ -45,7 +45,6 @@ import {
 } from '../../shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
-import { ModuleDetailDataService } from '../module-parts/module-detail-data.service';
 import {
   InputDialogComponent,
   InputDialogDataInModel,
@@ -102,6 +101,8 @@ export class RackDetailDataService extends SubManager {
   requestRackEditableStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
+  requestRackedModuleReplaceWithBlank$ = new Subject<RackedModule>();
+  
   requestRackedModulesDbSync$ = new Subject<void>();
   //
   
@@ -113,13 +114,51 @@ export class RackDetailDataService extends SubManager {
     private backend: SupabaseService,
     private dialog: MatDialog,
     private router: Router,
-    private moduleDetailDataService: ModuleDetailDataService
   ) {
     super();
     
+    // when user wants to replace a module with blank, replace it with a blank module from manufacturer id 2000
+    this.requestRackedModuleReplaceWithBlank$
+      .pipe(
+        // if racked module HP is bigger than twenty then show snackbar and do not propagate the event
+        map((rackedModule) => {
+          if (rackedModule.module.hp > 20) {
+            this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
+              duration: 2000
+            });
+            return [];
+          }
+          return [rackedModule];
+        }),
+        filter(x => x.length > 0),
+        map(([rackedModule]) => rackedModule),
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([rackedModule, rackModules, rack]) => {
+          
+          const originalModule: RackedModule = _.cloneDeep(rackedModule);
+          
+          this.removeRackedModuleFromArray(rackModules, rackedModule);
+          this.rowedRackedModules$.next(rackModules);
+          
+          return this.backend.delete.rackedModule(rackedModule.rackingData.id).pipe(
+            // add the blank module in their old position
+            map(() => ({
+              row: originalModule.rackingData.row,
+              column: originalModule.rackingData.column,
+              rackId: rack.id,
+              moduleId: this.calculateBlankIdForModuleSize(rackedModule.module.hp)
+            })),
+            switchMap(({row, column, rackId, moduleId}) => this.backend.add.rackModule(moduleId, rackId, row, column)),
+            takeUntil(this.destroyEvent$)
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => this.updateSingleRackData$.next(this.singleRackData$.value.id));
+    
     // when user requests to download rack image, download it using HTML2Canvas
     this.downloadRackImageToUserComputer$.pipe(
-      tap(x => this.snackBar.open('Downloading image...', undefined, {duration: 4000})),
+      tap(() => this.snackBar.open('Downloading image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
       switchMap(([_, references]) => from(
         domtoimage.toJpeg(<any>references.screen.nativeElement, {
@@ -236,139 +275,133 @@ export class RackDetailDataService extends SubManager {
       .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
     
     // when updated rack data is received, update rowedRackedModules$
-    this.manageSub(
-      this.singleRackData$.pipe(
-        tap(() => this.rowedRackedModules$.next(null)),
-        filter(x => !!x),
-        switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
-        withLatestFrom(this.singleRackData$)
-      )
-        .subscribe(([rackedModules, rack]: [RackedModule[], Rack]) => {
-          // create a 2d array of racked modules and sort them by row
-          const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
-          this.rowedRackedModules$.next(rowedRackedModules);
-        })
-    );
+    this.singleRackData$.pipe(
+      tap(() => this.rowedRackedModules$.next(null)),
+      filter(x => !!x),
+      switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
+      withLatestFrom(this.singleRackData$),
+      takeUntil(this.destroy$),
+    )
+      .subscribe(([rackedModules, rack]: [RackedModule[], Rack]) => {
+        // create a 2d array of racked modules and sort them by row
+        const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
+        this.rowedRackedModules$.next(rowedRackedModules);
+      })
     
     // on order change, update local rack data and backend
-    this.manageSub(
-      this.rackOrderChange$
-        .pipe(
-          withLatestFrom(this.rowedRackedModules$, this.singleRackData$)
-        )
-        .subscribe(([
-                      {
-                        event,
-                        newRow,
-                        module
-                      }, rackModules, rack
-                    ]) => {
+    this.rackOrderChange$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(([
+                    {
+                      event,
+                      newRow,
+                      module
+                    }, rackModules, rack
+                  ]) => {
+        
+        
+        const movingUnrackedModule: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
+        if (movingUnrackedModule) {
+          module.rackingData.column = 0;
+          this.transferInRow(rackModules, newRow, event);
           
-          
-          const movingUnrackedModule: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
-          if (movingUnrackedModule) {
-            module.rackingData.column = 0;
-            this.transferInRow(rackModules, newRow, event);
-            
-            // nothing to do, not moving unracked module
-            this.snackBar.open(
-              `Please move unracked module to a suitable position inside your rack.
+          // nothing to do, not moving unracked module
+          this.snackBar.open(
+            `Please move unracked module to a suitable position inside your rack.
                 Your rack has ${ rack.rows } rows`,
-              null,
-              {duration: 8000});
-            
-            return;
-          }
+            null,
+            {duration: 8000});
           
-          // update array
-          if (newRow === module.rackingData.row) {
-            this.transferInRow(rackModules, newRow, event);
-          } else {
-            this.transferBetweenRows(rackModules, module, event, newRow);
-          }
-          
-          this.rowedRackedModules$.next(rackModules);
-          
-          this.requestRackedModulesDbSync$.next();
-        })
-    );
+          return;
+        }
+        
+        // update array
+        if (newRow === module.rackingData.row) {
+          this.transferInRow(rackModules, newRow, event);
+        } else {
+          this.transferBetweenRows(rackModules, module, event, newRow);
+        }
+        
+        this.rowedRackedModules$.next(rackModules);
+        
+        this.requestRackedModulesDbSync$.next();
+      })
     
     // track if rack is property of current user
-    this.manageSub(
-      combineLatest([
-        this.userService.loggedUser$,
-        this.singleRackData$
-      ])
-        .pipe(
-          tap(x => this.isCurrentRackPropertyOfCurrentUser$.next(false)),
-          filter(([user, rackData]) => (!!user && !!rackData))
-        )
-        .subscribe(([user, rackData]) => {
-          this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
-        })
-    );
+    combineLatest([
+      this.userService.loggedUser$,
+      this.singleRackData$
+    ])
+      .pipe(
+        tap(() => this.isCurrentRackPropertyOfCurrentUser$.next(false)),
+        filter(([user, rackData]) => (!!user && !!rackData)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([user, rackData]) => {
+        this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
+      })
     
     // when request to remove module is received, find module and remove it, then update the local rack data
-    this.manageSub(
-      this.requestRackedModuleRemoval$
-        .pipe(
-          withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-          switchMap(([rackedModule, rackModules, rack]) => {
-            
-            this.removeRackedModuleFromArray(rackModules, rackedModule);
-            this.rowedRackedModules$.next(rackModules);
-            
-            // this.requestRackedModulesDbSync$.next();
-            // this does not work, because the rack data are upserted, so we need to delete in the backend manually
-            
-            return this.backend.delete.rackedModule(rackedModule.rackingData.id);
-          }),
-          withLatestFrom(this.singleRackData$)
-        )
-        .subscribe(([x, rackData]) => {
-          this.singleRackData$.next(rackData);
-        })
-    );
-    
-    // when request to duplicate module is received, find module and duplicate it, then update the local rack data
-    this.manageSub(
-      this.requestRackedModuleDuplication$
-        .pipe(
-          withLatestFrom(this.rowedRackedModules$, this.singleRackData$)
-        )
-        .subscribe(([rackedModule, rackModules, rack]) => {
+    this.requestRackedModuleRemoval$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$),
+        switchMap(([rackedModule, rackModules]) => {
           
-          this.duplicateModule(rackModules, rackedModule);
+          this.removeRackedModuleFromArray(rackModules, rackedModule);
           this.rowedRackedModules$.next(rackModules);
           
-          this.requestRackedModulesDbSync$.next();
+          // this.requestRackedModulesDbSync$.next();
+          // this does not work, because the rack data are upserted, so we need to delete in the backend manually
           
-        })
-    );
+          return this.backend.delete.rackedModule(rackedModule.rackingData.id);
+        }),
+        withLatestFrom(this.singleRackData$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([x, rackData]) => {
+        this.singleRackData$.next(rackData);
+      })
+    
+    // when request to duplicate module is received, find module and duplicate it, then update the local rack data
+    this.requestRackedModuleDuplication$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(([rackedModule, rackModules]) => {
+        
+        this.duplicateModule(rackModules, rackedModule);
+        this.rowedRackedModules$.next(rackModules);
+        
+        this.requestRackedModulesDbSync$.next();
+        
+      })
     
     // on request to sync rack data with backend, update backend
-    this.manageSub(
-      this.requestRackedModulesDbSync$
-        .pipe(
-          withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-          switchMap(([_, rackModules, rack]) => this.callBackendToUpdateModulesOfRack(rackModules, rack)
-          ),
-          // handle error, if any module has not been updated,tow to the user that something went wrong
-          catchError(err => {
-            SharedConstants.errorHandlerOperation(this.snackBar);
-            return of(undefined);
-          }),
-          filter(x => !!x),
-        )
-        .subscribe(x => {
-          // SharedConstants.successSaveShort(this.snackBar);
-        })
-    );
+    this.requestRackedModulesDbSync$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
+        switchMap(([_, rackModules, rack]) => this.callBackendToUpdateModulesOfRack(rackModules, rack)
+        ),
+        // handle error, if any module has not been updated,tow to the user that something went wrong
+        catchError(() => {
+          SharedConstants.errorHandlerOperation(this.snackBar);
+          return of(undefined);
+        }),
+        filter(x => !!x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
+        // SharedConstants.successSaveShort(this.snackBar);
+      })
     
     // on rack delete, ask for confirmation and delete rack on backend
     this.deleteRack$
       .pipe(
-        switchMap(x => {
+        switchMap(() => {
           
           const data: ConfirmDialogDataInModel = {
             title: 'Deletion',
@@ -394,12 +427,12 @@ export class RackDetailDataService extends SubManager {
         switchMap(x => this.backend.delete.userRack(x.id)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => {
+      .subscribe(() => {
         this.router.navigate(['/user/area']);
         SharedConstants.successDelete(this.snackBar);
       });
     
-    // on rack duplicate, ask for confirmation and duplicate rack on backend, including modules and their positions 
+    // on rack duplicate, ask for confirmation and duplicate rack on the backend, including modules and their positions
     this.duplicateRack$
       .pipe(
         switchMap(() => this.askForConfirmationWhenDuplicatingRack()),
@@ -423,14 +456,15 @@ export class RackDetailDataService extends SubManager {
             return this.singleRackData$.pipe(
               filter(x => x.id === newlyCreatedRackId),
               take(1),
-              map(x => rackModules),
+              map(() => rackModules),
             )
           }
         ),
         // wait for the new empty rack to arrive, then add the modules to the new rack
         switchMap(rackModules => this.callBackendToUpdateModulesOfRack(rackModules, this.singleRackData$.value)),
+        takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => {
+      .subscribe(() => {
         SharedConstants.successCustom(this.snackBar, 'Rack Duplicated');
       });
     
@@ -443,7 +477,7 @@ export class RackDetailDataService extends SubManager {
         )),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(moduleToAdd => {
+      .subscribe(() => {
         snackBar.open('✅ Added', undefined, {duration: 4000});
         
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
@@ -459,12 +493,12 @@ export class RackDetailDataService extends SubManager {
         }
       }),
       filter(x => !!x),
-      switchMap(x => this.rowedRackedModules$.pipe(
+      switchMap(() => this.rowedRackedModules$.pipe(
         filter(y => !!y),
         take(1),
       )),
       withLatestFrom(this.singleRackData$),
-      takeUntil(this.destroy$),
+      takeUntil(this.destroy$)
     )
       .subscribe(([rows, rack]) => {
         // let patchPoints = {
@@ -520,8 +554,8 @@ export class RackDetailDataService extends SubManager {
       row.forEach(module => {
         // update rack id of each module to the newly created rack id
         module.rackingData.rackid = newlyCreatedRackId;
-        // we are creating new rack modules, so we need to remove the id, 
-        // otherwise the backend will think we are updating the modules 
+        // we are creating new rack modules, so we need to remove the id,
+        // otherwise the backend will think we are updating the modules
         module.rackingData.id = undefined;
         
       });
@@ -562,6 +596,7 @@ export class RackDetailDataService extends SubManager {
   }
 
 // bump up version number in name of rack, if it has one, otherwise add version "V2", used when duplicating rack
+  
   private bumpUpVersionInNameOfOfRack() {
     let originalName = this.singleRackData$.value.name;
     
@@ -580,7 +615,7 @@ export class RackDetailDataService extends SubManager {
   private callBackendToUpdateModulesOfRack(rackModules: RackedModule[][], rack: Rack) {
     return this.backend.update.rackedModules(rackModules.flatMap(row => row))
       .pipe(
-        tap(x => {
+        tap(() => {
           if (this.isAnyModuleWithoutRackingId(rackModules)) {
             this.singleRackData$.next(rack);
           }
@@ -590,8 +625,9 @@ export class RackDetailDataService extends SubManager {
   
   /*
    check if there are modules without racking id, because they have not been synced with the backend yet,
-   probably because they are new, and have not been saved to the backend yet 
+   probably because they are new, and have not been saved to the backend yet
    */
+  
   private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
     return rackModules.flatMap(row => row)
       .filter(module => module.rackingData.id === undefined).length > 0;
@@ -694,5 +730,52 @@ export class RackDetailDataService extends SubManager {
     this.updateModulesColumnIds(rackedModules, deepCopiedRackedModule.rackingData.row);
   }
   
+  // the following identifications come from database
+  private calculateBlankIdForModuleSize(hp: number) {
+    switch (hp) {
+      case 1:
+        return 4666;
+      case 2:
+        return 4647;
+      case 3:
+        return 4665;
+      case 4:
+        return 4648;
+      case 5:
+        return 4664;
+      case 6:
+        return 4649;
+      case 7:
+        return 4650;
+      case 8:
+        return 4651;
+      case 9:
+        return 4652;
+      case 10:
+        return 4653;
+      case 11:
+        return 4654;
+      case 12:
+        return 4655;
+      case 13:
+        return 4656;
+      case 14:
+        return 4657;
+      case 15:
+        return 4658;
+      case 16:
+        return 4659;
+      case 17:
+        return 4660;
+      case 18:
+        return 4661;
+      case 19:
+        return 4662;
+      case 20:
+        return 4663;
+      default:
+        return -1;
+    }
+  }
   
 }
