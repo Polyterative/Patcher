@@ -1,6 +1,6 @@
 ﻿@use '@angular/material' as mat;
 @import "../../../app.component";
-@import "~src/app/style/brand-resources.scss";
+@import "src/app/style/brand-resources.scss";
 
 mat-toolbar-row {
   height: 3em;

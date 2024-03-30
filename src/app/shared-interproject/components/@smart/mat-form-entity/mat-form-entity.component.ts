@@ -1,15 +1,57 @@
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, AsyncValidatorFn, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn } from '@angular/forms';
+import {
+  COMMA,
+  ENTER
+} from '@angular/cdk/keycodes';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import {
+  AbstractControl,
+  AsyncValidatorFn,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  ValidatorFn
+} from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { FloatLabelType, MatFormFieldAppearance } from '@angular/material/form-field';
+import {
+  FloatLabelType,
+  MatFormFieldAppearance
+} from '@angular/material/form-field';
 import { TooltipPosition } from '@angular/material/tooltip';
-import { BehaviorSubject, merge, NEVER, Observable, of } from 'rxjs';
-import { debounceTime, filter, map, tap, withLatestFrom } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  merge,
+  NEVER,
+  Observable,
+  of
+} from 'rxjs';
+import {
+  debounceTime,
+  filter,
+  map,
+  tap,
+  withLatestFrom
+} from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
-import { AppFormUtils, Strings } from './app-form-utils';
-import { findOptionForId, flatOptionGroupToArray, FormTypes, ISelectable, isOption } from './form-element-models';
+import {
+  AppFormUtils,
+  Strings
+} from './app-form-utils';
+import {
+  findOptionForId,
+  flatOptionGroupToArray,
+  FormTypes,
+  ISelectable,
+  isOption
+} from './form-element-models';
+
 
 export interface IMatFormEntityConfig {
   type: FormTypes;
@@ -30,9 +72,9 @@ export interface IMatFormEntityConfig {
  * created: 03/03/2018
  */
 @Component({
-  selector:        'lib-mat-form-entity',
-  templateUrl:     './mat-form-entity.component.html',
-  styleUrls:       ['./mat-form-entity.component.scss'],
+  selector: 'lib-mat-form-entity',
+  templateUrl: './mat-form-entity.component.html',
+  styleUrls: ['./mat-form-entity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
@@ -42,6 +84,11 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     private changeDetectorRef: ChangeDetectorRef
   ) {
     super();
+    
+    if (this.formGroupRoot === undefined) {
+      this.formGroupRoot = this.formBuilder.group({});
+    }
+    
   }
   
   @Input()
@@ -73,10 +120,13 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    * Types reference, do not use from outside
    */
   types = FormTypes;
-  @Input() formGroupRoot: UntypedFormGroup = this.formBuilder.group({});
-  @Input() styleOptions: { hideRequired: boolean, floatLabel: FloatLabelType } = {
+  @Input() formGroupRoot: UntypedFormGroup;
+  @Input() styleOptions: {
+    hideRequired: boolean,
+    floatLabel: FloatLabelType
+  } = {
     hideRequired: false,
-    floatLabel:   'auto' // can be auto|always|never
+    floatLabel: 'auto' // can be auto|always|never
   };
   @Input() control: UntypedFormControl;
   @Input() hint ?: string;
@@ -232,16 +282,16 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
         if (this.textTransformFunction) {
           this.manageSub(
             hostControl.valueChanges
-                       .pipe(
-                         filter(x => x.length > 0)
-                       )
-                       .subscribe(x => {
-                         const result = this.textTransformFunction(x);
-              
-                         if (x !== result) { // prevent loop
-                           this.control.patchValue(result);
-                         }
-                       })
+              .pipe(
+                filter(x => x.length > 0)
+              )
+              .subscribe(x => {
+                const result = this.textTransformFunction(x);
+                
+                if (x !== result) { // prevent loop
+                  this.control.patchValue(result);
+                }
+              })
           );
           
         }
@@ -291,9 +341,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                         .map((x => x))
                         .filter(opt =>
                           this.autocompleteCaseSensitiveComparison
-                          ? opt.name.includes(input.name)
-                          : opt.name.toLowerCase()
-                               .includes(input.name.toLowerCase()));
+                            ? opt.name.includes(input.name)
+                            : opt.name.toLowerCase()
+                              .includes(input.name.toLowerCase()));
                     }
                     
                     return group;
@@ -309,9 +359,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                         .map((x => x))
                         .filter(opt =>
                           this.autocompleteCaseSensitiveComparison
-                          ? opt.name.includes(input)
-                          : opt.name.toLowerCase()
-                               .includes(input.toLowerCase()));
+                            ? opt.name.includes(input)
+                            : opt.name.toLowerCase()
+                              .includes(input.toLowerCase()));
                     }
                     
                     return group;
@@ -391,11 +441,11 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                   .map((x => x))
                   .filter(opt =>
                     this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
-                                                                                                  .includes(input.name.toLowerCase()));
+                      .includes(input.name.toLowerCase()));
               } else if (typeof input === 'string') {
                 remainingOptions = options.filter(opt =>
                   this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                           .includes(input.toLowerCase()));
+                    .includes(input.toLowerCase()));
                 
               } else {
                 remainingOptions = options;
@@ -438,7 +488,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
         
         break;
       case FormTypes.AUTOCOMPLETE_MULTIPLE:
-  
+        
         this.checkOptions();
         this.ghostControl = new UntypedFormControl('');
         
@@ -448,9 +498,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
         
         this.manageSub(
           hostControl.statusChanges
-                     .subscribe(() => {
-                       hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
-                     })
+            .subscribe(() => {
+              hostControl.disabled ? this.ghostControl.disable() : this.ghostControl.enable();
+            })
         );
         
         this.manageSub(
@@ -465,7 +515,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
               if (typeof input === 'string') {
                 const filtered: ISelectable[] = options.filter(opt =>
                   this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                                                                                           .includes(input.toLowerCase()));
+                    .includes(input.toLowerCase()));
                 
                 this.optionsFiltered.next(filtered);
                 
@@ -532,7 +582,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
     if ((value || '').trim()) {
       const toAdd: ISelectable = ({
         name: value.trim(),
-        id:   ''
+        id: ''
       });
       dataCapsule.patchValue([
         ...dataCapsule.value,
@@ -597,7 +647,12 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   
   // fixed this way because otherwise it caused immutability issues and object by reference passes
   // This is a quick way to make a deep copy of the array and content
-  private getOptionsGroupedCopy(options: ISelectable[]): { name: string; options: ISelectable[]; disabled?: boolean; id: string }[] {
+  private getOptionsGroupedCopy(options: ISelectable[]): {
+    name: string;
+    options: ISelectable[];
+    disabled?: boolean;
+    id: string
+  }[] {
     return [
       ...options.map((option: ISelectable) => ({
         ...option,
