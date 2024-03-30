@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+
 
 @Component({
   selector:        'app-user-area-root',
@@ -31,11 +40,12 @@ export class UserAreaRootComponent implements OnInit {
   ) { }
   
   ngOnInit(): void {
+    //TODO: change this when user can see other profiles
     if (!this.ignoreSeo) {
       this.seoAndUtilsService.updateSeo({
         title:       'User collection',
         description: 'Personal user collection'
-      }, 'User Area');
+      }, 'My collection');
     }
     
   }

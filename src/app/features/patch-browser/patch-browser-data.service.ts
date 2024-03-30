@@ -2,12 +2,16 @@ import {
   Injectable,
   OnDestroy
 } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import {
+  FormControl,
+  UntypedFormControl
+} from '@angular/forms';
+import { PageEvent } from "@angular/material/paginator";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   combineLatest,
+  Observable,
   of,
   Subject
 } from 'rxjs';
@@ -48,54 +52,24 @@ export class PatchBrowserDataService implements OnDestroy {
   
   formTypes = FormTypes;
   
-  fields = {
-    
+  fields: {
     search: {
-      label:   'search',
-      code:    'search',
-      flex:    '6rem',
-      control: new UntypedFormControl(''),
-      type:    FormTypes.TEXT
-  
-    },
-    order:  {
-      label:    'order',
-      code:     'order',
-      flex:     '6rem',
-      control: new UntypedFormControl({
-        id:   'updated',
-        name: 'Updated'
-      }),
-      type:     FormTypes.SELECT,
-      options$: of([
-        {
-          id:   'name',
-          name: 'Name ↑'
-        },
-        {
-          id:   'name',
-          name: 'Name ↓'
-        },
-        {
-          id:   'created',
-          name: 'Created ↑'
-        },
-        {
-          id:   'created',
-          name: 'Created ↓'
-        },
-        {
-          id:   'updated',
-          name: 'Updated ↑'
-        },
-        {
-          id:   'updated',
-          name: 'Updated ↓'
-        }
-      ])
-                  .pipe(
-                    startWith([]))
-  
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    order: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes;
+      options$: Observable<{
+        name: string;
+        id: string
+      }[]>
     }
   };
   
@@ -134,6 +108,56 @@ export class PatchBrowserDataService implements OnDestroy {
     private snackBar: MatSnackBar,
     private backend: SupabaseService
   ) {
+    
+    this.fields = {
+      search: {
+        label: 'Search patch...',
+        code: 'search',
+        flex: '6rem',
+        control: new UntypedFormControl(''),
+        type: FormTypes.TEXT
+        
+      },
+      order: {
+        label: 'Order by',
+        code: 'order',
+        flex: '6rem',
+        control: new UntypedFormControl({
+          id: 'updated',
+          name: 'Updated'
+        }),
+        type: FormTypes.SELECT,
+        options$: of([
+          {
+            id: 'name',
+            name: 'Name ↑'
+          },
+          {
+            id: 'name',
+            name: 'Name ↓'
+          },
+          {
+            id: 'created',
+            name: 'Created ↑'
+          },
+          {
+            id: 'created',
+            name: 'Created ↓'
+          },
+          {
+            id: 'updated',
+            name: 'Updated ↑'
+          },
+          {
+            id: 'updated',
+            name: 'Updated ↓'
+          }
+        ])
+          .pipe(
+            startWith([]))
+        
+      }
+    }
   
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
   

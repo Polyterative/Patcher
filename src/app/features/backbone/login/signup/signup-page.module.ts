@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatCardModule } from "@angular/material/card";
 import { RouterModule } from '@angular/router';
 import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
 import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
@@ -30,7 +29,6 @@ import { SignupPageComponent } from './signup-page.component';
     ScreenWrapperModule,
     FlexLayoutModule,
     MatFormEntityModule,
-    MatFormFieldModule,
     MatCardModule,
     RouterModule
   ],

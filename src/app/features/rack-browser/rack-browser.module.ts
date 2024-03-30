@@ -3,16 +3,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyChipsModule as MatChipsModule } from '@angular/material/legacy-chips';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
-import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { RackModule } from 'src/app/components/rack-parts/rack.module';
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
@@ -42,7 +32,16 @@ import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/comp
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserModule } from '../module-browser/module-browser.module';
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
-import { MatLegacyInputModule as MatInputModule } from "@angular/material/legacy-input";
+import { RouterModule } from "@angular/router";
+import { MatCardModule } from "@angular/material/card";
+import { MatChipsModule } from "@angular/material/chips";
+import { MatIconModule } from "@angular/material/icon";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatButtonModule } from "@angular/material/button";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatDividerModule } from "@angular/material/divider";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { MatToolbarModule } from "@angular/material/toolbar";
 
 
 const parentPrefix: string = 'racks';
@@ -119,7 +118,6 @@ const parentPrefix: string = 'racks';
     RackListModule,
     ModuleBrowserModule,
     StatisticsModule,
-    MatInputModule
   ]
 })
 export class RackBrowserModule {}

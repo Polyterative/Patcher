@@ -2,23 +2,20 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { BrandPrimaryButtonComponent } from './brand-primary-button.component';
+import { MatButtonModule } from "@angular/material/button";
 
 
 @NgModule({
   declarations: [BrandPrimaryButtonComponent],
-  imports:      [
+  imports: [
     CommonModule,
-    MatButtonModule,
     FlexLayoutModule,
     MatButtonModule,
-    MatIconModule,
     RouterModule,
-    A11yModule
+    A11yModule,
   ],
-  exports:      [BrandPrimaryButtonComponent]
+  exports: [BrandPrimaryButtonComponent]
 })
 export class BrandPrimaryButtonModule {}

@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RackMinimal } from 'src/app/models/rack';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';

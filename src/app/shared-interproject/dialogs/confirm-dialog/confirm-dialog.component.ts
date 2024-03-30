@@ -46,11 +46,9 @@ export class ConfirmDialogComponent extends DialogBase implements ConfirmDialogD
   ) {
 
     super(data);
-
-    if (data.negative && data.positive) {
-      this.negative = data.negative;
-      this.positive = data.positive;
-    }
+    
+    this.negative = data.negative;
+    this.positive = data.positive;
 
   }
 }
