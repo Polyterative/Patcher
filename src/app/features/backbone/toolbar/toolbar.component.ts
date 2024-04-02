@@ -20,7 +20,7 @@ import { ToolbarService } from './toolbar.service';
 export class ToolbarComponent extends SubManager {
   public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([
     {
-      label:    '',
+      label: 'Home',
       route:    'home',
       icon:     'home',
       disabled: false

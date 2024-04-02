@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { MarkdownModule } from 'ngx-markdown';
+// import { MarkdownModule } from 'ngx-markdown';
 import { ChangelogComponent } from './changelog/changelog.component';
+
 
 @NgModule({
   declarations: [
@@ -17,7 +18,7 @@ import { ChangelogComponent } from './changelog/changelog.component';
         component: ChangelogComponent
       }
     ]),
-    MarkdownModule
+    // MarkdownModule
   ],
   exports:      [
     ChangelogComponent

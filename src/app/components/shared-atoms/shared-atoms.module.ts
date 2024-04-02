@@ -9,6 +9,7 @@ import { EntityAuthorComponent } from './entity-author/entity-author.component';
 import { PatchConnectionSymbolComponent } from './patch-connection-symbol/patch-connection-symbol.component';
 import { TimestampsRelativeComponent } from './timestamps-relative/timestamps-relative.component';
 import { MatCardModule } from "@angular/material/card";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 
 @NgModule({
@@ -17,14 +18,15 @@ import { MatCardModule } from "@angular/material/card";
     EntityAuthorComponent,
     PatchConnectionSymbolComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     FlexLayoutModule,
     TimeagoModule.forChild(),
     MatCardModule,
     HeroInfoBoxModule,
     CommentsModule,
-    MatIconModule
+    MatIconModule,
+    MatTooltipModule
   ],
   exports:      [
     TimestampsRelativeComponent,
