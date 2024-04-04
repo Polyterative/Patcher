@@ -1,8 +1,11 @@
-import { Injectable } from '@angular/core';
+import {
+  inject,
+  Injectable
+} from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   ActivatedRouteSnapshot,
-  CanActivate,
+  CanActivateFn,
   Router,
   RouterStateSnapshot
 } from '@angular/router';
@@ -15,7 +18,7 @@ import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()
-export class UserAuthGuard implements CanActivate {
+export class UserAuthGuard {
   constructor(
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -49,4 +52,8 @@ export class UserAuthGuard implements CanActivate {
   
   
   }
+}
+
+export const AuthGuard: CanActivateFn = (next: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(UserAuthGuard).canActivate(next, state);
 }

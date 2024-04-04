@@ -32,11 +32,14 @@ import { ScreenWrapperModule } from './shared-interproject/components/@visual/sc
 import { MatDialogRef } from "@angular/material/dialog";
 
 
-const italianLocale: { useValue: string; provide: InjectionToken<string>; } = {
+const locale: {
+  useValue: string;
+  provide: InjectionToken<string>;
+} = {
   provide:  LOCALE_ID,
-  useValue: 'it'
+  useValue: 'en-US'
 };
-const localeCode = 'it';
+const localeCode = 'en-US';
 const matDatepickerLocale: { useValue: string; provide: InjectionToken<string>; } = {
   provide:  MAT_DATE_LOCALE,
   useValue: localeCode
@@ -68,17 +71,16 @@ const matDatepickerLocaleIT = {
     AppFeaturesModule,
     FeedbackBoxModule,
     ScreenWrapperModule,
-    BackboneModule,//keep as last (for routes)
     PageHeaderModule,
     MatToolbarModule,
     FlexLayoutModule,
     MatCardModule,
     AdviceTooltipModule,
-    MatDividerModule
-
+    MatDividerModule,
+    BackboneModule,//keep as last (for routes)
   ],
   providers:    [
-    italianLocale,
+    locale,
     matDatepickerLocale,
     matDatepickerLocaleIT,
     UserAuthGuard,
