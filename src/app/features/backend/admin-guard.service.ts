@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { environment } from 'src/environments/environment';
 
+
 @Injectable()
-export class AdminGuardService implements CanActivate {
+export class AdminGuardService {
     
     canActivate(route: ActivatedRouteSnapshot): boolean {
         
