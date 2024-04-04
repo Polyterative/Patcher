@@ -23,6 +23,7 @@ import { ModuleBrowserModule } from '../module-browser/module-browser.module';
 import { UserAreaDataService } from './user-area-data.service';
 import { UserAreaRootComponent } from './user-area-root/user-area-root.component';
 import { MatCardModule } from "@angular/material/card";
+import { AuthGuard } from "src/app/features/backbone/login/user-auth-guard.service";
 
 
 @NgModule({
@@ -36,7 +37,8 @@ import { MatCardModule } from "@angular/material/card";
     RouterModule.forChild([
       {
         path:      'user/area',
-        component: UserAreaRootComponent
+        component: UserAreaRootComponent,
+        canActivate: [AuthGuard],
       }
     ]),
     FlexLayoutModule,
