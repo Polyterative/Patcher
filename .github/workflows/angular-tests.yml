@@ -46,9 +46,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Clear Yarn Cache
-        run: yarn cache clean
-
       - name: Install dependencies
         run: yarn install # Use Yarn to install dependencies
 
