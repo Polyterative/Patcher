@@ -1,6 +1,8 @@
-<mat-card-subtitle infoBox
-                   infoText="Updated/Created"
-                   class="item"
-                   *ngIf="data&&data.created&&data.updated"
->{{data.updated|timeago}} - {{data.created|timeago}}
-</mat-card-subtitle>
+<div style="opacity: .8">
+  <div infoBox
+       infoText="Updated/Created"
+       class="technical-item item"
+       *ngIf="data&&data.created&&data.updated"
+  >{{ data.updated|timeago }} - {{ data.created|timeago }}
+  </div>
+</div>

@@ -39,11 +39,9 @@ body {
   font-size: 14px;
 }
 
-.mat-paginator, .mat-paginator-page-size .mat-select-trigger {
-  font-family: Roboto, Helvetica Neue, sans-serif;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.54);
-  background-color: rgba(255, 255, 255, 0.67);
+mat-paginator {
+  background-color: transparent !important;
+  margin-bottom: .25rem;
 }
 
 .mat-paginator-container {
@@ -55,10 +53,6 @@ body {
   //justify-content: var(--mat-dialog-actions-alignment, start);
 }
 
-.mat-mdc-paginator {
-  background: rgba(255, 255, 255, 0);
-  //color: rgba(0, 0, 0, .87);
-}
 
 .mdc-button {
   letter-spacing: 0;
