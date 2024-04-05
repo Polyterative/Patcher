@@ -1,12 +1,18 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
 import { Tag } from 'src/app/models/tag';
+
 
 @Pipe({
   name: 'orderTagsByType'
 })
 export class OrderTagsByTypePipe implements PipeTransform {
   
-  transform(values: { tag: Tag }[]): unknown {
+  transform(values: {
+    tag: Tag
+  }[]) {
     // order tags by type, type is an integer
     return values.sort((a, b) => {
       if (a.tag.type < b.tag.type) {
@@ -18,7 +24,7 @@ export class OrderTagsByTypePipe implements PipeTransform {
       return 0;
     });
     
-    return;
+    return 0;
   }
   
 }
