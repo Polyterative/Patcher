@@ -6,7 +6,7 @@
 >
   <div class="col parent"
   >
-    <div class="col"
+    <div class="col gap0"
     >
       <app-module-part-image [big]="viewConfig.bigPanelImage"
                              [data]="data"
@@ -99,7 +99,7 @@
             <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
               <button
                 (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-                      [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
+                [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
                 mat-icon-button
                 matTooltip="Edit module"
               >
@@ -111,7 +111,7 @@
                 (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                 [disabled]="!bag.user"
                 mat-icon-button
-                      matTooltip="Close editor"
+                matTooltip="Close editor"
               >
                 <mat-icon>close</mat-icon>
               </button>
@@ -138,9 +138,9 @@
             <a
               [href]="'https://www.google.com/search?q='+bag.singleModuleData.name+' by '+bag.singleModuleData.manufacturer.name"
               mat-icon-button
-               matTooltip="Seach on Google"
+              matTooltip="Seach on Google"
               rel="noopener noreferrer"
-               target="_blank"
+              target="_blank"
             >
               <mat-icon>open_in_new</mat-icon>
             </a>

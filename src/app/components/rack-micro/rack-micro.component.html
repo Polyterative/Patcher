@@ -1,23 +1,18 @@
-<div class="col"
+<div class="col gap0"
 >
   <app-hero-clickable-title [link]="['/racks/details',data.id]"
-  >{{data.name}}
+  >{{ data.name }}
   </app-hero-clickable-title>
-  <div class="row gap1"
+  <div class="row gap1 space-between"
   >
     <app-entity-author [data]="data.author"></app-entity-author>
-    <div fxFlex="100"
-         fxLayout="row"
-         fxLayoutGap="1rem"
-         fxLayoutAlign="end"
+    <div class="technical-item"
          *ngIf="!viewConfig.hideHP"
     >
-      <mat-card-subtitle
-      >{{data.hp}} HP - {{data.rows}} rows
-      </mat-card-subtitle>
+      {{ data.hp }} HP - {{ data.rows }} rows
     </div>
   </div>
+  <app-timestamps-relative [data]="data"
+                           *ngIf="!viewConfig.hideDates"
+  ></app-timestamps-relative>
 </div>
-<app-timestamps-relative [data]="data"
-                         *ngIf="!viewConfig.hideDates"
-></app-timestamps-relative>
