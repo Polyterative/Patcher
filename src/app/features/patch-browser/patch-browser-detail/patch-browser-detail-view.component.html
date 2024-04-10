@@ -21,36 +21,87 @@ data:(dataService.singlePatchData$|async)
       </lib-hero-content-card>
     </div>
   </ng-container>
+  
+  
   <ng-container *ngIf="bag.patchEditingPanelOpenState">
     <div class="col gap1"
     >
       <lib-hero-content-card titleBig="Patch details"
                              class="patchesBG"
       >
-        <div ngClass.gt-md="row gap1"
-             ngClass.lt-lg="col gap1"
+        <div class="col gap1"
         >
-          <div fxFlex.gt-md="28rem">
+          <div>
             <ng-template [ngTemplateOutlet]="patch"></ng-template>
           </div>
           <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
                                               [data$]="dataService.singlePatchData$"
           ></lib-auto-content-loading-indicator>
-          <lib-hero-content-card fxFlex.gt-md="fill"
-                                 titleNormal="Connections Editor"
-                                 *ngIf="bag.data&&bag.patchEditingPanelOpenState"
-
-          >
-            <lib-clean-card>
-              <app-patch-editor
-                  [data]="(bag.data)"
-              ></app-patch-editor>
-            </lib-clean-card>
-          </lib-hero-content-card>
         </div>
+      </lib-hero-content-card>
+      
+      <lib-hero-content-card titleNormal="Connections Editor"
+                             *ngIf="bag.data&&bag.patchEditingPanelOpenState"
+      
+      >
+        <!--        <div class="col gap2">-->
+        <!--          <div class="row gap1">-->
+        <!--            <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"-->
+        <!--                              (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"-->
+        <!--                              class="toggle">-->
+        <!--              <div style="cursor: pointer;">-->
+        <!--                Show panels images-->
+        <!--              </div>-->
+        <!--            </mat-slide-toggle>-->
+        <!--          </div>-->
+        <app-patch-editor [data]="(bag.data)"
+        ></app-patch-editor>
+        <!--        </div>-->
       </lib-hero-content-card>
     </div>
   </ng-container>
+  
+  
+  <!--  -->
+  <!--  -->
+  <!--  <ng-container *ngIf="bag.patchEditingPanelOpenState">-->
+  <!--    <lib-hero-content-card titleBig="Patch editing"-->
+  <!--                           class="patchesBG"-->
+  <!--    >-->
+  <!--      <div class="gap1 col"-->
+  <!--      >-->
+  <!--        <ng-template [ngTemplateOutlet]="patch"></ng-template>-->
+  <!--        <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"-->
+  <!--                                            [data$]="dataService.singlePatchData$"-->
+  <!--        ></lib-auto-content-loading-indicator>-->
+  <!--      </div>-->
+  <!--      <lib-hero-content-card titleNormal="Connections Editor"-->
+  <!--                             *ngIf="bag.data&&bag.patchEditingPanelOpenState"-->
+  <!--      -->
+  <!--      >-->
+  <!--        &lt;!&ndash;          <lib-clean-card>&ndash;&gt;-->
+  <!--        <app-patch-editor [data]="(bag.data)"-->
+  <!--        ></app-patch-editor>-->
+  <!--        &lt;!&ndash;          </lib-clean-card>&ndash;&gt;-->
+  <!--      </lib-hero-content-card>-->
+  <!--    </lib-hero-content-card>-->
+  <!--  </ng-container>-->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   <ng-template #patch>
     <ng-container *ngIf="bag.data"
     >

@@ -12,102 +12,91 @@
   </lib-auto-content-loading-indicator>
   <ng-template #data>
     
-    <div ngClass.lt-lg="col gap1"
+    <div class="row gap1"
     >
-      <div ngClass.lt-xl="col gap1"
-           ngClass.gt-lg="row gap1"
+      <div class="gap1 col" style="min-width: 26rem"
       >
-        <div class="col gap1"
-             fxFlex.gt-lg="28rem"
+        <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
+                                           [updateData$]="dataService.savePatchEditing$"
+                                           loadingLabel="Saving data"
         >
-          <lib-auto-update-loading-indicator [data$]="dataService.singlePatchData$"
-                                             [updateData$]="dataService.savePatchEditing$"
-                                             loadingLabel="Saving data"
+          <div class="row gap1"
           >
-            <div class="row gap1"
-            >
-              <mat-card-subtitle fxFlex="grow"
-                                 fxLayoutAlign="end center"
-              > You're editing your patch. Remember to save
-                after
-                you're done!
-              </mat-card-subtitle>
-              <div>
-                <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
-                                          theme="positive"
-                                          fxLayoutAlign="end"
-                                          [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
-                >
-                  <div class="row gap">
-                    <!--                    <mat-icon>save</mat-icon>-->
-                    <div>
-                      Save patch
-                    </div>
+            <mat-card-subtitle fxFlex="grow"
+                               fxLayoutAlign="end center"
+            > You're editing your patch. Remember to save
+              after
+              you're done!
+            </mat-card-subtitle>
+            <div>
+              <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
+                                        theme="positive"
+                                        fxLayoutAlign="end"
+                                        [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
+              >
+                <div class="row gap">
+                  <!--                    <mat-icon>save</mat-icon>-->
+                  <div>
+                    Save patch
                   </div>
-                </app-brand-primary-button>
-              </div>
-
-
+                </div>
+              </app-brand-primary-button>
             </div>
-          </lib-auto-update-loading-indicator>
-  
-          <div class="col gap1"
-               ngClass.md="row"
-          >
-            <lib-hero-content-card class="selection"
-                                   titleNormal="Your selection"
-                                   description="The connection you want to create"
-                                   [showHelpButton]="true"
-            >
-              <lib-clean-card *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
-                <app-patch-connection-minimal [data]="{
-                                                        a:bag.selectedForConnection.a.cv,
-                                                        b:bag.selectedForConnection.b.cv,
-                                                        patch:dataService.singlePatchData$|async
-                                                        }"
-                                              [isEditing]="true"
-                                              [isCreator]="true"
-                                              (remove$)="dataService.resetSelectedForConnection$.next()"
-                                              (create$)="dataService.confirmSelectedConnection$.next()"
-                ></app-patch-connection-minimal>
-              </lib-clean-card>
-              <ng-template #selectedForConnectionVoidState>
-                <div class="animate-fadein-long">
-                  <app-advice-tooltip>Click on the ins and outs to create connections
-                  </app-advice-tooltip>
-                </div>
-                <div style="height:9rem;width:auto"
-                     fxLayoutAlign="center center"
-                >The connection will appear here
-                </div>
-              </ng-template>
-            </lib-hero-content-card>
-            <lib-hero-content-card fxFlex.gt-lg="fill"
-                                   *ngIf="bag.editorConnections.length>0"
-                                   [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
-                                   class="connections"
-                                   description="The connections of the patch you are editing"
-                                   [showHelpButton]="true"
-            >
-      
-              <app-patch-connections-list [editorConnections]="bag.editorConnections"
-                                          [isEditing]="true"
-              ></app-patch-connections-list>
-    
-            </lib-hero-content-card>
+          
+          
           </div>
-        </div>
-        <div fxFlex.gt-lg="grow"
-             class="col gap1"
+        </lib-auto-update-loading-indicator>
+        
+        <lib-hero-content-card class="selection"
+                               titleNormal="Your selection"
+                               description="The connection you want to create"
+                               [showHelpButton]="true"
         >
-          <app-user-modules class="modulesBG"
-                            [userModulesComponentViewConfig]="userModulesComponentViewConfig"
-                            [modulesViewConfig]="modulesViewConfig"
-          ></app-user-modules>
-        </div>
+          <lib-clean-card
+            *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+            <app-patch-connection-minimal [data]="{
+                                                          a:bag.selectedForConnection.a.cv,
+                                                          b:bag.selectedForConnection.b.cv,
+                                                          patch:dataService.singlePatchData$|async
+                                                          }"
+                                          [isEditing]="true"
+                                          [isCreator]="true"
+                                          (remove$)="dataService.resetSelectedForConnection$.next()"
+                                          (create$)="dataService.confirmSelectedConnection$.next()"
+            ></app-patch-connection-minimal>
+          </lib-clean-card>
+          <ng-template #selectedForConnectionVoidState>
+            <div class="animate-fadein-long">
+              <app-advice-tooltip>Click on the ins and outs to create connections
+              </app-advice-tooltip>
+            </div>
+            <div style="height:9rem;width:auto"
+                 fxLayoutAlign="center center"
+            >The connection will appear here
+            </div>
+          </ng-template>
+        </lib-hero-content-card>
+        <lib-hero-content-card *ngIf="bag.editorConnections.length>0"
+                               [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
+                               class="connections"
+                               description="The connections of the patch you are editing, shown in reverse order"
+                               [showHelpButton]="true"
+        >
+          
+          <app-patch-connections-list [editorConnections]="bag.editorConnections"
+                                      [isEditing]="true"
+                                      [encloseVertically]="false"
+          ></app-patch-connections-list>
+        
+        </lib-hero-content-card>
       </div>
-    
+      <app-user-modules class="modulesBG"
+                        [encloseVertically]="false"
+                        [userModulesComponentViewConfig]="userModulesComponentViewConfig"
+                        [modulesViewConfig]="modulesViewConfig"
+      ></app-user-modules>
     </div>
+  
   </ng-template>
 
 </ng-container>

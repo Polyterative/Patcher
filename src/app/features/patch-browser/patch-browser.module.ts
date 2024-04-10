@@ -40,6 +40,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 
 const parentPrefix = 'patches';
@@ -54,31 +55,31 @@ const parentPrefix = 'patches';
     PatchBrowserDetailViewComponent
   ],
   providers:    [PatchBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     
     RouterModule.forRoot([
       {
-        path:      `${ parentPrefix }/details/:id`,
+        path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
         component: PatchBrowserDetailViewComponent
         // children:  []
       },
       generateUranusRoutes(parentPrefix, [
         {
-          path:      'browser',
+          path: 'browser',
           component: PatchBrowserRootComponent
           // canActivate: [LocalAuthGuardService],
         },
         {
-          path:      '',
+          path: '',
           component: CommonSidebarComponent,
-          outlet:    'sidebar'
+          outlet: 'sidebar'
         },
         {
-          path:      '',
+          path: '',
           component: UserDataHandlerComponent,
-          outlet:    'user'
+          outlet: 'user'
         }
       ])
     ], {scrollPositionRestoration: 'enabled'}),
@@ -113,7 +114,8 @@ const parentPrefix = 'patches';
     CommentsModule,
     LocalDataFilterModule,
     CleanCardModule,
-    PatchListModule
+    PatchListModule,
+    MatSlideToggleModule
   ]
 })
 export class PatchBrowserModule {}
