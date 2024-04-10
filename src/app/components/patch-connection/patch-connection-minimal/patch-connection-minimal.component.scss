@@ -5,3 +5,9 @@
 .ordinal {
   opacity: .5;
 }
+
+.module {
+  // occupy all possible vertical space
+  flex: 1 0 45%;
+
+}

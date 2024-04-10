@@ -1,7 +1,16 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { fadeOutOnLeaveAnimation, zoomInOnEnterAnimation } from 'angular-animations';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  fadeOutOnLeaveAnimation,
+  zoomInOnEnterAnimation
+} from 'angular-animations';
 import { PatchConnection } from 'src/app/models/connection';
 import { PatchDetailDataService } from '../patch-detail-data.service';
+
 
 @Component({
   selector:        'app-patch-connections-list',
@@ -28,6 +37,7 @@ export class PatchConnectionsListComponent implements OnInit {
   @Input() editorConnections: PatchConnection[];
   
   @Input() isEditing: boolean = false;
+  @Input() encloseVertically: boolean = false;
   
   constructor(
     public dataService: PatchDetailDataService

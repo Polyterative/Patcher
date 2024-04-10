@@ -80,6 +80,7 @@ export class PatchDetailDataService implements OnDestroy {
   readonly deletePatch$ = new Subject<number>();
   //
   protected destroyEvent$ = new Subject<void>();
+  shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   
   constructor(
     private router: Router,

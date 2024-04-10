@@ -1,4 +1,6 @@
-<div class="col gap0 limit-height">
+<div class="col gap0"
+     [ngClass]="{'limit-height': encloseVertically}"
+>
   <ng-container *ngFor="let item of editorConnections.slice().reverse(); let i = index">
     <lib-clean-card [@exit]
     >
@@ -10,7 +12,6 @@
     </lib-clean-card>
   </ng-container>
 </div>
-
 
 <!--              <cdk-virtual-scroll-viewport *ngIf="bag.editorConnections.length>5"-->
 <!--                                           itemSize="175.76"-->
