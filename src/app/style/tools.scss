@@ -8,10 +8,6 @@
   -webkit-box-direction: normal;
 }
 
-.grow {
-  flex-grow: 1;
-}
-
 .row {
   @include flex;
   display:            inline-flex;
@@ -25,6 +21,102 @@
   flex-direction:     row-reverse;
   //flex-flow:          row;
   -webkit-box-orient: horizontal;
+}
+
+//breakpoint	mediaQuery
+//xs	'screen and (max-width: 599px)'
+//sm	'screen and (min-width: 600px) and (max-width: 959px)'
+//md	'screen and (min-width: 960px) and (max-width: 1279px)'
+//lg	'screen and (min-width: 1280px) and (max-width: 1919px)'
+//xl	'screen and (min-width: 1920px) and (max-width: 5000px)'
+//lt-sm	'screen and (max-width: 599px)'
+//lt-md	'screen and (max-width: 959px)'
+//lt-lg	'screen and (max-width: 1279px)'
+//lt-xl	'screen and (max-width: 1919px)'
+//gt-xs	'screen and (min-width: 600px)'
+//gt-sm	'screen and (min-width: 960px)'
+//gt-md	'screen and (min-width: 1280px)'
+//gt-lg	'screen and (min-width: 1920px)'
+
+.col-lt-SM {
+  /* Below 600px all flex rows should be cols*/
+  @media (max-width: 600px) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-SM {
+  /* Below 600px all flex rows should be cols*/
+  @media (max-width: 600px) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-MD {
+  /* Below 960px all flex rows should be cols*/
+  @media (max-width: 960px) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-LG {
+  /* Below 1280px all flex rows should be cols*/
+  @media (max-width: 1280px) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.col-lt-XL {
+  /* Below 1920px all flex rows should be cols*/
+  @media (max-width: 1920px) {
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-SM {
+  /* Below 600px all flex cols should be rows*/
+  @media (max-width: 600px) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-MD {
+  /* Below 960px all flex cols should be rows*/
+  @media (max-width: 960px) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-LG {
+  /* Below 1280px all flex cols should be rows*/
+  @media (max-width: 1280px) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
+}
+
+.row-lt-XL {
+  /* Below 1920px all flex cols should be rows*/
+  @media (max-width: 1920px) {
+    flex-direction: row;
+    -webkit-box-orient: horizontal;
+    height: auto; /*  important for sizing of row heights */
+  }
 }
 
 .gap0 {
@@ -57,7 +149,7 @@
 }
 
 //align flex to end
-.end {
+.auto-left {
   margin-left: auto;
 }
 
@@ -66,8 +158,16 @@
   align-items: center;
 }
 
+.align-left {
+  align-items: flex-start;
+}
+
+.align-right {
+  align-items: flex-end;
+}
+
 //align flex to start
-.start {
+.auto-right {
   margin-right: auto;
 }
 
@@ -112,6 +212,10 @@
   flex: 0 1 auto;
 }
 
+.occupyHalf {
+  // occupy at most half of the space
+  flex: 0 0 50%;
+}
 
 .textEllipse {
   white-space:   nowrap;

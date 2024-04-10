@@ -1,8 +1,7 @@
-<div ngClass.sm="col gap1"
-     ngClass.gt-sm="row gap1"
+<div class="row gap1"
      *ngIf="!!item"
 >
-  <div fxLayoutAlign="start center">
+  <div>
     <button mat-icon-button
             [disabled]="!(item.id==0)"
             (click)="removeRequest$.next()"
