@@ -2,16 +2,14 @@
   <div class="col gap1"
   >
     <div class="col gap2 homeBG"
-         style=" padding-top: 4rem; padding-bottom: 8rem; padding-left: 2rem; padding-right: 2rem;"
+         style="padding: 4rem 2rem 8rem;"
     >
       <h1 [@titleEnter]
-          fxLayoutAlign="start center"
       > PATCHER.XYZ</h1>
       <h1 [@subtitleEnter]
-          fxLayoutAlign="start center"
       > the modern way to manage everything modular</h1>
       <mat-divider inset="true"></mat-divider>
-      <div class="col gap1" fxFlex="100" style="font-size: 1.8rem;">
+      <div class="col gap1" style="font-size: 1.8rem;">
         <div class="col gap1">
           <b>Discover the world of modular.</b>
           <p>Explore a vast library of modules, discover new favorites, and build your dream rack with ease.</p>
@@ -30,10 +28,7 @@
           
           <div class="col gap1">
             <p>Create an account to get started.</p>
-            <div fxFlex="100"
-                 fxLayout="row wrap"
-                 fxLayoutAlign="start center"
-                 fxLayoutGap="1rem"
+            <div class="row gap3"
             >
               <app-brand-primary-button routerLink="/auth/signup">Create an account
               </app-brand-primary-button>
@@ -48,8 +43,7 @@
     </div>
     <ng-container>
       
-      <div class="col gap2"
-           style="border-left: 1px solid #ccc; border-right: 1px solid #ccc;"
+      <div class="col gap2 belowContainer"
       >
         <div class="col gap1"
         >
@@ -72,7 +66,6 @@
           <lib-hero-header class="gradientCard"
                            description="Explore a vast library of modules, discover new favorites, and track your collection with ease."
                            title="Discover new modules"
-                           #moduleBrowser
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
@@ -105,23 +98,15 @@
           
           <lib-hero-header class="gradientCard"
                            description="Create an account to get started."
-                           title="Join the community"
+                           title="Use it! For free!"
           >
             <lib-screen-wrapper>
-              <div fxFlex="100"
-                   fxLayout="column"
-                   fxLayoutGap="1rem"
+              <div class="row gap3"
               >
-                <div fxFlex="100"
-                     fxLayout="row wrap"
-                     fxLayoutAlign="start center"
-                     fxLayoutGap="1rem"
-                >
-                  <app-brand-primary-button routerLink="/auth/signup">Create an account
-                  </app-brand-primary-button>
-                  <app-brand-primary-button routerLink="/auth/login">Login
-                  </app-brand-primary-button>
-                </div>
+                <app-brand-primary-button routerLink="/auth/signup">Create an account
+                </app-brand-primary-button>
+                <app-brand-primary-button routerLink="/auth/login">Login
+                </app-brand-primary-button>
               </div>
             </lib-screen-wrapper>
           </lib-hero-header>

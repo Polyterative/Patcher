@@ -42,6 +42,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatInputModule } from "@angular/material/input";
 
 
 const parentPrefix: string = 'racks';
@@ -73,12 +74,12 @@ const parentPrefix: string = 'racks';
           // canActivate: [LocalAuthGuardService],
         },
         {
-          path:   '',
+          path: '',
           component: CommonSidebarComponent,
           outlet: 'sidebar'
         },
         {
-          path:   '',
+          path: '',
           component: UserDataHandlerComponent,
           outlet: 'user'
         }
@@ -118,6 +119,7 @@ const parentPrefix: string = 'racks';
     RackListModule,
     ModuleBrowserModule,
     StatisticsModule,
+    MatInputModule,
   ]
 })
 export class RackBrowserModule {}

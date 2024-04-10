@@ -1,9 +1,23 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
 import { Subject } from 'rxjs';
 import { PatchConnection } from 'src/app/models/connection';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from '../../module-parts/module-minimal/module-minimal.component';
+
 
 @Component({
   selector:        'app-patch-connection-minimal',
@@ -28,7 +42,7 @@ export class PatchConnectionMinimalComponent implements OnInit {
     hideButtons:      true,
     hideHP:           true,
     hideDates:        true,
-    hideTags:         true
+    hideTags: true,
   };
   
   notes = {

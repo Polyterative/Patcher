@@ -37,6 +37,7 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatChipsModule } from "@angular/material/chips";
+import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 
 
 @NgModule({
@@ -56,7 +57,7 @@ import { MatChipsModule } from "@angular/material/chips";
     PatchConnectionsListComponent
   ],
   providers:    [PatchDetailDataService],
-  imports:      [
+  imports: [
     CommonModule,
     ConfirmDialogModule,
     TimeagoModule.forChild(),
@@ -87,7 +88,8 @@ import { MatChipsModule } from "@angular/material/chips";
     AutoUpdateLoadingIndicatorModule,
     CleanCardModule,
     LibGraphModule,
-    PatchMicroModule
+    PatchMicroModule,
+    MatSlideToggleModule
   ]
 })
 export class PatchModule {}

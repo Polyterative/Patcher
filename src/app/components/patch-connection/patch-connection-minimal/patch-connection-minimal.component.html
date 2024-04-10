@@ -1,10 +1,10 @@
-<div class="col ">
-  <div class="row gap0"
-       [ngClass.lt-md]="{'column':true}"
+<div class="col">
+  <div class="row gap0 col-lt-MD"
   >
-    <app-module-minimal fxFlex="100"
-                        [data]="data.a.module"
+    <app-module-minimal [data]="data.a.module"
                         [viewConfig]="viewConfig"
+                        class="module"
+                        
     >
       <mat-chip-listbox>
         <app-module-cvitem [data]="data.a"
@@ -13,9 +13,9 @@
       </mat-chip-listbox>
     </app-module-minimal>
     <app-patch-connection-symbol></app-patch-connection-symbol>
-    <app-module-minimal fxFlex="100"
-                        [data]="data.b.module"
+    <app-module-minimal [data]="data.b.module"
                         [viewConfig]="viewConfig"
+                        class="module"
     >
       <mat-chip-listbox>
         <app-module-cvitem [data]="data.b"

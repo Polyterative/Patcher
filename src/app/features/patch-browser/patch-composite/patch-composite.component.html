@@ -3,7 +3,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
 } as bag"
 >
   <ng-container *ngIf="bag.layoutFlexWidth">
-    <div *ngIf="bag.layoutFlexWidth.ltlg||isEditing"
+    <div *ngIf="bag.layoutFlexWidth.ltlg"
     >
       <div class="col gap1"
       >
@@ -22,7 +22,7 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
       </div>
     </div>
     
-    <ng-container *ngIf="bag.layoutFlexWidth.gtmd&&!isEditing">
+    <ng-container *ngIf="bag.layoutFlexWidth.gtmd">
       <div class="row gap2"
       >
         <div class="col gap1"
