@@ -1,11 +1,13 @@
 <ng-container *ngIf="{
-data:(dataService.singleRackData$|async)
+data:(dataService.singleRackData$|async),
+isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
+isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
 } as bag"
 >
   <div class="col gap1"
   >
     <lib-hero-content-card class="racksBG"
-                           titleBig="Rack details"
+                           [titleBig]="bag.isCurrentRackEditable&&bag.isCurrentRackPropertyOfCurrentUser?'Rack Editing':'Rack Details'"
     >
       <lib-auto-content-loading-indicator [data$]="dataService.singleRackData$"
                                           [updateData$]="dataService.updateSingleRackData$"

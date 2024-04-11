@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnInit
@@ -25,8 +26,8 @@ import {
 @Component({
   selector: 'app-rack-browser-rack-detail',
   templateUrl: './rack-browser-detail-view.component.html',
-  styleUrls: ['./rack-browser-detail-view.component.scss']
-  // changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./rack-browser-detail-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackBrowserDetailViewComponent implements OnInit {
   @Input() readonly viewConfig: RackMinimalViewConfig = {

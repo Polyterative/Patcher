@@ -1,5 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input
+} from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
+
 
 /**
  *  UI ONLY COMPONENT
@@ -35,5 +40,4 @@ export class HeroContentCardComponent {
   @Input() descriptionAlign: 'alignTextStart' | 'alignTextEnd' = 'alignTextStart';
   @Input() showHelpButton = false;
   @Input() icon: string;
-  @Input() titleStyle?: { [param: string]: any };
 }
