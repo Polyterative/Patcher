@@ -26,7 +26,7 @@ data:(dataService.singlePatchData$|async)
   <ng-container *ngIf="bag.patchEditingPanelOpenState">
     <div class="col gap1"
     >
-      <lib-hero-content-card titleBig="Patch details"
+      <lib-hero-content-card titleBig="Patch editing"
                              class="patchesBG"
       >
         <div class="col gap1"
@@ -60,47 +60,6 @@ data:(dataService.singlePatchData$|async)
       </lib-hero-content-card>
     </div>
   </ng-container>
-  
-  
-  <!--  -->
-  <!--  -->
-  <!--  <ng-container *ngIf="bag.patchEditingPanelOpenState">-->
-  <!--    <lib-hero-content-card titleBig="Patch editing"-->
-  <!--                           class="patchesBG"-->
-  <!--    >-->
-  <!--      <div class="gap1 col"-->
-  <!--      >-->
-  <!--        <ng-template [ngTemplateOutlet]="patch"></ng-template>-->
-  <!--        <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"-->
-  <!--                                            [data$]="dataService.singlePatchData$"-->
-  <!--        ></lib-auto-content-loading-indicator>-->
-  <!--      </div>-->
-  <!--      <lib-hero-content-card titleNormal="Connections Editor"-->
-  <!--                             *ngIf="bag.data&&bag.patchEditingPanelOpenState"-->
-  <!--      -->
-  <!--      >-->
-  <!--        &lt;!&ndash;          <lib-clean-card>&ndash;&gt;-->
-  <!--        <app-patch-editor [data]="(bag.data)"-->
-  <!--        ></app-patch-editor>-->
-  <!--        &lt;!&ndash;          </lib-clean-card>&ndash;&gt;-->
-  <!--      </lib-hero-content-card>-->
-  <!--    </lib-hero-content-card>-->
-  <!--  </ng-container>-->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   <ng-template #patch>
     <ng-container *ngIf="bag.data"

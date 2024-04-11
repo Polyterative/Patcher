@@ -7,6 +7,11 @@ mat-card {
   padding: 0
 }
 
+h1 {
+  @extend .std-rounding;
+
+}
+
 @mixin darkBG {
   color: white;
 }
@@ -20,14 +25,6 @@ mat-card {
   writing-mode:     vertical-rl;
   text-orientation: sideways;
   //text-orientation: mixed;
-}
-
-.root {
-  @extend .slight-rounding;
-
-  & > * {
-    @include unselectable
-  }
 }
 
 .pad {
@@ -144,18 +141,12 @@ mat-card {
 
 
 .container {
-  border-color:     transparentize(#768597, 0.75);
-  border-top-width: 0.5rem;
-  border-top-style: solid;
-  //border-right-width: 0.5rem;
-  //border-right-style: solid;
-  //border-left-width:  0.5rem;
-  //border-left-style: solid;
-  //border-bottom-width: 0.5rem;
-  //border-bottom-style: solid;
+  @extend .std-rounding;
 }
 
 .bgImage {
+  @extend .std-rounding;
+
   //$color: rgb(255, 255, 255, 0);
   //background-image: linear-gradient($color, $color) url(/assets/illustrations/undraw_road_sign_mfpo.svg);
   background-size:     cover;
