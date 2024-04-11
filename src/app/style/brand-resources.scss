@@ -177,6 +177,36 @@ $secondary-font:            'Noto Sans';
 
 }
 
+$bgTransarency: .65;
+$bgGradientBG: rgb(223, 223, 223);
+
+
+.modulesBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(86, 187, 220), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.racksBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(104, 191, 167), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.patchesBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(175, 166, 223), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.homeBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(148, 148, 148), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+
+}
+
+.userBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(229, 155, 155), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
 .limit-height {
   @include scrollbars;
 

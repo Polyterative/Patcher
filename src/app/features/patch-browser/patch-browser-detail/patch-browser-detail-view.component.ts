@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   OnDestroy,
@@ -27,8 +28,8 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 @Component({
   selector: 'app-patch-browser-patch-detail',
   templateUrl: './patch-browser-detail-view.component.html',
-  styleUrls: ['./patch-browser-detail-view.component.scss']
-  // changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./patch-browser-detail-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
   
