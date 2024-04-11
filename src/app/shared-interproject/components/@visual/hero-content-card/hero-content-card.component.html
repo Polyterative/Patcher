@@ -2,10 +2,9 @@
 >
   
   <ng-container *ngIf="titleBig&&titleNormal else titles">
-    <div class="col gap1 title bgImage"
+    <div class="col gap1 title bgImage  std-rounding"
     >
-      <h2 [ngStyle]="titleStyle"
-          style="margin-bottom: 0"
+      <h2 style="margin-bottom: 0"
           [@title]
       >
         {{titleBig}}
@@ -43,14 +42,10 @@
 
 <ng-template #titles>
   
-  <h1 fxFlex="grow"
-      fxLayout="row"
-      *ngIf="titleBig"
-      class="title bgImage padHeight"
-      [ngStyle]="titleStyle"
+  <h1 *ngIf="titleBig"
+      class="row title bgImage padHeight"
   >
-    <div fxFlex="grow"
-         [@title]
+    <div [@title]
     >{{titleBig}}</div>
     <app-hero-content-card-head-icon
         fxLayoutAlign="center center"
@@ -59,10 +54,8 @@
     ></app-hero-content-card-head-icon>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h1>
-  <h3 fxFlex="grow"
-      fxLayout="row"
-      *ngIf="titleNormal"
-      class="title"
+  <h3 *ngIf="titleNormal"
+      class="row title"
       [@title]
   >
     <div fxFlex="grow">{{titleNormal}}</div>
