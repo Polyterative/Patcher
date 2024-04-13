@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.5.0](https://github.com/Polyterative/Patcher/compare/v4.4.1...v4.5.0) (2024-04-13)
+
+
+### Features
+
+* **app:** move components to new material + multiple UI improvements ([f427fe5](https://github.com/Polyterative/Patcher/commit/f427fe5ae3e4124a07561fb70924fe06c360c6a7))
+* **app:** UI/UX improvements ([89f67eb](https://github.com/Polyterative/Patcher/commit/89f67ebde9b56ef0afb4d38387b200233702c3d8))
+* **rack:** user can now replace a module with a blank directly from the interface ([10217a8](https://github.com/Polyterative/Patcher/commit/10217a833a078a1e4cc3c3918ed37769541bfebe))
+
 ### [4.4.1](https://github.com/Polyterative/Patcher/compare/v4.4.0...v4.4.1) (2024-03-20)
 
 
