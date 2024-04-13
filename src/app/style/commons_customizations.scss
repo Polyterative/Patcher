@@ -30,6 +30,7 @@ body {
   padding: 0 16px;
 }
 
+
 .mat-card-title {
   font-size: 24px;
   font-weight: 500;
@@ -53,6 +54,10 @@ mat-paginator {
   //justify-content: var(--mat-dialog-actions-alignment, start);
 }
 
+
+.mat-mdc-button {
+  letter-spacing: 0 !important;
+}
 
 .mdc-button {
   letter-spacing: 0;
