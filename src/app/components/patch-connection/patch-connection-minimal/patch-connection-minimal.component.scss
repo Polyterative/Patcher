@@ -11,3 +11,20 @@
   flex: 1 0 45%;
 
 }
+
+.root {
+  min-width: 20rem;
+}
+
+.notes {
+  font-style: italic;
+  // go to next line if the text is too long
+  white-space: pre-wrap;
+  // small font size
+  font-size: 0.8rem;
+  max-height: 20rem;
+}
+
+.deleteIcon {
+  align-self: center;
+}
