@@ -127,6 +127,11 @@ fieldset > legend {
 }
 
 
+mat-chip-listbox {
+  margin-left: .25rem;
+}
+
+
 @mixin margins {
   margin: $dim-standardUnit;
 }
