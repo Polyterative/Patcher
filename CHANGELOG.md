@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.5.1](https://github.com/Polyterative/Patcher/compare/v4.5.0...v4.5.1) (2024-04-13)
+
+
+### Features
+
+* **modules:** alphabetize the CVs by name, numbers are in order smallest to largest ([302500f](https://github.com/Polyterative/Patcher/commit/302500fec316ca9457d38263047317242588ff78))
+* **modules:** better tooltips ([6ec9ca4](https://github.com/Polyterative/Patcher/commit/6ec9ca4326accd62dbe6864d94971b46a9468270))
+* **patches:** new patch editing/view layout ([09533c8](https://github.com/Polyterative/Patcher/commit/09533c8dd760bb78dc6b0543a82df6ce41563fb9))
+
 ## [4.5.0](https://github.com/Polyterative/Patcher/compare/v4.4.1...v4.5.0) (2024-04-13)
 
 
