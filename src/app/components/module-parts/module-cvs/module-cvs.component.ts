@@ -1,10 +1,24 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
+import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+} from 'angular-animations';
 import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import {
+  filter,
+  takeUntil
+} from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
+
 
 @Component({
   selector:        'app-module-cvs',
@@ -39,9 +53,9 @@ export class ModuleCVsComponent implements OnInit {
   ) { }
   
   ngOnInit(): void {
-    
-    if (this.data.ins) { this.ins = this.data.ins; }
-    if (this.data.outs) { this.outs = this.data.outs; }
+    // alphabetize the CVs by name, numbers are in order smallest to largest
+    if (this.data.ins) { this.ins = this.data.ins.slice().sort((a, b) => a.name.localeCompare(b.name)); }
+    if (this.data.outs) { this.outs = this.data.outs.slice().sort((a, b) => a.name.localeCompare(b.name)); }
   
     this.inClick$
         .pipe(
