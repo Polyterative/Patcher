@@ -1,10 +1,10 @@
-<div class="col">
+<div class="col root">
   <div class="row gap0 col-lt-MD"
   >
     <app-module-minimal [data]="data.a.module"
                         [viewConfig]="viewConfig"
                         class="module"
-                        
+    
     >
       <mat-chip-listbox>
         <app-module-cvitem [data]="data.a"
@@ -37,28 +37,23 @@
   <ng-container *ngIf="!isEditing">
     <div class="row gap0 padT0"
     >
-      <div class="grow">
         <ng-container *ngIf="data.notes&&data.notes.length>0">
-          <mat-card-subtitle style="font-style:italic"
-          >
-            {{data.notes}}
-          </mat-card-subtitle>
+          <div class="notes">
+            {{ data.notes }}
+          </div>
         </ng-container>
-      </div>
       
-      <div>
+      <div style="flex-grow: 1">
         <ng-container *ngTemplateOutlet="ordinal"></ng-container>
       </div>
     </div>
   </ng-container>
   <ng-container *ngIf="isEditing">
-    <div class="row gap0 padT0 space-between">
+    <div class="row gap0 padT0 space-between parent">
       
-      <!--      center icon on x axis-->
       <mat-icon [matTooltip]="isCreator?'Clear selection':'Remove connection'"
                 (click)="remove$.next(data)"
-                class="transparentize-quarter clickable "
-                style="align-self: center;"
+                class="transparentize-quarter clickable opacizeOnHover deleteIcon"
       >delete
       </mat-icon>
       <app-brand-primary-button *ngIf="isCreator"
@@ -75,7 +70,8 @@
                        fxLayoutAlign="end center"
                        class="monospace"
                        [ngClass]="index%5!=0?'fade-ordinal':''"
-    >#{{index}}</mat-card-subtitle>
+    >#{{ index }}
+    </mat-card-subtitle>
   </ng-template>
   <ng-template #notesT>
   </ng-template>
