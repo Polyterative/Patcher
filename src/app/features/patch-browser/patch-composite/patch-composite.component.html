@@ -34,7 +34,6 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             >
             </app-patch-minimal>
           </lib-clean-card>
-          <ng-template *ngTemplateOutlet="connectionList"></ng-template>
           <app-comments-root></app-comments-root>
   
         </div>
@@ -44,8 +43,11 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
           <app-patch-details fxFlex="grow"
                              [data]="data"
           ></app-patch-details>
+        
         </div>
       </div>
+      <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+    
     </ng-container>
   </ng-container>
   

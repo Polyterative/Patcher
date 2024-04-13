@@ -1,6 +1,15 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnInit
+} from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { MinimalModule } from 'src/app/models/module';
+
 
 @Component({
   selector:        'app-module-part-image',
@@ -15,7 +24,7 @@ import { MinimalModule } from 'src/app/models/module';
     })
   ]
 })
-export class ModulePartImageComponent implements OnInit, AfterViewInit {
+export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewInit {
   
   @Input() data: MinimalModule;
   
@@ -29,6 +38,16 @@ export class ModulePartImageComponent implements OnInit, AfterViewInit {
   constructor(
     public changeDetection: ChangeDetectorRef
   ) { }
+  
+  // force change detection when the data changes
+  ngOnChanges(): void {
+    if (this.data.panels && this.data.panels.length > 0) {
+      this.filename = this.data.panels[0].filename;
+    } else {
+      this.filename = undefined;
+    }
+    
+  }
   
   ngOnInit(): void {
     if (this.data.panels && this.data.panels.length > 0) {
