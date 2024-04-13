@@ -18,9 +18,9 @@ import {
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import {
-  defaultRackMinimalViewConfig,
-  RackMinimalViewConfig
-} from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from "src/app/components/module-parts/module-minimal/module-minimal.component";
 
 
 @Component({
@@ -30,8 +30,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RackBrowserDetailViewComponent implements OnInit {
-  @Input() readonly viewConfig: RackMinimalViewConfig = {
-    ...defaultRackMinimalViewConfig
+  @Input() readonly viewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig
   };
   
   protected destroyEvent$ = new Subject<void>();

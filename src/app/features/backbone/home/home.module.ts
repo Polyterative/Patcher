@@ -15,7 +15,6 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
 import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroHeaderModule } from 'src/app/shared-interproject/components/@visual/hero-header/hero-header.module';
-import { HeroLinkModule } from 'src/app/shared-interproject/components/@visual/hero-link/hero-link.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ModuleBrowserModule } from '../../module-browser/module-browser.module';
 import { PatchBrowserModule } from '../../patch-browser/patch-browser.module';
@@ -49,7 +48,6 @@ import { HomeComponent } from './home.component';
     ], {scrollPositionRestoration: 'enabled'}),
     ScreenWrapperModule,
     ListLinkRouterModule,
-    HeroLinkModule,
     UserDataHandlerModule,
     EmptyStateModule,
     BrandPrimaryButtonModule,
