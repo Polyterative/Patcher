@@ -41,8 +41,8 @@ export class SharedConstants {
     
   }
   
-  static errorLogin<T>(snackBar: MatSnackBar, msg?: string) {
-    return snackBar.open(`❌ Login  not possible ${msg}`, undefined, {duration: 5000});
+  static errorLogin<T>(snackBar: MatSnackBar) {
+    return snackBar.open(`❌ Login  unsuccessful, please check your credentials and try again`, undefined, {duration: 5000});
     
   }
   
