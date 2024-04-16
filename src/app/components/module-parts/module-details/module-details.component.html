@@ -34,6 +34,8 @@
             <div fxFlex="auto">
               <img *ngIf="item.filename"
                    alt="{{item.filename}}"
+                   class="image-transition"
+                   loading="lazy"
                    [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
                    [matTooltip]="item.filename"
                    [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
