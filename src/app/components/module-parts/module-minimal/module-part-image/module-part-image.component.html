@@ -9,10 +9,11 @@
     <ng-container *ngIf="containImage"
     >
       <img *ngIf="filename"
-           class="img"
+           class="img image-transition"
            [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
            [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
            [@enter]
+           loading="lazy"
       >
       
       <lib-screen-wrapper *ngIf="!filename"
@@ -33,6 +34,8 @@
            [ngStyle]="{maxHeight:((bag.height)+'rem')}"
            [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
            [@enter]
+           class="image-transition"
+           loading="lazy"
       >
     </ng-container>
   </ng-container>
