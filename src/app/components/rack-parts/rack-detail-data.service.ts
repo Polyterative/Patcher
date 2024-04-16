@@ -303,31 +303,29 @@ export class RackDetailDataService extends SubManager {
                   ]) => {
         
         
-        const movingUnrackedModule: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
-        if (movingUnrackedModule) {
-          module.rackingData.column = 0;
-          this.transferInRow(rackModules, newRow, event);
-          
+        const movingUnrackedModuleToUnrackedPosition: boolean = module.rackingData.row === null && newRow > rack.rows - 1;
+        if (movingUnrackedModuleToUnrackedPosition) {
           // nothing to do, not moving unracked module
           this.snackBar.open(
-            `Please move unracked module to a suitable position inside your rack.
+            `Not moving unracked module. Please move it to a suitable position inside your rack above.
                 Your rack has ${ rack.rows } rows`,
             null,
             {duration: 8000});
           
-          return;
-        }
-        
-        // update array
-        if (newRow === module.rackingData.row) {
-          this.transferInRow(rackModules, newRow, event);
         } else {
-          this.transferBetweenRows(rackModules, module, event, newRow);
+          
+          // update array
+          if (newRow === module.rackingData.row) {
+            this.transferInRow(rackModules, newRow, event);
+          } else {
+            this.transferBetweenRows(rackModules, module, event, newRow);
+          }
+          
+          this.rowedRackedModules$.next(rackModules);
+          
+          this.requestRackedModulesDbSync$.next();
         }
         
-        this.rowedRackedModules$.next(rackModules);
-        
-        this.requestRackedModulesDbSync$.next();
       })
     
     // track if rack is property of current user
