@@ -382,10 +382,10 @@ export class RackDetailDataService extends SubManager {
     this.requestRackedModulesDbSync$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([_, rackModules, rack]) => this.callBackendToUpdateModulesOfRack(rackModules, rack)
-        ),
-        // handle error, if any module has not been updated,tow to the user that something went wrong
-        catchError(() => {
+        switchMap(([_, rackModules, rack]) => this.callBackendToUpdateModulesOfRack(rackModules, rack)),
+        // handle error, if any module has not been updated,tell to the user that something went wrong
+        catchError((err) => {
+          console.error(`Error syncing rack data with backend: ${ err }`);
           SharedConstants.errorHandlerOperation(this.snackBar);
           return of(undefined);
         }),
@@ -446,16 +446,16 @@ export class RackDetailDataService extends SubManager {
         // wait for the new rack id to arrive, then update the rack modules with the new rack id,
         switchMap(newlyCreatedRackId => {
           history.replaceState({}, '', `/racks/details/${ newlyCreatedRackId }`);
-            
-            const rackModules = this.removeInformationFromModulesOfCurrentRack(newlyCreatedRackId);
-            
-            // load the new empty rack
-            this.updateSingleRackData$.next(newlyCreatedRackId)
-            return this.singleRackData$.pipe(
-              filter(x => x.id === newlyCreatedRackId),
-              take(1),
-              map(() => rackModules),
-            )
+          
+          const rackModules = this.removeInformationFromModulesOfCurrentRack(newlyCreatedRackId);
+          
+          // load the new empty rack
+          this.updateSingleRackData$.next(newlyCreatedRackId)
+          return this.singleRackData$.pipe(
+            filter(x => x.id === newlyCreatedRackId),
+            take(1),
+            map(() => rackModules),
+          )
           }
         ),
         // wait for the new empty rack to arrive, then add the modules to the new rack
