@@ -79,11 +79,10 @@ export class UserManagementService {
   login$(email: string, password: string): Observable<SupabaseLoginResponse> {
     return this.backend.login$(email, password)
       .pipe(
-        catchError(x => {
+        catchError(() => {
           SharedConstants.errorLogin(this.snackBar);
           return NEVER;
         }),
-        
         tap(x => {
           this.loggedUser$.next(x.user);
         })
