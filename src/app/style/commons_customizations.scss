@@ -172,6 +172,12 @@ mat-expansion-panel {
   //background: linear-gradient(26deg, rgba(255, 255, 255, 0.9) 0%, rgba(234, 234, 234, 0.5) 100%)
 }
 
+.image-transition {
+  transition: opacity 0.3s;
+  transition-delay: 0.2s;
+
+}
+
 
 .ellipsisfade {
   position: relative;
