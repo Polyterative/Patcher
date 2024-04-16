@@ -30,7 +30,7 @@ export class SharedConstants {
   }
   
   static errorHandlerOperation<T>(snackBar: MatSnackBar) {
-    return catchError<T, Observable<never>>(err => {
+    return catchError<T, Observable<never>>(() => {
       snackBar.open('❌ Operation failed, please try again', undefined, {duration: 8000});
       return EMPTY;
     });

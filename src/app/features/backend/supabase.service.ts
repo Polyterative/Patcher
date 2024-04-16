@@ -87,24 +87,31 @@ export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | Observed
 
 @Injectable()
 export class SupabaseService {
+  constructor(
+    public activated: ActivatedRoute,
+    public snackBar: MatSnackBar
+  ) {
+    // console.clear();
+    
+  }
+  
+  
   user = {
     user$: new ReplaySubject(),
     login$: new EventEmitter<void>(),
     logout$: new EventEmitter<void>()
   };
-  
-  
   private defaultPag = 20;
+  
+  
   private supabase = createClient<Database>(environment.supabase.url, environment.supabase.key);
-  
-  
   add = {
     module_tags: (data: Tag[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_tags)
         .upsert(data)
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     userModule: (moduleId: number) => this.getUserSession$()
       .pipe(
         switchMap(user => rxFrom(
@@ -115,7 +122,7 @@ export class SupabaseService {
               profileid: user.id
             })
         )),
-        tap(x => /*errorHandling*/ x)
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
       ),
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
       this.supabase
@@ -127,7 +134,7 @@ export class SupabaseService {
           column
         })
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     rack: (data: {
       name: string,
       authorid: string,
@@ -141,7 +148,7 @@ export class SupabaseService {
         .select('id'),
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x), // map type as any , TODO: fix this
       ),
     patch: (data: {
@@ -156,7 +163,7 @@ export class SupabaseService {
               authorid: user.id
             })
         )),
-        tap(x => /*errorHandling*/ x));
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
     },
     modules: (data: DbModule[]) => {
       return this.getUserSession$().pipe(
@@ -200,7 +207,7 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     moduleOUTs: (data: CV[], moduleid: number) => rxFrom(
       this.supabase
         .from(DbPaths.moduleOUTs)
@@ -209,19 +216,19 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
       this.supabase
         .from(DbPaths.manufacturers)
         .insert(data)
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     panel: (data: Partial<ModulePanel>[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_panels)
         .insert(data)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
   };
   get = {
     userModules: () => {
@@ -251,7 +258,7 @@ export class SupabaseService {
               .limit(1, {foreignTable: panelsTable})
               .filter('profileid', 'eq', user.id)
           ).pipe(
-            tap(x => /*errorHandling*/ x),
+            switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
             map((x: any) => x), // map type as any , TODO: fix this
             map((x => x.data.map(y => y.module)))
           )
@@ -274,7 +281,7 @@ export class SupabaseService {
         .order('ordinal')
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x), // map type as any , TODO: fix this
         map((x => x.data))
       )
@@ -293,7 +300,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x),// map type as any , TODO: fix this
       ),
     userPatches: () => {
@@ -304,7 +311,7 @@ export class SupabaseService {
               .filter('authorid', 'eq', user.id)
               .order('updated', {ascending: false})
           ).pipe(
-            tap(x => /*errorHandling*/ x),
+          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
             map((x: any) => x), // map type as any , TODO: fix this
             map((x => x.data))
           )
@@ -333,7 +340,7 @@ export class SupabaseService {
         .order('row', {ascending: true})
         .order('column', {ascending: true})
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
       .pipe(
         map((x: any) => x), // map type as any , TODO: fix this
         map((x => x.data)),
@@ -358,13 +365,13 @@ export class SupabaseService {
           `)
         .range(from, to)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
       .pipe(map((x => x.data))),
     tags: () => rxFrom(
       this.supabase.from(DbPaths.tags)
         .select('*')
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
       .pipe(map((x => x.data))),
     modulesMinimal: (
       from = 0,
@@ -414,21 +421,21 @@ export class SupabaseService {
       
       
       return rxFrom(
-        query  .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
-        .limit(1, {                                // take only one panel
-          foreignTable: DbPaths.module_panels
-        })
-        .ilike('name', `%${ name }%`)
-      
-      .range(from, to)
+        query.filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+          .order(`color`, {                                // order panel by color
+            foreignTable: DbPaths.module_panels,
+            ascending: true
+          })
+          .limit(1, {                                // take only one panel
+            foreignTable: DbPaths.module_panels
+          })
+          .ilike('name', `%${ name }%`)
+          
+          .range(from, to)
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
       )
         .pipe(
-          tap(x => /*errorHandling*/ x),
+          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
           map((x: any) => x), // map type as any , TODO: fix this
         )
     },
@@ -440,7 +447,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x), // map type as any , TODO: fix this
       ),
     racksWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
@@ -452,7 +459,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x)// map type as any , TODO: fix this
       )
     ,
@@ -479,7 +486,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x)// map type as any , TODO: fix this
       ),
     patchWithId: (id: number, columns = '*') => rxFrom(
@@ -493,7 +500,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x)// map type as any , TODO: fix this
       ),
     patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
@@ -507,7 +514,7 @@ export class SupabaseService {
           .filter('moduleid', 'eq', moduleid)
           .range(from, to)
       )
-        .pipe(tap(x => /*errorHandling*/ x));
+        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
       
       // for each patchid, get the patch in a single query, combine them in a single array at the end
       return patchIdList$.pipe(
@@ -548,7 +555,7 @@ export class SupabaseService {
         .range(from, to)
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x),// map type as any , TODO: fix this
         map((x => x.data))
       ),
@@ -563,7 +570,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x)// map type as any , TODO: fix this
       ),
     manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
@@ -573,7 +580,7 @@ export class SupabaseService {
         .filter('id', 'eq', id)
         .single()
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     manufacturers: (from = 0, to = this.defaultPag, columns = '*', orderBy?: string) => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
         .select(columns)
@@ -581,43 +588,44 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name')
     )
       .pipe(
-        tap(x => /*errorHandling*/ x),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x),// map type as any , TODO: fix this
       ),
     standards: () => rxFrom(
       this.supabase.from(DbPaths.standards)
         .select('*')
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     userWithId: (id: string, columns = '*') => rxFrom(
       this.supabase.from(DbPaths.profiles)
         .select(columns)
         .filter('id', 'eq', id)
         .single()
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     statistics: () => zip(
       rxFrom(
         this.supabase.from(DbPaths.modules)
           .select('id', {count: 'exact'})
       )
-        .pipe(tap(x => /*errorHandling*/ x))
+        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
         .pipe(map(((x: any) => x.count))),
       rxFrom(
         this.supabase.from(DbPaths.racks)
           .select('id', {count: 'exact'})
       )
-        .pipe(tap(x => /*errorHandling*/ x))
+        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
         .pipe(map(((x: any) => x.count))),
       rxFrom(
         this.supabase.from(DbPaths.patches)
           .select('id', {count: 'exact'})
       )
-        .pipe(tap(x => /*errorHandling*/ x))
+        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
         .pipe(map(((x: any) => x.count)))
     )
     
   };
+  
   delete = {
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
@@ -626,7 +634,7 @@ export class SupabaseService {
           .filter('profileid', 'eq', user.id)
           .filter('moduleid', 'eq', id)
       )),
-      tap(x => /*errorHandling*/ x)
+      switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
     )
     ,
     rackedModule: (id: number) => rxFrom(
@@ -634,14 +642,14 @@ export class SupabaseService {
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
     ,
     modulesOfRack: (rackId: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .delete()
         .filter('rackid', 'eq', rackId)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
     ,
     patch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patches)
@@ -649,7 +657,7 @@ export class SupabaseService {
         // .filter('profileid', 'eq', this.getUser().id)
         .filter('id', 'eq', id)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
     ,
     patchConnectionsForPatch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_connections)
@@ -657,7 +665,7 @@ export class SupabaseService {
         .filter('patchid', 'eq', id)
       // .filter('moduleid', 'eq', id)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
     ,
     userPatch: (id: number) => this.getUserSession$()
       .pipe(
@@ -667,7 +675,7 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        tap(x => /*errorHandling*/ x)
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
       )
     ,
     userRack: (id: number) => this.getUserSession$()
@@ -678,7 +686,7 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        switchMap((x) => (x.error ? this.handleAsyncError('errorMessageToCustomize') : of(x))),
+        switchMap((x) => (x.error ? this.throwAsyncError('errorMessageToCustomize') : of(x))),
         this.errorMsg()
       )
     ,
@@ -687,21 +695,21 @@ export class SupabaseService {
         .delete()
         .range(from, to)
     )
-      .pipe(tap(x => /*errorHandling*/ x)),
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
         .delete()
         .range(from, to)
     )
-      .pipe(tap(x => /*errorHandling*/ x))
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
   };
+  
   
   private errorMsg() {
     return SharedConstants.errorHandlerOperation(this.snackBar);
   }
   
-  
-  private handleAsyncError(message: string) {
+  private throwAsyncError(message: string) {
     return throwError(() => new Error(message));
   }
   
@@ -720,12 +728,9 @@ export class SupabaseService {
           .eq('id', data.id)
         // .single()
       )
-        .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rackedModules: (data: RackedModule[]) => {
-      const rackId: number = data[0].rackingData.rackid;
-      
-      
       // upload all modules that already have an id
       const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
         .map(rackedModule => rackedModule.rackingData);
@@ -763,8 +768,11 @@ export class SupabaseService {
           //                    })
           //                    .filter('id', 'eq', rackId) // forces updated refresh
           // );
+        )
+        .pipe(
+          // if data.error is true, then we have an error, throw it down the pipe
+          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         );
-      // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     rack: (data: RackMinimal) => {
       return rxFrom(
@@ -832,6 +840,7 @@ export class SupabaseService {
     return NEVER;
   }
   
+  
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
@@ -866,7 +875,6 @@ export class SupabaseService {
         .pipe(map(x => filenameAndExtension));
     },
   };
-  
   
   private cleanUpFileName(filenameAndExtension: string) {
     return filenameAndExtension.toLowerCase().trim()
@@ -989,14 +997,6 @@ export class SupabaseService {
     error: AuthError | null
   }> {
     return from(this.supabase.auth.signOut())
-  }
-  
-  constructor(
-    public activated: ActivatedRoute,
-    public snackBar: MatSnackBar
-  ) {
-    // console.clear();
-    
   }
   
   // logs in, updates profile, logs out
