@@ -10,9 +10,10 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
     <lib-hero-content-card class="modulesBG"
                            titleBig="Module details"
     >
-      <div class="col gap1"
+      <div fxLayout.gt-md="row" fxLayout="column" fxLayoutGap="2rem"
       >
-        <lib-screen-wrapper maxSize="36rem">
+        <lib-screen-wrapper maxSize="36rem"
+        >
           <lib-clean-card>
             
             <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
@@ -25,31 +26,15 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             <ng-template #data>
               <app-module-composite [data]="(bag.data)"
                                     [viewConfig]="viewConfig"
+                                    style="margin: 10rem"
               ></app-module-composite>
             </ng-template>
           
           </lib-clean-card>
         
-        
         </lib-screen-wrapper>
-        <!--  -->
-        <!--                  <lib-auto-content-loading-indicator [updateData$]="dataService.updateSingleModuleData$"-->
-        <!--                                                      [data$]="dataService.singleModuleData$"-->
-        <!--                  ></lib-auto-content-loading-indicator>-->
         
-        <!--          <lib-clean-card *ngIf="bag.data">-->
-        <!--            <app-module-patches [module]="bag.data"></app-module-patches>-->
-        <!--          </lib-clean-card>-->
-        
-        
-        <!--          hidden cause circular dependency-->
-        <!--          <app-module-patches [data$]="dataService.modulePatchesList$"></app-module-patches>-->
-        <!--              stuff-->
-        
-        
-        <lib-screen-wrapper>
-          
-          <div fxLayout="column"
+        <div fxFlex class="col gap2"
           >
             <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
                                    titleNormal="Module Editor"
@@ -59,23 +44,24 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             </lib-hero-content-card>
             
             <div fxLayout.gt-md="row"
-                 fxLayout.lt-md="column"
+                 fxLayout="column"
                  fxLayoutGap="1rem"
             >
               <lib-hero-content-card *ngIf="viewConfig.hideRackedIn===false"
-                                     fxFlex
+                                     style="flex: 1 1 100%;"
                                      titleNormal="Racked in"
               >
                 <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
                                                     [updateData$]="dataService.updateSingleModuleData$"
                 >
-                  <app-module-racks *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
-                                    [data$]="dataService.racksWithThisModule$"
+                  <app-module-racks
+                    *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
+                    [data$]="dataService.racksWithThisModule$"
                   ></app-module-racks>
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
               <lib-hero-content-card *ngIf="viewConfig.hidePatchedIn===false"
-                                     fxFlex
+                                     style="flex: 1 1 100%;"
                                      titleNormal="Patched in"
               >
                 
@@ -92,7 +78,7 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             </div>
             
             <lib-hero-content-card *ngIf="bag.data?.manufacturer&&viewConfig.hideBySameManufacturer===false"
-                                   [titleNormal]="'Others by '+(bag.data.manufacturer.name) "
+                                   [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
                                    fxFlex
             >
               
@@ -108,7 +94,6 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
               </lib-auto-content-loading-indicator>
             </lib-hero-content-card>
           </div>
-        </lib-screen-wrapper>
       
       </div>
     </lib-hero-content-card>
