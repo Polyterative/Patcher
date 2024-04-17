@@ -1,16 +1,16 @@
-<div class="container col"
+<div class="container col "
 >
   
-  <ng-container *ngIf="titleBig&&titleNormal else titles">
-    <div class="col gap1 title bgImage  std-rounding"
+  <ng-container *ngIf="titleBig&&titleNormal else singleTitles">
+    <div class="col gap1 title bgImage sides-pad std-rounding"
     >
       <h2 style="margin-bottom: 0"
           [@title]
       >
-        {{titleBig}}
+        {{ titleBig }}
       </h2>
-  
-      <h3 [@title]>{{titleNormal}}</h3>
+      
+      <h3 [@title]>{{ titleNormal }}</h3>
     </div>
   </ng-container>
   
@@ -18,7 +18,8 @@
                      class="description"
                      [ngClass]="descriptionAlign"
                      [@description]
-  >{{description}}</mat-card-subtitle>
+  >{{ description }}
+  </mat-card-subtitle>
   
   <div class="content col"
   >
@@ -27,7 +28,7 @@
     >
       <ng-content select=".TOP"></ng-content>
     </div>
-    <div class="pad"
+    <div class=" sides-pad"
     >
       <ng-content></ng-content>
     </div>
@@ -40,25 +41,25 @@
 
 </div>
 
-<ng-template #titles>
+<ng-template #singleTitles>
   
   <h1 *ngIf="titleBig"
-      class="row title bgImage padHeight"
+      class="row title sides-pad bgImage padHeight"
   >
     <div [@title]
-    >{{titleBig}}</div>
-    <app-hero-content-card-head-icon
-        fxLayoutAlign="center center"
-        [icon]="icon"
+    >{{ titleBig }}
+    </div>
+    <app-hero-content-card-head-icon fxLayoutAlign="center center"
+                                     [icon]="icon"
     
     ></app-hero-content-card-head-icon>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h1>
   <h3 *ngIf="titleNormal"
-      class="row title"
+      class="row title sides-pad"
       [@title]
   >
-    <div fxFlex="grow">{{titleNormal}}</div>
+    <div fxFlex="grow">{{ titleNormal }}</div>
     <app-hero-content-card-head-icon [icon]="icon"
     ></app-hero-content-card-head-icon>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
@@ -75,3 +76,5 @@
     <mat-icon [matTooltip]="description">help</mat-icon>
   </div>
 </ng-template>
+
+<!--in this file copilot should suggest how to change every fxLayout tag to a equivalent class/style in css-->
