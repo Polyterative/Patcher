@@ -20,7 +20,7 @@
       >
         <app-local-data-filter></app-local-data-filter>
       </div>
-      <flexbox-row-fast class="darker-bg"
+      <flexbox-row-fast
                         [ngClass]="{'limit-height':encloseVertically}"
       >
         <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index"

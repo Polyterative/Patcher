@@ -31,6 +31,11 @@ h1 {
   padding: .5rem;
 }
 
+.sides-pad {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 .padHeight {
   padding-top:    2rem;
   padding-bottom: 2rem;
@@ -47,6 +52,9 @@ h1 {
 
 .content {
   background-color: $brand-tertiary;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  //border-top: 0.25rem solid $brand-tertiary;
   //@include unselectable;
   //border-top-right-radius: 4px;
   //border-top-left-radius: 4px;
@@ -59,7 +67,7 @@ h1 {
 .title {
   //@include unselectable;
   //padding:     1rem 0 1rem;
-  padding-left: .5rem;
+  //padding-left: .5rem;
   //font-size:        1.424rem;
   //background-color: #212121;
   //color:            #FFFFFF;
@@ -95,7 +103,7 @@ h1 {
 .description {
   //@include unselectable;
   font-size: small;
-  padding:   .5rem;
+  padding: 1rem;
   //border: 0.1rem solid white;
   //padding: 1rem;
   //background-color: white;
