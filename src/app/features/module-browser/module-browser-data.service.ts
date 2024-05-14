@@ -107,6 +107,17 @@ export class ModuleBrowserDataService implements OnDestroy {
         name: string;
         id: string
       })[]>
+    },
+    format: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes;
+      options$: Observable<({
+        name: string;
+        id: number
+      })[]>
     }
   }
   
@@ -275,6 +286,30 @@ export class ModuleBrowserDataService implements OnDestroy {
           },
         
         ])
+      },
+      format: {
+        label: 'Format',
+        code: 'format',
+        flex: '8rem',
+        control: new UntypedFormControl({
+          id: 0,
+          name: '3U Doepfer'
+        }),
+        type: FormTypes.SELECT,
+        options$: of([
+          {
+            id: 0,
+            name: '3U Doepfer'
+          },
+          {
+            id: 1,
+            name: '1U Intellijel'
+          },
+          {
+            id: 2,
+            name: '1U Pulp Logic'
+          },
+        ])
       }
     };
     
@@ -287,6 +322,8 @@ export class ModuleBrowserDataService implements OnDestroy {
           const sortColumnName: string = sort[0] ? sort[0] : null;
           const sortDirection = sort[1];
           
+          const standard = this.fields.format.control.value.id;
+          
           return this.backend.get.modulesMinimal(
             skip,
             (skip + take) - 1,
@@ -295,7 +332,8 @@ export class ModuleBrowserDataService implements OnDestroy {
             sortDirection,
             parseInt(getCleanedValueId(this.fields.manufacturers.control)),
             parseInt(this.fields.hp.control.value),
-            this.fields.hpCondition.control.value.id
+            this.fields.hpCondition.control.value.id,
+            standard
           );
         }),
         takeUntil(this.destroyEvent$)
@@ -321,6 +359,10 @@ export class ModuleBrowserDataService implements OnDestroy {
             id: '=',
             name: 'exactly'
           });
+        this.fields.format.control.setValue({
+          id: 0,
+          name: '3U Doepfer'
+        });
         }
       );
     
@@ -346,6 +388,12 @@ export class ModuleBrowserDataService implements OnDestroy {
       .subscribe(() => this.updateModulesList$.next());
     
     this.fields.hpCondition.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => this.updateModulesList$.next());
+    
+    this.fields.format.control.valueChanges
       .pipe(
         takeUntil(this.destroyEvent$)
       )
