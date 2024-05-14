@@ -16,6 +16,14 @@
   -webkit-box-orient: horizontal;
 }
 
+.rowwrap {
+  @include flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  //flex-flow:          row wrap;
+  -webkit-box-orient: horizontal;
+}
+
 .rowrev {
   @include flex;
   flex-direction:     row-reverse;
@@ -41,27 +49,18 @@
 .col-lt-SM {
   /* Below 600px all flex rows should be cols*/
   @media (max-width: 600px) {
-    flex-direction: column;
-    -webkit-box-orient: vertical;
-    height: auto; /*  important for sizing of row heights */
-  }
-}
-
-.col-lt-SM {
-  /* Below 600px all flex rows should be cols*/
-  @media (max-width: 600px) {
-    flex-direction: column;
-    -webkit-box-orient: vertical;
-    height: auto; /*  important for sizing of row heights */
+    flex-direction: column !important;
+    -webkit-box-orient: vertical !important;
+    height: auto !important /*  important for sizing of row heights */
   }
 }
 
 .col-lt-MD {
   /* Below 960px all flex rows should be cols*/
   @media (max-width: 960px) {
-    flex-direction: column;
-    -webkit-box-orient: vertical;
-    height: auto; /*  important for sizing of row heights */
+    flex-direction: column !important;
+    -webkit-box-orient: vertical !important;
+    height: auto !important; /*  important for sizing of row heights */
   }
 }
 
