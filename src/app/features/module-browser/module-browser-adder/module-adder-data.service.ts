@@ -292,6 +292,7 @@ export class ModuleAdderDataService {
             parseInt(getCleanedValueId(this.formData.manufacturer.control)),
             undefined,
             undefined,
+            undefined,
             false,
           ))
         )
