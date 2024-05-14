@@ -382,6 +382,7 @@ export class SupabaseService {
       manufacturerId?: number,
       withHP?: number,
       withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
+      standard: number | undefined = undefined,
       onlyPublic = true
     ) => {
       let query = this.supabase.from(DbPaths.modules)
@@ -419,6 +420,10 @@ export class SupabaseService {
         query = query.filter('manufacturerId', 'eq', manufacturerId);
       }
       
+      if (standard) {
+        query = query.filter('standard', 'eq', standard);
+      }
+      
       
       return rxFrom(
         query.filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
@@ -430,7 +435,6 @@ export class SupabaseService {
             foreignTable: DbPaths.module_panels
           })
           .ilike('name', `%${ name }%`)
-          
           .range(from, to)
           .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
       )
