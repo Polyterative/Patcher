@@ -31,6 +31,12 @@
                              [label]="dataService.fields.hp.label"
         ></lib-mat-form-entity>
         
+        <lib-mat-form-entity [control]="dataService.fields.format.control"
+                             [type]="dataService.fields.format.type"
+                             [options$]="dataService.fields.format.options$"
+                             [disableVoidSelection]="true"
+                             [label]="dataService.fields.format.label"
+        ></lib-mat-form-entity>
         <lib-mat-form-entity [control]="dataService.fields.order.control"
                              [options$]="dataService.fields.order.options$"
                              [type]="dataService.fields.order.type"
