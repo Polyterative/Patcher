@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.5.2](https://github.com/Polyterative/Patcher/compare/v4.5.1...v4.5.2) (2024-05-14)
+
+
+### Features
+
+* **app:** better backend error handling ([63ca5bc](https://github.com/Polyterative/Patcher/commit/63ca5bc50b849556b516af0a332fba200039c02a))
+* **app:** better details pages layouts UI ([a34fdf4](https://github.com/Polyterative/Patcher/commit/a34fdf49411210ba05c442cc61fb90650c1dde3b))
+* **app:** better login errors ([87b1f91](https://github.com/Polyterative/Patcher/commit/87b1f917d562e8812a92e8186fa7df9952a6d8f8))
+* **app:** images now lazyload ([53053f2](https://github.com/Polyterative/Patcher/commit/53053f28a9440ea7658e0e2396f9813b657dff42))
+* **modules:** can now filter by format ([96b3b4e](https://github.com/Polyterative/Patcher/commit/96b3b4eb97d57afd8f9d5eb016415cf275b4b6a1))
+* **modules:** UI now flows well on smaller screens ([252eab8](https://github.com/Polyterative/Patcher/commit/252eab89d84e431d0620635208ee23a41ae9df09))
+
+
+### Bug Fixes
+
+* **rack:** swapping unracked modules inline no longer makes them disappear ([356d1af](https://github.com/Polyterative/Patcher/commit/356d1afda60724e0b3b43daf85737353c2389e37))
+
 ### [4.5.1](https://github.com/Polyterative/Patcher/compare/v4.5.0...v4.5.1) (2024-04-13)
 
 
