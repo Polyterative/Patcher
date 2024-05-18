@@ -56,19 +56,19 @@ export class ModuleBrowserDetailComponent implements OnInit {
     {
       url: (name: string) => `https://www.modwiggler.com/forum/search.php?keywords=${ name }`,
       label: 'Modwiggler',
-      icon: 'info',
+      icon: 'forum',
       tooltip: 'Search on Modwiggler'
     },
     {
       url: (name: string) => `https://www.elektronauts.com/search?q=${ name }`,
       label: 'Elektronauts',
-      icon: 'people',
+      icon: 'forum',
       tooltip: 'Search on Elektronauts'
     },
     {
       url: (name: string) => `https://modulargrid.net/e/modules/browser?SearchName=${ name }`,
       label: 'Modulargrid',
-      icon: 'settings',
+      icon: 'power',
       tooltip: 'Search on Modulargrid'
     },
     {
