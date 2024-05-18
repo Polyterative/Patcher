@@ -249,7 +249,7 @@ export class SupabaseService {
             this.supabase.from(DbPaths.user_modules)
               .select(columns)
               // only approved panels
-              .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
+              // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
               // order panel by color
               .order(`color`, {
                 foreignTable: panelsTable,
@@ -426,7 +426,8 @@ export class SupabaseService {
       
       
       return rxFrom(
-        query.filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        query
+          // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
           .order(`color`, {                                // order panel by color
             foreignTable: DbPaths.module_panels,
             ascending: true
@@ -477,7 +478,7 @@ export class SupabaseService {
             ${ QueryJoins.module_panels }
             `)
         .filter('id', 'eq', id)
-        .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
         .order(`color`, {                                // order panel by color
           foreignTable: DbPaths.module_panels,
           ascending: true
@@ -547,7 +548,7 @@ export class SupabaseService {
           ${ QueryJoins.module_tags }
           `)
         .filter('manufacturerId', 'eq', manufacturerId)
-        .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
         .limit(1, {                                                         // take only one panel
           foreignTable: DbPaths.module_panels
         })
@@ -718,19 +719,28 @@ export class SupabaseService {
   }
   
   update = {
-    module: (data: DbModule) => {
+    module: (data: Partial<DbModule>) => {
       data.manufacturer = undefined;
       data.ins = undefined;
       data.outs = undefined;
       data.tags = undefined; // todo handle tags
       data.panels = undefined;
+      data.standard = undefined;
+      // iso 8601 date
       data.updated = new Date().toISOString();
+      
+      //strip out undefined or null values
+      for (const key in data) {
+        if (data[key] === undefined || data[key] === null) {
+          delete data[key];
+        }
+      }
       
       return rxFrom(
         this.supabase.from(DbPaths.modules)
           .update(data)
           .eq('id', data.id)
-        // .single()
+        // .select('id,updated,created')
       )
         .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
