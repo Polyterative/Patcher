@@ -46,6 +46,92 @@ export class ModuleBrowserDetailComponent implements OnInit {
     hideLabels: true,
     hideDescription: true
   };
+  searchLinks = [
+    {
+      url: (name: string, manufacturer: string) => `https://www.google.com/search?q=${ name } by ${ manufacturer }`,
+      label: 'Google',
+      icon: 'search',
+      tooltip: 'Search on Google'
+    },
+    {
+      url: (name: string) => `https://modulargrid.net/e/modules/browser?SearchName=${ name }`,
+      label: 'Modulargrid',
+      icon: '',
+      tooltip: 'Search on Modulargrid'
+    },
+    {
+      url: (name: string) => `https://www.thomann.de/intl/search_dir.html?sw=${ name }`,
+      label: 'Thomann',
+      icon: 'store',
+      tooltip: 'Search on Thomann'
+    },
+    {
+      url: (name: string) => `https://schneidersladen.de/en/search?sSearch=${ name }`,
+      label: 'Schneidersladen',
+      icon: 'store',
+      tooltip: 'Search on Schneidersladen'
+    },
+    {
+      url: (name: string) => `https://www.signalsounds.com/search.php?search_query=${ name }`,
+      label: 'Signalsounds',
+      icon: 'store',
+      tooltip: 'Search on Signalsounds'
+    },
+    {
+      url: (name: string) => `https://www.exploding-shed.com/search?search=${ name }`,
+      label: 'Exploding Shed',
+      icon: 'store',
+      tooltip: 'Search on Exploding Shed'
+    },
+    {
+      url: (name: string) => `https://eu.elevatorsound.com/shop/?_sf_s=${ name }`,
+      label: 'Elevatorsound',
+      icon: 'store',
+      tooltip: 'Search on Elevatorsound'
+    },
+    {
+      url: (name) => `https://www.perfectcircuit.com/catalogsearch/result/?q=${ name }`,
+      label: 'Perfect Circuit',
+      icon: 'store',
+      tooltip: 'Search on Perfect Circuit'
+    },
+    {
+      url: (name: string) => `https://www.milkaudiostore.com/it/search?term=${ name }`,
+      label: 'Milk Audio Store',
+      icon: 'store',
+      tooltip: 'Search on Milk Audio Store'
+    },
+    {
+      url: (name: string) => `https://escapefromnoise.com/search/?q=${ name }&lang=en`,
+      label: 'Escape From Noise',
+      icon: 'store',
+      tooltip: 'Search on Escape From Noise'
+    },
+    {
+      url: (name: string) => `https://machineroom.com.ua/?s=${ name }`,
+      label: 'Machineroom',
+      icon: 'store',
+      tooltip: 'Search on Machineroom'
+    },
+    {
+      url: (name) => `https://www.ctrl-mod.com/search?type=product&q=${ name }`,
+      label: 'Control',
+      icon: 'store',
+      tooltip: 'Search on Control'
+    },
+    {
+      url: (name) => `https://www.patchwerks.com/search?q=${ name }`,
+      label: 'Patchwerks',
+      icon: 'store',
+      tooltip: 'Search on Patchwerks'
+    },
+    {
+      url: (name) => `https://foundsound.com.au/search?q=${ name }`,
+      label: 'Found Sound',
+      icon: 'store',
+      tooltip: 'Search on Found Sound'
+    },
+  ];
   
   constructor(
     public dataService: ModuleDetailDataService,
