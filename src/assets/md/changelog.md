@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.6.0](https://github.com/Polyterative/Patcher/compare/v4.5.4...v4.6.0) (2024-05-18)
+
+
+### Features
+
+* **module-details:** fixed cv adder button css flow ([e48fc2f](https://github.com/Polyterative/Patcher/commit/e48fc2fc0f42ff16f10fcad3ba17daf83caa6700))
+* **module-details:** more links for quick searches ([4baf74c](https://github.com/Polyterative/Patcher/commit/4baf74c8fba6b18d378f040a28d5345abbd2c3c7))
+* **module-details:** panels are now approved by default ([c9a16e6](https://github.com/Polyterative/Patcher/commit/c9a16e60050989eeda168866c892649c0752fe27))
+* **rack-details:** more accurate 1U height ([aa81811](https://github.com/Polyterative/Patcher/commit/aa818112d39d4e9b8060e18605ea2259b4c7fbfa))
+
 ### [4.5.4](https://github.com/Polyterative/Patcher/compare/v4.5.3...v4.5.4) (2024-05-18)
 
 
