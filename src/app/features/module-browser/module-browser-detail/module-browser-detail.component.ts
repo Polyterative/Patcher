@@ -54,10 +54,22 @@ export class ModuleBrowserDetailComponent implements OnInit {
       tooltip: 'Search on Google'
     },
     {
+      url: (name: string, manufacturer: string) => `https://www.youtube.com/results?search_query=${ name }+${ manufacturer }`,
+      label: 'YouTube',
+      icon: 'search',
+      tooltip: 'Search on YouTube'
+    },
+    {
       url: (name: string) => `https://www.modwiggler.com/forum/search.php?keywords=${ name }`,
       label: 'Modwiggler',
       icon: 'forum',
       tooltip: 'Search on Modwiggler'
+    },
+    {
+      url: (name: string) => `https://llllllll.co/search?q=${ name }`,
+      label: 'Lines',
+      icon: 'forum',
+      tooltip: 'Search on Lines'
     },
     {
       url: (name: string) => `https://www.elektronauts.com/search?q=${ name }`,
