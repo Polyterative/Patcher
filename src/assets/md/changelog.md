@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.5.4](https://github.com/Polyterative/Patcher/compare/v4.5.3...v4.5.4) (2024-05-18)
+
+
+### Features
+
+* **module-details:** more links for quick searches ([477e663](https://github.com/Polyterative/Patcher/commit/477e6634f123bb18e99e8c78129a6422c621a426))
+* **patch-details:** cleaner notes UI ([eb7416b](https://github.com/Polyterative/Patcher/commit/eb7416b7537662274e72ff8a5756690630106e12))
+
 ### [4.5.3](https://github.com/Polyterative/Patcher/compare/v4.5.2...v4.5.3) (2024-05-18)
 
 
