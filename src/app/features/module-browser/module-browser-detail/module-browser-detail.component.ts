@@ -54,10 +54,28 @@ export class ModuleBrowserDetailComponent implements OnInit {
       tooltip: 'Search on Google'
     },
     {
+      url: (name: string) => `https://www.modwiggler.com/forum/search.php?keywords=${ name }`,
+      label: 'Modwiggler',
+      icon: 'info',
+      tooltip: 'Search on Modwiggler'
+    },
+    {
+      url: (name: string) => `https://www.elektronauts.com/search?q=${ name }`,
+      label: 'Elektronauts',
+      icon: 'people',
+      tooltip: 'Search on Elektronauts'
+    },
+    {
       url: (name: string) => `https://modulargrid.net/e/modules/browser?SearchName=${ name }`,
       label: 'Modulargrid',
-      icon: '',
+      icon: 'settings',
       tooltip: 'Search on Modulargrid'
+    },
+    {
+      url: (name: string) => `https://library.vcvrack.com/?query=${ name }`,
+      label: 'VCV Library',
+      icon: 'power',
+      tooltip: 'Search on VCV Library'
     },
     {
       url: (name: string) => `https://www.thomann.de/intl/search_dir.html?sw=${ name }`,
