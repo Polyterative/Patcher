@@ -95,8 +95,8 @@ export class HomeComponent extends SubManager implements OnDestroy {
     bigPanelImage: false,
     ellipseDescription: true,
     hideBySameManufacturer: true,
-    hidePatchedIn: true,
-    hideRackedIn: true
+    hidePatchedIn: false,
+    hideRackedIn: false
   };
   
   constructor(
