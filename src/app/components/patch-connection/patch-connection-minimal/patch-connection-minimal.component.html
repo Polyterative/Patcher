@@ -30,7 +30,7 @@
                        label="Notes"
                        [disabled]="!isEditing"
                        *ngIf="isEditing&&!isCreator"
-                       [hint]="notes.control.value.length+'/999'"
+                       [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
                        [ngClass]="{'padT0':notes.control.value.length>0}"
   ></lib-mat-form-entity>
   
