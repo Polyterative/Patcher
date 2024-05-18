@@ -251,7 +251,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         const sameUnapproved: boolean = ins.length === this.data.ins.length && outs.length === this.data.outs.length;
         
         if (sameApproved && sameUnapproved) {
-          this.snackBar.open('All CV\'s are approved. Nothing to save.', null, {
+          this.snackBar.open('All CVs are approved. Nothing to save.', null, {
             duration: 3000
           });
           
@@ -264,14 +264,16 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         
       }),
       switchMap(([ins, outs]) => {
-        const module = this.data;
         return concat(
           this.backend.update.moduleINsOUTs(
-            module.id,
+            this.data.id,
             ins,
             outs
           ),
-          this.backend.update.module(module)
+          // update only updated time
+          this.backend.update.module({
+            id: this.data.id
+          })
         );
       }),
       withLatestFrom(this.dataService.updateSingleModuleData$),
@@ -279,9 +281,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     )
         .subscribe(([x, updateSingleModuleData]) => {
             this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-    
-            let message: string = `The community appreciates your effort, thank you for your contribution. Your efforts will be remembered.`;
-            this.snackBar.open(message, undefined, {
+          
+          // let message: string = `The community appreciates your effort, thank you for your contribution. Your efforts will be remembered.`;
+          this.snackBar.open("Thank you for your contribution!", undefined, {
               duration: 5000
             });
           }
@@ -333,16 +335,23 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           moduleid:    this.data.id
         }
       ])),
+      // update only updated time
+      switchMap(() => this.backend.update.module({
+        id: this.data.id
+      })),
+      // also update the module to update it's last updated datetime
       catchError(() => {
           this.snackBar.open('Something went wrong during the upload, please try again');
           return of(NEVER);
         }
       ),
-      switchMap(() => this.backend.update.module(this.data))
     )
         .subscribe(x => {
           // feedback to user
-          this.snackBar.open('✔ Panel added, thanks! Will be available as soon as reviewed and approved.', undefined, {
+          // let message = '✔ Panel added, thanks! Will be available as soon as reviewed and approved.';
+          let message = '✔ Panel added, thanks! It is now available for the community';
+          
+          this.snackBar.open(message, undefined, {
             duration: 10000
           });
       
