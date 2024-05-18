@@ -44,6 +44,11 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
+import {
+  MatMenu,
+  MatMenuItem,
+  MatMenuTrigger
+} from "@angular/material/menu";
 
 
 const parentPrefix = 'modules';
@@ -57,35 +62,35 @@ const parentPrefix = 'modules';
     ModuleBrowserAdderComponent
   ],
   providers:    [ModuleBrowserDataService],
-  imports:      [
+  imports: [
     CommonModule,
     RouterModule.forChild([
       
       {
-        path:      `${ parentPrefix }/details/:id`,
+        path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
         component: ModuleBrowserDetailComponent
       },
       {
-        path:      `${ parentPrefix }/add`,
+        path: `${ parentPrefix }/add`,
         pathMatch: 'full',
         component: ModuleBrowserAdderComponent
       },
       generateUranusRoutes(parentPrefix, [
         {
-          path:      'browser',
+          path: 'browser',
           component: ModuleBrowserRootComponent
           // canActivate: [LocalAuthGuardService],
         },
         {
-          path:      '',
+          path: '',
           component: CommonSidebarComponent,
-          outlet:    'sidebar'
+          outlet: 'sidebar'
         },
         {
-          path:      '',
+          path: '',
           component: UserDataHandlerComponent,
-          outlet:    'user'
+          outlet: 'user'
         }
       ])
     ]),
@@ -122,7 +127,10 @@ const parentPrefix = 'modules';
     ModuleRacksModule,
     ModulePatchesModule,
     AdviceTooltipModule,
-    FileDragHostModule
+    FileDragHostModule,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger
   ],
   exports: [
     ModuleListComponent,
