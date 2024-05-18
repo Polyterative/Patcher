@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.5.3](https://github.com/Polyterative/Patcher/compare/v4.5.2...v4.5.3) (2024-05-18)
+
+
+### Features
+
+* **home:** minor improvements ([a754f03](https://github.com/Polyterative/Patcher/commit/a754f0309af711633b26d27a0cc03b43f27a7ea3))
+* **module-details:** add links to stores for quick searches ([f49396b](https://github.com/Polyterative/Patcher/commit/f49396be8719523c1ab55f03eca24897ba88df45))
+
 ### [4.5.2](https://github.com/Polyterative/Patcher/compare/v4.5.1...v4.5.2) (2024-05-14)
 
 
