@@ -10,7 +10,7 @@ import { Subject } from 'rxjs';
 import {
   filter,
   map,
-  take
+  takeUntil
 } from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import {
@@ -196,7 +196,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
       this.dataService.singleModuleData$
         .pipe(
           filter(x => !!x),
-          take(1)
+          takeUntil(this.destroyEvent$)
         )
         .subscribe(data => {
           const tags: string = data.tags.map(x => x.tag.name)
