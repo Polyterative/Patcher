@@ -56,7 +56,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
     {
       url: (name: string, manufacturer: string) => `https://www.youtube.com/results?search_query=${ name }+${ manufacturer }`,
       label: 'YouTube',
-      icon: 'search',
+      icon: 'video_library',
       tooltip: 'Search on YouTube'
     },
     {
