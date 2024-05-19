@@ -1,20 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable }       from '@angular/core';
 import {
   FormControl,
   FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
   Validators
-} from '@angular/forms';
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
+}                           from '@angular/forms';
+import { MatDialog }        from "@angular/material/dialog";
+import { MatSnackBar }      from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   merge,
   Observable,
   of,
   Subject
-} from 'rxjs';
+}                           from 'rxjs';
 import {
   filter,
   map,
@@ -22,20 +22,20 @@ import {
   startWith,
   switchMap,
   tap
-} from 'rxjs/operators';
+}                           from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
-import { MinimalModule } from 'src/app/models/module';
+import { MinimalModule }    from 'src/app/models/module';
 import {
   CustomValidators,
   FormTypes,
   getCleanedValueId
-} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                           from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,
   ConfirmDialogDataOutModel
-} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
-import { SupabaseService } from '../../backend/supabase.service';
+}                           from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SupabaseService }  from '../../backend/supabase.service';
 
 
 @Injectable()
@@ -304,7 +304,7 @@ export class ModuleAdderDataService {
     this.submitModuleForm$
         .pipe(
           switchMap(x => {
-  
+            
             const data: ConfirmDialogDataInModel = {
               title:       'Submit',
               description: 'Are you sure you want to submit this module? Please verify that all information is correct.',
@@ -317,7 +317,7 @@ export class ModuleAdderDataService {
                 theme: 'negative'
               }
             };
-  
+            
             return this.dialog.open(
               ConfirmDialogComponent,
               {
@@ -325,15 +325,15 @@ export class ModuleAdderDataService {
                 disableClose: false
               }
             )
-                       .afterClosed()
-                       .pipe(filter((x: ConfirmDialogDataOutModel) => x && x.answer)
-                       );
+              .afterClosed()
+              .pipe(filter((x: ConfirmDialogDataOutModel) => x && x.answer)
+              );
           }),
           tap(() => this.similarModulesData$.next(undefined)),
           map(() => {
             const manualValue = this.formData.manual.control.value;
             const manualURL: any = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
-  
+            
             return {
               name:           this.formData.name.control.value,
               description:    this.formData.description.control.value,
@@ -343,7 +343,7 @@ export class ModuleAdderDataService {
               manualURL,
               isApproved:     false,
               isDIY:          this.formData.diy.control.value.id === '1',
-              public:         false
+              public: true
             };
           }),
           switchMap((x: any) => this.backend.add.modules([x]))
@@ -358,11 +358,9 @@ export class ModuleAdderDataService {
           // inform user that the module was added
           this.snackBar.open(
             `
-            Module requested! ✅
-            It will be available as soon as an admin can approve it.
-            Please be patient.
-            Submitting the module again will not be speed up the process.
+            Module submitted!
             Thank you very much for your contribution! 🙏
+            It is now available to everyone.
             `,
             '',
             {
