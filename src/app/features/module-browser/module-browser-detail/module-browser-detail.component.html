@@ -33,17 +33,19 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             
             </lib-clean-card>
             
-            <div class="rowwrap gap1" *ngIf="bag.data">
-              <ng-container *ngFor="let link of searchLinks">
-                <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
-                   rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
-                  <button mat-flat-button [matTooltip]="link.tooltip">
-                    <mat-icon *ngIf="link.icon">{{ link.icon }}</mat-icon>
-                    <span>{{ link.label }}</span>
-                  </button>
-                </a>
-              </ng-container>
-            </div>
+            <lib-hero-content-card titleNormal="Search on">
+              <div class="rowwrap gap1" *ngIf="bag.data">
+                <ng-container *ngFor="let link of searchLinks">
+                  <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
+                     rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
+                    <button mat-flat-button>
+                      <mat-icon *ngIf="link.icon">{{ link.icon }}</mat-icon>
+                      <span>{{ link.label }}</span>
+                    </button>
+                  </a>
+                </ng-container>
+              </div>
+            </lib-hero-content-card>
           </div>
         
         </lib-screen-wrapper>
