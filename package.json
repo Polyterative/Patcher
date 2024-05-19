@@ -97,8 +97,13 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "protractor": "^7.0.0",
     "standard-version": "^9.5.0",
-    "supabase": "^1.136.3",
+    "supabase": "^1.167.4",
     "ts-node": "^10.9.2",
     "typescript": "5.4.4"
+  },
+  "overrides": {
+    "@supabase/supabase-js": {
+      "@supabase/auth-js": "2.61.0"
+  }
   }
 }
