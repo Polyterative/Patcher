@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.6.1](https://github.com/Polyterative/Patcher/compare/v4.6.0...v4.6.1) (2024-05-19)
+
+
+### Features
+
+* **app:** supabase lib update ([79e7fcb](https://github.com/Polyterative/Patcher/commit/79e7fcb1eb59c0c035e3b090f3d0c4e1133d0016))
+* **module-details:** add links to stores for quick searches ([941b98f](https://github.com/Polyterative/Patcher/commit/941b98f0e7d7316b935a46be446f3edd3f978740))
+* **module-details:** add links to stores for quick searches ([f40e722](https://github.com/Polyterative/Patcher/commit/f40e722b4ae2ed7dc0a8766fcd878d1df65b4b14))
+* **module-editor:** ui flow improvement ([33388f6](https://github.com/Polyterative/Patcher/commit/33388f6672cbbabff9d1ee1381083c8396c6b8de))
+* **module-submit:** submitted modules are now public by default ([155f4b5](https://github.com/Polyterative/Patcher/commit/155f4b5d7cd952e4168efb8ab30f12a61abbdedc))
+
+
+### Bug Fixes
+
+* **module-details:** title now updates correctly when changing module in page ([fafc55e](https://github.com/Polyterative/Patcher/commit/fafc55e0e56e34676f82c9fa7542dfc6c3a8b205))
+
 ## [4.6.0](https://github.com/Polyterative/Patcher/compare/v4.5.4...v4.6.0) (2024-05-18)
 
 
