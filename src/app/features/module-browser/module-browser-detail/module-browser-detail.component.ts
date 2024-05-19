@@ -90,6 +90,13 @@ export class ModuleBrowserDetailComponent implements OnInit {
       tooltip: 'Search on VCV Library'
     },
     {
+      url: (name: string) => `https://wigglehunt.com/?query=${ name }`,
+      label: 'Wigglehunt',
+      // icon regarding prices
+      icon: 'attach_money',
+      tooltip: 'Search on Modulargrid'
+    },
+    {
       url: (name: string) => `https://www.thomann.de/intl/search_dir.html?sw=${ name }`,
       label: 'Thomann',
       icon: 'store',
