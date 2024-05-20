@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
@@ -11,6 +10,21 @@ import { CommentsEditorComponent } from './comments-editor/comments-editor.compo
 import { CommentsItemComponent } from './comments-item/comments-item.component';
 import { CommentsListComponent } from './comments-list/comments-list.component';
 import { CommentsRootComponent } from './comments-root/comments-root.component';
+import {
+  MatList,
+  MatListItem
+} from "@angular/material/list";
+import {
+  MatTree,
+  MatTreeNode
+} from "@angular/material/tree";
+import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module";
+import { MatIcon } from "@angular/material/icon";
+import { MatIconButton } from "@angular/material/button";
+import { NgDatePipesModule } from "ngx-pipes";
+import { TimeagoModule } from "ngx-timeago";
+import { MatTooltip } from "@angular/material/tooltip";
+import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
 
 
 @NgModule({
@@ -20,14 +34,24 @@ import { CommentsRootComponent } from './comments-root/comments-root.component';
     CommentsEditorComponent,
     CommentsRootComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     MatCardModule,
-    FlexLayoutModule,
     BrandPrimaryButtonModule,
     MatFormEntityModule,
     DevOnlyWindowModule,
-    HeroContentCardModule
+    HeroContentCardModule,
+    MatListItem,
+    MatList,
+    MatTreeNode,
+    MatTree,
+    AutoUpdateLoadingIndicatorModule,
+    MatIcon,
+    MatIconButton,
+    NgDatePipesModule,
+    TimeagoModule,
+    MatTooltip,
+    CleanCardModule,
   ],
   providers:    [CommentsDataService],
   exports:      [

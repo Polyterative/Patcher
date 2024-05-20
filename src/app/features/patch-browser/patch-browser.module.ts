@@ -28,7 +28,6 @@ import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@vis
 import { WidthLimiterModule } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
 import { PatchListModule } from '../../components/patch-list/patch-list.module';
-import { CommentsModule } from '../../components/shared-atoms/comments/comments.module';
 import { LocalDataFilterModule } from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { MatCardModule } from "@angular/material/card";
@@ -41,6 +40,7 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 
 
 const parentPrefix = 'patches';
@@ -111,11 +111,11 @@ const parentPrefix = 'patches';
     WidthLimiterModule,
     HeroItemCardModule,
     EmptyStateModule,
-    CommentsModule,
     LocalDataFilterModule,
     CleanCardModule,
     PatchListModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    CommentsModule
   ]
 })
 export class PatchBrowserModule {}
