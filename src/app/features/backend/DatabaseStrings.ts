@@ -16,6 +16,7 @@ export class DbPaths {
   static tags: string = 'tags';
   static standards: string = 'standards';
   static profiles: string = 'profiles';
+  static comments: string = 'comments';
   
 }
 

@@ -1,1 +1,21 @@
-<p>comments-item works!</p>
+<lib-clean-card class=" parent">
+  <div class="comment-content">
+    <div class="comment-header">
+      <div class="username">{{ data.profile.username }}</div>
+      <div class="timestamp"
+           [matTooltip]="data.updated | date:'medium'"
+      >{{ data.updated | timeago }}
+      </div>
+      <div class="delete" *ngIf="data.profile.id === (userService.loggedUser$|async)?.id">
+        <button mat-icon-button (click)="dataService.deleteComment$.next(data.id)">
+          <mat-icon class="opacizeOnHover"
+          >delete
+          </mat-icon>
+        </button>
+      </div>
+    </div>
+    <!--    <p class="comment-text">{{ data.content }}</p>-->
+    <div class="comment-text" [innerHTML]="makeURLsClickable(data.content)"></div>
+  
+  </div>
+</lib-clean-card>
