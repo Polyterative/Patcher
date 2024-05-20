@@ -23,12 +23,17 @@ import {
 import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 import { AppStateService }         from "src/app/shared-interproject/app-state.service";
 import { DbModule }                from "src/app/models/module";
+import {
+  CommentableEntityTypes,
+  CommentsDataService
+}                                  from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
 @Component({
   selector: 'app-module-browser-detail',
   templateUrl: './module-browser-detail.component.html',
   styleUrls: ['./module-browser-detail.component.scss'],
+  providers: [CommentsDataService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserDetailComponent implements OnInit {
@@ -180,13 +185,34 @@ export class ModuleBrowserDetailComponent implements OnInit {
     public route: ActivatedRoute,
     public router: Router,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    public appState: AppStateService
+    public appState: AppStateService,
+    private commentsDataService: CommentsDataService
   ) {
     
   }
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Module Details'); }
+    
+    // every time we get the new data for the new module, send the data about the context to the comments service
+    this.dataService.singleModuleData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => {
+        this.commentsDataService.requestCommentsUpdate$.next({entityId: data.id, entityType: CommentableEntityTypes.MODULE});
+      });
+    
+    // every time we are waiting for new data, tell the comments service to reset its contents
+    this.dataService.updateSingleModuleData$
+      .pipe(
+        filter(x => !x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
+        this.commentsDataService.requestReset$.next();
+      });
     
     this.route.params
       .pipe(

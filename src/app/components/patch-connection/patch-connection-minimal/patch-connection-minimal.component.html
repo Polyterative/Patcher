@@ -57,7 +57,7 @@
       >delete
       </mat-icon>
       <app-brand-primary-button *ngIf="isCreator"
-                                (click)="create$.next(data)"
+                                (click$)="create$.next(data)"
       >
         Confirm connection
       </app-brand-primary-button>

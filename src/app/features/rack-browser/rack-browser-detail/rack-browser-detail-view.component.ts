@@ -3,31 +3,38 @@ import {
   Component,
   Input,
   OnInit
-} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { SeoSocialShareData } from 'ngx-seo';
+}                                from '@angular/core';
+import { ActivatedRoute }        from '@angular/router';
+import { SeoSocialShareData }    from 'ngx-seo';
 import {
   combineLatest,
   Subject
-} from 'rxjs';
+}                                from 'rxjs';
 import {
   filter,
   map,
-  take
-} from 'rxjs/operators';
+  take,
+  takeUntil
+}                                from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { SeoAndUtilsService }    from '../../backbone/seo-and-utils.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-} from "src/app/components/module-parts/module-minimal/module-minimal.component";
+}                                from "src/app/components/module-parts/module-minimal/module-minimal.component";
+import {
+  CommentableEntityTypes,
+  CommentsDataService
+}                                from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
 @Component({
   selector: 'app-rack-browser-rack-detail',
   templateUrl: './rack-browser-detail-view.component.html',
   styleUrls: ['./rack-browser-detail-view.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers:       [CommentsDataService]
+  
 })
 export class RackBrowserDetailViewComponent implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
@@ -41,7 +48,8 @@ export class RackBrowserDetailViewComponent implements OnInit {
   constructor(
     public dataService: RackDetailDataService,
     public route: ActivatedRoute,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    private commentsDataService: CommentsDataService
   ) {
   }
   
@@ -88,6 +96,16 @@ export class RackBrowserDetailViewComponent implements OnInit {
           
         });
     }
+    
+    // every time we get the new data for the new module, send the data about the context to the comments service
+    this.dataService.singleRackData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => {
+        this.commentsDataService.requestCommentsUpdate$.next({entityId: data.id, entityType: CommentableEntityTypes.RACK});
+      });
   }
   
   ngOnDestroy(): void {
