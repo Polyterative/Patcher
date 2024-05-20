@@ -33,8 +33,8 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
             
             </lib-clean-card>
             
-            <lib-hero-content-card titleNormal="Search on">
-              <div class="rowwrap gap1" *ngIf="bag.data">
+            <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
+              <div class="rowwrap gap1">
                 <ng-container *ngFor="let link of searchLinks">
                   <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
                      rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
@@ -44,6 +44,30 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                     </button>
                   </a>
                 </ng-container>
+              </div>
+            </lib-hero-content-card>
+            
+            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev">
+              <div class="rowwrap gap1">
+                <button mat-stroked-button color="warn" (click)="dataService.deleteModule$.next(bag.data.id)">Delete
+                  module
+                </button>
+                <button mat-stroked-button color="primary" (click)="dataService.changeModule$.next({
+                standard:{
+                id:1,
+                name:''
+                }
+                })">
+                  Convert to 1U Intellijel
+                </button>
+                
+                <button mat-stroked-button color="primary" (click)="dataService.changeModule$.next({
+                standard:{
+                id:0,
+                name:''
+                }
+                })">Convert to 3U Doepfer
+                </button>
               </div>
             </lib-hero-content-card>
           </div>
