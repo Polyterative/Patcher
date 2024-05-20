@@ -1,27 +1,31 @@
-import { Injectable } from '@angular/core';
+import { Injectable }      from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-} from 'rxjs';
+}                          from 'rxjs';
 import {
+  map,
   switchMap,
   takeUntil,
   tap
-} from 'rxjs/operators';
+}                          from 'rxjs/operators';
 import {
   PatchCreatorComponent,
   PatchCreatorInModel
-} from '../../components/patch-parts/patch-creator/patch-creator.component';
+}                          from '../../components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
   RackCreatorInModel
-} from '../../components/rack-parts/rack-creator/rack-creator.component';
-import { MinimalModule } from '../../models/module';
-import { Patch } from '../../models/patch';
-import { Rack } from '../../models/rack';
-import { SubManager } from '../../shared-interproject/directives/subscription-manager';
+}                          from '../../components/rack-parts/rack-creator/rack-creator.component';
+import {
+  DbModule,
+  MinimalModule
+}                          from '../../models/module';
+import { Patch }           from '../../models/patch';
+import { Rack }            from '../../models/rack';
+import { SubManager }      from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog }       from "@angular/material/dialog";
 
 
 @Injectable()
@@ -29,11 +33,13 @@ export class UserAreaDataService extends SubManager {
   modulesData$: BehaviorSubject<MinimalModule[] | undefined> = new BehaviorSubject(undefined);
   patchesData$: BehaviorSubject<Patch[] | undefined> = new BehaviorSubject(undefined);
   rackData$: BehaviorSubject<Rack[] | undefined> = new BehaviorSubject(undefined);
+  manualsData$: BehaviorSubject<DbModule[] | undefined> = new BehaviorSubject(undefined);
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateModulesData$ = new Subject<void>();
+  readonly updateRackData$                              = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
+  readonly updateManualsData$                           = new Subject<void>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
-  readonly updateRackData$ = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
   
   constructor(
     public dialog: MatDialog,
@@ -64,6 +70,17 @@ export class UserAreaDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.rackData$.next(x))
+    
+    this.updateManualsData$
+      .pipe(
+        tap(() => this.manualsData$.next(undefined)),
+        switchMap(() => this.backend.get.userModules()),
+        map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
+        // order the entities of the array by name alphabetically
+        map(x => x.sort((a, b) => a.name.localeCompare(b.name))),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(x => this.manualsData$.next(x))
     
     this.addPatch$
       .pipe(
@@ -101,6 +118,7 @@ export class UserAreaDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(() => this.updateRackData$.next(undefined));
+    
     
   }
 }
