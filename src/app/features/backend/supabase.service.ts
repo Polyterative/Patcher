@@ -633,6 +633,13 @@ export class SupabaseService {
   };
   
   delete = {
+    module: (id: number) => rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .delete()
+        .filter('id', 'eq', id)
+    )
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        catchError(() => this.standardErrorMessageAndBlock())),
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
         this.supabase.from(DbPaths.user_modules)
@@ -726,7 +733,15 @@ export class SupabaseService {
       data.outs = undefined;
       data.tags = undefined; // todo handle tags
       data.panels = undefined;
-      data.standard = undefined;
+      
+      if (data.standard) {
+        // @ts-ignore
+        data.standard = data.standard.id;
+      } else {
+        data.standard = undefined;
+      }
+      
+      
       // iso 8601 date
       data.updated = new Date().toISOString();
       

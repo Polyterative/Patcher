@@ -3,21 +3,22 @@ import {
   Component,
   Input,
   OnInit
-} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { SeoSocialShareData } from 'ngx-seo';
-import { Subject } from 'rxjs';
+}                                  from '@angular/core';
+import { ActivatedRoute }          from '@angular/router';
+import { SeoSocialShareData }      from 'ngx-seo';
+import { Subject }                 from 'rxjs';
 import {
   filter,
   map,
   takeUntil
-} from 'rxjs/operators';
+}                                  from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+}                                  from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
+import { AppStateService }         from "src/app/shared-interproject/app-state.service";
 
 
 @Component({
@@ -173,7 +174,8 @@ export class ModuleBrowserDetailComponent implements OnInit {
   constructor(
     public dataService: ModuleDetailDataService,
     public route: ActivatedRoute,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    public appState: AppStateService
   ) {
     
   }
