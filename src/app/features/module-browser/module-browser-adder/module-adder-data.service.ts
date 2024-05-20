@@ -21,6 +21,7 @@ import {
   share,
   startWith,
   switchMap,
+  takeUntil,
   tap
 }                           from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
@@ -36,10 +37,11 @@ import {
   ConfirmDialogDataOutModel
 }                           from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SupabaseService }  from '../../backend/supabase.service';
+import { SubManager }       from "src/app/shared-interproject/directives/subscription-manager";
 
 
 @Injectable()
-export class ModuleAdderDataService {
+export class ModuleAdderDataService extends SubManager {
   
   similarModulesData$ = new BehaviorSubject<MinimalModule[] | undefined>(undefined);
   updateModulesList$ = new Subject<void>();
@@ -120,6 +122,7 @@ export class ModuleAdderDataService {
     public dialog: MatDialog,
     public snackBar: MatSnackBar
   ) {
+    super();
     this.formData = {
       name: {
         label: 'Name',
@@ -247,7 +250,8 @@ export class ModuleAdderDataService {
     this.formData.standard.options$.pipe(
       tap(() => this.formData.standard.control.disable()),
       filter(x => x !== undefined),
-      filter(x => x.length > 0)
+      filter(x => x.length > 0),
+      takeUntil(this.destroy$)
     )
         .subscribe(x => {
           this.formData.standard.control.enable();
@@ -263,7 +267,8 @@ export class ModuleAdderDataService {
     this.formData.manufacturer.options$.pipe(
       tap(() => this.formData.manufacturer.control.disable()),
       filter(x => x !== undefined),
-      filter(x => x.length > 0)
+      filter(x => x.length > 0),
+      takeUntil(this.destroy$)
     )
         .subscribe(x => {
           this.formData.manufacturer.control.enable();
@@ -274,6 +279,9 @@ export class ModuleAdderDataService {
       this.formData.name.control.valueChanges,
       this.formData.manufacturer.control.valueChanges
     )
+      .pipe(
+        takeUntil(this.destroy$)
+      )
       .subscribe(_ => {
         this.updateModulesList$.next();
       });
@@ -294,7 +302,9 @@ export class ModuleAdderDataService {
             undefined,
             undefined,
             false,
-          ))
+          )),
+          takeUntil(this.destroy$)
+          
         )
         .subscribe(x => {
           this.similarModulesData$.next(x.data);
@@ -346,7 +356,9 @@ export class ModuleAdderDataService {
               public: true
             };
           }),
-          switchMap((x: any) => this.backend.add.modules([x]))
+          switchMap((x: any) => this.backend.add.modules([x])),
+          takeUntil(this.destroy$)
+          
         )
         .subscribe(x => {
   
