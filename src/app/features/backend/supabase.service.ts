@@ -756,7 +756,7 @@ export class SupabaseService {
         this.supabase.from(DbPaths.modules)
           .update(data)
           .eq('id', data.id)
-        // .select('id,updated,created')
+          .select('id,updated,created')
       )
         .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
     },

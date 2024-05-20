@@ -96,25 +96,27 @@
         <div fxFlex="grow"></div>
         <div class="row gap1">
           <ng-container *ngIf="(bag.singleModuleData&&bag.user)">
-            <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
-              <button
-                (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-                [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
-                mat-icon-button
-                matTooltip="Edit module"
-              >
-                <mat-icon>edit</mat-icon>
-              </button>
-            </ng-container>
-            <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
-              <button
-                (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-                [disabled]="!bag.user"
-                mat-icon-button
-                matTooltip="Close editor"
-              >
-                <mat-icon>close</mat-icon>
-              </button>
+            <ng-container *ngIf="false">
+              <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
+                <button
+                  (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                  [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
+                  mat-icon-button
+                  matTooltip="Edit module"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </ng-container>
+              <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
+                <button
+                  (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                  [disabled]="!bag.user"
+                  mat-icon-button
+                  matTooltip="Close editor"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </ng-container>
             </ng-container>
           </ng-container>
           <ng-container *ngIf="bag.singleModuleData">

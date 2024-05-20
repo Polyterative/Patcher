@@ -32,6 +32,61 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
               </ng-template>
             
             </lib-clean-card>
+            <div class="col"
+            >
+              <div class="col gap1"
+                   *ngIf="bag.data"
+              >
+                <div class="row gap1">
+                  <!--              each 50%w -->
+                  <button mat-flat-button
+                          style="width: 50%"
+                          (click)="submitSimilar(bag.data)"
+                  >
+                    <mat-icon>upload</mat-icon>
+                    Submit similar module
+                  </button>
+                  <ng-container *ngIf="!bag.data.isComplete">
+                    <button mat-flat-button color="primary"
+                            style="width: 50%"
+                            *ngIf="bag.data&&(dataService.moduleEditingPanelOpenState$|async)===false"
+                            (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                    >
+                      <mat-icon>edit</mat-icon>
+                      Open editor
+                    </button>
+                    <button mat-flat-button color="primary"
+                            style="width: 50%"
+                            *ngIf="bag.data&&(dataService.moduleEditingPanelOpenState$|async)===true"
+                            (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                    >
+                      <mat-icon>close</mat-icon>
+                      Close editor
+                    </button>
+                  </ng-container>
+                  
+                  <button mat-flat-button
+                          *ngIf="bag.data&&bag.data.isComplete&&bag.data.manualURL"
+                          style="width: 50%"
+                          (click)="openManual(bag.data)"
+                  >
+                    <mat-icon>menu_book</mat-icon>
+                    Open manual
+                  </button>
+                </div>
+              
+              
+              </div>
+              <p fxLayoutAlign="end"
+                 style="font-size: 1rem; font-family: 'Roboto', sans-serif"
+                 *ngIf="!bag.data.isComplete&&!viewConfig.hideLabels&&(bag.data.manufacturer.id!==10000)"
+                 [@help]
+              >
+                Do you know about this module?
+                Please help the community by adding the module's ins and outs.
+                Contributors' patches DO sound better!
+              </p>
+            </div>
             
             <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
               <div class="rowwrap gap1">
@@ -47,12 +102,17 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
               </div>
             </lib-hero-content-card>
             
-            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev">
-              <div class="rowwrap gap1">
-                <button mat-stroked-button color="warn" (click)="dataService.deleteModule$.next(bag.data.id)">Delete
+            
+            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data">
+              <div class="rowwrap gap2">
+                <button mat-flat-button color="warn"
+                        *ngIf="bag.data.isComplete===false"
+                        (click)="dataService.deleteModule$.next(bag.data.id)">Delete
                   module
                 </button>
-                <button mat-stroked-button color="primary" (click)="dataService.changeModule$.next({
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.standard.id!==1"
+                        (click)="dataService.changeModule$.next({
                 standard:{
                 id:1,
                 name:''
@@ -61,16 +121,51 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                   Convert to 1U Intellijel
                 </button>
                 
-                <button mat-stroked-button color="primary" (click)="dataService.changeModule$.next({
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.standard.id!==0"
+                        (click)="dataService.changeModule$.next({
                 standard:{
                 id:0,
                 name:''
                 }
                 })">Convert to 3U Doepfer
                 </button>
+                
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.isComplete===false"
+                        (click)="dataService.changeModule$.next({
+                isComplete:true
+                })">Mark as complete
+                </button>
+                
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.isComplete===true"
+                        (click)="dataService.changeModule$.next({
+                isComplete:false
+                })">Mark as incomplete
+                </button>
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.isApproved===false"
+                        (click)="dataService.changeModule$.next({
+                isComplete:false
+                })">Mark as approved
+                </button>
+                
+                <button mat-flat-button color="primary"
+                        *ngIf="bag.data&&bag.data.isApproved===true"
+                        (click)="dataService.changeModule$.next({
+                isComplete:false
+                })">Mark as unapproved
+                </button>
+                
+                <pre>
+                  {{ bag.data|json }}
+                </pre>
+              
               </div>
             </lib-hero-content-card>
           </div>
+        
         
         </lib-screen-wrapper>
         
