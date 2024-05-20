@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Injectable }                     from '@angular/core';
+import { MatSnackBar }                    from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   delay,
@@ -7,7 +7,7 @@ import {
   of,
   ReplaySubject,
   Subject
-} from 'rxjs';
+}                                         from 'rxjs';
 import {
   filter,
   map,
@@ -15,14 +15,16 @@ import {
   takeUntil,
   tap,
   withLatestFrom
-} from 'rxjs/operators';
+}                                         from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
-import { UserManagementService } from '../../features/backbone/login/user-management.service';
-import { SupabaseService } from '../../features/backend/supabase.service';
-import { DbModule } from '../../models/module';
-import { PatchMinimal } from '../../models/patch';
-import { RackMinimal } from '../../models/rack';
-import { MatDialog } from "@angular/material/dialog";
+import { UserManagementService }          from '../../features/backbone/login/user-management.service';
+import { SupabaseService }                from '../../features/backend/supabase.service';
+import { DbModule }                       from '../../models/module';
+import { PatchMinimal }                   from '../../models/patch';
+import { RackMinimal }                    from '../../models/rack';
+import { MatDialog }                      from "@angular/material/dialog";
+import { AppStateService }                from "src/app/shared-interproject/app-state.service";
+import { Router }                         from "@angular/router";
 
 
 @Injectable()
@@ -42,13 +44,18 @@ export class ModuleDetailDataService {
   patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
   modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
+  deleteModule$ = new Subject<number>();
+  changeModule$ = new Subject<Partial<DbModule>>();
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
     public userService: UserManagementService,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    public appState: AppStateService,
+    public router: Router,
+  
   ) {
     
     this.copyModuleNameAndManufacturer$
@@ -171,6 +178,31 @@ export class ModuleDetailDataService {
         }
       });
     
+    this.deleteModule$
+      .pipe(
+        filter(x => x > 0),
+        filter(x => this.appState.isDev),
+        switchMap(x => this.backend.delete.module(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        snackBar.open('Deleted', undefined, {duration: 1000});
+        // navigate to module browser
+        
+        this.router.navigate(['/modules', 'browser']);
+      });
+    
+    this.changeModule$
+      .pipe(
+        filter(x => this.appState.isDev),
+        withLatestFrom(this.singleModuleData$),
+        switchMap(([partial, original]) => this.backend.update.module({...original, ...partial})),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        snackBar.open('Changed', undefined, {duration: 1000});
+        this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
+      });
     
   }
   
