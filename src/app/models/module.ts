@@ -1,10 +1,14 @@
-import { CV } from './cv';
-import { Manufacturer, MinimalManufacturer } from './manufacturer';
+import { CV }          from './cv';
+import {
+  Manufacturer,
+  MinimalManufacturer
+}                      from './manufacturer';
 import { Timestamped } from './models';
 import { RackingData } from './rack';
-import { Standard } from './standard';
-import { Switch } from './switch';
-import { Tag } from './tag';
+import { Standard }    from './standard';
+import { Switch }      from './switch';
+import { Tag }         from './tag';
+
 
 export interface Module {
   name: string;
@@ -40,6 +44,7 @@ export interface DbModule extends MinimalModule {
   manualURL: string;
   additional: any;
   isComplete: boolean;
+  isApproved: boolean;
   isDIY: boolean;
 }
 

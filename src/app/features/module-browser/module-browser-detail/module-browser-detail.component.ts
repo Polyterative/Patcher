@@ -4,7 +4,10 @@ import {
   Input,
   OnInit
 }                                  from '@angular/core';
-import { ActivatedRoute }          from '@angular/router';
+import {
+  ActivatedRoute,
+  Router
+}                                  from '@angular/router';
 import { SeoSocialShareData }      from 'ngx-seo';
 import { Subject }                 from 'rxjs';
 import {
@@ -19,6 +22,7 @@ import {
 }                                  from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
 import { AppStateService }         from "src/app/shared-interproject/app-state.service";
+import { DbModule }                from "src/app/models/module";
 
 
 @Component({
@@ -174,6 +178,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
   constructor(
     public dataService: ModuleDetailDataService,
     public route: ActivatedRoute,
+    public router: Router,
     readonly seoAndUtilsService: SeoAndUtilsService,
     public appState: AppStateService
   ) {
@@ -231,4 +236,25 @@ export class ModuleBrowserDetailComponent implements OnInit {
     
   }
   
+  submitSimilar(
+    data: Partial<DbModule>
+  ) {
+    // [href]="'/modules/add?manufacturer='+bag.data.manufacturer.id+'&HP='+bag.data.hp+'standard='+bag.data.standard.id"
+    // this.router.navigate(['/modules', 'add'], {
+    //   queryParams: {
+    //     manufacturer: data.manufacturerId,
+    //     HP:           data.hp,
+    //     standard:     data.standard.id
+    //   }
+    // });
+    
+    // full navigation with reload, plain JS href, new tab
+    window.open(`/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`, '_blank');
+    // window.location.href = `/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`;
+    
+  }
+  
+  openManual(data: DbModule) {
+    window.open(data.manualURL, '_blank');
+  }
 }
