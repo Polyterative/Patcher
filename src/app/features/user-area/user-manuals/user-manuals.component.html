@@ -1,0 +1,49 @@
+<div class="col gap1"
+>
+  <lib-hero-content-card titleNormal="Manuals"
+                         description="Available manuals for your modules. Learn and understand what you are working with."
+                         class="manualsBG"
+                         icon="book"
+                         id="manuals"
+  >
+    <div class="col gap1"
+    >
+      <div class="row gap1 auto-left"
+      >
+        <!--        <app-brand-primary-button (click$)="dataService.addRack$.next()"-->
+        <!--                                  fxLayoutAlign="end"-->
+        <!--        >Create rack-->
+        <!--        </app-brand-primary-button>-->
+      </div>
+      <mat-divider inset="true"></mat-divider>
+      <ng-container *ngIf="(dataService.manualsData$|async) as data">
+        <div class="rowwrap gap1"
+        >
+          
+          <ng-container *ngFor="let item of data">
+            
+            <button mat-raised-button
+                    (click)="openManual(item.manualURL)">{{ item.name }}
+            </button>
+          
+          </ng-container>
+        
+        </div>
+      
+      </ng-container>
+      
+      <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
+                                         [updateData$]="dataService.updateManualsData$"
+      ></lib-auto-update-loading-indicator>
+    </div>
+  </lib-hero-content-card>
+</div>
+
+<ng-template #voidData>
+  <div fxFlex="100">
+    <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't got any modules with manuals
+      yet.
+      Try adding your first!
+    </mat-card-subtitle>
+  </div>
+</ng-template>

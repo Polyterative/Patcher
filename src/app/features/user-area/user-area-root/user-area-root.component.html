@@ -2,28 +2,30 @@
   userProfile:(userService.loggedUserFullProfile$|async)
   } as bag"
 >
-  <lib-screen-wrapper maxSize="110rem">
-    <div class="row gap1"
-         *ngIf="bag.userProfile"
+  <lib-screen-wrapper maxSize="130rem">
+    
+    <lib-clean-card style="max-width: 26rem;min-width:18rem" *ngIf="bag.userProfile">
+      <app-label-value-showcase label="User"
+      >{{ bag.userProfile.username }}
+      </app-label-value-showcase>
+    </lib-clean-card>
+    
+    <div class="col gap1"
     >
-      <lib-clean-card style="max-width: 26rem;min-width:18rem">
-        <app-label-value-showcase label="User"
-                                  fxLayoutAlign="start center"
-        >{{bag.userProfile.username}}</app-label-value-showcase>
-      </lib-clean-card>
-      <lib-screen-wrapper>
-        <div fxLayout.gt-md="row"
-             fxLayout="column"
-             fxLayoutGap="1rem"
-        >
-          <app-user-modules fxFlex="100"
-                            [modulesViewConfig]="viewConfig"
-                            [encloseVertically]="false"
-          ></app-user-modules>
-          <app-user-racks fxFlex="100"></app-user-racks>
-          <app-user-patches fxFlex="100"></app-user-patches>
-        </div>
-      </lib-screen-wrapper>
+      <app-user-manuals fxFlex="100"></app-user-manuals>
+      
+      <div fxLayout.gt-md="row"
+           fxLayout="column"
+           fxLayoutGap="1rem"
+      >
+        <app-user-modules fxFlex="100"
+                          [modulesViewConfig]="viewConfig"
+                          [encloseVertically]="false"
+        ></app-user-modules>
+        <app-user-racks fxFlex="100"></app-user-racks>
+        <app-user-patches fxFlex="100"></app-user-patches>
+      </div>
+    
     </div>
   </lib-screen-wrapper>
 </ng-container>
