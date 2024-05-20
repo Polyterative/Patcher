@@ -1,14 +1,14 @@
 import {
   EventEmitter,
   Injectable
-}                          from '@angular/core';
-import { MatSnackBar }     from "@angular/material/snack-bar";
-import { ActivatedRoute }  from '@angular/router';
+} from '@angular/core';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ActivatedRoute } from '@angular/router';
 import {
   AuthError,
   createClient,
   User
-}                          from '@supabase/supabase-js';
+} from '@supabase/supabase-js';
 import {
   forkJoin,
   from,
@@ -21,38 +21,38 @@ import {
   shareReplay,
   throwError,
   zip
-}                          from 'rxjs';
+} from 'rxjs';
 import {
   catchError,
   map,
   switchMap,
   tap,
   withLatestFrom
-}                          from 'rxjs/operators';
+} from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { Database }        from 'src/backend/database.types';
-import { environment }     from 'src/environments/environment';
+import { Database } from 'src/backend/database.types';
+import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
 import {
   CV,
   CVwithModuleId
-}                          from '../../models/cv';
-import { DBManufacturer }  from '../../models/manufacturer';
+} from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
 import {
   DbModule,
   ModulePanel,
   RackedModule
-}                          from '../../models/module';
-import { Patch }           from '../../models/patch';
+} from '../../models/module';
+import { Patch } from '../../models/patch';
 import {
   RackingData,
   RackMinimal
-}                          from '../../models/rack';
-import { Tag }             from '../../models/tag';
+} from '../../models/rack';
+import { Tag } from '../../models/tag';
 import {
   DbPaths,
   QueryJoins
-}                          from './DatabaseStrings';
+} from './DatabaseStrings';
 
 
 export type SupabaseStorageFile =
@@ -106,6 +106,25 @@ export class SupabaseService {
   
   private supabase = createClient<Database>(environment.supabase.url, environment.supabase.key);
   add = {
+    comment: (data: {
+      entityId: number,
+      entityType: number,
+      content: string,
+      //  authorid is not provided, we will run it for the current user
+    }) => this.getUserSession$()
+      .pipe(
+        switchMap(user => rxFrom(
+          this.supabase
+            .from(DbPaths.comments)
+            .insert({
+              entityId:   data.entityId,
+              entityType: data.entityType,
+              content:    data.content,
+              authorId:   user.id
+            })
+        )),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+      ),
     module_tags: (data: Tag[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_tags)
@@ -231,6 +250,20 @@ export class SupabaseService {
       .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
   };
   get = {
+    comments: (entityId: number, entityType: number) => rxFrom(
+      this.supabase.from(DbPaths.comments)
+        .select(`*,profile:profiles(id,username,email)`)
+        .filter('entityId', 'eq', entityId)
+        .filter('entityType', 'eq', entityType)
+      // foreign key add profile information for each comment
+      
+      
+    )
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        map((x => x.data))
+      ),
+    
     userModules: () => {
       let prefix = `module`;
       let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
@@ -631,8 +664,13 @@ export class SupabaseService {
     )
     
   };
-  
   delete = {
+    comment: (id: number) => rxFrom(
+      this.supabase.from(DbPaths.comments)
+        .delete()
+        .filter('id', 'eq', id)
+    )
+      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     module: (id: number) => rxFrom(
       this.supabase.from(DbPaths.modules)
         .delete()
@@ -716,16 +754,6 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
   };
-  
-  
-  private errorMsg() {
-    return SharedConstants.errorHandlerOperation(this.snackBar);
-  }
-  
-  private throwAsyncError(message: string) {
-    return throwError(() => new Error(message));
-  }
-  
   update = {
     module: (data: Partial<DbModule>) => {
       data.manufacturer = undefined;
@@ -864,6 +892,14 @@ export class SupabaseService {
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
   };
+  
+  private errorMsg() {
+    return SharedConstants.errorHandlerOperation(this.snackBar);
+  }
+  
+  private throwAsyncError(message: string) {
+    return throwError(() => new Error(message));
+  }
   
   private standardErrorMessageAndBlock(): Observable<never> {
     SharedConstants.errorHandlerOperation(this.snackBar);

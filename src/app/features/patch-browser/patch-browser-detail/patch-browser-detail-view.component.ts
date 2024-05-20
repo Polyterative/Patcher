@@ -14,7 +14,8 @@ import {
 import {
   filter,
   map,
-  take
+  take,
+  takeUntil
 } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import {
@@ -23,13 +24,20 @@ import {
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import {
+  CommentableEntityTypes,
+  CommentsDataService
+} from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
 @Component({
   selector: 'app-patch-browser-patch-detail',
   templateUrl: './patch-browser-detail-view.component.html',
   styleUrls: ['./patch-browser-detail-view.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    CommentsDataService
+  ]
 })
 export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
   
@@ -43,7 +51,8 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   constructor(
     public dataService: PatchDetailDataService,
     public route: ActivatedRoute,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    private commentsDataService: CommentsDataService
   ) {
     super();
   }
@@ -95,6 +104,19 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
             `${ patchData.name } - Patch Details`);
         });
     }
+    
+    // when new patch is loaded, send request to get comments
+    this.dataService.singlePatchData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(data => {
+        this.commentsDataService.requestCommentsUpdate$.next({
+          entityId: data.id,
+          entityType: CommentableEntityTypes.PATCH
+        });
+      });
     
   }
   

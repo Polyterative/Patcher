@@ -3,18 +3,15 @@
     } as bag"
 >
   <div *ngIf="bag.dataLoading"
-       fxLayout="column"
-       fxLayoutGap=".5rem"
+       class="col gap0"
        [fxHide]="!bag.dataLoading"
   >
-    <app-lottie-container fxLayoutAlign="center center"
-                          fxFlex="100"
-                          style="opacity: 0.25;"
+    <app-lottie-container
+      style="opacity: 0.25; align-self: center"
                           [styles]="{maxWidth: '10rem'}"
                           [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
     ></app-lottie-container>
   </div>
-  <!--  </ng-container>-->
   <ng-container *ngIf="!bag.dataLoading">
     <ng-content></ng-content>
   </ng-container>
