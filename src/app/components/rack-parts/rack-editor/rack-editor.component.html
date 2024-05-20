@@ -58,7 +58,7 @@
               <!--              create space between these-->
               <div fxFlex="1 1 auto"></div>
               <app-brand-primary-button style="padding: 1rem 0;"
-                (click)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
+                                        (click$)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
               >
                 Download as image
               </app-brand-primary-button>

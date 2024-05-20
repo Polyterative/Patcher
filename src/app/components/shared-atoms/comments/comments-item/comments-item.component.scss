@@ -1,0 +1,55 @@
+.comment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comment-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  .username {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    vertical-align: middle;
+  }
+
+  .timestamp {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    margin-left: auto;
+  }
+}
+
+.comment-text {
+  white-space: pre-line;
+  font-size: 1.2rem;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+
+.parent {
+  > .opacizeOnHover {
+    opacity: 0.2;
+
+  }
+
+
+  > .showOnHover {
+    opacity: 0;
+  }
+}
+
+.parent:hover > .opacizeOnHover {
+  opacity: 1;
+  -webkit-transition: opacity 125ms ease-in-out;
+  -moz-transition: opacity 125ms ease-in-out;
+  -ms-transition: opacity 125ms ease-in-out;
+  -o-transition: opacity 125ms ease-in-out;
+  transition: opacity 125ms ease-in-out;
+}
