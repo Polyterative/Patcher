@@ -3,9 +3,7 @@ export type Json =
   | number
   | boolean
   | null
-  | {
-      [key: string]: Json | undefined
-    }
+  | { [key: string]: Json | undefined }
   | Json[]
 
 export type Database = {
@@ -112,7 +110,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "module_ins_profiles_id_fk"
+            foreignKeyName: "module_ins_authorid_fkey"
             columns: ["authorid"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -173,7 +171,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "module_outs_profiles_id_fk"
+            foreignKeyName: "module_outs_authorid_fkey"
             columns: ["authorid"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -347,7 +345,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "modules_standards_id_fk"
+            foreignKeyName: "modules_standard_fkey"
             columns: ["standard"]
             isOneToOne: false
             referencedRelation: "standards"
@@ -435,7 +433,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "patches_authorId_fkey"
+            foreignKeyName: "patches_authorid_fkey"
             columns: ["authorid"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -631,17 +629,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_module_tags_module_tags_id_fk"
-            columns: ["moduletagid"]
-            isOneToOne: false
-            referencedRelation: "module_tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_module_tags_profiles_id_fk"
+            foreignKeyName: "user_module_tags_authorid_fkey"
             columns: ["authorid"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_module_tags_moduletagid_fkey"
+            columns: ["moduletagid"]
+            isOneToOne: false
+            referencedRelation: "module_tags"
             referencedColumns: ["id"]
           },
         ]
@@ -745,29 +743,24 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-                                   | {
-                                       schema: keyof Database
-                                     },
-  TableName extends PublicTableNameOrOptions extends {
-      schema: keyof Database
-    }
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-             Database[PublicTableNameOrOptions["schema"]]["Views"])
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends {
-    schema: keyof Database
-  }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-     Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
   : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-                                            PublicSchema["Views"])
+        PublicSchema["Views"])
     ? (PublicSchema["Tables"] &
-       PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -775,18 +768,13 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
-                                   | {
-                                       schema: keyof Database
-                                     },
-  TableName extends PublicTableNameOrOptions extends {
-      schema: keyof Database
-    }
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends {
-    schema: keyof Database
-  }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
@@ -801,18 +789,13 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
-                                   | {
-                                       schema: keyof Database
-                                     },
-  TableName extends PublicTableNameOrOptions extends {
-      schema: keyof Database
-    }
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends {
-    schema: keyof Database
-  }
+> = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
@@ -827,18 +810,13 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
-                                  | {
-                                      schema: keyof Database
-                                    },
-  EnumName extends PublicEnumNameOrOptions extends {
-      schema: keyof Database
-    }
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends {
-    schema: keyof Database
-  }
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
