@@ -25,7 +25,7 @@ export class QueryJoins {
   static manufacturer: string = 'manufacturer:manufacturerId(name,id,logo)';
 
 // Standard staticant
-  static standard: string = 'standard:standards!modules_standards_id_fk(name,id)';
+  static standard: string = 'standard:standards!modules_standard_fkey(name,id)';
 
 // Patch staticant
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(*)';
@@ -40,7 +40,7 @@ export class QueryJoins {
   static rackModules: string = 'rackModules:rackid(*)';
 
 // Module Foreign Key in Rack Modules staticant
-  static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standards_id_fk(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
+  static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
 
 // Module Tags staticant
   static module_tags: string = `tags:${ DbPaths.module_tags }(tag:${ DbPaths.tags }(*))`;
@@ -68,12 +68,12 @@ export class QueryJoins {
 //   // a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
 //  
 //   manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
-//   standard: 'standard:standards!modules_standards_id_fk(name,id)',
+//   standard: 'standard:standards!modules_standard_fkey(name,id)',
 //   patch: 'patch:patches!patch_connections_patchid_fkey(*)',
 //   author: 'author:authorid(username,id,email)',
 //   rack: 'rack:rackid(*,author:authorid(username,id,email))',
 //   rack_modules: 'rackModules:rackid(*)',
-//   module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standards_id_fk(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
+//   module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
 //   // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
 //   module_tags: `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
 //   module_panels: `panels:${ this.paths.module_panels }!module_panels_moduleid_fkey(*)`,
