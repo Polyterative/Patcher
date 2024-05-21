@@ -1,21 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable }            from '@angular/core';
 import {
   UntypedFormControl,
   Validators
-} from '@angular/forms';
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Router } from '@angular/router';
+}                                from '@angular/forms';
+import { MatSnackBar }           from "@angular/material/snack-bar";
+import { Router }                from '@angular/router';
 import {
   interval,
   Subject
-} from 'rxjs';
+}                                from 'rxjs';
 import {
   switchMap,
   take,
   takeUntil
-} from 'rxjs/operators';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+}                                from 'rxjs/operators';
+import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants }       from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 
 
@@ -52,7 +52,7 @@ export class UserLoginDataService {
   // public readonly mailSignClick$ = new Subject<void>();
   
   constructor(
-    public router: Router,
+    private router: Router,
     public loginInteraction: UserManagementService,
     private snackBar: MatSnackBar
   ) {
