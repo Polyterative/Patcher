@@ -8,6 +8,7 @@ import { ActivatedRoute }         from '@angular/router';
 import { SeoSocialShareData }     from 'ngx-seo';
 import {
   combineLatest,
+  delay,
   Subject
 }                                 from 'rxjs';
 import {
@@ -55,21 +56,7 @@ export class ModuleBrowserAdderComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    // this.route.params
-    //     .pipe(
-    //       map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
-    //       filter(x => x > 0),
-    //       take(1)
-    //     )
-    //     .subscribe(data => {
-    //       // debugger
-    //       this.dataService.updateSingleModuleData$.next(data);
-    //     });
-    
-    // use parameters to get prefill data
-    // reference:
-    // [href]="'/modules/add?manufacturer='+bag.data.manufacturer.id+'&HP='+bag.data.hp+'standard='+bag.data.standard.id"
-    
+    // use params to prefill form fields
     combineLatest([
       this.route.queryParams,
       this.dataService.formData.manufacturer.options$.pipe(
@@ -82,22 +69,22 @@ export class ModuleBrowserAdderComponent implements OnInit {
       ),
     ])
       .pipe(
+        delay(200),
         takeUntil(this.destroyEvent$),
       )
       .subscribe(([params, manufacturersList, standardsList]) => {
-          console.log([params, manufacturersList, standardsList]);
           if (parseInt(params.manufacturer)) {
-            this.dataService.formData.manufacturer.control.setValue(
+            this.dataService.formData.manufacturer.control.patchValue(
               manufacturersList.find(x => x.id === params.manufacturer)
             );
           }
           
           if (parseInt(params.HP)) {
-            this.dataService.formData.hp.control.setValue(parseInt(params.HP));
+            this.dataService.formData.hp.control.patchValue(parseInt(params.HP));
           }
           
           if (parseInt(params.standard)) {
-            this.dataService.formData.standard.control.setValue(
+            this.dataService.formData.standard.control.patchValue(
               standardsList.find(x => x.id === parseInt(params.standard))
             );
           }
