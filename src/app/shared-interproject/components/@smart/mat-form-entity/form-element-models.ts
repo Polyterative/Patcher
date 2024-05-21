@@ -1,5 +1,10 @@
-import { AbstractControl, UntypedFormControl, Validators } from '@angular/forms';
-import { Strings } from './app-form-utils';
+import {
+  AbstractControl,
+  UntypedFormControl,
+  Validators
+}                     from '@angular/forms';
+import { ErrorCodes } from './app-form-utils';
+
 
 export interface FormLineSetup {
   hideRequired: boolean;
@@ -33,28 +38,28 @@ export namespace CustomValidators {
     if (!(control.value.length > 0)) {return null;}
   
     const valid: boolean = control.value.includes('https://');
-    return valid ? null : {[Strings.form.errorCode.custom.doesNotContainHttps]: true};
+    return valid ? null : {[ErrorCodes.form.errorCode.custom.doesNotContainHttps]: true};
   }
   
   export function onlyIntegers(control: AbstractControl) {
     const valid: boolean = Number.isInteger(Number.parseFloat(control.value));
-    return valid ? null : {[Strings.form.errorCode.custom.numberNotInteger]: true};
+    return valid ? null : {[ErrorCodes.form.errorCode.custom.numberNotInteger]: true};
   }
   
   export function atLeastOneObject(control: AbstractControl) {
     const valid: boolean = control.value && control.value.length > 0;
-    return valid ? null : {[Strings.form.errorCode.custom.lessThanOneElement]: true};
+    return valid ? null : {[ErrorCodes.form.errorCode.custom.lessThanOneElement]: true};
   }
   
   // @ts-ignore
   function onlyNumbers(control: AbstractControl) {
-    return !(typeof control.value === 'number') ? {[Strings.form.errorCode.custom.numberNot]: true} : null;
+    return !(typeof control.value === 'number') ? {[ErrorCodes.form.errorCode.custom.numberNot]: true} : null;
   }
   
   // @ts-ignore
   function onlyPositiveAndInteger(control: AbstractControl) {
     const input = control.value;
-    return input <= 0 || Math.round(input) !== input ? {[Strings.form.errorCode.custom.numberNotPositiveInteger]: true} : null;
+    return input <= 0 || Math.round(input) !== input ? {[ErrorCodes.form.errorCode.custom.numberNotPositiveInteger]: true} : null;
   }
   
 }
