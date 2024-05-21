@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.6.2](https://github.com/Polyterative/Patcher/compare/v4.6.1...v4.6.2) (2024-05-21)
+
+
+### Features
+
+* **app:** added secret dev utils buttons ([2fb4d13](https://github.com/Polyterative/Patcher/commit/2fb4d13706abaa5a61346f7e3a09c5aacbc6997e))
+* **app:** inputs sanitization ([9a1108d](https://github.com/Polyterative/Patcher/commit/9a1108d565196585c44744efd1d1a78c2792611d))
+* **app:** secret dev utils ([d0f99a7](https://github.com/Polyterative/Patcher/commit/d0f99a75be25d70b96d2218ce3aed658fa0e495c))
+* **app:** user comments are now supported ([5fbd34b](https://github.com/Polyterative/Patcher/commit/5fbd34b9de1ba44bd31bfacd4ee043404725fae3))
+* **login:** improvements ([773999f](https://github.com/Polyterative/Patcher/commit/773999f6f68b18ce9aa634c66048d2c26d9c6a5c))
+* **module-submit:** Submit similar module button ([1fb4935](https://github.com/Polyterative/Patcher/commit/1fb4935eb54c1db097febdc52d2c03f4fd5a069a))
+* **user-area:** manuals of modules section improvements ([c511d74](https://github.com/Polyterative/Patcher/commit/c511d74678d6ebb9c77fa9ba7b43877a46f53e3e))
+* **user-area:** new manuals of modules section in user profile ([8482d22](https://github.com/Polyterative/Patcher/commit/8482d223b9eb71a3da9ea4b69160ebbd7f15fdc8))
+
 ### [4.6.1](https://github.com/Polyterative/Patcher/compare/v4.6.0...v4.6.1) (2024-05-19)
 
 
