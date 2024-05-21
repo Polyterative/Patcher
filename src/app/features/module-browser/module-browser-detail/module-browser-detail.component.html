@@ -147,7 +147,7 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                 <button mat-flat-button color="primary"
                         *ngIf="bag.data&&bag.data.isApproved===false"
                         (click)="dataService.changeModule$.next({
-                isComplete:false
+                isApproved:true
                 })">Mark as approved
                 </button>
                 
