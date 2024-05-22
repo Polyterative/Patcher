@@ -1,19 +1,19 @@
 import {
   Injectable,
   OnDestroy
-} from '@angular/core';
+}                          from '@angular/core';
 import {
   FormControl,
   UntypedFormControl,
   Validators
-} from '@angular/forms';
+}                          from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
   Observable,
   of,
   Subject
-} from 'rxjs';
+}                          from 'rxjs';
 import {
   distinctUntilChanged,
   map,
@@ -22,17 +22,17 @@ import {
   switchMap,
   takeUntil,
   withLatestFrom
-} from 'rxjs/operators';
+}                          from 'rxjs/operators';
 import {
   DbModule,
   MinimalModule
-} from '../../models/module';
+}                          from '../../models/module';
 import {
   FormTypes,
   getCleanedValueId
-} from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+}                          from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../backend/supabase.service';
-import { PageEvent } from "@angular/material/paginator";
+import { PageEvent }       from "@angular/material/paginator";
 
 
 export type ModuleList = MinimalModule[] | null;
@@ -108,7 +108,7 @@ export class ModuleBrowserDataService implements OnDestroy {
         id: string
       })[]>
     },
-    format: {
+    standard: {
       code: string;
       flex: string;
       control: FormControl<any>;
@@ -287,16 +287,20 @@ export class ModuleBrowserDataService implements OnDestroy {
         
         ])
       },
-      format: {
-        label: 'Format',
-        code: 'format',
+      standard: {
+        label: 'Standard',
+        code: 'standard',
         flex: '8rem',
         control: new UntypedFormControl({
-          id: 0,
-          name: '3U Doepfer'
+          id: undefined,
+          name: 'All'
         }),
         type: FormTypes.SELECT,
         options$: of([
+          {
+            id:   undefined,
+            name: 'All'
+          },
           {
             id: 0,
             name: '3U Doepfer'
@@ -322,7 +326,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           const sortColumnName: string = sort[0] ? sort[0] : null;
           const sortDirection = sort[1];
           
-          const standard = this.fields.format.control.value.id;
+          const standard = this.fields.standard.control.value.id;
           
           return this.backend.get.modulesMinimal(
             skip,
@@ -359,7 +363,7 @@ export class ModuleBrowserDataService implements OnDestroy {
             id: '=',
             name: 'exactly'
           });
-        this.fields.format.control.setValue({
+        this.fields.standard.control.setValue({
           id: 0,
           name: '3U Doepfer'
         });
@@ -393,7 +397,7 @@ export class ModuleBrowserDataService implements OnDestroy {
       )
       .subscribe(() => this.updateModulesList$.next());
     
-    this.fields.format.control.valueChanges
+    this.fields.standard.control.valueChanges
       .pipe(
         takeUntil(this.destroyEvent$)
       )
