@@ -1,13 +1,12 @@
-import {
-  Injectable,
-  SecurityContext
-}                             from '@angular/core';
+import { Injectable }         from '@angular/core';
 import {
   FormControl,
-  UntypedFormControl,
   Validators
 }                             from '@angular/forms';
-import { FormTypes }          from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  CustomValidators,
+  FormTypes
+}                             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   BehaviorSubject,
   Subject
@@ -25,8 +24,7 @@ import { DbComment }          from "src/app/models/comment";
 import { SharedConstants }    from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar }        from "@angular/material/snack-bar";
 import { DomSanitizer }       from "@angular/platform-browser";
-import { ErrorCodes }         from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
-import { sanitizeItemInFlow } from "src/app/shared-interproject/app-state.service";
+import { sanitizeItemInPipe } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
 
 
 interface CommentEntityReference {
@@ -45,6 +43,8 @@ export class CommentsDataService extends SubManager {
       type: FormTypes
     }
   };
+  
+  readonly maxLength = 1440*2;
   
   readonly comments$              = new BehaviorSubject<DbComment[] | undefined>(undefined);
   readonly requestCommentsUpdate$ = new Subject<CommentEntityReference>();
@@ -67,27 +67,11 @@ export class CommentsDataService extends SubManager {
         label:   'Add a comment',
         code:    'submit',
         flex:    '6rem',
-        control: new UntypedFormControl('', [
+        control: new FormControl<string>('', [
           // validators as functions
-          Validators.maxLength(1440),
-          (control) => {
-            if (/^\s*$/.test(control.value)) {
-              return {[ErrorCodes.form.errorCode.custom.empty]: true};
-            }
-            return null;
-          },
-          // sanitize validator
-          (control) => {
-            try {
-              const sanitizedValue = this.sanitizer.sanitize(SecurityContext.HTML, control.value);
-              if (!sanitizedValue) {
-                return {[ErrorCodes.form.errorCode.custom.invalidContent]: true};
-              }
-              return null;
-            } catch (e) {
-              return {[ErrorCodes.form.errorCode.custom.invalidContent]: true};
-            }
-          }
+          Validators.maxLength(this.maxLength),
+          CustomValidators.onlyCleanHtml,
+          CustomValidators.notEmpty,
         ]),
         type:    FormTypes.AREA
         
@@ -106,11 +90,12 @@ export class CommentsDataService extends SubManager {
     
     // every time we receive a new entity id, get the comments for this entity
     this.requestCommentsUpdate$.pipe(
-      tap(x => this.comments$.next(undefined)),
+      tap(() => this.comments$.next(undefined)),
       switchMap(x => this.backend.get.comments(x.entityId, x.entityType)),
       takeUntil(this.destroy$),
     ).subscribe(data => {
       this.comments$.next(data);
+      this.resetField();
     });
     
     
@@ -119,11 +104,12 @@ export class CommentsDataService extends SubManager {
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.comments$.next(undefined);
+      this.resetField();
     });
     
     // when a new comment add has been requested, add the comment by performing the backend call
     this.submitComment$.pipe(
-      sanitizeItemInFlow(this.sanitizer),
+      sanitizeItemInPipe(),
       // last check before sending the comment
       filter(x => !!x),
       filter(x => x.length > 0),
@@ -136,14 +122,18 @@ export class CommentsDataService extends SubManager {
       withLatestFrom(this.requestCommentsUpdate$),
       takeUntil(this.destroy$)
     ).subscribe(([_, entity]) => {
-      this.fields.submit.control.setValue('');
-      this.fields.submit.control.markAsUntouched();
+      this.resetField();
+      
       SharedConstants.successCustom(this.snackBar, 'Comment added');
       this.requestCommentsUpdate$.next(entity);
     });
     
   }
   
+  private resetField() {
+    this.fields.submit.control.setValue('');
+    this.fields.submit.control.markAsUntouched();
+  }
 }
 
 // profiles = 10, modules = 1, racks = 2, patches = 3,

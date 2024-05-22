@@ -25,7 +25,8 @@ user:(userManagerService.loggedUser$|async),
             <ng-container *ngIf="bag.data&&bag.user"
             >
               <lib-mat-form-entity [dataPack]="dataService.fields.submit"
-                                   [hint]="dataService.fields.submit.control.value.length<1444?'':dataService.fields.submit.control.value.length+' / 1444'"
+                                   [hint]="dataService.fields.submit.control.value.length<dataService.maxLength/3
+                                   ?'':dataService.fields.submit.control.value.length+' /'+dataService.maxLength"
               ></lib-mat-form-entity>
               <div style="width: 100%; align-self: flex-end"
               >
