@@ -1,14 +1,14 @@
 import {
   EventEmitter,
   Injectable
-} from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { ActivatedRoute } from '@angular/router';
+}                          from '@angular/core';
+import { MatSnackBar }     from "@angular/material/snack-bar";
+import { ActivatedRoute }  from '@angular/router';
 import {
   AuthError,
   createClient,
   User
-} from '@supabase/supabase-js';
+}                          from '@supabase/supabase-js';
 import {
   forkJoin,
   from,
@@ -21,38 +21,38 @@ import {
   shareReplay,
   throwError,
   zip
-} from 'rxjs';
+}                          from 'rxjs';
 import {
   catchError,
   map,
   switchMap,
   tap,
   withLatestFrom
-} from 'rxjs/operators';
+}                          from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { Database } from 'src/backend/database.types';
-import { environment } from 'src/environments/environment';
+import { Database }        from 'src/backend/database.types';
+import { environment }     from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
 import {
   CV,
   CVwithModuleId
-} from '../../models/cv';
-import { DBManufacturer } from '../../models/manufacturer';
+}                          from '../../models/cv';
+import { DBManufacturer }  from '../../models/manufacturer';
 import {
   DbModule,
   ModulePanel,
   RackedModule
-} from '../../models/module';
-import { Patch } from '../../models/patch';
+}                          from '../../models/module';
+import { Patch }           from '../../models/patch';
 import {
   RackingData,
   RackMinimal
-} from '../../models/rack';
-import { Tag } from '../../models/tag';
+}                          from '../../models/rack';
+import { Tag }             from '../../models/tag';
 import {
   DbPaths,
   QueryJoins
-} from './DatabaseStrings';
+}                          from './DatabaseStrings';
 
 
 export type SupabaseStorageFile =
@@ -419,6 +419,7 @@ export class SupabaseService {
       standard: number | undefined = undefined,
       onlyPublic = true
     ) => {
+      
       let query = this.supabase.from(DbPaths.modules)
         .select(`
                               id,name,hp,description,public,created,updated,
@@ -428,7 +429,7 @@ export class SupabaseService {
                               ${ QueryJoins.module_tags }
                             `, {count: 'exact'})
       
-      if (onlyPublic) {
+      if (onlyPublic===true) {
         query = query.filter('public', 'eq', true);
       }
       
@@ -454,7 +455,7 @@ export class SupabaseService {
         query = query.filter('manufacturerId', 'eq', manufacturerId);
       }
       
-      if (standard) {
+      if (standard !== undefined) {
         query = query.filter('standard', 'eq', standard);
       }
       
