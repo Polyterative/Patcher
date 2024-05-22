@@ -1,37 +1,37 @@
 import {
   Component,
   OnDestroy
-} from '@angular/core';
-import { Router } from '@angular/router';
+}                                  from '@angular/core';
+import { Router }                  from '@angular/router';
 import {
   fadeInOnEnterAnimation,
   slideInDownOnEnterAnimation
-} from 'angular-animations';
-import { timer } from 'rxjs';
+}                                  from 'angular-animations';
+import { timer }                   from 'rxjs';
 import {
   CardLinkDataModel,
   cleanCardlinkModelObject
-} from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
-import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { SupabaseService } from '../../backend/supabase.service';
-import { SeoAndUtilsService } from '../seo-and-utils.service';
-import { SeoSocialShareData } from "ngx-seo";
-import { PatchDetailDataService } from "src/app/components/patch-parts/patch-detail-data.service";
+}                                  from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+import { SubManager }              from 'src/app/shared-interproject/directives/subscription-manager';
+import { SupabaseService }         from '../../backend/supabase.service';
+import { SeoAndUtilsService }      from '../seo-and-utils.service';
+import { SeoSocialShareData }      from "ngx-seo";
+import { PatchDetailDataService }  from "src/app/components/patch-parts/patch-detail-data.service";
 import { ModuleDetailDataService } from "src/app/components/module-parts/module-detail-data.service";
-import { take } from "rxjs/operators";
-import { RackDetailDataService } from "src/app/components/rack-parts/rack-detail-data.service";
+import { take }                    from "rxjs/operators";
+import { RackDetailDataService }   from "src/app/components/rack-parts/rack-detail-data.service";
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
-} from "src/app/components/patch-parts/patch-minimal/patch-minimal.component";
+}                                  from "src/app/components/patch-parts/patch-minimal/patch-minimal.component";
 import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
-} from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
+}                                  from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-} from "src/app/components/module-parts/module-minimal/module-minimal.component";
+}                                  from "src/app/components/module-parts/module-minimal/module-minimal.component";
 
 
 @Component({
@@ -99,6 +99,8 @@ export class HomeComponent extends SubManager implements OnDestroy {
     hideRackedIn: false
   };
   
+  private delayTime = 500;
+  
   constructor(
     readonly patchDetailDataService: PatchDetailDataService,
     readonly rackDetailDataService: RackDetailDataService,
@@ -119,7 +121,7 @@ export class HomeComponent extends SubManager implements OnDestroy {
     this.seoAndUtilsService.updateSeo(seoData, "Home");
     
     //    wait for the user to load the page, then load the data
-    timer(3000)
+    timer(this.delayTime * 2)
       .pipe(
         take(1)
       )
@@ -128,7 +130,7 @@ export class HomeComponent extends SubManager implements OnDestroy {
         this.patchDetailDataService.updateSinglePatchData$.next(5);
       });
     
-    timer(5000)
+    timer(this.delayTime * 4)
       .pipe(
         take(1)
       )
@@ -137,7 +139,7 @@ export class HomeComponent extends SubManager implements OnDestroy {
         this.moduleDetailDataService.updateSingleModuleData$.next(1025);
       });
     
-    timer(7000)
+    timer(this.delayTime * 6)
       .pipe(
         take(1)
       )
