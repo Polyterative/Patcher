@@ -39,7 +39,9 @@ import {
 import { SupabaseService }  from '../../backend/supabase.service';
 import { SubManager }       from "src/app/shared-interproject/directives/subscription-manager";
 import { DomSanitizer }     from "@angular/platform-browser";
-import { plainSanitize }    from "src/app/shared-interproject/app-state.service";
+
+
+import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
 
 
 @Injectable()
