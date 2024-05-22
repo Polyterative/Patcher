@@ -1,4 +1,11 @@
 import { UntypedFormControl } from '@angular/forms';
+import { DomSanitizer }       from "@angular/platform-browser";
+import { Observable }         from "rxjs";
+import {
+  filter,
+  map
+}                             from "rxjs/operators";
+import DOMPurify              from "dompurify";
 
 
 export class AppFormUtils {
@@ -65,11 +72,54 @@ export class ErrorMessages {
     error_numberNotPositiveInteger: 'The number entered is not a positive integer',
     error_doesNotContainHttps:      'The entered URL does not contain https',
     error_numberBiggerThanInterval: 'The number entered is greater than the interval',
-    error_invalidContent:           'Invalid content',
+    error_invalidContent:           'Invalid content, please check the input',
     error_empty:                    'The field content is empty'
   };
   
-  static readonly general = {
-    info_data_loading: 'Dati in caricamento...'
-  };
+}
+
+export function sanitizeItemInPipe<T>() {
+  return (source: Observable<T>) => source.pipe(
+    // Sanitize the comment
+    map(x => {
+      // purify only strings
+      if (typeof x === 'string') {
+        return DOMPurify.sanitize(x.trim()).trim();
+      } else {
+        return x;
+      }
+    }),
+    // Last check before sending the comment
+    filter(x => {
+      if (typeof x === 'string') {
+        return x.length > 0;
+      } else {
+        return true;
+      }
+    })
+  );
+}
+
+export function plainSanitize(sanitizer: DomSanitizer, x: any) {
+  // purify only strings
+  if (typeof x === 'string') {
+    return DOMPurify.sanitize(x);
+  } else {
+    return x;
+  }
+}
+
+export function sanitizeObjectInPipe<T>(sanitizer: DomSanitizer) {
+  return (source: Observable<T>) => source.pipe(
+    // Sanitize every property of the object
+    map(x => {
+      Object.keys(x).forEach(key => {
+        // purify only strings
+        if (typeof x[key] === 'string') {
+          x[key] = DOMPurify.sanitize(x[key]);
+        }
+      });
+      return x;
+    })
+  );
 }

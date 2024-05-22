@@ -4,6 +4,7 @@ import {
   Validators
 }                     from '@angular/forms';
 import { ErrorCodes } from './app-form-utils';
+import DOMPurify      from "dompurify";
 
 
 export interface FormLineSetup {
@@ -51,6 +52,30 @@ export namespace CustomValidators {
     return valid ? null : {[ErrorCodes.form.errorCode.custom.lessThanOneElement]: true};
   }
   
+  
+  export function notEmpty(control: AbstractControl) {
+    // if string check if empty or only spaces
+    if (typeof control.value === 'string') {
+      return /^\s*$/.test(control.value) ? {[ErrorCodes.form.errorCode.custom.empty]: true} : null;
+    }
+    // if array check if empty
+    if (Array.isArray(control.value)) {
+      return control.value.length > 0 ? null : {[ErrorCodes.form.errorCode.custom.empty]: true};
+    }
+    // if object check if empty
+    if (typeof control.value === 'object') {
+      return Object.keys(control.value).length > 0 ? null : {[ErrorCodes.form.errorCode.custom.empty]: true};
+    }
+    // else check if null or undefined
+    return control.value ? null : {[ErrorCodes.form.errorCode.custom.empty]: true};
+  }
+  
+  // check sanitized html vs original html and error if different
+  export function onlyCleanHtml(control: AbstractControl) {
+    let original  = control.value;
+    let sanitized = DOMPurify.sanitize(original);
+    return original === sanitized ? null : {[ErrorCodes.form.errorCode.custom.invalidContent]: true};
+  }
   // @ts-ignore
   function onlyNumbers(control: AbstractControl) {
     return !(typeof control.value === 'number') ? {[ErrorCodes.form.errorCode.custom.numberNot]: true} : null;
@@ -61,6 +86,7 @@ export namespace CustomValidators {
     const input = control.value;
     return input <= 0 || Math.round(input) !== input ? {[ErrorCodes.form.errorCode.custom.numberNotPositiveInteger]: true} : null;
   }
+  
   
 }
 
