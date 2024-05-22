@@ -246,7 +246,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
               .join(', ') }, ${ data.outs.map(x => x.name)
               .join(', ') }`,
             published: data.created,
-            modified: data.updated
+            modified: data.updated,
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ data.name } by ${ data.manufacturer.name } - Module Details`);
