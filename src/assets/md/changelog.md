@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.6.3](https://github.com/Polyterative/Patcher/compare/v4.6.2...v4.6.3) (2024-05-22)
+
+
+### Features
+
+* **app:** paginators are now more consistent ([72c3c4a](https://github.com/Polyterative/Patcher/commit/72c3c4a445d1d5a664473adcff2ee031678159fd))
+* **comments:** better sanitization strategy ([46f5e46](https://github.com/Polyterative/Patcher/commit/46f5e46b29e26421d6c9fbdaf9e5b0812a436e0c))
+* **comments:** now active in production ([8245540](https://github.com/Polyterative/Patcher/commit/82455401c3ef8d4c09ac4b0321506bfb6f3d05ff))
+* **home:** faster lazy load ([57e21f1](https://github.com/Polyterative/Patcher/commit/57e21f11728dd84f987c762dd2c4a01693b043d2))
+* **seo:** improvements ([ef58257](https://github.com/Polyterative/Patcher/commit/ef58257b5883abea2bf8fb4f9aa149f007beacc5))
+
+
+### Bug Fixes
+
+* **module-browser:** filtering for 3U no longer shows 1U as well ([ce41b04](https://github.com/Polyterative/Patcher/commit/ce41b04a03fd2667ba9252438fb1745b3ec967a8))
+
 ### [4.6.2](https://github.com/Polyterative/Patcher/compare/v4.6.1...v4.6.2) (2024-05-21)
 
 
