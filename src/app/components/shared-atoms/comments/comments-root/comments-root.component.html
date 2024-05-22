@@ -1,60 +1,58 @@
 <lib-hero-content-card titleNormal="Comments"
                        *ngIf="appState.isDev"
 >
-    <ng-container *ngIf="{
+  <ng-container *ngIf="{
 data:(dataService.comments$|async),
 user:(userManagerService.loggedUser$|async),
 
 } as bag"
+  >
+    <lib-auto-update-loading-indicator [data$]="dataService.comments$"
+                                       [updateData$]="dataService.requestCommentsUpdate$"
     >
-      <lib-auto-update-loading-indicator [data$]="dataService.comments$"
-                                         [updateData$]="dataService.requestCommentsUpdate$"
+      <div class="col gap2"
       >
-        <div>
-          <div class="col gap2"
-          >
-            <ng-container *ngIf="bag.data&&bag.data.length>0;else noData">
-              <div class="col gap1 ">
-                <ng-container *ngFor="let item of bag.data; let i = index">
-                  <app-comments-item [data]="item"
-                                     [@enter]="{ value: '', params: { delay: (i * 25)+100}}"></app-comments-item>
-                </ng-container>
-              </div>
+        <ng-container *ngIf="bag.data&&bag.data.length>0;else noData">
+          <div class="col gap1 ">
+            <ng-container *ngFor="let item of bag.data; let i = index">
+              <app-comments-item [data]="item"
+                                 [@enter]="{ value: '', params: { delay: (i * 25)+100}}"></app-comments-item>
             </ng-container>
-            
-            <ng-container *ngIf="bag.data&&bag.user"
-            >
-              <lib-mat-form-entity [dataPack]="dataService.fields.submit"
-                                   [hint]="dataService.fields.submit.control.value.length<dataService.maxLength/3
-                                   ?'':dataService.fields.submit.control.value.length+' /'+dataService.maxLength"
-              ></lib-mat-form-entity>
-              <div style="width: 100%; align-self: flex-end"
-              >
-                <app-brand-primary-button
-                  [disabled]="!dataService.fields.submit.control.valid||(!dataService.fields.submit.control.value.length>0)"
-                  (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
-                  [innerFlex]="'100%'"
-                >Submit comment
-                </app-brand-primary-button>
-              </div>
-            </ng-container>
-          
-          
           </div>
-        </div>
-      </lib-auto-update-loading-indicator>
-    </ng-container>
+        </ng-container>
+        
+        <ng-container *ngIf="bag.data&&bag.user"
+        >
+          <lib-mat-form-entity [dataPack]="dataService.fields.submit"
+                               [hint]="dataService.fields.submit.control.value.length<dataService.maxLength/3
+                                   ?'':dataService.fields.submit.control.value.length+' /'+dataService.maxLength"
+          ></lib-mat-form-entity>
+          <div style="width: 100%; align-self: flex-end"
+          >
+            <app-brand-primary-button
+              [disabled]="!dataService.fields.submit.control.valid||(!dataService.fields.submit.control.value.length>0)"
+              (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
+              [innerFlex]="'100%'"
+            >Submit comment
+            </app-brand-primary-button>
+          </div>
+        </ng-container>
+      
+      
+      </div>
+    </lib-auto-update-loading-indicator>
+  </ng-container>
 
 
 </lib-hero-content-card>
 
 
 <ng-template #noData>
-    <div class="col gap1 animate-fadein-slowest"
-    >
-      <mat-card-subtitle
-                         style="padding: 1rem"
-      >No one commented yet
-      </mat-card-subtitle>
-    </div>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle
+      style="padding: 1rem"
+    >No one commented yet
+    </mat-card-subtitle>
+  </div>
 </ng-template>
