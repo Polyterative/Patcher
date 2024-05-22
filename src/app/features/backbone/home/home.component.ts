@@ -114,7 +114,8 @@ export class HomeComponent extends SubManager implements OnDestroy {
     const seoData: SeoSocialShareData = {
       title: 'Home page',
       description: 'Manager and database for musicians using modular gear, with a focus on saving, and visualizing patch-notes.',
-      keywords: 'eurorack, modular, tool, modulargrid, patch-notes, utility, database, doepfer, intellijel, makenoise'
+      keywords: 'eurorack, modular, tool, modulargrid, patch-notes, utility, database, doepfer, intellijel, makenoise',
+      type: 'website',
     };
     
     
