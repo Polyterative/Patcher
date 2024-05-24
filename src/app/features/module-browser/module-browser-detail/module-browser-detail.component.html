@@ -2,7 +2,8 @@
 data:(dataService.singleModuleData$|async),
 racksWithThisModule:(dataService.racksWithThisModule$|async),
 patchesWithThisModule:(dataService.patchesWithThisModule$|async),
-modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
+modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async),
+user:(userManagementService.loggedUser$|async)
 } as bag"
 >
   <div class="col gap1"
@@ -42,6 +43,8 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                   <button mat-flat-button
                           style="width: 50%"
                           (click)="submitSimilar(bag.data)"
+                          [disabled]="!bag.user"
+                          [matTooltip]="bag.user?'':'Please log in to submit a module'"
                   >
                     <mat-icon>upload</mat-icon>
                     Submit similar module
@@ -49,7 +52,9 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                   <ng-container *ngIf="!bag.data.isComplete">
                     <button mat-flat-button color="primary"
                             style="width: 50%"
-                            *ngIf="bag.data&&(dataService.moduleEditingPanelOpenState$|async)===false"
+                            [disabled]="!bag.user"
+                            *ngIf="bag.data
+                            &&(dataService.moduleEditingPanelOpenState$|async)===false"
                             (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                     >
                       <mat-icon>edit</mat-icon>
@@ -57,7 +62,9 @@ modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async)
                     </button>
                     <button mat-flat-button color="primary"
                             style="width: 50%"
-                            *ngIf="bag.data&&(dataService.moduleEditingPanelOpenState$|async)===true"
+                            [disabled]="!bag.user"
+                            *ngIf="bag.data
+                            &&(dataService.moduleEditingPanelOpenState$|async)===true"
                             (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                     >
                       <mat-icon>close</mat-icon>
