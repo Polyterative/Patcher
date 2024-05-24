@@ -1,32 +1,32 @@
-import { Injectable } from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Injectable }             from '@angular/core';
+import { MatSnackBar }            from "@angular/material/snack-bar";
 import {
   ActivatedRoute,
   Router
-} from '@angular/router';
+}                                 from '@angular/router';
 import {
   from,
   NEVER,
   Observable,
   of,
   ReplaySubject
-} from 'rxjs';
+}                                 from 'rxjs';
 import {
   catchError,
   filter,
   switchMap,
   take,
   tap
-} from 'rxjs/operators';
+}                                 from 'rxjs/operators';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { SharedConstants }        from 'src/app/shared-interproject/SharedConstants';
 import {
   RichUserModel,
   SimpleUserModel,
   SupabaseLoginResponse,
   SupabaseService,
   SupabaseSignupResponse,
-} from '../../backend/supabase.service';
+}                                 from '../../backend/supabase.service';
 
 
 @Injectable()
@@ -43,8 +43,9 @@ export class UserManagementService {
     public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
-    this.loggedUser$.next(undefined);
-    this.loggedUserFullProfile$.next(undefined);
+    // these should not be activated here, as the undefinedness should be checked on the cookie check
+    // this.loggedUser$.next(undefined);
+    // this.loggedUserFullProfile$.next(undefined);
     
     this.checkUserInCookies();
     
@@ -102,26 +103,29 @@ export class UserManagementService {
     console.log('Logging out...');
     this.loggedUser$.next(undefined);
     from(this.backend.logoff$())
+      .pipe(take(1))
       .subscribe(x => {
+        this.loggedUser$.next(undefined);
+        this.loggedUserFullProfile$.next(undefined);
         this.router.navigate(['/auth/login']);
         SharedConstants.successLogout(this.snackBar);
+        
       });
   }
   
   // what we want here is to check if the user is logged in, and if so, to get the user data from the backend in the next pipes
   // this is needed to trigger the initial check of the session
   private checkUserInCookies(): void {
-    // const user: User = this.backend.getUser$();
-    // if (user && user.role === 'authenticated') {
-    //   this.loggedUser$.next(user);
-    // }
-    
     this.backend.getUserSession$().pipe(
       take(1)
     ).subscribe(x => {
         if (x) {
+          // explicitly set the user to x since we know that the user is logged in for sure
           this.loggedUser$.next(x);
-        }
+        } else {
+          // explicitly set the user to undefined since we know that the user is not logged in for sure
+          this.loggedUser$.next(undefined);
+      }
       }
     );
   }
