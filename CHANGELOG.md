@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.6.4](https://github.com/Polyterative/Patcher/compare/v4.6.3...v4.6.4) (2024-05-24)
+
+
+### Features
+
+* **app:** now using angular 18 + material 18 ([69bd353](https://github.com/Polyterative/Patcher/commit/69bd3537dff82167d1b654ee4447c5d785a1d4ab))
+
+
+### Bug Fixes
+
+* **login:** opening collection from scratch no longer breaks ([d529466](https://github.com/Polyterative/Patcher/commit/d5294666ace5b7956fed7bc545eecb5c539b00c5))
+* **module-details:** edit security improvements ([5ff1a6b](https://github.com/Polyterative/Patcher/commit/5ff1a6bae27a1873008d2942f49fb0527077885e))
+
 ### [4.6.3](https://github.com/Polyterative/Patcher/compare/v4.6.2...v4.6.3) (2024-05-22)
 
 
