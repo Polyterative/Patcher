@@ -27,6 +27,7 @@ import {
   CommentableEntityTypes,
   CommentsDataService
 }                                  from "src/app/components/shared-atoms/comments/comments-data.service";
+import { UserManagementService }   from "src/app/features/backbone/login/user-management.service";
 
 
 @Component({
@@ -186,7 +187,8 @@ export class ModuleBrowserDetailComponent implements OnInit {
     public router: Router,
     readonly seoAndUtilsService: SeoAndUtilsService,
     public appState: AppStateService,
-    private commentsDataService: CommentsDataService
+    private commentsDataService: CommentsDataService,
+    public userManagementService: UserManagementService,
   ) {
     
   }
