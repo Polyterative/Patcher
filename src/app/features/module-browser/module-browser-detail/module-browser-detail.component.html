@@ -87,7 +87,6 @@ user:(userManagementService.loggedUser$|async)
               <p fxLayoutAlign="end"
                  style="font-size: 1rem; font-family: 'Roboto', sans-serif"
                  *ngIf="bag.data&&!bag.data.isComplete&&!viewConfig.hideLabels&&(bag.data.manufacturer.id!==10000)"
-                 [@help]
               >
                 Do you know about this module?
                 Please help the community by adding the module's ins and outs.
