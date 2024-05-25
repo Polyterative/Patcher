@@ -1,19 +1,19 @@
 import {
   Injectable,
   OnDestroy
-}                          from '@angular/core';
+} from '@angular/core';
 import {
   FormControl,
   UntypedFormControl,
   Validators
-}                          from '@angular/forms';
+} from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
   Observable,
   of,
   Subject
-}                          from 'rxjs';
+} from 'rxjs';
 import {
   distinctUntilChanged,
   map,
@@ -22,17 +22,17 @@ import {
   switchMap,
   takeUntil,
   withLatestFrom
-}                          from 'rxjs/operators';
+} from 'rxjs/operators';
 import {
   DbModule,
   MinimalModule
-}                          from '../../models/module';
+} from '../../models/module';
 import {
   FormTypes,
   getCleanedValueId
-}                          from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+} from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../backend/supabase.service';
-import { PageEvent }       from "@angular/material/paginator";
+import { PageEvent } from "@angular/material/paginator";
 
 
 export type ModuleList = MinimalModule[] | null;
@@ -64,7 +64,14 @@ export class ModuleBrowserDataService implements OnDestroy {
   };
   
   fields: {
-    search: {
+    name: {
+      code: string;
+      flex: string;
+      control: FormControl<any>;
+      label: string;
+      type: FormTypes
+    };
+    description: {
       code: string;
       flex: string;
       control: FormControl<any>;
@@ -159,9 +166,16 @@ export class ModuleBrowserDataService implements OnDestroy {
     
     // executing this in the constructor because of new execution ordering in angular 15
     this.fields = {
-      search: {
+      name: {
         label: 'Search module...',
         code: 'search',
+        flex: '14rem',
+        control: new UntypedFormControl(''),
+        type: FormTypes.TEXT
+      },
+      description: {
+        label: 'Description',
+        code: 'description',
         flex: '14rem',
         control: new UntypedFormControl(''),
         type: FormTypes.TEXT
@@ -328,8 +342,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           
           const standard = this.fields.standard.control.value.id;
           
-          return this.backend.get.modulesMinimal(
-            skip,
+          return this.backend.get.modulesMinimal(skip,
             (skip + take) - 1,
             filter,
             sortColumnName,
@@ -337,7 +350,8 @@ export class ModuleBrowserDataService implements OnDestroy {
             parseInt(getCleanedValueId(this.fields.manufacturers.control)),
             parseInt(this.fields.hp.control.value),
             this.fields.hpCondition.control.value.id,
-            standard
+            standard,
+            this.fields.description.control.value
           );
         }),
         takeUntil(this.destroyEvent$)
@@ -354,7 +368,7 @@ export class ModuleBrowserDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(() => {
-          this.fields.search.control.setValue('');
+          this.fields.name.control.setValue('');
           
           this.fields.order.control.setValue(this.orderStartingValue);
           this.fields.manufacturers.control.setValue('');
@@ -370,7 +384,7 @@ export class ModuleBrowserDataService implements OnDestroy {
         }
       );
     
-    this.fields.search.control.valueChanges
+    this.fields.name.control.valueChanges
       .pipe(
         takeUntil(this.destroyEvent$)
       )
@@ -398,6 +412,12 @@ export class ModuleBrowserDataService implements OnDestroy {
       .subscribe(() => this.updateModulesList$.next());
     
     this.fields.standard.control.valueChanges
+      .pipe(
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => this.updateModulesList$.next());
+    
+    this.fields.description.control.valueChanges
       .pipe(
         takeUntil(this.destroyEvent$)
       )
