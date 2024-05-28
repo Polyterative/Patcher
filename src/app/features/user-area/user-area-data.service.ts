@@ -1,31 +1,31 @@
-import { Injectable }      from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   Subject
-}                          from 'rxjs';
+} from 'rxjs';
 import {
   map,
   switchMap,
   takeUntil,
   tap
-}                          from 'rxjs/operators';
+} from 'rxjs/operators';
 import {
   PatchCreatorComponent,
   PatchCreatorInModel
-}                          from '../../components/patch-parts/patch-creator/patch-creator.component';
+} from '../../components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
   RackCreatorInModel
-}                          from '../../components/rack-parts/rack-creator/rack-creator.component';
+} from '../../components/rack-parts/rack-creator/rack-creator.component';
 import {
   DbModule,
   MinimalModule
-}                          from '../../models/module';
-import { Patch }           from '../../models/patch';
-import { Rack }            from '../../models/rack';
-import { SubManager }      from '../../shared-interproject/directives/subscription-manager';
+} from '../../models/module';
+import { Patch } from '../../models/patch';
+import { Rack } from '../../models/rack';
+import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
-import { MatDialog }       from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 
 
 @Injectable()
@@ -50,7 +50,7 @@ export class UserAreaDataService extends SubManager {
     this.updateModulesData$
       .pipe(
         tap(() => this.modulesData$.next(undefined)),
-        switchMap(() => this.backend.get.userModules()),
+        switchMap(() => this.backend.get.currentUserModules()),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.modulesData$.next(x))
@@ -58,7 +58,7 @@ export class UserAreaDataService extends SubManager {
     this.updatePatchesData$
       .pipe(
         tap(() => this.patchesData$.next(undefined)),
-        switchMap(() => this.backend.get.userPatches()),
+        switchMap(() => this.backend.get.currentUserPatches()),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.patchesData$.next(x))
@@ -66,7 +66,7 @@ export class UserAreaDataService extends SubManager {
     this.updateRackData$
       .pipe(
         tap(() => this.rackData$.next(undefined)),
-        switchMap(() => this.backend.get.userRacks()),
+        switchMap(() => this.backend.get.currentUserRacks()),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.rackData$.next(x))
@@ -74,7 +74,7 @@ export class UserAreaDataService extends SubManager {
     this.updateManualsData$
       .pipe(
         tap(() => this.manualsData$.next(undefined)),
-        switchMap(() => this.backend.get.userModules()),
+        switchMap(() => this.backend.get.currentUserModules()),
         map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
         // order the entities of the array by name alphabetically
         map(x => x.sort((a, b) => a.name.localeCompare(b.name))),
