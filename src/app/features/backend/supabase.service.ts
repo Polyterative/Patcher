@@ -288,6 +288,7 @@ export class SupabaseService {
                 foreignTable: panelsTable,
                 ascending: true
               })
+              .order('updated', {ascending: false})
               .limit(1, {foreignTable: panelsTable})
               .filter('profileid', 'eq', user.id)
           ).pipe(
