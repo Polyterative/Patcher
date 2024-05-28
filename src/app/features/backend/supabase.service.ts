@@ -264,7 +264,7 @@ export class SupabaseService {
         map((x => x.data))
       ),
     
-    userModules: () => {
+    currentUserModules: () => {
       let prefix = `module`;
       let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
       
@@ -337,7 +337,7 @@ export class SupabaseService {
         switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
         map((x: any) => x),// map type as any , TODO: fix this
       ),
-    userPatches: () => {
+    currentUserPatches: () => {
       return this.getUserSession$().pipe(
         switchMap(user => rxFrom(
             this.supabase.from(DbPaths.patches)
@@ -353,7 +353,7 @@ export class SupabaseService {
       );
     },
     // if authorid is not provided, we will run it for the current user
-    userRacks: (authorid?: string) => rxFrom(this.getUserSession$()
+    currentUserRacks: (authorid?: string) => rxFrom(this.getUserSession$()
       .pipe(
         switchMap((user: SimpleUserModel) => this.supabase.from(DbPaths.racks)
           .select(`*, ${ QueryJoins.author }`)

@@ -1,5 +1,5 @@
-import { Injectable }                     from '@angular/core';
-import { MatSnackBar }                    from "@angular/material/snack-bar";
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   delay,
@@ -7,7 +7,7 @@ import {
   of,
   ReplaySubject,
   Subject
-}                                         from 'rxjs';
+} from 'rxjs';
 import {
   filter,
   map,
@@ -15,16 +15,16 @@ import {
   takeUntil,
   tap,
   withLatestFrom
-}                                         from 'rxjs/operators';
+} from 'rxjs/operators';
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
-import { UserManagementService }          from '../../features/backbone/login/user-management.service';
-import { SupabaseService }                from '../../features/backend/supabase.service';
-import { DbModule }                       from '../../models/module';
-import { PatchMinimal }                   from '../../models/patch';
-import { RackMinimal }                    from '../../models/rack';
-import { MatDialog }                      from "@angular/material/dialog";
-import { AppStateService }                from "src/app/shared-interproject/app-state.service";
-import { Router }                         from "@angular/router";
+import { UserManagementService } from '../../features/backbone/login/user-management.service';
+import { SupabaseService } from '../../features/backend/supabase.service';
+import { DbModule } from '../../models/module';
+import { PatchMinimal } from '../../models/patch';
+import { RackMinimal } from '../../models/rack';
+import { MatDialog } from "@angular/material/dialog";
+import { AppStateService } from "src/app/shared-interproject/app-state.service";
+import { Router } from "@angular/router";
 
 
 @Injectable()
@@ -74,7 +74,7 @@ export class ModuleDetailDataService {
     merge(this.userService.loggedUser$, this.updateSingleModuleData$)
       .pipe(
         switchMap(x => this.userService.loggedUser$),
-        switchMap(x => !!x ? this.backend.get.userModules() : of([])),
+        switchMap(x => !!x ? this.backend.get.currentUserModules() : of([])),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
