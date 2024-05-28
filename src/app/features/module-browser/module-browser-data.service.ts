@@ -378,8 +378,8 @@ export class ModuleBrowserDataService implements OnDestroy {
             name: 'exactly'
           });
         this.fields.standard.control.setValue({
-          id: 0,
-          name: '3U Doepfer'
+          id: undefined,
+          name: 'All'
         });
         }
       );
