@@ -37,7 +37,8 @@ export class PatchConnectionsListComponent implements OnInit {
   @Input() editorConnections: PatchConnection[];
   
   @Input() isEditing: boolean = false;
-  @Input() encloseVertically: boolean = false;
+  
+  @Input() reverseOrder: boolean = false;
   
   constructor(
     public dataService: PatchDetailDataService
