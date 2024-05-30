@@ -85,7 +85,7 @@ export class ModuleDetailDataService {
     this.updateSingleModuleData$
       .pipe(
         tap(x => this.singleModuleData$.next(undefined)),
-        switchMap(x => this.backend.get.moduleWithId(x)),
+        switchMap(x => this.backend.GET.moduleWithId(x)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => this.singleModuleData$.next(x.data));
