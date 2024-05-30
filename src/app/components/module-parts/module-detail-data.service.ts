@@ -74,7 +74,7 @@ export class ModuleDetailDataService {
     merge(this.userService.loggedUser$, this.updateSingleModuleData$)
       .pipe(
         switchMap(x => this.userService.loggedUser$),
-        switchMap(x => !!x ? this.backend.get.currentUserModules() : of([])),
+        switchMap(x => !!x ? this.backend.GET.currentUserModules(false) : of([])),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {

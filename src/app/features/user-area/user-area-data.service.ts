@@ -49,7 +49,7 @@ export class UserAreaDataService extends SubManager {
     this.updateModulesData$
       .pipe(
         tap(() => this.modulesData$.next(undefined)),
-        switchMap(() => this.backend.get.currentUserModules()),
+        switchMap(() => this.backend.GET.currentUserModules()),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.modulesData$.next(x))
@@ -73,7 +73,7 @@ export class UserAreaDataService extends SubManager {
     this.updateManualsData$
       .pipe(
         tap(() => this.manualsData$.next(undefined)),
-        switchMap(() => this.backend.get.currentUserModules()),
+        switchMap(() => this.backend.GET.currentUserModules()),
         map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
         // order the entities of the array by name alphabetically
         map(x => x.sort((a, b) => a.name.localeCompare(b.name))),

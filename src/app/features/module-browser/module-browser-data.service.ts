@@ -239,7 +239,7 @@ export class ModuleBrowserDataService implements OnDestroy {
         flex: '12rem',
         control: new UntypedFormControl(),
         type: FormTypes.AUTOCOMPLETE,
-        options$: this.backend.get.manufacturers(0, 9999, 'id,name')
+        options$: this.backend.GET.manufacturers(0, 9999, 'id,name')
           .pipe(
             map(x => x.data.map(z => ({
               id: z.id.toString(),
@@ -342,7 +342,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           
           const standard = this.fields.standard.control.value.id;
           
-          return this.backend.get.modulesMinimal(skip,
+          return this.backend.GET.modules(skip,
             (skip + take) - 1,
             filter,
             sortColumnName,
