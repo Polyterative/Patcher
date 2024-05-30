@@ -19,11 +19,13 @@ import {
   of,
   ReplaySubject,
   shareReplay,
+  Subject,
   throwError,
   zip
 } from 'rxjs';
 import {
   catchError,
+  filter,
   map,
   switchMap,
   tap,
@@ -53,7 +55,14 @@ import {
   DbPaths,
   QueryJoins
 } from './DatabaseStrings';
+import {
+  Cacheable,
+  GlobalCacheConfig,
+  LocalStorageStrategy
+} from "ts-cacheable";
 
+
+GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
 
 export type SupabaseStorageFile =
   ArrayBuffer
@@ -86,8 +95,9 @@ export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | Observed
 }>>>;
 
 
-//from  Database.public.Tables.modules.Row
-type ModulesMinimalColumns = Pick<DbModule, 'id' | 'name' | 'hp' | 'description' | 'public' | 'created' | 'updated' | 'manufacturerId' | 'standard' | 'tags' | 'panels'>;
+const defaultCacheTime = 5 * 60 * 1000;
+const smallCacheTime = defaultCacheTime / 5;
+const cacheBuster$ = new Subject<'comments' | 'modules' | 'manufacturers' | 'currentUserModules' | void>();
 
 @Injectable()
 export class SupabaseService {
@@ -107,9 +117,24 @@ export class SupabaseService {
   };
   private defaultPag = 20;
   
+  readonly GET: {
+    // infer types and return types
+    currentUserModules: typeof SupabaseService.prototype.getCurrentUserModules;
+    modules: typeof SupabaseService.prototype.getModules;
+    manufacturers: typeof SupabaseService.prototype.getManufacturers;
+    comments: typeof SupabaseService.prototype.getComments;
+  } = {
+    currentUserModules: this.getCurrentUserModules.bind(this),
+    modules: this.getModules.bind(this),
+    manufacturers: this.getManufacturers.bind(this),
+    comments: this.getComments.bind(this)
+  };
+  
+  readonly cacheResetter$ = cacheBuster$;
+  
   
   private supabase = createClient<Database>(environment.supabase.url, environment.supabase.key);
-  add = {
+  readonly add = {
     comment: (data: {
       entityId: number,
       entityType: number,
@@ -127,6 +152,8 @@ export class SupabaseService {
               authorId:   user.id
             })
         )),
+        // bust the cache for comments
+        tap(() => cacheBuster$.next('comments')),
         switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
       ),
     module_tags: (data: Tag[]) => rxFrom(
@@ -145,6 +172,8 @@ export class SupabaseService {
               profileid: user.id
             })
         )),
+        // bust the cache for user modules
+        tap(() => cacheBuster$.next('currentUserModules')),
         switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
       ),
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
@@ -218,6 +247,8 @@ export class SupabaseService {
             )),
         // for each module, build a call to insert the module
         switchMap((x) => forkJoin(x)),
+        // bust the cache for modules
+        tap(() => cacheBuster$.next('modules')),
         catchError(() => this.standardErrorMessageAndBlock()),
         this.errorMsg()
       );
@@ -245,7 +276,10 @@ export class SupabaseService {
         .from(DbPaths.manufacturers)
         .insert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        tap(() => cacheBuster$.next('manufacturers')),
+      ),
     panel: (data: Partial<ModulePanel>[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_panels)
@@ -253,67 +287,7 @@ export class SupabaseService {
     )
       .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
   };
-  get = {
-    comments: (entityId: number, entityType: number) => rxFrom(
-      this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username,email)`)
-        .filter('entityId', 'eq', entityId)
-        .filter('entityType', 'eq', entityType)
-      // foreign key add profile information for each comment
-      
-      
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x => x.data))
-      ),
-    
-    currentUserModules: (
-      includeInsOuts = true,
-    ) => {
-      let prefix = `module`;
-      let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
-      
-      
-      let moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
-      
-      let columns = [
-        moduleColumns,
-        QueryJoins.manufacturer,
-        QueryJoins.module_panels,
-      ]
-      // can be optimized to avoid calling it all the time but for now it is ok
-      if (includeInsOuts) {
-        columns.push(QueryJoins.insOuts);
-      }
-      
-      return this.getUserSession$().pipe(
-        switchMap(user =>
-          rxFrom(
-            this.supabase.from(DbPaths.user_modules)
-              .select(
-                `${ prefix }:modules!user_modules_moduleid_fkey(
-                ${ columns.join(',') })`
-              )
-              // only approved panels
-              // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
-              // order panel by color
-              .order(`color`, {
-                foreignTable: panelsTable,
-                ascending: true
-              })
-              .order('updated', {ascending: false})
-              .limit(1, {foreignTable: panelsTable})
-              .filter('profileid', 'eq', user.id)
-          ).pipe(
-            switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-            map((x: any) => x), // map type as any , TODO: fix this
-            map((x => x.data.map(y => y.module)))
-          )
-        ),
-      );
-    }
-    ,
+  readonly get = {
     patchConnections: (patchid: number) => rxFrom(
       this.supabase.from(DbPaths.patch_connections)
         // .select(`module:moduleid(*, ${ QueryJoins.manufacturer }, ${ QueryJoins.insOuts })`)
@@ -402,102 +376,12 @@ export class SupabaseService {
             rackid: y.rackid
           }
         })))),
-    modulesFull: (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`${ columns },
-          ${ QueryJoins.manufacturer },
-          ${ QueryJoins.insOuts },
-          ${ QueryJoins.standard },
-          ${ QueryJoins.module_tags },
-          ${ QueryJoins.module_panels }
-          `)
-        .range(from, to)
-        .filter(`${ DbPaths.module_panels }.isPublic`, 'eq', true) // only public modules
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-      .pipe(map((x => x.data))),
     tags: () => rxFrom(
       this.supabase.from(DbPaths.tags)
         .select('*')
     )
       .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
       .pipe(map((x => x.data))),
-    modulesMinimal: (
-      from                         = 0,
-      to: number                   = this.defaultPag,
-      name?: string,
-      orderBy?: string,
-      orderDirection?: string,
-      manufacturerId?: number,
-      withHP?: number,
-      withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
-      standard: number | undefined = undefined,
-      description: string          = undefined,
-      onlyPublic                   = true) => {
-      
-      let query = this.supabase.from(DbPaths.modules)
-        .select(`
-                              id,name,hp,description,public,created,updated,
-                              ${ QueryJoins.manufacturer },
-                              ${ QueryJoins.standard },
-                              ${ QueryJoins.module_panels },
-                              ${ QueryJoins.module_tags }
-                            `, {count: 'exact'})
-      
-      if (onlyPublic===true) {
-        query = query.filter('public', 'eq', true);
-      }
-      
-      if (withHP) {
-        if (withHpCondition === '=' || withHpCondition === undefined) {
-          query = query.filter('hp', 'eq', withHP);
-        } else if (withHpCondition === '>') {
-          query = query.filter('hp', 'gt', withHP);
-        } else if (withHpCondition === '<') {
-          query = query.filter('hp', 'lt', withHP);
-        } else if (withHpCondition === '>=') {
-          query = query.filter('hp', 'gte', withHP);
-        } else if (withHpCondition === '<=') {
-          query = query.filter('hp', 'lte', withHP);
-        } else if (withHpCondition === '!=') {
-          query = query.filter('hp', 'neq', withHP);
-        } else {
-          query = query.filter('hp', 'eq', withHP);
-        }
-      }
-      
-      if (manufacturerId) {
-        query = query.filter('manufacturerId', 'eq', manufacturerId);
-      }
-      
-      if (standard !== undefined) {
-        query = query.filter('standard', 'eq', standard);
-      }
-      
-      if (description) {
-        query = query.ilike('description', `%${ description }%`);
-      }
-      
-      
-      return rxFrom(
-        query
-          // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-          .order(`color`, {                                // order panel by color
-            foreignTable: DbPaths.module_panels,
-            ascending: true
-          })
-          .limit(1, {                                // take only one panel
-            foreignTable: DbPaths.module_panels
-          })
-          .ilike('name', `%${ name }%`)
-          .range(from, to)
-          .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-      )
-        .pipe(
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-          map((x: any) => x), // map type as any , TODO: fix this
-        )
-    },
     racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(DbPaths.racks)
         .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author }`, {count: 'exact'})
@@ -640,16 +524,6 @@ export class SupabaseService {
         .single()
     )
       .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
-    manufacturers: (from = 0, to = this.defaultPag, columns = '*', orderBy?: string) => rxFrom(
-      this.supabase.from(DbPaths.manufacturers)
-        .select(columns)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name')
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x),// map type as any , TODO: fix this
-      ),
     standards: () => rxFrom(
       this.supabase.from(DbPaths.standards)
         .select('*')
@@ -684,19 +558,25 @@ export class SupabaseService {
     )
     
   };
-  delete = {
+  
+  readonly delete = {
     comment: (id: number) => rxFrom(
       this.supabase.from(DbPaths.comments)
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        // bust the cache for comments
+        tap(() => cacheBuster$.next('comments')),
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
     module: (id: number) => rxFrom(
       this.supabase.from(DbPaths.modules)
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        tap(() => cacheBuster$.next('modules')),
         catchError(() => this.standardErrorMessageAndBlock())),
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
@@ -705,6 +585,7 @@ export class SupabaseService {
           .filter('profileid', 'eq', user.id)
           .filter('moduleid', 'eq', id)
       )),
+      tap(() => cacheBuster$.next('currentUserModules')),
       switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
     )
     ,
@@ -766,15 +647,22 @@ export class SupabaseService {
         .delete()
         .range(from, to)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        tap(() => cacheBuster$.next('modules'))
+      ),
     manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
         .delete()
         .range(from, to)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        tap(() => cacheBuster$.next('manufacturers'))
+      )
   };
-  update = {
+  
+  readonly update = {
     module: (data: Partial<DbModule>) => {
       data.manufacturer = undefined;
       data.ins = undefined;
@@ -806,7 +694,10 @@ export class SupabaseService {
           .eq('id', data.id)
           .select('id,updated,created')
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(
+          tap(() => SharedConstants.showSuccessUpdate(this.snackBar)),
+          tap(() => cacheBuster$.next('modules'))
+        );
     },
     rackedModules: (data: RackedModule[]) => {
       // upload all modules that already have an id
@@ -891,7 +782,10 @@ export class SupabaseService {
         this.supabase.from(DbPaths.modules)
           .update(data)
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(
+          tap(() => cacheBuster$.next('modules')),
+          tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+        );
     },
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
       return this.getUserSession$()
@@ -912,20 +806,6 @@ export class SupabaseService {
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
   };
-  
-  private errorMsg() {
-    return SharedConstants.errorHandlerOperation(this.snackBar);
-  }
-  
-  private throwAsyncError(message: string) {
-    return throwError(() => new Error(message));
-  }
-  
-  private standardErrorMessageAndBlock(): Observable<never> {
-    SharedConstants.errorHandlerOperation(this.snackBar);
-    return NEVER;
-  }
-  
   
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
@@ -961,6 +841,184 @@ export class SupabaseService {
         .pipe(map(x => filenameAndExtension));
     },
   };
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x === 'modules'))
+  })
+  private getModules(
+    from = 0,
+    to: number = this.defaultPag,
+    name?: string,
+    orderBy?: string,
+    orderDirection?: string,
+    manufacturerId?: number,
+    withHP?: number,
+    withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
+    standard: number | undefined = undefined,
+    description: string = undefined,
+    onlyPublic = true) {
+    let query = this.supabase.from(DbPaths.modules)
+      .select(`
+                              id,name,hp,description,public,created,updated,
+                              ${ QueryJoins.manufacturer },
+                              ${ QueryJoins.standard },
+                              ${ QueryJoins.module_panels },
+                              ${ QueryJoins.module_tags }
+                            `, {count: 'exact'})
+    
+    if (onlyPublic === true) {
+      query = query.filter('public', 'eq', true);
+    }
+    
+    if (withHP) {
+      if (withHpCondition === '=' || withHpCondition === undefined) {
+        query = query.filter('hp', 'eq', withHP);
+      } else if (withHpCondition === '>') {
+        query = query.filter('hp', 'gt', withHP);
+      } else if (withHpCondition === '<') {
+        query = query.filter('hp', 'lt', withHP);
+      } else if (withHpCondition === '>=') {
+        query = query.filter('hp', 'gte', withHP);
+      } else if (withHpCondition === '<=') {
+        query = query.filter('hp', 'lte', withHP);
+      } else if (withHpCondition === '!=') {
+        query = query.filter('hp', 'neq', withHP);
+      } else {
+        query = query.filter('hp', 'eq', withHP);
+      }
+    }
+    
+    if (manufacturerId) {
+      query = query.filter('manufacturerId', 'eq', manufacturerId);
+    }
+    
+    if (standard !== undefined) {
+      query = query.filter('standard', 'eq', standard);
+    }
+    
+    if (description) {
+      query = query.ilike('description', `%${ description }%`);
+    }
+    
+    
+    return rxFrom(
+      query
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        .order(`color`, {                                // order panel by color
+          foreignTable: DbPaths.module_panels,
+          ascending: true
+        })
+        .limit(1, {                                // take only one panel
+          foreignTable: DbPaths.module_panels
+        })
+        .ilike('name', `%${ name }%`)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+    )
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        map((x: any) => x), // map type as any , TODO: fix this
+      )
+  }
+  
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x === 'comments'))
+  })
+  private getComments(entityId: number, entityType: number) {
+    return rxFrom(
+      this.supabase.from(DbPaths.comments)
+        .select(`*,profile:profiles(id,username,email)`)
+        .filter('entityId', 'eq', entityId)
+        .filter('entityType', 'eq', entityType)
+      // foreign key add profile information for each comment
+    
+    )
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        map((x => x.data))
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime * 20,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x === 'manufacturers'))
+  })
+  private getManufacturers(from = 0, to = this.defaultPag, columns = '*', orderBy?: string) {
+    return rxFrom(
+      this.supabase.from(DbPaths.manufacturers)
+        .select(columns)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name')
+    )
+      .pipe(
+        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        map((x: any) => x),// map type as any , TODO: fix this
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x === 'currentUserModules'))
+  })
+  private getCurrentUserModules(includeInsOuts = true): Observable<any> {
+    let prefix = `module`;
+    let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
+    
+    
+    let moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
+    
+    let columns = [
+      moduleColumns,
+      QueryJoins.manufacturer,
+      QueryJoins.module_panels,
+    ]
+    // can be optimized to avoid calling it all the time but for now it is ok
+    if (includeInsOuts) {
+      columns.push(QueryJoins.insOuts);
+    }
+    
+    return this.getUserSession$().pipe(
+      switchMap(user =>
+        rxFrom(
+          this.supabase.from(DbPaths.user_modules)
+            .select(
+              `${ prefix }:modules!user_modules_moduleid_fkey(
+                ${ columns.join(',') })`
+            )
+            // only approved panels
+            // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
+            // order panel by color
+            .order(`color`, {
+              foreignTable: panelsTable,
+              ascending: true
+            })
+            .order('updated', {ascending: false})
+            .limit(1, {foreignTable: panelsTable})
+            .filter('profileid', 'eq', user.id)
+        ).pipe(
+          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+          map((x: any) => x), // map type as any , TODO: fix this
+          map((x => x.data.map(y => y.module)))
+        )
+      ),
+    );
+  }
+  
+  private errorMsg() {
+    return SharedConstants.errorHandlerOperation(this.snackBar);
+  }
+  
+  private throwAsyncError(message: string) {
+    return throwError(() => new Error(message));
+  }
+  
+  
+  private standardErrorMessageAndBlock(): Observable<never> {
+    SharedConstants.errorHandlerOperation(this.snackBar);
+    return NEVER;
+  }
   
   private cleanUpFileName(filenameAndExtension: string) {
     return filenameAndExtension.toLowerCase().trim()

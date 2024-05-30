@@ -1,29 +1,29 @@
-import { Injectable }         from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   FormControl,
   Validators
-}                             from '@angular/forms';
+} from '@angular/forms';
 import {
   CustomValidators,
   FormTypes
-}                             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   BehaviorSubject,
   Subject
-}                             from "rxjs";
-import { SupabaseService }    from "src/app/features/backend/supabase.service";
-import { SubManager }         from "src/app/shared-interproject/directives/subscription-manager";
+} from "rxjs";
+import { SupabaseService } from "src/app/features/backend/supabase.service";
+import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
   filter,
   switchMap,
   takeUntil,
   tap,
   withLatestFrom
-}                             from "rxjs/operators";
-import { DbComment }          from "src/app/models/comment";
-import { SharedConstants }    from "src/app/shared-interproject/SharedConstants";
-import { MatSnackBar }        from "@angular/material/snack-bar";
-import { DomSanitizer }       from "@angular/platform-browser";
+} from "rxjs/operators";
+import { DbComment } from "src/app/models/comment";
+import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { DomSanitizer } from "@angular/platform-browser";
 import { sanitizeItemInPipe } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
 
 
@@ -91,7 +91,7 @@ export class CommentsDataService extends SubManager {
     // every time we receive a new entity id, get the comments for this entity
     this.requestCommentsUpdate$.pipe(
       tap(() => this.comments$.next(undefined)),
-      switchMap(x => this.backend.get.comments(x.entityId, x.entityType)),
+      switchMap(x => this.backend.GET.comments(x.entityId, x.entityType)),
       takeUntil(this.destroy$),
     ).subscribe(data => {
       this.comments$.next(data);
