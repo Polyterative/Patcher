@@ -162,7 +162,7 @@ export class ModuleAdderDataService extends SubManager {
           Validators.required
         ])),
         type:     FormTypes.AUTOCOMPLETE,
-        options$: this.backend.get.manufacturers(0, 99999, 'id,name')
+        options$: this.backend.GET.manufacturers(0, 99999, 'id,name')
                     .pipe(
                       map(x => x.data.map(z => ({
                         id:   z.id.toString(),
@@ -296,7 +296,7 @@ export class ModuleAdderDataService extends SubManager {
       .pipe(
         tap(() => this.similarModulesData$.next(undefined)),
         filter(() => this.formData.name.control.value.length !== '' || this.formData.manufacturer.control.value.length !== ''),
-        switchMap(() => this.backend.get.modulesMinimal(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)),
+        switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
