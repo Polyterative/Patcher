@@ -85,6 +85,10 @@ export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | Observed
   // error: AuthError | null
 }>>>;
 
+
+//from  Database.public.Tables.modules.Row
+type ModulesMinimalColumns = Pick<DbModule, 'id' | 'name' | 'hp' | 'description' | 'public' | 'created' | 'updated' | 'manufacturerId' | 'standard' | 'tags' | 'panels'>;
+
 @Injectable()
 export class SupabaseService {
   constructor(
@@ -264,23 +268,33 @@ export class SupabaseService {
         map((x => x.data))
       ),
     
-    currentUserModules: () => {
+    currentUserModules: (
+      includeInsOuts = true,
+    ) => {
       let prefix = `module`;
       let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
       
-      const columns = `
-    ${ prefix }:modules!user_modules_moduleid_fkey(
-      *,
-      ${ QueryJoins.module_panels },
-      ${ QueryJoins.manufacturer },
-      ${ QueryJoins.insOuts }
-    )
-  `;
+      
+      let moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
+      
+      let columns = [
+        moduleColumns,
+        QueryJoins.manufacturer,
+        QueryJoins.module_panels,
+      ]
+      // can be optimized to avoid calling it all the time but for now it is ok
+      if (includeInsOuts) {
+        columns.push(QueryJoins.insOuts);
+      }
+      
       return this.getUserSession$().pipe(
         switchMap(user =>
           rxFrom(
             this.supabase.from(DbPaths.user_modules)
-              .select(columns)
+              .select(
+                `${ prefix }:modules!user_modules_moduleid_fkey(
+                ${ columns.join(',') })`
+              )
               // only approved panels
               // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
               // order panel by color

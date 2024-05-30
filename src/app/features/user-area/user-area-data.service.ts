@@ -46,7 +46,6 @@ export class UserAreaDataService extends SubManager {
     public backend: SupabaseService
   ) {
     super();
-    
     this.updateModulesData$
       .pipe(
         tap(() => this.modulesData$.next(undefined)),
