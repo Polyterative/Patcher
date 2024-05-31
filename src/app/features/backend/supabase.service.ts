@@ -116,16 +116,16 @@ function cacheBust<T>(cacheKeys: CachedEntity[]): MonoTypeOperatorFunction<T> {
   );
 }
 
-function showSuccessMessage<T>(): MonoTypeOperatorFunction<T> {
+function showSuccessMessage<T>(snackBar: MatSnackBar): MonoTypeOperatorFunction<T> {
   return (source: Observable<T>) => source.pipe(
-    tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+    tap(() => SharedConstants.showSuccessUpdate(snackBar))
   );
 }
 
-function catchErrors<T>(): (source: Observable<T>) => Observable<T> {
+function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) => Observable<T> {
   return (source: Observable<T>) => source.pipe(
     catchError(() => {
-      SharedConstants.errorHandlerOperation(this.snackBar);
+      SharedConstants.errorHandlerOperation(snackBar);
       return NEVER;
     })
   );
@@ -519,8 +519,7 @@ export class SupabaseService {
         switchMap((x) => forkJoin(x)),
         // bust the cache for modules
         cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-        catchErrors(),
-        this.errorMsg()
+        catchErrors(this.snackBar)
       );
     },
     moduleINs: (data: CV[], moduleid: number) => rxFrom(
@@ -576,7 +575,7 @@ export class SupabaseService {
       .pipe(
         remapErrors(),
         cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-        catchErrors()
+        catchErrors(this.snackBar)
       ),
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
@@ -693,7 +692,7 @@ export class SupabaseService {
           .select('id,updated,created')
       )
         .pipe(
-          showSuccessMessage(),
+          showSuccessMessage(this.snackBar),
           // bust the cache for modules
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
         );
@@ -767,7 +766,7 @@ export class SupabaseService {
           .eq('id', data.id)
           .single()
       )
-        .pipe(showSuccessMessage());
+        .pipe(showSuccessMessage(this.snackBar));
     },
     modules: (data: DbModule[]) => {
       for (const datum of data) {
@@ -785,7 +784,7 @@ export class SupabaseService {
         .pipe(
           // bust the cache for modules
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          showSuccessMessage()
+          showSuccessMessage(this.snackBar)
         );
     },
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
@@ -802,8 +801,8 @@ export class SupabaseService {
           }),
           // bust the cache for modules
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          catchErrors(),
-          showSuccessMessage()
+          catchErrors(this.snackBar),
+          showSuccessMessage(this.snackBar)
         );
     },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
@@ -827,7 +826,7 @@ export class SupabaseService {
         .pipe(
           // bust the cache for modules
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          catchErrors(),
+          catchErrors(this.snackBar),
           map(x => filenameAndExtension)
         );
     },
