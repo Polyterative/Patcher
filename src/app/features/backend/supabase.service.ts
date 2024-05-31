@@ -251,6 +251,8 @@ export class SupabaseService {
     racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(DbPaths.racks)
         .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author }`, {count: 'exact'})
+        // only public
+        .filter('public', 'eq', true)
         .ilike(`name,hp,rows, ${ QueryJoins.author }`, `%${ name }%`)
         .range(from, to)
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
@@ -348,6 +350,8 @@ export class SupabaseService {
         .select(`${ columns }, ${ QueryJoins.author }`)
         // .range(from, to)
         .filter('id', 'eq', id)
+        // .filter('public', 'eq', true)
+        
         // .order('id', {foreignTable: DatabasePaths.moduleINs})
         // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
         .single()
@@ -644,7 +648,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        // bust the cache for modules
         cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
       ),
     manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
@@ -749,7 +752,8 @@ export class SupabaseService {
             description: data.description,
             rows: data.rows,
             hp: data.hp,
-            locked: data.locked
+            locked: data.locked,
+            public: data.public
           }).select('id')
       );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
