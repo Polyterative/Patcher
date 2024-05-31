@@ -8,9 +8,7 @@
   <mat-divider [inset]="true"
                style="margin-top:.5rem"
   ></mat-divider>
-  <div class="row opacizeOnHover"
-       fxLayoutGap="2rem"
-       fxLayoutGap.xs="0rem"
+  <div class="row gap2 opacizeOnHover"
        *ngIf="!viewConfig.hideButtons"
   >
     <ng-container *ngIf="{
@@ -21,10 +19,17 @@
     >
       <ng-container *ngIf="bag.user&&bag.isCurrentRackPropertyOfCurrentUser">
         <button mat-icon-button
-                matTooltip="Toggle rack lock"
+                [matTooltip]="bag.isCurrentRackEditable ? 'Lock rack' : 'Unlock rack'"
                 (click)="dataService.requestRackEditableStatusChange$.next()"
         >
           <mat-icon>{{ bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline' }}</mat-icon>
+        </button>
+        <button mat-icon-button
+                [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
+                (click)="dataService.requestRackPrivacyStatusChange$.next()"
+                [disabled]="!bag.isCurrentRackEditable"
+        >
+          <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
         </button>
         <button mat-icon-button
                 [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Unlock rack to rename'"
