@@ -41,6 +41,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
 
 
 @NgModule({
@@ -97,7 +98,8 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
     RackMicroModule,
     MatSlideToggleModule,
     InputDialogModule,
-    StatisticsModule
+    StatisticsModule,
+    AdviceTooltipModule
   ]
 })
 export class RackModule {

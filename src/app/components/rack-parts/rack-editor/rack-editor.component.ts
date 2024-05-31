@@ -26,6 +26,10 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
+import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+} from "angular-animations";
 
 
 export interface ModuleRightClick {
@@ -38,7 +42,18 @@ export interface ModuleRightClick {
   templateUrl: './rack-editor.component.html',
   styleUrls: ['./rack-editor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [GeneralContextMenuDataService]
+  providers: [GeneralContextMenuDataService],
+  animations: [
+    fadeInOnEnterAnimation({
+      anchor: 'enter',
+      duration: 1525,
+      animateChildren: 'after'
+    }),
+    fadeOutOnLeaveAnimation({
+      anchor: 'leave',
+      duration: 1
+    })
+  ]
 })
 export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
