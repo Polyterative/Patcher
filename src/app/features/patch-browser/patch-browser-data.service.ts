@@ -39,7 +39,7 @@ export class PatchBrowserDataService implements OnDestroy {
   ////
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
-    take$:   new BehaviorSubject<number>(10),
+    take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
     sort$:   new BehaviorSubject<[string, string]>([
       '',
