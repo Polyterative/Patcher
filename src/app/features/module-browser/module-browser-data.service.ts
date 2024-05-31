@@ -381,6 +381,9 @@ export class ModuleBrowserDataService implements OnDestroy {
           id: undefined,
           name: 'All'
         });
+        
+        this.fields.description.control.setValue('');
+        this.paginatorToFistPage$.next();
         }
       );
     
