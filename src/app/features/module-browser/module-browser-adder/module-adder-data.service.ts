@@ -42,6 +42,7 @@ import { DomSanitizer } from "@angular/platform-browser";
 
 
 import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
+import { Router } from "@angular/router";
 
 
 @Injectable()
@@ -125,7 +126,8 @@ export class ModuleAdderDataService extends SubManager {
     public backend: SupabaseService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private router: Router
   ) {
     super();
     this.formData = {
@@ -366,12 +368,15 @@ export class ModuleAdderDataService extends SubManager {
           `
             Module submitted!
             Thank you very much for your contribution! 🙏
-            It is now available to everyone.
+            It is now available to everyone
             `,
           '',
           {
             duration: 7000
           });
+        
+        // navigate to the module browser page
+        this.router.navigate(['/modules', 'browser']);
       });
     
   }
