@@ -13,6 +13,7 @@ import {
   forkJoin,
   from,
   from as rxFrom,
+  MonoTypeOperatorFunction,
   NEVER,
   Observable,
   ObservedValueOf,
@@ -60,6 +61,7 @@ import {
   GlobalCacheConfig,
   LocalStorageStrategy
 } from "ts-cacheable";
+import { PostgrestSingleResponse } from "@supabase/postgrest-js/src/types";
 
 
 GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
@@ -107,6 +109,33 @@ type CachedEntity =
   | 'patchConnections'
   | void;
 const cacheBuster$ = new Subject<CachedEntity[]>();
+
+function cacheBust<T>(cacheKeys: CachedEntity[]): MonoTypeOperatorFunction<T> {
+  return (source: Observable<T>) => source.pipe(
+    tap(() => cacheBuster$.next(cacheKeys))
+  );
+}
+
+function showSuccessMessage<T>(): MonoTypeOperatorFunction<T> {
+  return (source: Observable<T>) => source.pipe(
+    tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+  );
+}
+
+function catchErrors<T>(): (source: Observable<T>) => Observable<T> {
+  return (source: Observable<T>) => source.pipe(
+    catchError(() => {
+      SharedConstants.errorHandlerOperation(this.snackBar);
+      return NEVER;
+    })
+  );
+}
+
+function remapErrors<T>() {
+  return (source: Observable<PostgrestSingleResponse<T>>) => source.pipe(
+    switchMap(x => x.error ? throwError(() => new Error(x.error.message)) : of(x)),
+  );
+}
 
 @Injectable()
 export class SupabaseService {
@@ -164,7 +193,8 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        map((x) => x),
+        remapErrors(),
         map((x: any) => x),// map type as any , TODO: fix this
       ),
     currentUserPatches: () => {
@@ -175,7 +205,7 @@ export class SupabaseService {
               .filter('authorid', 'eq', user.id)
               .order('updated', {ascending: false})
           ).pipe(
-            switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+          remapErrors(),
             map((x: any) => x), // map type as any , TODO: fix this
             map((x => x.data))
           )
@@ -204,7 +234,7 @@ export class SupabaseService {
         .order('row', {ascending: true})
         .order('column', {ascending: true})
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
       .pipe(
         map((x: any) => x), // map type as any , TODO: fix this
         map((x => x.data)),
@@ -226,7 +256,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
       ),
     racksWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
@@ -238,7 +268,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x)// map type as any , TODO: fix this
       )
     ,
@@ -253,7 +283,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x)// map type as any , TODO: fix this
       ),
     patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
@@ -267,7 +297,7 @@ export class SupabaseService {
           .filter('moduleid', 'eq', moduleid)
           .range(from, to)
       )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
+      // .pipe(remapErrors());
       
       // for each patchid, get the patch in a single query, combine them in a single array at the end
       return patchIdList$.pipe(
@@ -308,7 +338,7 @@ export class SupabaseService {
         .range(from, to)
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x),// map type as any , TODO: fix this
         map((x => x.data))
       ),
@@ -323,7 +353,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x)// map type as any , TODO: fix this
       ),
     manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
@@ -333,37 +363,40 @@ export class SupabaseService {
         .filter('id', 'eq', id)
         .single()
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     standards: () => rxFrom(
       this.supabase.from(DbPaths.standards)
         .select('*')
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
+      ),
     userWithId: (id: string, columns = '*') => rxFrom(
       this.supabase.from(DbPaths.profiles)
         .select(columns)
         .filter('id', 'eq', id)
         .single()
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     statistics: () => zip(
       rxFrom(
         this.supabase.from(DbPaths.modules)
           .select('id', {count: 'exact'})
       )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+        .pipe(remapErrors())
         .pipe(map(((x: any) => x.count))),
       rxFrom(
         this.supabase.from(DbPaths.racks)
           .select('id', {count: 'exact'})
       )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+        .pipe(remapErrors())
         .pipe(map(((x: any) => x.count))),
       rxFrom(
         this.supabase.from(DbPaths.patches)
           .select('id', {count: 'exact'})
       )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+        .pipe(remapErrors())
         .pipe(map(((x: any) => x.count)))
     )
     
@@ -381,22 +414,21 @@ export class SupabaseService {
           this.supabase
             .from(DbPaths.comments)
             .insert({
-              entityId:   data.entityId,
+              entityId: data.entityId,
               entityType: data.entityType,
-              content:    data.content,
-              authorId:   user.id
+              content: data.content,
+              authorId: user.id
             })
         )),
-        // bust the cache for comments
-        tap(() => cacheBuster$.next(['comments'])),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        cacheBust(['comments']),
+        remapErrors()
       ),
     module_tags: (data: Tag[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_tags)
         .upsert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     userModule: (moduleId: number) => this.getUserSession$()
       .pipe(
         switchMap(user => rxFrom(
@@ -407,8 +439,8 @@ export class SupabaseService {
               profileid: user.id
             })
         )),
-        tap(() => cacheBuster$.next(['currentUserModules'])),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        cacheBust(['currentUserModules']),
+        remapErrors()
       ),
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
       this.supabase
@@ -420,7 +452,7 @@ export class SupabaseService {
           column
         })
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     rack: (data: {
       name: string,
       authorid: string,
@@ -434,7 +466,7 @@ export class SupabaseService {
         .select('id'),
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
       ),
     patch: (data: {
@@ -449,7 +481,7 @@ export class SupabaseService {
               authorid: user.id
             })
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
+        remapErrors());
     },
     modules: (data: DbModule[]) => {
       return this.getUserSession$().pipe(
@@ -482,8 +514,8 @@ export class SupabaseService {
         // for each module, build a call to insert the module
         switchMap((x) => forkJoin(x)),
         // bust the cache for modules
-        tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
-        catchError(() => this.standardErrorMessageAndBlock()),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        catchErrors(),
         this.errorMsg()
       );
     },
@@ -495,7 +527,7 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     moduleOUTs: (data: CV[], moduleid: number) => rxFrom(
       this.supabase
         .from(DbPaths.moduleOUTs)
@@ -504,22 +536,22 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
       this.supabase
         .from(DbPaths.manufacturers)
         .insert(data)
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        tap(() => cacheBuster$.next(['manufacturers'])),
+        remapErrors(),
+        cacheBust(['manufacturers'])
       ),
     panel: (data: Partial<ModulePanel>[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_panels)
         .insert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
   };
   
   readonly delete = {
@@ -530,17 +562,18 @@ export class SupabaseService {
     )
       .pipe(
         // bust the cache for comments
-        tap(() => cacheBuster$.next(['comments'])),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+        cacheBust(['comments']),
+        remapErrors()),
     module: (id: number) => rxFrom(
       this.supabase.from(DbPaths.modules)
         .delete()
         .filter('id', 'eq', id)
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
-        catchError(() => this.standardErrorMessageAndBlock())),
+        remapErrors(),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        catchErrors()
+      ),
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
         this.supabase.from(DbPaths.user_modules)
@@ -548,8 +581,8 @@ export class SupabaseService {
           .filter('profileid', 'eq', user.id)
           .filter('moduleid', 'eq', id)
       )),
-      tap(() => cacheBuster$.next(['currentUserModules'])),
-      switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+      cacheBust(['currentUserModules']),
+      remapErrors()
     )
     ,
     rackedModule: (id: number) => rxFrom(
@@ -557,14 +590,14 @@ export class SupabaseService {
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     modulesOfRack: (rackId: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .delete()
         .filter('rackid', 'eq', rackId)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     patch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patches)
@@ -572,7 +605,7 @@ export class SupabaseService {
         // .filter('profileid', 'eq', this.getUser().id)
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     patchConnectionsForPatch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_connections)
@@ -580,7 +613,7 @@ export class SupabaseService {
         .filter('patchid', 'eq', id)
       // .filter('moduleid', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     userPatch: (id: number) => this.getUserSession$()
       .pipe(
@@ -590,7 +623,7 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        remapErrors()
       )
     ,
     userRack: (id: number) => this.getUserSession$()
@@ -601,8 +634,7 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        switchMap((x) => (x.error ? this.throwAsyncError('errorMessageToCustomize') : of(x))),
-        this.errorMsg()
+        remapErrors(),
       )
     ,
     modules: (from = 0, to: number = this.defaultPag) => rxFrom(
@@ -611,9 +643,9 @@ export class SupabaseService {
         .range(from, to)
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         // bust the cache for modules
-        tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
       ),
     manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
@@ -621,8 +653,8 @@ export class SupabaseService {
         .range(from, to)
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        tap(() => cacheBuster$.next(['manufacturers']))
+        remapErrors(),
+        cacheBust(['manufacturers'])
       )
   };
   readonly update = {
@@ -658,9 +690,9 @@ export class SupabaseService {
           .select('id,updated,created')
       )
         .pipe(
-          tap(() => SharedConstants.showSuccessUpdate(this.snackBar)),
+          showSuccessMessage(),
           // bust the cache for modules
-          tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId']))
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
         );
     },
     rackedModules: (data: RackedModule[]) => {
@@ -704,7 +736,7 @@ export class SupabaseService {
         )
         .pipe(
           // if data.error is true, then we have an error, throw it down the pipe
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+          remapErrors(),
         );
     },
     rack: (data: RackMinimal) => {
@@ -731,7 +763,7 @@ export class SupabaseService {
           .eq('id', data.id)
           .single()
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(showSuccessMessage());
     },
     modules: (data: DbModule[]) => {
       for (const datum of data) {
@@ -748,8 +780,8 @@ export class SupabaseService {
       )
         .pipe(
           // bust the cache for modules
-          tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
-          tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          showSuccessMessage()
         );
     },
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
@@ -765,9 +797,9 @@ export class SupabaseService {
             return forkJoin(controlVoltageUpdates$);
           }),
           // bust the cache for modules
-          tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
-          catchError(err => this.standardErrorMessageAndBlock()),
-          tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          catchErrors(),
+          showSuccessMessage()
         );
     },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
@@ -790,8 +822,8 @@ export class SupabaseService {
       )
         .pipe(
           // bust the cache for modules
-          tap(() => cacheBuster$.next(['modules', 'currentUserModules', 'moduleWithId'])),
-          catchError(err => this.standardErrorMessageAndBlock()),
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          catchErrors(),
           map(x => filenameAndExtension)
         );
     },
@@ -890,7 +922,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
       )
   }
@@ -917,7 +949,7 @@ export class SupabaseService {
         .order('ordinal')
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
         map((x => x.data))
       );
@@ -952,7 +984,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x)// map type as any , TODO: fix this
       );
   }
@@ -972,7 +1004,7 @@ export class SupabaseService {
     
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        // remapErrors(),
         map((x => x.data))
       );
   }
@@ -989,7 +1021,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name')
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x),// map type as any , TODO: fix this
       );
   }
@@ -1035,7 +1067,7 @@ export class SupabaseService {
             .limit(1, {foreignTable: panelsTable})
             .filter('profileid', 'eq', user.id)
         ).pipe(
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+          remapErrors(),
           map((x: any) => x), // map type as any , TODO: fix this
           map((x => x.data.map(y => y.module)))
         )
@@ -1048,22 +1080,14 @@ export class SupabaseService {
       this.supabase.from(DbPaths.tags)
         .select('*')
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-      .pipe(map((x => x.data)));
+      .pipe(
+        // remapErrors(),
+        map((x => x.data))
+      );
   }
   
   private errorMsg() {
     return SharedConstants.errorHandlerOperation(this.snackBar);
-  }
-  
-  private throwAsyncError(message: string) {
-    return throwError(() => new Error(message));
-  }
-  
-  
-  private standardErrorMessageAndBlock(): Observable<never> {
-    SharedConstants.errorHandlerOperation(this.snackBar);
-    return NEVER;
   }
   
   private cleanUpFileName(filenameAndExtension: string) {
@@ -1276,5 +1300,6 @@ export class SupabaseService {
       .update(x)
       .eq('id', x.id)));
   }
+  
   
 }
