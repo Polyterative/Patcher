@@ -27,12 +27,42 @@
           >
           </app-module-realistic>
         </ng-container>
-  
+      
+      
       </div>
     </ng-container>
-    <!--    small watermark,in style of powered by patcher.xyz on center-->
-    <div class="watermark" fxLayoutAlign="center center">Planned on patcher.xyz</div>
-  
+    <div class="watermark self-center">Planned on patcher.xyz</div>
   </div>
+  
+  <!--    add new row button-->
+  
+  <div class="row gap2 self-center">
+    <ng-container *ngIf="isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser&&rowedRackedModules.length>1">
+      <div [@enter]="{ value: '', params: { delay: (1 * 25)+500}}"
+      
+      >
+        <button mat-flat-button
+                (click)="rackDetailDataService.requestRemoveRow$.next()"
+                [disabled]="!isLastRowEmpty(rowedRackedModules)"
+        >
+          Remove last row
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+    </ng-container>
+    <div fxFlex="1 1 auto"></div>
+    
+    <div *ngIf="isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser"
+         [@enter]="{ value: '', params: { delay: (2 * 25)+500}}"
+    >
+      <button mat-flat-button
+              (click)="rackDetailDataService.requestAddNewRow$.next()"
+      >
+        Add new row
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+  </div>
+  
   <div fxFlex="100"></div>
 </div>
