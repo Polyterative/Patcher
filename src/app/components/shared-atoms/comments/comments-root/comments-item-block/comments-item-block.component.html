@@ -1,0 +1,20 @@
+<ng-container *ngIf="data&&data.length>0;else noData">
+  <div class="col gap1 ">
+    <ng-container *ngFor="let item of data; let i = index">
+      <app-comments-item [data]="item"
+                         [viewConfig]="viewConfig"
+      >
+      </app-comments-item>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-template #noData>
+  <div class="col gap1 animate-fadein-slowest"
+  >
+    <mat-card-subtitle
+      style="padding: 1rem"
+    >No one commented yet
+    </mat-card-subtitle>
+  </div>
+</ng-template>

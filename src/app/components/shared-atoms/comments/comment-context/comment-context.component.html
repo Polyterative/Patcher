@@ -1,0 +1,9 @@
+<ng-container *ngIf="{ contextInformation: contextInformation$ | async } as bag">
+  <ng-container *ngIf="bag.contextInformation">
+    <button mat-stroked-button (click)="openURL()"
+            color="primary"
+    >
+      {{ bag.contextInformation.description }}
+    </button>
+  </ng-container>
+</ng-container>
