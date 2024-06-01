@@ -50,6 +50,12 @@
 
   opacity: 0.75;
   padding: 1rem;
-  //  center
-  //transform: translate(-50%, -50%);
+  // no break word
+  white-space: nowrap;
+
+  // center text
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
 }
