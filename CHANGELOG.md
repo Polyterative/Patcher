@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.6.6](https://github.com/Polyterative/Patcher/compare/v4.6.5...v4.6.6) (2024-06-01)
+
+
+### Bug Fixes
+
+* **module-submit:** standard now saved correctly ([3795f2c](https://github.com/Polyterative/Patcher/commit/3795f2cb580dc87870fa87f20e12a2980fce7dec))
+
 ### [4.6.5](https://github.com/Polyterative/Patcher/compare/v4.6.4...v4.6.5) (2024-06-01)
 
 ### [4.6.4](https://github.com/Polyterative/Patcher/compare/v4.6.3...v4.6.4) (2024-05-24)
