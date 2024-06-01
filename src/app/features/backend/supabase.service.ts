@@ -62,6 +62,7 @@ import {
   LocalStorageStrategy
 } from "ts-cacheable";
 import { PostgrestSingleResponse } from "@supabase/postgrest-js/src/types";
+import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
 GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
@@ -573,6 +574,13 @@ export class SupabaseService {
         .filter('id', 'eq', id)
     )
       .pipe(
+        // delete all comments for this module
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+        )),
         remapErrors(),
         cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
         catchErrors(this.snackBar)
@@ -583,6 +591,13 @@ export class SupabaseService {
           .delete()
           .filter('profileid', 'eq', user.id)
           .filter('moduleid', 'eq', id)
+      )),
+      // delete all comments for this module
+      switchMap(() => rxFrom(
+        this.supabase.from(DbPaths.comments)
+          .delete()
+          .filter('entityId', 'eq', id)
+          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
       )),
       cacheBust(['currentUserModules']),
       remapErrors()
@@ -608,7 +623,16 @@ export class SupabaseService {
         // .filter('profileid', 'eq', this.getUser().id)
         .filter('id', 'eq', id)
     )
-      .pipe(remapErrors())
+      .pipe(
+        // delete all comments for this patch
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
+        )),
+        remapErrors()
+      )
     ,
     patchConnectionsForPatch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_connections)
@@ -626,6 +650,13 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
+        // delete all comments for this patch
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
+        )),
         remapErrors()
       )
     ,
@@ -636,6 +667,13 @@ export class SupabaseService {
             .delete()
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
+        )),
+        // delete all comments for this rack
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.RACK)
         )),
         remapErrors(),
       )
