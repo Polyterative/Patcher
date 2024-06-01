@@ -73,7 +73,14 @@ export class UserAreaDataService extends SubManager {
     this.updateManualsData$
       .pipe(
         tap(() => this.manualsData$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserModules()),
+        // log
+        tap(() => console.log('updateManualsData$')),
+        switchMap(() => this.backend.GET.currentUserModules(
+          false,
+          true
+        )),
+        tap((x) => console.log(x)),
+        
         map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
         // order the entities of the array by name alphabetically
         map(x => x.sort((a, b) => a.name.localeCompare(b.name))),

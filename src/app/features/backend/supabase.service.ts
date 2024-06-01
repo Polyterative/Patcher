@@ -1073,7 +1073,10 @@ export class SupabaseService {
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
     maxCacheCount: 50
   })
-  private getCurrentUserModules(includeInsOuts = true): Observable<any> {
+  private getCurrentUserModules(
+    includeInsOuts = true,
+    includeManuals = false,
+  ): Observable<any> {
     let prefix = `module`;
     let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
     
@@ -1088,6 +1091,10 @@ export class SupabaseService {
     // can be optimized to avoid calling it all the time but for now it is ok
     if (includeInsOuts) {
       columns.push(QueryJoins.insOuts);
+    }
+    
+    if (includeManuals) {
+      columns.push('manualURL');
     }
     
     return this.getUserSession$().pipe(
