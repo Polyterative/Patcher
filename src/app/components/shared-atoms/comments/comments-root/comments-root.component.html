@@ -20,6 +20,15 @@ user:(userManagerService.loggedUser$|async),
           </div>
         </ng-container>
         
+        <ng-template #noData>
+          <div class="col gap1 animate-fadein-slowest"
+          >
+            <mat-card-subtitle
+              style="padding: 1rem"
+            >No one commented yet
+            </mat-card-subtitle>
+          </div>
+        </ng-template>
         <ng-container *ngIf="bag.data&&bag.user"
         >
           <lib-mat-form-entity [dataPack]="dataService.fields.submit"
@@ -44,14 +53,3 @@ user:(userManagerService.loggedUser$|async),
 
 
 </lib-hero-content-card>
-
-
-<ng-template #noData>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle
-      style="padding: 1rem"
-    >No one commented yet
-    </mat-card-subtitle>
-  </div>
-</ng-template>
