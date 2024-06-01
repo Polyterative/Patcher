@@ -60,4 +60,7 @@ export class RackVisualModelComponent implements OnInit, AfterViewInit {
     // this.screen
   }
   
+  isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
+    return rowedRackedModules[rowedRackedModules.length - 1].length === 0;
+  }
 }

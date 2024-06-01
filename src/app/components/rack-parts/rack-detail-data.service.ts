@@ -96,12 +96,16 @@ export class RackDetailDataService extends SubManager {
   }>();
   isCurrentRackPropertyOfCurrentUser$ = new BehaviorSubject<boolean>(false);
   isCurrentRackEditable$ = new BehaviorSubject<boolean>(true);
+  isCurrentRackPrivate$ = new BehaviorSubject<boolean>(false);
   userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   //
   requestRackEditableStatusChange$ = new Subject<void>();
+  requestRackPrivacyStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
   requestRackedModuleReplaceWithBlank$ = new Subject<RackedModule>();
+  requestAddNewRow$ = new Subject<void>();
+  requestRemoveRow$ = new Subject<void>();
   
   requestRackedModulesDbSync$ = new Subject<void>();
   //
@@ -116,6 +120,52 @@ export class RackDetailDataService extends SubManager {
     private router: Router,
   ) {
     super();
+    
+    // when user requests to remove a row, update data and backend
+    this.requestRemoveRow$
+      .pipe(
+        withLatestFrom(this.singleRackData$),
+        map(([_, x]) => {
+          x.rows--;
+          return x;
+        }),
+        switchMap(x => this.backend.update.rack(x)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+          this.updateSingleRackData$.next(this.singleRackData$.value.id);
+        }
+      );
+    
+    // when user requests to add a new row, update data and backend
+    this.requestAddNewRow$
+      .pipe(
+        withLatestFrom(this.singleRackData$),
+        map(([_, x]) => {
+          x.rows++;
+          return x;
+        }),
+        switchMap(x => this.backend.update.rack(x)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+          this.updateSingleRackData$.next(this.singleRackData$.value.id);
+        }
+      );
+    
+    // when user requests to change privacy status of rack, update backend
+    this.requestRackPrivacyStatusChange$
+      .pipe(
+        withLatestFrom(this.singleRackData$),
+        map(([_, x]) => {
+          x.public = !x.public;
+          this.isCurrentRackPrivate$.next(!x.public);
+          return x;
+        }),
+        switchMap(x => this.backend.update.rack(x)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
     
     // when user wants to replace a module with blank, replace it with a blank module from manufacturer id 2000
     this.requestRackedModuleReplaceWithBlank$
@@ -273,6 +323,14 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
+    
+    // when updated rack data is received, update privacy status observable
+    this.singleRackData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(x => this.isCurrentRackPrivate$.next(!x.public))
     
     // when updated rack data is received, update rowedRackedModules$
     this.singleRackData$.pipe(

@@ -3,6 +3,6 @@
 >
   <div class="circle"></div>
   <div class="circle"
-       *ngIf="data.hp>4"
+       *ngIf="data.standard.id===0?data.hp>4:data.hp>7"
   ></div>
 </div>
