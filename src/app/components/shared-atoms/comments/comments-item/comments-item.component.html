@@ -6,7 +6,9 @@
            [matTooltip]="data.updated | date:'medium'"
       >{{ data.updated | timeago }}
       </div>
-      <div class="delete" *ngIf="data.profile.id === (userService.loggedUser$|async)?.id">
+      <div class="delete"
+           *ngIf="data.profile.id === (userService.loggedUser$|async)?.id&&isDeletable"
+      >
         <button mat-icon-button (click)="dataService.deleteComment$.next(data.id)">
           <mat-icon class="opacizeOnHover"
           >delete
