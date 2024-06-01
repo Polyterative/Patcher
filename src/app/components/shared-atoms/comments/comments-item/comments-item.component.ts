@@ -21,7 +21,8 @@ import { DomSanitizer } from "@angular/platform-browser";
 })
 export class CommentsItemComponent implements OnInit {
   @Input() data: DbComment;
-  
+  currentDateTime = new Date();
+  isDeletable = false;
   constructor(
     public dataService: CommentsDataService,
     public userService: UserManagementService,
@@ -30,6 +31,11 @@ export class CommentsItemComponent implements OnInit {
   }
   
   ngOnInit(): void {
+    // determine if the comment is NOT deletable, only if older than 30 minutes
+    const commentDate = new Date(this.data.created);
+    const diff = this.currentDateTime.getTime() - commentDate.getTime();
+    const maxDiff = 30 * 60 * 1000;
+    this.isDeletable = diff < maxDiff;
   }
   
   
