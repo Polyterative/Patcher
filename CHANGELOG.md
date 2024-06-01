@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.7.0](https://github.com/Polyterative/Patcher/compare/v4.6.6...v4.7.0) (2024-06-01)
+
+
+### Features
+
+* **backend:** enhanced caching support ([78bcf66](https://github.com/Polyterative/Patcher/commit/78bcf6665fb06d02a7b3ed93e7630daf928db7e6))
+* **backend:** local caching support ([b5a4c22](https://github.com/Polyterative/Patcher/commit/b5a4c22c050ad1e1a7b05dddfad628b204f4016c))
+* **module-browser:** optimized calls and cache on form reset ([efe44ed](https://github.com/Polyterative/Patcher/commit/efe44ed40d82f1a35c1a58265e94ee4f77dbb9f7))
+* **module-details:** can search description now ([fcf09dd](https://github.com/Polyterative/Patcher/commit/fcf09dd499355df2d15e309f915eb528d9fa6f6b))
+* **patch-editor:** better UI ([b1a0e7b](https://github.com/Polyterative/Patcher/commit/b1a0e7b437a846498ea84608691385d183cd4c10))
+* **rack-details:** add row / remove row ([4dd36a0](https://github.com/Polyterative/Patcher/commit/4dd36a08815c853fa7bfd4b7bb438ea2f7d405f2))
+* **rack-details:** racks analytic view UI improvements ([80d79a6](https://github.com/Polyterative/Patcher/commit/80d79a6178614b726d28874e094cc2578de60382))
+* **rack-details:** racks can now be private ([abbcd21](https://github.com/Polyterative/Patcher/commit/abbcd21cbbd94b79126f5db269a0c1ddac182dbc))
+* **seo:** tagging improvements ([c960c68](https://github.com/Polyterative/Patcher/commit/c960c688718378d49f5601b0186f2c88aef05ef0))
+* **user-area:** modules now sorted by add date ([459ca16](https://github.com/Polyterative/Patcher/commit/459ca1629a173c185f2bd969f7f3189eb9fcdc20))
+
+
+### Bug Fixes
+
+* **backend:** taking care of comments on entity delete ([ced3a1f](https://github.com/Polyterative/Patcher/commit/ced3a1f5ea962963da0f41e4e147e91b0891934f))
+* **browsers:** starting number of elements now correct on first opening ([d6c5c9f](https://github.com/Polyterative/Patcher/commit/d6c5c9fb9bc975b0fed9d086d75306506fe09399))
+* **module-browser:** filtering on reset format ([3862ab6](https://github.com/Polyterative/Patcher/commit/3862ab64322f7da7c8dcd877e3c23611f3e53130))
+* **module-browser:** reset now takes to first page ([33b8c54](https://github.com/Polyterative/Patcher/commit/33b8c5402a81ba93cfc99f3bc8ebf6f002a2ac68))
+* **module-submit:** now automatically routing user after module submit ([14bf395](https://github.com/Polyterative/Patcher/commit/14bf395a72b436d9a5c5831e3c5c8a8358616bd0))
+* **modules:** correct sorting of module inputs and outputs with numeric parts ([0b5fe5a](https://github.com/Polyterative/Patcher/commit/0b5fe5abea542a688c3975917d053c38b5ee2257))
+
 ### [4.6.6](https://github.com/Polyterative/Patcher/compare/v4.6.5...v4.6.6) (2024-06-01)
 
 
