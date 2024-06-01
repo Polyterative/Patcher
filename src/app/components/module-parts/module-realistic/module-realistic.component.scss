@@ -25,10 +25,14 @@
   //transform: scale(0.75);
 }
 
-.hole-left-padding {
+.hole-padding {
   padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.hole-right-padding {
-  padding-right: 1rem;
+.modBody {
+  padding-right: .5rem;
+  padding-left: .5rem;
+  background-color: #ffffff;
+  height: 100%;
 }
