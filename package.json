@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "4.6.4",
+  "version": "4.6.5",
   "scripts": {
     "start": "ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
