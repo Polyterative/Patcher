@@ -39,8 +39,9 @@ export class UserAreaDataService extends SubManager {
   //
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateModulesData$ = new Subject<void>();
-  readonly updateRackData$                              = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
-  readonly updateManualsData$                           = new Subject<void>();
+  readonly updateRackData$ = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
+  readonly updateManualsData$ = new Subject<void>();
+  readonly updateCommentsData$ = new Subject<void>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
   
@@ -50,7 +51,7 @@ export class UserAreaDataService extends SubManager {
   ) {
     super();
     
-    this.updateModulesData$
+    this.updateCommentsData$
       .pipe(
         tap(() => this.commentsData$.next(undefined)),
         switchMap(() => this.backend.GET.currentUserComments()),
@@ -85,14 +86,10 @@ export class UserAreaDataService extends SubManager {
     this.updateManualsData$
       .pipe(
         tap(() => this.manualsData$.next(undefined)),
-        // log
-        tap(() => console.log('updateManualsData$')),
         switchMap(() => this.backend.GET.currentUserModules(
           false,
           true
         )),
-        tap((x) => console.log(x)),
-        
         map(x => x.filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)),
         // order the entities of the array by name alphabetically
         map(x => x.sort((a, b) => a.name.localeCompare(b.name))),

@@ -1,9 +1,10 @@
 import {
   EMPTY,
   Observable
-}                      from 'rxjs';
-import { catchError }  from 'rxjs/operators';
+} from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { fadeInOnEnterAnimation } from "angular-animations";
 
 
 export class SharedConstants {
@@ -85,5 +86,14 @@ export class SharedConstants {
   static showSuccessUpdate(snackBar: MatSnackBar) {
     snackBar.open('✅ Updated data', undefined, {duration: 1000});
   }
+  
+}
+
+export namespace Animations {
+  export const fadeInOnEnter = fadeInOnEnterAnimation({
+    anchor: 'enter',
+    duration: 225,
+    animateChildren: 'after'
+  })
   
 }
