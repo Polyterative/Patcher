@@ -26,6 +26,7 @@ import { Rack } from '../../models/rack';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SupabaseService } from '../backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
+import { DbComment } from "src/app/models/comment";
 
 
 @Injectable()
@@ -34,6 +35,8 @@ export class UserAreaDataService extends SubManager {
   patchesData$: BehaviorSubject<Patch[] | undefined> = new BehaviorSubject(undefined);
   rackData$: BehaviorSubject<Rack[] | undefined> = new BehaviorSubject(undefined);
   manualsData$: BehaviorSubject<DbModule[] | undefined> = new BehaviorSubject(undefined);
+  commentsData$: BehaviorSubject<DbComment[] | undefined> = new BehaviorSubject(undefined);
+  //
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateModulesData$ = new Subject<void>();
   readonly updateRackData$                              = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
@@ -46,6 +49,15 @@ export class UserAreaDataService extends SubManager {
     public backend: SupabaseService
   ) {
     super();
+    
+    this.updateModulesData$
+      .pipe(
+        tap(() => this.commentsData$.next(undefined)),
+        switchMap(() => this.backend.GET.currentUserComments()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(x => this.commentsData$.next(x))
+    
     this.updateModulesData$
       .pipe(
         tap(() => this.modulesData$.next(undefined)),
