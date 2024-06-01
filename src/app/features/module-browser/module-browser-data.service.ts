@@ -15,6 +15,7 @@ import {
   Subject
 } from 'rxjs';
 import {
+  debounceTime,
   distinctUntilChanged,
   map,
   share,
@@ -335,6 +336,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     
     this.updateModulesList$
       .pipe(
+        debounceTime(10),
         withLatestFrom(this.serversideDataPackage$),
         switchMap(([z, [skip, take, filter, sort]]) => {
           const sortColumnName: string = sort[0] ? sort[0] : null;
@@ -368,6 +370,10 @@ export class ModuleBrowserDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(() => {
+        this.backend.cacheResetter$.next([
+          "modules"
+        ]);
+        
           this.fields.name.control.setValue('');
           
           this.fields.order.control.setValue(this.orderStartingValue);
