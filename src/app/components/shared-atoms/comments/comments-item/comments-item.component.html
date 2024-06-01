@@ -1,5 +1,6 @@
 <lib-clean-card class=" parent">
   <div class="comment-content">
+    
     <div class="comment-header">
       <div class="username">{{ data.profile.username }}</div>
       <div class="timestamp"
@@ -17,7 +18,11 @@
       </div>
     </div>
     <!--    <p class="comment-text">{{ data.content }}</p>-->
+
     <div class="comment-text" [innerHTML]="makeURLsClickable(data.content)"></div>
-  
+    
+    <app-comment-context *ngIf="viewConfig.showContext"
+      [data]="data"
+    ></app-comment-context>
   </div>
 </lib-clean-card>

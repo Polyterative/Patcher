@@ -1019,27 +1019,41 @@ export class SupabaseService {
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('moduleWithId'))),
     maxCacheCount: 50
   })
-  private getModuleWithId(id: number, columns = '*') {
-    return rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`${ columns },
+  private getModuleWithId(id: number, columns = `*,
            ${ QueryJoins.manufacturer },
             ${ QueryJoins.standard },
             ${ QueryJoins.insOuts },
             ${ QueryJoins.module_tags },
             ${ QueryJoins.module_panels }
-            `)
-        .filter('id', 'eq', id)
+            `) {
+    let queryBuilder$ = this.supabase.from(DbPaths.modules)
+      .select(
+        columns
+      )
+      .filter('id', 'eq', id);
+    
+    if (columns.includes(QueryJoins.module_panels)) {
+      // order panel by color
+      queryBuilder$ = queryBuilder$.order(`color`, {
+        referencedTable: DbPaths.module_panels,
+        ascending: true
+      })
+    }
+    
+    if (columns.includes(QueryJoins.insOuts)) {
+      // order inputs and outputs
+      queryBuilder$ = queryBuilder$
+        .order('id', {referencedTable: DbPaths.moduleINs})
+        .order('id', {referencedTable: DbPaths.moduleOUTs})
+    }
+    
+    
+    return rxFrom(
+      queryBuilder$
         // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
         // .limit(1, {                                // take only one panel
         //   foreignTable: DatabasePaths.module_panels
         // })
-        .order('id', {foreignTable: DbPaths.moduleINs})
-        .order('id', {foreignTable: DbPaths.moduleOUTs})
         .single()
     )
       .pipe(

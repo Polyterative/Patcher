@@ -11,24 +11,10 @@ user:(userManagerService.loggedUser$|async),
     >
       <div class="col gap2"
       >
-        <ng-container *ngIf="bag.data&&bag.data.length>0;else noData">
-          <div class="col gap1 ">
-            <ng-container *ngFor="let item of bag.data; let i = index">
-              <app-comments-item [data]="item"
-                                 [@enter]="{ value: '', params: { delay: (i * 25)+100}}"></app-comments-item>
-            </ng-container>
-          </div>
-        </ng-container>
+        <app-comments-item-block [data]="bag.data"
         
-        <ng-template #noData>
-          <div class="col gap1 animate-fadein-slowest"
-          >
-            <mat-card-subtitle
-              style="padding: 1rem"
-            >No one commented yet
-            </mat-card-subtitle>
-          </div>
-        </ng-template>
+        ></app-comments-item-block>
+        
         <ng-container *ngIf="bag.data&&bag.user"
         >
           <lib-mat-form-entity [dataPack]="dataService.fields.submit"

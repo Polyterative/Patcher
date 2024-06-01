@@ -1,1 +1,35 @@
-<p>user-comments works!</p>
+<div class="col gap1"
+>
+  <lib-hero-content-card titleNormal="Comments"
+                         description="Conversations, feedback and more"
+                         class="commentsBG"
+                         icon="comment"
+                         id="comments"
+  >
+    <ng-container *ngTemplateOutlet="content;">
+    </ng-container>
+  </lib-hero-content-card>
+</div>
+
+<!--<ng-template #voidData>-->
+<!--  <div fxFlex="100">-->
+<!--    <mat-card-subtitle fxLayoutAlign="center center">So far, you haven't left any comments. Try leaving a few!-->
+<!--    </mat-card-subtitle>-->
+<!--  </div>-->
+<!--</ng-template>-->
+
+
+<ng-template #content>
+  <div class="col gap1"
+  >
+    <ng-container *ngIf="{
+data:(dataService.commentsData$|async),
+} as bag"
+    >
+      <app-comments-item-block [data]="bag.data"
+                               [viewConfig]="commentViewConfig"
+      ></app-comments-item-block>
+    </ng-container>
+  
+  </div>
+</ng-template>
