@@ -1,8 +1,8 @@
 <div class="gap0 root">
-  <ng-container *ngFor="let item of editorConnections.slice().reverse(); let i = index">
+  <ng-container *ngFor="let item of editorConnections; let i = index">
     <lib-clean-card [@exit]>
       <app-patch-connection-minimal [data]="item"
-                                    [index]="editorConnections.length-i"
+                                    [index]="reverseOrder ? editorConnections.length - i : i+1"
                                     [isEditing]="isEditing"
                                     (remove$)="dataService.removeConnectionFromEditor$.next($event)"
       ></app-patch-connection-minimal>
