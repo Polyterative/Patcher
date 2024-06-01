@@ -165,6 +165,7 @@ export class SupabaseService {
     tags: typeof SupabaseService.prototype.getTags;
     moduleWithId: typeof SupabaseService.prototype.getModuleWithId;
     patchConnections: typeof SupabaseService.prototype.getPatchConnections;
+    currentUserComments: typeof SupabaseService.prototype.getCurrentUserComments;
   } = {
     currentUserModules: this.getCurrentUserModules.bind(this),
     modules: this.getModules.bind(this),
@@ -173,6 +174,7 @@ export class SupabaseService {
     tags: this.getTags.bind(this),
     moduleWithId: this.getModuleWithId.bind(this),
     patchConnections: this.getPatchConnections.bind(this),
+    currentUserComments: this.getCurrentUserComments.bind(this)
   };
   
   readonly cacheResetter$ = cacheBuster$;
@@ -966,6 +968,22 @@ export class SupabaseService {
         remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
       )
+  }
+  
+  private getCurrentUserComments() {
+    return this.getUserSession$()
+      .pipe(
+        switchMap(user => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .select(`*,profile:profiles(id,username,email)`)
+            .filter('authorId', 'eq', user.id)
+            .limit(20)
+            .order('created', {ascending: false})
+            .range(0, 20)
+        )),
+        remapErrors(),
+        map((x => x.data))
+      );
   }
   
   @Cacheable({
