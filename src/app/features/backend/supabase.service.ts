@@ -890,7 +890,7 @@ export class SupabaseService {
     maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
     maxCacheCount: 50,
-    async: true
+    // async: true
   })
   private getModules(
     from = 0,
@@ -1033,7 +1033,8 @@ export class SupabaseService {
   @Cacheable({
     maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('comments'))),
-    maxCacheCount: 100
+    maxCacheCount: 100,
+    async: true
   })
   private getComments(entityId: number, entityType: number) {
     return rxFrom(
