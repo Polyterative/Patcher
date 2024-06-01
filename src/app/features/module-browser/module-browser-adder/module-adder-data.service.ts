@@ -1,20 +1,20 @@
-import { Injectable }       from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   UntypedFormControl,
   UntypedFormGroup,
   Validators
-}                           from '@angular/forms';
-import { MatDialog }        from "@angular/material/dialog";
-import { MatSnackBar }      from "@angular/material/snack-bar";
+} from '@angular/forms';
+import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   merge,
   Observable,
   of,
   Subject
-}                           from 'rxjs';
+} from 'rxjs';
 import {
   filter,
   map,
@@ -23,22 +23,22 @@ import {
   switchMap,
   takeUntil,
   tap
-}                           from 'rxjs/operators';
+} from 'rxjs/operators';
 import { StandardsService } from 'src/app/components/format-translator/standards.service';
-import { MinimalModule }    from 'src/app/models/module';
+import { MinimalModule } from 'src/app/models/module';
 import {
   CustomValidators,
   FormTypes,
   getCleanedValueId
-}                           from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,
   ConfirmDialogDataOutModel
-}                           from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
-import { SupabaseService }  from '../../backend/supabase.service';
-import { SubManager }       from "src/app/shared-interproject/directives/subscription-manager";
-import { DomSanitizer }     from "@angular/platform-browser";
+} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
+import { SupabaseService } from '../../backend/supabase.service';
+import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
+import { DomSanitizer } from "@angular/platform-browser";
 
 
 import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
@@ -349,15 +349,15 @@ export class ModuleAdderDataService extends SubManager {
           const manualURL: any = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
           
           return {
-            name:           plainSanitize(this.sanitizer, this.formData.name.control.value),
-            description:    plainSanitize(this.sanitizer, this.formData.description.control.value),
+            name: plainSanitize(this.sanitizer, this.formData.name.control.value),
+            description: plainSanitize(this.sanitizer, this.formData.description.control.value),
             manufacturerId: parseInt(getCleanedValueId(this.formData.manufacturer.control)),
-            hp:             parseInt(this.formData.hp.control.value),
-            standard:       this.formData.standard.control.value.value,
-            manualURL:      plainSanitize(this.sanitizer, manualURL),
-            isApproved:     false,
-            isDIY:          this.formData.diy.control.value.id === '1',
-            public:         true
+            hp: parseInt(this.formData.hp.control.value),
+            standard: parseInt(this.formData.standard.control.value.id),
+            manualURL: plainSanitize(this.sanitizer, manualURL),
+            isApproved: false,
+            isDIY: this.formData.diy.control.value.id === '1',
+            public: true
           };
           
         }),
