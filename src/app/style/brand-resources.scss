@@ -212,6 +212,11 @@ $bgGradientBG: rgb(223, 223, 223);
   background: linear-gradient(135deg, transparentize(rgb(114, 175, 166), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
+.commentsBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, transparentize(rgb(104, 126, 191), $bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
 .limit-height {
   @include scrollbars;
 
