@@ -21,7 +21,7 @@
         
         <app-patch-connections-list [editorConnections]="bag.editorConnections"
                                     [isEditing]="true"
-                                    [encloseVertically]="false"
+                                    [reverseOrder]="true"
         ></app-patch-connections-list>
       
       </lib-hero-content-card>
@@ -64,6 +64,7 @@
           <lib-hero-content-card class="selection"
                                  titleNormal="Your selection"
                                  description="The connection you want to create"
+                                 style="min-width: 26rem; max-width: 26rem"
                                  [showHelpButton]="true"
           >
             <lib-clean-card

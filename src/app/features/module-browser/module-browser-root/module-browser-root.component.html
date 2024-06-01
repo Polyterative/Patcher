@@ -7,15 +7,21 @@
     >
       <div class="rowwrap gap1 col-lt-SM"
       >
-        <lib-mat-form-entity [control]="dataService.fields.search.control"
-                             [type]="dataService.fields.search.type"
-                             [label]="dataService.fields.search.label"
+        <lib-mat-form-entity [control]="dataService.fields.name.control"
+                             [type]="dataService.fields.name.type"
+                             [label]="dataService.fields.name.label"
+        ></lib-mat-form-entity>
+        
+        <lib-mat-form-entity [control]="dataService.fields.description.control"
+                             [type]="dataService.fields.description.type"
+                             [label]="dataService.fields.description.label"
         ></lib-mat-form-entity>
         
         <lib-mat-form-entity [control]="dataService.fields.manufacturers.control"
                              [type]="dataService.fields.manufacturers.type"
                              [options$]="dataService.fields.manufacturers.options$"
                              [label]="dataService.fields.manufacturers.label"
+                             [disableVoidSelection]="false"
         ></lib-mat-form-entity>
         
         <lib-mat-form-entity [control]="dataService.fields.hpCondition.control"

@@ -1,29 +1,24 @@
-<div [fxFlex]="data.hp*1+'rem'"
+<div [fxFlex]="data.hp+'rem'"
      [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem')}"
      class="col root"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
-  <!--  [ngStyle]="{'background-image': 'url('+('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+data.panels[0].filename)+')'}"-->
-  
   <ng-container *ngIf="!showPanelImages">
     <app-module-realistic-holeline [data]="data"
-                                   class="hole-left-padding"
+                                   class="hole-padding"
     >
     
     </app-module-realistic-holeline>
-    <div class="col gap1 parent"
-         fxFlex="grow"
-         style="padding-right: .5rem;padding-left: .5rem;background-color: #ffffff"
-    
+    <div class="col gap1 parent modBody"
     >
       <app-module-part-hp [data]="data"
                           *ngIf="data.hp>3"
+                          class="self-center"
       ></app-module-part-hp>
       <app-module-part-manufacturer [data]="data"
                                     *ngIf="data.hp>3&&data.standard.id===0"
                                     [ngClass]="{'rotated':data.hp<6}"
-                                    [fxLayoutAlign]="data.hp<=6?'end center':'center center'"
-                                    fxLayoutAlign="center center"
+                                    class="self-center"
       ></app-module-part-manufacturer>
       <div fxFlex="grow"
            *ngIf="data.standard.id===0"
@@ -36,11 +31,11 @@
       <app-module-part-name [data]="data"
                             [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                             [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
-                            [textSize]="(1/(data.name.length/12)*(data.hp/14))+(data.standard.id===0?0.5:-0.5)"
+                            [textSize]="calculateTextSize(data)"
       ></app-module-part-name>
     </div>
     <app-module-realistic-holeline [data]="data"
-                                   class="hole-right-padding"
+                                   class="hole-padding"
     ></app-module-realistic-holeline>
   </ng-container>
   
