@@ -3,31 +3,31 @@ import {
   Component,
   Input,
   OnInit
-}                                  from '@angular/core';
+} from '@angular/core';
 import {
   ActivatedRoute,
   Router
-}                                  from '@angular/router';
-import { SeoSocialShareData }      from 'ngx-seo';
-import { Subject }                 from 'rxjs';
+} from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
+import { Subject } from 'rxjs';
 import {
   filter,
   map,
   takeUntil
-}                                  from 'rxjs/operators';
+} from 'rxjs/operators';
 import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-}                                  from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { SeoAndUtilsService }      from '../../backbone/seo-and-utils.service';
-import { AppStateService }         from "src/app/shared-interproject/app-state.service";
-import { DbModule }                from "src/app/models/module";
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { AppStateService } from "src/app/shared-interproject/app-state.service";
+import { DbModule } from "src/app/models/module";
 import {
   CommentableEntityTypes,
   CommentsDataService
-}                                  from "src/app/components/shared-atoms/comments/comments-data.service";
-import { UserManagementService }   from "src/app/features/backbone/login/user-management.service";
+} from "src/app/components/shared-atoms/comments/comments-data.service";
+import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 
 
 @Component({
@@ -39,8 +39,8 @@ import { UserManagementService }   from "src/app/features/backbone/login/user-ma
 })
 export class ModuleBrowserDetailComponent implements OnInit {
   
-  protected destroyEvent$ = new Subject<void>();
-  @Input() ignoreSeo = false;
+  protected destroyEvent$                      = new Subject<void>();
+  @Input() ignoreSeo                           = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: false,
@@ -57,7 +57,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
     hideLabels: true,
     hideDescription: true
   };
-  searchLinks = [
+  searchLinks                                                    = [
     {
       url: (name: string, manufacturer: string) => `https://www.google.com/search?q=${ name } by ${ manufacturer }`,
       label: 'Google',
@@ -234,19 +234,32 @@ export class ModuleBrowserDetailComponent implements OnInit {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => {
-          const tags: string = data.tags.map(x => x.tag.name)
+          let rawTags = data.tags.map(x => x.tag.name).filter(x => !!x);
+          
+          const ins  = data.ins.map(x => x.name);
+          const outs = data.outs.map(x => x.name);
+          
+          let keywords = [
+            'eurorack',
+            'module',
+            data.manufacturer.name,
+            data.name,
+            rawTags,
+            ins,
+            outs
+          ]
+            .flatMap(x => x)
+            .map(x => x.toLowerCase())
+            .map(x => x.replace(/[^a-z0-9]/g, ''))
+            .filter(x => !!x)
+            .map(x => x.trim())
             .join(', ');
+          
+          let tagsClean                     = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
           const seoData: SeoSocialShareData = {
-            title: `${ data.name } - details. `,
-            description: `${ data.name } - module details.
-                Has ${ data.ins.length } inputs and ${ data.outs.length } outputs.
-                Made by ${ data.manufacturer.name }.
-                Module is ${ data.hp } HP wide.
-                Tagged ${ tags }.
-                `,
-            keywords: `${ tags }, module, eurorack,${ data.manufacturer.name },${ data.ins.map(x => x.name)
-              .join(', ') }, ${ data.outs.map(x => x.name)
-              .join(', ') }`,
+            title: `${ data.name } - details.`,
+            description: `${ data.name } - module details. Has ${ data.ins.length } recorded inputs and ${ data.outs.length } recorded outputs. Made by ${ data.manufacturer.name }. Module is ${ data.hp } HP wide. Tagged: ${ tagsClean }.`,
+            keywords: keywords,
             published: data.created,
             modified: data.updated,
           };
@@ -254,7 +267,6 @@ export class ModuleBrowserDetailComponent implements OnInit {
             `${ data.name } by ${ data.manufacturer.name } - Module Details`);
         });
     }
-    
   }
   
   ngOnDestroy(): void {

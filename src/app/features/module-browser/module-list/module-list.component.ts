@@ -15,6 +15,7 @@ import {
 } from 'rxjs';
 import {
   filter,
+  map,
   take
 } from 'rxjs/operators';
 import {
@@ -50,6 +51,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
   
   @Input() readonly showSearch = false;
+  @Input() readonly showOrder = false;
   @Input() readonly encloseVertically = true;
   
   filteredData$ = new BehaviorSubject<ModuleList>([]);
@@ -77,25 +79,43 @@ export class ModuleListComponent extends SubManager implements OnInit {
     
     this.manageSub(
       this.data$
-        .pipe(take(1))
+        .pipe(
+          take(1),
+          map(data => this.orderData(data))
+        )
         .subscribe(x => this.filteredData$.next(x))
     );
     
     if (this.showSearch) {
       this.manageSub(
         combineLatest([
-          this.data$.pipe(filter(data => !!data)),
+          this.data$.pipe(
+            filter(data => !!data),
+            map(data => this.orderData(data))
+          ),
           this.filterService.filterEvent$
         ])
           .subscribe(([data, query]) => {
             const result = data.filter(item => item.name.toLowerCase()
               .includes(query.toLowerCase()));
+            
             this.filteredData$.next(result);
           })
       );
       
+      // if (this.showOrder) {
+      
+      // }
     }
     
   }
   
+  // sort happening on the server side now
+  orderData(
+    moduleList: ModuleList,
+  ): ModuleList {
+    // return moduleList.sort((a, b) => a.name.localeCompare(b.name));
+    return moduleList;
+  
+}
 }

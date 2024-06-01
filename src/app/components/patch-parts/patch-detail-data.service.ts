@@ -157,7 +157,7 @@ export class PatchDetailDataService implements OnDestroy {
     this.singlePatchData$
       .pipe(
         filter(x => !!x),
-        switchMap(x => this.backend.get.patchConnections(x.id)),
+        switchMap(x => this.backend.GET.patchConnections(x.id)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(data => this.patchConnections$.next(data));
