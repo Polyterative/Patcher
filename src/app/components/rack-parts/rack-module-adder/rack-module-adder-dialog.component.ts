@@ -35,6 +35,7 @@ import {
   MatDialog,
   MatDialogRef
 } from "@angular/material/dialog";
+import { Router } from "@angular/router";
 
 
 export interface RackModuleAdderOutModel {
@@ -86,6 +87,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
     public timeagoPipe: TimeagoPipe,
     public userAreaDataService: UserAreaDataService,
     public dialogRef: MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel>,
+    private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: RackModuleAdderInModel
   ) {
     super();
@@ -113,6 +115,19 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
         )
         .subscribe(() => {
           SharedConstants.successSave(this.snackBar);
+          
+          this.snackBar.open(`Module added`, 'Open rack now', {
+            duration: 5000,
+          })
+            .onAction()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                this.dialogRef.close();
+                this.router.navigate(['/racks', 'details', this.fields.rack.control.value.id]);
+              }
+            );
+          
+          
           
           this.dialogRef.close();
         })

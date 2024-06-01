@@ -1,59 +1,71 @@
 import {
   EventEmitter,
   Injectable
-}                          from '@angular/core';
-import { MatSnackBar }     from "@angular/material/snack-bar";
-import { ActivatedRoute }  from '@angular/router';
+} from '@angular/core';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ActivatedRoute } from '@angular/router';
 import {
   AuthError,
   createClient,
   User
-}                          from '@supabase/supabase-js';
+} from '@supabase/supabase-js';
 import {
   forkJoin,
   from,
   from as rxFrom,
+  MonoTypeOperatorFunction,
   NEVER,
   Observable,
   ObservedValueOf,
   of,
   ReplaySubject,
   shareReplay,
+  Subject,
   throwError,
   zip
-}                          from 'rxjs';
+} from 'rxjs';
 import {
   catchError,
+  filter,
   map,
   switchMap,
   tap,
   withLatestFrom
-}                          from 'rxjs/operators';
+} from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { Database }        from 'src/backend/database.types';
-import { environment }     from 'src/environments/environment';
+import { Database } from 'src/backend/database.types';
+import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
 import {
   CV,
   CVwithModuleId
-}                          from '../../models/cv';
-import { DBManufacturer }  from '../../models/manufacturer';
+} from '../../models/cv';
+import { DBManufacturer } from '../../models/manufacturer';
 import {
   DbModule,
   ModulePanel,
   RackedModule
-}                          from '../../models/module';
-import { Patch }           from '../../models/patch';
+} from '../../models/module';
+import { Patch } from '../../models/patch';
 import {
   RackingData,
   RackMinimal
-}                          from '../../models/rack';
-import { Tag }             from '../../models/tag';
+} from '../../models/rack';
+import { Tag } from '../../models/tag';
 import {
   DbPaths,
   QueryJoins
-}                          from './DatabaseStrings';
+} from './DatabaseStrings';
+import {
+  Cacheable,
+  GlobalCacheConfig,
+  LocalStorageStrategy
+} from "ts-cacheable";
+import { PostgrestSingleResponse } from "@supabase/postgrest-js/src/types";
+import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 
+
+GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
 
 export type SupabaseStorageFile =
   ArrayBuffer
@@ -85,6 +97,47 @@ export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | Observed
   // error: AuthError | null
 }>>>;
 
+
+const defaultCacheTime = 5 * 60 * 1000;
+const longCacheTime = defaultCacheTime * 10;
+const smallCacheTime = defaultCacheTime / 5;
+type CachedEntity =
+  'comments'
+  | 'modules'
+  | 'manufacturers'
+  | 'currentUserModules'
+  | 'moduleWithId'
+  | 'patchConnections'
+  | void;
+const cacheBuster$ = new Subject<CachedEntity[]>();
+
+function cacheBust<T>(cacheKeys: CachedEntity[]): MonoTypeOperatorFunction<T> {
+  return (source: Observable<T>) => source.pipe(
+    tap(() => cacheBuster$.next(cacheKeys))
+  );
+}
+
+function showSuccessMessage<T>(snackBar: MatSnackBar): MonoTypeOperatorFunction<T> {
+  return (source: Observable<T>) => source.pipe(
+    tap(() => SharedConstants.showSuccessUpdate(snackBar))
+  );
+}
+
+function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) => Observable<T> {
+  return (source: Observable<T>) => source.pipe(
+    catchError(() => {
+      SharedConstants.errorHandlerOperation(snackBar);
+      return NEVER;
+    })
+  );
+}
+
+function remapErrors<T>() {
+  return (source: Observable<PostgrestSingleResponse<T>>) => source.pipe(
+    switchMap(x => x.error ? throwError(() => new Error(x.error.message)) : of(x)),
+  );
+}
+
 @Injectable()
 export class SupabaseService {
   constructor(
@@ -103,9 +156,258 @@ export class SupabaseService {
   };
   private defaultPag = 20;
   
+  readonly GET: {
+    // infer types and return types
+    currentUserModules: typeof SupabaseService.prototype.getCurrentUserModules;
+    modules: typeof SupabaseService.prototype.getModules;
+    manufacturers: typeof SupabaseService.prototype.getManufacturers;
+    comments: typeof SupabaseService.prototype.getComments;
+    tags: typeof SupabaseService.prototype.getTags;
+    moduleWithId: typeof SupabaseService.prototype.getModuleWithId;
+    patchConnections: typeof SupabaseService.prototype.getPatchConnections;
+  } = {
+    currentUserModules: this.getCurrentUserModules.bind(this),
+    modules: this.getModules.bind(this),
+    manufacturers: this.getManufacturers.bind(this),
+    comments: this.getComments.bind(this),
+    tags: this.getTags.bind(this),
+    moduleWithId: this.getModuleWithId.bind(this),
+    patchConnections: this.getPatchConnections.bind(this),
+  };
+  
+  readonly cacheResetter$ = cacheBuster$;
+  
   
   private supabase = createClient<Database>(environment.supabase.url, environment.supabase.key);
-  add = {
+  readonly get = {
+    
+    // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
+    //   this.supabase.from(DatabasePaths.patches)
+    //       .select(`${ columns }`)
+    //       .range(from, to)
+    // ),
+    patchesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(`id,name,description,${ QueryJoins.author },updated,created `, {count: 'exact'})
+        .ilike('name', `%${ name }%`)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+    )
+      .pipe(
+        map((x) => x),
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
+      ),
+    currentUserPatches: () => {
+      return this.getUserSession$().pipe(
+        switchMap(user => rxFrom(
+            this.supabase.from(DbPaths.patches)
+              .select(`*, ${ QueryJoins.author }`)
+              .filter('authorid', 'eq', user.id)
+              .order('updated', {ascending: false})
+          ).pipe(
+          remapErrors(),
+            map((x: any) => x), // map type as any , TODO: fix this
+            map((x => x.data))
+          )
+        ),
+      );
+    },
+    // if authorid is not provided, we will run it for the current user
+    currentUserRacks: (authorid?: string) => rxFrom(this.getUserSession$()
+      .pipe(
+        switchMap((user: SimpleUserModel) => this.supabase.from(DbPaths.racks)
+          .select(`*, ${ QueryJoins.author }`)
+          .filter('authorid', 'eq', authorid ? authorid : user.id)
+          .order('updated', {ascending: false})
+        ),
+      ).pipe(
+        tap((x) => /*errorHandling*/ x),
+        map((x: any) => x), // map type as any , TODO: fix this
+        map((x => x.data))
+      )),
+    rackedModules: (rackid: number) => rxFrom(
+      this.supabase.from(DbPaths.rack_modules)
+        .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
+        // .order('module.id')
+        // .select(`*`)
+        .filter('rackid', 'eq', rackid)
+        .order('row', {ascending: true})
+        .order('column', {ascending: true})
+    )
+      .pipe(remapErrors())
+      .pipe(
+        map((x: any) => x), // map type as any , TODO: fix this
+        map((x => x.data)),
+        map(x => x.map(y => ({
+          module: y.module,
+          rackingData: {
+            id: y.id,
+            row: y.row,
+            column: y.column,
+            moduleid: y.moduleid,
+            rackid: y.rackid
+          }
+        })))),
+    racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author }`, {count: 'exact'})
+        // only public
+        .filter('public', 'eq', true)
+        .ilike(`name,hp,rows, ${ QueryJoins.author }`, `%${ name }%`)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x), // map type as any , TODO: fix this
+      ),
+    racksWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
+      this.supabase.from(DbPaths.rack_modules_grouped_by_moduleid)
+        .select(`*,${ QueryJoins.rack }`, {count: 'exact'})
+        .filter('moduleid', 'eq', moduleid)
+        // postgrest show racks only once
+        .range(from, to)
+        .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)// map type as any , TODO: fix this
+      )
+    ,
+    patchWithId: (id: number, columns = '*') => rxFrom(
+      this.supabase.from(DbPaths.patches)
+        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
+        // .range(from, to)
+        .filter('id', 'eq', id)
+        // .order('id', {foreignTable: DatabasePaths.moduleINs})
+        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)// map type as any , TODO: fix this
+      ),
+    patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
+      const patchIdList$ = rxFrom(
+        this.supabase.from(DbPaths.patches_for_modules)
+          .select('moduleid,patchid', {count: 'exact'})
+          // .order('updated', {
+          //   ascending:    false,
+          //   foreignTable: DatabasePaths.patch_connections
+          // })
+          .filter('moduleid', 'eq', moduleid)
+          .range(from, to)
+      )
+      // .pipe(remapErrors());
+      
+      // for each patchid, get the patch in a single query, combine them in a single array at the end
+      return patchIdList$.pipe(
+        switchMap(x => {
+            const getPatchData$ = forkJoin(
+              x.data.map(resultFromView =>
+                rxFrom(this.supabase.from(DbPaths.patches)
+                  .select(`id,name,description,${ QueryJoins.author },updated,created `)
+                  .filter('id', 'eq', resultFromView.patchid)
+                  .single())
+                  .pipe(map(x => x.data))
+              )
+            );
+            
+            return x.data.length > 0 ? getPatchData$ : of([]);
+          }
+        )
+      );
+    },
+    modulesBySameManufacturer: (manufacturerId, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`${ columns },
+          ${ QueryJoins.manufacturer },
+          ${ QueryJoins.standard },
+          ${ QueryJoins.module_panels },
+          ${ QueryJoins.module_tags }
+          `)
+        .filter('manufacturerId', 'eq', manufacturerId)
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        .limit(1, {                                                         // take only one panel
+          foreignTable: DbPaths.module_panels
+        })
+        .order(`color`, {                                // order panel by color
+          foreignTable: DbPaths.module_panels,
+          ascending: true
+        })
+        .order('updated', {ascending: false})
+        .range(from, to)
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
+        map((x => x.data))
+      ),
+    rackWithId: (id: number, columns = '*') => rxFrom(
+      this.supabase.from(DbPaths.racks)
+        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
+        // .range(from, to)
+        .filter('id', 'eq', id)
+        // .filter('public', 'eq', true)
+        
+        // .order('id', {foreignTable: DatabasePaths.moduleINs})
+        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)// map type as any , TODO: fix this
+      ),
+    manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
+      this.supabase.from(DbPaths.manufacturers)
+        .select(columns)
+        .range(from, to)
+        .filter('id', 'eq', id)
+        .single()
+    )
+      .pipe(remapErrors()),
+    standards: () => rxFrom(
+      this.supabase.from(DbPaths.standards)
+        .select('*')
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
+      ),
+    userWithId: (id: string, columns = '*') => rxFrom(
+      this.supabase.from(DbPaths.profiles)
+        .select(columns)
+        .filter('id', 'eq', id)
+        .single()
+    )
+      .pipe(remapErrors()),
+    statistics: () => zip(
+      rxFrom(
+        this.supabase.from(DbPaths.modules)
+          .select('id', {count: 'exact'})
+      )
+        .pipe(remapErrors())
+        .pipe(map(((x: any) => x.count))),
+      rxFrom(
+        this.supabase.from(DbPaths.racks)
+          .select('id', {count: 'exact'})
+      )
+        .pipe(remapErrors())
+        .pipe(map(((x: any) => x.count))),
+      rxFrom(
+        this.supabase.from(DbPaths.patches)
+          .select('id', {count: 'exact'})
+      )
+        .pipe(remapErrors())
+        .pipe(map(((x: any) => x.count)))
+    )
+    
+  };
+  
+  readonly add = {
     comment: (data: {
       entityId: number,
       entityType: number,
@@ -117,20 +419,21 @@ export class SupabaseService {
           this.supabase
             .from(DbPaths.comments)
             .insert({
-              entityId:   data.entityId,
+              entityId: data.entityId,
               entityType: data.entityType,
-              content:    data.content,
-              authorId:   user.id
+              content: data.content,
+              authorId: user.id
             })
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        cacheBust(['comments']),
+        remapErrors()
       ),
     module_tags: (data: Tag[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_tags)
         .upsert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     userModule: (moduleId: number) => this.getUserSession$()
       .pipe(
         switchMap(user => rxFrom(
@@ -141,7 +444,8 @@ export class SupabaseService {
               profileid: user.id
             })
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        cacheBust(['currentUserModules']),
+        remapErrors()
       ),
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
       this.supabase
@@ -153,7 +457,7 @@ export class SupabaseService {
           column
         })
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     rack: (data: {
       name: string,
       authorid: string,
@@ -167,7 +471,7 @@ export class SupabaseService {
         .select('id'),
     )
       .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+        remapErrors(),
         map((x: any) => x), // map type as any , TODO: fix this
       ),
     patch: (data: {
@@ -182,7 +486,7 @@ export class SupabaseService {
               authorid: user.id
             })
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
+        remapErrors());
     },
     modules: (data: DbModule[]) => {
       return this.getUserSession$().pipe(
@@ -214,8 +518,9 @@ export class SupabaseService {
             )),
         // for each module, build a call to insert the module
         switchMap((x) => forkJoin(x)),
-        catchError(() => this.standardErrorMessageAndBlock()),
-        this.errorMsg()
+        // bust the cache for modules
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        catchErrors(this.snackBar)
       );
     },
     moduleINs: (data: CV[], moduleid: number) => rxFrom(
@@ -226,7 +531,7 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     moduleOUTs: (data: CV[], moduleid: number) => rxFrom(
       this.supabase
         .from(DbPaths.moduleOUTs)
@@ -235,450 +540,51 @@ export class SupabaseService {
           moduleid
         })))
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(remapErrors()),
     manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
       this.supabase
         .from(DbPaths.manufacturers)
         .insert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        remapErrors(),
+        cacheBust(['manufacturers'])
+      ),
     panel: (data: Partial<ModulePanel>[]) => rxFrom(
       this.supabase
         .from(DbPaths.module_panels)
         .insert(data)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
   };
-  get = {
-    comments: (entityId: number, entityType: number) => rxFrom(
-      this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username,email)`)
-        .filter('entityId', 'eq', entityId)
-        .filter('entityType', 'eq', entityType)
-      // foreign key add profile information for each comment
-      
-      
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x => x.data))
-      ),
-    
-    userModules: () => {
-      let prefix = `module`;
-      let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
-      
-      const columns = `
-    ${ prefix }:modules!user_modules_moduleid_fkey(
-      *,
-      ${ QueryJoins.module_panels },
-      ${ QueryJoins.manufacturer },
-      ${ QueryJoins.insOuts }
-    )
-  `;
-      return this.getUserSession$().pipe(
-        switchMap(user =>
-          rxFrom(
-            this.supabase.from(DbPaths.user_modules)
-              .select(columns)
-              // only approved panels
-              // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
-              // order panel by color
-              .order(`color`, {
-                foreignTable: panelsTable,
-                ascending: true
-              })
-              .limit(1, {foreignTable: panelsTable})
-              .filter('profileid', 'eq', user.id)
-          ).pipe(
-            switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-            map((x: any) => x), // map type as any , TODO: fix this
-            map((x => x.data.map(y => y.module)))
-          )
-        ),
-      );
-    }
-    ,
-    patchConnections: (patchid: number) => rxFrom(
-      this.supabase.from(DbPaths.patch_connections)
-        // .select(`module:moduleid(*, ${ QueryJoins.manufacturer }, ${ QueryJoins.insOuts })`)
-        //   .select(`*,a(*,${ QueryJoins.module })`)
-        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
-        .select(`
-          *,
-          ${ QueryJoins.patch },
-          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ QueryJoins.manufacturer },${ QueryJoins.module_panels })),
-          b(*,module:modules!moduleINs_moduleId_fkey(*,${ QueryJoins.manufacturer },${ QueryJoins.module_panels }))
-          `)
-        .filter('patchid', 'eq', patchid)
-        .order('ordinal')
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x), // map type as any , TODO: fix this
-        map((x => x.data))
-      )
-    ,
-    
-    // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
-    //   this.supabase.from(DatabasePaths.patches)
-    //       .select(`${ columns }`)
-    //       .range(from, to)
-    // ),
-    patchesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
-      this.supabase.from(DbPaths.patches)
-        .select(`id,name,description,${ QueryJoins.author },updated,created `, {count: 'exact'})
-        .ilike('name', `%${ name }%`)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x),// map type as any , TODO: fix this
-      ),
-    userPatches: () => {
-      return this.getUserSession$().pipe(
-        switchMap(user => rxFrom(
-            this.supabase.from(DbPaths.patches)
-              .select(`*, ${ QueryJoins.author }`)
-              .filter('authorid', 'eq', user.id)
-              .order('updated', {ascending: false})
-          ).pipe(
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-            map((x: any) => x), // map type as any , TODO: fix this
-            map((x => x.data))
-          )
-        ),
-      );
-    },
-    // if authorid is not provided, we will run it for the current user
-    userRacks: (authorid?: string) => rxFrom(this.getUserSession$()
-      .pipe(
-        switchMap((user: SimpleUserModel) => this.supabase.from(DbPaths.racks)
-          .select(`*, ${ QueryJoins.author }`)
-          .filter('authorid', 'eq', authorid ? authorid : user.id)
-          .order('updated', {ascending: false})
-        ),
-      ).pipe(
-        tap((x) => /*errorHandling*/ x),
-        map((x: any) => x), // map type as any , TODO: fix this
-        map((x => x.data))
-      )),
-    rackedModules: (rackid: number) => rxFrom(
-      this.supabase.from(DbPaths.rack_modules)
-        .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
-        // .order('module.id')
-        // .select(`*`)
-        .filter('rackid', 'eq', rackid)
-        .order('row', {ascending: true})
-        .order('column', {ascending: true})
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-      .pipe(
-        map((x: any) => x), // map type as any , TODO: fix this
-        map((x => x.data)),
-        map(x => x.map(y => ({
-          module: y.module,
-          rackingData: {
-            id: y.id,
-            row: y.row,
-            column: y.column,
-            moduleid: y.moduleid,
-            rackid: y.rackid
-          }
-        })))),
-    modulesFull: (from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`${ columns },
-          ${ QueryJoins.manufacturer },
-          ${ QueryJoins.insOuts },
-          ${ QueryJoins.standard },
-          ${ QueryJoins.module_tags },
-          ${ QueryJoins.module_panels }
-          `)
-        .range(from, to)
-        .filter(`${ DbPaths.module_panels }.isPublic`, 'eq', true) // only public modules
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-      .pipe(map((x => x.data))),
-    tags: () => rxFrom(
-      this.supabase.from(DbPaths.tags)
-        .select('*')
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-      .pipe(map((x => x.data))),
-    modulesMinimal: (
-      from = 0,
-      to: number = this.defaultPag,
-      name?: string,
-      orderBy?: string,
-      orderDirection?: string,
-      manufacturerId?: number,
-      withHP?: number,
-      withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
-      standard: number | undefined = undefined,
-      onlyPublic = true
-    ) => {
-      
-      let query = this.supabase.from(DbPaths.modules)
-        .select(`
-                              id,name,hp,description,public,created,updated,
-                              ${ QueryJoins.manufacturer },
-                              ${ QueryJoins.standard },
-                              ${ QueryJoins.module_panels },
-                              ${ QueryJoins.module_tags }
-                            `, {count: 'exact'})
-      
-      if (onlyPublic===true) {
-        query = query.filter('public', 'eq', true);
-      }
-      
-      if (withHP) {
-        if (withHpCondition === '=' || withHpCondition === undefined) {
-          query = query.filter('hp', 'eq', withHP);
-        } else if (withHpCondition === '>') {
-          query = query.filter('hp', 'gt', withHP);
-        } else if (withHpCondition === '<') {
-          query = query.filter('hp', 'lt', withHP);
-        } else if (withHpCondition === '>=') {
-          query = query.filter('hp', 'gte', withHP);
-        } else if (withHpCondition === '<=') {
-          query = query.filter('hp', 'lte', withHP);
-        } else if (withHpCondition === '!=') {
-          query = query.filter('hp', 'neq', withHP);
-        } else {
-          query = query.filter('hp', 'eq', withHP);
-        }
-      }
-      
-      if (manufacturerId) {
-        query = query.filter('manufacturerId', 'eq', manufacturerId);
-      }
-      
-      if (standard !== undefined) {
-        query = query.filter('standard', 'eq', standard);
-      }
-      
-      
-      return rxFrom(
-        query
-          // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-          .order(`color`, {                                // order panel by color
-            foreignTable: DbPaths.module_panels,
-            ascending: true
-          })
-          .limit(1, {                                // take only one panel
-            foreignTable: DbPaths.module_panels
-          })
-          .ilike('name', `%${ name }%`)
-          .range(from, to)
-          .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-      )
-        .pipe(
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-          map((x: any) => x), // map type as any , TODO: fix this
-        )
-    },
-    racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
-      this.supabase.from(DbPaths.racks)
-        .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author }`, {count: 'exact'})
-        .ilike(`name,hp,rows, ${ QueryJoins.author }`, `%${ name }%`)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x), // map type as any , TODO: fix this
-      ),
-    racksWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
-      this.supabase.from(DbPaths.rack_modules_grouped_by_moduleid)
-        .select(`*,${ QueryJoins.rack }`, {count: 'exact'})
-        .filter('moduleid', 'eq', moduleid)
-        // postgrest show racks only once
-        .range(from, to)
-        .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x)// map type as any , TODO: fix this
-      )
-    ,
-    moduleWithId: (id: number, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`${ columns },
-           ${ QueryJoins.manufacturer },
-            ${ QueryJoins.standard },
-            ${ QueryJoins.insOuts },
-            ${ QueryJoins.module_tags },
-            ${ QueryJoins.module_panels }
-            `)
-        .filter('id', 'eq', id)
-        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
-        // .limit(1, {                                // take only one panel
-        //   foreignTable: DatabasePaths.module_panels
-        // })
-        .order('id', {foreignTable: DbPaths.moduleINs})
-        .order('id', {foreignTable: DbPaths.moduleOUTs})
-        .single()
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x)// map type as any , TODO: fix this
-      ),
-    patchWithId: (id: number, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.patches)
-        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
-        .select(`${ columns }, ${ QueryJoins.author }`)
-        // .range(from, to)
-        .filter('id', 'eq', id)
-        // .order('id', {foreignTable: DatabasePaths.moduleINs})
-        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
-        .single()
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x)// map type as any , TODO: fix this
-      ),
-    patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
-      const patchIdList$ = rxFrom(
-        this.supabase.from(DbPaths.patches_for_modules)
-          .select('moduleid,patchid', {count: 'exact'})
-          // .order('updated', {
-          //   ascending:    false,
-          //   foreignTable: DatabasePaths.patch_connections
-          // })
-          .filter('moduleid', 'eq', moduleid)
-          .range(from, to)
-      )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)));
-      
-      // for each patchid, get the patch in a single query, combine them in a single array at the end
-      return patchIdList$.pipe(
-        switchMap(x => {
-            const getPatchData$ = forkJoin(
-              x.data.map(resultFromView =>
-                rxFrom(this.supabase.from(DbPaths.patches)
-                  .select(`id,name,description,${ QueryJoins.author },updated,created `)
-                  .filter('id', 'eq', resultFromView.patchid)
-                  .single())
-                  .pipe(map(x => x.data))
-              )
-            );
-          
-          return x.data.length > 0 ? getPatchData$ : of([]);
-          }
-        )
-      );
-    },
-    modulesBySameManufacturer: (manufacturerId, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .select(`${ columns },
-          ${ QueryJoins.manufacturer },
-          ${ QueryJoins.standard },
-          ${ QueryJoins.module_panels },
-          ${ QueryJoins.module_tags }
-          `)
-        .filter('manufacturerId', 'eq', manufacturerId)
-        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .limit(1, {                                                         // take only one panel
-          foreignTable: DbPaths.module_panels
-        })
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
-        .order('updated', {ascending: false})
-        .range(from, to)
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x),// map type as any , TODO: fix this
-        map((x => x.data))
-      ),
-    rackWithId: (id: number, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.racks)
-        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
-        .select(`${ columns }, ${ QueryJoins.author }`)
-        // .range(from, to)
-        .filter('id', 'eq', id)
-        // .order('id', {foreignTable: DatabasePaths.moduleINs})
-        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
-        .single()
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x)// map type as any , TODO: fix this
-      ),
-    manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.manufacturers)
-        .select(columns)
-        .range(from, to)
-        .filter('id', 'eq', id)
-        .single()
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
-    manufacturers: (from = 0, to = this.defaultPag, columns = '*', orderBy?: string) => rxFrom(
-      this.supabase.from(DbPaths.manufacturers)
-        .select(columns)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name')
-    )
-      .pipe(
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        map((x: any) => x),// map type as any , TODO: fix this
-      ),
-    standards: () => rxFrom(
-      this.supabase.from(DbPaths.standards)
-        .select('*')
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
-    userWithId: (id: string, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.profiles)
-        .select(columns)
-        .filter('id', 'eq', id)
-        .single()
-    )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
-    statistics: () => zip(
-      rxFrom(
-        this.supabase.from(DbPaths.modules)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-        .pipe(map(((x: any) => x.count))),
-      rxFrom(
-        this.supabase.from(DbPaths.racks)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-        .pipe(map(((x: any) => x.count))),
-      rxFrom(
-        this.supabase.from(DbPaths.patches)
-          .select('id', {count: 'exact'})
-      )
-        .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
-        .pipe(map(((x: any) => x.count)))
-    )
-    
-  };
-  delete = {
+  
+  readonly delete = {
     comment: (id: number) => rxFrom(
       this.supabase.from(DbPaths.comments)
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        // bust the cache for comments
+        cacheBust(['comments']),
+        remapErrors()),
     module: (id: number) => rxFrom(
       this.supabase.from(DbPaths.modules)
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
-        catchError(() => this.standardErrorMessageAndBlock())),
+      .pipe(
+        // delete all comments for this module
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+        )),
+        remapErrors(),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        catchErrors(this.snackBar)
+      ),
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
         this.supabase.from(DbPaths.user_modules)
@@ -686,7 +592,15 @@ export class SupabaseService {
           .filter('profileid', 'eq', user.id)
           .filter('moduleid', 'eq', id)
       )),
-      switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+      // delete all comments for this module
+      switchMap(() => rxFrom(
+        this.supabase.from(DbPaths.comments)
+          .delete()
+          .filter('entityId', 'eq', id)
+          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+      )),
+      cacheBust(['currentUserModules']),
+      remapErrors()
     )
     ,
     rackedModule: (id: number) => rxFrom(
@@ -694,14 +608,14 @@ export class SupabaseService {
         .delete()
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     modulesOfRack: (rackId: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .delete()
         .filter('rackid', 'eq', rackId)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     patch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patches)
@@ -709,7 +623,16 @@ export class SupabaseService {
         // .filter('profileid', 'eq', this.getUser().id)
         .filter('id', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(
+        // delete all comments for this patch
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
+        )),
+        remapErrors()
+      )
     ,
     patchConnectionsForPatch: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_connections)
@@ -717,7 +640,7 @@ export class SupabaseService {
         .filter('patchid', 'eq', id)
       // .filter('moduleid', 'eq', id)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(remapErrors())
     ,
     userPatch: (id: number) => this.getUserSession$()
       .pipe(
@@ -727,7 +650,14 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))
+        // delete all comments for this patch
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
+        )),
+        remapErrors()
       )
     ,
     userRack: (id: number) => this.getUserSession$()
@@ -738,8 +668,14 @@ export class SupabaseService {
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
         )),
-        switchMap((x) => (x.error ? this.throwAsyncError('errorMessageToCustomize') : of(x))),
-        this.errorMsg()
+        // delete all comments for this rack
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.RACK)
+        )),
+        remapErrors(),
       )
     ,
     modules: (from = 0, to: number = this.defaultPag) => rxFrom(
@@ -747,15 +683,21 @@ export class SupabaseService {
         .delete()
         .range(from, to)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x))),
+      .pipe(
+        remapErrors(),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
+      ),
     manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
         .delete()
         .range(from, to)
     )
-      .pipe(switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)))
+      .pipe(
+        remapErrors(),
+        cacheBust(['manufacturers'])
+      )
   };
-  update = {
+  readonly update = {
     module: (data: Partial<DbModule>) => {
       data.manufacturer = undefined;
       data.ins = undefined;
@@ -787,7 +729,11 @@ export class SupabaseService {
           .eq('id', data.id)
           .select('id,updated,created')
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(
+          showSuccessMessage(this.snackBar),
+          // bust the cache for modules
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        );
     },
     rackedModules: (data: RackedModule[]) => {
       // upload all modules that already have an id
@@ -830,7 +776,7 @@ export class SupabaseService {
         )
         .pipe(
           // if data.error is true, then we have an error, throw it down the pipe
-          switchMap(x => x.error ? this.throwAsyncError(x.error.message) : of(x)),
+          remapErrors(),
         );
     },
     rack: (data: RackMinimal) => {
@@ -843,7 +789,8 @@ export class SupabaseService {
             description: data.description,
             rows: data.rows,
             hp: data.hp,
-            locked: data.locked
+            locked: data.locked,
+            public: data.public
           }).select('id')
       );
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
@@ -857,7 +804,7 @@ export class SupabaseService {
           .eq('id', data.id)
           .single()
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(showSuccessMessage(this.snackBar));
     },
     modules: (data: DbModule[]) => {
       for (const datum of data) {
@@ -872,7 +819,11 @@ export class SupabaseService {
         this.supabase.from(DbPaths.modules)
           .update(data)
       )
-        .pipe(tap(() => SharedConstants.showSuccessUpdate(this.snackBar)));
+        .pipe(
+          // bust the cache for modules
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          showSuccessMessage(this.snackBar)
+        );
     },
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
       return this.getUserSession$()
@@ -886,28 +837,15 @@ export class SupabaseService {
             ].flatMap(x => x);
             return forkJoin(controlVoltageUpdates$);
           }),
-          catchError(err => this.standardErrorMessageAndBlock()),
-          tap(() => SharedConstants.showSuccessUpdate(this.snackBar))
+          // bust the cache for modules
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          catchErrors(this.snackBar),
+          showSuccessMessage(this.snackBar)
         );
     },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
   };
-  
-  private errorMsg() {
-    return SharedConstants.errorHandlerOperation(this.snackBar);
-  }
-  
-  private throwAsyncError(message: string) {
-    return throwError(() => new Error(message));
-  }
-  
-  private standardErrorMessageAndBlock(): Observable<never> {
-    SharedConstants.errorHandlerOperation(this.snackBar);
-    return NEVER;
-  }
-  
-  
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
@@ -923,7 +861,12 @@ export class SupabaseService {
             contentType: contentType
           })
       )
-        .pipe(map(x => filenameAndExtension));
+        .pipe(
+          // bust the cache for modules
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+          catchErrors(this.snackBar),
+          map(x => filenameAndExtension)
+        );
     },
     uploadRack: (file: SupabaseStorageFile, filenameAndExtension: string) => {
       
@@ -942,6 +885,252 @@ export class SupabaseService {
         .pipe(map(x => filenameAndExtension));
     },
   };
+  
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
+    maxCacheCount: 50,
+    // async: true
+  })
+  private getModules(
+    from = 0,
+    to: number = this.defaultPag,
+    name?: string,
+    orderBy?: string,
+    orderDirection?: string,
+    manufacturerId?: number,
+    withHP?: number,
+    withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
+    standard: number | undefined = undefined,
+    description: string = undefined,
+    onlyPublic = true) {
+    let query = this.supabase.from(DbPaths.modules)
+      .select(`
+                              id,name,hp,description,public,created,updated,
+                              ${ QueryJoins.manufacturer },
+                              ${ QueryJoins.standard },
+                              ${ QueryJoins.module_panels },
+                              ${ QueryJoins.module_tags }
+                            `, {count: 'exact'})
+    
+    if (onlyPublic === true) {
+      query = query.filter('public', 'eq', true);
+    }
+    
+    if (withHP) {
+      if (withHpCondition === '=' || withHpCondition === undefined) {
+        query = query.filter('hp', 'eq', withHP);
+      } else if (withHpCondition === '>') {
+        query = query.filter('hp', 'gt', withHP);
+      } else if (withHpCondition === '<') {
+        query = query.filter('hp', 'lt', withHP);
+      } else if (withHpCondition === '>=') {
+        query = query.filter('hp', 'gte', withHP);
+      } else if (withHpCondition === '<=') {
+        query = query.filter('hp', 'lte', withHP);
+      } else if (withHpCondition === '!=') {
+        query = query.filter('hp', 'neq', withHP);
+      } else {
+        query = query.filter('hp', 'eq', withHP);
+      }
+    }
+    
+    if (manufacturerId) {
+      query = query.filter('manufacturerId', 'eq', manufacturerId);
+    }
+    
+    if (standard !== undefined) {
+      query = query.filter('standard', 'eq', standard);
+    }
+    
+    if (description) {
+      query = query.ilike('description', `%${ description }%`);
+    }
+    
+    
+    return rxFrom(
+      query
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        .order(`color`, {                                // order panel by color
+          foreignTable: DbPaths.module_panels,
+          ascending: true
+        })
+        .limit(1, {                                // take only one panel
+          foreignTable: DbPaths.module_panels
+        })
+        .ilike('name', `%${ name }%`)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x), // map type as any , TODO: fix this
+      )
+  }
+  
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patchConnections'))),
+    maxCacheCount: 50,
+    async: true
+  })
+  private getPatchConnections(patchid: number) {
+    return rxFrom(
+      this.supabase.from(DbPaths.patch_connections)
+        // .select(`module:moduleid(*, ${ QueryJoins.manufacturer }, ${ QueryJoins.insOuts })`)
+        //   .select(`*,a(*,${ QueryJoins.module })`)
+        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
+        .select(`
+          *,
+          ${ QueryJoins.patch },
+          a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ QueryJoins.manufacturer },${ QueryJoins.module_panels })),
+          b(*,module:modules!moduleINs_moduleId_fkey(*,${ QueryJoins.manufacturer },${ QueryJoins.module_panels }))
+          `)
+        .filter('patchid', 'eq', patchid)
+        .order('ordinal')
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x), // map type as any , TODO: fix this
+        map((x => x.data))
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('moduleWithId'))),
+    maxCacheCount: 50
+  })
+  private getModuleWithId(id: number, columns = '*') {
+    return rxFrom(
+      this.supabase.from(DbPaths.modules)
+        .select(`${ columns },
+           ${ QueryJoins.manufacturer },
+            ${ QueryJoins.standard },
+            ${ QueryJoins.insOuts },
+            ${ QueryJoins.module_tags },
+            ${ QueryJoins.module_panels }
+            `)
+        .filter('id', 'eq', id)
+        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
+        .order(`color`, {                                // order panel by color
+          foreignTable: DbPaths.module_panels,
+          ascending: true
+        })
+        // .limit(1, {                                // take only one panel
+        //   foreignTable: DatabasePaths.module_panels
+        // })
+        .order('id', {foreignTable: DbPaths.moduleINs})
+        .order('id', {foreignTable: DbPaths.moduleOUTs})
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)// map type as any , TODO: fix this
+      );
+  }
+  
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('comments'))),
+    maxCacheCount: 100,
+    async: true
+  })
+  private getComments(entityId: number, entityType: number) {
+    return rxFrom(
+      this.supabase.from(DbPaths.comments)
+        .select(`*,profile:profiles(id,username,email)`)
+        .filter('entityId', 'eq', entityId)
+        .filter('entityType', 'eq', entityType)
+      // foreign key add profile information for each comment
+    
+    )
+      .pipe(
+        // remapErrors(),
+        map((x => x.data))
+      );
+  }
+  
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('manufacturers'))),
+  })
+  private getManufacturers(from = 0, to = this.defaultPag, columns = '*', orderBy?: string) {
+    return rxFrom(
+      this.supabase.from(DbPaths.manufacturers)
+        .select(columns)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'name')
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
+    maxCacheCount: 50
+  })
+  private getCurrentUserModules(includeInsOuts = true): Observable<any> {
+    let prefix = `module`;
+    let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
+    
+    
+    let moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
+    
+    let columns = [
+      moduleColumns,
+      QueryJoins.manufacturer,
+      QueryJoins.module_panels,
+    ]
+    // can be optimized to avoid calling it all the time but for now it is ok
+    if (includeInsOuts) {
+      columns.push(QueryJoins.insOuts);
+    }
+    
+    return this.getUserSession$().pipe(
+      switchMap(user =>
+        rxFrom(
+          this.supabase.from(DbPaths.user_modules)
+            .select(
+              `${ prefix }:modules!user_modules_moduleid_fkey(
+                ${ columns.join(',') })`
+            )
+            // only approved panels
+            // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
+            // order panel by color
+            .order(`color`, {
+              foreignTable: panelsTable,
+              ascending: true
+            })
+            .order('updated', {ascending: false})
+            .limit(1, {foreignTable: panelsTable})
+            .filter('profileid', 'eq', user.id)
+        ).pipe(
+          remapErrors(),
+          map((x: any) => x), // map type as any , TODO: fix this
+          map((x => x.data.map(y => y.module)))
+        )
+      ),
+    );
+  }
+  
+  private getTags() {
+    return rxFrom(
+      this.supabase.from(DbPaths.tags)
+        .select('*')
+    )
+      .pipe(
+        // remapErrors(),
+        map((x => x.data))
+      );
+  }
+  
+  private errorMsg() {
+    return SharedConstants.errorHandlerOperation(this.snackBar);
+  }
   
   private cleanUpFileName(filenameAndExtension: string) {
     return filenameAndExtension.toLowerCase().trim()
@@ -1153,5 +1342,6 @@ export class SupabaseService {
       .update(x)
       .eq('id', x.id)));
   }
+  
   
 }

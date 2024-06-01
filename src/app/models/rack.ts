@@ -1,4 +1,7 @@
-import { Timestamped } from './models';
+import {
+  Privatable,
+  Timestamped
+} from './models';
 import { PublicUser } from './user';
 
 
@@ -20,7 +23,7 @@ export interface Rack extends RackMinimal {
   // updated: string;
 }
 
-export interface RackMinimal extends Timestamped {
+export interface RackMinimal extends Timestamped, Privatable {
   id: number;
   name: string;
   description?: string;

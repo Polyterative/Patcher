@@ -68,6 +68,7 @@
     "ngx-timeago": "^3.0.0",
     "rxjs": "^7.8.1",
     "sigma": "^2.2.0",
+    "ts-cacheable": "^1.0.10",
     "tslib": "^2.3.1",
     "zone.js": "~0.14.4"
   },
