@@ -1,0 +1,18 @@
+.block {
+  flex: 1 1 26rem;
+}
+
+.container {
+  // responsive, flex
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+
+  //when below 768px in width switch to column layout
+  //@media (max-width: 768px) {
+  //  flex-direction: column;
+  //}
+
+}
