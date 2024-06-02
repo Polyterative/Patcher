@@ -56,7 +56,7 @@ export class ToolbarComponent extends SubManager {
   
   public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>([
     {
-      label:    'Collection',
+      label: 'My profile',
       route:    'user/area',
       icon:     'dashboard',
       disabled: false

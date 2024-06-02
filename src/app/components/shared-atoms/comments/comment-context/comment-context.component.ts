@@ -101,9 +101,51 @@ export class CommentContextComponent extends SubManager implements OnInit {
         break;
       case this.entityTypes.PATCH:
         // get patch information
+        // this.backend.GET.patchWithId(
+        //   this.data.entityId,
+        //   `name,id,${
+        //     QueryJoins.module
+        //   }`)
+        //   .pipe(
+        //     // map to data
+        //     map(x => x.data),
+        //     takeUntil(this.destroy$)
+        //   )
+        //   .subscribe(patch => {
+        //     this.contextInformation$.next(
+        //       {
+        //         description: `Patch: ${ patch.name }`,
+        //         URL: [
+        //           'patches',
+        //           'details',
+        //           patch.id
+        //         ]
+        //       }
+        //     );
+        //   });
         break;
       case this.entityTypes.RACK:
         // get rack information
+        this.backend.GET.rackWithId(
+          this.data.entityId,
+          `name,id`)
+          .pipe(
+            // map to data
+            map(x => x.data),
+            takeUntil(this.destroy$)
+          )
+          .subscribe(rack => {
+            this.contextInformation$.next(
+              {
+                description: `Rack: ${ rack.name }`,
+                URL: [
+                  'racks',
+                  'details',
+                  rack.id
+                ]
+              }
+            );
+          });
         break;
       default:
       // do nothing
