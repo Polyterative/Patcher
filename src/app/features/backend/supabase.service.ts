@@ -108,6 +108,9 @@ type CachedEntity =
   | 'currentUserModules'
   | 'moduleWithId'
   | 'patchConnections'
+  | 'patches'
+  | 'currentUserComments'
+  | 'rackWithId'
   | void;
 const cacheBuster$ = new Subject<CachedEntity[]>();
 
@@ -166,6 +169,8 @@ export class SupabaseService {
     moduleWithId: typeof SupabaseService.prototype.getModuleWithId;
     patchConnections: typeof SupabaseService.prototype.getPatchConnections;
     currentUserComments: typeof SupabaseService.prototype.getCurrentUserComments;
+    patches: typeof SupabaseService.prototype.getPatches;
+    rackWithId: typeof SupabaseService.prototype.getRackWithId;
   } = {
     currentUserModules: this.getCurrentUserModules.bind(this),
     modules: this.getModules.bind(this),
@@ -174,7 +179,9 @@ export class SupabaseService {
     tags: this.getTags.bind(this),
     moduleWithId: this.getModuleWithId.bind(this),
     patchConnections: this.getPatchConnections.bind(this),
-    currentUserComments: this.getCurrentUserComments.bind(this)
+    currentUserComments: this.getCurrentUserComments.bind(this),
+    patches: this.getPatches.bind(this),
+    rackWithId: this.getRackWithId.bind(this)
   };
   
   readonly cacheResetter$ = cacheBuster$;
@@ -347,22 +354,6 @@ export class SupabaseService {
         map((x: any) => x),// map type as any , TODO: fix this
         map((x => x.data))
       ),
-    rackWithId: (id: number, columns = '*') => rxFrom(
-      this.supabase.from(DbPaths.racks)
-        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
-        .select(`${ columns }, ${ QueryJoins.author }`)
-        // .range(from, to)
-        .filter('id', 'eq', id)
-        // .filter('public', 'eq', true)
-        
-        // .order('id', {foreignTable: DatabasePaths.moduleINs})
-        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
-        .single()
-    )
-      .pipe(
-        remapErrors(),
-        map((x: any) => x)// map type as any , TODO: fix this
-      ),
     manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
       this.supabase.from(DbPaths.manufacturers)
         .select(columns)
@@ -427,7 +418,7 @@ export class SupabaseService {
               authorId: user.id
             })
         )),
-        cacheBust(['comments']),
+        cacheBust(['comments', 'currentUserComments']),
         remapErrors()
       ),
     module_tags: (data: Tag[]) => rxFrom(
@@ -568,7 +559,7 @@ export class SupabaseService {
     )
       .pipe(
         // bust the cache for comments
-        cacheBust(['comments']),
+        cacheBust(['comments', 'currentUserComments']),
         remapErrors()),
     module: (id: number) => rxFrom(
       this.supabase.from(DbPaths.modules)
@@ -584,7 +575,7 @@ export class SupabaseService {
             .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
         )),
         remapErrors(),
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+        cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
         catchErrors(this.snackBar)
       ),
     userModule: (id: number) => this.getUserSession$().pipe(
@@ -601,7 +592,7 @@ export class SupabaseService {
           .filter('entityId', 'eq', id)
           .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
       )),
-      cacheBust(['currentUserModules']),
+      cacheBust(['currentUserModules', 'currentUserComments']),
       remapErrors()
     )
     ,
@@ -678,6 +669,7 @@ export class SupabaseService {
             .filter('entityType', 'eq', CommentableEntityTypes.RACK)
         )),
         remapErrors(),
+        cacheBust(['rackWithId'])
       )
     ,
     modules: (from = 0, to: number = this.defaultPag) => rxFrom(
@@ -794,7 +786,10 @@ export class SupabaseService {
             locked: data.locked,
             public: data.public
           }).select('id')
-      );
+      )
+        .pipe(
+          cacheBust(['rackWithId']),
+        )
       // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
     },
     patch: (data: Patch) => {
@@ -848,6 +843,7 @@ export class SupabaseService {
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
   };
+  
   storage = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       
@@ -970,6 +966,35 @@ export class SupabaseService {
       )
   }
   
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
+    maxCacheCount: 50,
+  })
+  private getRackWithId(id: number, columns = '*') {
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
+        // .range(from, to)
+        .filter('id', 'eq', id)
+        // .filter('public', 'eq', true)
+        
+        // .order('id', {foreignTable: DatabasePaths.moduleINs})
+        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)// map type as any , TODO: fix this
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserComments'))),
+    maxCacheCount: 50,
+  })
   private getCurrentUserComments() {
     return this.getUserSession$()
       .pipe(
@@ -1291,6 +1316,16 @@ export class SupabaseService {
   logoff$(): Observable<{
     error: AuthError | null
   }> {
+    // burst the caches, all of them
+    cacheBuster$.next([
+      "comments",
+      "modules",
+      "currentUserModules",
+      "moduleWithId",
+      "manufacturers",
+      "currentUserModules",
+      "patchConnections",
+    ]);
     return from(this.supabase.auth.signOut())
   }
   
