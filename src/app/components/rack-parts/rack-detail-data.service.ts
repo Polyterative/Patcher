@@ -311,7 +311,7 @@ export class RackDetailDataService extends SubManager {
     this.updateSingleRackData$
       .pipe(
         // tap(x => this.singleRackData$.next(undefined)),
-        switchMap(x => this.backend.get.rackWithId(x)),
+        switchMap(x => this.backend.GET.rackWithId(x)),
         takeUntil(this.destroy$),
       )
       .subscribe(x => this.singleRackData$.next(x.data))
