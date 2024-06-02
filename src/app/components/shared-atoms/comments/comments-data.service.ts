@@ -136,7 +136,7 @@ export class CommentsDataService extends SubManager {
   }
 }
 
-// profiles = 10, modules = 1, racks = 2, patches = 3,
+// profiles = 10, modules = 1, racks = 2, patches = 3, THESE ARE ON DATABASE
 export enum CommentableEntityTypes {
   RESERVED = 0,
   PROFILE  = 10,

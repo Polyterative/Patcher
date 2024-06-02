@@ -194,19 +194,6 @@ export class SupabaseService {
     //   this.supabase.from(DatabasePaths.patches)
     //       .select(`${ columns }`)
     //       .range(from, to)
-    // ),
-    patchesMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
-      this.supabase.from(DbPaths.patches)
-        .select(`id,name,description,${ QueryJoins.author },updated,created `, {count: 'exact'})
-        .ilike('name', `%${ name }%`)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        map((x) => x),
-        remapErrors(),
-        map((x: any) => x),// map type as any , TODO: fix this
-      ),
     currentUserPatches: () => {
       return this.getUserSession$().pipe(
         switchMap(user => rxFrom(
@@ -399,7 +386,7 @@ export class SupabaseService {
     )
     
   };
-  
+
   readonly add = {
     comment: (data: {
       entityId: number,
@@ -691,6 +678,7 @@ export class SupabaseService {
         cacheBust(['manufacturers'])
       )
   };
+  
   readonly update = {
     module: (data: Partial<DbModule>) => {
       data.manufacturer = undefined;
@@ -883,7 +871,6 @@ export class SupabaseService {
         .pipe(map(x => filenameAndExtension));
     },
   };
-  
   @Cacheable({
     maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
@@ -1008,6 +995,45 @@ export class SupabaseService {
         )),
         remapErrors(),
         map((x => x.data))
+      );
+  }
+  
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+    async: true
+  })
+  private getPatches(
+    from = 0,
+    to: number = this.defaultPag,
+    name?: string,
+    orderBy?: string,
+    orderDirection?: string,
+    columns: string = `id,name,description,${ QueryJoins.author },updated,created `) {
+    
+    let queryBuilder = this.supabase.from(DbPaths.patches)
+      .select(columns, {count: 'exact'})
+    
+    
+    if (columns.includes('name')) {
+      queryBuilder = queryBuilder
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+    }
+    
+    if (name) {
+      queryBuilder = queryBuilder
+        .ilike('name', `%${ name }%`)
+    }
+    
+    return rxFrom(
+      queryBuilder
+        .range(from, to)
+    )
+      .pipe(
+        map((x) => x),
+        remapErrors(),
+        map((x: any) => x),// map type as any , TODO: fix this
       );
   }
   

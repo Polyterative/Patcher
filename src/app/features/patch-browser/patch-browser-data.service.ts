@@ -167,8 +167,8 @@ export class PatchBrowserDataService implements OnDestroy {
           switchMap(([z, [skip, take, filter, sort]]) => {
             const sortColumnName: string = sort[0] ? sort[0] : null;
             const sortDirection = sort[1];
-  
-            return this.backend.get.patchesMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
+            
+            return this.backend.GET.patches(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),
           takeUntil(this.destroyEvent$)
         )
