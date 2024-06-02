@@ -982,7 +982,10 @@ export class SupabaseService {
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserComments'))),
     maxCacheCount: 50,
   })
-  private getCurrentUserComments() {
+  private getCurrentUserComments(
+    from = 0,
+    to: number = this.defaultPag
+  ) {
     return this.getUserSession$()
       .pipe(
         switchMap(user => rxFrom(
@@ -991,7 +994,7 @@ export class SupabaseService {
             .filter('authorId', 'eq', user.id)
             .limit(20)
             .order('created', {ascending: false})
-            .range(0, 20)
+            .range(from, to)
         )),
         remapErrors(),
         map((x => x.data))
