@@ -12,20 +12,18 @@
     
     <div class="col gap1"
     >
-      <app-user-manuals fxFlex="100"></app-user-manuals>
+      <app-user-manuals></app-user-manuals>
       
-      <div fxLayout.gt-md="row"
-           fxLayout="column"
-           fxLayoutGap="1rem"
+      <div class="container gap1"
       >
-        <app-user-comments fxFlex="100"></app-user-comments>
         
-        <app-user-modules fxFlex="100"
+        <app-user-modules class="block"
                           [modulesViewConfig]="viewConfig"
-                          [encloseVertically]="false"
+                          [encloseVertically]="true"
         ></app-user-modules>
-        <app-user-racks fxFlex="100"></app-user-racks>
-        <app-user-patches fxFlex="100"></app-user-patches>
+        <app-user-racks class="block"></app-user-racks>
+        <app-user-patches class="block"></app-user-patches>
+        <app-user-comments class="block"></app-user-comments>
       </div>
     
     </div>

@@ -54,7 +54,10 @@ export class UserAreaDataService extends SubManager {
     this.updateCommentsData$
       .pipe(
         tap(() => this.commentsData$.next(undefined)),
-        switchMap(() => this.backend.GET.currentUserComments()),
+        switchMap(() => this.backend.GET.currentUserComments(
+          0,
+          10
+        )),
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.commentsData$.next(x))
