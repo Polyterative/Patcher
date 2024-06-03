@@ -12,19 +12,19 @@ import {
 import {
   PatchCreatorComponent,
   PatchCreatorInModel
-} from '../../components/patch-parts/patch-creator/patch-creator.component';
+} from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import {
   RackCreatorComponent,
   RackCreatorInModel
-} from '../../components/rack-parts/rack-creator/rack-creator.component';
+} from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
 import {
   DbModule,
   MinimalModule
-} from '../../models/module';
-import { Patch } from '../../models/patch';
-import { Rack } from '../../models/rack';
-import { SubManager } from '../../shared-interproject/directives/subscription-manager';
-import { SupabaseService } from '../backend/supabase.service';
+} from 'src/app/models/module';
+import { Patch } from 'src/app/models/patch';
+import { Rack } from 'src/app/models/rack';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
 import { DbComment } from "src/app/models/comment";
 

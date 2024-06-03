@@ -15,7 +15,7 @@ import { PatchDetailsComponent } from 'src/app/components/patch-parts/patch-deta
 import { PatchEditorComponent } from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
-import { UserModulesModule } from 'src/app/features/user-area/user-modules/user-modules.module';
+import { UserModulesModule } from 'src/app/features/routes/user-area/user-modules/user-modules.module';
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
