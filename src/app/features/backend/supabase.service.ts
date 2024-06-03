@@ -978,7 +978,7 @@ export class SupabaseService {
   }
   
   @Cacheable({
-    maxAge: defaultCacheTime,
+    maxAge: longCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserComments'))),
     maxCacheCount: 50,
   })
@@ -1002,7 +1002,7 @@ export class SupabaseService {
   }
   
   @Cacheable({
-    maxAge: smallCacheTime,
+    maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
     maxCacheCount: 50,
     async: true
@@ -1041,7 +1041,7 @@ export class SupabaseService {
   }
   
   @Cacheable({
-    maxAge: smallCacheTime,
+    maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patchConnections'))),
     maxCacheCount: 50,
     async: true
@@ -1117,7 +1117,7 @@ export class SupabaseService {
   }
   
   @Cacheable({
-    maxAge: smallCacheTime,
+    maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('comments'))),
     maxCacheCount: 100,
     async: true
