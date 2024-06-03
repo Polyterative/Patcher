@@ -22,10 +22,10 @@ import {
   takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
-import { RackMinimal } from '../../models/rack';
-import { FormTypes } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { UserManagementService } from '../backbone/login/user-management.service';
-import { SupabaseService } from '../backend/supabase.service';
+import { RackMinimal } from 'src/app/models/rack';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { PageEvent } from "@angular/material/paginator";
 
 

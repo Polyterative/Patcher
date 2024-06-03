@@ -25,7 +25,7 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { UserAreaDataService } from 'src/app/features/user-area/user-area-data.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { DbModule } from 'src/app/models/module';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
