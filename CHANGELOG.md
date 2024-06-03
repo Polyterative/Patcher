@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.1](https://github.com/Polyterative/Patcher/compare/v4.7.0...v4.7.1) (2024-06-03)
+
+
+### Features
+
+* **backend:** enhanced caching support ([e4468c7](https://github.com/Polyterative/Patcher/commit/e4468c7879ac114b8de28fcbebd8df67cffac618))
+* **backend:** enhanced caching support ([7f257ef](https://github.com/Polyterative/Patcher/commit/7f257ef8ea606f9d4111abab7e7a0d1d2ccd1c48))
+* **comments:** comments deletable only withing 30minutes ([707e6ba](https://github.com/Polyterative/Patcher/commit/707e6baf75d25cd2699ad0c941037a181a65df31))
+* **module-details:** stores have flags now ([8095c27](https://github.com/Polyterative/Patcher/commit/8095c27c04d47d71f9b651789775400e5d892377))
+* **user-comments:** comments of user ([2329160](https://github.com/Polyterative/Patcher/commit/2329160715b11f527e3fb05f83f5206908cc0725))
+* **user-comments:** comments of user in user page ([6e81298](https://github.com/Polyterative/Patcher/commit/6e8129813e92fa063765a368de1487c7e9cb2d6b))
+
+
+### Bug Fixes
+
+* **forms:** more resilient form entity ([19c3be0](https://github.com/Polyterative/Patcher/commit/19c3be045078e159e7910186863e20aa16244814))
+* **rack-editor:** replace with black for 1U ([dd93a9f](https://github.com/Polyterative/Patcher/commit/dd93a9ff15f770197460a7d110733af89ff00333))
+
 ## [4.7.0](https://github.com/Polyterative/Patcher/compare/v4.6.6...v4.7.0) (2024-06-01)
 
 
