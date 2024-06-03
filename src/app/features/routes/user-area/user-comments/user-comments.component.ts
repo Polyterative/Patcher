@@ -10,7 +10,7 @@ import {
   NgIf,
   NgTemplateOutlet
 } from "@angular/common";
-import { UserAreaDataService } from "src/app/features/user-area/user-area-data.service";
+import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module";
 import { BrandPrimaryButtonModule } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module";

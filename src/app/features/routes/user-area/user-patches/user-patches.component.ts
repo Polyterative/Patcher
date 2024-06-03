@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from "@angular/material/dialog";
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { UserAreaDataService } from '../user-area-data.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 
 
 @Component({

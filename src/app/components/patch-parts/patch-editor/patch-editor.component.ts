@@ -1,11 +1,27 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl
+} from '@angular/forms';
 import { Subject } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { UserModulesComponentViewConfig, userModulesDefaultViewConfig } from 'src/app/features/user-area/user-modules/user-modules.component';
+import {
+  UserModulesComponentViewConfig,
+  userModulesDefaultViewConfig
+} from 'src/app/features/routes/user-area/user-modules/user-modules.component';
 import { Patch } from 'src/app/models/patch';
-import { defaultModuleMinimalViewConfig, ModuleMinimalViewConfig } from '../../module-parts/module-minimal/module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from '../../module-parts/module-minimal/module-minimal.component';
+
 
 interface FormCV {
   id: number;
