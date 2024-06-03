@@ -172,11 +172,21 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         // if racked module HP is bigger than twenty then show snackbar and do not propagate the event
         map((rackedModule) => {
-          if (rackedModule.module.hp > 20) {
-            this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
-              duration: 2000
-            });
-            return [];
+          if (rackedModule.module.standard.id === 0) {
+            if (rackedModule.module.hp > 20) {
+              this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
+                duration: 2000
+              });
+              return [];
+            }
+          } else if (rackedModule.module.standard.id === 1) {
+            // if Intellijel module is bigger than 26 then show snackbar and do not propagate the event
+            if (rackedModule.module.hp > 26) {
+              this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
+                duration: 2000
+              });
+              return [];
+            }
           }
           return [rackedModule];
         }),
@@ -196,7 +206,10 @@ export class RackDetailDataService extends SubManager {
               row: originalModule.rackingData.row,
               column: originalModule.rackingData.column,
               rackId: rack.id,
-              moduleId: this.calculateBlankIdForModuleSize(rackedModule.module.hp)
+              moduleId: this.calculateBlankIdForSizeAndStandard(
+                rackedModule.module.hp,
+                rackedModule.module.standard.id
+              )
             })),
             switchMap(({row, column, rackId, moduleId}) => this.backend.add.rackModule(moduleId, rackId, row, column)),
             takeUntil(this.destroyEvent$)
@@ -787,51 +800,111 @@ export class RackDetailDataService extends SubManager {
   }
   
   // the following identifications come from database
-  private calculateBlankIdForModuleSize(hp: number) {
-    switch (hp) {
-      case 1:
-        return 4666;
-      case 2:
-        return 4647;
-      case 3:
-        return 4665;
-      case 4:
-        return 4648;
-      case 5:
-        return 4664;
-      case 6:
-        return 4649;
-      case 7:
-        return 4650;
-      case 8:
-        return 4651;
-      case 9:
-        return 4652;
-      case 10:
-        return 4653;
-      case 11:
-        return 4654;
-      case 12:
-        return 4655;
-      case 13:
-        return 4656;
-      case 14:
-        return 4657;
-      case 15:
-        return 4658;
-      case 16:
-        return 4659;
-      case 17:
-        return 4660;
-      case 18:
-        return 4661;
-      case 19:
-        return 4662;
-      case 20:
-        return 4663;
-      default:
-        return -1;
-    }
+  private calculateBlankIdForSizeAndStandard(
+    hp: number,
+    standard: number = 0
+  ) {
+    if (standard === 0) {
+      switch (hp) {
+        case 1:
+          return 4666;
+        case 2:
+          return 4647;
+        case 3:
+          return 4665;
+        case 4:
+          return 4648;
+        case 5:
+          return 4664;
+        case 6:
+          return 4649;
+        case 7:
+          return 4650;
+        case 8:
+          return 4651;
+        case 9:
+          return 4652;
+        case 10:
+          return 4653;
+        case 11:
+          return 4654;
+        case 12:
+          return 4655;
+        case 13:
+          return 4656;
+        case 14:
+          return 4657;
+        case 15:
+          return 4658;
+        case 16:
+          return 4659;
+        case 17:
+          return 4660;
+        case 18:
+          return 4661;
+        case 19:
+          return 4662;
+        case 20:
+          return 4663;
+        default:
+          return -1;
+      }
+    } else if (standard === 1) {
+      switch (hp) {
+        case 1:
+          return 4711;
+        case 2:
+          return 4712;
+        case 3:
+          return 4713;
+        case 4:
+          return 4714;
+        case 5:
+          return 4715;
+        case 6:
+          return 4716;
+        case 7:
+          return 4717;
+        case 8:
+          return 4718;
+        case 9:
+          return 4719;
+        case 10:
+          return 4720;
+        case 11:
+          return 4721;
+        case 12:
+          return 4722;
+        case 13:
+          return 4723;
+        case 14:
+          return 4724;
+        case 15:
+          return 4725;
+        case 16:
+          return 4726;
+        case 17:
+          return 4727;
+        case 18:
+          return 4728;
+        case 19:
+          return 4729;
+        case 20:
+          return 4730;
+        case 21:
+          return 4731;
+        case 22:
+          return 4732;
+        case 23:
+          return 4733;
+        case 24:
+          return 4734;
+        case 25:
+          return 4735;
+        default:
+          return -1;
+      }
+    } else return -1;
   }
   
 }
