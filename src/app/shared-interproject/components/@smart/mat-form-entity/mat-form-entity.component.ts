@@ -1,7 +1,7 @@
 import {
   COMMA,
   ENTER
-}                                       from '@angular/cdk/keycodes';
+} from '@angular/cdk/keycodes';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -9,7 +9,7 @@ import {
   Input,
   OnDestroy,
   OnInit
-}                                       from '@angular/core';
+} from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -17,40 +17,40 @@ import {
   UntypedFormControl,
   UntypedFormGroup,
   ValidatorFn
-}                                       from '@angular/forms';
-import { MatChipInputEvent }            from '@angular/material/chips';
+} from '@angular/forms';
+import { MatChipInputEvent } from '@angular/material/chips';
 import {
   BehaviorSubject,
   merge,
   NEVER,
   Observable,
   of
-}                                       from 'rxjs';
+} from 'rxjs';
 import {
   debounceTime,
   filter,
   map,
   tap,
   withLatestFrom
-}                                       from 'rxjs/operators';
-import { SubManager }                   from '../../../directives/subscription-manager';
+} from 'rxjs/operators';
+import { SubManager } from '../../../directives/subscription-manager';
 import {
   AppFormUtils,
   ErrorCodes
-}                                       from './app-form-utils';
+} from './app-form-utils';
 import {
   findOptionForId,
   flatOptionGroupToArray,
   FormTypes,
   ISelectable,
   isOption
-}                                       from './form-element-models';
+} from './form-element-models';
 import {
   FloatLabelType,
   MatFormFieldAppearance
-}                                       from "@angular/material/form-field";
+} from "@angular/material/form-field";
 import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
-import { TooltipPosition }              from "@angular/material/tooltip";
+import { TooltipPosition } from "@angular/material/tooltip";
 
 
 export interface IMatFormEntityConfig {
@@ -472,8 +472,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                     if (typeof input === 'string') {
                       return this.autocompleteCanBeVoid && input === '' ? null : this.errorObjectNotInOptions;
                     }
-                    
-                    const foundSome = options.some(y => (y.id === input.id));
+                  
+                  const foundSome = options.some(y => (y?.id === input?.id));
                     
                     // tslint:disable-next-line:no-null-keyword
                     return foundSome ? null : this.errorObjectNotInOptions;
