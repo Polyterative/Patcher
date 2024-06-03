@@ -11,8 +11,8 @@ import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
 } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
-import { RackBrowserDataService } from 'src/app/features/rack-browser/rack-browser-data.service';
-import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
+import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { MatPaginator } from "@angular/material/paginator";
 
 

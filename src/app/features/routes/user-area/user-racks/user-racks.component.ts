@@ -8,7 +8,7 @@ import {
   RackMinimalViewConfig
 } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { UserAreaDataService } from '../user-area-data.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 
 
 @Component({

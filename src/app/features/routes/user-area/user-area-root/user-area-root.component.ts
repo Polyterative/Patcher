@@ -10,7 +10,7 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 
 
 @Component({

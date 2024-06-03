@@ -3,29 +3,29 @@ import {
   Component,
   Input,
   OnInit
-}                                from '@angular/core';
-import { ActivatedRoute }        from '@angular/router';
-import { SeoSocialShareData }    from 'ngx-seo';
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
 import {
   combineLatest,
   Subject
-}                                from 'rxjs';
+} from 'rxjs';
 import {
   filter,
   map,
   take,
   takeUntil
-}                                from 'rxjs/operators';
+} from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
-import { SeoAndUtilsService }    from '../../backbone/seo-and-utils.service';
+import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-}                                from "src/app/components/module-parts/module-minimal/module-minimal.component";
+} from "src/app/components/module-parts/module-minimal/module-minimal.component";
 import {
   CommentableEntityTypes,
   CommentsDataService
-}                                from "src/app/components/shared-atoms/comments/comments-data.service";
+} from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
 @Component({
