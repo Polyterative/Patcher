@@ -18,7 +18,7 @@ import { HeroHeaderModule } from 'src/app/shared-interproject/components/@visual
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ModuleBrowserModule } from '../../module-browser/module-browser.module';
 import { PatchBrowserModule } from '../../patch-browser/patch-browser.module';
-import { RackBrowserModule } from '../../rack-browser/rack-browser.module';
+import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
 import { HomeComponent } from './home.component';
 
 
