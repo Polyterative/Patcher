@@ -180,7 +180,7 @@ export class PatchBrowserDataService implements OnDestroy {
         });
   
     this.fields.search.control.valueChanges.pipe(
-      debounceTime(500),
+      debounceTime(750),
       takeUntil(this.destroyEvent$)
     )
         .subscribe(x => {
