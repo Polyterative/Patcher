@@ -20,6 +20,12 @@ export class DbPaths {
   
 }
 
+export class DbStoragePaths {
+  static module_panels: string = 'module-panels';
+  static racks: string = 'racks';
+  
+}
+
 export class QueryJoins {
   // Manufacturer staticant
   static manufacturer: string = 'manufacturer:manufacturerId(name,id,logo)';

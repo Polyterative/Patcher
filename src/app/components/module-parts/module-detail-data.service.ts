@@ -45,6 +45,7 @@ export class ModuleDetailDataService {
   modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
   deleteModule$ = new Subject<number>();
+  deleteLastPanel$ = new Subject<DbModule>();
   changeModule$ = new Subject<Partial<DbModule>>();
   protected destroyEvent$ = new Subject<void>();
   
@@ -57,6 +58,19 @@ export class ModuleDetailDataService {
     public router: Router,
   
   ) {
+    
+    // when delete of the latest panel is requested, perform the deletion
+    this.deleteLastPanel$
+      .pipe(
+        filter(x => this.appState.isDev),
+        map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
+        switchMap(x => this.backend.delete.modulePanel(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => {
+        snackBar.open('Deleted', undefined, {duration: 1000});
+        this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
+      });
     
     this.copyModuleNameAndManufacturer$
       .pipe(
