@@ -336,7 +336,7 @@ export class ModuleBrowserDataService implements OnDestroy {
     
     this.updateModulesList$
       .pipe(
-        debounceTime(10),
+        debounceTime(750),
         withLatestFrom(this.serversideDataPackage$),
         switchMap(([z, [skip, take, filter, sort]]) => {
           const sortColumnName: string = sort[0] ? sort[0] : null;
@@ -374,7 +374,7 @@ export class ModuleBrowserDataService implements OnDestroy {
           "modules"
         ]);
         
-          this.fields.name.control.setValue('');
+        this.fields.name.control.setValue('', {emitEvent: false});
           
           this.fields.order.control.setValue(this.orderStartingValue);
           this.fields.manufacturers.control.setValue('');
@@ -430,7 +430,10 @@ export class ModuleBrowserDataService implements OnDestroy {
       .pipe(
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => this.updateModulesList$.next());
+      .subscribe(() => {
+        this.paginatorToFistPage$.next();
+        this.updateModulesList$.next();
+      });
   }
   
   ngOnDestroy(): void {
