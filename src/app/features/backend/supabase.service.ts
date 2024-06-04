@@ -54,6 +54,7 @@ import {
 import { Tag } from '../../models/tag';
 import {
   DbPaths,
+  DbStoragePaths,
   QueryJoins
 } from './DatabaseStrings';
 import {
@@ -128,7 +129,8 @@ function showSuccessMessage<T>(snackBar: MatSnackBar): MonoTypeOperatorFunction<
 
 function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) => Observable<T> {
   return (source: Observable<T>) => source.pipe(
-    catchError(() => {
+    catchError((e) => {
+      console.error(e);
       SharedConstants.errorHandlerOperation(snackBar);
       return NEVER;
     })
@@ -386,7 +388,7 @@ export class SupabaseService {
     )
     
   };
-
+  
   readonly add = {
     comment: (data: {
       entityId: number,
@@ -548,23 +550,27 @@ export class SupabaseService {
         // bust the cache for comments
         cacheBust(['comments', 'currentUserComments']),
         remapErrors()),
-    module: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .delete()
-        .filter('id', 'eq', id)
-    )
-      .pipe(
-        // delete all comments for this module
-        switchMap(() => rxFrom(
-          this.supabase.from(DbPaths.comments)
-            .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
-        )),
-        remapErrors(),
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
-        catchErrors(this.snackBar)
-      ),
+    module: (id: number) => {
+      const deleteAllComments$ = rxFrom(
+        this.supabase.from(DbPaths.comments)
+          .delete()
+          .filter('entityId', 'eq', id)
+          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+      );
+      const deleteModule$ = rxFrom(
+        this.supabase.from(DbPaths.modules)
+          .delete()
+          .filter('id', 'eq', id)
+          .select('id')
+      );
+      return deleteAllComments$
+        .pipe(
+          switchMap(() => deleteModule$),
+          remapErrors(),
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
+          catchErrors(this.snackBar)
+        );
+    },
     userModule: (id: number) => this.getUserSession$().pipe(
       switchMap(user => rxFrom(
         this.supabase.from(DbPaths.user_modules)
@@ -674,9 +680,26 @@ export class SupabaseService {
         .range(from, to)
     )
       .pipe(
+        cacheBust(['manufacturers']),
+        catchErrors(this.snackBar),
         remapErrors(),
-        cacheBust(['manufacturers'])
-      )
+      ),
+    modulePanel: (data: ModulePanel) => {
+      // delete the panel file from storage first
+      const deletePanelFile$ = this.storage.deletePanelFile(data.filename)
+      
+      const deleteDatabaseEntry$ = rxFrom(
+        this.supabase.from(DbPaths.module_panels)
+          .delete()
+          .filter('id', 'eq', data.id)
+      );
+      return deletePanelFile$
+        .pipe(
+          switchMap(() => deleteDatabaseEntry$),
+          catchErrors(this.snackBar),
+          remapErrors()
+        );
+    }
   };
   
   readonly update = {
@@ -837,16 +860,20 @@ export class SupabaseService {
       
       filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
       
-      return rxFrom(
+      let uploadNewPanel$ = rxFrom(
         this.supabase
           .storage
-          .from('module-panels')
-          .upload('' + filenameAndExtension, file, {
-            cacheControl: '36000', // 10 hours
-            upsert: false,
+          .from(DbStoragePaths.module_panels)
+          .upload(filenameAndExtension, file, {
+            cacheControl: '360000', // 100 hours
+            upsert: true,
             contentType: contentType
           })
-      )
+      );
+      
+      let deleteThePossibleOldPanel$ = this.storage.deletePanelFile(filenameAndExtension);
+      
+      return forkJoin([deleteThePossibleOldPanel$, uploadNewPanel$])
         .pipe(
           // bust the cache for modules
           cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
@@ -861,16 +888,32 @@ export class SupabaseService {
       return rxFrom(
         this.supabase
           .storage
-          .from('racks')
-          .upload('' + filenameAndExtension, file, {
+          .from(DbStoragePaths.racks)
+          .upload(filenameAndExtension, file, {
             cacheControl: '36000',
-            upsert: false,
+            upsert: true,
             contentType: 'image/jpeg'
           })
       )
         .pipe(map(x => filenameAndExtension));
     },
+    deletePanelFile: (path: string) => {
+      return rxFrom(
+        this.supabase
+          .storage
+          .from(DbStoragePaths.module_panels)
+          // .remove([`${ DbStoragePaths.module_panels }/${ path }`])
+          .remove([path])
+      )
+        .pipe(
+          // bust the cache for modules
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId', "rackWithId"]),
+          catchErrors(this.snackBar)
+        );
+    }
+    
   };
+  
   @Cacheable({
     maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
@@ -1346,6 +1389,11 @@ export class SupabaseService {
     error: AuthError | null
   }> {
     // burst the caches, all of them
+    this.burstAllCaches();
+    return from(this.supabase.auth.signOut())
+  }
+  
+  private burstAllCaches() {
     cacheBuster$.next([
       "comments",
       "modules",
@@ -1354,11 +1402,13 @@ export class SupabaseService {
       "manufacturers",
       "currentUserModules",
       "patchConnections",
+      "rackWithId",
+      "patches",
+      "currentUserComments"
     ]);
-    return from(this.supabase.auth.signOut())
   }
-  
-  // logs in, updates profile, logs out
+
+// logs in, updates profile, logs out
   private updateUserProfile(email: string, password: string, username: string): Observable<SupabaseLoginResponse> {
     return this.login$(email, password)
       .pipe(
