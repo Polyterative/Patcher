@@ -109,12 +109,15 @@ user:(userManagementService.loggedUser$|async)
             </lib-hero-content-card>
             
             
-            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data">
+            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user">
               <div class="rowwrap gap2">
                 <button mat-flat-button color="warn"
                         *ngIf="bag.data.isComplete===false"
-                        (click)="dataService.deleteModule$.next(bag.data.id)">Delete
-                  module
+                        (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
+                </button>
+                <button mat-flat-button color="warn"
+                        *ngIf="bag.data.isComplete===false"
+                        (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
                 </button>
                 <button mat-flat-button color="primary"
                         *ngIf="bag.data&&bag.data.standard.id!==1"
