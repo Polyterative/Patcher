@@ -14,7 +14,8 @@ import { TimeagoPipe } from 'ngx-timeago';
 import {
   BehaviorSubject,
   Observable,
-  Subject
+  Subject,
+  timer
 } from 'rxjs';
 import {
   filter,
@@ -116,18 +117,20 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
         .subscribe(() => {
           SharedConstants.successSave(this.snackBar);
           
+          const duration = 5000;
+          
           this.snackBar.open(`Module added`, 'Open rack now', {
-            duration: 5000,
+            duration: duration,
           })
             .onAction()
-            .pipe(takeUntil(this.destroy$))
+            .pipe(
+              takeUntil(timer(duration))
+            )
             .subscribe(() => {
-                this.dialogRef.close();
-                this.router.navigate(['/racks', 'details', this.fields.rack.control.value.id]);
+              this.router.navigate(['/racks', 'details', this.fields.rack.control.value.id]);
+              this.destroy$.next(undefined);
               }
             );
-          
-          
           
           this.dialogRef.close();
         })
