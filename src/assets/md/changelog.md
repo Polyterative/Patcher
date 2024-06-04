@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.2](https://github.com/Polyterative/Patcher/compare/v4.7.1...v4.7.2) (2024-06-04)
+
+
+### Features
+
+* **module-details:** improvements to administration functions ([6028efc](https://github.com/Polyterative/Patcher/commit/6028efcb33815bff2841032057ca73bbf6def5f9))
+
+
+### Bug Fixes
+
+* **module-details:** opening the rack after adding a module now works correctly ([8fae199](https://github.com/Polyterative/Patcher/commit/8fae199cbd279f4a7adc37312239aba74db1877c))
+* **search:** increased wait time before search for smoother operation ([5140fd7](https://github.com/Polyterative/Patcher/commit/5140fd7d1e407f7b4115ee361c9b9f8556053f60))
+
 ### [4.7.1](https://github.com/Polyterative/Patcher/compare/v4.7.0...v4.7.1) (2024-06-03)
 
 
