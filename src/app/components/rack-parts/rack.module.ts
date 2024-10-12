@@ -42,6 +42,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
+import { MatBadge } from "@angular/material/badge";
+import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
 
 
 @NgModule({
@@ -99,7 +101,9 @@ import { AdviceTooltipModule } from "src/app/shared-interproject/components/@vis
     MatSlideToggleModule,
     InputDialogModule,
     StatisticsModule,
-    AdviceTooltipModule
+    AdviceTooltipModule,
+    MatBadge,
+    CalculateRowInformationPipe
   ]
 })
 export class RackModule {
