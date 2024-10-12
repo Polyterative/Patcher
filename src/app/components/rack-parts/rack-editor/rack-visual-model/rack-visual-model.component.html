@@ -11,6 +11,8 @@
     >
       <div class="row"
            [class.row-bg]="!(row|hasUnrackedModules)"
+           [matBadge]="row.length==0?undefined:row.length"
+           matBadgePosition="above after"
            cdkDropList
            cdkDropListOrientation="horizontal"
            (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
@@ -35,12 +37,12 @@
   </div>
   
   <!--    add new row button-->
-  
   <div class="row gap2 self-center">
     <ng-container *ngIf="isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser&&rowedRackedModules.length>1">
       <div [@enter]="{ value: '', params: { delay: (1 * 25)+500}}"
-      
-      >
+           
+           matTooltip="Please remove all modules from the last row to remove it"
+           [matTooltipDisabled]="isLastRowEmpty(rowedRackedModules)">
         <button mat-flat-button
                 (click)="rackDetailDataService.requestRemoveRow$.next()"
                 [disabled]="!isLastRowEmpty(rowedRackedModules)"
