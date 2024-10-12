@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.3](https://github.com/Polyterative/Patcher/compare/v4.7.2...v4.7.3) (2024-10-12)
+
+
+### Features
+
+* **rack-details:** show number of modules in each row ([e702848](https://github.com/Polyterative/Patcher/commit/e702848a12aacc50b040918d43f20c68fd4da972))
+
 ### [4.7.2](https://github.com/Polyterative/Patcher/compare/v4.7.1...v4.7.2) (2024-06-04)
 
 
