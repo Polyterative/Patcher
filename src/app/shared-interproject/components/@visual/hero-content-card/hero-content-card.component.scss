@@ -52,8 +52,8 @@ h1 {
 
 .content {
   background-color: $brand-tertiary;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   //border-top: 0.25rem solid $brand-tertiary;
   //@include unselectable;
   //border-top-right-radius: 4px;
@@ -104,6 +104,13 @@ h1 {
   //@include unselectable;
   font-size: small;
   padding: 1rem;
+  // align y axis center
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  //padding-right: 1.5rem;
+
   //border: 0.1rem solid white;
   //padding: 1rem;
   //background-color: white;
