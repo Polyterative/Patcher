@@ -1,25 +1,28 @@
 <div class="container col "
 >
   
-  <ng-container *ngIf="titleBig&&titleNormal else singleTitles">
-    <div class="col gap1 title bgImage sides-pad std-rounding"
-    >
-      <h2 style="margin-bottom: 0"
-          [@title]
+  <div class="row"
+  >
+    <ng-container *ngIf="titleBig&&titleNormal else singleTitles">
+      <div class="col gap1 title bgImage sides-pad std-rounding"
       >
-        {{ titleBig }}
-      </h2>
-      
-      <h3 [@title]>{{ titleNormal }}</h3>
-    </div>
-  </ng-container>
-  
-  <mat-card-subtitle *ngIf="description&&!showHelpButton"
-                     class="description"
-                     [ngClass]="descriptionAlign"
-                     [@description]
-  >{{ description }}
-  </mat-card-subtitle>
+        <h2 style="margin-bottom: 0"
+            [@title]
+        >
+          {{ titleBig }}
+        </h2>
+        
+        <h3 [@title]>{{ titleNormal }}</h3>
+      </div>
+    </ng-container>
+    
+    <mat-card-subtitle *ngIf="description&&!showHelpButton"
+                       class="description"
+                       [ngClass]="descriptionAlign"
+                       [@description]
+    >{{ description }}
+    </mat-card-subtitle>
+  </div>
   
   <div class="content col"
   >
@@ -50,6 +53,7 @@
     >{{ titleBig }}
     </div>
     <app-hero-content-card-head-icon fxLayoutAlign="center center"
+                                     style="margin-left: .5rem"
                                      [icon]="icon"
     
     ></app-hero-content-card-head-icon>
@@ -59,9 +63,11 @@
       class="row title sides-pad"
       [@title]
   >
-    <div fxFlex="grow">{{ titleNormal }}</div>
     <app-hero-content-card-head-icon [icon]="icon"
+                                     style="margin-right: .5rem"
+    
     ></app-hero-content-card-head-icon>
+    <div fxFlex="grow">{{ titleNormal }}</div>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h3>
 
