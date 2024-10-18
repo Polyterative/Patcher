@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.4](https://github.com/Polyterative/Patcher/compare/v4.7.3...v4.7.4) (2024-10-18)
+
+
+### Features
+
+* **cards:** less padding, more vert space ([370db61](https://github.com/Polyterative/Patcher/commit/370db61c6682914a3abc96450ca7eaf0e073192d))
+* **rack:** clean a whole single row functionality ([f8991ed](https://github.com/Polyterative/Patcher/commit/f8991edba2b9e54f1730b8e87047df6a9b509123))
+
 ### [4.7.3](https://github.com/Polyterative/Patcher/compare/v4.7.2...v4.7.3) (2024-10-12)
 
 
