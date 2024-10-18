@@ -110,6 +110,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
           
           const duplicateModule$ = new Subject<ContextMenuItem>();
           const deleteModule$ = new Subject<ContextMenuItem>();
+          const deleteRow$ = new Subject<ContextMenuItem>();
           const replaceWithBlank$ = new Subject<ContextMenuItem>();
           
           this.contextMenu.menuItems$.next([
@@ -137,14 +138,6 @@ export class RackEditorComponent extends SubManager implements OnInit {
               click$: new Subject<ContextMenuItem>()
             },
             {
-              id: 'void-spacer',
-              label: '-',
-              icon: '',
-              data: undefined,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
-            },
-            {
               id: 'replace-with-blank',
               label: 'Replace with blank',
               icon: 'copy_all',
@@ -159,7 +152,23 @@ export class RackEditorComponent extends SubManager implements OnInit {
               data: rackedModule,
               disabled: false,
               click$: deleteModule$
-            }
+            },
+            {
+              id: 'void-spacer',
+              label: '-',
+              icon: '',
+              data: undefined,
+              disabled: true,
+              click$: new Subject<ContextMenuItem>()
+            },
+            {
+              id: 'clear-row',
+              label: 'Delete all in row',
+              icon: 'delete_sweep',
+              data: rackedModule,
+              disabled: false,
+              click$: deleteRow$
+            },
           ]);
           
           this.contextMenu.open$.next($event);
@@ -184,6 +193,15 @@ export class RackEditorComponent extends SubManager implements OnInit {
               takeUntil(this.destroy$)
             )
             .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule))
+          
+          deleteRow$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleRowClearing$.next(rackedModule))
+          
+          
         })
     );
     
