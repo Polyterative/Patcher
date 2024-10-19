@@ -46,7 +46,8 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * **forms:** more resilient form entity ([19c3be0](https://github.com/Polyterative/Patcher/commit/19c3be045078e159e7910186863e20aa16244814))
-* **rack-editor:** replace with black for 1U ([dd93a9f](https://github.com/Polyterative/Patcher/commit/dd93a9ff15f770197460a7d110733af89ff00333))
+* **rack-editor:** replace with blank for
+  1U ([dd93a9f](https://github.com/Polyterative/Patcher/commit/dd93a9ff15f770197460a7d110733af89ff00333))
 
 ## [4.7.0](https://github.com/Polyterative/Patcher/compare/v4.6.6...v4.7.0) (2024-06-01)
 
