@@ -1,5 +1,10 @@
 <div class="col gap0"
 >
+  
+  <app-rack-image [data]="data"
+                  [containImage]="viewConfig.containImage"
+  ></app-rack-image>
+  
   <app-hero-clickable-title [link]="['/racks/details',data.id]"
   >{{ data.name }}
   </app-hero-clickable-title>

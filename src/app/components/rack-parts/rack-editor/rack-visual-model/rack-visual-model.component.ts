@@ -57,7 +57,6 @@ export class RackVisualModelComponent implements OnInit, AfterViewInit {
     this.dataService.currentDownloadElementRef$.next({
       screen: this.screenReference
     });
-    // this.screen
   }
   
   isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
