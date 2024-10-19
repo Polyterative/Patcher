@@ -33,7 +33,7 @@ export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewIni
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
   
-  sizeDivider: number = 2;
+  sizeDivider: number = 2.7;
   
   constructor(
     public changeDetection: ChangeDetectorRef

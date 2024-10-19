@@ -47,6 +47,61 @@ export type Database = {
           },
         ]
       }
+      comments_duplicate: {
+        Row: {
+          authorId: string
+          content: string
+          created: string
+          entityId: number
+          entityType: number
+          id: number
+          moduleId: number | null
+          updated: string
+        }
+        Insert: {
+          authorId?: string
+          content?: string
+          created?: string
+          entityId: number
+          entityType: number
+          id?: number
+          moduleId?: number | null
+          updated?: string
+        }
+        Update: {
+          authorId?: string
+          content?: string
+          created?: string
+          entityId?: number
+          entityType?: number
+          id?: number
+          moduleId?: number | null
+          updated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_duplicate_authorId_fkey"
+            columns: ["authorId"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_duplicate_moduleId_fkey"
+            columns: ["moduleId"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_duplicate_moduleId_fkey"
+            columns: ["moduleId"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+        ]
+      }
       manufacturers: {
         Row: {
           adminUser: string | null
@@ -472,15 +527,7 @@ export type Database = {
           username?: string | null
           website?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       rack_modules: {
         Row: {
@@ -541,6 +588,7 @@ export type Database = {
           description: string | null
           hp: number
           id: number
+          image: string | null
           locked: boolean
           name: string | null
           public: boolean
@@ -553,6 +601,7 @@ export type Database = {
           description?: string | null
           hp?: number
           id?: number
+          image?: string | null
           locked?: boolean
           name?: string | null
           public?: boolean
@@ -565,6 +614,7 @@ export type Database = {
           description?: string | null
           hp?: number
           id?: number
+          image?: string | null
           locked?: boolean
           name?: string | null
           public?: boolean
@@ -646,16 +696,19 @@ export type Database = {
       }
       user_modules: {
         Row: {
+          kind: Database["public"]["Enums"]["user module possession"]
           moduleid: number
           profileid: string
           updated: string
         }
         Insert: {
+          kind?: Database["public"]["Enums"]["user module possession"]
           moduleid: number
           profileid: string
           updated?: string
         }
         Update: {
+          kind?: Database["public"]["Enums"]["user module possession"]
           moduleid?: number
           profileid?: string
           updated?: string
@@ -732,7 +785,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      "user module possession": "HAS" | "WANTS" | "SELLS"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -820,4 +873,22 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends | keyof PublicSchema["CompositeTypes"]
+    | {
+    schema: keyof Database
+  },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+      schema: keyof Database
+    }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

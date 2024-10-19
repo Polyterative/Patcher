@@ -18,7 +18,10 @@ import { RackMinimal } from 'src/app/models/rack';
 })
 export class RackMinimalComponent implements OnInit {
   @Input() data: RackMinimal;
-  @Input() viewConfig: RackMinimalViewConfig = defaultRackMinimalViewConfig;
+  @Input() viewConfig: RackMinimalViewConfig = {
+    ...defaultRackMinimalViewConfig,
+    containImage: false
+  }
   
   constructor(
     public userManagerService: UserManagementService,
@@ -43,6 +46,7 @@ export interface RackMinimalViewConfig {
   hideButtons: boolean;
   hideHP: boolean;
   hideDates: boolean;
+  containImage: boolean;
 }
 
 export const defaultRackMinimalViewConfig: RackMinimalViewConfig = {
@@ -50,5 +54,6 @@ export const defaultRackMinimalViewConfig: RackMinimalViewConfig = {
   hideDescription: false,
   hideButtons:     false,
   hideHP:          false,
-  hideDates:       false
+  hideDates: false,
+  containImage: true
 };

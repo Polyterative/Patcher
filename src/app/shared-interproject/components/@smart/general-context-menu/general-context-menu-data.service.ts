@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
 import { SubManager } from '../../../directives/subscription-manager';
+
 
 export interface ContextMenuItem {
   id: string;
@@ -9,6 +13,7 @@ export interface ContextMenuItem {
   disabled: boolean;
   data?: any;
   click$: Subject<ContextMenuItem>;
+  
 }
 
 @Injectable()
