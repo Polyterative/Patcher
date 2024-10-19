@@ -149,6 +149,7 @@ export class RackCreatorComponent implements OnInit {
             name: this.fields.name.control.value,
             hp: this.fields.hp.control.value,
             rows: this.fields.rows.control.value,
+            public: true,
             locked: false
           }
         )),

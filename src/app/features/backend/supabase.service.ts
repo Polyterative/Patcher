@@ -249,7 +249,7 @@ export class SupabaseService {
         })))),
     racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author }`, {count: 'exact'})
+        .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author },image`, {count: 'exact'})
         // only public
         .filter('public', 'eq', true)
         .ilike(`name,hp,rows, ${ QueryJoins.author }`, `%${ name }%`)
@@ -440,12 +440,8 @@ export class SupabaseService {
         })
     )
       .pipe(remapErrors()),
-    rack: (data: {
-      name: string,
-      authorid: string,
-      rows: number,
-      hp: number,
-      locked: boolean
+    rack: (data: Omit<RackMinimal, 'author' | 'created' | 'updated' | 'id'> & {
+      authorid: string
     }) => rxFrom(
       this.supabase
         .from(DbPaths.racks)
@@ -545,6 +541,16 @@ export class SupabaseService {
       this.supabase.from(DbPaths.comments)
         .delete()
         .filter('id', 'eq', id)
+    )
+      .pipe(
+        // bust the cache for comments
+        cacheBust(['comments', 'currentUserComments']),
+        remapErrors()),
+    commentsForRack: (id: number) => rxFrom(
+      this.supabase.from(DbPaths.comments)
+        .delete()
+        .filter('entityId', 'eq', id)
+        .filter('entityType', 'eq', CommentableEntityTypes.RACK)
     )
       .pipe(
         // bust the cache for comments
@@ -653,13 +659,6 @@ export class SupabaseService {
             .delete()
             .filter('authorid', 'eq', user.id)
             .filter('id', 'eq', id)
-        )),
-        // delete all comments for this rack
-        switchMap(() => rxFrom(
-          this.supabase.from(DbPaths.comments)
-            .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.RACK)
         )),
         remapErrors(),
         cacheBust(['rackWithId'])
@@ -787,6 +786,7 @@ export class SupabaseService {
     rack: (data: RackMinimal) => {
       return rxFrom(
         this.supabase.from(DbPaths.racks)
+          // do not use spread operator, because it will include unintended properties
           .upsert({
             id: data.id,
             authorid: data.author.id,
@@ -795,7 +795,8 @@ export class SupabaseService {
             rows: data.rows,
             hp: data.hp,
             locked: data.locked,
-            public: data.public
+            public: data.public,
+            image: data.image
           }).select('id')
       )
         .pipe(
@@ -881,28 +882,53 @@ export class SupabaseService {
           map(x => filenameAndExtension)
         );
     },
-    uploadRack: (file: SupabaseStorageFile, filenameAndExtension: string) => {
+    uploadRackImage: (file: SupabaseStorageFile, filenameAndExtension: string) => {
       
       filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
       
+      // prefix precise date and time to the filename,just before the extension,which can change
+      // use best practices regarding special symbols and stuff
+      filenameAndExtension = filenameAndExtension.split('.').join(`_${ new Date().toISOString().replace(/:/g, '-').replace(/[^0-9-]/g, '') }.`);
+      return this.getUserSession$()
+        .pipe(
+          switchMap(() => {
+            return rxFrom(
+              this.supabase
+                .storage
+                .from(DbStoragePaths.racks)
+                .upload(filenameAndExtension, file, {
+                  cacheControl: '360',
+                  contentType: 'image/jpeg'
+                })
+            )
+              .pipe(
+                // bust the cache
+                cacheBust(['rackWithId']),
+                map(x => filenameAndExtension));
+          })
+        );
+      
+    },
+    deleteRackImage: (filenameAndExtension: string) => {
+      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
       return rxFrom(
         this.supabase
           .storage
           .from(DbStoragePaths.racks)
-          .upload(filenameAndExtension, file, {
-            cacheControl: '36000',
-            upsert: true,
-            contentType: 'image/jpeg'
-          })
+          .remove([filenameAndExtension])
       )
-        .pipe(map(x => filenameAndExtension));
+        .pipe(
+          // bust the cache for modules
+          cacheBust(['rackWithId']),
+          catchErrors(this.snackBar)
+        );
+      
     },
     deletePanelFile: (path: string) => {
       return rxFrom(
         this.supabase
           .storage
           .from(DbStoragePaths.module_panels)
-          // .remove([`${ DbStoragePaths.module_panels }/${ path }`])
           .remove([path])
       )
         .pipe(

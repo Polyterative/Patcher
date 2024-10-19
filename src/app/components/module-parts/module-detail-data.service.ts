@@ -25,6 +25,7 @@ import { RackMinimal } from '../../models/rack';
 import { MatDialog } from "@angular/material/dialog";
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
+import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
 @Injectable()
@@ -68,7 +69,8 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        snackBar.open('Deleted', undefined, {duration: 1000});
+        SharedConstants.successCustom(this.snackBar, 'Panel deleted');
+        
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
     
@@ -81,7 +83,7 @@ export class ModuleDetailDataService {
         if (b) {
           let text: string = `${ b.name } by ${ b.manufacturer.name }`;
           navigator.clipboard.writeText(text);
-          snackBar.open('Copied: ' + text, undefined, {duration: 3000});
+          SharedConstants.successCustom(snackBar, `Copied: ${ text }`);
         }
       });
     

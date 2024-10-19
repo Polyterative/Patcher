@@ -53,7 +53,15 @@
                                 style="align-self: center;"
               >
                 <div style="cursor: pointer;">
-                  Show panels as images
+                  Use images
+                </div>
+              </mat-slide-toggle>
+              <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
+                                (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
+                                style="align-self: center;"
+              >
+                <div style="cursor: pointer;">
+                  Count modules
                 </div>
               </mat-slide-toggle>
               <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
@@ -61,7 +69,7 @@
                                 style="align-self: center;"
               >
                 <div style="cursor: pointer;">
-                I've got many modules
+                  Reduce scale
                 </div>
               </mat-slide-toggle>
               
@@ -76,9 +84,24 @@
                 {{ bag.isCurrentRackEditable ? "Lock rack" : "Unlock rack" }}
               </app-brand-primary-button>
               <app-brand-primary-button style="padding: 1rem 0;"
-                                        (click$)="dataService.downloadRackImageToUserComputer$.next({canvas:canvasReference,download:downloadReference})"
+                                        (click$)="dataService.downloadRackImageToUserComputer$.next()"
+                                        *ngIf="(bag.rowedRackedModules|totalHpOfRack)>0"
+                                        matTooltip="Will download an image file of the rack to your computer"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="1000"
+                                        
               >
-                Download as image
+                Download jpeg
+              </app-brand-primary-button>
+              <app-brand-primary-button style="padding: 1rem 0;"
+                                        (click$)="dataService.updateRackImagePreview$.next()"
+                                        *ngIf="bag.isCurrentRackPropertyOfCurrentUser&&(bag.rowedRackedModules|totalHpOfRack)>0"
+                                        matTooltip="Will update the rack preview image to help you identify it in the lists"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="1000"
+                                        
+              >
+                Update preview
               </app-brand-primary-button>
             </div>
             
