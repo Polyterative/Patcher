@@ -11,7 +11,7 @@
     >
       <div class="row"
            [class.row-bg]="!(row|hasUnrackedModules)"
-           [matBadge]="row.length==0?undefined:row.length"
+           [matBadge]="row.length==0?undefined:(rackDetailDataService.showModuleCounters$|async)?row.length:undefined"
            matBadgePosition="above after"
            cdkDropList
            cdkDropListOrientation="horizontal"
@@ -33,7 +33,7 @@
       
       </div>
     </ng-container>
-    <div class="watermark self-center">Planned on patcher.xyz</div>
+    <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
   </div>
   
   <!--    add new row button-->

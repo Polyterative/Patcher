@@ -8,41 +8,55 @@ import {
   OnInit
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { MinimalModule } from 'src/app/models/module';
+import { FlexLayoutModule } from "@angular/flex-layout";
+import { RouterLink } from "@angular/router";
+import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
+import { NgIf } from "@angular/common";
+import { Rack } from "src/app/models/rack";
 
 
 @Component({
-  selector:        'app-module-part-image',
-  templateUrl:     './module-part-image.component.html',
-  styleUrls:       ['./module-part-image.component.scss'],
+  selector: 'app-rack-image',
+  templateUrl: './rack-image.component.html',
+  styleUrls: ['./rack-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  standalone: true,
+  imports: [
+    FlexLayoutModule,
+    RouterLink,
+    ScreenWrapperModule,
+    NgIf
+  ],
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        725,
+      anchor: 'enter',
+      duration: 725,
       animateChildren: 'after'
     })
   ]
 })
-export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewInit {
+export class RackImageComponent implements OnInit, OnChanges, AfterViewInit {
   
-  @Input() data: MinimalModule;
+  @Input() data: Rack;
   
   filename: string | undefined;
   
-  @Input() containImage: boolean = true;
-  @Input() big: boolean = false;
+  // @Input() containImage: boolean = true;
+  // @Input() big: boolean = false;
   
-  sizeDivider: number = 2.7;
+  // proportion between contained and full size
+  sizeDivider: number = 1.5;
   
   constructor(
     public changeDetection: ChangeDetectorRef
-  ) { }
+  ) {
+  }
   
   // force change detection when the data changes
+  @Input() containImage: boolean = true;
   ngOnChanges(): void {
-    if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[0].filename;
+    if (this.data.image) {
+      this.filename = this.data.image;
     } else {
       this.filename = undefined;
     }
@@ -50,16 +64,16 @@ export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewIni
   }
   
   ngOnInit(): void {
-    if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[0].filename;
+    if (this.data.image) {
+      this.filename = this.data.image;
     } else {
       this.filename = undefined;
     }
-  
-    if (this.big) {
-      this.sizeDivider = 1;
-    }
-  
+    
+    // if (this.big) {
+    //   this.sizeDivider = 1;
+    // }
+    
     this.changeDetection.detectChanges();
   }
   

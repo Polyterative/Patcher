@@ -130,14 +130,6 @@ export class RackEditorComponent extends SubManager implements OnInit {
               click$: duplicateModule$
             },
             {
-              id: 'void-spacer',
-              label: '-',
-              icon: '',
-              data: undefined,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
-            },
-            {
               id: 'replace-with-blank',
               label: 'Replace with blank',
               icon: 'copy_all',
@@ -161,6 +153,15 @@ export class RackEditorComponent extends SubManager implements OnInit {
               disabled: true,
               click$: new Subject<ContextMenuItem>()
             },
+            {
+              id: 'void-spacer',
+              label: '-',
+              icon: '',
+              data: undefined,
+              disabled: true,
+              click$: new Subject<ContextMenuItem>()
+            },
+            
             {
               id: 'clear-row',
               label: 'Delete all in row',

@@ -31,4 +31,6 @@ export interface RackMinimal extends Timestamped, Privatable {
   rows: number;
   author: PublicUser;
   locked: boolean;
+  image?: string;
+  
 }

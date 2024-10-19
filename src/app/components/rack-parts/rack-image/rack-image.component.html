@@ -1,0 +1,35 @@
+<div fxLayoutAlign="center center"
+     [routerLink]="['/racks/details',data.id]"
+     class="clickable"
+     style="max-width:100%"
+>
+  <ng-container *ngIf="{
+      height:20
+    } as bag"
+  >
+    <ng-container *ngIf="containImage"
+    >
+      <img *ngIf="filename"
+           class="img image-transition"
+           [ngStyle]="{maxHeight:bag.height/sizeDivider+'rem'}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/'+filename"
+           [@enter]
+           loading="lazy"
+           [alt]="'Rack preview for '+data.name"
+      >
+    </ng-container>
+    
+    
+    <ng-container *ngIf="!containImage">
+      <img *ngIf="filename"
+           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/racks/'+filename"
+           [@enter]
+           class="image-transition"
+           loading="lazy"
+           [alt]="'Rack preview for '+data.name"
+      >
+    
+    </ng-container>
+  </ng-container>
+</div>

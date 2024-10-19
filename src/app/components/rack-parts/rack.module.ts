@@ -44,6 +44,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { AdviceTooltipModule } from "src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module";
 import { MatBadge } from "@angular/material/badge";
 import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
+import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rack-image.component";
 
 
 @NgModule({
@@ -103,7 +104,8 @@ import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-
     StatisticsModule,
     AdviceTooltipModule,
     MatBadge,
-    CalculateRowInformationPipe
+    CalculateRowInformationPipe,
+    RackImageComponent
   ]
 })
 export class RackModule {
