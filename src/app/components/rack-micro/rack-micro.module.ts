@@ -5,17 +5,19 @@ import { HeroClickableTitleModule } from '../../shared-interproject/components/@
 import { SharedAtomsModule } from '../shared-atoms/shared-atoms.module';
 import { RackMicroComponent } from './rack-micro.component';
 import { MatCardModule } from "@angular/material/card";
+import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rack-image.component";
 
 
 @NgModule({
   declarations: [RackMicroComponent],
   exports:      [RackMicroComponent],
-  imports:      [
+  imports: [
     CommonModule,
     HeroClickableTitleModule,
     SharedAtomsModule,
     MatCardModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    RackImageComponent
   ]
 })
 export class RackMicroModule {}

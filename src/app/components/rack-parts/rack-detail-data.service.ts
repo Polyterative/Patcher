@@ -12,6 +12,7 @@ import _ from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
+  delay,
   forkJoin,
   from,
   of,
@@ -68,11 +69,9 @@ export class RackDetailDataService extends SubManager {
   renameCurrentRack$ = new Subject<void>();
   // @ViewChild('screen') screen: ElementRef;
   // @ViewChild('canvas') canvas: ElementRef;
-  downloadRackImageToUserComputer$ = new Subject<{
-    // screen: ElementRef,
-    canvas: ElementRef,
-    download: ElementRef
-  }>();
+  downloadRackImageToUserComputer$ = new Subject<void>();
+  updateRackImagePreview$ = new Subject<void>();
+  
   //
   currentDownloadElementRef$: BehaviorSubject<{
     screen: ElementRef,
@@ -82,6 +81,7 @@ export class RackDetailDataService extends SubManager {
   
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
+  showModuleCounters$ = new BehaviorSubject<boolean>(true);
   // name and value
   rackStatistics$ = new BehaviorSubject<{
     name: string,
@@ -109,7 +109,7 @@ export class RackDetailDataService extends SubManager {
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
   
-  requestRackedModulesDbSync$ = new Subject<void>();
+  requestRackedModulesDbSync$ = new Subject<void>(); // updates the backend with the current state of the rack
   //
   
   protected destroyEvent$ = new Subject<void>();
@@ -225,8 +225,8 @@ export class RackDetailDataService extends SubManager {
     this.requestRackedModuleRowClearing$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([rackedModule, zrackModules, rack]) => {
-          const rackModules: RackedModule[][] = _.cloneDeep(zrackModules);
+        switchMap(([rackedModule, allRackModule, rack]) => {
+          const rackModules: RackedModule[][] = _.cloneDeep(allRackModule);
           const modulesInRow: RackedModule[] = _.cloneDeep(rackModules[rackedModule.rackingData.row]);
           
           if (modulesInRow && modulesInRow.length > 0) {
@@ -236,15 +236,11 @@ export class RackDetailDataService extends SubManager {
             
             // Update the UI before submitting to the backend. This is currently buggy in the user interface.
             // The goal is to perform all changes without reloading the entire page to avoid layout shifting and flashing.
-            // this.rowedRackedModules$.next(rackModules);
             
             return forkJoin(modulesInRow.map(module => this.backend.delete.rackedModule(module.rackingData.id))).pipe(
-              tap(() => {
-                SharedConstants.successCustom(this.snackBar, `Removed ${ modulesInRow.length } modules`);
-              }),
-              
+              tap(() => SharedConstants.successCustom(this.snackBar, `Removed ${ modulesInRow.length } modules`)),
               catchError((err) => {
-                  console.error(`Error clearing row: ${ err }`);
+                console.error(`Error clearing row: ${ err }`);
                 SharedConstants.errorCustom(this.snackBar, 'Error clearing row, refresh the page and try again');
                   return of(undefined);
                 }
@@ -267,7 +263,7 @@ export class RackDetailDataService extends SubManager {
     
     // when user requests to download rack image, download it using HTML2Canvas
     this.downloadRackImageToUserComputer$.pipe(
-      tap(() => this.snackBar.open('Downloading image...', undefined, {duration: 4000})),
+      tap(() => this.snackBar.open('⏲️ Generating image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
       switchMap(([_, references]) => from(
         domtoimage.toJpeg(<any>references.screen.nativeElement, {
@@ -294,6 +290,63 @@ export class RackDetailDataService extends SubManager {
         }
       );
     
+    // when user requests to update rack image preview, generate it, and upload to backend
+    this.updateRackImagePreview$.pipe(
+      tap(() => this.snackBar.open('⏲️ Generating image: please wait, this can take a few moments...', undefined, {duration: 20000})),
+      tap(() => this.showModuleCounters$.next(false)),
+      delay(50), // wait for the screen to be ready
+      withLatestFrom(this.currentDownloadElementRef$),
+      // generate the image, and convert it to a Blob
+      switchMap(([_, references]) =>
+        from(
+          domtoimage.toJpeg(<any>references.screen.nativeElement, {
+            quality: 0.9,
+            bgcolor: '#ffffff',
+          })
+        ).pipe(
+          tap(() => this.showModuleCounters$.next(true)),
+          // Convert the image data to a Blob
+          map(imageData => {
+            const byteCharacters = atob(imageData.split(',')[1]);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], {type: 'image/jpeg'});
+          })
+        )
+      ),
+      // Upload the Blob to the backend
+      switchMap(imageBlob => {
+        const fileName = `${ this.singleRackData$.value.id }`;
+        return this.backend.storage.uploadRackImage(imageBlob, `${ fileName }.jpeg`);
+      }),
+      // remove the old image from the backend
+      withLatestFrom(this.singleRackData$),
+      switchMap(([uploadResult, singleRackData]) => {
+        if (singleRackData.image) {
+          return this.backend.storage.deleteRackImage(singleRackData.image).pipe(map(() => uploadResult));
+        } else {
+          return of(uploadResult);
+        }
+      }),
+      withLatestFrom(this.singleRackData$),
+      // Update the rack data with the new image URL
+      switchMap(([uploadResult, rackData]) => {
+        rackData.image = uploadResult;
+        return this.backend.update.rack(rackData);
+        
+      }),
+      withLatestFrom(this.singleRackData$),
+      takeUntil(this.destroyEvent$)
+    )
+      .subscribe(() => {
+        SharedConstants.successCustom(this.snackBar, 'Preview updated');
+        
+        this.updateSingleRackData$.next(this.singleRackData$.value.id);
+        }
+      );
     
     // when user toggles locked status of rack, update backend
     this.requestRackEditableStatusChange$
@@ -537,8 +590,9 @@ export class RackDetailDataService extends SubManager {
             );
         }),
         withLatestFrom(this.deleteRack$, this.rowedRackedModules$),
-        switchMap(([z, x]) => this.backend.delete.modulesOfRack(x.id)
-          .pipe(map(() => x))),
+        switchMap(([_, x]) => this.backend.delete.modulesOfRack(x.id).pipe(map(() => x))),
+        switchMap(x => this.backend.delete.commentsForRack(x.id).pipe(map(() => x))),
+        switchMap(x => x.image ? this.backend.storage.deleteRackImage(x.image).pipe(map(() => x)) : of(x)),
         switchMap(x => this.backend.delete.userRack(x.id)),
         takeUntil(this.destroyEvent$)
       )
@@ -685,6 +739,8 @@ export class RackDetailDataService extends SubManager {
         name: this.bumpUpVersionInNameOfOfRack(),
         hp: this.singleRackData$.value.hp,
         rows: this.singleRackData$.value.rows,
+        image: this.singleRackData$.value.image,
+        public: true,
         locked: false
       }
     );
