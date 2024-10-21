@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.8.0](https://github.com/Polyterative/Patcher/compare/v4.7.4...v4.8.0) (2024-10-21)
+
+
+### Features
+
+* **racks:** allow to update image preview to show it in lists ([868c64e](https://github.com/Polyterative/Patcher/commit/868c64ea0c6887ea917635774cae86a677d5b326))
+
 ### [4.7.4](https://github.com/Polyterative/Patcher/compare/v4.7.3...v4.7.4) (2024-10-18)
 
 
