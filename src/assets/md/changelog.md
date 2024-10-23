@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.8.1](https://github.com/Polyterative/Patcher/compare/v4.8.0...v4.8.1) (2024-10-23)
+
+
+### Bug Fixes
+
+* **module-submit:** after submitting a new module to the system the module list correctly shows the new module without having to reload manually ([a367208](https://github.com/Polyterative/Patcher/commit/a367208f423f53d9543504dd67ee20924a3ab702))
+
 ## [4.8.0](https://github.com/Polyterative/Patcher/compare/v4.7.4...v4.8.0) (2024-10-21)
 
 
