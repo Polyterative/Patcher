@@ -15,6 +15,7 @@ import {
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { MatPaginator } from "@angular/material/paginator";
+import { ActivatedRoute } from "@angular/router";
 
 
 @Component({
@@ -41,7 +42,8 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   
   constructor(
     public dataService: ModuleBrowserDataService,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    private route: ActivatedRoute
   ) {
     
     this.dataService.paginatorToFistPage$
@@ -60,6 +62,17 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     this.seoAndUtilsService.updateSeo({
       description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'
     }, 'Modules');
+    
+    this.route.queryParams
+      .pipe(
+        takeUntil(this.destroyEvent$),
+      )
+      .subscribe(params => {
+        if (params['refresh']) {
+          this.dataService.serversideTableRequestData.skip$.next(0);
+          this.dataService.serversideTableRequestData.take$.next(20);
+        }
+      });
   }
   
   ngOnInit(): void {
