@@ -376,7 +376,13 @@ export class ModuleAdderDataService extends SubManager {
           });
         
         // navigate to the module browser page
-        this.router.navigate(['/modules', 'browser']);
+        this.router.navigate(
+          ['/modules', 'browser'],
+          {
+            queryParams: {refresh: true},
+            queryParamsHandling: 'merge' // This keeps existing query parameters and merges the new one.
+          }
+        );
       });
     
   }
