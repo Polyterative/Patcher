@@ -44,7 +44,7 @@
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
     "@ngx-pwa/local-storage": "^16.3.0",
-    "@sentry/angular": "^7.109.0",
+    "@sentry/angular": "^8.35.0",
     "@sentry/cli": "^2.38.0",
     "@sentry/tracing": "^7.109.0",
     "@supabase/supabase-js": "^2.39.3",
