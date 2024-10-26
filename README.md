@@ -1,8 +1,3 @@
-# Patcher
-
-Patcher is the modern Eurorack helper. This project was originally generated
-with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.3. The current version is Angular 13.
-
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -46,7 +41,7 @@ encounter any issues, refer to the documentation or raise an issue on GitHub.
 
 The project uses the following tools and libraries:
 
-- Angular CLI: 13 (currently)
+- Angular CLI: 18
 - Node.js: Check the `.nvmrc` file for the version
 - Other dependencies: Check the `package.json` file
 
@@ -77,4 +72,4 @@ foundation for the rest of your work, please submit it separately first.
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0. For more information, see
-the [LICENSE](LICENSE) file.
+the [LICENSE](LICENSE.txt) file.
