@@ -2,6 +2,7 @@ import { registerLocaleData } from '@angular/common';
 import localeItExtra from '@angular/common/locales/extra/it';
 import localeIt from '@angular/common/locales/it';
 import {
+  ErrorHandler,
   InjectionToken,
   LOCALE_ID,
   NgModule
@@ -30,6 +31,8 @@ import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { MatDialogRef } from "@angular/material/dialog";
+
+import * as Sentry from "@sentry/angular";
 
 
 const locale: {
@@ -87,6 +90,10 @@ const matDatepickerLocaleIT = {
     {
       provide: MatDialogRef,
       useValue: {}
+    },
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler(),
     }
   ],
   bootstrap:    [AppComponent]
