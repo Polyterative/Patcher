@@ -4,7 +4,7 @@
   "scripts": {
     "start": "ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
-    "build": "angular-build-info && ng build --configuration production && yarn sentry:sourcemaps",
+    "build": "yarn prebuild && angular-build-info && ng build --configuration production && yarn sentry:sourcemaps",
     "copyChangelog": "copyfiles changelog.md assets/md/",
     "updateMinors": "npm update --save/--save-dev",
     "updateAll": "ncu -u",
@@ -19,6 +19,7 @@
     "test-headless": "ng test --browsers=ChromeHeadless --watch=false",
     "lint": "ng lint",
     "cli-version": "ng --version",
+    "prebuild": "node generate-env.js",
     "e2e": "ng e2e",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher"
   },
