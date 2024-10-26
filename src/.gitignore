@@ -3,3 +3,4 @@
 # Exclude the package-lock.json file
 package-lock.json
 !/environments/environment.prod.ts
+/environments/environment.prod.ts
