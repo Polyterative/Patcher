@@ -19,13 +19,13 @@ import {
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import {
-  defaultModuleMinimalViewConfig,
-  ModuleMinimalViewConfig
-} from "src/app/components/module-parts/module-minimal/module-minimal.component";
-import {
   CommentableEntityTypes,
   CommentsDataService
 } from "src/app/components/shared-atoms/comments/comments-data.service";
+import {
+  defaultRackMinimalViewConfig,
+  RackMinimalViewConfig
+} from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
 
 
 @Component({
@@ -37,8 +37,8 @@ import {
   
 })
 export class RackBrowserDetailViewComponent implements OnInit {
-  @Input() readonly viewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig
+  @Input() readonly viewConfig: RackMinimalViewConfig = {
+    ...defaultRackMinimalViewConfig
   };
   
   protected destroyEvent$ = new Subject<void>();
