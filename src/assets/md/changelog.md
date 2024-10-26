@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.8.4](https://github.com/Polyterative/Patcher/compare/v4.8.3...v4.8.4) (2024-10-26)
+
+
+### Bug Fixes
+
+* **backend:** environment fixes ([3b98dce](https://github.com/Polyterative/Patcher/commit/3b98dce81d038d6c3ffb6657d77eb2df5dde4c24))
+
 ### [4.8.3](https://github.com/Polyterative/Patcher/compare/v4.8.2...v4.8.3) (2024-10-26)
 
 
