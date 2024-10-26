@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.8.8](https://github.com/Polyterative/Patcher/compare/v4.8.7...v4.8.8) (2024-10-26)
+
+
+### Features
+
+* **backend:** sentry lib update ([3f7f054](https://github.com/Polyterative/Patcher/commit/3f7f0541cc1c15c97d9e49e9fc44cd51d6ab55f6))
+
 ### [4.8.7](https://github.com/Polyterative/Patcher/compare/v4.8.6...v4.8.7) (2024-10-26)
 
 
