@@ -41,8 +41,12 @@ encounter any issues, refer to the documentation or raise an issue on GitHub.
 
 The project uses the following tools and libraries:
 
-- Angular CLI: 18
-- Node.js: Check the `.nvmrc` file for the version
+- Angular: v18
+- Angular Material: UI components
+- Supabase: database, authentication, and storage
+- Vercel: deployment, hosting
+- Github: version control, issue tracking, project management,test automation
+- Database: PostgreSQL hosted on Supabase
 - Other dependencies: Check the `package.json` file
 
 ## DB Model Details
