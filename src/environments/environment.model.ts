@@ -4,5 +4,4 @@ export interface EnvironmentModel {
     url: string
     key: string
   };
-  firebase: any;
 }
