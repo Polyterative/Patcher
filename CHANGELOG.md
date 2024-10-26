@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.8.2](https://github.com/Polyterative/Patcher/compare/v4.8.1...v4.8.2) (2024-10-26)
+
+
+### Features
+
+* **backend:** cleaner sentry code ([55bd39e](https://github.com/Polyterative/Patcher/commit/55bd39e8573b1428cd2451bcb765870fdda129eb))
+* **backend:** enabled sentry sourcemaps ([201ccf4](https://github.com/Polyterative/Patcher/commit/201ccf4440a0efcf5f7fec0a03a435986a6e2505))
+* **backend:** removed secrets from repo ([bf1cf5a](https://github.com/Polyterative/Patcher/commit/bf1cf5a0a089edd0e4aaf920928afd958e35fc94))
+
+
+### Bug Fixes
+
+* **comments:** cleaner labels ([0baa69c](https://github.com/Polyterative/Patcher/commit/0baa69cbfc9d1022077db03318defd47f84936fb))
+
 ### [4.8.1](https://github.com/Polyterative/Patcher/compare/v4.8.0...v4.8.1) (2024-10-23)
 
 
