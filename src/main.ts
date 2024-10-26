@@ -12,12 +12,23 @@ if (environment.production) {
   
   Sentry.init({
     dsn: 'https://57dc8f0b1ad240f3afa61628b8351aae@o718439.ingest.us.sentry.io/5780783',
+    
     environment: environment.production ? 'production' : 'development',
     release: `patcher@${ build.version }`,
-    integrations: [Sentry.browserTracingIntegration()],
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.browserProfilingIntegration(),
+      Sentry.replayIntegration(),
+      Sentry.breadcrumbsIntegration(),
+      Sentry.browserApiErrorsIntegration(),
+      Sentry.dedupeIntegration(),
+      Sentry.httpContextIntegration()
+    ]
+    ,
     tracesSampleRate: 1.0,
     tracePropagationTargets: ['localhost', /^https:\/\/patcher\.xyz/], // Updated to include only patcher.xyz
   });
+  
 }
 
 platformBrowserDynamic()
