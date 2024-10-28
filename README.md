@@ -46,15 +46,16 @@ To use the project's features, navigate to the appropriate section of the interf
 
 The project uses the following tools and libraries:
 
-| **Tool/Library**       | **Description**                             |
-|------------------------|---------------------------------------------|
-| **Angular**            | v18                                         |
-| **Angular Material**   | UI components                               |
-| **Supabase**           | Database, authentication, and storage       |
-| **Vercel**             | Deployment, hosting                         |
+| **Tool/Library**       | **What**                                                             |
+|------------------------|----------------------------------------------------------------------|
+| **Angular**            | Web framework. Using v18                                             |
+| **Angular Material**   | UI components                                                        |
+| **Supabase**           | Database, authentication, and storage                                |
+| **Vercel**             | Deployment, hosting                                                  |
 | **GitHub**             | Version control, issue tracking, project management, test automation |
-| **Database**           | PostgreSQL hosted on Supabase               |
-| **Other Dependencies** | Check the `package.json` file               |
+| **Database**           | PostgreSQL hosted on Supabase                                        |
+| **Sentry**             | Technical analytics and error tracking                               |
+| **Other Dependencies** | Check the `package.json` file                                        |
 
 ---
 
