@@ -68,4 +68,17 @@ The database model for the project is as follows:
 
 ## **Pull Requests**
 
-If you have forked on **Git
+If you have forked on **GitHub**, then the best way to submit your patches is to push your changes back to GitHub and then send a "pull request" on GitHub.
+
+If your pull request is small, for example, one or two commits each containing only a few lines of code, then it is easy for the maintainers to review.
+
+If you are creating a larger pull request, then please help the maintainers by making the reviews as straightforward as possible:
+
+- The smaller the PR, the easier it is to review. In particular, if a PR is too large to review in one sitting, or if changes are requested, then the maintainer needs to repeatedly re-read code that has already been considered.
+- If you are creating a large pull request, then please consider splitting your pull request into multiple PRs. If part of your work can be considered standalone, or is a foundation for the rest of your work, please submit it separately first.
+
+---
+
+## **License**
+
+This project is licensed under the **GNU Affero General Public License v3.0**. For more information, see the [LICENSE](LICENSE.txt) file.
