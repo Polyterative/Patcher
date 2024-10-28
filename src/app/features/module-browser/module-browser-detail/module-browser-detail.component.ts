@@ -57,6 +57,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
     hideLabels: true,
     hideDescription: true
   };
+  // hopefully these do not become too many
   searchLinks                                                    = [
     {
       url: (name: string, manufacturer: string) => `https://www.google.com/search?q=${ name } by ${ manufacturer }`,
@@ -186,6 +187,14 @@ export class ModuleBrowserDetailComponent implements OnInit {
       icon: 'store',
       tooltip: 'Search on Found Sound'
     },
+    
+    {
+      url: (name) => `https://synthshop.no/search?q=${ name }`,
+      label: 'Synthshop 🇳🇴',
+      icon: 'store',
+      tooltip: 'Search on Synthshop'
+    },
+    
   ];
   
   constructor(
