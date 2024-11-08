@@ -304,3 +304,23 @@ mat-expansion-panel {
   border-radius: 1rem;
   -webkit-border-radius: 1rem;
 }
+
+.copy-feedback {
+  position: absolute;
+  background-color: rgba(0, 128, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  top: -30px;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.copy-feedback.show {
+  opacity: 1;
+  transform: translateY(0);
+}
