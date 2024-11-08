@@ -49,6 +49,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatButtonModule } from "@angular/material/button";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatExpansionModule } from "@angular/material/expansion";
+import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 
 
 @NgModule({
@@ -104,7 +105,8 @@ import { MatExpansionModule } from "@angular/material/expansion";
     ScreenWrapperModule,
     MatExpansionModule,
     FileDragHostModule,
-    NgOptimizedImage
+    NgOptimizedImage,
+    CopyableDirective
   ],
   exports:      [
     ModuleCVItemComponent,
