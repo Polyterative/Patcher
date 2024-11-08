@@ -23,28 +23,22 @@
         ></lib-mat-form-entity>
   
         <div fxFlex="grow"></div>
-        <!--      <div fxFlex="100">-->
-        <!--        <a mat-button-->
-        <!--           href="https://forms.gle/MjyXuafbrXmaSMiaA"-->
-        <!--           target="_blank"-->
-        <!--        >Add a patch</a>-->
-        <!--      </div>-->
       </div>
+      
+      <app-patch-list [data$]="dataService.patchesList$"
+                      [viewConfig]="viewConfig"
+      ></app-patch-list>
       <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
                      [pageSizeOptions]="[20,25,50,100]"
                      [length]="dataService.serversideAdditionalData.itemsCount$|async"
                      (page)="dataService.onPageEvent($event)"
                      showFirstLastButtons
+                     style="margin-top:1rem;"
       ></mat-paginator>
-  
-      <app-patch-list [data$]="dataService.patchesList$"
-                      [viewConfig]="viewConfig"
-      ></app-patch-list>
       <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
                                           [updateData$]="dataService.updatePatchesList$"
       ></lib-auto-content-loading-indicator>
     </div>
     <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>
-  <app-empty-state></app-empty-state>
 </div>
