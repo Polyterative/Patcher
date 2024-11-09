@@ -1,6 +1,35 @@
 ![image](https://github.com/user-attachments/assets/aeb72af3-8e20-44f5-aad8-2ca547251532)
 ![My_collection__patcher xyz_-_Google_Chrome__2024-10-29_00-43](https://github.com/user-attachments/assets/68635b4f-7ae8-4841-8356-7b7720d89e97)
 
+<br>
+<br>
+
+<h1 align="center">
+  <a href="https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1" target="_blank">PROJECT ROADMAP</a>
+</h1>
+
+<br>
+
+<p align="center">
+  This roadmap provides a clear view of the project's ongoing developments, including bug fixes, feature requests, future enhancements, and budget tracking. Here, you'll find the most up-to-date information on what we're working on and what’s planned for the future.
+</p>
+
+<br>
+<br>
+
+---
+
+<br>
+
+### FOR USERS: HOW TO REQUEST NEW FEATURES OR REPORT BUGS
+
+If you’re a user with a new feature request or bug report, please check the <a href="https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1" target="_blank">Project Roadmap</a> first, as your request may already be in progress or planned.
+
+If you don’t see your issue listed, feel free to open a new issue on GitHub to let us know.
+
+<br>
+<br>
+
 
 ## **Table of Contents**
 
