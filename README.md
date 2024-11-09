@@ -23,9 +23,9 @@
 
 ### FOR USERS: HOW TO REQUEST NEW FEATURES OR REPORT BUGS
 
-If you’re a user with a new feature request or bug report, please check the <a href="https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1" target="_blank">Project Roadmap</a> first, as your request may already be in progress or planned.
+If you’re a user with feedback or ideas, please join our community on [Discord](https://discord.gg/N6Z32xJR) to discuss them with us first. Our Discord server is the primary space for conversations, discussions, and feedback, so we encourage you to bring any thoughts or suggestions there.
 
-If you don’t see your issue listed, feel free to open a new issue on GitHub to let us know.
+If you are a **technical user** with a specific bug report, you may open an issue directly on GitHub if the problem isn’t already mentioned in the [Project Roadmap](https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1).
 
 <br>
 <br>
