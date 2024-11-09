@@ -1,22 +1,21 @@
-<div class="value-showcase"
-     [fxLayout]="valueBelow ? 'column' : 'row'"
-     [fxLayoutAlign]="pushToEnd?'space-between':''"
-     fxLayoutGap=".4rem"
+<div class="row gap1">
+  <!-- Optional Icon -->
+  <ng-container *ngIf="icon">
+    <div class="icon">
+      <mat-icon>{{ icon }}</mat-icon>
+    </div>
+  </ng-container>
+  <div [ngClass]="{'column': valueBelow, 'row': !valueBelow, 'space-between': pushToEnd}"
 >
-  <div fxFlex="100"
-       class="label"
-  >{{ label }}</div>
-  <div fxFlex="100"
-       fxLayout="row"
-  
-  >
-    <div fxFlex="100"
-         [fxLayoutAlign]="pushToEnd?'end':''"
-         [class]="bigText ? 'value' : ''"
-    >
-      <div [class]="monospace ? 'monospace' : null">
+    <div class="label">
+      {{ label }}
+    </div>
+    <div class="value-content row">
+      <div [ngClass]="{'end': pushToEnd, 'value': bigText}">
+        <div [ngClass]="{'monospace': monospace}">
         <ng-content></ng-content>
       </div>
     </div>
   </div>
+</div>
 </div>

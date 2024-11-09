@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input
+} from '@angular/core';
+
 
 /**
  *  UI ONLY COMPONENT
@@ -12,6 +17,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 export class LabelValueShowcaseComponent {
   @Input()
   label: string;
+  
+  @Input()
+  icon?: string;
 
   @Input()
   bigText = true;

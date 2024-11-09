@@ -45,6 +45,8 @@ import { AdviceTooltipModule } from "src/app/shared-interproject/components/@vis
 import { MatBadge } from "@angular/material/badge";
 import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-editor/calculate-row-information.pipe";
 import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rack-image.component";
+import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
+import { LibShowcaseGridComponent } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 
 
 @NgModule({
@@ -105,7 +107,9 @@ import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rac
     AdviceTooltipModule,
     MatBadge,
     CalculateRowInformationPipe,
-    RackImageComponent
+    RackImageComponent,
+    LabelValueShowcaseModule,
+    LibShowcaseGridComponent
   ]
 })
 export class RackModule {

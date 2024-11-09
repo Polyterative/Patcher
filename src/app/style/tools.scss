@@ -31,6 +31,14 @@
   -webkit-box-orient: horizontal;
 }
 
+.fixed-width12 {
+  flex: 0 0 12rem;
+}
+
+.fixed-width16 {
+  flex: 0 0 16rem;
+}
+
 //breakpoint	mediaQuery
 //xs	'screen and (max-width: 599px)'
 //sm	'screen and (min-width: 600px) and (max-width: 959px)'
