@@ -208,4 +208,11 @@ export class RackEditorComponent extends SubManager implements OnInit {
     
   }
   
+  calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
+    const totalCapacity = Number(totalHp) * Number(rows);
+    if (totalCapacity === 0 || isNaN(totalCapacity)) return '0%';
+    return ((Number(usedHp) / totalCapacity) * 100).toFixed(2) + '%';
+  }
+  
+  
 }
