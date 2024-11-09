@@ -15,10 +15,8 @@
   </div>
   
   <ng-template #yesdata>
-    <lib-hero-content-card [description]="(bag.rowedRackedModules|totalModulesOfRack)+' module(s) '+' /' +
-                            ' '+data.hp+' HP per row'+' / ' +
-                             ''+(bag.rowedRackedModules|totalHpOfRack)+' HP used' +
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?' / Changes saved automatically / Right click on modules for more options / Add modules from below':' / Unlock to make changes')):'')"
+    <lib-hero-content-card [description]="
+                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'Changes saved automatically / Right click on modules for more options / Add modules from below':'Unlock to make changes')):'')"
                            descriptionAlign="alignTextEnd"
                            class="transition-all-long"
                            [ngClass]="{
@@ -43,8 +41,26 @@
             
             >
               This rack private. It won't be listed in search but will be accessible to anyone who has
-              the URL
+              the URLm
             </app-advice-tooltip>
+            <lib-clean-card>
+              <app-lib-showcase-grid [data]="[
+    { label: 'Rack name', value: data.name, icon: 'label' },
+    { label: 'Rack rows', value: data.rows.toString(), icon: 'view_comfy' },
+    { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets' },
+    { label: 'HP', value: data.hp.toString(), icon: 'straighten' },
+    { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4' },
+    { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free' },
+    
+    { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart' },
+  ]">
+              </app-lib-showcase-grid>
+              
+              <!--              { label: '+12V mA', value: '12000', icon: 'bolt' },-->
+              <!--               { label: '-12V mA', value: '12000', icon: 'bolt' },-->
+              <!--              { label: '+5V mA', value: '12000', icon: 'bolt' }-->
+            </lib-clean-card>
+            
             
             <div class="row gap1">
               
