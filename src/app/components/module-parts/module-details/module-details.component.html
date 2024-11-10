@@ -57,27 +57,6 @@
   >
     Abstract module, used for educational patches.
   </p>
-  
-  <div appCopyable *ngIf="data">
-    <span class="hot">{{ data?.name }}</span>
-    is a <span class="hot">{{ data?.hp }}</span>HP
-    <span class="hot">{{ data?.standard?.name }}</span> module made by
-    <span class="hot">{{ data?.manufacturer?.name }}</span>
-    
-    <br>
-    Module has <span class="hot"> {{ data?.isComplete ? 'been' : 'not been' }} completed</span>
-    and <span class="hot">{{ data?.isApproved ? 'has' : 'has not' }} </span> been approved.
-    <br>
-    
-    Module has <span class="hot">{{ data?.panels?.length }}</span> panel(s).
-    <br>
-    Provides <span class="hot">{{ data?.ins?.length }}</span> in(s)
-    and <span class="hot">{{ data?.outs?.length }}</span> out(s).
-  
-  </div>
-  
-  <div *ngIf="data">
-    First seen on <span class="hot">{{ data?.created | date: 'mediumDate' }}</span>
-    and last updated on <span class="hot">{{ data?.updated | date: 'mediumDate' }}</span>.
-  </div>
+
+
 </div>

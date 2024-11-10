@@ -33,8 +33,64 @@ user:(userManagementService.loggedUser$|async)
               </ng-template>
             
             </lib-clean-card>
-            <div class="col"
+            <div class="col gap1"
             >
+              
+              <!--              <div appCopyable *ngIf="data">-->
+              <!--                <span class="hot">{{ data?.name }}</span>-->
+              <!--                is a <span class="hot">{{ data?.hp }}</span>HP-->
+              <!--                <span class="hot">{{ data?.standard?.name }}</span> module made by-->
+              <!--                <span class="hot">{{ data?.manufacturer?.name }}</span>-->
+              <!--                -->
+              <!--                <br>-->
+              <!--                Module has <span class="hot"> {{ data?.isComplete ? 'been' : 'not been' }} completed</span>-->
+              <!--                and <span class="hot">{{ data?.isApproved ? 'has' : 'has not' }} </span> been approved.-->
+              <!--                <br>-->
+              <!--                -->
+              <!--                Module has <span class="hot">{{ data?.panels?.length }}</span> panel(s).-->
+              <!--                <br>-->
+              <!--                Provides <span class="hot">{{ data?.ins?.length }}</span> in(s)-->
+              <!--                and <span class="hot">{{ data?.outs?.length }}</span> out(s).-->
+              <!--              -->
+              <!--              </div>-->
+              <!--              -->
+              <!--              <div *ngIf="data">-->
+              <!--                First seen on <span class="hot">{{ data?.created | date: 'mediumDate' }}</span>-->
+              <!--                and last updated on <span class="hot">{{ data?.updated | date: 'mediumDate' }}</span>.-->
+              <!--              </div>-->
+              
+              
+              <lib-clean-card [@enter]>
+                <div class="col gap1">
+                  <app-lib-showcase-grid [data]="[
+      { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business',size:'auto' },
+      { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten' },
+      { label: 'Standard', value: bag.data.standard.name, icon: 'verified' },
+      { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module' },
+    ]">
+                  </app-lib-showcase-grid>
+                  
+                  <app-lib-showcase-grid
+                    *ngIf="(bag.data.outs.length + bag.data.ins.length)>0"
+                    [data]="[
+      { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0 ,size:'auto' },
+      { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0 ,size:'auto'},
+      { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0 ,size:'auto'},
+      { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length)/bag.data.hp).toPrecision(3), icon: 'bar_chart' ,size:'auto'},
+    ]">
+                  </app-lib-showcase-grid>
+                  <app-lib-showcase-grid [data]="[
+        { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done',size:'auto'  },
+        { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up',size:'auto'  },
+      ]">
+                  </app-lib-showcase-grid>
+                </div>
+                
+                <!--              { label: '+12V mA', value: '12000', icon: 'bolt' },-->
+                <!--               { label: '-12V mA', value: '12000', icon: 'bolt' },-->
+                <!--              { label: '+5V mA', value: '12000', icon: 'bolt' }-->
+              </lib-clean-card>
+              
               <div class="col gap1"
                    *ngIf="bag.data"
               >
@@ -84,14 +140,6 @@ user:(userManagementService.loggedUser$|async)
               
               
               </div>
-              <p fxLayoutAlign="end"
-                 style="font-size: 1rem; font-family: 'Roboto', sans-serif"
-                 *ngIf="bag.data&&!bag.data.isComplete&&!viewConfig.hideLabels&&(bag.data.manufacturer.id!==10000)"
-              >
-                Do you know about this module?
-                Please help the community by adding the module's ins and outs.
-                Contributors' patches DO sound better!
-              </p>
             </div>
             
             <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
@@ -184,6 +232,9 @@ user:(userManagementService.loggedUser$|async)
           >
             <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
                                    titleNormal="Module Editor"
+                                   description="Do you know about this module?
+                Please help the community by adding the module's ins and outs.
+                Contributors' patches DO sound better!"
             >
               <app-module-editor [data]="(bag.data)"
               ></app-module-editor>
