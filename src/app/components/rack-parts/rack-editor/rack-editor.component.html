@@ -43,16 +43,15 @@
               This rack private. It won't be listed in search but will be accessible to anyone who has
               the URLm
             </app-advice-tooltip>
-            <lib-clean-card>
+            <lib-clean-card [@enter]>
               <app-lib-showcase-grid [data]="[
-    { label: 'Rack name', value: data.name, icon: 'label' },
-    { label: 'Rack rows', value: data.rows.toString(), icon: 'view_comfy' },
-    { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets' },
-    { label: 'HP', value: data.hp.toString(), icon: 'straighten' },
-    { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4' },
-    { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free' },
-    
-    { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart' },
+    { label: 'Rack name', value: data.name, icon: 'label', size: 'auto' },
+    { label: 'Rack rows', value: data.rows.toString(), icon: 'view_comfy', size: 'auto' },
+    { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets', size: 'auto' },
+    { label: 'HP', value: data.hp.toString(), icon: 'straighten', size: 'auto' },
+    { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4', size: 'auto' },
+    { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free', size: 'auto' },
+    { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart', size: 'auto' }
   ]">
               </app-lib-showcase-grid>
               

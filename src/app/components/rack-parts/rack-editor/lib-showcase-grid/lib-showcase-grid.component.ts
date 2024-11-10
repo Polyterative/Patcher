@@ -3,8 +3,10 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
 import {
+  AsyncPipe,
   NgForOf,
   NgIf
 } from "@angular/common";
@@ -15,6 +17,8 @@ interface LabelValueData {
   label: string;
   value: string;
   icon?: string;
+  hidden?: boolean;
+  size?: string;
 }
 
 @Component({
@@ -24,15 +28,18 @@ interface LabelValueData {
     LabelValueShowcaseModule,
     NgForOf,
     MatIcon,
-    NgIf
+    NgIf,
+    AsyncPipe
   ],
   templateUrl: './lib-showcase-grid.component.html',
   styleUrl: './lib-showcase-grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LibShowcaseGridComponent {
+  public data$ = new BehaviorSubject<LabelValueData[]>([]);
   
-  @Input() data: LabelValueData[] = [];
-  @Input() minSize: string = '6rem'; // Default size is 12rem
+  @Input() set data(values: LabelValueData[]) {
+    this.data$.next(values.filter(v => !v.hidden));
+  }
   
 }
