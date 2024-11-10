@@ -51,6 +51,7 @@ import {
 } from "@angular/material/menu";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
+import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 
 
 const parentPrefix = 'modules';
@@ -135,6 +136,7 @@ const parentPrefix = 'modules';
     MatMenuTrigger,
     CommentsModule,
     CopyableDirective,
+    LibShowcaseGridComponent,
   ],
   exports: [
     ModuleListComponent,

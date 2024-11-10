@@ -1,7 +1,7 @@
-<div class="rowwrap gap1">
-  <app-label-value-showcase *ngFor="let item of data"
+<div class="rowwrap gap1 grow">
+  <app-label-value-showcase *ngFor="let item of data$ | async"
                             class="label-value-showcase"
-                            [style]="{ flex: '1 1 auto', 'min-width': minSize }"
+                            [style]="{ flex: '1 1 '+item.size, }"
                             [label]="item.label"
                             [icon]="item.icon"
   >
