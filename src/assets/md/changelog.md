@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.9.0](https://github.com/Polyterative/Patcher/compare/v4.8.10...v4.9.0) (2024-11-10)
+
+
+### Features
+
+* **browsers:** paginator now on bottom and cleaner top part ([d911aaf](https://github.com/Polyterative/Patcher/commit/d911aaf92943840bb236767baea29f15d4503184))
+* **module-details:** add text description of data ([5e0eb6d](https://github.com/Polyterative/Patcher/commit/5e0eb6ddc59f5489722ae963f338b69e65163460))
+* **module-details:** statistics card in page ([8e5ae8b](https://github.com/Polyterative/Patcher/commit/8e5ae8beb2d94f031da9629d548b03b331ece527))
+* **rack-details:** minor bugfix ([b249c9f](https://github.com/Polyterative/Patcher/commit/b249c9ffb412f2a1b335856d5cd616c8de49eb8a))
+* **rack-details:** statistics card in page ([39635b8](https://github.com/Polyterative/Patcher/commit/39635b895d14e4f6f4b054929db30e667583270c))
+
 ### [4.8.10](https://github.com/Polyterative/Patcher/compare/v4.8.9...v4.8.10) (2024-10-28)
 
 
