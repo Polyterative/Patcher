@@ -26,6 +26,7 @@ import { MatCardModule } from "@angular/material/card";
 import { AuthGuard } from "src/app/features/backbone/login/user-auth-guard.service";
 import { UserManualsComponent } from "src/app/features/routes/user-area/user-manuals/user-manuals.component";
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
+import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 
 
 @NgModule({
@@ -62,7 +63,8 @@ import { UserCommentsComponent } from "src/app/features/routes/user-area/user-co
     RackListModule,
     PatchListModule,
     UserManualsComponent,
-    UserCommentsComponent
+    UserCommentsComponent,
+    AppFaqComponent
   ],
   exports:      [
     UserAreaRootComponent
