@@ -2,18 +2,29 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { Route, RouterModule, Routes } from '@angular/router';
+import {
+  Route,
+  RouterModule,
+  Routes
+} from '@angular/router';
 import { ScreenWrapperModule } from '../../components/@visual/screen-wrapper/screen-wrapper.module';
 import { UranusComponent } from './uranus.component';
+import { FaqComponent } from "src/app/shared-interproject/components/@visual/faq/faq.component";
+import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
+import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
+
 
 @NgModule({
   declarations: [UranusComponent],
-  imports:      [
+  imports: [
     RouterModule,
     CommonModule,
     FlexLayoutModule,
     ScreenWrapperModule,
-    MatToolbarModule
+    MatToolbarModule,
+    FaqComponent,
+    HeroContentCardModule,
+    AppFaqComponent
   ],
   providers:    [],
   exports:      [UranusComponent]
