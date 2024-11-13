@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 import { fadeAnimation } from './fade.animation';
+
 
 @Component({
   selector:    'app-uranus',
@@ -15,8 +19,6 @@ export class UranusComponent {
   constructor(private route: ActivatedRoute, private router: Router) {
   
   }
-  
-  // public width: string = this.route.snapshot.data.width;
   
   ngOnInit(): void {
     const providedTitle = this.route.snapshot.data.title;
