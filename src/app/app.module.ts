@@ -33,6 +33,7 @@ import { ScreenWrapperModule } from './shared-interproject/components/@visual/sc
 import { MatDialogRef } from "@angular/material/dialog";
 
 import * as Sentry from "@sentry/angular";
+import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 
 
 const locale: {
@@ -80,7 +81,9 @@ const matDatepickerLocaleIT = {
     MatCardModule,
     AdviceTooltipModule,
     MatDividerModule,
-    BackboneModule,//keep as last (for routes)
+    BackboneModule,
+    AppFaqComponent,
+//keep as last (for routes)
   ],
   providers:    [
     locale,
