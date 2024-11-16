@@ -1,126 +1,146 @@
-<div class="col gap1"
->
-  <lib-hero-content-card titleBig="Submit a module"
-                         class="modulesBG"
-  >
-    <div class="col gap1"
-    >
-      <lib-screen-wrapper maxSize="86rem">
-        <div class="row col-lt-MD gap2"
-        >
-          <lib-hero-content-card titleNormal="Data"
-                                 description="If your manufacturer is missing, please contact us via Discord or mail.
-                                 Submitted modules will be usable immediately, but will be reviewed by our team."
+<div class="col gap1">
+  <lib-hero-content-card titleBig="Submit a module" class="modulesBG">
+    <div class="col gap1">
+      <div class="rowwrap  gap2">
+        <lib-hero-content-card style="max-width: 25rem;"
+                               titleNormal="Guidelines">
+          <lib-clean-card>
+            <app-lib-showcase-grid [data]="[
+      {
+        label: 'Check for Duplicates',
+        value: 'Ensure the module is not already listed by checking the list on the right',
+        icon: 'search',
+        size: 'auto',
+      },
+      {
+        label: 'Avoid Panel Variations',
+        value: 'Please do not submit multiple modules for different panel variations; they are considered the same module (avoid *SILVER*, *BLACK*, etc.)',
+        icon: 'layers_clear',
+        size: 'auto',
+      },
+      {
+        label: 'Add Details After Submission',
+        value: 'You can add panel images, power specs, and inputs/outputs on the module detail page after submission',
+        icon: 'add_circle_outline',
+        size: 'auto',
+      },
+      {
+        label: 'Immediate Usability',
+        value: 'Submitted modules are usable immediately but will be reviewed by our team',
+        icon: 'flash_on',
+        size: 'auto',
+      },
+      {
+        label: 'Contact Us if Needed',
+        value: 'If your manufacturer is missing, please reach out via Discord or email',
+        icon: 'contact_support',
+        size: 'auto',
+      },
+    ]">
+            </app-lib-showcase-grid>
+          </lib-clean-card>
+        </lib-hero-content-card>
+        
+        <lib-hero-content-card
+          class="grow"
+          titleNormal="Data"
           >
             <div class="col gap2">
-              <div fxLayout="column"
-                   fxLayout.gt-md="row"
-                   fxLayoutGap="1rem"
-              >
-                <ul>
-                  <li>
-                    Check the panel on the right for duplicate of the one you are submitting
-                  </li>
-                  <li>
-                    Please do not submit panel variations, we don't treat them as separate modules
-                  </li>
-                  <li>
-                    You will be able to add the panel image file once the module is submitted by opening the module
-                    detail page
-                  </li>
-                </ul>
               
-              
-              </div>
               <lib-clean-card>
                 <div class="col gap1">
-                  
-                  <lib-mat-form-entity [dataPack]="dataService.formData.manufacturer"
-                                       [disableVoidSelection]="true"
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.manufacturer"
+                    [disableVoidSelection]="true"
                   ></lib-mat-form-entity>
-                  <lib-mat-form-entity [dataPack]="dataService.formData.name"
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.name"
                   ></lib-mat-form-entity>
-                  <lib-mat-form-entity [dataPack]="dataService.formData.description"
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.description"
                   ></lib-mat-form-entity>
-                  <lib-mat-form-entity [dataPack]="dataService.formData.manual"
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.manual"
                   ></lib-mat-form-entity>
-                  <div fxLayout="column"
-                       fxLayout.gt-md="row"
-                       fxLayoutGap="1rem"
-                  >
-                    <lib-mat-form-entity [dataPack]="dataService.formData.hp"
+                  <div class="col-md-row gap1">
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.hp"
                     ></lib-mat-form-entity>
-                    <lib-mat-form-entity [dataPack]="dataService.formData.standard"
-                                         [disableVoidSelection]="true"
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.standard"
+                      [disableVoidSelection]="true"
                     ></lib-mat-form-entity>
-                    <lib-mat-form-entity [dataPack]="dataService.formData.diy"
-                                         [disableVoidSelection]="true"
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.diy"
+                      [disableVoidSelection]="true"
                     ></lib-mat-form-entity>
                   </div>
-                  <!--                <lib-file-drag-host [isImageOnlyMode]="true"-->
-                  <!--                                    [multipleFilesMode]="false"-->
-                  <!--                                    acceptedFileType="image/jpeg,image/jpg,image/png"-->
-                  <!--                ></lib-file-drag-host>-->
                 </div>
               </lib-clean-card>
-              <div class="col center"
-              >
-                <app-brand-primary-button [disabled]="!dataService.formGroup.valid"
-                                          *ngIf="(!!((userService.loggedUser$|async)?.id)) else noUser"
-                                          (click$)="dataService.submitModuleForm$.next()"
-                                          fxLayoutAlign="end start"
-                                          style="margin-top: 1rem; margin-bottom: 1rem"
+              <div class="col center">
+                <app-brand-primary-button
+                  [disabled]="!dataService.formGroup.valid"
+                  *ngIf="(!!((userService.loggedUser$ | async)?.id)); else noUser"
+                  (click$)="dataService.submitModuleForm$.next()"
+                  class="align-end"
+                  style="margin-top: 1rem; margin-bottom: 1rem"
                 >
                   Submit module
                 </app-brand-primary-button>
               </div>
             </div>
           </lib-hero-content-card>
-          <lib-hero-content-card titleNormal="Similar modules (name/manufacturer)"
-                                 description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
-                                 fxFlex="grow"
+        
+        <lib-hero-content-card
+            titleNormal="Similar modules (name/manufacturer)"
+            description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
+            class="flex-grow"
           >
-            <lib-auto-update-loading-indicator [data$]="dataService.similarModulesData$"
-                                               [updateData$]="dataService.updateModulesList$"
+            <lib-auto-update-loading-indicator
+              [data$]="dataService.similarModulesData$"
+              [updateData$]="dataService.updateModulesList$"
             >
-              <ng-container *ngIf="(dataService.similarModulesData$|async) as data">
-                <app-module-list fxFlex="grow"
-                                 [data$]="dataService.similarModulesData$"
-                                 [showSearch]="false"
-                                 [viewConfig]="viewConfig"
-                                 *ngIf="data.length>0&&dataService.formData.name.control.value.length > 0 else voidData"
+              <ng-container
+                *ngIf="(dataService.similarModulesData$ | async) as data"
+              >
+                <app-module-list
+                  class="flex-grow"
+                  [data$]="dataService.similarModulesData$"
+                  [showSearch]="false"
+                  [viewConfig]="viewConfig"
+                  *ngIf="
+                    data.length > 0 &&
+                    dataService.formData.name.control.value.length > 0;
+                    else voidData
+                  "
                 ></app-module-list>
               </ng-container>
             </lib-auto-update-loading-indicator>
           </lib-hero-content-card>
         </div>
-      </lib-screen-wrapper>
-    
     </div>
   </lib-hero-content-card>
 </div>
 
+<!-- Templates -->
 <ng-template #voidData>
-  <div fxFlex="100"
-       class="pad"
-  >
-    <mat-card-subtitle fxLayoutAlign="center center" style="padding: 2rem; color: #0D7023!important"
-    >Nothing similar found on database! You can submit it maybe?
+  <div class="pad">
+    <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
+      Nothing similar found in the database! You can submit it maybe?
     </mat-card-subtitle>
   </div>
 </ng-template>
 
 <ng-template #noUser>
-  <div class="col gap0" style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336!important"
+  <div
+    class="col gap0"
+    style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
   >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem; color: #F44336!important"
-    >You need to be logged in to submit a module
+    <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
+      You need to be logged in to submit a module
     </mat-card-subtitle>
     
-    <app-brand-primary-button routerLink="/auth/login"
-                              fxLayoutAlign="end start"
-    >
+    <app-brand-primary-button routerLink="/auth/login" class="align-end">
       Login
     </app-brand-primary-button>
   </div>
