@@ -1,13 +1,13 @@
-import { CV }          from './cv';
+import { CV } from './cv';
 import {
   Manufacturer,
   MinimalManufacturer
-}                      from './manufacturer';
+} from './manufacturer';
 import { Timestamped } from './models';
 import { RackingData } from './rack';
-import { Standard }    from './standard';
-import { Switch }      from './switch';
-import { Tag }         from './tag';
+import { Standard } from './standard';
+import { Switch } from './switch';
+import { Tag } from './tag';
 
 
 export interface Module {
@@ -46,6 +46,11 @@ export interface DbModule extends MinimalModule {
   isComplete: boolean;
   isApproved: boolean;
   isDIY: boolean;
+  powerPos12: number;
+  powerNeg12: number;
+  powerPos5: number;
+  depth: number;
+  weight: number;
 }
 
 export interface RackedModule {
