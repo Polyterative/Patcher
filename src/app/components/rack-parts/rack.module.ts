@@ -47,6 +47,7 @@ import { CalculateRowInformationPipe } from "src/app/components/rack-parts/rack-
 import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rack-image.component";
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
+import { TotalPowerOfRackPipe } from "src/app/components/rack-parts/total-power-of-rack.pipe";
 
 
 @NgModule({
@@ -110,6 +111,7 @@ import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-ed
     RackImageComponent,
     LabelValueShowcaseModule,
     LibShowcaseGridComponent,
+    TotalPowerOfRackPipe,
   ]
 })
 export class RackModule {
