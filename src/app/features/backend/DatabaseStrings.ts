@@ -1,5 +1,5 @@
 export class DbPaths {
-  // Manufacturer staticant
+  // Manufacturer
   static modules: string = 'modules';
   static moduleINs: string = 'module_ins';
   static moduleOUTs: string = 'module_outs';
@@ -27,40 +27,40 @@ export class DbStoragePaths {
 }
 
 export class QueryJoins {
-  // Manufacturer staticant
+  // Manufacturer
   static manufacturer: string = 'manufacturer:manufacturerId(name,id,logo)';
 
-// Standard staticant
+// Standard
   static standard: string = 'standard:standards!modules_standard_fkey(name,id)';
 
-// Patch staticant
+// Patch
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(*)';
 
-// Author staticant
+// Author
   static author: string = 'author:authorid(username,id,email)';
 
-// Rack staticant
+// Rack
   static rack: string = 'rack:rackid(*,author:authorid(username,id,email))';
 
-// Rack Modules staticant
+// Rack Modules
   static rackModules: string = 'rackModules:rackid(*)';
 
-// Module Foreign Key in Rack Modules staticant
-  static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
+// Module Foreign Key in Rack Modules
+  static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,weight,depth,powerPos12,powerNeg12,powerPos5,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
 
-// Module Tags staticant
+// Module Tags
   static module_tags: string = `tags:${ DbPaths.module_tags }(tag:${ DbPaths.tags }(*))`;
 
-// Module Panels staticant
+// Module Panels
   static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
 
-// Module Inputs staticant
+// Module Inputs
   static ins: string = `ins:${ DbPaths.moduleINs }(*)`;
 
-// Module Outputs staticant
+// Module Outputs
   static outs: string = `outs:${ DbPaths.moduleOUTs }(*)`;
 
-// Module Inputs and Outputs staticant
+// Module Inputs and Outputs
   static insOuts: string = `ins:${ DbPaths.moduleINs }(*), outs:${ DbPaths.moduleOUTs }(*)`;
   
 }

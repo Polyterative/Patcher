@@ -33,64 +33,75 @@ user:(userManagementService.loggedUser$|async)
               </ng-template>
             
             </lib-clean-card>
-            <div class="col gap1"
-            >
-              
-              <!--              <div appCopyable *ngIf="data">-->
-              <!--                <span class="hot">{{ data?.name }}</span>-->
-              <!--                is a <span class="hot">{{ data?.hp }}</span>HP-->
-              <!--                <span class="hot">{{ data?.standard?.name }}</span> module made by-->
-              <!--                <span class="hot">{{ data?.manufacturer?.name }}</span>-->
-              <!--                -->
-              <!--                <br>-->
-              <!--                Module has <span class="hot"> {{ data?.isComplete ? 'been' : 'not been' }} completed</span>-->
-              <!--                and <span class="hot">{{ data?.isApproved ? 'has' : 'has not' }} </span> been approved.-->
-              <!--                <br>-->
-              <!--                -->
-              <!--                Module has <span class="hot">{{ data?.panels?.length }}</span> panel(s).-->
-              <!--                <br>-->
-              <!--                Provides <span class="hot">{{ data?.ins?.length }}</span> in(s)-->
-              <!--                and <span class="hot">{{ data?.outs?.length }}</span> out(s).-->
-              <!--              -->
-              <!--              </div>-->
-              <!--              -->
-              <!--              <div *ngIf="data">-->
-              <!--                First seen on <span class="hot">{{ data?.created | date: 'mediumDate' }}</span>-->
-              <!--                and last updated on <span class="hot">{{ data?.updated | date: 'mediumDate' }}</span>.-->
-              <!--              </div>-->
-              
-              
+            <div class="col gap1" *ngIf="bag.data">
+              <!-- Information Card -->
               <lib-clean-card [@enter]>
                 <div class="col gap1">
+                  <mat-card-title>Information</mat-card-title>
                   <app-lib-showcase-grid [data]="[
-      { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business',size:'auto' },
-      { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten' },
-      { label: 'Standard', value: bag.data.standard.name, icon: 'verified' },
-      { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module' },
+      { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business', size: 'auto' },
+      { label: 'Standard', value: bag.data.standard.name, icon: 'verified', size: 'auto' },
+      { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module', size: 'auto' }
     ]">
                   </app-lib-showcase-grid>
-                  
+                </div>
+              </lib-clean-card>
+              
+              <!-- Physical Characteristics Card -->
+              <lib-clean-card [@enter]>
+                <div class="col gap1">
+                  <mat-card-title>Physical Characteristics</mat-card-title>
+                  <app-lib-showcase-grid [data]="[
+      { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
+      { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'straighten', size: 'auto', hidden: !bag.data.depth },
+      { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
+    ]">
+                  </app-lib-showcase-grid>
+                </div>
+              </lib-clean-card>
+              
+              <!-- Power Consumption Card -->
+              <lib-clean-card [@enter] *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5">
+                <div class="col gap1">
+                  <mat-card-title>Power Consumption</mat-card-title>
                   <app-lib-showcase-grid
-                    *ngIf="(bag.data.outs.length + bag.data.ins.length)>0"
+                    *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5"
                     [data]="[
-      { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0 ,size:'auto' },
-      { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0 ,size:'auto'},
-      { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0 ,size:'auto'},
-      { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length)/bag.data.hp).toPrecision(3), icon: 'bar_chart' ,size:'auto'},
-    ]">
-                  </app-lib-showcase-grid>
-                  <app-lib-showcase-grid [data]="[
-        { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done',size:'auto'  },
-        { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up',size:'auto'  },
+        { label: '+12V', value: bag.data.powerPos12?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+        { label: '-12V', value: bag.data.powerNeg12?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+        { label: '+5V', value: bag.data.powerPos5?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
       ]">
                   </app-lib-showcase-grid>
                 </div>
-                
-                <!--              { label: '+12V mA', value: '12000', icon: 'bolt' },-->
-                <!--               { label: '-12V mA', value: '12000', icon: 'bolt' },-->
-                <!--              { label: '+5V mA', value: '12000', icon: 'bolt' }-->
               </lib-clean-card>
               
+              <!-- Connectivity Card -->
+              <lib-clean-card [@enter]>
+                <div class="col gap1">
+                  <mat-card-title>Connectivity</mat-card-title>
+                  <app-lib-showcase-grid
+                    *ngIf="(bag.data.outs.length + bag.data.ins.length) > 0"
+                    [data]="[
+        { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0, size: 'auto' },
+        { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
+        { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
+        { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
+      ]">
+                  </app-lib-showcase-grid>
+                </div>
+              </lib-clean-card>
+              
+              <!-- Status Card -->
+              <lib-clean-card [@enter]>
+                <div class="col gap1">
+                  <mat-card-title>Status</mat-card-title>
+                  <app-lib-showcase-grid [data]="[
+      { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done', size: 'auto' },
+      { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up', size: 'auto' }
+    ]">
+                  </app-lib-showcase-grid>
+                </div>
+              </lib-clean-card>
               <div class="col gap1"
                    *ngIf="bag.data"
               >
