@@ -20,6 +20,8 @@ import { ModuleBrowserModule } from '../../module-browser/module-browser.module'
 import { PatchBrowserModule } from '../../patch-browser/patch-browser.module';
 import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
 import { HomeComponent } from './home.component';
+import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
+import { LibShowcaseGridComponent } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 
 
 @NgModule({
@@ -29,7 +31,7 @@ import { HomeComponent } from './home.component';
   exports:      [
     HomeComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     FlexLayoutModule,
     MatCardModule,
@@ -37,12 +39,12 @@ import { HomeComponent } from './home.component';
     // EmptyStateModule,
     RouterModule.forRoot([
       {
-        path:       '',
+        path: '',
         redirectTo: 'home',
-        pathMatch:  'full'
+        pathMatch: 'full'
       },
       {
-        path:      'home',
+        path: 'home',
         component: HomeComponent
       }
     ], {scrollPositionRestoration: 'enabled'}),
@@ -60,7 +62,9 @@ import { HomeComponent } from './home.component';
     RackBrowserModule,
     DeviceFrameWrapperModule,
     LottieContainerModule,
-    MatDividerModule
+    MatDividerModule,
+    CleanCardModule,
+    LibShowcaseGridComponent
   ]
 })
 export class HomeModule {}
