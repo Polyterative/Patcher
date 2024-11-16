@@ -11,6 +11,7 @@ import {
   NgIf
 } from "@angular/common";
 import { MatIcon } from "@angular/material/icon";
+import { MatBadge } from "@angular/material/badge";
 
 
 interface LabelValueData {
@@ -19,6 +20,7 @@ interface LabelValueData {
   icon?: string;
   hidden?: boolean;
   size?: string;
+  badge?: string;
 }
 
 @Component({
@@ -29,7 +31,8 @@ interface LabelValueData {
     NgForOf,
     MatIcon,
     NgIf,
-    AsyncPipe
+    AsyncPipe,
+    MatBadge
   ],
   templateUrl: './lib-showcase-grid.component.html',
   styleUrl: './lib-showcase-grid.component.scss',
