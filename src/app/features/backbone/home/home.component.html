@@ -1,122 +1,114 @@
 <lib-screen-wrapper>
-  <div class="col gap1"
-  >
-    <div class="col gap2 homeBG"
-         style="padding: 4rem 2rem 8rem;"
-    >
-      <h1 [@titleEnter]
-      > PATCHER.XYZ</h1>
-      <h1 [@subtitleEnter]
-      > the modern way to manage everything modular</h1>
+  <div class="col gap1">
+    <div class="col gap2 homeBG" style="padding: 4rem 2rem 8rem;">
+      <h1 [@titleEnter]>PATCHER.XYZ</h1>
+      <h2 [@subtitleEnter]>The everything modular manager and database</h2>
       <mat-divider inset="true"></mat-divider>
-      <div class="col gap1" style="font-size: 1.8rem;">
-        <div class="col gap1">
-          <b>Discover the world of modular.</b>
-          <p>Explore a vast library of modules, discover new favorites, and build your dream rack with ease.</p>
-          <div class="col gap1">
-            <b>Craft stunning patches, share them effortlessly.</b>
-            <p>Record and share complex patch notes with a click. Impress collaborators, document your creative
-              journey,
-              and never forget a sonic masterpiece.</p>
-          </div>
-          <div class="col gap1">
-            <b>Effortless rack management at your fingertips.</b>
-            <p>Design, configure, and
-              optimize your modular system with lightning speed. Visualize your dream setup, manage all your racks
-              effortlessly, and unlock your next sonic adventure.</p>
-          </div>
-          
-          <div class="col gap1">
-            <p>Create an account to get started.</p>
-            <div class="row gap3"
-            >
-              <app-brand-primary-button routerLink="/auth/signup">Create an account
-              </app-brand-primary-button>
-              <app-brand-primary-button routerLink="/auth/login">Login
-              </app-brand-primary-button>
-            </div>
-          </div>
+      
+      <app-lib-showcase-grid
+        [data]="[
+            {
+              label: 'Discover the world of modular',
+              value: 'Explore a vast library of modules, discover new favorites, and build your dream rack with ease.',
+              icon: 'widgets',
+              size: 'auto',
+            },
+            {
+              label: 'Craft stunning patches, share them effortlessly',
+              value: 'Record and share complex patch notes with a click. Impress collaborators, document your creative journey, and never forget a sonic masterpiece.',
+              icon: 'music_note',
+              size: 'auto',
+            },
+            {
+              label: 'Effortless rack management at your fingertips',
+              value: 'Design, configure, and optimize your modular system with lightning speed. Visualize your dream setup, manage all your racks effortlessly, and unlock your next sonic adventure.',
+              icon: 'settings',
+              size: 'auto',
+            },
+          ]"
+      ></app-lib-showcase-grid>
+      
+      <div class="col gap1 center-content">
+        <p style="font-size: 1.8rem;">Create an account to get started.</p>
+        <div class="row gap3 center-content">
+          <app-brand-primary-button routerLink="/auth/signup">Create an account</app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/login">Login</app-brand-primary-button>
         </div>
       </div>
-      <mat-divider inset="true"></mat-divider>
-    
-    </div>
-    <ng-container>
       
-      <div class="col gap2 belowContainer"
-      >
-        <div class="col gap1"
-        >
-          <lib-hero-header class="gradientCard"
-                           description="Record and share complex patch notes with a click. Impress your friends, document your creative journey, and never forget a sonic masterpiece."
-                           title="Create, share, and explore patches"
+      <mat-divider inset="true"></mat-divider>
+    </div>
+    
+    <ng-container>
+      <div class="col gap2 belowContainer">
+        <div class="col gap1">
+          <!-- Patch Creation Section -->
+          <lib-hero-header
+            class="gradientCard"
+            title="Create, share, and explore patches"
+            description="Record and share complex patch notes with a click. Impress your friends, document your creative journey, and never forget a sonic masterpiece."
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
-                <app-patch-browser-patch-detail [ignoreSeo]="true"
-                                                [viewConfig]="patchViewConfig"
-                                                class="embedded"
+                <app-patch-browser-patch-detail
+                  [ignoreSeo]="true"
+                  [viewConfig]="patchViewConfig"
+                  class="embedded"
                 ></app-patch-browser-patch-detail>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-          <mat-divider inset="true"
-          ></mat-divider>
+          <mat-divider inset="true"></mat-divider>
           
-          <lib-hero-header class="gradientCard"
-                           description="Explore a vast library of modules, discover new favorites, and track your collection with ease."
-                           title="Discover new modules"
+          <!-- Module Discovery Section -->
+          <lib-hero-header
+            class="gradientCard"
+            title="Discover new modules"
+            description="Explore a vast library of modules, discover new favorites, and track your collection with ease."
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
-                <app-module-browser-detail [ignoreSeo]="true"
-                                           [viewConfig]="moduleViewConfig"
-                                           class="embedded"
-                >
-                
-                </app-module-browser-detail>
+                <app-module-browser-detail
+                  [ignoreSeo]="true"
+                  [viewConfig]="moduleViewConfig"
+                  class="embedded"
+                ></app-module-browser-detail>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
-          
           <mat-divider inset="true"></mat-divider>
           
-          <lib-hero-header class="gradientCard"
-                           description="Move modules freely, visualize your dream setup, and manage all your racks effortlessly."
-                           title="Manage racks with unprecedented ease"
+          <!-- Rack Management Section -->
+          <lib-hero-header
+            class="gradientCard"
+            title="Manage racks with unprecedented ease"
+            description="Move modules freely, visualize your dream setup, and manage all your racks effortlessly."
           >
             <lib-screen-wrapper maxSize="75rem">
               <lib-device-frame-wrapper>
-                <app-rack-browser-rack-detail [ignoreSeo]="true"
-                                              [viewConfig]="rackViewConfig"
-                                              class="embedded"
+                <app-rack-browser-rack-detail
+                  [ignoreSeo]="true"
+                  [viewConfig]="rackViewConfig"
+                  class="embedded"
                 ></app-rack-browser-rack-detail>
               </lib-device-frame-wrapper>
             </lib-screen-wrapper>
           </lib-hero-header>
           
-          
-          <lib-hero-header class="gradientCard"
-                           description="Create an account to get started."
-                           title="Use it! For free!"
+          <!-- Call to Action Section -->
+          <lib-hero-header
+            class="gradientCard"
+            description="Create an account to get started."
           >
             <lib-screen-wrapper>
-              <div class="row gap3"
-              >
-                <app-brand-primary-button routerLink="/auth/signup">Create an account
-                </app-brand-primary-button>
-                <app-brand-primary-button routerLink="/auth/login">Login
-                </app-brand-primary-button>
+              <div class="row gap3 center-content">
+                <app-brand-primary-button routerLink="/auth/signup">Create an account</app-brand-primary-button>
+                <app-brand-primary-button routerLink="/auth/login">Login</app-brand-primary-button>
               </div>
             </lib-screen-wrapper>
           </lib-hero-header>
         </div>
       </div>
     </ng-container>
-  
-  
   </div>
-  <!--  <app-lottie-container fxLayoutAlign="center center"-->
-  <!--                        [options]="{path: '/assets/json/animation.json'}"-->
-  <!--  ></app-lottie-container>-->
 </lib-screen-wrapper>
