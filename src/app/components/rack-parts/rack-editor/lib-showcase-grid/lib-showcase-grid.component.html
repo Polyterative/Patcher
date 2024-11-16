@@ -4,6 +4,8 @@
                             [style]="{ flex: '1 1 '+item.size, }"
                             [label]="item.label"
                             [icon]="item.icon"
+                            [matBadge]="item.badge?item.badge:undefined"
+                            matBadgeDescription="test"
   >
     {{ item.value }}
   </app-label-value-showcase>

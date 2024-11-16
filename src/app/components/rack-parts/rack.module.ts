@@ -48,6 +48,7 @@ import { RackImageComponent } from "src/app/components/rack-parts/rack-image/rac
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 import { TotalPowerOfRackPipe } from "src/app/components/rack-parts/total-power-of-rack.pipe";
+import { TotalMissingPowerDataInRackPipe } from "src/app/components/rack-parts/total-missing-power-data-in-rack.pipe";
 
 
 @NgModule({
@@ -112,6 +113,7 @@ import { TotalPowerOfRackPipe } from "src/app/components/rack-parts/total-power-
     LabelValueShowcaseModule,
     LibShowcaseGridComponent,
     TotalPowerOfRackPipe,
+    TotalMissingPowerDataInRackPipe,
   ]
 })
 export class RackModule {

@@ -52,9 +52,24 @@
     { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4', size: 'auto' },
     { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free', size: 'auto' },
     { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart', size: 'auto' },
-    { label: '+12V', value: (bag.rowedRackedModules | totalPowerOfRack)[0].toString()+' mA', icon: 'bolt', size: 'auto' },
-    { label: '-12V', value: (bag.rowedRackedModules | totalPowerOfRack)[1].toString()+' mA', icon: 'bolt', size: 'auto' },
-    { label: '+5V', value: (bag.rowedRackedModules | totalPowerOfRack)[2].toString()+' mA', icon: 'bolt', size: 'auto' }
+    {
+      label: '+12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
+      value: (bag.rowedRackedModules | totalPowerOfRack)[0].toString() + ' mA',
+      icon: 'bolt',
+      size: 'auto',
+    },
+    {
+      label: '-12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
+      value: (bag.rowedRackedModules | totalPowerOfRack)[1].toString() + ' mA',
+      icon: 'bolt',
+      size: 'auto',
+    },
+    {
+      label: '+5V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
+      value: (bag.rowedRackedModules | totalPowerOfRack)[2].toString() + ' mA',
+      icon: 'bolt',
+      size: 'auto',
+    },
   ]">
               </app-lib-showcase-grid>
               
