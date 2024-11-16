@@ -33,16 +33,28 @@ user:(userManagementService.loggedUser$|async)
               </ng-template>
             
             </lib-clean-card>
+          </div>
+          
+          <app-comments-root></app-comments-root>
+        
+        
+        </lib-screen-wrapper>
+        
+        <div class="col gap2" style="flex: 1 1 100%; max-width: 36rem;">
+          
+          <lib-hero-content-card titleNormal="Data" *ngIf="bag.data"
+          >
+            
             <div class="col gap1" *ngIf="bag.data">
               <!-- Information Card -->
               <lib-clean-card [@enter]>
                 <div class="col gap1">
                   <mat-card-title>Information</mat-card-title>
                   <app-lib-showcase-grid [data]="[
-      { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business', size: 'auto' },
-      { label: 'Standard', value: bag.data.standard.name, icon: 'verified', size: 'auto' },
-      { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module', size: 'auto' }
-    ]">
+        { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business', size: 'auto' },
+        { label: 'Standard', value: bag.data.standard.name, icon: 'verified', size: 'auto' },
+        { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module', size: 'auto' }
+      ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
@@ -52,10 +64,10 @@ user:(userManagementService.loggedUser$|async)
                 <div class="col gap1">
                   <mat-card-title>Physical Characteristics</mat-card-title>
                   <app-lib-showcase-grid [data]="[
-      { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
-      { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'straighten', size: 'auto', hidden: !bag.data.depth },
-      { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
-    ]">
+        { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
+        { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'straighten', size: 'auto', hidden: !bag.data.depth },
+        { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
+      ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
@@ -67,10 +79,10 @@ user:(userManagementService.loggedUser$|async)
                   <app-lib-showcase-grid
                     *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5"
                     [data]="[
-        { label: '+12V', value: bag.data.powerPos12?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
-        { label: '-12V', value: bag.data.powerNeg12?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
-        { label: '+5V', value: bag.data.powerPos5?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
-      ]">
+          { label: '+12V', value: bag.data.powerPos12?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+          { label: '-12V', value: bag.data.powerNeg12?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+          { label: '+5V', value: bag.data.powerPos5?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
+        ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
@@ -82,11 +94,11 @@ user:(userManagementService.loggedUser$|async)
                   <app-lib-showcase-grid
                     *ngIf="(bag.data.outs.length + bag.data.ins.length) > 0"
                     [data]="[
-        { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0, size: 'auto' },
-        { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
-        { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
-        { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
-      ]">
+          { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0, size: 'auto' },
+          { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
+          { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
+          { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
+        ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
@@ -96,9 +108,9 @@ user:(userManagementService.loggedUser$|async)
                 <div class="col gap1">
                   <mat-card-title>Status</mat-card-title>
                   <app-lib-showcase-grid [data]="[
-      { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done', size: 'auto' },
-      { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up', size: 'auto' }
-    ]">
+        { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done', size: 'auto' },
+        { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up', size: 'auto' }
+      ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
@@ -121,7 +133,7 @@ user:(userManagementService.loggedUser$|async)
                             style="width: 50%"
                             [disabled]="!bag.user"
                             *ngIf="bag.data
-                            &&(dataService.moduleEditingPanelOpenState$|async)===false"
+                              &&(dataService.moduleEditingPanelOpenState$|async)===false"
                             (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                     >
                       <mat-icon>edit</mat-icon>
@@ -131,7 +143,7 @@ user:(userManagementService.loggedUser$|async)
                             style="width: 50%"
                             [disabled]="!bag.user"
                             *ngIf="bag.data
-                            &&(dataService.moduleEditingPanelOpenState$|async)===true"
+                              &&(dataService.moduleEditingPanelOpenState$|async)===true"
                             (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                     >
                       <mat-icon>close</mat-icon>
@@ -152,96 +164,91 @@ user:(userManagementService.loggedUser$|async)
               
               </div>
             </div>
-            
-            <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
-              <div class="rowwrap gap1">
-                <ng-container *ngFor="let link of searchLinks">
-                  <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
-                     rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
-                    <button mat-flat-button>
-                      <mat-icon *ngIf="link.icon">{{ link.icon }}</mat-icon>
-                      <span>{{ link.label }}</span>
-                    </button>
-                  </a>
-                </ng-container>
-              </div>
-            </lib-hero-content-card>
-            
-            <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user">
-              <div class="rowwrap gap2">
-                <button mat-flat-button color="warn"
-                        *ngIf="bag.data.isComplete===false"
-                        (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
-                </button>
-                <button mat-flat-button color="warn"
-                        *ngIf="bag.data.isComplete===false"
-                        (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
-                </button>
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.standard.id!==1"
-                        (click)="dataService.changeModule$.next({
+          
+          </lib-hero-content-card>
+          <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
+            <div class="rowwrap gap1">
+              <ng-container *ngFor="let link of searchLinks">
+                <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
+                   rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
+                  <button mat-flat-button>
+                    <mat-icon *ngIf="link.icon">{{ link.icon }}</mat-icon>
+                    <span>{{ link.label }}</span>
+                  </button>
+                </a>
+              </ng-container>
+            </div>
+          </lib-hero-content-card>
+          
+          <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user">
+            <div class="rowwrap gap2">
+              <button mat-flat-button color="warn"
+                      *ngIf="bag.data.isComplete===false"
+                      (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
+              </button>
+              <button mat-flat-button color="warn"
+                      *ngIf="bag.data.isComplete===false"
+                      (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
+              </button>
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.standard.id!==1"
+                      (click)="dataService.changeModule$.next({
                 standard:{
                 id:1,
                 name:''
                 }
                 })">
-                  Convert to 1U Intellijel
-                </button>
-                
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.standard.id!==0"
-                        (click)="dataService.changeModule$.next({
+                Convert to 1U Intellijel
+              </button>
+              
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.standard.id!==0"
+                      (click)="dataService.changeModule$.next({
                 standard:{
                 id:0,
                 name:''
                 }
                 })">Convert to 3U Doepfer
-                </button>
-                
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.isComplete===false"
-                        (click)="dataService.changeModule$.next({
+              </button>
+              
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.isComplete===false"
+                      (click)="dataService.changeModule$.next({
                 isComplete:true
                 })">Mark as complete
-                </button>
-                
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.isComplete===true"
-                        (click)="dataService.changeModule$.next({
+              </button>
+              
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.isComplete===true"
+                      (click)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as incomplete
-                </button>
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.isApproved===false"
-                        (click)="dataService.changeModule$.next({
+              </button>
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.isApproved===false"
+                      (click)="dataService.changeModule$.next({
                 isApproved:true
                 })">Mark as approved
-                </button>
-                
-                <button mat-flat-button color="primary"
-                        *ngIf="bag.data&&bag.data.isApproved===true"
-                        (click)="dataService.changeModule$.next({
+              </button>
+              
+              <button mat-flat-button color="primary"
+                      *ngIf="bag.data&&bag.data.isApproved===true"
+                      (click)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as unapproved
-                </button>
-                
-                <!--                <pre>-->
-                <!--                  {{ bag.data|json }}-->
-                <!--                </pre>-->
+              </button>
               
-              
-              </div>
-            </lib-hero-content-card>
+              <!--                <pre>-->
+              <!--                  {{ bag.data|json }}-->
+              <!--                </pre>-->
+            
+            
+            </div>
+          </lib-hero-content-card>
           </div>
+        <div fxFlex class="col gap2">
           
-          <app-comments-root></app-comments-root>
-        
-        
-        </lib-screen-wrapper>
-        
-        <div fxFlex class="col gap2"
-          >
-            <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
+          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
                                    titleNormal="Module Editor"
                                    description="Do you know about this module?
                 Please help the community by adding the module's ins and outs.
@@ -284,26 +291,28 @@ user:(userManagementService.loggedUser$|async)
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
             </div>
-            
-            <lib-hero-content-card *ngIf="bag.data?.manufacturer&&viewConfig.hideBySameManufacturer===false"
-                                   [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
-                                   fxFlex
-            >
-              
-              
-              <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
-                                                  [updateData$]="dataService.updateSingleModuleData$"
-              >
-                <app-module-list
-                  *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
-                  [data$]="dataService.modulesBySameManufacturer$"
-                  [viewConfig]="bySameManufacturerViewConfig"
-                ></app-module-list>
-              </lib-auto-content-loading-indicator>
-            </lib-hero-content-card>
-          </div>
+        
+        
+        </div>
       
       </div>
+    </lib-hero-content-card>
+    
+    <lib-hero-content-card *ngIf="bag.data?.manufacturer&&viewConfig.hideBySameManufacturer===false"
+                           [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
+                           fxFlex
+    >
+      
+      
+      <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
+                                          [updateData$]="dataService.updateSingleModuleData$"
+      >
+        <app-module-list
+          *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
+          [data$]="dataService.modulesBySameManufacturer$"
+          [viewConfig]="bySameManufacturerViewConfig"
+        ></app-module-list>
+      </lib-auto-content-loading-indicator>
     </lib-hero-content-card>
   </div>
 </ng-container>
