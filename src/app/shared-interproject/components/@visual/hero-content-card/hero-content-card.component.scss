@@ -9,7 +9,6 @@ mat-card {
 
 h1 {
   @extend .std-rounding;
-
 }
 
 @mixin darkBG {
@@ -36,9 +35,9 @@ h1 {
   padding-right: 1rem;
 }
 
-.padHeight {
-  padding-top:    2rem;
-  padding-bottom: 2rem;
+.vertPadding {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .side {
@@ -103,7 +102,6 @@ h1 {
 .description {
   //@include unselectable;
   font-size: small;
-  padding: 1rem;
   // align y axis center
   display: flex;
   flex-direction: column;
