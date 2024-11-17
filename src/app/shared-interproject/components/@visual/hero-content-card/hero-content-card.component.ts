@@ -36,6 +36,8 @@ export class HeroContentCardComponent {
   @Input() titleNormal: string;
   @Input() top = false;
   @Input() bottom = false;
+  @Input() sidesPadding = true;
+  @Input() vertPadding = true;
   @Input() description: string;
   @Input() descriptionAlign: 'alignTextStart' | 'alignTextEnd' = 'alignTextEnd';
   @Input() showHelpButton = false;

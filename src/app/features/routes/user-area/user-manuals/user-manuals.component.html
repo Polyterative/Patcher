@@ -1,38 +1,40 @@
 <ng-container *ngIf="(dataService.manualsData$|async) as data">
   <div class="col gap1"
        *ngIf="data.length>0"
->
-    <lib-hero-content-card description="Available manuals for your modules. Click to open"
-                         class="manualsBG"
-                         icon="book"
-                         id="manuals"
   >
-    <div class="col gap1"
+    <lib-hero-content-card description="Available manuals for your modules. Click to open"
+                           class="manualsBG"
+                           [sidesPadding]="true"
+                           [vertPadding]="true"
+                           icon="book"
+                           id="manuals"
     >
-      <ng-container *ngIf="data.length>0;else voidData">
-      
-      <div class="rowwrap gap1"
-        >
+      <div class="col gap1"
+      >
+        <ng-container *ngIf="data.length>0;else voidData">
           
-          <ng-container *ngFor="let item of data">
+          <div class="rowwrap gap1"
+          >
             
-            <button mat-raised-button
-                    (click)="openManual(item.manualURL)">{{ item.name }}
-            </button>
+            <ng-container *ngFor="let item of data">
+              
+              <button mat-raised-button
+                      (click)="openManual(item.manualURL)">{{ item.name }}
+              </button>
+            
+            </ng-container>
           
-          </ng-container>
+          </div>
         
-        </div>
-      
-      
-      </ng-container>
-      
-      <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
-                                         [updateData$]="dataService.updateManualsData$"
-      ></lib-auto-update-loading-indicator>
-    </div>
-  </lib-hero-content-card>
-</div>
+        
+        </ng-container>
+        
+        <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
+                                           [updateData$]="dataService.updateManualsData$"
+        ></lib-auto-update-loading-indicator>
+      </div>
+    </lib-hero-content-card>
+  </div>
 </ng-container>
 
 <ng-template #voidData>
@@ -40,5 +42,5 @@
     style="padding: 1rem; align-self: center; text-align: center; width: 100%"
   >It looks like you haven't got any modules with manuals
     yet
-    </mat-card-subtitle>
+  </mat-card-subtitle>
 </ng-template>
