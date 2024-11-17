@@ -1,86 +1,73 @@
-<div class="container col "
->
-  
-  <div class="row"
-  >
-    <ng-container *ngIf="titleBig&&titleNormal else singleTitles">
-      <div class="col gap1 title bgImage sides-pad std-rounding"
-      >
+<div class="container col">
+  <div class="row gap1"
+       [class.sides-pad]="sidesPadding"
+       [class.vertPadding]="vertPadding">
+    <ng-container *ngIf="titleBig && titleNormal; else singleTitles">
+      <div class="col gap1 title bgImage std-rounding">
         <h2 style="margin-bottom: 0"
             [@title]
-        >
+            *ngIf="titleBig">
           {{ titleBig }}
         </h2>
-        
-        <h3 [@title]>{{ titleNormal }}</h3>
+        <h3 [@title]
+            [class.no-word-break]="!description"
+            *ngIf="titleNormal">
+          {{ titleNormal }}
+        </h3>
       </div>
     </ng-container>
-    
-    <mat-card-subtitle *ngIf="description&&!showHelpButton"
-                       class="description"
+    <mat-card-subtitle *ngIf="description && !showHelpButton"
+                       class="description auto"
                        [ngClass]="descriptionAlign"
-                       [@description]
-    >{{ description }}
+                       [@description]>
+      {{ description }}
     </mat-card-subtitle>
   </div>
   
-  <div class="content col"
-  >
-    <div class="supporting-top"
-         *ngIf="top"
-    >
+  <div class="content col">
+    <div class="supporting-top" *ngIf="top">
       <ng-content select=".TOP"></ng-content>
     </div>
-    <div class=" sides-pad"
-    >
+    <div class="sides-pad">
       <ng-content></ng-content>
     </div>
-    <div class="supporting-bottom"
-         *ngIf="bottom"
-    >
+    <div class="supporting-bottom" *ngIf="bottom">
       <ng-content select=".BOTTOM"></ng-content>
     </div>
   </div>
-
 </div>
 
 <ng-template #singleTitles>
-  
   <h1 *ngIf="titleBig"
-      class="row title sides-pad bgImage padHeight"
-  >
-    <div [@title]
-    >{{ titleBig }}
+      class="row title bgImage vertPadding gap1">
+    <div class="title-text" [@title]>
+      {{ titleBig }}
     </div>
-    <app-hero-content-card-head-icon fxLayoutAlign="center center"
-                                     style="margin-left: .5rem"
-                                     [icon]="icon"
-    
-    ></app-hero-content-card-head-icon>
+    <app-hero-content-card-head-icon [icon]="icon"
+                                     *ngIf="icon"
+                                     class="icon-center">
+    </app-hero-content-card-head-icon>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h1>
+  
   <h3 *ngIf="titleNormal"
-      class="row title sides-pad"
-      [@title]
-  >
+      class="row title gap1"
+      [@title]>
     <app-hero-content-card-head-icon [icon]="icon"
-                                     style="margin-right: .5rem"
-    
-    ></app-hero-content-card-head-icon>
-    <div fxFlex="grow">{{ titleNormal }}</div>
+                                     *ngIf="icon">
+    </app-hero-content-card-head-icon>
+    <div class="title-text">
+      {{ titleNormal }}
+    </div>
     <ng-container *ngTemplateOutlet="helpButton"></ng-container>
   </h3>
-
 </ng-template>
-
 
 <ng-template #helpButton>
-  <div fxLayoutAlign="end center"
-       *ngIf="description&&showHelpButton"
-       class="help-icon"
-  >
-    <mat-icon [matTooltip]="description">help</mat-icon>
+  <div class="help-icon"
+       *ngIf="description && showHelpButton">
+    <mat-icon [matTooltip]="description">
+      help
+    </mat-icon>
   </div>
 </ng-template>
-
-<!--in this file copilot should suggest how to change every fxLayout tag to a equivalent class/style in css-->

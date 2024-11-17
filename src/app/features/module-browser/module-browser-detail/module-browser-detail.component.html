@@ -11,11 +11,11 @@ user:(userManagementService.loggedUser$|async)
     <lib-hero-content-card class="modulesBG"
                            titleBig="Module details"
     >
-      <div fxLayout.gt-md="row" fxLayout="column" fxLayoutGap="2rem"
+      <div fxLayout.gt-md="row" fxLayout="column" fxLayoutGap="1rem"
       >
-        <lib-screen-wrapper maxSize="36rem"
+        <lib-screen-wrapper maxSize="36rem" class="fixed-width32"
         >
-          <div class="col gap2">
+          <div class="col gap2 ">
             <lib-clean-card>
               
               <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
@@ -40,9 +40,11 @@ user:(userManagementService.loggedUser$|async)
         
         </lib-screen-wrapper>
         
-        <div class="col gap2" style="flex: 1 1 100%; max-width: 36rem;">
+        <div class="col gap2 fixed-width32">
           
-          <lib-hero-content-card titleNormal="Data" *ngIf="bag.data"
+          <lib-hero-content-card *ngIf="bag.data"
+                                 titleNormal="Data"
+                                 [sidesPadding]="false"
           >
             
             <div class="col gap1" *ngIf="bag.data">
@@ -52,8 +54,8 @@ user:(userManagementService.loggedUser$|async)
                   <mat-card-title>Information</mat-card-title>
                   <app-lib-showcase-grid [data]="[
         { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business', size: 'auto' },
-        { label: 'Standard', value: bag.data.standard.name, icon: 'verified', size: 'auto' },
-        { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module', size: 'auto' }
+        { label: 'Standard', value: bag.data.standard.name, icon: 'verified',  },
+        { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module',  }
       ]">
                   </app-lib-showcase-grid>
                 </div>
@@ -79,16 +81,16 @@ user:(userManagementService.loggedUser$|async)
                   <app-lib-showcase-grid
                     *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5"
                     [data]="[
-          { label: '+12V', value: bag.data.powerPos12?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
-          { label: '-12V', value: bag.data.powerNeg12?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
-          { label: '+5V', value: bag.data.powerPos5?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
+          { label: '+12V', value: bag.data.powerPos12!==null?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+          { label: '-12V', value: bag.data.powerNeg12!==null?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
+          { label: '+5V', value: bag.data.powerPos5!==null?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
         ]">
                   </app-lib-showcase-grid>
                 </div>
               </lib-clean-card>
               
               <!-- Connectivity Card -->
-              <lib-clean-card [@enter]>
+              <lib-clean-card [@enter] *ngIf="(bag.data.outs.length + bag.data.ins.length) > 0">
                 <div class="col gap1">
                   <mat-card-title>Connectivity</mat-card-title>
                   <app-lib-showcase-grid
@@ -166,7 +168,7 @@ user:(userManagementService.loggedUser$|async)
             </div>
           
           </lib-hero-content-card>
-          <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data">
+          <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data" [sidesPadding]="false">
             <div class="rowwrap gap1">
               <ng-container *ngFor="let link of searchLinks">
                 <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
@@ -180,7 +182,8 @@ user:(userManagementService.loggedUser$|async)
             </div>
           </lib-hero-content-card>
           
-          <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user">
+          <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user"
+                                 [sidesPadding]="false">
             <div class="rowwrap gap2">
               <button mat-flat-button color="warn"
                       *ngIf="bag.data.isComplete===false"
@@ -248,7 +251,7 @@ user:(userManagementService.loggedUser$|async)
           </div>
         <div fxFlex class="col gap2">
           
-          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async"
+          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async" [sidesPadding]="false"
                                    titleNormal="Module Editor"
                                    description="Do you know about this module?
                 Please help the community by adding the module's ins and outs.
@@ -262,7 +265,7 @@ user:(userManagementService.loggedUser$|async)
                  fxLayout="column"
                  fxLayoutGap="1rem"
             >
-              <lib-hero-content-card *ngIf="viewConfig.hideRackedIn===false"
+              <lib-hero-content-card *ngIf="viewConfig.hideRackedIn===false" [sidesPadding]="false"
                                      style="flex: 1 1 100%;"
                                      titleNormal="Racked in"
               >
@@ -275,7 +278,7 @@ user:(userManagementService.loggedUser$|async)
                   ></app-module-racks>
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
-              <lib-hero-content-card *ngIf="viewConfig.hidePatchedIn===false"
+              <lib-hero-content-card *ngIf="viewConfig.hidePatchedIn===false" [sidesPadding]="false"
                                      style="flex: 1 1 100%;"
                                      titleNormal="Patched in"
               >
