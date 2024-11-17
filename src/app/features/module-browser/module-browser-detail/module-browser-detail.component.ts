@@ -28,6 +28,7 @@ import {
   CommentsDataService
 } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
+import { Animations } from "src/app/shared-interproject/SharedConstants";
 
 
 @Component({
@@ -35,6 +36,9 @@ import { UserManagementService } from "src/app/features/backbone/login/user-mana
   templateUrl: './module-browser-detail.component.html',
   styleUrls: ['./module-browser-detail.component.scss'],
   providers: [CommentsDataService],
+  animations: [
+    Animations.fadeInOnEnter
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ModuleBrowserDetailComponent implements OnInit {
