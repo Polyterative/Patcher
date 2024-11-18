@@ -67,7 +67,7 @@ user:(userManagementService.loggedUser$|async)
                   <mat-card-title>Physical Characteristics</mat-card-title>
                   <app-lib-showcase-grid [data]="[
         { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
-        { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'straighten', size: 'auto', hidden: !bag.data.depth },
+        { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'vertical_align_bottom', size: 'auto', hidden: !bag.data.depth },
         { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
       ]">
                   </app-lib-showcase-grid>
