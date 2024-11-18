@@ -239,6 +239,10 @@
   flex: 0 1 auto;
 }
 
+.basis {
+  flex: 0 0 auto;
+}
+
 .occupyHalf {
   // occupy at most half of the space
   flex: 0 0 50%;
