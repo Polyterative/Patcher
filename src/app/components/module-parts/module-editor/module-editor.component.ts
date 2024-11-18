@@ -63,12 +63,12 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   readonly saveInsOuts$ = new Subject<void>();
   readonly savePanels$ = new Subject<void>();
   readonly savePower$ = new Subject<void>();
+  readonly savePhysical$ = new Subject<void>();
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
   addIN$ = new Subject<CV>();
   addOUT$ = new Subject<CV>();
-  addSwitch$ = new Subject<void>();
   
   INs$ = new BehaviorSubject<FormCV[]>([]);
   OUTs$ = new BehaviorSubject<FormCV[]>([]);
@@ -80,6 +80,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   formGroupB: UntypedFormGroup;
   formGroupPanel: UntypedFormGroup;
   formGroupPower: UntypedFormGroup;
+  formGroupPhysical: UntypedFormGroup;
   
   panelDescription: IMatFormEntityConfig;
   panelType: IMatFormEntityConfig;
@@ -87,6 +88,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   powerRailPositive: IMatFormEntityConfig;
   powerRailNegative: IMatFormEntityConfig;
   powerRailFiveVolts: IMatFormEntityConfig;
+  
+  weight: IMatFormEntityConfig;
+  depth: IMatFormEntityConfig;
   
   // Validators
   private validatorsNum = Validators.compose([
@@ -141,6 +145,15 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       
       if (this.data.powerPos5 != null) {
         this.powerRailFiveVolts.control.setValue(this.data.powerPos5);
+      }
+      
+      // Initialize physical form controls with data if available
+      if (this.data.weight != null) {
+        this.weight.control.setValue(this.data.weight);
+      }
+      
+      if (this.data.depth != null) {
+        this.depth.control.setValue(this.data.depth);
       }
       
     } else {
@@ -212,6 +225,29 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       control: new UntypedFormControl('', this.validatorsPower),
       flex: 'auto'
     };
+    
+    // Depth and weight form controls
+    this.weight = {
+      code: 'weight',
+      label: 'Weight (g)',
+      type: FormTypes.NUMBER,
+      control: new UntypedFormControl('', [
+        Validators.min(0),
+        Validators.max(2000)
+      ]),
+      flex: 'auto'
+    };
+    
+    this.depth = {
+      code: 'depth',
+      label: 'Depth (mm)',
+      type: FormTypes.NUMBER,
+      control: new UntypedFormControl('', [
+        Validators.min(0),
+        Validators.max(500)
+      ]),
+      flex: 'auto'
+    };
   }
   
   private initializeFormGroups(): void {
@@ -228,6 +264,11 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     
     this.formGroupA = this.formBuilder.group({});
     this.formGroupB = this.formBuilder.group({});
+    
+    this.formGroupPhysical = this.formBuilder.group({
+      weight: this.weight.control,
+      depth: this.depth.control
+    });
   }
   
   private initializeSubscriptions(): void {
@@ -320,7 +361,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     // Subscription for saving power data
     this.savePower$
       .pipe(
-        takeUntil(this.destroyEvent$),
         switchMap(() => {
           if (this.formGroupPower.invalid) {
             this.snackBar.open('Please enter valid power values.', undefined, {
@@ -352,11 +392,53 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           });
           return EMPTY;
         }),
-        withLatestFrom(this.dataService.updateSingleModuleData$)
+        withLatestFrom(this.dataService.updateSingleModuleData$),
+        takeUntil(this.destroyEvent$),
       )
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
         this.snackBar.open('Power data saved successfully.', undefined, {
+          duration: 5000
+        });
+      });
+    
+    // subscription for adding depth and weight
+    this.savePhysical$
+      .pipe(
+        switchMap(() => {
+          if (this.formGroupPhysical.invalid) {
+            this.snackBar.open('Please enter valid physical values.', undefined, {
+              duration: 5000
+            });
+            return EMPTY;
+          }
+          
+          const physicalData = {
+            weight: this.weight.control.value !== '' ? this.weight.control.value : undefined,
+            depth: this.depth.control.value !== '' ? this.depth.control.value : undefined
+          };
+          
+          return this.backend.update.module({
+              ...this.data,
+              weight: physicalData.weight,
+              depth: physicalData.depth
+            }
+          );
+        }),
+        switchMap(() => this.backend.update.module({id: this.data.id})),
+        catchError(error => {
+          console.error('Error saving physical data:', error);
+          this.snackBar.open('An error occurred while saving physical data.', undefined, {
+            duration: 5000
+          });
+          return EMPTY;
+        }),
+        withLatestFrom(this.dataService.updateSingleModuleData$),
+        takeUntil(this.destroyEvent$),
+      )
+      .subscribe(([, updateSingleModuleData]) => {
+        this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
+        this.snackBar.open('Physical data saved successfully.', undefined, {
           duration: 5000
         });
       });
