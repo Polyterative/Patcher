@@ -29,6 +29,33 @@
         </div>
       </lib-auto-update-loading-indicator>
     </div>
+    <!-- Physical properties Section -->
+    <div class="col gap1">
+      <div class="row gap1 ">
+        <mat-card-title>Physical properties</mat-card-title>
+      </div>
+      
+      <div class="col gap1">
+        <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
+        <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
+      </div>
+      
+      <lib-auto-update-loading-indicator
+        [data$]="dataService.singleModuleData$"
+        [updateData$]="savePhysical$"
+        loadingLabel="Saving data"
+      >
+        <div class="row end-align" style="margin-top: 1rem;">
+          <app-brand-primary-button
+            (click$)="savePhysical$.next()"
+            [disabled]="!(formGroupPhysical | formValid)"
+            theme="positive"
+          >
+            Save physical properties
+          </app-brand-primary-button>
+        </div>
+      </lib-auto-update-loading-indicator>
+    </div>
     
     <mat-divider></mat-divider>
     
