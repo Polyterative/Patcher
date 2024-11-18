@@ -41,98 +41,128 @@
             
             >
               This rack private. It won't be listed in search but will be accessible to anyone who has
-              the URLm
+              the URL
             </app-advice-tooltip>
             <lib-clean-card [@enter]>
-              <app-lib-showcase-grid [data]="[
-    { label: 'Rack name', value: data.name, icon: 'label', size: 'auto' },
-    { label: 'Rack rows', value: data.rows.toString(), icon: 'view_comfy', size: 'auto' },
-    { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets', size: 'auto' },
-    { label: 'HP', value: data.hp.toString(), icon: 'straighten', size: 'auto' },
-    { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4', size: 'auto' },
-    { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free', size: 'auto' },
-    { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart', size: 'auto' },
-    {
-      label: '+12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
-      value: (bag.rowedRackedModules | totalPowerOfRack)[0].toString() + ' mA',
-      icon: 'bolt',
-      size: 'auto',
-    },
-    {
-      label: '-12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
-      value: (bag.rowedRackedModules | totalPowerOfRack)[1].toString() + ' mA',
-      icon: 'bolt',
-      size: 'auto',
-    },
-    {
-      label: '+5V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)' : ''),
-      value: (bag.rowedRackedModules | totalPowerOfRack)[2].toString() + ' mA',
-      icon: 'bolt',
-      size: 'auto',
-    },
-  ]">
-              </app-lib-showcase-grid>
-              
+              <div class="col gap1">
+                <!-- Group 1: Rack Details -->
+                <app-lib-showcase-grid class="auto"
+                                       [data]="[
+          { label: 'Name', value: data.name, icon: 'label', size: 'auto' },
+          { label: 'Rows', value: data.rows.toString(), icon: 'view_comfy'},
+          { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets'},
+          { label: 'HP', value: data.hp.toString(), icon: 'straighten'},
+          { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4'},
+          { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free'},
+          { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart'}
+        ]">
+                </app-lib-showcase-grid>
+                
+                <div class="rowwrap gap1"
+                     style="display: flex; flex-wrap: wrap; justify-content: flex-start;">
+                  <!-- Group 3: Power Consumption -->
+                  <app-lib-showcase-grid class="auto" style="flex: 0 1 auto;"
+                                         [data]="[
+            {
+              label: '+12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
+                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
+                : ''),
+              value: (bag.rowedRackedModules | totalPowerOfRack)[0].toString() + ' mA',
+              icon: 'bolt'
+            },
+            {
+              label: '-12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
+                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
+                : ''),
+              value: (bag.rowedRackedModules | totalPowerOfRack)[1].toString() + ' mA',
+              icon: 'bolt'
+            },
+            {
+              label: '+5V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
+                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
+                : ''),
+              value: (bag.rowedRackedModules | totalPowerOfRack)[2].toString() + ' mA',
+              icon: 'bolt'
+            }
+          ]">
+                  </app-lib-showcase-grid>
+                  
+                  <!-- Group 2: Module Statistics -->
+                  <app-lib-showcase-grid class="auto"
+                                         style="margin-left: auto; flex: 0 1 auto;"
+                                         [data]="[
+            { label: 'Max depth', value: (bag.rowedRackedModules | totalDepthOfRack)[0].toPrecision(2) + ' mm', icon: 'vertical_align_bottom'},
+            { label: 'Min depth', value: (bag.rowedRackedModules | totalDepthOfRack)[1].toPrecision(2) + ' mm', icon: 'vertical_align_top'},
+            { label: 'Average depth', value: (bag.rowedRackedModules | totalDepthOfRack)[2].toPrecision(2) + ' mm', icon: 'vertical_align_center'},
+            { label: 'Modules weight', value: ((bag.rowedRackedModules | totalWeightOfRack)/1000).toPrecision(2) + ' kg', icon: 'fitness_center'}
+          ]">
+                  </app-lib-showcase-grid>
+                </div>
+              </div>
             </lib-clean-card>
             
             
-            <div class="row gap1">
+            <div class="rowwrap gap1">
               
-              <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
-                                (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
-                                style="align-self: center;"
-              >
-                <div style="cursor: pointer;">
-                  Use images
-                </div>
-              </mat-slide-toggle>
-              <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
-                                (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
-                                style="align-self: center;"
-              >
-                <div style="cursor: pointer;">
-                  Count modules
-                </div>
-              </mat-slide-toggle>
-              <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
-                                (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
-                                style="align-self: center;"
-              >
-                <div style="cursor: pointer;">
-                  Reduce scale
-                </div>
-              </mat-slide-toggle>
+              <div class="row gap1">
+                <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
+                                  (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
+                                  style="align-self: center;"
+                >
+                  <div style="cursor: pointer;">
+                    Use images
+                  </div>
+                </mat-slide-toggle>
+                <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
+                                  (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
+                                  style="align-self: center;"
+                >
+                  <div style="cursor: pointer;">
+                    Count modules
+                  </div>
+                </mat-slide-toggle>
+                <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
+                                  (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
+                                  style="align-self: center;"
+                >
+                  <div style="cursor: pointer;">
+                    Reduce scale
+                  </div>
+                </mat-slide-toggle>
               
+              </div>
               <!--              create space between these-->
               
               <div fxFlex="1 1 auto"></div>
-              
-              <app-brand-primary-button style="padding: 1rem 0;"
-                                        *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
-                                        (click$)="dataService.requestRackEditableStatusChange$.next()"
-              >
-                {{ bag.isCurrentRackEditable ? "Lock rack" : "Unlock rack" }}
-              </app-brand-primary-button>
-              <app-brand-primary-button style="padding: 1rem 0;"
-                                        (click$)="dataService.downloadRackImageToUserComputer$.next()"
-                                        *ngIf="(bag.rowedRackedModules|totalHpOfRack)>0"
-                                        matTooltip="Will download an image file of the rack to your computer"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="1000"
-                                        
-              >
-                Download jpeg
-              </app-brand-primary-button>
-              <app-brand-primary-button style="padding: 1rem 0;"
-                                        (click$)="dataService.updateRackImagePreview$.next()"
-                                        *ngIf="bag.isCurrentRackPropertyOfCurrentUser&&(bag.rowedRackedModules|totalHpOfRack)>0"
-                                        matTooltip="Will update the rack preview image to help you identify it in the lists"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="1000"
-                                        
-              >
-                Update preview
-              </app-brand-primary-button>
+              <div class="row gap1">
+                
+                <app-brand-primary-button style="padding: 1rem 0;"
+                                          *ngIf="bag.isCurrentRackPropertyOfCurrentUser"
+                                          (click$)="dataService.requestRackEditableStatusChange$.next()"
+                >
+                  {{ bag.isCurrentRackEditable ? "Lock rack" : "Unlock rack" }}
+                </app-brand-primary-button>
+                <app-brand-primary-button style="padding: 1rem 0;"
+                                          (click$)="dataService.downloadRackImageToUserComputer$.next()"
+                                          *ngIf="(bag.rowedRackedModules|totalHpOfRack)>0"
+                                          matTooltip="Will download an image file of the rack to your computer"
+                                          matTooltipPosition="above"
+                                          matTooltipShowDelay="1000"
+                
+                >
+                  Download jpeg
+                </app-brand-primary-button>
+                <app-brand-primary-button style="padding: 1rem 0;"
+                                          (click$)="dataService.updateRackImagePreview$.next()"
+                                          *ngIf="bag.isCurrentRackPropertyOfCurrentUser&&(bag.rowedRackedModules|totalHpOfRack)>0"
+                                          matTooltip="Will update the rack preview image to help you identify it in the lists"
+                                          matTooltipPosition="above"
+                                          matTooltipShowDelay="1000"
+                
+                >
+                  Update preview
+                </app-brand-primary-button>
+              </div>
             </div>
             
             
@@ -143,6 +173,7 @@
                                    [rackDetailDataService]="dataService"
                                    [moduleRightClick$]="moduleRightClick$"
                                    class="transition-all-long"
+                                   style="max-width: 100%;"
                                    [ngClass]="{
                                      'smallerScale':bag.userRequestedSmallerScale
                                    }"
