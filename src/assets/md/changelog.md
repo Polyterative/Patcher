@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.10.0](https://github.com/Polyterative/Patcher/compare/v4.9.0...v4.10.0) (2024-11-21)
+
+
+### Features
+
+* **footer:** add faq ([26ebd39](https://github.com/Polyterative/Patcher/commit/26ebd3966637a9058183e0249d5c83e41c6d1d65))
+* **home:** user interface improvements ([b4b85c6](https://github.com/Polyterative/Patcher/commit/b4b85c6b3e70950f315913ef4a930db15ade8799))
+* **module-details:** add depth/weight tracking ([4cf5b3e](https://github.com/Polyterative/Patcher/commit/4cf5b3e523a91e64d748de39fd637b6d7092aa8d))
+* **module-details:** better layout ([4a73f3a](https://github.com/Polyterative/Patcher/commit/4a73f3a604cd40f8f1a57aa1bc61699178e18a44))
+* **module-details:** better layout ([d86ac57](https://github.com/Polyterative/Patcher/commit/d86ac57d6c4908866b79d5df8612ad0c2c9d5fec))
+* **module-details:** better layout ([4498d3d](https://github.com/Polyterative/Patcher/commit/4498d3dfab8b1d3a08699724551d58e19574d7a3))
+* **module-editor:** track mA for modules and allow update, show total consumption in rack ([f45cf05](https://github.com/Polyterative/Patcher/commit/f45cf05b9346c3c57f3e2fd3145b103296ae90a8))
+* **rack-details:** add depth/weight tracking ([7beef76](https://github.com/Polyterative/Patcher/commit/7beef76246464f593df64c7ab64b2df56bb34204))
+* **rack-editor:** show total consumption in rack ([fbeae76](https://github.com/Polyterative/Patcher/commit/fbeae760afdf1ef132cff317679b78cb9b79db1e))
+* **submit-module:** improve layout ([e735a30](https://github.com/Polyterative/Patcher/commit/e735a304fc10a0bfd4be2baf714bb2d16858f086))
+
+
+### Bug Fixes
+
+* **app:** fonts no longer flash ([c3521b5](https://github.com/Polyterative/Patcher/commit/c3521b56f40687094703d1caed627029785a560e))
+
 ### [4.9.1](https://github.com/Polyterative/Patcher/compare/v4.9.0...v4.9.1) (2024-11-13)
 
 
