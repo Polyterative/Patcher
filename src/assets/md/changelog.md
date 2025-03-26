@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.10.2](https://github.com/Polyterative/Patcher/compare/v4.10.1...v4.10.2) (2025-03-26)
+
+
+### Bug Fixes
+
+* **actions:** cache fix ([6659d91](https://github.com/Polyterative/Patcher/commit/6659d9170aa1773179dd72c2765b04c0e4ab115f))
+* **actions:** cache fix ([795c3a6](https://github.com/Polyterative/Patcher/commit/795c3a6f9dda0188da79fe99946985a4253434ff))
+
 ### [4.10.1](https://github.com/Polyterative/Patcher/compare/v4.10.0...v4.10.1) (2025-03-26)
 
 
