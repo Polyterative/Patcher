@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.10.1](https://github.com/Polyterative/Patcher/compare/v4.10.0...v4.10.1) (2025-03-26)
+
+
+### Bug Fixes
+
+* **module-details:** panel upload works again ([6945a93](https://github.com/Polyterative/Patcher/commit/6945a939d5ea9eb60069b11f200803cfe815304c))
+* **module-details:** power upload more reliable ([d5c60ce](https://github.com/Polyterative/Patcher/commit/d5c60cef0e63d9a06e7e6f4e008719306678f9eb))
+
 ## [4.10.0](https://github.com/Polyterative/Patcher/compare/v4.9.0...v4.10.0) (2024-11-21)
 
 
