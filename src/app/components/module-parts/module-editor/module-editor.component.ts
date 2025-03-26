@@ -356,13 +356,11 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }
       });
     
-    // Subscription for saving panels
-    // ... (No changes here)
-    
     // Subscription for saving power data
     this.savePower$
       .pipe(
         switchMap(() => {
+          // Check if the power form is valid
           if (this.formGroupPower.invalid) {
             this.snackBar.open('Please enter valid power values.', undefined, {
               duration: 5000
@@ -370,22 +368,20 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             return EMPTY;
           }
           
+          // Gather power data from controls
           const powerData = {
-            positive12V: this.powerRailPositive.control.value,
-            negative12V: this.powerRailNegative.control.value,
-            positive5V: this.powerRailFiveVolts.control.value
+            powerPos12: this.powerRailPositive.control.value,
+            powerNeg12: this.powerRailNegative.control.value,
+            powerPos5: this.powerRailFiveVolts.control.value
           };
           
-          // Placeholder for backend method to update power data
+          // Perform a single update call with the full module data merged with the power data.
+          // Ensure that the backend update method returns the updated module.
           return this.backend.update.module({
-              ...this.data,
-              powerPos12: powerData.positive12V,
-              powerNeg12: powerData.negative12V,
-              powerPos5: powerData.positive5V
-            }
-          );
+            ...this.data,
+            ...powerData
+          });
         }),
-        switchMap(() => this.backend.update.module({id: this.data.id})),
         catchError(error => {
           console.error('Error saving power data:', error);
           this.snackBar.open('An error occurred while saving power data.', undefined, {
@@ -393,15 +389,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           });
           return EMPTY;
         }),
-        withLatestFrom(this.dataService.updateSingleModuleData$),
-        takeUntil(this.destroyEvent$),
+        takeUntil(this.destroyEvent$)
       )
-      .subscribe(([, updateSingleModuleData]) => {
-        this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        this.snackBar.open('Power data saved successfully.', undefined, {
-          duration: 5000
-        });
+      .subscribe(updatedModule => {
+        if (updatedModule) {
+          this.snackBar.open('Power data saved successfully.', undefined, {
+            duration: 5000
+          });
+          this.dataService.updateSingleModuleData$.next(this.data.id);
+        }
+        
       });
+    
     
     // subscription for adding depth and weight
     this.savePhysical$
