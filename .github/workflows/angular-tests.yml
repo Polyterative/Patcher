@@ -43,7 +43,7 @@ jobs:
         run: yarn global add @angular/cli # Use Yarn to install Angular CLI
 
       - name: Cache Yarn dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/yarn
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
