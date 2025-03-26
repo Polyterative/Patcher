@@ -16,6 +16,7 @@ import {
   BehaviorSubject,
   concat,
   EMPTY,
+  from,
   of,
   Subject
 } from 'rxjs';
@@ -442,6 +443,64 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           duration: 5000
         });
       });
+    
+    // Subscription to save panels (including image upload)
+// Subscription to save panels (including image upload)
+    this.savePanels$
+      .pipe(
+        // Retrieve the first file from the file drag host service
+        map(() => this.fileDragHostService.files$.value[0]),
+        // Convert the file to an ArrayBuffer and get the file name and type
+        switchMap(file =>
+          from(file.arrayBuffer()).pipe(
+            withLatestFrom(of([file.name, file.type]))
+          )
+        ),
+        // Construct a new filename and upload the file to the server
+        switchMap(([fileBuffer, [filename, fileType]]) => {
+          // Extract the extension from the original filename
+          const extension: string = filename.split('.').pop();
+          // Build a new filename using the module's name, manufacturer, panel type, and standard,
+          // sanitized using safeString to avoid invalid characters.
+          const name: string = `${ this.safeString(this.data.name) }-${ this.safeString(this.data.manufacturer.name) }-${ this.panelType.control.value.name }-${ this.safeString(this.data.standard.name) }`;
+          const filenameAndExtension: string = `${ name }.${ extension }`;
+          // Upload the file to the server
+          return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
+        }),
+        // Add the panel to the database with the returned filename and panel details
+        switchMap(dbFilename =>
+          this.backend.add.panel([
+            {
+              filename: dbFilename,
+              color: +this.panelType.control.value.value,
+              description: this.panelDescription.control.value,
+              moduleid: this.data.id
+            }
+          ])
+        ),
+        // Update the module to refresh its last updated datetime
+        switchMap(() => this.backend.update.module({id: this.data.id})),
+        // Error handling: inspect the error message to detect duplicate entry errors
+        catchError(error => {
+          console.error('Error during panel upload:', error);
+          if (error && error.message && error.message.includes('duplicate key value violates')) {
+            // Duplicate panel exists: notify the user accordingly
+            this.snackBar.open('Panel already exists.', undefined, {duration: 10000});
+          } else {
+            // Generic error message for any other errors
+            this.snackBar.open('Something went wrong during the upload, please try again', undefined, {duration: 10000});
+          }
+          return EMPTY;
+        })
+      )
+      .subscribe(() => {
+        // Provide user feedback on successful panel upload
+        const message = '✔ Panel added, thanks! It is now available for the community';
+        this.snackBar.open(message, undefined, {duration: 10000});
+        // Reload the module data
+        this.dataService.updateSingleModuleData$.next(this.data.id);
+      });
+    
   }
   
   private shouldSaveInsOuts(ins: CV[], outs: CV[]): boolean {
