@@ -36,6 +36,9 @@ export class QueryJoins {
 // Patch
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(*)';
 
+//   Patch Connections
+  static patch_connections: string = 'patch_connections:patch_connections!patch_connections_patchid_fkey(*)';
+
 // Author
   static author: string = 'author:authorid(username,id,email)';
 
