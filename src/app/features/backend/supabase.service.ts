@@ -1082,30 +1082,28 @@ export class SupabaseService {
     name?: string,
     orderBy?: string,
     orderDirection?: string,
-    columns: string = `id,name,description,${ QueryJoins.author },updated,created `) {
+    columns: string = `id,name,description,${ QueryJoins.author },updated,created`
+  ) {
+    const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
     
-    let queryBuilder = this.supabase.from(DbPaths.patches)
-      .select(columns, {count: 'exact'})
-    
+    let queryBuilder = this.supabase
+      .from(DbPaths.patches)
+      .select(columns + connections, {count: 'exact'})
+      .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
     
     if (columns.includes('name')) {
-      queryBuilder = queryBuilder
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
+      queryBuilder = queryBuilder.order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
     }
     
     if (name) {
-      queryBuilder = queryBuilder
-        .ilike('name', `%${ name }%`)
+      queryBuilder = queryBuilder.ilike('name', `%${ name }%`);
     }
     
-    return rxFrom(
-      queryBuilder
-        .range(from, to)
-    )
+    return rxFrom(queryBuilder.range(from, to))
       .pipe(
         map((x) => x),
         remapErrors(),
-        map((x: any) => x),// map type as any , TODO: fix this
+        map((x: any) => x),
       );
   }
   
