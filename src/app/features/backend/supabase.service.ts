@@ -112,6 +112,7 @@ type CachedEntity =
   | 'patches'
   | 'currentUserComments'
   | 'rackWithId'
+  | 'racksMinimal'
   | void;
 const cacheBuster$ = new Subject<CachedEntity[]>();
 
@@ -173,6 +174,7 @@ export class SupabaseService {
     currentUserComments: typeof SupabaseService.prototype.getCurrentUserComments;
     patches: typeof SupabaseService.prototype.getPatches;
     rackWithId: typeof SupabaseService.prototype.getRackWithId;
+    racksMinimal: typeof SupabaseService.prototype.getRacksMinimal;
   } = {
     currentUserModules: this.getCurrentUserModules.bind(this),
     modules: this.getModules.bind(this),
@@ -183,7 +185,8 @@ export class SupabaseService {
     patchConnections: this.getPatchConnections.bind(this),
     currentUserComments: this.getCurrentUserComments.bind(this),
     patches: this.getPatches.bind(this),
-    rackWithId: this.getRackWithId.bind(this)
+    rackWithId: this.getRackWithId.bind(this),
+    racksMinimal: this.getRacksMinimal.bind(this)
   };
   
   readonly cacheResetter$ = cacheBuster$;
@@ -247,19 +250,7 @@ export class SupabaseService {
             rackid: y.rackid
           }
         })))),
-    racksMinimal: (from = 0, to: number = this.defaultPag, name?: string, orderBy?: string, orderDirection?: string) => rxFrom(
-      this.supabase.from(DbPaths.racks)
-        .select(`id,name,hp,rows,description,created,updated,authorid,${ QueryJoins.author },image`, {count: 'exact'})
-        // only public
-        .filter('public', 'eq', true)
-        .ilike(`name,hp,rows, ${ QueryJoins.author }`, `%${ name }%`)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        remapErrors(),
-        map((x: any) => x), // map type as any , TODO: fix this
-      ),
+    
     racksWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
       this.supabase.from(DbPaths.rack_modules_grouped_by_moduleid)
         .select(`*,${ QueryJoins.rack }`, {count: 'exact'})
@@ -1043,6 +1034,47 @@ export class SupabaseService {
       .pipe(
         remapErrors(),
         map((x: any) => x)// map type as any , TODO: fix this
+      );
+  }
+  
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('racksMinimal'))),
+    maxCacheCount: 50,
+  })
+  private getRacksMinimal(
+    from: number = 0,
+    to?: number,
+    name?: string,
+    orderBy?: string,
+    orderDirection?: string
+  ) {
+    const effectiveTo = to ?? this.defaultPag;
+    
+    const columns = [
+      "id",
+      "name",
+      "hp",
+      "rows",
+      "description",
+      "created",
+      "updated",
+      "authorid",
+      QueryJoins.author,
+      "image"
+    ].join(",");
+    
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
+        .filter("public", "eq", true)
+        .ilike(`name,hp,rows,${ QueryJoins.author }`, `%${ name.trim().toLowerCase() }%`)
+        .range(from, effectiveTo)
+        .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"})
+    )
+      .pipe(
+        remapErrors(),
+        map((x: any) => x)
       );
   }
   

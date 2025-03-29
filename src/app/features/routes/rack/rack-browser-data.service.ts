@@ -169,11 +169,11 @@ export class RackBrowserDataService implements OnDestroy {
             const sortDirection = sort[1];
   
             // return this.backend.get.racks(skip, (skip + take) - 1, filter, sortColumnName);
-            return this.backend.get.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
+            return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
           }),
           takeUntil(this.destroyEvent$)
         )
-        .subscribe(x => {
+      .subscribe((x: any) => {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.racksList$.next(x.data);
   
