@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.11.0](https://github.com/Polyterative/Patcher/compare/v4.10.2...v4.11.0) (2025-03-29)
+
+
+### Features
+
+* **patch-browser:** only show patches with connections ([e634799](https://github.com/Polyterative/Patcher/commit/e634799ca90aeddb223aac115a3765cbf43be9ce))
+* **rack-browser:** only show racks with modules ([4b2aa40](https://github.com/Polyterative/Patcher/commit/4b2aa405168c656bc767244b1cc4fd578e22d035))
+
 ### [4.10.2](https://github.com/Polyterative/Patcher/compare/v4.10.1...v4.10.2) (2025-03-26)
 
 
