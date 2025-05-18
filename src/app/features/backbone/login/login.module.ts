@@ -5,30 +5,33 @@ import { LoginPageModule } from './login-page/login-page.module';
 import { SignupPageComponent } from './signup/signup-page.component';
 import { SignupPageModule } from './signup/signup-page.module';
 import { UserManagementService } from './user-management.service';
+import { ResetPasswordPageComponent } from './reset-password/reset-password-page.component';
+
 
 @NgModule({
-  declarations: [],
-  providers:    [UserManagementService],
-  imports:      [
+  providers: [UserManagementService],
+  imports: [
     LoginPageModule,
     SignupPageModule,
     RouterModule.forRoot([
       {
-        path:     'auth',
+        path: 'auth',
         children: [
           {
-            path:      'login',
+            path: 'login',
             component: LoginPageComponent
           },
           {
-            path:      'signup',
+            path: 'signup',
             component: SignupPageComponent
+          },
+          {
+            path: 'reset-password',
+            component: ResetPasswordPageComponent
           }
         ]
       }
-
     ], {scrollPositionRestoration: 'enabled'})
-  
   ]
 })
 export class LoginModule {}
