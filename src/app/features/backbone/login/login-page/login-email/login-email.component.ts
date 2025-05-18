@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output
+} from '@angular/core';
 import { UserLoginDataService } from '../user-login-data.service';
+import { FormControl } from '@angular/forms';
+
 
 @Component({
   selector:        'app-login-email',
@@ -9,9 +17,15 @@ import { UserLoginDataService } from '../user-login-data.service';
 })
 export class LoginEmailComponent implements OnInit {
   
+  @Output() emailChange = new EventEmitter<string>();
+
   constructor(public dataService: UserLoginDataService) { }
   
   ngOnInit(): void {
+    const emailControl: FormControl = this.dataService.fields.user.control;
+    emailControl.valueChanges.subscribe(value => {
+      this.emailChange.emit(value);
+    });
   }
   
 }
