@@ -1,32 +1,31 @@
-import { Injectable }             from '@angular/core';
-import { MatSnackBar }            from "@angular/material/snack-bar";
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   ActivatedRoute,
   Router
-}                                 from '@angular/router';
+} from '@angular/router';
 import {
   from,
   NEVER,
   Observable,
-  of,
   ReplaySubject
-}                                 from 'rxjs';
+} from 'rxjs';
 import {
   catchError,
   filter,
   switchMap,
   take,
   tap
-}                                 from 'rxjs/operators';
+} from 'rxjs/operators';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
-import { SharedConstants }        from 'src/app/shared-interproject/SharedConstants';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   RichUserModel,
   SimpleUserModel,
   SupabaseLoginResponse,
   SupabaseService,
   SupabaseSignupResponse,
-}                                 from '../../backend/supabase.service';
+} from '../../backend/supabase.service';
 
 
 @Injectable()
@@ -59,19 +58,21 @@ export class UserManagementService {
           this.userBoxService.store.user$.next({username: undefined});
         }
       });
-    
+
     // update loggedUserProfile$ when loggedUser$ changes
     this.loggedUser$
       .pipe(
-        tap(x => this.loggedUserFullProfile$.next(undefined)),
+        tap(() => this.loggedUserFullProfile$.next(undefined)),
         filter(x => !!x),
-        switchMap(x => x ? this.backend.getRichUserSession$() : of(undefined)),
+        switchMap(() => this.backend.getRichUserSession$()),
         //perform good the check of both values
-        filter(x => !!x && !!x.username && !!x.email),
+        filter(x => !!x && !!x.username && !!x.email)
       )
-      .subscribe(x => this.loggedUserFullProfile$.next(x));
+      .subscribe(x => {
+        this.loggedUserFullProfile$.next(x);
+      });
     
-    userBoxService.logoffButtonClick$.subscribe(x => {
+    userBoxService.logoffButtonClick$.subscribe(() => {
       this.logoff$();
     });
   }
@@ -111,6 +112,30 @@ export class UserManagementService {
         SharedConstants.successLogout(this.snackBar);
         
       });
+  }
+  
+  /**
+   * Sends a password reset email to the user (for both authenticated and unauthenticated users).
+   * @param email The email address of the user.
+   */
+  resetPassword$(email: string) {
+    return this.backend.resetPassword$(email).pipe(
+      catchError((error) => {
+        if (error?.error_code === 'over_email_send_rate_limit') {
+          SharedConstants.errorCustom(
+            this.snackBar,
+            SharedConstants.messages.overEmailSendRateLimit
+          );
+        } else {
+          SharedConstants.errorCustom(
+            this.snackBar,
+            SharedConstants.messages.operationFailed
+          );
+        }
+        return NEVER;
+      }),
+      tap(() => SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent))
+    );
   }
   
   // what we want here is to check if the user is logged in, and if so, to get the user data from the backend in the next pipes
