@@ -29,6 +29,9 @@
       "precommit": "git add src/assets/md/changelog.md"
     }
   },
+  "engines": {
+    "node": ">=18.19.0 <23"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
@@ -91,7 +94,7 @@
     "@types/jasminewd2": "^2.0.10",
     "@types/lodash": "^4.14.182",
     "@types/luxon": "^2.3.2",
-    "@types/node": "^20.12.2",
+    "@types/node": "^22.0.0",
     "angular-build-info": "^2.0.1",
     "copyfiles": "^2.4.1",
     "jasmine-core": "^4.0.1",
@@ -103,13 +106,8 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "protractor": "^7.0.0",
     "standard-version": "^9.5.0",
-    "supabase": "^1.167.4",
+    "supabase": "^2.22.6",
     "ts-node": "^10.9.2",
     "typescript": "5.4.4"
-  },
-  "overrides": {
-    "@supabase/supabase-js": {
-      "@supabase/auth-js": "2.61.0"
-    }
   }
 }
