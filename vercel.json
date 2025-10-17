@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "framework": "angular",
+  "buildCommand": "yarn build",
+  "outputDirectory": "dist/Patcher/browser"
+}
