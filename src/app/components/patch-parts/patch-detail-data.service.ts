@@ -38,6 +38,7 @@ import {
   CVwithModule
 } from '../../models/cv';
 import { Patch } from '../../models/patch';
+import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
 @Injectable()
@@ -259,6 +260,10 @@ export class PatchDetailDataService implements OnDestroy {
             ...patchConnections,
             newConnection
           ]);
+          
+          SharedConstants.successCustom(this.snackBar, 'Connection added');
+        } else {
+          SharedConstants.successCustom(this.snackBar, 'Connection already exists');
         }
       });
     
