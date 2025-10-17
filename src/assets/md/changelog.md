@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.11.1](https://github.com/Polyterative/Patcher/compare/v4.11.0...v4.11.1) (2025-10-17)
+
+
+### Features
+
+* **auth:** add password reset flow ([b8d20f6](https://github.com/Polyterative/Patcher/commit/b8d20f6f0ebb63e20c29c90d6ab3456e2489918e))
+* **patch-detail-data:** enhance connection feedback ([c307b52](https://github.com/Polyterative/Patcher/commit/c307b528201f03d2cae02c149395319e34956693))
+* **patch-detail:** improve connection handling and patch update logic -vibe- ([0160acf](https://github.com/Polyterative/Patcher/commit/0160acfbe153e207d299a40a9384f8070e33fd8c))
+* update Node.js version to 22.x and add Vercel configuration ([7a3ba9f](https://github.com/Polyterative/Patcher/commit/7a3ba9fd7122c7f13a4f438245aa6d7ac7ed8f13))
+
+
+### Bug Fixes
+
+* **package.json:** update Node.js engine version range ([11a5522](https://github.com/Polyterative/Patcher/commit/11a5522cc0a9cf1d72229706d10a748b237337b1))
+* preload custom font to prevent flash of unstyled text (FOUT) ([12038f6](https://github.com/Polyterative/Patcher/commit/12038f6cec24945389fb11e8b16ee29373b7d63a))
+* **supabase.service:** restore patch save ([9ff01d5](https://github.com/Polyterative/Patcher/commit/9ff01d5fb3d31c97acc9b82221ae5e00bd2271e1))
+* **vercel.json:** remove functions configuration and retain output directory ([056af6e](https://github.com/Polyterative/Patcher/commit/056af6e6bc28613c6d8b4638c8a413b0e32e173e))
+
 ## [4.11.0](https://github.com/Polyterative/Patcher/compare/v4.10.2...v4.11.0) (2025-03-29)
 
 
