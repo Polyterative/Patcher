@@ -797,14 +797,16 @@ export class SupabaseService {
     },
     patch: (data: Patch) => {
       data.author = undefined;
-      
       return rxFrom(
         this.supabase.from(DbPaths.patches)
           .update(data)
           .eq('id', data.id)
           .single()
       )
-        .pipe(showSuccessMessage(this.snackBar));
+        .pipe(
+          showSuccessMessage(this.snackBar),
+          cacheBust(['patches', 'patchConnections'])
+        );
     },
     modules: (data: DbModule[]) => {
       for (const datum of data) {
@@ -844,7 +846,10 @@ export class SupabaseService {
         );
     },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
-      .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
+      .pipe(
+        tap(x => SharedConstants.showSuccessUpdate(this.snackBar)),
+        cacheBust(['patchConnections', 'patches'])
+      )
   };
   
   storage = {
@@ -1552,7 +1557,7 @@ export class SupabaseService {
       .update(x)
       .eq('id', x.id)));
   }
-
+  
   /**
    * Handles both sending a password reset email and resetting the password with a token.
    * If newPassword is provided, performs a token-based password reset. Otherwise, sends a reset email.
