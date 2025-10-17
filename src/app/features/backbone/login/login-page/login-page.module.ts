@@ -12,6 +12,11 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { LoginEmailModule } from './login-email/login-email.module';
 import { LoginPageComponent } from './login-page.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -30,7 +35,12 @@ import { LoginPageComponent } from './login-page.component';
     LoginEmailModule,
     RouterModule,
     MatCardModule,
-    LottieContainerModule
+    LottieContainerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatDialogModule,
+    FormsModule
   ],
   exports:      [
     LoginPageComponent,

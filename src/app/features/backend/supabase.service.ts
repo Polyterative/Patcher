@@ -797,14 +797,16 @@ export class SupabaseService {
     },
     patch: (data: Patch) => {
       data.author = undefined;
-      
       return rxFrom(
         this.supabase.from(DbPaths.patches)
           .update(data)
           .eq('id', data.id)
           .single()
       )
-        .pipe(showSuccessMessage(this.snackBar));
+        .pipe(
+          showSuccessMessage(this.snackBar),
+          cacheBust(['patches', 'patchConnections'])
+        );
     },
     modules: (data: DbModule[]) => {
       for (const datum of data) {
@@ -844,7 +846,10 @@ export class SupabaseService {
         );
     },
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
-      .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)))
+      .pipe(
+        tap(x => SharedConstants.showSuccessUpdate(this.snackBar)),
+        cacheBust(['patchConnections', 'patches'])
+      )
   };
   
   storage = {
@@ -1424,12 +1429,13 @@ export class SupabaseService {
             .pipe(
               map(usernameGetterResponse => ({
                 ...simpleUserData,
-                username: usernameGetterResponse.data[0].username
+                username: usernameGetterResponse.data[0].username,
+                email: simpleUserData.email // Ensure email is retained
               }))
-            )
+            );
         }),
         shareReplay(1)
-      )
+      );
   }
   
   private getUserNameFromDatabase(userId: string) {
@@ -1552,5 +1558,62 @@ export class SupabaseService {
       .eq('id', x.id)));
   }
   
+  /**
+   * Handles both sending a password reset email and resetting the password with a token.
+   * If newPassword is provided, performs a token-based password reset. Otherwise, sends a reset email.
+   * @param emailOrToken The email address (for email-based) or token (for token-based).
+   * @param newPassword The new password to set (for token-based reset).
+   */
+  resetPassword$(emailOrToken: string, newPassword?: string): Observable<void> {
+    if (newPassword) {
+      // Token-based password reset
+      return from(
+        this.supabase.auth.updateUser({
+          password: newPassword
+        })
+      ).pipe(
+        map(() => {
+          console.log(SharedConstants.messages.resetPassword?.resetPasswordTitle);
+        }),
+        catchError((error) => {
+          console.error(SharedConstants.messages.resetPassword?.resetFailed, error);
+          return throwError(() => error);
+        })
+      );
+    } else {
+      // Email-based password reset
+      if (!this.isValidEmail(emailOrToken)) {
+        return throwError(() => new Error('Invalid email address.'));
+      }
+      // DOENT WORK
+      const redirectTo = `${ window.location.origin }/auth/reset-password`;
+      return from(this.supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
+        map((response) => {
+          if (response.error) {
+            throw new PasswordResetError('Failed to send password reset email.', response.error.message);
+          }
+        }),
+        catchError((error) => {
+          console.error('Password reset request failed:', error);
+          return throwError(() => error);
+        })
+      );
+    }
+  }
   
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  private isValidPassword(password: string): boolean {
+    return password.length >= 8; // Add more complexity checks if needed
+  }
+}
+
+class PasswordResetError extends Error {
+  constructor(public message: string, public details?: string) {
+    super(message);
+    this.name = 'PasswordResetError';
+  }
 }
