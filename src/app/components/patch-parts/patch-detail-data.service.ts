@@ -11,6 +11,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  of,
   ReplaySubject,
   Subject
 } from 'rxjs';
@@ -236,13 +237,13 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([_, patchConnections]) => {
+        patchConnections = patchConnections || [];
         const selectedForConnection: {
           a: CVConnectionEntity | null;
           b: CVConnectionEntity | null
         } = this.selectedForConnection$.value;
-        
         const patch: Patch = this.singlePatchData$.value;
-        
+        if (!selectedForConnection.a || !selectedForConnection.b || !patch) { return; }
         const newConnection: {
           patch: Patch;
           a: CVwithModule;
@@ -252,19 +253,13 @@ export class PatchDetailDataService implements OnDestroy {
           b: selectedForConnection.b.cv,
           patch
         };
-        
-        const isAlreadyInList: boolean = !!patchConnections.find(connection => {
-          return connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id;
-        });
-        
+        const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
         if (!isAlreadyInList) {
-          this.snackBar.open('✔ Connection confirmed', undefined, {duration: 1000});
           this.editorConnections$.next([
             ...patchConnections,
             newConnection
           ]);
-        } else { this.snackBar.open('⚠ This connection has already been made', undefined, {duration: 2000}); }
-        
+        }
       });
     
     this.patchConnections$
@@ -285,12 +280,24 @@ export class PatchDetailDataService implements OnDestroy {
     this.savePatchEditing$
       .pipe(
         withLatestFrom(this.editorConnections$, this.singlePatchData$),
-        switchMap(([a, patchConnections, patch]) => this.backend.update.patchConnections(patchConnections)
-          .pipe(switchMap(x => this.backend.update.patch(patch)))),
+        switchMap(([_, patchConnections, patch]) => {
+          if (!patch) { return of(null); }
+          if (patchConnections === null) { // connections not loaded yet, only patch update
+            return this.backend.update.patch(patch);
+          }
+          if (patchConnections.length === 0) { // user cleared all connections
+            return this.backend.delete.patchConnectionsForPatch(patch.id)
+              .pipe(switchMap(() => this.backend.update.patch(patch)));
+          }
+          return this.backend.update.patchConnections(patchConnections)
+            .pipe(switchMap(() => this.backend.update.patch(patch)));
+        }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => {
-        this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
+      .subscribe(() => {
+        if (this.singlePatchData$.value) {
+          this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
+        }
       });
     
     this.deletePatch$
