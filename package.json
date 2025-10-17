@@ -29,6 +29,9 @@
       "precommit": "git add src/assets/md/changelog.md"
     }
   },
+  "engines": {
+    "node": "22.x"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
@@ -91,7 +94,7 @@
     "@types/jasminewd2": "^2.0.10",
     "@types/lodash": "^4.14.182",
     "@types/luxon": "^2.3.2",
-    "@types/node": "^20.12.2",
+    "@types/node": "^22.0.0",
     "angular-build-info": "^2.0.1",
     "copyfiles": "^2.4.1",
     "jasmine-core": "^4.0.1",
