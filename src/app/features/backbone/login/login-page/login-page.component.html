@@ -67,7 +67,8 @@
                 [type]="dataService.fields.user.type"
                 [control]="dataService.fields.user.control"
                 [label]="dataService.fields.user.label"
-                formFieldAppearanceType="fill">
+                formFieldAppearanceType="fill"
+                iconL1="email">
               </lib-mat-form-entity>
               
               <div *ngIf="dataService.resetErrorMessage$ | async as errorMessage"
