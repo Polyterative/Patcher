@@ -1,4 +1,5 @@
-@import "src/app/style/brand-resources.scss";
+@use "sass:color";
+@use "src/app/style/brand-resources.scss" as *;
 
 
 .depadding {
@@ -25,7 +26,7 @@
   }
 
   &:hover {
-    background-color: transparentize($brand-tertiary, 0.9);
+    background-color: color.adjust($brand-tertiary, $alpha: -0.9);
   }
 
   transition:    125ms;

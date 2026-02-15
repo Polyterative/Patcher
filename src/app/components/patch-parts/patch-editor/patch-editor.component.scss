@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "sass:map";
+
 .leftBorderS {
   border-left-width: .5rem;
   border-left-style: solid;
@@ -34,9 +37,9 @@ $palette: (
     padding-left: 1em !important
   }
 
-  background-color: transparentize(map-get($palette, d), 0.7);
+  background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
 }
 
 .selection {
-  background-color: transparentize(map-get($palette, b), 0.7);
+  background-color: color.adjust(map.get($palette, b), $alpha: -0.7);
 }
