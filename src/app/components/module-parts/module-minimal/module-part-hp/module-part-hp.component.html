@@ -1,5 +1,6 @@
-<div class="technical-item"
-     *ngIf="data.manufacturer.id!==10000"
->
-  {{ data.standard.name }} {{ data.hp }}HP
-</div>
+@if (data.manufacturer.id !== 10000) {
+  <div class="technical-item"
+  >
+    {{ data.standard.name }} {{ data.hp }}HP
+  </div>
+}

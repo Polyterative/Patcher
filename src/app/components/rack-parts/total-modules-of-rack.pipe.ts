@@ -1,8 +1,13 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
 import { RackedModule } from '../../models/module';
 
+
 @Pipe({
-  name: 'totalModulesOfRack'
+  name: 'totalModulesOfRack',
+  standalone: false
 })
 export class TotalModulesOfRackPipe implements PipeTransform {
   

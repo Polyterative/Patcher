@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { MinimalModule } from 'src/app/models/module';
+
 
 @Component({
   selector: 'app-module-part-name',
   templateUrl: './module-part-name.component.html',
   styleUrls: ['./module-part-name.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModulePartNameComponent implements OnInit {
 

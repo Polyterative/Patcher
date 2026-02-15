@@ -1,12 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { RackMinimal } from '../../models/rack';
 import { RackMinimalViewConfig } from '../rack-parts/rack-minimal/rack-minimal.component';
 
+
 @Component({
-  selector:        'app-rack-micro',
-  templateUrl:     './rack-micro.component.html',
-  styleUrls:       ['./rack-micro.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-rack-micro',
+  templateUrl: './rack-micro.component.html',
+  styleUrls: ['./rack-micro.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackMicroComponent implements OnInit {
   

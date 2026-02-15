@@ -3,31 +3,33 @@
      class="col root"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
-  <ng-container *ngIf="!showPanelImages">
+  @if (!showPanelImages) {
     <app-module-realistic-holeline [data]="data"
                                    class="hole-padding"
     >
-    
     </app-module-realistic-holeline>
     <div class="col gap1 parent modBody"
     >
-      <app-module-part-hp [data]="data"
-                          *ngIf="data.hp>3"
-                          class="self-center"
-      ></app-module-part-hp>
-      <app-module-part-manufacturer [data]="data"
-                                    *ngIf="data.hp>3&&data.standard.id===0"
-                                    [ngClass]="{'rotated':data.hp<6}"
-                                    class="self-center"
-      ></app-module-part-manufacturer>
-      <div fxFlex="grow"
-           *ngIf="data.standard.id===0"
-      ></div>
+      @if (data.hp > 3) {
+        <app-module-part-hp [data]="data"
+                            class="self-center"
+        ></app-module-part-hp>
+      }
+      @if (data.hp > 3 && data.standard.id === 0) {
+        <app-module-part-manufacturer [data]="data"
+                                      [ngClass]="{'rotated':data.hp<6}"
+                                      class="self-center"
+        ></app-module-part-manufacturer>
+      }
+      @if (data.standard.id === 0) {
+        <div fxFlex="grow"
+        ></div>
+      }
       <ng-content></ng-content>
-      <div fxFlex="grow"
-           *ngIf="data.standard.id===0"
-      ></div>
-      
+      @if (data.standard.id === 0) {
+        <div fxFlex="grow"
+        ></div>
+      }
       <app-module-part-name [data]="data"
                             [fxLayoutAlign]="data.hp<=6?'start center':'center center'"
                             [ngClass]="{'half-sizing':data.hp<3,'rotated':data.hp<6}"
@@ -37,13 +39,13 @@
     <app-module-realistic-holeline [data]="data"
                                    class="hole-padding"
     ></app-module-realistic-holeline>
-  </ng-container>
+  }
   
-  <ng-container *ngIf="showPanelImages">
+  @if (showPanelImages) {
     <app-module-part-image [data]="data"
                            [containImage]="false"
                            [matTooltip]="data.name+' ('+data.manufacturer.name+', '+data.standard.name+', '+data.hp+'HP)'"
     ></app-module-part-image>
-  </ng-container>
+  }
 
 </div>

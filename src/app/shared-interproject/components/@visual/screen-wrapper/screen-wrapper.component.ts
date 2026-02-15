@@ -1,4 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+
 
 /**
  * questo componente ti aiuta a tenere sotto controllo le dimensioni
@@ -7,9 +12,10 @@ import { Component, Input, OnInit } from '@angular/core';
  * 2k ma non fhd oppure permette di forzare roba ad una certa dimensione
  */
 @Component({
-  selector:    'lib-screen-wrapper',
+  selector: 'lib-screen-wrapper',
   templateUrl: './screen-wrapper.component.html',
-  styleUrls:   ['./screen-wrapper.component.scss']
+  styleUrls: ['./screen-wrapper.component.scss'],
+  standalone: false
 })
 export class ScreenWrapperComponent implements OnInit {
   

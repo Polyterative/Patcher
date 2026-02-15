@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
   selector: 'app-hero-clickable-title',
   templateUrl: './hero-clickable-title.component.html',
   styleUrls: ['./hero-clickable-title.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class HeroClickableTitleComponent implements OnInit {
   @Input() link: string | any[] = undefined;

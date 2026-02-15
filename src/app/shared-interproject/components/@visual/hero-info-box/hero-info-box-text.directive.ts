@@ -1,8 +1,16 @@
-import { Directive, ElementRef, HostListener, Input, OnDestroy } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  Input,
+  OnDestroy
+} from '@angular/core';
 import { HeroInfoBoxService } from './hero-info-box.service';
 
+
 @Directive({
-  selector: '[infoBox]'
+  selector: '[infoBox]',
+  standalone: false
 })
 export class HeroInfoBoxTextDirective implements OnDestroy {
   @Input() infoText: string;

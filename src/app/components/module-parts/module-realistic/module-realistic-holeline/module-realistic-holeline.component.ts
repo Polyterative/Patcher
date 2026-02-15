@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { MinimalModule } from 'src/app/models/module';
 
+
 @Component({
-  selector:        'app-module-realistic-holeline',
-  templateUrl:     './module-realistic-holeline.component.html',
-  styleUrls:       ['./module-realistic-holeline.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-realistic-holeline',
+  templateUrl: './module-realistic-holeline.component.html',
+  styleUrls: ['./module-realistic-holeline.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleRealisticHolelineComponent implements OnInit {
   

@@ -12,10 +12,11 @@ import { RackDetailDataService } from '../rack-detail-data.service';
 
 
 @Component({
-  selector:        'app-rack-details',
-  templateUrl:     './rack-details.component.html',
-  styleUrls:       ['./rack-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-rack-details',
+  templateUrl: './rack-details.component.html',
+  styleUrls: ['./rack-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackDetailsComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;

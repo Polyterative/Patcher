@@ -76,7 +76,8 @@ export interface IMatFormEntityConfig {
   selector: 'lib-mat-form-entity',
   templateUrl: './mat-form-entity.component.html',
   styleUrls: ['./mat-form-entity.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
   

@@ -13,10 +13,11 @@ import {
 
 
 @Component({
-  selector:        'app-module-racks',
-  templateUrl:     './module-racks.component.html',
-  styleUrls:       ['./module-racks.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-racks',
+  templateUrl: './module-racks.component.html',
+  styleUrls: ['./module-racks.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleRacksComponent implements OnInit {
   @Input()

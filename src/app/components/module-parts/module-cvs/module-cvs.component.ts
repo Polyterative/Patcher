@@ -35,7 +35,8 @@ import { DbModule } from 'src/app/models/module';
       duration: 1
     })
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleCVsComponent implements OnInit {
   @Input() data: DbModule;

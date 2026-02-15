@@ -1,64 +1,68 @@
-<div fxLayout="column "
-     fxLayoutGap="1rem"
-     *ngIf="linksData.links.length>0"
->
-  <ng-container *ngFor="let group of linksData.links">
-    <div fxFlex="100">
-      <lib-clean-card class="depadding"
-  
-      >
-        <mat-nav-list class="depadding"
+@if (linksData.links.length > 0) {
+  <div fxLayout="column "
+       fxLayoutGap="1rem"
+  >
+    @for (group of linksData.links; track group) {
+      <div fxFlex="100">
+        <lib-clean-card class="depadding"
         >
-          <ng-container *ngFor="let cardLink of group">
-        
-            <ng-container *ngIf="{
-                        disabled:(cardLink.disabled?(cardLink.disabled|async):false),
-                        hidden:(cardLink.hidden?(cardLink.hidden|async):false)
-                        } as bag"
-            >
-              <ng-container *ngIf="isRelative(cardLink); else absolute">
-                <a mat-list-item
-                   class="depadding option"
-                   (click)="bag.disabled?doNothing():linksData.click$.emit(cardLink)"
-                   [routerLink]="(!bag.disabled)?cardLink.route:null"
-                   [routerLinkActive]="(!bag.disabled)?'selected':''"
-                   [ngClass]='{"disabled":bag.disabled}'
-                   [disableRipple]="bag.disabled"
-                   *ngIf="!bag.hidden"
-                >
-                  <span matLine
-                        *ngIf="cardLink.label"
-                        fxLayoutAlign="baseline"
-                  >{{ cardLink.label }}</span>
-                  <mat-icon *ngIf="cardLink.icon"
-                            fxLayoutAlign="baseline"
-                  >{{cardLink.icon}}</mat-icon>
-                </a>
-              </ng-container>
-              <ng-template #absolute>
-                <a mat-list-item
-                   class="depadding option"
-                   [href]="cardLink.route"
-                   [ngClass]='{"disabled":bag.disabled}'
-                   [disableRipple]="bag.disabled"
-                   *ngIf="!bag.hidden"
-                >
-                  <span matLine
-                        *ngIf="cardLink.label"
-                        fxLayoutAlign="baseline"
-                  >{{ cardLink.label }}</span>
-                  <mat-icon *ngIf="cardLink.icon"
-                            fxLayoutAlign="baseline"
-                  >{{cardLink.icon}}</mat-icon>
-                </a>
-              </ng-template>
-            
-            </ng-container>
-          
-          </ng-container>
-        </mat-nav-list>
-      </lib-clean-card>
-    </div>
-  </ng-container>
-
-</div>
+          <mat-nav-list class="depadding"
+          >
+            @for (cardLink of group; track cardLink) {
+              @if ({
+                disabled: (cardLink.disabled ? (cardLink.disabled|async) : false),
+                hidden: (cardLink.hidden ? (cardLink.hidden|async) : false)
+              }; as bag) {
+                @if (isRelative(cardLink)) {
+                  @if (!bag.hidden) {
+                    <a mat-list-item
+                       class="depadding option"
+                       (click)="bag.disabled?doNothing():linksData.click$.emit(cardLink)"
+                       [routerLink]="(!bag.disabled)?cardLink.route:null"
+                       [routerLinkActive]="(!bag.disabled)?'selected':''"
+                       [ngClass]='{"disabled":bag.disabled}'
+                       [disableRipple]="bag.disabled"
+                    >
+                      @if (cardLink.label) {
+                        <span matLine
+                              fxLayoutAlign="baseline"
+                        >{{ cardLink.label }}</span>
+                      }
+                      @if (cardLink.icon) {
+                        <mat-icon
+                          fxLayoutAlign="baseline"
+                        >{{ cardLink.icon }}
+                        </mat-icon>
+                      }
+                    </a>
+                  }
+                } @else {
+                  @if (!bag.hidden) {
+                    <a mat-list-item
+                       class="depadding option"
+                       [href]="cardLink.route"
+                       [ngClass]='{"disabled":bag.disabled}'
+                       [disableRipple]="bag.disabled"
+                    >
+                      @if (cardLink.label) {
+                        <span matLine
+                              fxLayoutAlign="baseline"
+                        >{{ cardLink.label }}</span>
+                      }
+                      @if (cardLink.icon) {
+                        <mat-icon
+                          fxLayoutAlign="baseline"
+                        >{{ cardLink.icon }}
+                        </mat-icon>
+                      }
+                    </a>
+                  }
+                }
+              }
+            }
+          </mat-nav-list>
+        </lib-clean-card>
+      </div>
+    }
+  </div>
+}

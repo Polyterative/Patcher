@@ -8,7 +8,6 @@ import { HeroContentCardModule } from "src/app/shared-interproject/components/@v
 
 @Component({
   selector: 'app-faq',
-  standalone: true,
   imports: [
     FaqComponent,
     HeroContentCardModule

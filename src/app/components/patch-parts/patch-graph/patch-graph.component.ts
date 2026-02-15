@@ -38,18 +38,19 @@ interface NodesDictionary {[id: string]: GraphNode;}
 interface EdgeDictionary {[id: string]: GraphEdge;}
 
 @Component({
-  selector:        'app-patch-graph',
-  templateUrl:     './patch-graph.component.html',
-  styleUrls:       ['./patch-graph.component.scss'],
+  selector: 'app-patch-graph',
+  templateUrl: './patch-graph.component.html',
+  styleUrls: ['./patch-graph.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  animations: [
     fadeInAnimation({
       duration: 500,
-      delay:    100,
-      anchor:   'enter'
+      delay: 100,
+      anchor: 'enter'
     })
   ],
-  providers:       [GraphViewService]
+  providers: [GraphViewService],
+  standalone: false
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
   

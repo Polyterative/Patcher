@@ -1,11 +1,18 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { PublicUser } from 'src/app/models/user';
 
+
 @Component({
-  selector:        'app-entity-author',
-  templateUrl:     './entity-author.component.html',
-  styleUrls:       ['./entity-author.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-entity-author',
+  templateUrl: './entity-author.component.html',
+  styleUrls: ['./entity-author.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class EntityAuthorComponent implements OnInit {
   @Input()

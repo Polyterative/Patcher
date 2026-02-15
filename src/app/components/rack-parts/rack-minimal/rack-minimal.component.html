@@ -7,59 +7,58 @@
   <mat-divider [inset]="true"
                style="margin-top:.5rem"
   ></mat-divider>
-  <div class="row gap2 opacizeOnHover"
-       *ngIf="!viewConfig.hideButtons"
-  >
-    <ng-container *ngIf="{
-      isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
-      isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
-      user:(userManagerService.loggedUser$|async)
-    } as bag"
+  @if (!viewConfig.hideButtons) {
+    <div class="row gap2 opacizeOnHover"
     >
-      <ng-container *ngIf="bag.user&&bag.isCurrentRackPropertyOfCurrentUser">
-        <button mat-icon-button
-                [matTooltip]="bag.isCurrentRackEditable ? 'Lock rack' : 'Unlock rack'"
-                (click)="dataService.requestRackEditableStatusChange$.next()"
-        >
-          <mat-icon>{{ bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline' }}</mat-icon>
-        </button>
-        <button mat-icon-button
-                [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
-                (click)="dataService.requestRackPrivacyStatusChange$.next()"
-                [disabled]="!bag.isCurrentRackEditable"
-        >
-          <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
-        </button>
-        <button mat-icon-button
-                [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Unlock rack to rename'"
-                [disabled]="!bag.isCurrentRackEditable"
-                (click)="dataService.renameCurrentRack$.next()"
-        >
-          <mat-icon>mode_edit</mat-icon>
-        </button>
-        <button mat-icon-button
-                [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
-                [disabled]="!bag.isCurrentRackEditable"
-                (click)="dataService.deleteRack$.next(data)"
-        >
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-      
-      </ng-container>
-    </ng-container>
-    <div fxFlex="grow"></div>
-    <button mat-icon-button
-            [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-            [disabled]="!(userManagerService.loggedUser$|async)"
-            (click)="dataService.duplicateRack$.next(data)"
-    >
-      <mat-icon>file_copy</mat-icon>
-    </button>
-    <!--    <button mat-icon-button-->
-    <!--       matTooltip="Show details"-->
-    <!--       [routerLink]="['/racks/details',data.id]"-->
-    <!--    >-->
-    <!--      <mat-icon>info</mat-icon>-->
+      @if ({
+        isCurrentRackEditable: (dataService.isCurrentRackEditable$|async),
+        isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
+        user: (userManagerService.loggedUser$|async)
+      }; as bag) {
+        @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+          <button mat-icon-button
+                  [matTooltip]="bag.isCurrentRackEditable ? 'Lock rack' : 'Unlock rack'"
+                  (click)="dataService.requestRackEditableStatusChange$.next()"
+          >
+            <mat-icon>{{ bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline' }}</mat-icon>
+          </button>
+          <button mat-icon-button
+                  [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
+                  (click)="dataService.requestRackPrivacyStatusChange$.next()"
+                  [disabled]="!bag.isCurrentRackEditable"
+          >
+            <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
+          </button>
+          <button mat-icon-button
+                  [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Unlock rack to rename'"
+                  [disabled]="!bag.isCurrentRackEditable"
+                  (click)="dataService.renameCurrentRack$.next()"
+          >
+            <mat-icon>mode_edit</mat-icon>
+          </button>
+          <button mat-icon-button
+                  [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
+                  [disabled]="!bag.isCurrentRackEditable"
+                  (click)="dataService.deleteRack$.next(data)"
+          >
+            <mat-icon>delete_forever</mat-icon>
+          </button>
+        }
+      }
+      <div fxFlex="grow"></div>
+      <button mat-icon-button
+              [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+              [disabled]="!(userManagerService.loggedUser$|async)"
+              (click)="dataService.duplicateRack$.next(data)"
+      >
+        <mat-icon>file_copy</mat-icon>
+      </button>
+      <!--    <button mat-icon-button-->
+      <!--       matTooltip="Show details"-->
+      <!--       [routerLink]="['/racks/details',data.id]"-->
+      <!--    >-->
+      <!--      <mat-icon>info</mat-icon>-->
     <!--    </button>-->
   </div>
+  }
 </div>

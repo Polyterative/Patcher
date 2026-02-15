@@ -53,7 +53,8 @@ export interface ModuleRightClick {
       anchor: 'leave',
       duration: 1
     })
-  ]
+  ],
+  standalone: false
 })
 export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;

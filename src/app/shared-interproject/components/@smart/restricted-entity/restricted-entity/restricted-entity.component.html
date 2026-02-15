@@ -1,4 +1,4 @@
-<ng-container *ngIf="disabled; else normal">
+@if (disabled) {
   <!--  <div *matTooltip="'AAAAAAAAAAA'">-->
   <div fxFlex="100"
        fxLayout="column"
@@ -6,8 +6,7 @@
     <ng-content></ng-content>
   </div>
   <!--  </div>-->
-</ng-container>
-<ng-template #normal>
+} @else {
   <ng-content>
   </ng-content>
-</ng-template>
+}

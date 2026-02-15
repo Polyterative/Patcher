@@ -1,13 +1,19 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
 import { Subject } from 'rxjs';
 import { SupabaseService } from '../supabase.service';
 
+
 @Component({
-  selector:        'app-admin-panel-root',
-  templateUrl:     './admin-panel-root.component.html',
-  styleUrls:       ['./admin-panel-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-admin-panel-root',
+  templateUrl: './admin-panel-root.component.html',
+  styleUrls: ['./admin-panel-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class AdminPanelRootComponent implements OnInit {
   devToProd$ = new Subject<void>();

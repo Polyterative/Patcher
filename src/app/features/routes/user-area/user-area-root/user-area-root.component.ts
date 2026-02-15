@@ -14,10 +14,11 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 
 
 @Component({
-  selector:        'app-user-area-root',
-  templateUrl:     './user-area-root.component.html',
-  styleUrls:       ['./user-area-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-area-root',
+  templateUrl: './user-area-root.component.html',
+  styleUrls: ['./user-area-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserAreaRootComponent implements OnInit {
   @Input() viewConfig: ModuleMinimalViewConfig = {

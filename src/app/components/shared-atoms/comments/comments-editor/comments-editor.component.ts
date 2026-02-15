@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-  selector:        'app-comments-editor',
-  templateUrl:     './comments-editor.component.html',
-  styleUrls:       ['./comments-editor.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-comments-editor',
+  templateUrl: './comments-editor.component.html',
+  styleUrls: ['./comments-editor.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class CommentsEditorComponent implements OnInit {
   

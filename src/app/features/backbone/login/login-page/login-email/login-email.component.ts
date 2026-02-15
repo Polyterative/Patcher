@@ -10,10 +10,11 @@ import { FormControl } from '@angular/forms';
 
 
 @Component({
-  selector:        'app-login-email',
-  templateUrl:     './login-email.component.html',
-  styleUrls:       ['./login-email.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-login-email',
+  templateUrl: './login-email.component.html',
+  styleUrls: ['./login-email.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class LoginEmailComponent implements OnInit {
   
