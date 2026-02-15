@@ -19,11 +19,16 @@
         >Google Sign up
         </app-brand-primary-button>
         
-        <mat-card-subtitle fxLayoutAlign="center"
-                           routerLink="/auth/login"
-                           style="cursor: pointer"
-        >Login instead?
-        </mat-card-subtitle>
+        <!-- Action Links Section with improved spacing -->
+        <div class="signup-actions-section">
+          <div class="action-link-wrapper login-link">
+            <mat-card-subtitle fxLayoutAlign="center"
+                               routerLink="/auth/login"
+                               class="action-link">
+              Login instead?
+            </mat-card-subtitle>
+          </div>
+        </div>
       </div>
     </lib-hero-content-card>
   

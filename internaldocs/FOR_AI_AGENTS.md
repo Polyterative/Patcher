@@ -130,7 +130,8 @@ this.backend.delete.modulePanel(panel)
 ❌ Not using `$` suffix on observables  
 ❌ Using dialogs instead of inline UI  
 ❌ Subscribing in components (use async pipe instead)  
-❌ Not using `readonly` on public observables
+❌ Not using `readonly` on public observables  
+❌ **Creating markdown summary/report files** - Just do the work, don't generate documentation about what you did
 
 ## 📚 Required Reading
 
@@ -186,3 +187,11 @@ When reviewing your changes, verify:
 - `patch-detail-data.service.ts`
 
 These are reference implementations of the correct patterns.
+
+## 📣 Communication Guidelines
+
+- ❌ **DO NOT** generate markdown files summarizing your work or changes
+- ✅ Simply explain what you did in your response
+- ✅ Make the changes directly using the tools
+- ✅ Verify your changes with error checking
+- ❌ Do not create reports, summaries, or review documents as files without explicit instructions to do so
