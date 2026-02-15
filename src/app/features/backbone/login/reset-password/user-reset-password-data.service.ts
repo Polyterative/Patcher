@@ -129,8 +129,8 @@ export class UserResetPasswordDataService implements OnDestroy {
               this.fields.password.control.setValue('');
               this.fields.confirmPassword.control.setValue('');
               
-              // Start countdown from 30 seconds
-              this.startRedirectCountdown(30);
+              // Start countdown from 10 seconds
+              this.startRedirectCountdown(10);
               
               return true;
             }),

@@ -22,6 +22,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { UserResetPasswordDataService } from './user-reset-password-data.service';
 import { timer } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { CountdownProgressModule } from "src/app/shared-interproject/components/@visual/countdown-progress/countdown-progress.module";
 
 
 /**
@@ -39,7 +40,9 @@ const AUTH_CHECK_DELAY_MS = 1000;
     MatFormEntityModule,
     BrandPrimaryButtonModule,
     HeroContentCardModule,
-    ScreenWrapperModule
+    ScreenWrapperModule,
+    CountdownProgressModule,
+    CountdownProgressModule
   ],
   providers: [SeoAndUtilsService, UserResetPasswordDataService],
   templateUrl: './reset-password-page.component.html',
