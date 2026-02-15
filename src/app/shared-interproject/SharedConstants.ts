@@ -18,6 +18,7 @@ export class SharedConstants {
     dataNotSaved: "❌ Couldn't save your changes. Try again.",
     loginFailed: "❌ Login failed. Check your details and retry.",
     signupFailed: "❌ Signup didn't go through. Check the form and try again.",
+    passwordResetEmailSentTitle: "Check your email 📧",
     resetPassword: {
       invalidToken: "Invalid or missing token.",
       invalidRedirect: "That redirect URL isn't valid.",
