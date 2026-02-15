@@ -1,4 +1,4 @@
-﻿import { Inject } from '@angular/core';
+import { Inject } from '@angular/core';
 import { DialogDataInModelBase } from './DialogDataStructures';
 import { SubManager } from "../directives/subscription-manager";
 import { MAT_DIALOG_DATA } from "@angular/material/dialog";

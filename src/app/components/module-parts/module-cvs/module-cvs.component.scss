@@ -1,4 +1,5 @@
-@import "src/app/style/brand-resources.scss";
+@use "sass:color";
+@use "src/app/style/brand-resources.scss" as *;
 
 
 $transpAm: .95;
@@ -7,10 +8,10 @@ mat-card-subtitle {
 }
 
 .ins {
-  background-color: transparentize($color-cv-in, $transpAm);
+  background-color: color.adjust($color-cv-in, $alpha: -$transpAm);
   //border-radius: .5rem;
 }
 
 .outs {
-  background-color: transparentize($color-cv-out, $transpAm);
+  background-color: color.adjust($color-cv-out, $alpha: -$transpAm);
 }
