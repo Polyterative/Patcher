@@ -1,24 +1,21 @@
 <lib-clean-card>
   <div class="row gap1"
   >
-    <ng-container *ngIf="name; else noUser">
+    @if (name) {
       <!--            <div fxFlex='2rem'-->
       <!--                 fxLayoutAlign='top'-->
       <!--                 [ngStyle]='{"background-image": "url("+ backgroundImagePath + ")"}'-->
       <!--                 class='bg'-->
       <!--            >-->
       <!--                -->
-      <!--            </div>-->
-  
+        <!--            </div>-->
       <div fxLayout="column "
            fxFlex="grow"
            fxLayoutGap="1rem"
-  
       >
         <div fxLayout="row"
              fxFlex="100"
              fxLayoutGap="1rem"
-
         >
           <!--          <div fxFlex="100"-->
           <!--               style="font-size: 2rem; margin-right: 1rem"-->
@@ -31,19 +28,18 @@
             {{ name }}
           </div>
         </div>
-        <div fxFlex="100"
-             fxLayoutAlign="end"
-             *ngIf="!hideLogoff"
+        @if (!hideLogoff) {
+          <div fxFlex="100"
+               fxLayoutAlign="end"
         >
-          <button mat-stroked-button
-                  (click)="logoff$.emit()"
+            <button mat-stroked-button
+                    (click)="logoff$.emit()"
           >Logoff
-          </button>
-        </div>
+            </button>
+          </div>
+        }
       </div>
-    </ng-container>
-  
-    <ng-template #noUser>
+    } @else {
       <div class="col gap1"
       >
         <button mat-flat-button
@@ -56,8 +52,8 @@
                 (click)="signup$.emit()"
         >Sign up
         </button>
-
       </div>
-    </ng-template>
+    }
+  
   </div>
 </lib-clean-card>

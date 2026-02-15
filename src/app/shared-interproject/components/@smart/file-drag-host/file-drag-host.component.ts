@@ -1,49 +1,57 @@
-import { animate, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { merge, takeUntil } from 'rxjs';
+import {
+  animate,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  merge,
+  takeUntil
+} from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
 import { FileDragHostService } from './file-drag-host.service';
 
+
 @Component({
-  selector:        'lib-file-drag-host',
-  templateUrl:     './file-drag-host.component.html',
-  styleUrls:       ['./file-drag-host.component.scss'],
+  selector: 'lib-file-drag-host',
+  templateUrl: './file-drag-host.component.html',
+  styleUrls: ['./file-drag-host.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  animations: [
     trigger('fadeInOut', [
-      transition(':enter', [   // :enter is alias to 'void => *'
+      transition(':enter', [
         style({
           opacity: 0,
-          height:  0.01
+          height: 0.01
         }),
         animate('225ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
-        style(
-          {opacity: 1}
-        )
+        style({opacity: 1})
       ]),
-      transition(':leave', [   // :leave is alias to '* => void'
+      transition(':leave', [
         animate('225ms cubic-bezier(0.4, 0.0, 1, 1)'),
-        style(
-          {opacity: 0}
-        )
+        style({opacity: 0})
       ])
     ]),
-
     trigger('fadeIn', [
-      transition(':enter', [   // :enter is alias to 'void => *'
+      transition(':enter', [
         style({
           opacity: 0,
-          height:  0.01
+          height: 0.01
         }),
         animate('225ms 500ms cubic-bezier(0.0, 0.0, 0.2, 1)'),
-        style(
-          {opacity: 1}
-        )
+        style({opacity: 1})
       ])
     ])
-  ]
-  
+  ],
+  standalone: false
 })
 export class FileDragHostComponent extends SubManager implements OnInit {
   @Input()

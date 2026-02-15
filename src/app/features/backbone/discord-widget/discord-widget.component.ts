@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-  selector:        'app-discord-widget',
-  templateUrl:     './discord-widget.component.html',
-  styleUrls:       ['./discord-widget.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-discord-widget',
+  templateUrl: './discord-widget.component.html',
+  styleUrls: ['./discord-widget.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class DiscordWidgetComponent implements OnInit {
   

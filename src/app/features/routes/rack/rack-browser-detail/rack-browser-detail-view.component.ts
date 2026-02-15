@@ -33,8 +33,8 @@ import {
   templateUrl: './rack-browser-detail-view.component.html',
   styleUrls: ['./rack-browser-detail-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers:       [CommentsDataService]
-  
+  providers: [CommentsDataService],
+  standalone: false
 })
 export class RackBrowserDetailViewComponent implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {

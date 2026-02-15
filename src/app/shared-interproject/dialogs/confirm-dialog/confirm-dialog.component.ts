@@ -24,10 +24,11 @@ export interface ConfirmDialogDataOutModel {
 }
 
 @Component({
-  selector:        'lib-confirm-dialog',
-  templateUrl:     './confirm-dialog.component.html',
-  styleUrls:       ['./confirm-dialog.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'lib-confirm-dialog',
+  templateUrl: './confirm-dialog.component.html',
+  styleUrls: ['./confirm-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ConfirmDialogComponent extends DialogBase implements ConfirmDialogDataInModel {
 

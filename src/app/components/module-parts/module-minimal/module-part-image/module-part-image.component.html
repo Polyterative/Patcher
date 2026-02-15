@@ -2,43 +2,44 @@
      [routerLink]="['/modules/details',data.id]"
      class="clickable"
 >
-  <ng-container *ngIf="{
-  height:data.standard|getModuleHeightForStandard
-  } as bag"
-  >
-    <ng-container *ngIf="containImage"
-    >
-      <img *ngIf="filename"
-           class="img image-transition"
-           [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
-           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
-           [@enter]
-           loading="lazy"
-           [alt]="'Panel image for '+data.name"
-      >
-      
-      <lib-screen-wrapper *ngIf="!filename"
-                          class="img"
-                          [@enter]
-      >
-        <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
-             [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
-             class="preview img"
+  @if ({
+    height: data.standard|getModuleHeightForStandard
+  }; as bag) {
+    @if (containImage) {
+      @if (filename) {
+        <img
+          class="img image-transition"
+          [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
+          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+          [@enter]
+          loading="lazy"
+          [alt]="'Panel image for '+data.name"
         >
-        </div>
-      </lib-screen-wrapper>
-    </ng-container>
-    
-    
-    <ng-container *ngIf="!containImage">
-      <img *ngIf="filename"
-           [ngStyle]="{maxHeight:((bag.height)+'rem')}"
-           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
-           [@enter]
-           class="image-transition"
-           loading="lazy"
-           [alt]="'Panel image for '+data.name"
-      >
-    </ng-container>
-  </ng-container>
+      }
+      @if (!filename) {
+        <lib-screen-wrapper
+          class="img"
+          [@enter]
+        >
+          <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
+               [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
+               class="preview img"
+          >
+          </div>
+        </lib-screen-wrapper>
+      }
+    }
+    @if (!containImage) {
+      @if (filename) {
+        <img
+          [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+          [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
+          [@enter]
+          class="image-transition"
+          loading="lazy"
+          [alt]="'Panel image for '+data.name"
+        >
+      }
+    }
+  }
 </div>

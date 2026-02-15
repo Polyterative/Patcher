@@ -1,7 +1,6 @@
 <!--<lib-screen-wrapper-->
 <!--&gt;-->
-<ng-container *ngIf="title else content ">
-  
+@if (title) {
   <div fxFlex="100"
        fxLayout="column"
        fxLayoutGap=".5rem"
@@ -13,13 +12,8 @@
     >
       <mat-toolbar-row>{{title}}</mat-toolbar-row>
     </mat-toolbar>
-    
     <router-outlet></router-outlet>
   </div>
-
-</ng-container>
-
-<ng-template #content>
-    <router-outlet></router-outlet>
-  </ng-template>
-
+} @else {
+  <router-outlet></router-outlet>
+}

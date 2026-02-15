@@ -40,108 +40,101 @@
             </app-lib-showcase-grid>
           </lib-clean-card>
         </lib-hero-content-card>
-        
+
         <lib-hero-content-card
           class="grow"
           titleNormal="Data"
           >
-            <div class="col gap2">
-              
-              <lib-clean-card>
-                <div class="col gap1">
+          <div class="col gap2">
+            
+            <lib-clean-card>
+              <div class="col gap1">
+                <lib-mat-form-entity
+                  [dataPack]="dataService.formData.manufacturer"
+                  [disableVoidSelection]="true"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity
+                  [dataPack]="dataService.formData.name"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity
+                  [dataPack]="dataService.formData.description"
+                ></lib-mat-form-entity>
+                <lib-mat-form-entity
+                  [dataPack]="dataService.formData.manual"
+                ></lib-mat-form-entity>
+                <div class="col-md-row gap1">
                   <lib-mat-form-entity
-                    [dataPack]="dataService.formData.manufacturer"
+                    [dataPack]="dataService.formData.hp"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.standard"
                     [disableVoidSelection]="true"
                   ></lib-mat-form-entity>
                   <lib-mat-form-entity
-                    [dataPack]="dataService.formData.name"
+                    [dataPack]="dataService.formData.diy"
+                    [disableVoidSelection]="true"
                   ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.description"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.manual"
-                  ></lib-mat-form-entity>
-                  <div class="col-md-row gap1">
-                    <lib-mat-form-entity
-                      [dataPack]="dataService.formData.hp"
-                    ></lib-mat-form-entity>
-                    <lib-mat-form-entity
-                      [dataPack]="dataService.formData.standard"
-                      [disableVoidSelection]="true"
-                    ></lib-mat-form-entity>
-                    <lib-mat-form-entity
-                      [dataPack]="dataService.formData.diy"
-                      [disableVoidSelection]="true"
-                    ></lib-mat-form-entity>
-                  </div>
                 </div>
-              </lib-clean-card>
-              <div class="col center">
+              </div>
+            </lib-clean-card>
+            <div class="col center">
+              @if ((!!((userService.loggedUser$ | async)?.id))) {
                 <app-brand-primary-button
                   [disabled]="!dataService.formGroup.valid"
-                  *ngIf="(!!((userService.loggedUser$ | async)?.id)); else noUser"
                   (click$)="dataService.submitModuleForm$.next()"
                   class="align-end"
                   style="margin-top: 1rem; margin-bottom: 1rem"
                 >
                   Submit module
                 </app-brand-primary-button>
-              </div>
+              } @else {
+                <div
+                  class="col gap0"
+                  style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
+                >
+                  <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
+                    You need to be logged in to submit a module
+                  </mat-card-subtitle>
+                  <app-brand-primary-button routerLink="/auth/login" class="align-end">
+                    Login
+                  </app-brand-primary-button>
+                </div>
+              }
             </div>
-          </lib-hero-content-card>
+          </div>
+        </lib-hero-content-card>
         
         <lib-hero-content-card
-            titleNormal="Similar modules (name/manufacturer)"
-            description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
-            class="flex-grow"
+          titleNormal="Similar modules (name/manufacturer)"
+          description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
+          class="flex-grow"
           >
-            <lib-auto-update-loading-indicator
-              [data$]="dataService.similarModulesData$"
-              [updateData$]="dataService.updateModulesList$"
+          <lib-auto-update-loading-indicator
+            [data$]="dataService.similarModulesData$"
+            [updateData$]="dataService.updateModulesList$"
             >
-              <ng-container
-                *ngIf="(dataService.similarModulesData$ | async) as data"
-              >
+            @if ((dataService.similarModulesData$ | async); as data) {
+              @if (data.length > 0 &&
+              dataService.formData.name.control.value.length > 0) {
                 <app-module-list
                   class="flex-grow"
                   [data$]="dataService.similarModulesData$"
                   [showSearch]="false"
                   [viewConfig]="viewConfig"
-                  *ngIf="
-                    data.length > 0 &&
-                    dataService.formData.name.control.value.length > 0;
-                    else voidData
-                  "
                 ></app-module-list>
-              </ng-container>
-            </lib-auto-update-loading-indicator>
-          </lib-hero-content-card>
-        </div>
+              } @else {
+                <div class="pad">
+                  <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
+                    Nothing similar found in the database! You can submit it maybe?
+                  </mat-card-subtitle>
+                </div>
+              }
+            }
+          </lib-auto-update-loading-indicator>
+        </lib-hero-content-card>
+      </div>
     </div>
   </lib-hero-content-card>
 </div>
 
 <!-- Templates -->
-<ng-template #voidData>
-  <div class="pad">
-    <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
-      Nothing similar found in the database! You can submit it maybe?
-    </mat-card-subtitle>
-  </div>
-</ng-template>
-
-<ng-template #noUser>
-  <div
-    class="col gap0"
-    style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
-  >
-    <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
-      You need to be logged in to submit a module
-    </mat-card-subtitle>
-    
-    <app-brand-primary-button routerLink="/auth/login" class="align-end">
-      Login
-    </app-brand-primary-button>
-  </div>
-</ng-template>

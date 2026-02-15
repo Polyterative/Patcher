@@ -10,10 +10,11 @@ import { MatMenuTrigger } from "@angular/material/menu";
 
 
 @Component({
-  selector:        'app-general-context-menu',
-  templateUrl:     './general-context-menu.component.html',
-  styleUrls:       ['./general-context-menu.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-general-context-menu',
+  templateUrl: './general-context-menu.component.html',
+  styleUrls: ['./general-context-menu.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class GeneralContextMenuComponent extends SubManager implements OnInit {
   @ViewChild(MatMenuTrigger)

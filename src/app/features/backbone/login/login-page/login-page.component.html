@@ -3,11 +3,10 @@
     <lib-hero-content-card titleBig="Who are you again?"
                            style="padding-bottom: 32rem;">
       <div class="col gap1">
-        
+
         <!-- Normal Login Form -->
-        <ng-container *ngIf="!(dataService.showPasswordReset$ | async)">
+        @if (!(dataService.showPasswordReset$ | async)) {
           <app-login-email fxFlex="100"></app-login-email>
-          
           <!-- Action Links Section with improved spacing -->
           <div class="login-actions-section">
             <div class="action-link-wrapper signup-link"
@@ -17,11 +16,9 @@
                 Sign up instead?
               </mat-card-subtitle>
             </div>
-            
             <div class="action-divider">
               <span>or</span>
             </div>
-            
             <div class="action-link-wrapper reset-link"
                  (click)="dataService.togglePasswordReset$.next(true)">
               <mat-card-subtitle fxLayoutAlign="center"
@@ -30,10 +27,10 @@
               </mat-card-subtitle>
             </div>
           </div>
-        </ng-container>
+        }
         
         <!-- Password Reset Form -->
-        <ng-container *ngIf="dataService.showPasswordReset$ | async">
+        @if (dataService.showPasswordReset$ | async) {
           <div class="password-reset-container">
             <!-- Back button -->
             <div class="back-button-wrapper">
@@ -43,9 +40,8 @@
                 Back to login
               </mat-card-subtitle>
             </div>
-            
             <!-- Success state -->
-            <ng-container *ngIf="dataService.resetSuccessMessage$ | async as successMessage">
+            @if (dataService.resetSuccessMessage$ | async; as successMessage) {
               <div class="success-container">
                 <mat-icon class="state-icon success-icon">check_circle</mat-icon>
                 <h2>{{ SharedConstants.messages.passwordResetEmailSentTitle }}</h2>
@@ -54,14 +50,12 @@
                   Back to login
                 </app-brand-primary-button>
               </div>
-            </ng-container>
-            
+            }
             <!-- Reset form (shown when not successful) -->
-            <ng-container *ngIf="!(dataService.resetSuccessMessage$ | async)">
+            @if (!(dataService.resetSuccessMessage$ | async)) {
               <p class="reset-hint-text">
                 Enter your email address and we'll send you a link to reset your password.
               </p>
-              
               <lib-mat-form-entity
                 fxFlex="100"
                 [type]="dataService.fields.user.type"
@@ -70,13 +64,13 @@
                 formFieldAppearanceType="fill"
                 iconL1="email">
               </lib-mat-form-entity>
-              
-              <div *ngIf="dataService.resetErrorMessage$ | async as errorMessage"
-                   class="error-message error-notification">
-                <mat-icon>warning</mat-icon>
-                <p>{{ errorMessage }}</p>
-              </div>
-              
+              @if (dataService.resetErrorMessage$ | async; as errorMessage) {
+                <div
+                  class="error-message error-notification">
+                  <mat-icon>warning</mat-icon>
+                  <p>{{ errorMessage }}</p>
+                </div>
+              }
               <app-brand-primary-button
                 style="padding-top: 1rem"
                 [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
@@ -85,9 +79,9 @@
                 (click$)="dataService.requestPasswordReset$.next()">
                 {{ (dataService.isSubmittingReset$ | async) ? 'Sending...' : 'Send reset link' }}
               </app-brand-primary-button>
-            </ng-container>
+            }
           </div>
-        </ng-container>
+        }
       
       </div>
     </lib-hero-content-card>

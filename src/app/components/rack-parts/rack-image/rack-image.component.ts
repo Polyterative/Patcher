@@ -11,7 +11,7 @@ import { fadeInOnEnterAnimation } from 'angular-animations';
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { RouterLink } from "@angular/router";
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
-import { NgIf } from "@angular/common";
+
 import { Rack } from "src/app/models/rack";
 
 
@@ -20,12 +20,10 @@ import { Rack } from "src/app/models/rack";
   templateUrl: './rack-image.component.html',
   styleUrls: ['./rack-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     FlexLayoutModule,
     RouterLink,
-    ScreenWrapperModule,
-    NgIf
+    ScreenWrapperModule
   ],
   animations: [
     fadeInOnEnterAnimation({

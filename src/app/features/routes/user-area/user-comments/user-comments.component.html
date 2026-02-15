@@ -22,14 +22,13 @@
 <ng-template #content>
   <div class="col gap1"
   >
-    <ng-container *ngIf="{
-data:(dataService.commentsData$|async),
-} as bag"
-    >
+    @if ({
+      data: (dataService.commentsData$|async),
+    }; as bag) {
       <app-comments-item-block [data]="bag.data"
                                [viewConfig]="commentViewConfig"
       ></app-comments-item-block>
-    </ng-container>
+    }
   
   </div>
 </ng-template>

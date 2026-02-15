@@ -5,10 +5,7 @@ import {
 } from '@angular/core';
 import { DbComment } from "src/app/models/comment";
 import { MatCardSubtitle } from "@angular/material/card";
-import {
-  NgForOf,
-  NgIf
-} from "@angular/common";
+
 import {
   CommentsItemComponent,
   CommentViewConfig,
@@ -21,11 +18,8 @@ import {
   templateUrl: './comments-item-block.component.html',
   styleUrl: './comments-item-block.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     MatCardSubtitle,
-    NgIf,
-    NgForOf,
     CommentsItemComponent
   ]
 })

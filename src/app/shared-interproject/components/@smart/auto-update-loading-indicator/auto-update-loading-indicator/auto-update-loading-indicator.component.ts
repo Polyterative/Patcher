@@ -1,13 +1,30 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, merge, Observable, Subject } from 'rxjs';
-import { filter, mapTo, skip, takeUntil } from 'rxjs/operators';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import {
+  BehaviorSubject,
+  merge,
+  Observable,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  mapTo,
+  skip,
+  takeUntil
+} from 'rxjs/operators';
+
 
 @Component({
-  selector:        'lib-auto-update-loading-indicator',
-  templateUrl:     './auto-update-loading-indicator.component.html',
-  styleUrls:       ['./auto-update-loading-indicator.component.scss'],
+  selector: 'lib-auto-update-loading-indicator',
+  templateUrl: './auto-update-loading-indicator.component.html',
+  styleUrls: ['./auto-update-loading-indicator.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  
+  standalone: false
 })
 export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;

@@ -53,7 +53,8 @@ let URLReg = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';
   templateUrl: './module-editor.component.html',
   styleUrls: ['./module-editor.component.scss'],
   providers: [FileDragHostService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleEditorComponent implements OnInit, OnDestroy {
   

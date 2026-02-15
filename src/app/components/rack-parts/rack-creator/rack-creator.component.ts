@@ -44,7 +44,8 @@ export interface RackCreatorInModel {
   selector: 'app-rack-creator',
   templateUrl: './rack-creator.component.html',
   styleUrls: ['./rack-creator.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackCreatorComponent implements OnInit {
   readonly save$ = new Subject<void>();

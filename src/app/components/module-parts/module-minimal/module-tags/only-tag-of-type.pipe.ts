@@ -1,8 +1,16 @@
-import { Pipe, PipeTransform } from '@angular/core';
-import { Tag, TagType } from 'src/app/models/tag';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
+import {
+  Tag,
+  TagType
+} from 'src/app/models/tag';
+
 
 @Pipe({
-  name: 'onlyTagOfType'
+  name: 'onlyTagOfType',
+  standalone: false
 })
 export class OnlyTagOfTypePipe implements PipeTransform {
   

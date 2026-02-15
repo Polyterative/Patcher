@@ -1,37 +1,39 @@
 <div class="col gap0"
 >
-  <div class="col gap0 outs"
-       *ngIf="outs.length>0"
-  >
-    <mat-card-subtitle>
-      {{outs.length}} OUTs ↗
-    </mat-card-subtitle>
-    <mat-chip-listbox>
-      <ng-container *ngFor="let item of outs; let i = index">
-        <app-module-cvitem [data]="item"
-                           kind="out"
-                           (click$)="outClick$.next([$event,data])"
-                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                           [@leave]="{ value: '', params: { delay:  0 }}"
-        ></app-module-cvitem>
-      </ng-container>
-    </mat-chip-listbox>
-  </div>
-  <div class="col gap0 ins"
-       *ngIf="ins.length>0"
-  >
-    <mat-card-subtitle>
-      {{ins.length}} INs ↘
-    </mat-card-subtitle>
-    <mat-chip-listbox>
-      <ng-container *ngFor="let item of ins; let i = index">
-        <app-module-cvitem [data]="item"
-                           kind="in"
-                           (click$)="inClick$.next([$event,data])"
-                           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                           [@leave]="{ value: '', params: { delay:  5 }}"
-        ></app-module-cvitem>
-      </ng-container>
-    </mat-chip-listbox>
-  </div>
+  @if (outs.length > 0) {
+    <div class="col gap0 outs"
+    >
+      <mat-card-subtitle>
+        {{ outs.length }} OUTs ↗
+      </mat-card-subtitle>
+      <mat-chip-listbox>
+        @for (item of outs; track item; let i = $index) {
+          <app-module-cvitem [data]="item"
+                             kind="out"
+                             (click$)="outClick$.next([$event,data])"
+                             [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                             [@leave]="{ value: '', params: { delay:  0 }}"
+          ></app-module-cvitem>
+        }
+      </mat-chip-listbox>
+    </div>
+  }
+  @if (ins.length > 0) {
+    <div class="col gap0 ins"
+    >
+      <mat-card-subtitle>
+        {{ ins.length }} INs ↘
+      </mat-card-subtitle>
+      <mat-chip-listbox>
+        @for (item of ins; track item; let i = $index) {
+          <app-module-cvitem [data]="item"
+                             kind="in"
+                             (click$)="inClick$.next([$event,data])"
+                             [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                             [@leave]="{ value: '', params: { delay:  5 }}"
+          ></app-module-cvitem>
+        }
+      </mat-chip-listbox>
+    </div>
+  }
 </div>

@@ -1,14 +1,24 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+
 
 /**
  *  SMART COMPONENT
  */
 @Component({
-  selector:        'app-empty-state',
-  templateUrl:     './empty-state.component.html',
-  styleUrls:       ['./empty-state.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-empty-state',
+  templateUrl: './empty-state.component.html',
+  styleUrls: ['./empty-state.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class EmptyStateComponent implements OnInit {
   @Input()

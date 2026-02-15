@@ -31,10 +31,11 @@ interface FormCV {
 }
 
 @Component({
-  selector:        'app-patch-editor',
-  templateUrl:     './patch-editor.component.html',
-  styleUrls:       ['./patch-editor.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-patch-editor',
+  templateUrl: './patch-editor.component.html',
+  styleUrls: ['./patch-editor.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;

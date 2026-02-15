@@ -16,7 +16,8 @@ import {
   selector: 'lib-countdown-progress',
   templateUrl: './countdown-progress.component.html',
   styleUrls: ['./countdown-progress.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class CountdownProgressComponent implements OnDestroy {
   /**

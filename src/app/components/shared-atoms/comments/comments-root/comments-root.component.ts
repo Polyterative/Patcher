@@ -9,17 +9,18 @@ import { UserManagementService } from "src/app/features/backbone/login/user-mana
 
 
 @Component({
-  selector:        'app-comments-root',
-  templateUrl:     './comments-root.component.html',
-  styleUrls:       ['./comments-root.component.scss'],
+  selector: 'app-comments-root',
+  templateUrl: './comments-root.component.html',
+  styleUrls: ['./comments-root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        725,
+      anchor: 'enter',
+      duration: 725,
       animateChildren: 'after'
     })
-  ]
+  ],
+  standalone: false
 })
 export class CommentsRootComponent {
   
