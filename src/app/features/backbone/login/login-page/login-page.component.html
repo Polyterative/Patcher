@@ -10,9 +10,9 @@
           
           <!-- Action Links Section with improved spacing -->
           <div class="login-actions-section">
-            <div class="action-link-wrapper signup-link">
+            <div class="action-link-wrapper signup-link"
+                 routerLink="/auth/signup">
               <mat-card-subtitle fxLayoutAlign="center"
-                                 routerLink="/auth/signup"
                                  class="action-link">
                 Sign up instead?
               </mat-card-subtitle>
@@ -22,10 +22,10 @@
               <span>or</span>
             </div>
             
-            <div class="action-link-wrapper reset-link">
+            <div class="action-link-wrapper reset-link"
+                 (click)="dataService.togglePasswordReset$.next(true)">
               <mat-card-subtitle fxLayoutAlign="center"
-                                 class="action-link"
-                                 (click)="dataService.togglePasswordReset$.next(true)">
+                                 class="action-link">
                 Forgot your password?
               </mat-card-subtitle>
             </div>
