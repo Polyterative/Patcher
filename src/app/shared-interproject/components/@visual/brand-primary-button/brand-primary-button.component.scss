@@ -1,5 +1,6 @@
-@import "src/app/style/brand-resources";
-@import "src/app/style/commons_customizations";
+@use "sass:color";
+@use "src/app/style/brand-resources" as *;
+@use "src/app/style/commons_customizations";
 
 .brand-button {
   @extend .slight-rounding;
@@ -84,7 +85,7 @@
 
 
   &.disabled {
-    background-color: lighten($brand-secondary, 20%);
+    background-color: color.adjust($brand-secondary, $lightness: 20%);
     color: rgba(255, 255, 255, 0.81);
     //border: 0.2rem solid rgba(4, 30, 80, 0);
     //border:           0.2rem solid $brand-secondary;

@@ -1,4 +1,4 @@
-﻿import { BrandPrimaryButtonTheme } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component";
+import { BrandPrimaryButtonTheme } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component";
 
 
 export interface DialogLabelDefinition {

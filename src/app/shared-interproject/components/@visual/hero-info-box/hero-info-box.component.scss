@@ -1,6 +1,7 @@
+@use "sass:color";
 
 .container {
-  border-color:      transparentize(#768597, 0.75);
+  border-color: color.adjust(#768597, $alpha: -0.75);
   padding:           0.5rem;
   border-top-width:  0.5rem;
   //border-right-width:  0.5rem;
@@ -15,7 +16,7 @@
 
 .text {
   word-break: break-word;
-  color:      transparentize(#768597, 0.2);
+  color: color.adjust(#768597, $alpha: -0.2);
   //font-size: 0.75rem
 }
 
