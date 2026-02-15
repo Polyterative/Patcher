@@ -20,10 +20,11 @@ import {
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
+import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 
 
 @Injectable()
-export class UserSignupDataService {
+export class UserSignupDataService extends SubManager {
   updateData$ = new Subject<void>();
   
   // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
@@ -82,6 +83,7 @@ export class UserSignupDataService {
     public loginInteraction: UserManagementService,
     snackBar: MatSnackBar
   ) {
+    super();
     
     // this.mailLoginClick$
     //     .pipe(switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)))
@@ -112,14 +114,14 @@ export class UserSignupDataService {
           }
         }),
         filter(x => !!x),
-        takeUntil(this.destroyEvent$)
+        takeUntil(this.destroy$)
       )
       .subscribe(x => this.router.navigate(['/user/area']));
     
     // this.googleSignClick$
     //     .pipe(
     //       switchMap(x => this.loginInteraction.signupGoogle()),
-    //       takeUntil(this.destroyEvent$)
+    //       takeUntil(this.destroy$)
     //     )
     //     .subscribe(x => {
     //       if (!!x.error) {
@@ -129,14 +131,6 @@ export class UserSignupDataService {
     //       }
     //
     //     });
-    
-  }
-  
-  protected destroyEvent$ = new Subject<void>();
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
     
   }
 }

@@ -6,6 +6,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { UserSignupDataService } from './user-signup-data.service';
 import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
+import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 
 
 @Component({
@@ -15,7 +16,7 @@ import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.serv
   providers:       [UserSignupDataService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SignupPageComponent implements OnInit {
+export class SignupPageComponent extends SubManager implements OnInit {
   
   constructor(
     public activated: ActivatedRoute,
@@ -23,6 +24,7 @@ export class SignupPageComponent implements OnInit {
     readonly seoAndUtilsService: SeoAndUtilsService
   
   ) {
+    super();
     this.seoAndUtilsService.updateSeo({}, 'Signup');
   }
   
