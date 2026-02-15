@@ -8,7 +8,7 @@ import {
   ActivatedRoute,
   Router
 } from '@angular/router';
-import { SeoSocialShareData } from 'ngx-seo';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { Subject } from 'rxjs';
 import {
   filter,

@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { SeoSocialShareService } from 'ngx-seo';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
+import {
+  Meta,
+  Title
+} from '@angular/platform-browser';
+
 
 @Component({
   selector:        'app-not-found',
@@ -9,14 +17,16 @@ import { SeoSocialShareService } from 'ngx-seo';
 })
 export class NotFoundComponent implements OnInit {
   
-  constructor(private readonly seoSocialShareService: SeoSocialShareService
+  constructor(
+    private readonly meta: Meta,
+    private readonly title: Title
   ) { }
   
   ngOnInit(): void {
-    this.seoSocialShareService.setData({
-      title:       '404 - Not Found',
-      description: '404 - Not Found'
-    });
+    this.title.setTitle('404 - Not Found | patcher.xyz');
+    this.meta.updateTag({name: 'description', content: '404 - Not Found'});
+    this.meta.updateTag({property: 'og:title', content: '404 - Not Found | patcher.xyz'});
+    this.meta.updateTag({property: 'og:description', content: '404 - Not Found'});
   }
   
 }
