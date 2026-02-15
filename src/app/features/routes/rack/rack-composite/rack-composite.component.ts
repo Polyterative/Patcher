@@ -8,10 +8,11 @@ import { Rack } from 'src/app/models/rack';
 
 
 @Component({
-  selector:        'app-rack-composite',
-  templateUrl:     './rack-composite.component.html',
-  styleUrls:       ['./rack-composite.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-rack-composite',
+  templateUrl: './rack-composite.component.html',
+  styleUrls: ['./rack-composite.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackCompositeComponent implements OnInit {
   @Input() data: Rack;

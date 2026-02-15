@@ -18,9 +18,10 @@ export interface ReadOnlyDialogDataOutModel {
 }
 
 @Component({
-  selector:        'lib-read-only-dialog',
-  templateUrl:     './read-only-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'lib-read-only-dialog',
+  templateUrl: './read-only-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ReadOnlyDialogComponent extends DialogBase {
 

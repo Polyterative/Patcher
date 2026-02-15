@@ -15,10 +15,11 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 @Component({
-  selector:        'app-user-management',
-  templateUrl:     './user-management.component.html',
-  styleUrls:       ['./user-management.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-management',
+  templateUrl: './user-management.component.html',
+  styleUrls: ['./user-management.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;

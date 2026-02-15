@@ -1,12 +1,14 @@
 <div class="rowwrap gap1 grow">
-  <app-label-value-showcase *ngFor="let item of data$ | async"
-                            class="label-value-showcase"
-                            [style]="{ flex: '1 1 '+item.size, }"
-                            [label]="item.label"
-                            [icon]="item.icon"
-                            [matBadge]="item.badge?item.badge:undefined"
-                            matBadgeDescription="test"
-  >
-    {{ item.value }}
-  </app-label-value-showcase>
+  @for (item of data$ | async; track item) {
+    <app-label-value-showcase
+      class="label-value-showcase"
+      [style]="{ flex: '1 1 '+item.size, }"
+      [label]="item.label"
+      [icon]="item.icon"
+      [matBadge]="item.badge?item.badge:undefined"
+      matBadgeDescription="test"
+    >
+      {{ item.value }}
+    </app-label-value-showcase>
+  }
 </div>

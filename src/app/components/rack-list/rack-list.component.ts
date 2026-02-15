@@ -24,22 +24,23 @@ import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-
 
 
 @Component({
-  selector:        'app-rack-list',
-  templateUrl:     './rack-list.component.html',
-  styleUrls:       ['./rack-list.component.scss'],
-  animations:      [
+  selector: 'app-rack-list',
+  templateUrl: './rack-list.component.html',
+  styleUrls: ['./rack-list.component.scss'],
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        225,
+      anchor: 'enter',
+      duration: 225,
       animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
-      anchor:   'leave',
+      anchor: 'leave',
       duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders:   [LocalDataFilterService]
+  viewProviders: [LocalDataFilterService],
+  standalone: false
 })
 export class RackListComponent extends SubManager implements OnInit {
   @Input()

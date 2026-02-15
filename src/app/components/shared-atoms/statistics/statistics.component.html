@@ -1,12 +1,16 @@
-<div *ngIf="statistics&&statistics.length>0">
-  <div class="row wrap gap2"
-  >
-    <div *ngFor="let statistic of statistics">
-      <div style="min-width: 8rem">
-        <app-label-value-showcase [label]="statistic.name">
-          {{ statistic.value }}
-        </app-label-value-showcase>
-      </div>
+@if (statistics && statistics.length > 0) {
+  <div>
+    <div class="row wrap gap2"
+    >
+      @for (statistic of statistics; track statistic) {
+        <div>
+          <div style="min-width: 8rem">
+            <app-label-value-showcase [label]="statistic.name">
+              {{ statistic.value }}
+            </app-label-value-showcase>
+          </div>
+        </div>
+      }
     </div>
   </div>
-</div>
+}

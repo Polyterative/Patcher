@@ -47,14 +47,15 @@ export interface RackModuleAdderInModel {
 }
 
 @Component({
-  selector:        'app-rack-module-adder',
+  selector: 'app-rack-module-adder',
   templateUrl: './rack-module-adder-dialog.component.html',
-  styleUrls:   ['./rack-module-adder-dialog.component.scss'],
+  styleUrls: ['./rack-module-adder-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers:       [
+  providers: [
     UserAreaDataService,
     TimeagoPipe
-  ]
+  ],
+  standalone: false
 })
 export class RackModuleAdderDialogComponent extends SubManager implements OnInit {
   readonly saveRackedModule$ = new Subject<void>();

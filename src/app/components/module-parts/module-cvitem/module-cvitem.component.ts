@@ -1,15 +1,30 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
+import {
+  BehaviorSubject,
+  Subject
+} from 'rxjs';
+import {
+  map,
+  takeUntil
+} from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { CV } from 'src/app/models/cv';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
+
 @Component({
-  selector:        'app-module-cvitem',
-  templateUrl:     './module-cvitem.component.html',
-  styleUrls:       ['./module-cvitem.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-cvitem',
+  templateUrl: './module-cvitem.component.html',
+  styleUrls: ['./module-cvitem.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleCVItemComponent implements OnInit {
   @Input() readonly data: CV;

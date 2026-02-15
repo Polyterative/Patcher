@@ -12,8 +12,7 @@ import { UserManagementService } from "src/app/features/backbone/login/user-mana
 import { DomSanitizer } from "@angular/platform-browser";
 import {
   AsyncPipe,
-  DatePipe,
-  NgIf
+  DatePipe
 } from "@angular/common";
 import { TimeagoModule } from "ngx-timeago";
 import { MatIcon } from "@angular/material/icon";
@@ -35,7 +34,6 @@ export const defaultCommentViewConfig: CommentViewConfig = {
   selector: 'app-comments-item',
   templateUrl: './comments-item.component.html',
   styleUrls: ['./comments-item.component.scss'],
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
@@ -45,7 +43,6 @@ export const defaultCommentViewConfig: CommentViewConfig = {
     CleanCardModule,
     MatTooltip,
     MatIconButton,
-    NgIf,
     CommentContextComponent
   ],
   encapsulation: ViewEncapsulation.None

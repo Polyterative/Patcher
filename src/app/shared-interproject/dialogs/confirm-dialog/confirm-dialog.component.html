@@ -1,27 +1,33 @@
 ﻿<h1 mat-dialog-title>{{ title }}</h1>
-<mat-dialog-content *ngIf="description">
-  {{ description }}
-</mat-dialog-content>
+@if (description) {
+  <mat-dialog-content>
+    {{ description }}
+  </mat-dialog-content>
+}
 
 <mat-dialog-actions>
   <div class="row gap2 auto-left"
   >
-    <app-brand-primary-button *ngIf="data.negative"
-                              (click$)="dialogRef.close({answer:false})"
-                              [disabled]="negative&&negative.disabled?negative.disabled:false"
-                              [theme]="negative?.theme?negative.theme:'negative'"
-                              autoFocus="true"
-    >
-      {{ negative && negative.label ? negative.label : "No" }}
-    </app-brand-primary-button>
-    <app-brand-primary-button *ngIf="data.positive"
-                              (click$)="dialogRef.close({answer:true})"
-                              [disabled]="positive&&positive.disabled?positive.disabled:false"
-                              [theme]="positive?.theme?positive.theme:'positive'"
-                              theme="positive"
-                              autoFocus="false"
-    >
-      {{ positive && positive.label ? positive.label : "Yes" }}
-    </app-brand-primary-button>
+    @if (data.negative) {
+      <app-brand-primary-button
+        (click$)="dialogRef.close({answer:false})"
+        [disabled]="negative&&negative.disabled?negative.disabled:false"
+        [theme]="negative?.theme?negative.theme:'negative'"
+        autoFocus="true"
+      >
+        {{ negative && negative.label ? negative.label : "No" }}
+      </app-brand-primary-button>
+    }
+    @if (data.positive) {
+      <app-brand-primary-button
+        (click$)="dialogRef.close({answer:true})"
+        [disabled]="positive&&positive.disabled?positive.disabled:false"
+        [theme]="positive?.theme?positive.theme:'positive'"
+        theme="positive"
+        autoFocus="false"
+      >
+        {{ positive && positive.label ? positive.label : "Yes" }}
+      </app-brand-primary-button>
+    }
   </div>
 </mat-dialog-actions>

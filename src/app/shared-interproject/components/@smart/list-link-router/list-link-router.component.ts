@@ -1,13 +1,25 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit } from '@angular/core';
-import { CardLink, CardLinkDataModel, cleanCardlinkModelObject } from './clickable-list-card-base';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+import {
+  CardLink,
+  CardLinkDataModel,
+  cleanCardlinkModelObject
+} from './clickable-list-card-base';
+
 
 /**
  *  SMART COMPONENT
  */
 @Component({
-  selector:        'app-list-link-router',
-  templateUrl:     './list-link-router.component.html',
-  styleUrls:       ['./list-link-router.component.scss'],
+  selector: 'app-list-link-router',
+  templateUrl: './list-link-router.component.html',
+  styleUrls: ['./list-link-router.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
   // animations:      [
   //   trigger('list', [
@@ -25,6 +37,8 @@ import { CardLink, CardLinkDataModel, cleanCardlinkModelObject } from './clickab
   //     ])
   //   ])
   // ]
+  ,
+  standalone: false
 })
 export class ListLinkRouterComponent implements OnInit, OnDestroy {
   @Input()

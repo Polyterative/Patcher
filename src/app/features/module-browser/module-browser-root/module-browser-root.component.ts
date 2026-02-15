@@ -19,10 +19,11 @@ import { ActivatedRoute } from "@angular/router";
 
 
 @Component({
-  selector:        'app-module-browser-root',
-  templateUrl:     './module-browser-root.component.html',
-  styleUrls:       ['./module-browser-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-browser-root',
+  templateUrl: './module-browser-root.component.html',
+  styleUrls: ['./module-browser-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;

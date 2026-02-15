@@ -1,28 +1,31 @@
 <lib-clean-card class=" parent">
   <div class="comment-content">
-    
+
     <div class="comment-header">
       <div class="username">{{ data.profile.username }}</div>
       <div class="timestamp"
            [matTooltip]="data.updated | date:'medium'"
       >{{ data.updated | timeago }}
       </div>
-      <div class="delete"
-           *ngIf="data.profile.id === (userService.loggedUser$|async)?.id&&isDeletable"
-      >
-        <button mat-icon-button (click)="dataService.deleteComment$.next(data.id)">
-          <mat-icon class="opacizeOnHover"
-          >delete
-          </mat-icon>
-        </button>
-      </div>
+      @if (data.profile.id === (userService.loggedUser$|async)?.id && isDeletable) {
+        <div class="delete"
+        >
+          <button mat-icon-button (click)="dataService.deleteComment$.next(data.id)">
+            <mat-icon class="opacizeOnHover"
+            >delete
+            </mat-icon>
+          </button>
+        </div>
+      }
     </div>
     <!--    <p class="comment-text">{{ data.content }}</p>-->
 
     <div class="comment-text" [innerHTML]="makeURLsClickable(data.content)"></div>
     
-    <app-comment-context *ngIf="viewConfig.showContext"
-      [data]="data"
-    ></app-comment-context>
+    @if (viewConfig.showContext) {
+      <app-comment-context
+        [data]="data"
+      ></app-comment-context>
+    }
   </div>
 </lib-clean-card>

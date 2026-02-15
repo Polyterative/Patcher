@@ -1,13 +1,21 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output
+} from '@angular/core';
+
 
 /**
  *  UI ONLY COMPONENT
  */
 @Component({
-  selector:        'app-user-avatar',
-  templateUrl:     './user-avatar.component.html',
-  styleUrls:       ['./user-avatar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-avatar',
+  templateUrl: './user-avatar.component.html',
+  styleUrls: ['./user-avatar.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserAvatarComponent {
   @Output()

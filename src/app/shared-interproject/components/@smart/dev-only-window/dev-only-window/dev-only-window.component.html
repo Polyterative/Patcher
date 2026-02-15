@@ -1,6 +1,6 @@
-<ng-container *ngIf="show">
-    <pre style="max-width: 80px">
-        <ng-content>
-        </ng-content>
-    </pre>
-</ng-container>
+@if (show) {
+  <pre style="max-width: 80px">
+    <ng-content>
+    </ng-content>
+  </pre>
+}

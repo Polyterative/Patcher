@@ -22,7 +22,8 @@ export type BrandPrimaryButtonTheme =
   templateUrl: './brand-primary-button.component.html',
   styleUrls: ['./brand-primary-button.component.scss'],
   // encapsulation:   ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class BrandPrimaryButtonComponent {
   @Input() disabled = false;

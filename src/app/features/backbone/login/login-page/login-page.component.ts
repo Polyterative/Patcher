@@ -20,10 +20,11 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 
 
 @Component({
-  selector:        'app-login-page',
-  templateUrl:     './login-page.component.html',
-  styleUrls:       ['./login-page.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-login-page',
+  templateUrl: './login-page.component.html',
+  styleUrls: ['./login-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class LoginPageComponent extends SubManager implements OnInit {
 

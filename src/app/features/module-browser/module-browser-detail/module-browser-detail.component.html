@@ -1,11 +1,10 @@
-<ng-container *ngIf="{
-data:(dataService.singleModuleData$|async),
-racksWithThisModule:(dataService.racksWithThisModule$|async),
-patchesWithThisModule:(dataService.patchesWithThisModule$|async),
-modulesBySameManufacturer:(dataService.modulesBySameManufacturer$|async),
-user:(userManagementService.loggedUser$|async)
-} as bag"
->
+@if ({
+  data: (dataService.singleModuleData$|async),
+  racksWithThisModule: (dataService.racksWithThisModule$|async),
+  patchesWithThisModule: (dataService.patchesWithThisModule$|async),
+  modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
+  user: (userManagementService.loggedUser$|async)
+}; as bag) {
   <div class="col gap1"
   >
     <lib-hero-content-card class="modulesBG"
@@ -17,195 +16,198 @@ user:(userManagementService.loggedUser$|async)
         >
           <div class="col gap2 ">
             <lib-clean-card>
-              
-              <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
-                                                  [loadingLines]="5"
-                                                  [skipFirstData]="true"
-              >
-              </lib-auto-content-loading-indicator>
-              
-              
-              <ng-template #data>
+              @if (bag.data == null) {
+                <lib-auto-content-loading-indicator
+                  [loadingLines]="5"
+                  [skipFirstData]="true"
+                >
+                </lib-auto-content-loading-indicator>
+              } @else {
                 <app-module-composite [data]="(bag.data)"
                                       [viewConfig]="viewConfig"
                                       style="margin: 10rem"
                 ></app-module-composite>
-              </ng-template>
-            
+              }
             </lib-clean-card>
           </div>
-          
           <app-comments-root></app-comments-root>
-        
-        
         </lib-screen-wrapper>
-        
         <div class="col gap2 fixed-width32">
-          
-          <lib-hero-content-card *ngIf="bag.data"
-                                 titleNormal="Data"
-                                 [sidesPadding]="false"
-          >
-            
-            <div class="col gap1" *ngIf="bag.data">
-              <!-- Information Card -->
-              <lib-clean-card [@enter]>
+          @if (bag.data) {
+            <lib-hero-content-card
+              titleNormal="Data"
+              [sidesPadding]="false"
+            >
+              @if (bag.data) {
                 <div class="col gap1">
-                  <mat-card-title>Information</mat-card-title>
+                  <!-- Information Card -->
+                  <lib-clean-card [@enter]>
+                    <div class="col gap1">
+                      <mat-card-title>Information</mat-card-title>
                   <app-lib-showcase-grid [data]="[
         { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'business', size: 'auto' },
         { label: 'Standard', value: bag.data.standard.name, icon: 'verified',  },
         { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module',  }
       ]">
                   </app-lib-showcase-grid>
-                </div>
-              </lib-clean-card>
-              
-              <!-- Physical Characteristics Card -->
-              <lib-clean-card [@enter]>
-                <div class="col gap1">
-                  <mat-card-title>Physical Characteristics</mat-card-title>
+                    </div>
+                  </lib-clean-card>
+                  <!-- Physical Characteristics Card -->
+                  <lib-clean-card [@enter]>
+                    <div class="col gap1">
+                      <mat-card-title>Physical Characteristics</mat-card-title>
                   <app-lib-showcase-grid [data]="[
         { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
         { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'vertical_align_bottom', size: 'auto', hidden: !bag.data.depth },
         { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
       ]">
                   </app-lib-showcase-grid>
-                </div>
-              </lib-clean-card>
-              
-              <!-- Power Consumption Card -->
-              <lib-clean-card [@enter] *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5">
-                <div class="col gap1">
-                  <mat-card-title>Power Consumption</mat-card-title>
-                  <app-lib-showcase-grid
-                    *ngIf="bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5"
+                    </div>
+                  </lib-clean-card>
+                  <!-- Power Consumption Card -->
+                  @if (bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5) {
+                    <lib-clean-card [@enter]>
+                      <div class="col gap1">
+                        <mat-card-title>Power Consumption</mat-card-title>
+                        @if (bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5) {
+                          <app-lib-showcase-grid
                     [data]="[
           { label: '+12V', value: bag.data.powerPos12!==null?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
           { label: '-12V', value: bag.data.powerNeg12!==null?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
           { label: '+5V', value: bag.data.powerPos5!==null?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
         ]">
-                  </app-lib-showcase-grid>
-                </div>
-              </lib-clean-card>
-              
-              <!-- Connectivity Card -->
-              <lib-clean-card [@enter] *ngIf="(bag.data.outs.length + bag.data.ins.length) > 0">
-                <div class="col gap1">
-                  <mat-card-title>Connectivity</mat-card-title>
-                  <app-lib-showcase-grid
-                    *ngIf="(bag.data.outs.length + bag.data.ins.length) > 0"
+                          </app-lib-showcase-grid>
+                        }
+                      </div>
+                    </lib-clean-card>
+                  }
+                  <!-- Connectivity Card -->
+                  @if ((bag.data.outs.length + bag.data.ins.length) > 0) {
+                    <lib-clean-card [@enter]>
+                      <div class="col gap1">
+                        <mat-card-title>Connectivity</mat-card-title>
+                        @if ((bag.data.outs.length + bag.data.ins.length) > 0) {
+                          <app-lib-showcase-grid
                     [data]="[
           { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0, size: 'auto' },
           { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
           { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
           { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
         ]">
-                  </app-lib-showcase-grid>
-                </div>
-              </lib-clean-card>
-              
-              <!-- Status Card -->
-              <lib-clean-card [@enter]>
-                <div class="col gap1">
-                  <mat-card-title>Status</mat-card-title>
+                          </app-lib-showcase-grid>
+                        }
+                      </div>
+                    </lib-clean-card>
+                  }
+                  <!-- Status Card -->
+                  <lib-clean-card [@enter]>
+                    <div class="col gap1">
+                      <mat-card-title>Status</mat-card-title>
                   <app-lib-showcase-grid [data]="[
         { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done', size: 'auto' },
         { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up', size: 'auto' }
       ]">
                   </app-lib-showcase-grid>
-                </div>
-              </lib-clean-card>
-              <div class="col gap1"
-                   *ngIf="bag.data"
-              >
-                <div class="row gap1">
-                  <!--              each 50%w -->
-                  <button mat-flat-button
+                    </div>
+                  </lib-clean-card>
+                  @if (bag.data) {
+                    <div class="col gap1"
+                    >
+                      <div class="row gap1">
+                        <!--              each 50%w -->
+                        <button mat-flat-button
                           style="width: 50%"
                           (click)="submitSimilar(bag.data)"
                           [disabled]="!bag.user"
                           [matTooltip]="bag.user?'':'Please log in to submit a module'"
-                  >
-                    <mat-icon>upload</mat-icon>
-                    Submit similar module
-                  </button>
-                  <ng-container *ngIf="!bag.data.isComplete">
-                    <button mat-flat-button color="primary"
-                            style="width: 50%"
-                            [disabled]="!bag.user"
-                            *ngIf="bag.data
-                              &&(dataService.moduleEditingPanelOpenState$|async)===false"
-                            (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-                    >
-                      <mat-icon>edit</mat-icon>
-                      Open editor
-                    </button>
-                    <button mat-flat-button color="primary"
-                            style="width: 50%"
-                            [disabled]="!bag.user"
-                            *ngIf="bag.data
-                              &&(dataService.moduleEditingPanelOpenState$|async)===true"
-                            (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
-                    >
-                      <mat-icon>close</mat-icon>
-                      Close editor
-                    </button>
-                  </ng-container>
-                  
-                  <button mat-flat-button
-                          *ngIf="bag.data&&bag.data.isComplete&&bag.data.manualURL"
-                          style="width: 50%"
-                          (click)="openManual(bag.data)"
-                  >
-                    <mat-icon>menu_book</mat-icon>
-                    Open manual
-                  </button>
+                        >
+                          <mat-icon>upload</mat-icon>
+                          Submit similar module
+                        </button>
+                        @if (!bag.data.isComplete) {
+                          @if (bag.data
+                          && (dataService.moduleEditingPanelOpenState$|async) === false) {
+                            <button mat-flat-button color="primary"
+                                    style="width: 50%"
+                                    [disabled]="!bag.user"
+                                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                            >
+                              <mat-icon>edit</mat-icon>
+                              Open editor
+                            </button>
+                          }
+                          @if (bag.data
+                          && (dataService.moduleEditingPanelOpenState$|async) === true) {
+                            <button mat-flat-button color="primary"
+                                    style="width: 50%"
+                                    [disabled]="!bag.user"
+                                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                            >
+                              <mat-icon>close</mat-icon>
+                              Close editor
+                            </button>
+                          }
+                        }
+                        @if (bag.data && bag.data.isComplete && bag.data.manualURL) {
+                          <button mat-flat-button
+                                  style="width: 50%"
+                                  (click)="openManual(bag.data)"
+                          >
+                            <mat-icon>menu_book</mat-icon>
+                            Open manual
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
                 </div>
-              
-              
+              }
+            </lib-hero-content-card>
+          }
+          @if (bag.data) {
+            <lib-hero-content-card titleNormal="Search on" [sidesPadding]="false">
+              <div class="rowwrap gap1">
+                @for (link of searchLinks; track link) {
+                  <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
+                     rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
+                    <button mat-flat-button>
+                      @if (link.icon) {
+                        <mat-icon>{{ link.icon }}</mat-icon>
+                      }
+                      <span>{{ link.label }}</span>
+                    </button>
+                  </a>
+                }
               </div>
-            </div>
-          
-          </lib-hero-content-card>
-          <lib-hero-content-card titleNormal="Search on" *ngIf="bag.data" [sidesPadding]="false">
-            <div class="rowwrap gap1">
-              <ng-container *ngFor="let link of searchLinks">
-                <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
-                   rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
-                  <button mat-flat-button>
-                    <mat-icon *ngIf="link.icon">{{ link.icon }}</mat-icon>
-                    <span>{{ link.label }}</span>
+            </lib-hero-content-card>
+          }
+          @if (appState.isDev && bag.data && bag.user) {
+            <lib-hero-content-card titleNormal="Dev utils"
+                                   [sidesPadding]="false">
+              <div class="rowwrap gap2">
+                @if (bag.data.isComplete === false) {
+                  <button mat-flat-button color="warn"
+                          (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
                   </button>
-                </a>
-              </ng-container>
-            </div>
-          </lib-hero-content-card>
-          
-          <lib-hero-content-card titleNormal="Dev utils" *ngIf="appState.isDev&&bag.data&&bag.user"
-                                 [sidesPadding]="false">
-            <div class="rowwrap gap2">
-              <button mat-flat-button color="warn"
-                      *ngIf="bag.data.isComplete===false"
-                      (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
-              </button>
-              <button mat-flat-button color="warn"
-                      *ngIf="bag.data.isComplete===false"
-                      (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
-              </button>
-              <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.standard.id!==1"
+                }
+                @if (bag.data.isComplete === false) {
+                  <button mat-flat-button color="warn"
+                          (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
+                  </button>
+                }
+                @if (bag.data && bag.data.standard.id !== 1) {
+                  <button mat-flat-button color="primary"
                       (click)="dataService.changeModule$.next({
                 standard:{
                 id:1,
                 name:''
                 }
                 })">
-                Convert to 1U Intellijel
-              </button>
-              
-              <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.standard.id!==0"
+                    Convert to 1U Intellijel
+                  </button>
+                }
+                @if (bag.data && bag.data.standard.id !== 0) {
+                  <button mat-flat-button color="primary"
                       (click)="dataService.changeModule$.next({
                 standard:{
                 id:0,
@@ -213,45 +215,45 @@ user:(userManagementService.loggedUser$|async)
                 }
                 })">Convert to 3U Doepfer
               </button>
-              
+                }
+                @if (bag.data && bag.data.isComplete === false) {
               <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.isComplete===false"
                       (click)="dataService.changeModule$.next({
                 isComplete:true
                 })">Mark as complete
               </button>
-              
+                }
+                @if (bag.data && bag.data.isComplete === true) {
               <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.isComplete===true"
                       (click)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as incomplete
               </button>
+                }
+                @if (bag.data && bag.data.isApproved === false) {
               <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.isApproved===false"
                       (click)="dataService.changeModule$.next({
                 isApproved:true
                 })">Mark as approved
               </button>
-              
+                }
+                @if (bag.data && bag.data.isApproved === true) {
               <button mat-flat-button color="primary"
-                      *ngIf="bag.data&&bag.data.isApproved===true"
                       (click)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as unapproved
               </button>
-              
-              <!--                <pre>-->
-              <!--                  {{ bag.data|json }}-->
-              <!--                </pre>-->
-            
-            
-            </div>
-          </lib-hero-content-card>
-          </div>
+                }
+                <!--                <pre>-->
+                <!--                  {{ bag.data|json }}-->
+                <!--                </pre>-->
+              </div>
+            </lib-hero-content-card>
+          }
+        </div>
         <div fxFlex class="col gap2">
-          
-          <lib-hero-content-card *ngIf="bag.data&&dataService.moduleEditingPanelOpenState$|async" [sidesPadding]="false"
+          @if (bag.data && dataService.moduleEditingPanelOpenState$|async) {
+            <lib-hero-content-card [sidesPadding]="false"
                                    titleNormal="Module Editor"
                                    description="Do you know about this module?
                 Please help the community by adding the module's ins and outs.
@@ -260,91 +262,87 @@ user:(userManagementService.loggedUser$|async)
               <app-module-editor [data]="(bag.data)"
               ></app-module-editor>
             </lib-hero-content-card>
-            
-            <div fxLayout.gt-md="row"
-                 fxLayout="column"
-                 fxLayoutGap="1rem"
-            >
-              <lib-hero-content-card *ngIf="viewConfig.hideRackedIn===false" [sidesPadding]="false"
+          }
+          <div fxLayout.gt-md="row"
+               fxLayout="column"
+               fxLayoutGap="1rem"
+          >
+            @if (viewConfig.hideRackedIn === false) {
+              <lib-hero-content-card [sidesPadding]="false"
                                      style="flex: 1 1 100%;"
                                      titleNormal="Racked in"
               >
                 <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
                                                     [updateData$]="dataService.updateSingleModuleData$"
                 >
-                  <app-module-racks
-                    *ngIf="(bag.racksWithThisModule)&&(bag.racksWithThisModule).length>0; else noRacks"
-                    [data$]="dataService.racksWithThisModule$"
-                  ></app-module-racks>
+                  @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
+                    <app-module-racks
+                      [data$]="dataService.racksWithThisModule$"
+                    ></app-module-racks>
+                  } @else {
+                    <div class="col gap1 animate-fadein-slowest"
+                    >
+                      <mat-card-subtitle fxLayoutAlign="center start"
+                                         style="padding: 1rem"
+                      >No racks using this module yet. Try adding it to yours!
+                      </mat-card-subtitle>
+                    </div>
+                  }
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
-              <lib-hero-content-card *ngIf="viewConfig.hidePatchedIn===false" [sidesPadding]="false"
+            }
+            @if (viewConfig.hidePatchedIn === false) {
+              <lib-hero-content-card [sidesPadding]="false"
                                      style="flex: 1 1 100%;"
                                      titleNormal="Patched in"
               >
-                
-                
                 <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
                                                     [updateData$]="dataService.updateSingleModuleData$"
                 >
-                  <app-module-patches
-                    *ngIf="(bag.patchesWithThisModule)&&(bag.patchesWithThisModule).length>0; else noPatches"
-                    [data$]="dataService.patchesWithThisModule$"
-                  ></app-module-patches>
+                  @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
+                    <app-module-patches
+                      [data$]="dataService.patchesWithThisModule$"
+                    ></app-module-patches>
+                  } @else {
+                    <div class="col gap1 animate-fadein-slowest"
+                    >
+                      <mat-card-subtitle fxLayoutAlign="center start"
+                                         style="padding: 1rem"
+                      >No patches using this module yet. Try adding it to yours!
+                      </mat-card-subtitle>
+                    </div>
+                  }
                 </lib-auto-content-loading-indicator>
               </lib-hero-content-card>
-            </div>
-        
-        
+            }
+          </div>
         </div>
-      
       </div>
     </lib-hero-content-card>
-    
-    <lib-hero-content-card *ngIf="bag.data?.manufacturer&&viewConfig.hideBySameManufacturer===false"
-                           [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
-                           fxFlex
+    @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false) {
+      <lib-hero-content-card
+        [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
+        fxFlex
     >
-      
-      
-      <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
-                                          [updateData$]="dataService.updateSingleModuleData$"
+        <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
+                                            [updateData$]="dataService.updateSingleModuleData$"
       >
+          @if ((bag.modulesBySameManufacturer) && (bag.modulesBySameManufacturer).length > 0) {
         <app-module-list
-          *ngIf="(bag.modulesBySameManufacturer)&&(bag.modulesBySameManufacturer).length>0; else noModulesWithSameManufacturer"
           [data$]="dataService.modulesBySameManufacturer$"
           [viewConfig]="bySameManufacturerViewConfig"
         ></app-module-list>
-      </lib-auto-content-loading-indicator>
-    </lib-hero-content-card>
+          } @else {
+            <div class="col gap1 animate-fadein-slowest"
+            >
+              <mat-card-subtitle fxLayoutAlign="center start"
+                                 style="padding: 1rem"
+              >No more modules by this manufacturer yet.
+              </mat-card-subtitle>
+            </div>
+          }
+        </lib-auto-content-loading-indicator>
+      </lib-hero-content-card>
+    }
   </div>
-</ng-container>
-
-<ng-template #noRacks>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem"
-    >No racks using this module yet. Try adding it to yours!
-    </mat-card-subtitle>
-  </div>
-</ng-template>
-<ng-template #noPatches>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem"
-    >No patches using this module yet. Try adding it to yours!
-    </mat-card-subtitle>
-  </div>
-</ng-template>
-
-<ng-template #noModulesWithSameManufacturer>
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle fxLayoutAlign="center start"
-                       style="padding: 1rem"
-    >No more modules by this manufacturer yet.
-    </mat-card-subtitle>
-  </div>
-</ng-template>
+}

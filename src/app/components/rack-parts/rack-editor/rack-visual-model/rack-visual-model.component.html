@@ -5,10 +5,9 @@
                      fxLayoutAlign="center center"
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
-  
+
   <div class="col gap0 " #screen id="screen">
-    <ng-container *ngFor="let row of rowedRackedModules; index as rowId"
-    >
+    @for (row of rowedRackedModules; track row; let rowId = $index) {
       <div class="row"
            [class.row-bg]="!(row|hasUnrackedModules)"
            [matBadge]="row.length==0?undefined:(rackDetailDataService.showModuleCounters$|async)?row.length:undefined"
@@ -17,7 +16,7 @@
            cdkDropListOrientation="horizontal"
            (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
       >
-        <ng-container *ngFor="let rackedModule of row; let i = index">
+        @for (rackedModule of row; track rackedModule; let i = $index) {
           <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
                                 [data]="rackedModule|mapToModule"
                                 [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
@@ -28,19 +27,16 @@
                                 (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
           >
           </app-module-realistic>
-        </ng-container>
-      
-      
+        }
       </div>
-    </ng-container>
+    }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
   </div>
-  
+
   <!--    add new row button-->
   <div class="row gap2 self-center">
-    <ng-container *ngIf="isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser&&rowedRackedModules.length>1">
+    @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && rowedRackedModules.length > 1) {
       <div [@enter]="{ value: '', params: { delay: (1 * 25)+500}}"
-           
            matTooltip="Please remove all modules from the last row to remove it"
            [matTooltipDisabled]="isLastRowEmpty(rowedRackedModules)">
         <button mat-flat-button
@@ -51,19 +47,21 @@
           <mat-icon>remove</mat-icon>
         </button>
       </div>
-    </ng-container>
+    }
     <div fxFlex="1 1 auto"></div>
     
-    <div *ngIf="isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser"
-         [@enter]="{ value: '', params: { delay: (2 * 25)+500}}"
-    >
-      <button mat-flat-button
-              (click)="rackDetailDataService.requestAddNewRow$.next()"
+    @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
+      <div
+        [@enter]="{ value: '', params: { delay: (2 * 25)+500}}"
       >
-        Add new row
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
+        <button mat-flat-button
+                (click)="rackDetailDataService.requestAddNewRow$.next()"
+        >
+          Add new row
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    }
   </div>
   
   <div fxFlex="100"></div>

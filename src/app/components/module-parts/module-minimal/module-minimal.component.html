@@ -1,9 +1,8 @@
-<ng-container *ngIf="{
+@if ({
   user:(userManagerService.loggedUser$|async),
   isInCollection:(isInCollection$|async),
   singleModuleData:(dataService.singleModuleData$|async)
-  } as bag"
->
+}; as bag) {
   <div class="col parent"
   >
     <div class="col gap0"
@@ -15,28 +14,36 @@
       <app-module-part-name [data]="data"></app-module-part-name>
       <div class="row gap1 space-between"
       >
-        <app-module-part-manufacturer *ngIf="!viewConfig.hideManufacturer"
-                                      [data]="data"
-        ></app-module-part-manufacturer>
-        <app-module-part-hp *ngIf="!viewConfig.hideHP"
-                            [data]="data"
-        ></app-module-part-hp>
+        @if (!viewConfig.hideManufacturer) {
+          <app-module-part-manufacturer
+            [data]="data"
+          ></app-module-part-manufacturer>
+        }
+        @if (!viewConfig.hideHP) {
+          <app-module-part-hp
+            [data]="data"
+          ></app-module-part-hp>
+        }
       </div>
-      <app-timestamps-relative *ngIf="!viewConfig.hideDates"
-                               [data]="data"
-      ></app-timestamps-relative>
-      <app-module-part-description *ngIf="!viewConfig.hideDescription"
-                                   [data]="data"
-                                   [viewConfig]="viewConfig"
-      ></app-module-part-description>
-    
+      @if (!viewConfig.hideDates) {
+        <app-timestamps-relative
+          [data]="data"
+        ></app-timestamps-relative>
+      }
+      @if (!viewConfig.hideDescription) {
+        <app-module-part-description
+          [data]="data"
+          [viewConfig]="viewConfig"
+        ></app-module-part-description>
+      }
     </div>
-    
-    <app-module-tags *ngIf="!viewConfig.hideTags"
-                     [data]="data"
-    ></app-module-tags>
+    @if (!viewConfig.hideTags) {
+      <app-module-tags
+        [data]="data"
+      ></app-module-tags>
+    }
     <ng-content></ng-content>
-    <ng-container *ngIf="!viewConfig.hideButtons">
+    @if (!viewConfig.hideButtons) {
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
@@ -47,57 +54,56 @@
              fxLayout="row"
              fxLayoutGap="1rem"
         >
-          <ng-container *ngIf="!bag.isInCollection">
-            <button (click)="dataService.addModuleToCollection$.next(data.id)"
-                    *ngIf="(bag.singleModuleData)"
-                    [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                    [title]="!bag.user ? 'Login to add to modules your collection':''"
-                    mat-icon-button
-                    matTooltip="Add to your collection"
-            >
-              <mat-icon>add</mat-icon>
-            </button>
-          </ng-container>
-          <ng-container *ngIf="bag.isInCollection">
-            <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
-                    *ngIf="(bag.singleModuleData)"
-                    [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                    mat-icon-button
-                    matTooltip="Remove from your collection"
-            >
-              <mat-icon>eject</mat-icon>
-            </button>
-          </ng-container>
-          
-          
-          <button (click)="dataService.requestAddModuleToRack$.next(data)"
-                  *ngIf="(bag.singleModuleData)"
-                  [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
-                  [title]="!bag.user ? 'Login to add to modules your rack':''"
-                  mat-icon-button
-                  matTooltip="Add to rack"
-          >
-            <mat-icon>playlist_add</mat-icon>
-          </button>
-          
-          
-          <ng-container *ngIf="rackDataService.singleRackData$|async as rackData">
-            <button (click)="rackDataService.addModuleToRack$.next(data)"
-                    *ngIf="rackDataService.isCurrentRackEditable$|async"
-                    [matTooltip]="'Add to '+rackData.name"
+          @if (!bag.isInCollection) {
+            @if ((bag.singleModuleData)) {
+              <button (click)="dataService.addModuleToCollection$.next(data.id)"
+                      [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
+                      [title]="!bag.user ? 'Login to add to modules your collection':''"
+                      mat-icon-button
+                      matTooltip="Add to your collection"
+              >
+                <mat-icon>add</mat-icon>
+              </button>
+            }
+          }
+          @if (bag.isInCollection) {
+            @if ((bag.singleModuleData)) {
+              <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
+                      [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
+                      mat-icon-button
+                      matTooltip="Remove from your collection"
+              >
+                <mat-icon>eject</mat-icon>
+              </button>
+            }
+          }
+          @if ((bag.singleModuleData)) {
+            <button (click)="dataService.requestAddModuleToRack$.next(data)"
+                    [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
                     [title]="!bag.user ? 'Login to add to modules your rack':''"
                     mat-icon-button
+                    matTooltip="Add to rack"
             >
               <mat-icon>playlist_add</mat-icon>
             </button>
-          </ng-container>
-        
+          }
+          @if (rackDataService.singleRackData$|async; as rackData) {
+            @if (rackDataService.isCurrentRackEditable$|async) {
+              <button (click)="rackDataService.addModuleToRack$.next(data)"
+                      [matTooltip]="'Add to '+rackData.name"
+                      [title]="!bag.user ? 'Login to add to modules your rack':''"
+                      mat-icon-button
+              >
+                <mat-icon>playlist_add</mat-icon>
+              </button>
+            }
+          }
         </div>
         <div fxFlex="grow"></div>
         <div class="row gap1">
-          <ng-container *ngIf="(bag.singleModuleData&&bag.user)">
-            <ng-container *ngIf="false">
-              <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==false">
+          @if ((bag.singleModuleData && bag.user)) {
+            @if (false) {
+              @if ((dataService.moduleEditingPanelOpenState$|async) == false) {
                 <button
                   (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                   [disabled]="(!bag.user)||bag.singleModuleData.isComplete||(bag.singleModuleData.manufacturer.id===10000)"
@@ -106,8 +112,8 @@
                 >
                   <mat-icon>edit</mat-icon>
                 </button>
-              </ng-container>
-              <ng-container *ngIf="(dataService.moduleEditingPanelOpenState$|async)==true">
+              }
+              @if ((dataService.moduleEditingPanelOpenState$|async) == true) {
                 <button
                   (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
                   [disabled]="!bag.user"
@@ -116,30 +122,28 @@
                 >
                   <mat-icon>close</mat-icon>
                 </button>
-              </ng-container>
-            </ng-container>
-          </ng-container>
-          <ng-container *ngIf="bag.singleModuleData">
-            <a *ngIf="bag.singleModuleData.manualURL"
-               [href]="bag.singleModuleData.manualURL"
-               mat-icon-button
-               matTooltip="Open manual"
-               rel="noopener noreferrer"
-               target="_blank"
-            >
-              <mat-icon>menu_book</mat-icon>
-            </a>
-            
+              }
+            }
+          }
+          @if (bag.singleModuleData) {
+            @if (bag.singleModuleData.manualURL) {
+              <a
+                [href]="bag.singleModuleData.manualURL"
+                mat-icon-button
+                matTooltip="Open manual"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <mat-icon>menu_book</mat-icon>
+              </a>
+            }
             <a (click)="dataService.copyModuleNameAndManufacturer$.next()"
                mat-icon-button
                matTooltip="Copy module name to clipboard"
             >
               <mat-icon>content_copy</mat-icon>
             </a>
-            
-          </ng-container>
-          
-          
+          }
           <!--          <ng-container *ngIf="!bag.singleModuleData">-->
           <!--            <a mat-icon-button-->
           <!--               matTooltip="Show details"-->
@@ -149,9 +153,8 @@
           <!--            </a>-->
           <!--  -->
           <!--          </ng-container>-->
-        
         </div>
       </div>
-    </ng-container>
+    }
   </div>
-</ng-container>
+}

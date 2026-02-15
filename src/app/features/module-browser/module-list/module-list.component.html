@@ -1,46 +1,42 @@
-<ng-container *ngIf="{
+@if ({
   patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async),
   filteredData:(filteredData$|async),
   data:(data$|async)
-  
-  } as bag"
->
-  
-  <lib-auto-content-loading-indicator *ngIf="bag.data==null;else data"
-                                      [skipFirstData]="true"
-                                      [loadingLines]="5"
-  >
-  </lib-auto-content-loading-indicator>
-  
-  
-  <ng-template #data>
+}; as bag) {
+  @if (bag.data == null) {
+    <lib-auto-content-loading-indicator
+      [skipFirstData]="true"
+      [loadingLines]="5"
+    >
+    </lib-auto-content-loading-indicator>
+  } @else {
     <div class="col gap1">
-      <div class="row gap1"
-           *ngIf="showSearch"
-      >
-        <app-local-data-filter></app-local-data-filter>
-      </div>
-      <flexbox-row-fast
-                        [ngClass]="{'limit-height':encloseVertically}"
-      >
-        <ng-container *ngFor="let item of (showSearch?bag.filteredData:bag.data); let i = index"
+      @if (showSearch) {
+        <div class="row gap1"
         >
+          <app-local-data-filter></app-local-data-filter>
+        </div>
+      }
+      <flexbox-row-fast
+        [ngClass]="{'limit-height':encloseVertically}"
+      >
+        @for (item of (showSearch ? bag.filteredData : bag.data); track item; let i = $index) {
           <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
-            <app-module-minimal *ngIf="!bag.patchEditingPanelOpenState; else fullData"
-                                [data]="item"
-                                [viewConfig]="viewConfig"
-            ></app-module-minimal>
+            @if (!bag.patchEditingPanelOpenState) {
+              <app-module-minimal
+                [data]="item"
+                [viewConfig]="viewConfig"
+              ></app-module-minimal>
+            } @else {
+              <app-module-composite [data]="item"
+                                    [viewConfig]="viewConfig"
+              ></app-module-composite>
+            }
           </lib-clean-card>
-          <ng-template #fullData>
-            <app-module-composite [data]="item"
-                                  [viewConfig]="viewConfig"
-            ></app-module-composite>
-          </ng-template>
-        </ng-container>
+        }
       </flexbox-row-fast>
     </div>
-  </ng-template>
-
-</ng-container>
+  }
+}

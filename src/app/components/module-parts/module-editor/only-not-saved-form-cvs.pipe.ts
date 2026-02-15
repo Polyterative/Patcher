@@ -1,8 +1,13 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
 import { FormCV } from './module-editor.component';
 
+
 @Pipe({
-  name: 'onlyNotSavedFormCVsLength'
+  name: 'onlyNotSavedFormCVsLength',
+  standalone: false
 })
 export class OnlyNotSavedFormCVsLengthPipe implements PipeTransform {
   

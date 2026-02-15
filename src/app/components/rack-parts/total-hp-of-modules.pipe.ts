@@ -1,8 +1,13 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
 import { DbModule } from '../../models/module';
 
+
 @Pipe({
-  name: 'totalHpOfModules'
+  name: 'totalHpOfModules',
+  standalone: false
 })
 export class TotalHpOfModulesPipe implements PipeTransform {
   

@@ -6,8 +6,6 @@ import {
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import {
   AsyncPipe,
-  NgForOf,
-  NgIf,
   NgTemplateOutlet
 } from "@angular/common";
 import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
@@ -16,10 +14,7 @@ import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/co
 import { BrandPrimaryButtonModule } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module";
 import { FlexModule } from "@angular/flex-layout";
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
-import { MatCardSubtitle } from "@angular/material/card";
-import { MatDivider } from "@angular/material/divider";
 import { ModuleBrowserModule } from "src/app/features/module-browser/module-browser.module";
-import { RouterLink } from "@angular/router";
 import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comments/comments-root/comments-item-block/comments-item-block.component";
 import {
   CommentViewConfig,
@@ -35,21 +30,15 @@ import {
   animations: [
     Animations.fadeInOnEnter
   ],
-  standalone: true,
   imports: [
     CommentsModule,
-    NgForOf,
     AsyncPipe,
-    NgIf,
     AutoUpdateLoadingIndicatorModule,
     BrandPrimaryButtonModule,
     FlexModule,
     HeroContentCardModule,
-    MatCardSubtitle,
-    MatDivider,
     ModuleBrowserModule,
     NgTemplateOutlet,
-    RouterLink,
     CommentsItemBlockComponent
   ]
 })

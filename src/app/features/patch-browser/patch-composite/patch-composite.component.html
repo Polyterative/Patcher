@@ -1,28 +1,27 @@
-<ng-container *ngIf="{
-layoutFlexWidth:(appState.layoutFlexWidth$|async)
-} as bag"
->
-  <ng-container *ngIf="bag.layoutFlexWidth">
-    <div *ngIf="bag.layoutFlexWidth.ltlg"
-    >
-      <div class="col gap1"
+@if ({
+  layoutFlexWidth: (appState.layoutFlexWidth$|async)
+}; as bag) {
+  @if (bag.layoutFlexWidth) {
+    @if (bag.layoutFlexWidth.ltlg) {
+      <div
       >
-        <div>
-          <lib-clean-card>
-            <app-patch-minimal [data]="data"
-                               [viewConfig]="viewConfig"
-            >
-            </app-patch-minimal>
-          </lib-clean-card>
+        <div class="col gap1"
+        >
+          <div>
+            <lib-clean-card>
+              <app-patch-minimal [data]="data"
+                                 [viewConfig]="viewConfig"
+              >
+              </app-patch-minimal>
+            </lib-clean-card>
+          </div>
+          <app-patch-details [data]="data"></app-patch-details>
+          <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+          <app-comments-root></app-comments-root>
         </div>
-  
-        <app-patch-details [data]="data"></app-patch-details>
-        <ng-template *ngTemplateOutlet="connectionList"></ng-template>
-        <app-comments-root></app-comments-root>
       </div>
-    </div>
-    
-    <ng-container *ngIf="bag.layoutFlexWidth.gtmd">
+    }
+    @if (bag.layoutFlexWidth.gtmd) {
       <div class="row gap2"
       >
         <div class="col gap1"
@@ -35,7 +34,6 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
             </app-patch-minimal>
           </lib-clean-card>
           <app-comments-root></app-comments-root>
-  
         </div>
         <div class="col gap1"
              fxFlex="grow"
@@ -43,33 +41,27 @@ layoutFlexWidth:(appState.layoutFlexWidth$|async)
           <app-patch-details fxFlex="grow"
                              [data]="data"
           ></app-patch-details>
-        
         </div>
       </div>
       <ng-template *ngTemplateOutlet="connectionList"></ng-template>
-    
-    </ng-container>
-  </ng-container>
-  
-  
+    }
+  }
   <ng-template #connectionList>
-    <ng-container *ngIf="{
-          connections:(dataService.patchConnections$|async)
-          } as bagA"
-    >
-      
-      <ng-container *ngIf="data&&bagA.connections&&bagA.connections.length>0">
-        <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
-                               *ngIf="!(dataService.patchEditingPanelOpenState$|async)"
-        >
-          <!--          <lib-clean-card>-->
-          <app-patch-connections-list [editorConnections]="bagA.connections"
-                                      [isEditing]="false"
-          ></app-patch-connections-list>
+    @if ({
+      connections: (dataService.patchConnections$|async)
+    }; as bagA) {
+      @if (data && bagA.connections && bagA.connections.length > 0) {
+        @if (!(dataService.patchEditingPanelOpenState$|async)) {
+          <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
+          >
+            <!--          <lib-clean-card>-->
+            <app-patch-connections-list [editorConnections]="bagA.connections"
+                                        [isEditing]="false"
+            ></app-patch-connections-list>
           <!--          </lib-clean-card>-->
         </lib-hero-content-card>
-      </ng-container>
-    </ng-container>
+        }
+      }
+    }
   </ng-template>
-
-</ng-container>
+}

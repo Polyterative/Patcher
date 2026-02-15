@@ -14,7 +14,7 @@
                        iconL1="email"
   >
   </lib-mat-form-entity>
-  
+
   <lib-mat-form-entity [type]="dataService.fields.password.type"
                        [control]="dataService.fields.password.control"
                        [label]="dataService.fields.password.label"
@@ -30,11 +30,12 @@
   >
   </lib-mat-form-entity>
   
-  <mat-error *ngIf="dataService.fields.password.control.value!=''&&dataService.fields.passwordAgain.control.value.length>0&&
-dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value
-"
-  >Repeated password should be the same as original password
-  </mat-error>
+  @if (dataService.fields.password.control.value != '' && dataService.fields.passwordAgain.control.value.length > 0 &&
+  dataService.fields.password.control.value != dataService.fields.passwordAgain.control.value) {
+    <mat-error
+    >Repeated password should be the same as original password
+    </mat-error>
+  }
   
   <app-brand-primary-button style="padding-top: 1rem"
                             innerFlex="auto"

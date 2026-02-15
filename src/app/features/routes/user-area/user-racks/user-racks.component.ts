@@ -12,10 +12,11 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 
 
 @Component({
-  selector:        'app-user-racks',
-  templateUrl:     './user-racks.component.html',
-  styleUrls:       ['./user-racks.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-racks',
+  templateUrl: './user-racks.component.html',
+  styleUrls: ['./user-racks.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserRacksComponent {
   rackMinimalViewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};

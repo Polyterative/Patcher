@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-    selector:        'app-page-header',
-    templateUrl:     './page-header.component.html',
-    styleUrls:       ['./page-header.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-page-header',
+  templateUrl: './page-header.component.html',
+  styleUrls: ['./page-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PageHeaderComponent implements OnInit {
     @Input() color = '#778698';

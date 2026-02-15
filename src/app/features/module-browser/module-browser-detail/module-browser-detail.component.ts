@@ -39,7 +39,8 @@ import { Animations } from "src/app/shared-interproject/SharedConstants";
   animations: [
     Animations.fadeInOnEnter
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleBrowserDetailComponent implements OnInit {
   

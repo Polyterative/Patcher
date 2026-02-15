@@ -27,7 +27,8 @@ import { ModuleRightClick } from '../rack-editor.component';
       // animateChildren: 'before',
     })
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackVisualModelComponent implements OnInit, AfterViewInit {
   

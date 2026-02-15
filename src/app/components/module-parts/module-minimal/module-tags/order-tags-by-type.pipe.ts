@@ -6,7 +6,8 @@ import { Tag } from 'src/app/models/tag';
 
 
 @Pipe({
-  name: 'orderTagsByType'
+  name: 'orderTagsByType',
+  standalone: false
 })
 export class OrderTagsByTypePipe implements PipeTransform {
   

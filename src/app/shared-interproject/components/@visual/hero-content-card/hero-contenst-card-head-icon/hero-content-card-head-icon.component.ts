@@ -7,10 +7,11 @@ import {
 
 
 @Component({
-  selector:        'app-hero-content-card-head-icon',
+  selector: 'app-hero-content-card-head-icon',
   templateUrl: './hero-content-card-head-icon.component.html',
   styleUrls: ['./hero-content-card-head-icon.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class HeroContentCardHeadIconComponent implements OnInit {
   @Input()

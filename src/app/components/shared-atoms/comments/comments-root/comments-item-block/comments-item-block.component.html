@@ -1,15 +1,13 @@
-<ng-container *ngIf="data&&data.length>0;else noData">
+@if (data && data.length > 0) {
   <div class="col gap1 ">
-    <ng-container *ngFor="let item of data; let i = index">
+    @for (item of data; track item; let i = $index) {
       <app-comments-item [data]="item"
                          [viewConfig]="viewConfig"
       >
       </app-comments-item>
-    </ng-container>
+    }
   </div>
-</ng-container>
-
-<ng-template #noData>
+} @else {
   <div class="col gap1 animate-fadein-slowest"
   >
     <mat-card-subtitle
@@ -17,4 +15,4 @@
     >No comments yet.
     </mat-card-subtitle>
   </div>
-</ng-template>
+}

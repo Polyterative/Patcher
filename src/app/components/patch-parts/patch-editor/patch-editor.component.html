@@ -1,31 +1,28 @@
-<ng-container *ngIf="{
+@if ({
   editorConnections:(dataService.editorConnections$|async),
   selectedForConnection:(dataService.selectedForConnection$|async)
-  } as bag"
->
-  
-  
-  <lib-auto-content-loading-indicator *ngIf="bag.editorConnections==null;else data"
-                                      [skipFirstData]="true"
-                                      [loadingLines]="20"
-  >
-  </lib-auto-content-loading-indicator>
-  <ng-template #data>
+}; as bag) {
+  @if (bag.editorConnections == null) {
+    <lib-auto-content-loading-indicator
+      [skipFirstData]="true"
+      [loadingLines]="20"
+    >
+    </lib-auto-content-loading-indicator>
+  } @else {
     <div class="col">
-      <lib-hero-content-card *ngIf="bag.editorConnections.length>0"
-                             [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
-                             class="connections"
-                             description="The connections of the patch you are editing, shown in reverse order"
-                             [showHelpButton]="true"
-      >
-        
-        <app-patch-connections-list [editorConnections]="bag.editorConnections"
-                                    [isEditing]="true"
-                                    [reverseOrder]="true"
-        ></app-patch-connections-list>
-      
-      </lib-hero-content-card>
-      
+      @if (bag.editorConnections.length > 0) {
+        <lib-hero-content-card
+          [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
+          class="connections"
+          description="The connections of the patch you are editing, shown in reverse order"
+          [showHelpButton]="true"
+        >
+          <app-patch-connections-list [editorConnections]="bag.editorConnections"
+                                      [isEditing]="true"
+                                      [reverseOrder]="true"
+          ></app-patch-connections-list>
+        </lib-hero-content-card>
+      }
       <div class="row gap1"
       >
         <div class="gap1 col" style="min-width: 26rem"
@@ -56,19 +53,17 @@
                   </div>
                 </app-brand-primary-button>
               </div>
-            
-            
             </div>
           </lib-auto-update-loading-indicator>
-          
           <lib-hero-content-card class="selection"
                                  titleNormal="Your selection"
                                  description="The connection you want to create"
                                  style="min-width: 26rem; max-width: 26rem"
                                  [showHelpButton]="true"
           >
-            <lib-clean-card
-              *ngIf="bag.selectedForConnection.a&&bag.selectedForConnection.b; else selectedForConnectionVoidState">
+            @if (bag.selectedForConnection.a && bag.selectedForConnection.b) {
+              <lib-clean-card
+              >
               <app-patch-connection-minimal [data]="{
                                                             a:bag.selectedForConnection.a.cv,
                                                             b:bag.selectedForConnection.b.cv,
@@ -79,8 +74,8 @@
                                             (remove$)="dataService.resetSelectedForConnection$.next()"
                                             (create$)="dataService.confirmSelectedConnection$.next()"
               ></app-patch-connection-minimal>
-            </lib-clean-card>
-            <ng-template #selectedForConnectionVoidState>
+              </lib-clean-card>
+            } @else {
               <div class="animate-fadein-long">
                 <app-advice-tooltip>Click on the ins and outs to create connections
                 </app-advice-tooltip>
@@ -89,9 +84,8 @@
                    fxLayoutAlign="center center"
               >The connection will appear here
               </div>
-            </ng-template>
+            }
           </lib-hero-content-card>
-        
         </div>
         <app-user-modules class="modulesBG"
                           [encloseVertically]="false"
@@ -100,7 +94,5 @@
         ></app-user-modules>
       </div>
     </div>
-  
-  </ng-template>
-
-</ng-container>
+  }
+}

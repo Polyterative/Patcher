@@ -4,20 +4,22 @@
   <app-rack-image [data]="data"
                   [containImage]="viewConfig.containImage"
   ></app-rack-image>
-  
+
   <app-hero-clickable-title [link]="['/racks/details',data.id]"
   >{{ data.name }}
   </app-hero-clickable-title>
   <div class="row gap1 space-between"
   >
     <app-entity-author [data]="data.author"></app-entity-author>
-    <div class="technical-item"
-         *ngIf="!viewConfig.hideHP"
-    >
-      {{ data.hp }} HP - {{ data.rows }} rows
-    </div>
+    @if (!viewConfig.hideHP) {
+      <div class="technical-item"
+      >
+        {{ data.hp }} HP - {{ data.rows }} rows
+      </div>
+    }
   </div>
-  <app-timestamps-relative [data]="data"
-                           *ngIf="!viewConfig.hideDates"
-  ></app-timestamps-relative>
+  @if (!viewConfig.hideDates) {
+    <app-timestamps-relative [data]="data"
+    ></app-timestamps-relative>
+  }
 </div>

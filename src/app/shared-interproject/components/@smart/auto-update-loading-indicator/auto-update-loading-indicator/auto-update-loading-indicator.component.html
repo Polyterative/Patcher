@@ -1,18 +1,19 @@
-<ng-container *ngIf="{
-    dataLoading:(dataLoading$|async)
-    } as bag"
->
-  <div *ngIf="bag.dataLoading"
-       class="col gap0"
-       [fxHide]="!bag.dataLoading"
-  >
-    <app-lottie-container
-      style="opacity: 0.25; align-self: center"
-                          [styles]="{maxWidth: '10rem'}"
-                          [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
-    ></app-lottie-container>
-  </div>
-  <ng-container *ngIf="!bag.dataLoading">
+@if ({
+  dataLoading: (dataLoading$|async)
+}; as bag) {
+  @if (bag.dataLoading) {
+    <div
+      class="col gap0"
+      [fxHide]="!bag.dataLoading"
+    >
+      <app-lottie-container
+        style="opacity: 0.25; align-self: center"
+        [styles]="{maxWidth: '10rem'}"
+        [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
+      ></app-lottie-container>
+    </div>
+  }
+  @if (!bag.dataLoading) {
     <ng-content></ng-content>
-  </ng-container>
-</ng-container>
+  }
+}

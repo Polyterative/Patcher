@@ -1,29 +1,29 @@
-<lib-clean-card fxLayout="column"
-                style="background-color: rgba(0, 0, 0, 50)"
-                fxLayoutGap="1rem"
-                *ngIf="{user:userDataHandlerService.store.user$|async} as bag"
->
-  <div fxFlex="100"
-       *ngIf="bag.user; else noData"
+@if ({user: userDataHandlerService.store.user$|async}; as bag) {
+  <lib-clean-card fxLayout="column"
+                  style="background-color: rgba(0, 0, 0, 50)"
+                  fxLayoutGap="1rem"
   >
-    <app-user-avatar
-        [name]="bag.user.username"
-        [hideLogoff]="false"
-        (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
-        (login$)="userDataHandlerService.loginButtonClick$.next()"
-        (signup$)="userDataHandlerService.signupButtonClick$.next()"
-    ></app-user-avatar>
-  </div>
-  
-  <!--    {{bag.user|json}}-->
-  <!--    -->
-  <ng-template #noData>
-    <lib-clean-card>
-      <app-brand-primary-button fxFlex="grow"
-                                innerFlex="grow"
-                                (click$)="userDataHandlerService.loginButtonClick$.next()"
-      >Login/Signup
-      </app-brand-primary-button>
-    </lib-clean-card>
-  </ng-template>
-</lib-clean-card>
+    @if (bag.user) {
+      <div fxFlex="100"
+      >
+        <app-user-avatar
+          [name]="bag.user.username"
+          [hideLogoff]="false"
+          (logoff$)="userDataHandlerService.logoffButtonClick$.next()"
+          (login$)="userDataHandlerService.loginButtonClick$.next()"
+          (signup$)="userDataHandlerService.signupButtonClick$.next()"
+        ></app-user-avatar>
+      </div>
+    } @else {
+      <lib-clean-card>
+        <app-brand-primary-button fxFlex="grow"
+                                  innerFlex="grow"
+                                  (click$)="userDataHandlerService.loginButtonClick$.next()"
+        >Login/Signup
+        </app-brand-primary-button>
+      </lib-clean-card>
+    }
+    <!--    {{bag.user|json}}-->
+    <!--    -->
+  </lib-clean-card>
+}

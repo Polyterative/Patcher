@@ -1,9 +1,8 @@
-<ng-container *ngIf="{
-patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
-data:(dataService.singlePatchData$|async)
-} as bag"
->
-  <ng-container *ngIf="!bag.patchEditingPanelOpenState">
+@if ({
+  patchEditingPanelOpenState: (dataService.patchEditingPanelOpenState$|async),
+  data: (dataService.singlePatchData$|async)
+}; as bag) {
+  @if (!bag.patchEditingPanelOpenState) {
     <div class="col gap1"
     >
       <lib-hero-content-card titleBig="Patch details"
@@ -19,7 +18,6 @@ data:(dataService.singlePatchData$|async)
           ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
-      
       <!--      <ng-container *ngIf="bag.data"-->
       <!--      >-->
       <!--        -->
@@ -31,10 +29,8 @@ data:(dataService.singlePatchData$|async)
       <!--        </lib-screen-wrapper>-->
       <!--      </ng-container>-->
     </div>
-  </ng-container>
-  
-  
-  <ng-container *ngIf="bag.patchEditingPanelOpenState">
+  }
+  @if (bag.patchEditingPanelOpenState) {
     <div class="col gap1"
     >
       <lib-hero-content-card titleBig="Patch editing"
@@ -50,10 +46,8 @@ data:(dataService.singlePatchData$|async)
           ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
-      
+      @if (bag.data && bag.patchEditingPanelOpenState) {
       <lib-hero-content-card titleNormal="Connections Editor"
-                             *ngIf="bag.data&&bag.patchEditingPanelOpenState"
-      
       >
         <!--        <div class="col gap2">-->
         <!--          <div class="row gap1">-->
@@ -69,16 +63,15 @@ data:(dataService.singlePatchData$|async)
         ></app-patch-editor>
         <!--        </div>-->
       </lib-hero-content-card>
+      }
     </div>
-  </ng-container>
-  
+  }
   <ng-template #patch>
-    <ng-container *ngIf="bag.data"
-    >
+    @if (bag.data) {
       <app-patch-composite [data]="(bag.data)"
                            [isEditing]="bag.patchEditingPanelOpenState"
                            [viewConfig]="viewConfig"
       ></app-patch-composite>
-    </ng-container>
+    }
   </ng-template>
-</ng-container>
+}
