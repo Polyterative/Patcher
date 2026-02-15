@@ -3,6 +3,7 @@
   <lib-mat-form-entity [dataPack]="dataService.fields.username"
                        hint="Visible by other users"
                        formFieldAppearanceType="fill"
+                       iconL1="person"
   >
   </lib-mat-form-entity>
   <lib-mat-form-entity [type]="dataService.fields.email.type"
@@ -10,6 +11,7 @@
                        [label]="dataService.fields.email.label"
                        hint="NOT visible by other users"
                        formFieldAppearanceType="fill"
+                       iconL1="email"
   >
   </lib-mat-form-entity>
   
@@ -17,12 +19,14 @@
                        [control]="dataService.fields.password.control"
                        [label]="dataService.fields.password.label"
                        formFieldAppearanceType="fill"
+                       iconL1="lock"
   >
   </lib-mat-form-entity>
   <lib-mat-form-entity [type]="dataService.fields.passwordAgain.type"
                        [control]="dataService.fields.passwordAgain.control"
                        [label]="dataService.fields.passwordAgain.label"
                        formFieldAppearanceType="fill"
+                       iconL1="lock"
   >
   </lib-mat-form-entity>
   
