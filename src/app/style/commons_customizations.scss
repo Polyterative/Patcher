@@ -1,7 +1,7 @@
-﻿@use '@angular/material' as mat;
+@use '@angular/material' as mat;
 
-@import "reset";
-@import "brand-resources";
+@use "reset";
+@use "brand-resources";
 //@import 'material-design-icons-iconfont/dist/material-design-icons.css';
 //@import 'typeface-roboto/index.css';
 //@import 'typeface-noto-sans/index.css';
@@ -281,7 +281,7 @@ mat-expansion-panel {
 @mixin item-description {
   font-style: italic;
   color: rgba(0, 0, 0, 0.5);
-  @include condensed-font
+  @include brand-resources.condensed-font
 }
 
 .invert-color {
