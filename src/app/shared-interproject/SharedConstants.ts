@@ -23,7 +23,7 @@ export class SharedConstants {
       invalidRedirect: "That redirect URL isn't valid.",
       passwordMismatch: "Oops! Those passwords don't match. Give it another try.",
       resetFailed: "Something went wrong on our end. Mind trying again?",
-      resetPasswordTitle: "Create your new password",
+      resetPasswordTitle: "Let's get you a new password",
       invalidTokenTitle: "Hmm, this link isn't working",
       invalidTokenDescription: "This reset link might have expired or wasn't opened correctly. No worries! Just grab the fresh link from your email or request a new one.",
       goToLogin: "Take me to login",
