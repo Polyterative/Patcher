@@ -3,10 +3,7 @@ import {
   Meta,
   Title
 } from '@angular/platform-browser';
-import {
-  SeoSocialShareData,
-  SeoSocialShareService
-} from 'ngx-seo';
+import { SeoSocialShareData } from '../../models/seo.model';
 
 
 @Injectable({
@@ -23,7 +20,6 @@ export class SeoAndUtilsService {
   };
   
   constructor(
-    private readonly seoSocialShareService: SeoSocialShareService,
     private titleService: Title,
     private readonly metaService: Meta,
   ) { }
@@ -35,19 +31,30 @@ export class SeoAndUtilsService {
         ...data
       };
       
-      this.seoSocialShareService.setData(newSeoData);
-      
       const newTitle: string = appArea + ' | ' + this.defaults.title;
       this.setTitle(newTitle);
       
-      // Add more meta tags
+      // Set basic meta tags
+      this.metaService.updateTag({name: 'description', content: newSeoData.description});
+      this.metaService.updateTag({name: 'keywords', content: newSeoData.keywords});
+      this.metaService.updateTag({name: 'author', content: newSeoData.author || 'patcher.xyz'});
+      
+      // Open Graph meta tags
+      this.metaService.updateTag({property: 'og:title', content: newTitle});
       this.metaService.updateTag({property: 'og:description', content: newSeoData.description});
-      this.metaService.updateTag({property: 'og:type', content: 'website'});
-      this.metaService.updateTag({property: 'og:url', content: window.location.href});
-      this.metaService.updateTag({name: 'twitter:description', content: newSeoData.description});
+      this.metaService.updateTag({property: 'og:type', content: newSeoData.type || 'website'});
+      this.metaService.updateTag({property: 'og:url', content: newSeoData.url || window.location.href});
+      this.metaService.updateTag({property: 'og:image', content: newSeoData.image});
+      this.metaService.updateTag({property: 'og:image:secure_url', content: newSeoData.image});
+      this.metaService.updateTag({property: 'og:image:alt', content: newTitle});
+      
+      // Twitter Card meta tags
       this.metaService.updateTag({name: 'twitter:card', content: 'summary_large_image'});
+      this.metaService.updateTag({name: 'twitter:title', content: newTitle});
+      this.metaService.updateTag({name: 'twitter:description', content: newSeoData.description});
       this.metaService.updateTag({name: 'twitter:image', content: newSeoData.image});
       this.metaService.updateTag({name: 'twitter:image:src', content: newSeoData.image});
+      this.metaService.updateTag({name: 'twitter:image:alt', content: newTitle});
       this.metaService.updateTag({name: 'twitter:image:alt', content: newSeoData.title});
       this.metaService.updateTag({property: 'og:image', content: newSeoData.image});
       this.metaService.updateTag({property: 'og:image:secure_url', content: newSeoData.image});
@@ -61,7 +68,6 @@ export class SeoAndUtilsService {
   
   private setTitle(title: string = '') {
     this.titleService.setTitle(title);
-    this.seoSocialShareService.setTitle(title);
     if (title && title.length) {
       this.metaService.updateTag({name: 'twitter:title', content: title});
       this.metaService.updateTag({name: 'twitter:image:alt', content: title});
