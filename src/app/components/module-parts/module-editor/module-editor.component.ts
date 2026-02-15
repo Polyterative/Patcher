@@ -236,7 +236,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         Validators.min(0),
         Validators.max(2000)
       ]),
-      flex: 'auto'
+      flex: 'auto',
+      iconL1: 'fitness_center'
     };
     
     this.depth = {
@@ -247,7 +248,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         Validators.min(0),
         Validators.max(500)
       ]),
-      flex: 'auto'
+      flex: 'auto',
+      iconL1: 'vertical_align_center'
     };
   }
   

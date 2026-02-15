@@ -62,6 +62,7 @@ export interface IMatFormEntityConfig {
   // options?: ISelectable[];
   options$?: Observable<ISelectable[]>;
   hint?: string;
+  iconL1?: string;
 }
 
 /**
@@ -249,6 +250,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       }
       if (this.dataPack.hint) {
         this.hint = this.dataPack.hint;
+      }
+      if (this.dataPack.iconL1) {
+        this.iconL1 = this.dataPack.iconL1;
       }
     }
     
