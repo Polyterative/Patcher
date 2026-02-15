@@ -179,6 +179,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   @Input() label = 'Description';
   @Input() type: FormTypes = FormTypes.TEXT;
   @Input() default = false;
+  @Input() iconL1?: string;
   
   //
   // @Input()
