@@ -32,6 +32,7 @@
                        *ngIf="isEditing&&!isCreator"
                        [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
                        [ngClass]="{'padT0':notes.control.value.length>0}"
+                       iconL1="note"
   ></lib-mat-form-entity>
   
   <ng-container *ngIf="!isEditing">
