@@ -48,7 +48,7 @@
             <ng-container *ngIf="dataService.resetSuccessMessage$ | async as successMessage">
               <div class="success-container">
                 <mat-icon class="state-icon success-icon">check_circle</mat-icon>
-                <h2>{{ SharedConstants.messages.resetPassword.successTitle }}</h2>
+                <h2>{{ SharedConstants.messages.passwordResetEmailSentTitle }}</h2>
                 <p>{{ successMessage }}</p>
                 <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary">
                   Back to login
