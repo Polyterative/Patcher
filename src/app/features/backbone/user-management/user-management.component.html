@@ -23,7 +23,7 @@
                                       theme="warning"
             >Logout
             </app-brand-primary-button>
-            <div class="row gap1">
+            <div class="row gap1" fxLayoutAlign="start center">
               <app-label-value-showcase label="Display Name"
                                         fxFlex="grow"
               >{{bag.userProfile.username}}</app-label-value-showcase>
@@ -34,7 +34,7 @@
               </app-brand-primary-button>
             </div>
             <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
-            <div class="row gap1">
+            <div class="row gap1" fxLayoutAlign="start center">
               <app-label-value-showcase label="Password (hidden)"
                                         fxFlex="grow"
               >********
