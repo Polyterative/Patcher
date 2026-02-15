@@ -6,7 +6,10 @@ import {
 import { UserLoginDataService } from './user-login-data.service';
 import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
-import { Router } from "@angular/router";
+import {
+  ActivatedRoute,
+  Router
+} from "@angular/router";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
   take,
@@ -41,6 +44,7 @@ export class LoginPageComponent extends SubManager implements OnInit {
     private seoAndUtilsService: SeoAndUtilsService,
     public loginInteraction: UserManagementService,
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {
@@ -55,6 +59,15 @@ export class LoginPageComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
+    // Check if redirected after successful password reset
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
+      if (params['resetSuccess'] === 'true') {
+        this.snackBar.open('✅ Password reset successful! You can now log in with your new password.', undefined, {
+          duration: 5000
+        });
+      }
+    });
+    
     // if user is logged in, redirect to user area
     this.loginInteraction.loggedUser$
       .pipe(
