@@ -1,27 +1,37 @@
-import { Injectable }            from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   UntypedFormControl,
   Validators
-}                                from '@angular/forms';
-import { MatSnackBar }           from "@angular/material/snack-bar";
-import { Router }                from '@angular/router';
+} from '@angular/forms';
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { Router } from '@angular/router';
 import {
+  BehaviorSubject,
   interval,
   Subject
-}                                from 'rxjs';
+} from 'rxjs';
 import {
+  catchError,
+  map,
   switchMap,
   take,
-  takeUntil
-}                                from 'rxjs/operators';
-import { FormTypes }             from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { SharedConstants }       from 'src/app/shared-interproject/SharedConstants';
+  takeUntil,
+  tap
+} from 'rxjs/operators';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 
 
 @Injectable()
 export class UserLoginDataService {
   public readonly updateData$ = new Subject<void>();
+  
+  // State management for password reset UI
+  public readonly showPasswordReset$ = new BehaviorSubject<boolean>(false);
+  public readonly isSubmittingReset$ = new BehaviorSubject<boolean>(false);
+  public readonly resetSuccessMessage$ = new BehaviorSubject<string>('');
+  public readonly resetErrorMessage$ = new BehaviorSubject<string>('');
   
   fields = {
     user: {
@@ -47,19 +57,32 @@ export class UserLoginDataService {
       type: FormTypes.PASSWORD_CURRENT
     }
   };
-  public readonly mailLoginClick$ = new Subject<void>();
   
-  // public readonly mailSignClick$ = new Subject<void>();
+  // Action subjects
+  public readonly mailLoginClick$ = new Subject<void>();
+  public readonly togglePasswordReset$ = new Subject<boolean>();
+  public readonly requestPasswordReset$ = new Subject<void>();
   
   constructor(
     private router: Router,
     public loginInteraction: UserManagementService,
     private snackBar: MatSnackBar
   ) {
-    
+    this.initializeLoginHandler();
+    this.initializePasswordResetToggle();
+    this.initializePasswordResetRequest();
+  }
+  
+  /**
+   * Initialize login handler
+   */
+  private initializeLoginHandler(): void {
     this.mailLoginClick$
       .pipe(
-        switchMap(() => this.loginInteraction.login$(this.fields.user.control.value, this.fields.password.control.value)),
+        switchMap(() => this.loginInteraction.login$(
+          this.fields.user.control.value,
+          this.fields.password.control.value
+        )),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
@@ -70,21 +93,68 @@ export class UserLoginDataService {
             this.router.navigate([x.returnUrl ? x.returnUrl : '/user/area']);
           });
       });
-    
-    // this.mailSignClick$
-    //     .pipe(
-    //       switchMap(x => this.loginInteraction.signup(this.fields.user.control.value, this.fields.password.control.value)),
-    //       takeUntil(this.destroyEvent$)
-    //     )
-    //     .subscribe(x => {
-    //       if (!!x.error) {
-    //         SharedConstants.errorSignup(snackBar, x.error.message);
-    //       } else {
-    //         SharedConstants.confirmMail(snackBar);
-    //       }
-    //
-    //     });
-    
+  }
+  
+  /**
+   * Initialize password reset toggle handler
+   */
+  private initializePasswordResetToggle(): void {
+    this.togglePasswordReset$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(show => {
+        this.showPasswordReset$.next(show);
+        this.resetSuccessMessage$.next('');
+        this.resetErrorMessage$.next('');
+      });
+  }
+  
+  /**
+   * Initialize password reset request handler
+   */
+  private initializePasswordResetRequest(): void {
+    this.requestPasswordReset$
+      .pipe(
+        map(() => this.fields.user.control.value),
+        tap(() => {
+          this.resetErrorMessage$.next('');
+          this.resetSuccessMessage$.next('');
+        }),
+        // Validate email
+        map(email => {
+          if (!email || !email.trim()) {
+            throw new Error('Please enter your email address.');
+          }
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            throw new Error('Please enter a valid email address.');
+          }
+          return email;
+        }),
+        tap(() => this.isSubmittingReset$.next(true)),
+        switchMap(email =>
+          this.loginInteraction.resetPassword$(email).pipe(
+            map(() => ({
+              success: true,
+              message: 'Check your email! We\'ve sent you a link to reset your password.'
+            })),
+            catchError(() => {
+              this.isSubmittingReset$.next(false);
+              this.resetErrorMessage$.next('Something went wrong. Please try again.');
+              return [];
+            })
+          )
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(result => {
+        if (result?.success) {
+          this.isSubmittingReset$.next(false);
+          this.resetSuccessMessage$.next(result.message);
+        }
+      }, error => {
+        this.isSubmittingReset$.next(false);
+        this.resetErrorMessage$.next(error.message || 'Please enter a valid email address.');
+      });
   }
   
   protected destroyEvent$ = new Subject<void>();
