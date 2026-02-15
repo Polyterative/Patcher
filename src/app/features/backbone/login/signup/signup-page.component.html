@@ -11,13 +11,15 @@
         <app-signup-email fxFlex="100"></app-signup-email>
         
         
-        <app-brand-primary-button *ngIf="false"
-                                  style="padding-top: 1rem"
-                                  innerFlex="auto"
-                                  theme="positive"
-                                  (click$)="dataService.googleSignClick$.next()"
-        >Google Sign up
-        </app-brand-primary-button>
+        @if (false) {
+          <app-brand-primary-button
+            style="padding-top: 1rem"
+            innerFlex="auto"
+            theme="positive"
+            (click$)="dataService.googleSignClick$.next()"
+          >Google Sign up
+          </app-brand-primary-button>
+        }
         
         <!-- Action Links Section with improved spacing -->
         <div class="signup-actions-section">

@@ -1,42 +1,52 @@
-<ng-container *ngIf="{
-data:(data$|async),
-layoutFlexWidth:(appState.layoutFlexWidth$|async)
-} as bag"
->
-  <div class="row "
-       *ngIf="bag.layoutFlexWidth"
-  >
-    <ng-container *ngFor="let item of bag.data">
-      <a *ngIf="bag.layoutFlexWidth.xs"
-         mat-icon-button
-         class="option stock"
-         [routerLink]="item.route"
-         routerLinkActive="selected"
-         (click)="onClick(item)"
-         [disabled]="item.disabled"
-         [ngClass]="{'disabled':item.disabled}"
-         [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
-         [ngStyle]="item.style"
-      >
-        <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
-        <ng-container *ngIf="item.icon?bag.layoutFlexWidth.gtsm:true"> {{  item.label}}</ng-container>
-      </a>
-      <a *ngIf="bag.layoutFlexWidth.gtxs"
-         mat-button
-         class="option stock"
-         [routerLink]="item.route"
-         routerLinkActive="selected"
-         (click)="onClick(item)"
-         [disabled]="item.disabled"
-         [ngClass]="{'disabled':item.disabled}"
-         [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
-         [ngStyle]="item.style"
-      >
-        <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon>
-        <ng-container *ngIf="item.icon?bag.layoutFlexWidth.gtsm:true"> {{  item.label}}</ng-container>
-      </a>
-    </ng-container>
-  </div>
-
- 
-</ng-container>
+@if ({
+  data: (data$|async),
+  layoutFlexWidth: (appState.layoutFlexWidth$|async)
+}; as bag) {
+  @if (bag.layoutFlexWidth) {
+    <div class="row "
+    >
+      @for (item of bag.data; track item) {
+        @if (bag.layoutFlexWidth.xs) {
+          <a
+            mat-icon-button
+            class="option stock"
+            [routerLink]="item.route"
+            routerLinkActive="selected"
+            (click)="onClick(item)"
+            [disabled]="item.disabled"
+            [ngClass]="{'disabled':item.disabled}"
+            [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+            [ngStyle]="item.style"
+          >
+            @if (item.icon) {
+              <mat-icon>{{ item.icon }}</mat-icon>
+            }
+            @if (item.icon ? bag.layoutFlexWidth.gtsm : true) {
+              {{ item.label }}
+            }
+          </a>
+        }
+        @if (bag.layoutFlexWidth.gtxs) {
+          <a
+            mat-button
+            class="option stock"
+            [routerLink]="item.route"
+            routerLinkActive="selected"
+            (click)="onClick(item)"
+            [disabled]="item.disabled"
+            [ngClass]="{'disabled':item.disabled}"
+            [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+            [ngStyle]="item.style"
+          >
+            @if (item.icon) {
+              <mat-icon>{{ item.icon }}</mat-icon>
+            }
+            @if (item.icon ? bag.layoutFlexWidth.gtsm : true) {
+              {{ item.label }}
+            }
+          </a>
+        }
+      }
+    </div>
+  }
+}

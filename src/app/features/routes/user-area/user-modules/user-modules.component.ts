@@ -18,10 +18,11 @@ export const userModulesDefaultViewConfig: UserModulesComponentViewConfig = {
 };
 
 @Component({
-  selector:        'app-user-modules',
-  templateUrl:     './user-modules.component.html',
-  styleUrls:       ['./user-modules.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-modules',
+  templateUrl: './user-modules.component.html',
+  styleUrls: ['./user-modules.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserModulesComponent extends SubManager {
   @Input() modulesViewConfig: ModuleMinimalViewConfig;

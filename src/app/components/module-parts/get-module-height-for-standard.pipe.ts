@@ -9,7 +9,8 @@ import { Standard } from '../../models/standard';
  * Output in REM
  */
 @Pipe({
-  name: 'getModuleHeightForStandard'
+  name: 'getModuleHeightForStandard',
+  standalone: false
 })
 export class GetModuleHeightForStandardPipe implements PipeTransform {
   

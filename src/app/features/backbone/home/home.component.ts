@@ -1,37 +1,37 @@
 import {
   Component,
   OnDestroy
-}                                  from '@angular/core';
-import { Router }                  from '@angular/router';
+} from '@angular/core';
+import { Router } from '@angular/router';
 import {
   fadeInOnEnterAnimation,
   slideInDownOnEnterAnimation
-}                                  from 'angular-animations';
-import { timer }                   from 'rxjs';
+} from 'angular-animations';
+import { timer } from 'rxjs';
 import {
   CardLinkDataModel,
   cleanCardlinkModelObject
-}                                  from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
-import { SubManager }              from 'src/app/shared-interproject/directives/subscription-manager';
-import { SupabaseService }         from '../../backend/supabase.service';
-import { SeoAndUtilsService }      from '../seo-and-utils.service';
-import { SeoSocialShareData }      from "ngx-seo";
-import { PatchDetailDataService }  from "src/app/components/patch-parts/patch-detail-data.service";
+} from 'src/app/shared-interproject/components/@smart/list-link-router/clickable-list-card-base';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SupabaseService } from '../../backend/supabase.service';
+import { SeoAndUtilsService } from '../seo-and-utils.service';
+import { SeoSocialShareData } from "ngx-seo";
+import { PatchDetailDataService } from "src/app/components/patch-parts/patch-detail-data.service";
 import { ModuleDetailDataService } from "src/app/components/module-parts/module-detail-data.service";
-import { take }                    from "rxjs/operators";
-import { RackDetailDataService }   from "src/app/components/rack-parts/rack-detail-data.service";
+import { take } from "rxjs/operators";
+import { RackDetailDataService } from "src/app/components/rack-parts/rack-detail-data.service";
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
-}                                  from "src/app/components/patch-parts/patch-minimal/patch-minimal.component";
+} from "src/app/components/patch-parts/patch-minimal/patch-minimal.component";
 import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
-}                                  from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
+} from "src/app/components/rack-parts/rack-minimal/rack-minimal.component";
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-}                                  from "src/app/components/module-parts/module-minimal/module-minimal.component";
+} from "src/app/components/module-parts/module-minimal/module-minimal.component";
 
 
 @Component({
@@ -74,7 +74,8 @@ import {
     PatchDetailDataService,
     RackDetailDataService,
     ModuleDetailDataService
-  ]
+  ],
+  standalone: false
 })
 
 export class HomeComponent extends SubManager implements OnDestroy {

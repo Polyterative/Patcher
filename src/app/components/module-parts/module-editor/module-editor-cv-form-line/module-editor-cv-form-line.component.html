@@ -1,41 +1,38 @@
-<div class="rowwrap gap1"
-     *ngIf="!!item"
->
-  <div>
-    <button mat-icon-button
-            [disabled]="!(item.id==0)"
-            (click)="removeRequest$.next()"
-    >
-      <ng-container *ngIf="item.isApproved!==undefined&&item.isApproved; else deleteIcon"
+@if (!!item) {
+  <div class="rowwrap gap1"
+  >
+    <div>
+      <button mat-icon-button
+              [disabled]="!(item.id==0)"
+              (click)="removeRequest$.next()"
       >
-        <mat-icon>check</mat-icon>
-      </ng-container>
-    </button>
+        @if (item.isApproved !== undefined && item.isApproved) {
+          <mat-icon>check</mat-icon>
+        } @else {
+          <mat-icon>
+            delete
+          </mat-icon>
+        }
+      </button>
+    </div>
+    <lib-mat-form-entity [type]="types.TEXT"
+                         [control]="item.name"
+                         label="name"
+                         iconL1="label"
+    ></lib-mat-form-entity>
+    <lib-mat-form-entity [type]="types.NUMBER"
+                         [control]="item.a"
+                         label="Minimum Voltage (V)"
+                         iconL1="remove"
+    ></lib-mat-form-entity>
+    <lib-mat-form-entity [type]="types.NUMBER"
+                         [control]="item.b"
+                         label="Maximum Voltage (V)"
+                         iconL1="add"
+    ></lib-mat-form-entity>
+    <mat-divider inset="true"
+                 fxHide="true"
+                 fxShow.lt-md="true"
+    ></mat-divider>
   </div>
-  <lib-mat-form-entity [type]="types.TEXT"
-                       [control]="item.name"
-                       label="name"
-                       iconL1="label"
-  ></lib-mat-form-entity>
-  <lib-mat-form-entity [type]="types.NUMBER"
-                       [control]="item.a"
-                       label="Minimum Voltage (V)"
-                       iconL1="remove"
-  ></lib-mat-form-entity>
-  <lib-mat-form-entity [type]="types.NUMBER"
-                       [control]="item.b"
-                       label="Maximum Voltage (V)"
-                       iconL1="add"
-  ></lib-mat-form-entity>
-  <mat-divider inset="true"
-               fxHide="true"
-               fxShow.lt-md="true"
-  ></mat-divider>
-</div>
-
-<ng-template #deleteIcon>
-  <mat-icon>
-    delete
-  </mat-icon>
-
-</ng-template>
+}

@@ -6,14 +6,7 @@ import {
 } from '@angular/core';
 import { DbComment } from "src/app/models/comment";
 import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
-import {
-  MatChip,
-  MatChipSet
-} from "@angular/material/chips";
-import {
-  AsyncPipe,
-  NgIf
-} from "@angular/common";
+import { AsyncPipe } from "@angular/common";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import { SupabaseService } from "src/app/features/backend/supabase.service";
 import {
@@ -33,11 +26,7 @@ interface CommentContext {
 
 @Component({
   selector: 'app-comment-context',
-  standalone: true,
   imports: [
-    MatChipSet,
-    MatChip,
-    NgIf,
     AsyncPipe,
     MatButton
   ],

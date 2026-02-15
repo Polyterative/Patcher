@@ -8,10 +8,11 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 
 
 @Component({
-  selector:        'app-user-patches',
-  templateUrl:     './user-patches.component.html',
-  styleUrls:       ['./user-patches.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-user-patches',
+  templateUrl: './user-patches.component.html',
+  styleUrls: ['./user-patches.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class UserPatchesComponent {
   

@@ -2,7 +2,8 @@
      fxLayoutAlign="space-between"
 >
   <div class="circle"></div>
-  <div class="circle"
-       *ngIf="data.standard.id===0?data.hp>4:data.hp>7"
-  ></div>
+  @if (data.standard.id === 0 ? data.hp > 4 : data.hp > 7) {
+    <div class="circle"
+    ></div>
+  }
 </div>

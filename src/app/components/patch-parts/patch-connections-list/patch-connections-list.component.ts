@@ -13,24 +13,21 @@ import { PatchDetailDataService } from '../patch-detail-data.service';
 
 
 @Component({
-  selector:        'app-patch-connections-list',
-  templateUrl:     './patch-connections-list.component.html',
-  styleUrls:       ['./patch-connections-list.component.scss'],
-  animations:      [
-    zoomInOnEnterAnimation(
-      {
-        duration: 0,
-        anchor:   'enter'
-      }
-    ),
-    fadeOutOnLeaveAnimation(
-      {
-        duration: 500,
-        anchor:   'exit'
-      }
-    )
+  selector: 'app-patch-connections-list',
+  templateUrl: './patch-connections-list.component.html',
+  styleUrls: ['./patch-connections-list.component.scss'],
+  animations: [
+    zoomInOnEnterAnimation({
+      duration: 0,
+      anchor: 'enter'
+    }),
+    fadeOutOnLeaveAnimation({
+      duration: 500,
+      anchor: 'exit'
+    })
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchConnectionsListComponent implements OnInit {
   

@@ -20,10 +20,11 @@ import {
 
 
 @Component({
-  selector:        'app-patch-connection-minimal',
-  templateUrl:     './patch-connection-minimal.component.html',
-  styleUrls:       ['./patch-connection-minimal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-patch-connection-minimal',
+  templateUrl: './patch-connection-minimal.component.html',
+  styleUrls: ['./patch-connection-minimal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchConnectionMinimalComponent implements OnInit {
   @Input() readonly index?: number;

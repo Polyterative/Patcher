@@ -1,11 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import build from 'src/build';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-  selector:        'app-build-info',
-  templateUrl:     './build-info.component.html',
-  styleUrls:       ['./build-info.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-build-info',
+  templateUrl: './build-info.component.html',
+  styleUrls: ['./build-info.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class BuildInfoComponent implements OnInit {
   

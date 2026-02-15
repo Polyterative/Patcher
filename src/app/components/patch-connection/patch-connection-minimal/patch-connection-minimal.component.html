@@ -25,54 +25,57 @@
     </app-module-minimal>
   </div>
   
-  <lib-mat-form-entity [type]="types.AREA"
-                       [control]="notes.control"
-                       label="Notes"
-                       [disabled]="!isEditing"
-                       *ngIf="isEditing&&!isCreator"
-                       [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
-                       [ngClass]="{'padT0':notes.control.value.length>0}"
-                       iconL1="note"
-  ></lib-mat-form-entity>
+  @if (isEditing && !isCreator) {
+    <lib-mat-form-entity [type]="types.AREA"
+                         [control]="notes.control"
+                         label="Notes"
+                         [disabled]="!isEditing"
+                         [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
+                         [ngClass]="{'padT0':notes.control.value.length>0}"
+                         iconL1="note"
+    ></lib-mat-form-entity>
+  }
   
-  <ng-container *ngIf="!isEditing">
+  @if (!isEditing) {
     <div class="row gap0 padT0"
     >
-        <ng-container *ngIf="data.notes&&data.notes.length>0">
-          <div class="notes">
-            {{ data.notes }}
-          </div>
-        </ng-container>
-      
+      @if (data.notes && data.notes.length > 0) {
+        <div class="notes">
+          {{ data.notes }}
+        </div>
+      }
       <div style="flex-grow: 1">
         <ng-container *ngTemplateOutlet="ordinal"></ng-container>
       </div>
     </div>
-  </ng-container>
-  <ng-container *ngIf="isEditing">
+  }
+  @if (isEditing) {
     <div class="row gap0 padT0 space-between parent">
-      
       <mat-icon [matTooltip]="isCreator?'Clear selection':'Remove connection'"
                 (click)="remove$.next(data)"
                 class="transparentize-quarter clickable opacizeOnHover deleteIcon"
       >delete
       </mat-icon>
-      <app-brand-primary-button *ngIf="isCreator"
-                                (click$)="create$.next(data)"
-      >
-        Confirm connection
-      </app-brand-primary-button>
+      @if (isCreator) {
+        <app-brand-primary-button
+          (click$)="create$.next(data)"
+        >
+          Confirm connection
+        </app-brand-primary-button>
+      }
       <ng-container *ngTemplateOutlet="ordinal"></ng-container>
     </div>
-  </ng-container>
+  }
   
   <ng-template #ordinal>
-    <mat-card-subtitle *ngIf="index"
-                       fxLayoutAlign="end center"
-                       class="monospace"
-                       [ngClass]="index%5!=0?'fade-ordinal':''"
-    >#{{ index }}
-    </mat-card-subtitle>
+    @if (index) {
+      <mat-card-subtitle
+        fxLayoutAlign="end center"
+        class="monospace"
+        [ngClass]="index%5!=0?'fade-ordinal':''"
+      >#{{ index }}
+      </mat-card-subtitle>
+    }
   </ng-template>
   <ng-template #notesT>
   </ng-template>

@@ -1,13 +1,22 @@
-import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Pipe,
+  PipeTransform
+} from '@angular/core';
+import {
+  UntypedFormControl,
+  UntypedFormGroup
+} from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 
 type LocalType = UntypedFormControl | UntypedFormGroup;
 
 @Pipe({
   name: 'formValid',
-  pure: false
+  pure: false,
+  standalone: false
 })
 export class FormValidPipe implements PipeTransform {
   valid = false;

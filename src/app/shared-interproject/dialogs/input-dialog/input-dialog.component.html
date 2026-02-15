@@ -2,9 +2,11 @@
 <mat-dialog-content>
   <div class="col gap1"
   >
-    <div *ngIf="description">
-      {{ description }}
-    </div>
+    @if (description) {
+      <div>
+        {{ description }}
+      </div>
+    }
     <lib-mat-form-entity [label]="data.label"
                          [type]="data.type"
                          [control]="data.control"
@@ -29,9 +31,9 @@
   
   </div>
 </mat-dialog-actions>
-  <!--  <mat-progress-bar mode="indeterminate"-->
-  <!--                    [style.visibility]="data.control.valid ? 'hidden' : 'visible' "-->
-  <!--  ></mat-progress-bar>-->
+<!--  <mat-progress-bar mode="indeterminate"-->
+<!--                    [style.visibility]="data.control.valid ? 'hidden' : 'visible' "-->
+<!--  ></mat-progress-bar>-->
 
 <!--</div>-->
 <!--&lt;!&ndash;&ndash;&gt;-->

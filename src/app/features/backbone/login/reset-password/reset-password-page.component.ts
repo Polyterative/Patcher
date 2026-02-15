@@ -32,7 +32,6 @@ const AUTH_CHECK_DELAY_MS = 1000;
 
 @Component({
   selector: 'app-reset-password-page',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,

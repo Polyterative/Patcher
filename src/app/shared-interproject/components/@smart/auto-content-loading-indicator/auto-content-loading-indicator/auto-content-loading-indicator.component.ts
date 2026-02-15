@@ -1,22 +1,39 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation
+} from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import { BehaviorSubject, merge, Observable, Subject } from 'rxjs';
-import { filter, mapTo, skip, takeUntil } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  merge,
+  Observable,
+  Subject
+} from 'rxjs';
+import {
+  filter,
+  mapTo,
+  skip,
+  takeUntil
+} from 'rxjs/operators';
+
 
 @Component({
-  selector:        'lib-auto-content-loading-indicator',
-  templateUrl:     './auto-content-loading-indicator.component.html',
-  styleUrls:       ['./auto-content-loading-indicator.component.scss'],
-  animations:      [
-    fadeInOnEnterAnimation(
-      {
-        anchor:   'enter',
-        duration: 500
-      }
-    )
+  selector: 'lib-auto-content-loading-indicator',
+  templateUrl: './auto-content-loading-indicator.component.html',
+  styleUrls: ['./auto-content-loading-indicator.component.scss'],
+  animations: [
+    fadeInOnEnterAnimation({
+      anchor: 'enter',
+      duration: 500
+    })
   ],
-  encapsulation:   ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;

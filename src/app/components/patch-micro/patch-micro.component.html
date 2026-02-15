@@ -6,14 +6,16 @@
   </app-hero-clickable-title>
   <app-entity-author [data]="data.author"></app-entity-author>
   
-  <app-timestamps-relative [data]="data"
-                           *ngIf="!viewConfig.hideDates"
-  ></app-timestamps-relative>
-  <div class="row gap1 space-between description"
-       *ngIf="!viewConfig.hideDescription"
-  >
-    <mat-card-subtitle>{{ data.description }}</mat-card-subtitle>
-  </div>
+  @if (!viewConfig.hideDates) {
+    <app-timestamps-relative [data]="data"
+    ></app-timestamps-relative>
+  }
+  @if (!viewConfig.hideDescription) {
+    <div class="row gap1 space-between description"
+    >
+      <mat-card-subtitle>{{ data.description }}</mat-card-subtitle>
+    </div>
+  }
 
 </div>
 <!--{{viewConfig|json}}-->

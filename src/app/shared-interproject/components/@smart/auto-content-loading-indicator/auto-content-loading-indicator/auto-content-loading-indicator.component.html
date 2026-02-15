@@ -1,29 +1,29 @@
-<ng-container *ngIf="{
-    dataLoading:(dataLoading$|async)
-    } as bag"
->
-  <div *ngIf="bag.dataLoading"
-       fxLayout="column"
-       fxLayoutGap=".5rem"
-       [fxHide]="!bag.dataLoading"
-  >
-    <ng-container *ngFor="let i of [].constructor(loadingLines)">
-    
-      <div class="skeleton m1"
-      >Lorem ipsum dolor sit amet, consectetur adipiscing elit
-      </div>
-      <div class="skeleton m2"
-      >ullamco laboris nisi ut aliquip ex
-      </div>
-      <div class="skeleton m3"
-      >Excepteur sint occaecat cupidatat non proident
-      </div>
-    </ng-container>
-  </div>
+@if ({
+  dataLoading: (dataLoading$|async)
+}; as bag) {
+  @if (bag.dataLoading) {
+    <div
+      fxLayout="column"
+      fxLayoutGap=".5rem"
+      [fxHide]="!bag.dataLoading"
+    >
+      @for (i of [].constructor(loadingLines); track i) {
+        <div class="skeleton m1"
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit
+        </div>
+        <div class="skeleton m2"
+        >ullamco laboris nisi ut aliquip ex
+        </div>
+        <div class="skeleton m3"
+        >Excepteur sint occaecat cupidatat non proident
+        </div>
+      }
+    </div>
+  }
   <!--  </ng-container>-->
-  <ng-container *ngIf="!bag.dataLoading">
+  @if (!bag.dataLoading) {
     <div [@enter]>
       <ng-content></ng-content>
     </div>
-  </ng-container>
-</ng-container>
+  }
+}

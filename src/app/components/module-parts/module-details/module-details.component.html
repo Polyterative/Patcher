@@ -1,7 +1,7 @@
 <div class="col gap1 parent"
 >
   <app-module-cvs [data]="data"></app-module-cvs>
-  <ng-container *ngIf="switches.length>0">
+  @if (switches.length > 0) {
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div fxLayout="row wrap"
          fxLayoutGap="1rem"
@@ -12,8 +12,9 @@
       <!--        </ng-container>-->
       <!--      </mat-chip-list>-->
     </div>
-  </ng-container>
-  <mat-accordion *ngIf="(data.panels.length>1)&&(!viewConfig.hidePanelsOptions)">
+  }
+  @if ((data.panels.length > 1) && (!viewConfig.hidePanelsOptions)) {
+    <mat-accordion>
     <mat-expansion-panel hideToggle="true"
                          style="padding-top: 1rem"
     >
@@ -26,37 +27,41 @@
            fxLayout="row wrap"
            fxLayoutGap=".5rem grid"
       >
-        <ng-container *ngFor="let item of data.panels; let i = index">
+        @for (item of data.panels; track item; let i = $index) {
           <div fxFlex="auto"
                fxLayout="column"
                fxLayoutGap="1rem"
           >
             <div fxFlex="auto">
-              <img *ngIf="item.filename"
-                   alt="{{item.filename}}"
-                   class="image-transition"
-                   loading="lazy"
-                   [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
-                   [matTooltip]="item.filename"
-                   [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
-              >
+              @if (item.filename) {
+                <img
+                  alt="{{item.filename}}"
+                  class="image-transition"
+                  loading="lazy"
+                  [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
+                  [matTooltip]="item.filename"
+                  [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
+                >
+              }
             </div>
             <!--            <mat-chip>-->
             <!--              {{item.filename}}-->
             <!--            </mat-chip>-->
           </div>
-        </ng-container>
+        }
       </div>
     </mat-expansion-panel>
-  </mat-accordion>
+    </mat-accordion>
+  }
   
   
+  @if (data.manufacturer.id == 10000) {
   <p fxLayoutAlign="end"
      style="font-size: 1rem"
-     *ngIf="data.manufacturer.id==10000"
   >
     Abstract module, used for educational patches.
   </p>
+  }
 
 
 </div>

@@ -1,18 +1,20 @@
-<div class="col gap0"
-     *ngIf="data.tags&&data.tags.length>0"
->
-  <!--  <mat-card-subtitle>-->
-  <!--    {{data.tags.length}} Tag(s)-->
+@if (data.tags && data.tags.length > 0) {
+  <div class="col gap0"
+  >
+    <!--  <mat-card-subtitle>-->
+    <!--    {{data.tags.length}} Tag(s)-->
   <!--  </mat-card-subtitle>-->
   <!--  <ng-container *ngFor="let item of data.tags|onlyTagOfType:0">-->
   <!--    {{item.name}}-->
-  <!--  </ng-container>-->
-  <mat-chip-listbox class="padT0 padB0">
-    <ng-container *ngFor="let item of data.tags|orderTagsByType; let i = index">
-      <mat-chip
+    <!--  </ng-container>-->
+    <mat-chip-listbox class="padT0 padB0">
+      @for (item of data.tags|orderTagsByType; track item; let i = $index) {
+        <mat-chip
           [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
           [@leave]="{ value: '', params: { delay:  5 }}"
-      >{{item.tag.name}}</mat-chip>
-    </ng-container>
-  </mat-chip-listbox>
+        >{{ item.tag.name }}
+        </mat-chip>
+      }
+    </mat-chip-listbox>
 </div>
+}

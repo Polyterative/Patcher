@@ -1,21 +1,21 @@
-<div class="countdown-wrapper" *ngIf="countdown !== null">
-  <p class="countdown-message">
-    {{ message }}
-    <strong class="countdown-number">{{ countdown }}</strong>
-    {{ unitLabel }}
-  </p>
-  
-  <!-- Progress bar -->
-  <div class="progress-bar-container">
-    <div
-      [style.width.%]="progress"
-      [class.theme-success]="theme === 'success'"
-      [class.theme-info]="theme === 'info'"
-      [class.theme-warning]="theme === 'warning'"
-      class="progress-bar-fill">
+@if (countdown !== null) {
+  <div class="countdown-wrapper">
+    <p class="countdown-message">
+      {{ message }}
+      <strong class="countdown-number">{{ countdown }}</strong>
+      {{ unitLabel }}
+    </p>
+    <!-- Progress bar -->
+    <div class="progress-bar-container">
+      <div
+        [style.width.%]="progress"
+        [class.theme-success]="theme === 'success'"
+        [class.theme-info]="theme === 'info'"
+        [class.theme-warning]="theme === 'warning'"
+        class="progress-bar-fill">
+      </div>
     </div>
+    <!-- Optional action button -->
+    <ng-content></ng-content>
   </div>
-  
-  <!-- Optional action button -->
-  <ng-content></ng-content>
-</div>
+}

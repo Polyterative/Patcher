@@ -1,44 +1,38 @@
-<ng-container *ngIf="{
+@if ({
   connections:(dataService.patchConnections$|async)
-  } as bag"
->
+}; as bag) {
   <div class="col gap1"
   >
-    <lib-auto-content-loading-indicator *ngIf="bag.connections==null;else data"
-                                        [skipFirstData]="true"
-                                        [loadingLines]="5"
-    >
-    </lib-auto-content-loading-indicator>
-
-  </div>
-  
-  <ng-template #data>
-    <ng-container *ngIf="{
-      length:(bag.connections.length)
-      } as bagA"
-    >
-      <ng-container *ngIf="bagA.length>0; else noData">
-        <lib-hero-content-card [titleNormal]="'Connections graph'"
-        >
-          <lib-clean-card>
-            <app-patch-graph></app-patch-graph>
-          </lib-clean-card>
-        </lib-hero-content-card>
-
-      </ng-container>
-    </ng-container>
-  </ng-template>
-  <ng-template #noData>
-    <lib-hero-content-card titleNormal="Connections">
-      <div class="col gap1 animate-fadein-slowest"
+    @if (bag.connections == null) {
+      <lib-auto-content-loading-indicator
+        [skipFirstData]="true"
+        [loadingLines]="5"
       >
-        <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
-                                                        connections
-        </mat-card-subtitle>
-        <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
-        </mat-card-subtitle>
-      </div>
-    </lib-hero-content-card>
-  </ng-template>
-
-</ng-container>
+      </lib-auto-content-loading-indicator>
+    } @else {
+      @if ({
+        length: (bag.connections.length)
+      }; as bagA) {
+        @if (bagA.length > 0) {
+          <lib-hero-content-card [titleNormal]="'Connections graph'"
+          >
+            <lib-clean-card>
+              <app-patch-graph></app-patch-graph>
+            </lib-clean-card>
+          </lib-hero-content-card>
+        } @else {
+          <lib-hero-content-card titleNormal="Connections">
+            <div class="col gap1 animate-fadein-slowest"
+            >
+              <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
+                connections
+              </mat-card-subtitle>
+              <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
+              </mat-card-subtitle>
+            </div>
+          </lib-hero-content-card>
+        }
+      }
+    }
+  </div>
+}

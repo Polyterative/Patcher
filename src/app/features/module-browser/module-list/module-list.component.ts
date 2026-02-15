@@ -29,12 +29,12 @@ import { ModuleList } from '../module-browser-data.service';
 
 
 @Component({
-  selector:      'app-module-list',
-  templateUrl:   './module-list.component.html',
-  styleUrls:     ['./module-list.component.scss'],
-  animations:    [
+  selector: 'app-module-list',
+  templateUrl: './module-list.component.html',
+  styleUrls: ['./module-list.component.scss'],
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:   'enter',
+      anchor: 'enter',
       duration: 225,
       animateChildren: 'after'
     }),
@@ -44,7 +44,8 @@ import { ModuleList } from '../module-browser-data.service';
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders: [LocalDataFilterService]
+  viewProviders: [LocalDataFilterService],
+  standalone: false
 })
 export class ModuleListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<ModuleList>;

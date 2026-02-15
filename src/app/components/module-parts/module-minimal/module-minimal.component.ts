@@ -19,10 +19,11 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 
 
 @Component({
-  selector:        'app-module-minimal',
-  templateUrl:     './module-minimal.component.html',
-  styleUrls:       ['./module-minimal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-minimal',
+  templateUrl: './module-minimal.component.html',
+  styleUrls: ['./module-minimal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;

@@ -12,17 +12,18 @@ import { MinimalModule } from 'src/app/models/module';
 
 
 @Component({
-  selector:        'app-module-part-image',
-  templateUrl:     './module-part-image.component.html',
-  styleUrls:       ['./module-part-image.component.scss'],
+  selector: 'app-module-part-image',
+  templateUrl: './module-part-image.component.html',
+  styleUrls: ['./module-part-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations:      [
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        725,
+      anchor: 'enter',
+      duration: 725,
       animateChildren: 'after'
     })
-  ]
+  ],
+  standalone: false
 })
 export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewInit {
   

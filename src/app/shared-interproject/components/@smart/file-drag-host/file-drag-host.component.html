@@ -1,50 +1,52 @@
-<ng-container *ngIf="{files: service.files$|async} as bag">
+@if ({files: service.files$|async}; as bag) {
   <div fxFlex="auto"
        fxLayout="column"
        fxLayoutGap=".5rem"
   >
-    
     <ngx-dropzone
-        (change)="service.fileAdd$.emit($event)"
-        [accept]="acceptedFileType"
-        [multiple]="multipleFilesMode"
-        [expandable]="true"
-        class="dropzone"
+      (change)="service.fileAdd$.emit($event)"
+      [accept]="acceptedFileType"
+      [multiple]="multipleFilesMode"
+      [expandable]="true"
+      class="dropzone"
     >
-      <ngx-dropzone-label [@fadeIn]
-                          *ngIf="bag.files.length===0"
-                          style="padding: 1rem"
-      >
-        <div fxFlex="100"
-             fxLayout="column"
-             fxLayoutGap="2rem"
-             fxLayoutGap.xs="0rem"
+      @if (bag.files.length === 0) {
+        <ngx-dropzone-label [@fadeIn]
+                            style="padding: 1rem"
         >
           <div fxFlex="100"
-               style="font-size: 3.5rem"
-          >{{isImageOnlyMode ? "📷" : multipleFilesMode ? "🗃️" : "📁"}}
+               fxLayout="column"
+               fxLayoutGap="2rem"
+               fxLayoutGap.xs="0rem"
+          >
+            <div fxFlex="100"
+                 style="font-size: 3.5rem"
+            >{{ isImageOnlyMode ? "📷" : multipleFilesMode ? "🗃️" : "📁" }}
+            </div>
+            <div
+              fxFlex="100">{{ "Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one" }}
+            </div>
           </div>
-          
-          <div fxFlex="100">{{"Drag the  " + (multipleFilesMode ? "files" : "file") + " here or click to pick one"}}</div>
-        </div>
-      </ngx-dropzone-label>
-      
-      
-      <ng-container *ngIf="!isImageOnlyMode">
-        <ngx-dropzone-preview *ngFor="let file of bag.files"
-                              [removable]="true"
-                              (removed)="service.removeFile$.emit(file)"
-                              [file]="file"
-                              [@fadeInOut]
-        >
-          <mat-card-subtitle class="label">
-            {{ file.name|shorten:144: '...' }}
-            <br>
-            {{ file.lastModified|date }}</mat-card-subtitle>
-        </ngx-dropzone-preview>
-      </ng-container>
-      <ng-container *ngIf="isImageOnlyMode">
-        <ng-container *ngFor="let file of bag.files">
+        </ngx-dropzone-label>
+      }
+      @if (!isImageOnlyMode) {
+        @for (file of bag.files; track file) {
+          <ngx-dropzone-preview
+            [removable]="true"
+            (removed)="service.removeFile$.emit(file)"
+            [file]="file"
+            [@fadeInOut]
+          >
+            <mat-card-subtitle class="label">
+              {{ file.name|shorten:144: '...' }}
+              <br>
+              {{ file.lastModified|date }}
+            </mat-card-subtitle>
+          </ngx-dropzone-preview>
+        }
+      }
+      @if (isImageOnlyMode) {
+        @for (file of bag.files; track file) {
           <div fxFlex="100"
                fxLayout="row"
                fxLayoutGap="1rem"
@@ -61,18 +63,18 @@
                  class="label"
             >
               <mat-card-subtitle fxFlex="100"
-              >{{ file.name|shorten:144: '...' }}</mat-card-subtitle>
+              >{{ file.name|shorten:144: '...' }}
+              </mat-card-subtitle>
               <mat-card-subtitle fxFlex="100"
               >[{{ file.type }}]
               </mat-card-subtitle>
               <mat-card-subtitle fxFlex="100"
-              >{{ file.lastModified|date }}</mat-card-subtitle>
+              >{{ file.lastModified|date }}
+              </mat-card-subtitle>
             </div>
           </div>
-        
-        </ng-container>
-      </ng-container>
-    
+        }
+      }
     </ngx-dropzone>
     <!--    <ng-container *ngFor="let item of bag.files;">-->
     <!--      <div fxFlex="auto"-->
@@ -88,6 +90,5 @@
     <!--        </ngx-dropzone-image-preview>-->
     <!--      </div>-->
     <!--    </ng-container>-->
-  
   </div>
-</ng-container>
+}

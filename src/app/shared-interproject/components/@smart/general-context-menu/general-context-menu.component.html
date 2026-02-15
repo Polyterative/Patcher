@@ -1,4 +1,4 @@
-<ng-container *ngIf="(dataService.positionData$|async) as positionData">
+@if ((dataService.positionData$|async); as positionData) {
   <div style="visibility: hidden; position: fixed"
        [style.left]="positionData.x"
        [style.top]="positionData.y"
@@ -8,20 +8,16 @@
   <mat-menu #contextMenu="matMenu">
     <ng-template matMenuContent
     >
-      <ng-container *ngFor="let menuItem of dataService.menuItems$|async;">
+      @for (menuItem of dataService.menuItems$|async; track menuItem) {
         <!--        mat icon of menu item -->
-  
-  
         <button mat-menu-item
                 (click)="menuItem.click$.next(menuItem)"
                 [disabled]="menuItem.disabled"
-  
         >
           <mat-icon>{{menuItem.icon}}</mat-icon>
           <span>{{menuItem.label}}</span>
-  
         </button>
-      </ng-container>
+      }
     </ng-template>
   </mat-menu>
-</ng-container>
+}

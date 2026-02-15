@@ -1,12 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { PatchMinimal } from '../../models/patch';
 import { PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
 
+
 @Component({
-  selector:        'app-patch-micro',
-  templateUrl:     './patch-micro.component.html',
-  styleUrls:       ['./patch-micro.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-patch-micro',
+  templateUrl: './patch-micro.component.html',
+  styleUrls: ['./patch-micro.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchMicroComponent implements OnInit {
   
