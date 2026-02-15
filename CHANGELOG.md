@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.17.3](https://github.com/Polyterative/Patcher/compare/v4.17.2...v4.17.3) (2026-02-15)
+
+
+### Bug Fixes
+
+* **login:** update success message for password reset email notification ([7b99eab](https://github.com/Polyterative/Patcher/commit/7b99eabdb7f21171db4c8a7ab48bdf4b34c5291c))
+
 ### [4.17.2](https://github.com/Polyterative/Patcher/compare/v4.17.1...v4.17.2) (2026-02-15)
 
 ### [4.17.1](https://github.com/Polyterative/Patcher/compare/v4.11.1...v4.17.1) (2026-02-15)
