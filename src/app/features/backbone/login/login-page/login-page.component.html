@@ -1,22 +1,80 @@
-<lib-screen-wrapper maxSize="32rem"
->
+<lib-screen-wrapper maxSize="32rem">
   <div class="col gap1">
     <lib-hero-content-card titleBig="Who are you again?"
-                           style="padding-bottom: 32rem;"
-    >
-      <div class="col gap1"
-      >
-        <app-login-email fxFlex="100"></app-login-email>
-        <mat-card-subtitle fxLayoutAlign="center"
-                           routerLink="/auth/signup"
-                           style="cursor: pointer"
-        >Sign up instead?
-        </mat-card-subtitle>
-        <mat-card-subtitle fxLayoutAlign="center"
-                           style="cursor: pointer"
-                           (click)="openPasswordResetDialog()"
-        >Forgot your password?
-        </mat-card-subtitle>
+                           style="padding-bottom: 32rem;">
+      <div class="col gap1">
+        
+        <!-- Normal Login Form -->
+        <ng-container *ngIf="!(dataService.showPasswordReset$ | async)">
+          <app-login-email fxFlex="100"></app-login-email>
+          <mat-card-subtitle fxLayoutAlign="center"
+                             routerLink="/auth/signup"
+                             style="cursor: pointer">
+            Sign up instead?
+          </mat-card-subtitle>
+          <mat-card-subtitle fxLayoutAlign="center"
+                             style="cursor: pointer"
+                             (click)="dataService.togglePasswordReset$.next(true)">
+            Forgot your password?
+          </mat-card-subtitle>
+        </ng-container>
+        
+        <!-- Password Reset Form -->
+        <ng-container *ngIf="dataService.showPasswordReset$ | async">
+          <div class="password-reset-container">
+            <!-- Back button -->
+            <div class="back-button-wrapper">
+              <mat-card-subtitle style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;"
+                                 (click)="dataService.togglePasswordReset$.next(false)">
+                <mat-icon style="font-size: 1.25rem; width: 1.25rem; height: 1.25rem;">arrow_back</mat-icon>
+                Back to login
+              </mat-card-subtitle>
+            </div>
+            
+            <!-- Success state -->
+            <ng-container *ngIf="dataService.resetSuccessMessage$ | async as successMessage">
+              <div class="success-container">
+                <mat-icon class="state-icon success-icon">check_circle</mat-icon>
+                <h2>{{ SharedConstants.messages.resetPassword.successTitle }}</h2>
+                <p>{{ successMessage }}</p>
+                <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary">
+                  Back to login
+                </app-brand-primary-button>
+              </div>
+            </ng-container>
+            
+            <!-- Reset form (shown when not successful) -->
+            <ng-container *ngIf="!(dataService.resetSuccessMessage$ | async)">
+              <p class="reset-hint-text">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              
+              <lib-mat-form-entity
+                fxFlex="100"
+                [type]="dataService.fields.user.type"
+                [control]="dataService.fields.user.control"
+                [label]="dataService.fields.user.label"
+                formFieldAppearanceType="fill">
+              </lib-mat-form-entity>
+              
+              <div *ngIf="dataService.resetErrorMessage$ | async as errorMessage"
+                   class="error-message error-notification">
+                <mat-icon>warning</mat-icon>
+                <p>{{ errorMessage }}</p>
+              </div>
+              
+              <app-brand-primary-button
+                style="padding-top: 1rem"
+                [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
+                innerFlex="auto"
+                theme="positive"
+                (click$)="dataService.requestPasswordReset$.next()">
+                {{ (dataService.isSubmittingReset$ | async) ? 'Sending...' : 'Send reset link' }}
+              </app-brand-primary-button>
+            </ng-container>
+          </div>
+        </ng-container>
+      
       </div>
     </lib-hero-content-card>
   </div>
