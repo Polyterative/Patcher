@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.17.1](https://github.com/Polyterative/Patcher/compare/v4.11.1...v4.17.1) (2026-02-15)
+
+
+### Features
+
+* **countdown-progress:** add reusable countdown progress component with customizable themes and integrate into reset password page ([ab9c966](https://github.com/Polyterative/Patcher/commit/ab9c9662fe2c13202b16cc7c7536f48769be3821))
+* **docs:** add architecture, AI agent guidelines, and style guide documentation ([963f410](https://github.com/Polyterative/Patcher/commit/963f4104e98de8728fbf87980a9cab65a65532b7))
+* **form-components:** add icon support for input fields in login, signup, and reset password forms ([ce8456c](https://github.com/Polyterative/Patcher/commit/ce8456c64a38b1e1b2865a4e86320d495b19dc04))
+* **form-components:** add icons for various form fields ([42b3e5c](https://github.com/Polyterative/Patcher/commit/42b3e5cbdc1536df9f9fd4d3565e4a49ee859b81))
+* **login-page, signup-page:** improve action link UI and enhance routing functionality ([b22f3c8](https://github.com/Polyterative/Patcher/commit/b22f3c83b27708f6a87c3742c1546ffdceb21081))
+* **login-page:** implement password reset functionality with UI updates and state management ([644788b](https://github.com/Polyterative/Patcher/commit/644788bf7e6e36f1980a8bba2448855c3b6ec1e9))
+* **password-reset:** enhance UI ([96fcd62](https://github.com/Polyterative/Patcher/commit/96fcd6230b7f1d53934692c57d955283dc20dd37))
+* **password-reset:** implement complete password reset flow with token verification and user feedback ([59a896c](https://github.com/Polyterative/Patcher/commit/59a896c5357b3f94bdc13937f43bcdcbb1c9fe7a))
+* **password-reset:** refactor password reset logic with improved email validation and error handling ([8fad100](https://github.com/Polyterative/Patcher/commit/8fad100193b2bd2d4e39a611b0c4bf2d54e196ed))
+* **reset-password:** enhance UI with loading and error icons, improve responsiveness ([76633f0](https://github.com/Polyterative/Patcher/commit/76633f00bf71bdbb8a554004b74b853961de2d01))
+* **signup-page:** enhance signup actions UI and improve component structure ([32f1d80](https://github.com/Polyterative/Patcher/commit/32f1d8051fd8255f1a82171b92d42511299fa19c))
+* **user-management:** align layout of user information display for improved UI ([3a1073f](https://github.com/Polyterative/Patcher/commit/3a1073f6ba3613a1a189a6ede1749be779cec41a))
+
+
+### Bug Fixes
+
+* **package.json:** update Node.js engine version range to <26 ([2a278d0](https://github.com/Polyterative/Patcher/commit/2a278d088d8b537599c3bc6820baa99cb06d7caf))
+
 ## [4.17.0](https://github.com/Polyterative/Patcher/compare/v4.16.0...v4.17.0) (2026-02-15)
 
 ## [4.16.0](https://github.com/Polyterative/Patcher/compare/v4.15.0...v4.16.0) (2026-02-15)
