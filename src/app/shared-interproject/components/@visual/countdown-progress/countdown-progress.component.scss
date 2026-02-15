@@ -1,0 +1,61 @@
+// Countdown display
+.countdown-wrapper {
+  margin-bottom: 1.5rem;
+
+  .countdown-message {
+    color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    text-align: center;
+
+    .countdown-number {
+      color: var(--color-text-primary);
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 1.25rem;
+
+    .countdown-message {
+      font-size: 0.875rem;
+
+      .countdown-number {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Progress bar
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1rem;
+
+  .progress-bar-fill {
+    height: 100%;
+    transition: width 1s linear;
+    border-radius: 4px;
+
+    &.theme-success {
+      background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+    }
+
+    &.theme-info {
+      background: linear-gradient(90deg, #2196F3 0%, #42A5F5 100%);
+    }
+
+    &.theme-warning {
+      background: linear-gradient(90deg, #FF9800 0%, #FFB74D 100%);
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: 6px;
+  }
+}
