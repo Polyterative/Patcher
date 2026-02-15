@@ -5,7 +5,7 @@ import {
   OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { SeoSocialShareData } from 'ngx-seo';
+import { SeoSocialShareData } from 'src/app/models/seo.model';
 import {
   combineLatest,
   Subject
