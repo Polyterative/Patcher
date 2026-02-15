@@ -58,6 +58,17 @@
             ],
             "scripts":         [
             ],
+            "allowedCommonJsDependencies": [
+              "lottie-web",
+              "dompurify",
+              "graphology",
+              "graphology-layout-forceatlas2",
+              "graphology-layout",
+              "sigma",
+              "lodash",
+              "dom-to-image",
+              "ws"
+            ],
             "extractLicenses": false,
             "sourceMap":       true,
             "optimization":    false,
