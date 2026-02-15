@@ -10,11 +10,12 @@ import { SubManager } from "src/app/shared-interproject/directives/subscription-
 
 
 @Component({
-  selector:        'app-signup-page',
-  templateUrl:     './signup-page.component.html',
-  styleUrls:       ['./signup-page.component.scss'],
-  providers:       [UserSignupDataService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-signup-page',
+  templateUrl: './signup-page.component.html',
+  styleUrls: ['./signup-page.component.scss'],
+  providers: [UserSignupDataService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class SignupPageComponent extends SubManager implements OnInit {
   

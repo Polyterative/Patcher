@@ -11,10 +11,11 @@ import { RackMinimal } from 'src/app/models/rack';
 
 
 @Component({
-  selector:        'app-rack-minimal',
-  templateUrl:     './rack-minimal.component.html',
-  styleUrls:       ['./rack-minimal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-rack-minimal',
+  templateUrl: './rack-minimal.component.html',
+  styleUrls: ['./rack-minimal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RackMinimalComponent implements OnInit {
   @Input() data: RackMinimal;

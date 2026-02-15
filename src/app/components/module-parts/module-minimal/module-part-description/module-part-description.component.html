@@ -1,9 +1,14 @@
-<div class="row space-between description"
-     fxLayoutGap="1rem"
-     *ngIf="data.description"
->
-  <mat-card-subtitle>
-    <ng-container *ngIf="viewConfig.ellipseDescription">{{data.description|ellipsis:144}}</ng-container>
-    <ng-container *ngIf="!viewConfig.ellipseDescription">{{data.description}}</ng-container>
-  </mat-card-subtitle>
-</div>
+@if (data.description) {
+  <div class="row space-between description"
+       fxLayoutGap="1rem"
+  >
+    <mat-card-subtitle>
+      @if (viewConfig.ellipseDescription) {
+        {{ data.description|ellipsis:144 }}
+      }
+      @if (!viewConfig.ellipseDescription) {
+        {{ data.description }}
+      }
+    </mat-card-subtitle>
+  </div>
+}

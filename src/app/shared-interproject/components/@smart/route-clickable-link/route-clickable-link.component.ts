@@ -1,12 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
+
 @Component({
-  selector:        'app-route-clickable-link-list',
-  templateUrl:     './route-clickable-link.component.html',
-  styleUrls:       ['./route-clickable-link.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-route-clickable-link-list',
+  templateUrl: './route-clickable-link.component.html',
+  styleUrls: ['./route-clickable-link.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class RouteClickableLinkComponent implements OnInit {
   @Input()

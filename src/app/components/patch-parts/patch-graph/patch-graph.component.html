@@ -8,54 +8,52 @@
      style="position: absolute;background-color: rgba(255,255,255,0.8)!important;z-index: 5;"
 >
   
-  <div class="row gap0"
-       *ngFor="let item of legend"
-  >
-    <div class="circle"
-         [style]="{backgroundColor:item.color}"
-    ></div>
-    <div>{{item.label}}</div>
-  </div>
+  @for (item of legend; track item) {
+    <div class="row gap0"
+    >
+      <div class="circle"
+           [style]="{backgroundColor:item.color}"
+      ></div>
+      <div>{{ item.label }}</div>
+    </div>
+  }
 </div>
 <div
 >
-  <ng-container *ngIf="nodes$|async as nodes">
-    <ng-container *ngIf="edges$|async as edges">
-      <ng-container *ngIf="patchDetailDataService.patchConnections$|async as patchConnections">
-        <ng-container *ngIf="patchConnections; else noData">
-          
-          <ng-container *ngIf="nodes.length>0 && edges.length>0;else loading">
+  @if (nodes$|async; as nodes) {
+    @if (edges$|async; as edges) {
+      @if (patchDetailDataService.patchConnections$|async; as patchConnections) {
+        @if (patchConnections) {
+          @if (nodes.length > 0 && edges.length > 0) {
             <lib-graph [nodes]="nodes"
                        [edges]="edges"
                        style="height: 53.5rem;width: 100%;"
                        class="animate-fadein-slowest"
                        [@enter]
             ></lib-graph>
-          </ng-container>
-        </ng-container>
-      </ng-container>
-    </ng-container>
-  </ng-container>
+          } @else {
+            <div fxFlex="100">
+              <div class="col gap1 animate-fadein-slowest"
+              >
+                <mat-card-subtitle fxLayoutAlign="center start"
+                                   style="padding: 4rem"
+                >Building graph...
+                </mat-card-subtitle>
+              </div>
+            </div>
+          }
+        } @else {
+          <div fxFlex="100">
+            <div class="col gap1 animate-fadein-slowest"
+            >
+              <mat-card-subtitle fxLayoutAlign="center start"
+                                 style="padding: 1rem"
+              >No connections in this patch
+              </mat-card-subtitle>
+            </div>
+          </div>
+        }
+      }
+    }
+  }
 </div>
-<ng-template #noData>
-  <div fxFlex="100">
-    <div class="col gap1 animate-fadein-slowest"
-    >
-      <mat-card-subtitle fxLayoutAlign="center start"
-                         style="padding: 1rem"
-      >No connections in this patch
-      </mat-card-subtitle>
-    </div>
-  </div>
-</ng-template>
-<ng-template #loading>
-  <div fxFlex="100">
-    <div class="col gap1 animate-fadein-slowest"
-    >
-      <mat-card-subtitle fxLayoutAlign="center start"
-                         style="padding: 4rem"
-      >Building graph...
-      </mat-card-subtitle>
-    </div>
-  </div>
-</ng-template>

@@ -1,22 +1,19 @@
-<ng-container *ngIf="{
+@if ({
   userProfile:(userService.loggedUserFullProfile$|async)
-  } as bag"
->
+}; as bag) {
   <lib-screen-wrapper maxSize="130rem">
-    
-    <lib-clean-card style="max-width: 26rem;min-width:18rem" *ngIf="bag.userProfile">
-      <app-label-value-showcase label="User"
-      >{{ bag.userProfile.username }}
-      </app-label-value-showcase>
-    </lib-clean-card>
-    
+    @if (bag.userProfile) {
+      <lib-clean-card style="max-width: 26rem;min-width:18rem">
+        <app-label-value-showcase label="User"
+        >{{ bag.userProfile.username }}
+        </app-label-value-showcase>
+      </lib-clean-card>
+    }
     <div class="col gap1"
     >
       <app-user-manuals></app-user-manuals>
-      
       <div class="container gap1"
       >
-        
         <app-user-modules class="block"
                           [modulesViewConfig]="viewConfig"
                           [encloseVertically]="true"
@@ -25,8 +22,6 @@
         <app-user-patches class="block"></app-user-patches>
         <app-user-comments class="block"></app-user-comments>
       </div>
-    
     </div>
   </lib-screen-wrapper>
-
-</ng-container>
+}

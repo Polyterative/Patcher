@@ -7,11 +7,12 @@ import { fadeAnimation } from './fade.animation';
 
 
 @Component({
-  selector:    'app-uranus',
+  selector: 'app-uranus',
   templateUrl: './uranus.component.html',
-  styleUrls:   ['./uranus.component.scss'],
+  styleUrls: ['./uranus.component.scss'],
   // do not put OnPush here
-  animations: [fadeAnimation]
+  animations: [fadeAnimation],
+  standalone: false
 })
 export class UranusComponent {
   public title?: string;

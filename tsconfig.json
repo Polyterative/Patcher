@@ -1,25 +1,21 @@
 {
   "compileOnSave":          false,
   "compilerOptions":        {
-    "baseUrl":                          "./",
-    "outDir":                           "./dist/out-tsc",
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "esModuleInterop": true,
-    "noImplicitReturns":                true,
-    "noFallthroughCasesInSwitch":       true,
-    "sourceMap":                        true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution":                 "node",
-    "importHelpers":                    true,
+    "moduleResolution": "bundler",
+    "importHelpers": true,
     "target": "es2022",
     "module": "es2022",
-    "lib":                              [
-      "es2018",
-      "dom"
-    ],
-    "skipLibCheck":                     true
+    "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

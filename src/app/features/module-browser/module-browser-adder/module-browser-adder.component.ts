@@ -3,37 +3,38 @@ import {
   Component,
   Input,
   OnInit
-}                                 from '@angular/core';
-import { ActivatedRoute }         from '@angular/router';
-import { SeoSocialShareData }     from 'ngx-seo';
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { SeoSocialShareData } from 'ngx-seo';
 import {
   combineLatest,
   delay,
   Subject
-}                                 from 'rxjs';
+} from 'rxjs';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
-}                                 from 'src/app/components/module-parts/module-minimal/module-minimal.component';
-import { FileDragHostService }    from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
-import { SeoAndUtilsService }     from '../../backbone/seo-and-utils.service';
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { ModuleAdderDataService } from './module-adder-data.service';
-import { UserManagementService }  from "src/app/features/backbone/login/user-management.service";
+import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 import {
   filter,
   takeUntil
-}                                 from "rxjs/operators";
+} from "rxjs/operators";
 
 
 @Component({
-  selector:        'app-module-browser-adder',
-  templateUrl:     './module-browser-adder.component.html',
-  styleUrls:       ['./module-browser-adder.component.scss'],
+  selector: 'app-module-browser-adder',
+  templateUrl: './module-browser-adder.component.html',
+  styleUrls: ['./module-browser-adder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers:       [
+  providers: [
     ModuleAdderDataService,
     FileDragHostService
-  ]
+  ],
+  standalone: false
 })
 export class ModuleBrowserAdderComponent implements OnInit {
   

@@ -1,8 +1,16 @@
-import { Pipe, PipeTransform } from '@angular/core';
-import { DbModule, RackedModule } from '../../models/module';
+import {
+  Pipe,
+  PipeTransform
+} from '@angular/core';
+import {
+  DbModule,
+  RackedModule
+} from '../../models/module';
+
 
 @Pipe({
-  name: 'rackedToModules'
+  name: 'rackedToModules',
+  standalone: false
 })
 export class RackedToModulesPipe implements PipeTransform {
   

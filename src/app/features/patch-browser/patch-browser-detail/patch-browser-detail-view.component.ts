@@ -37,7 +37,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     CommentsDataService
-  ]
+  ],
+  standalone: false
 })
 export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
   

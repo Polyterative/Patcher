@@ -1,12 +1,21 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output
+} from '@angular/core';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { FormCV } from '../module-editor.component';
 
+
 @Component({
-  selector:        'app-module-editor-cv-form-line',
-  templateUrl:     './module-editor-cv-form-line.component.html',
-  styleUrls:       ['./module-editor-cv-form-line.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-editor-cv-form-line',
+  templateUrl: './module-editor-cv-form-line.component.html',
+  styleUrls: ['./module-editor-cv-form-line.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleEditorCvFormLineComponent implements OnInit {
   

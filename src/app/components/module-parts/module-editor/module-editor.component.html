@@ -1,18 +1,18 @@
 <lib-clean-card>
   <div class="rowwrap gap1">
-    
+
     <!-- Power Section -->
     <div class="col gap1">
       <div class="row gap1 ">
         <mat-card-title>Power</mat-card-title>
       </div>
-      
+
       <div class="col gap1">
         <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
         <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
         <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
       </div>
-      
+
       <lib-auto-update-loading-indicator
         [data$]="dataService.singleModuleData$"
         [updateData$]="savePower$"
@@ -34,12 +34,12 @@
       <div class="row gap1 ">
         <mat-card-title>Physical properties</mat-card-title>
       </div>
-      
+
       <div class="col gap1">
         <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
         <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
       </div>
-      
+
       <lib-auto-update-loading-indicator
         [data$]="dataService.singleModuleData$"
         [updateData$]="savePhysical$"
@@ -56,22 +56,22 @@
         </div>
       </lib-auto-update-loading-indicator>
     </div>
-    
+
     <mat-divider></mat-divider>
-    
+
     <!-- Panel Section -->
     <div class="col gap1">
       <div class="row gap1 ">
         <mat-card-title>Panel</mat-card-title>
       </div>
-      
+
       <div class="row gap1 ">
         <lib-file-drag-host
           [isImageOnlyMode]="true"
           [multipleFilesMode]="false"
           acceptedFileType="image/jpeg,image/jpg"
         ></lib-file-drag-host>
-        
+
         <div class="col gap1">
           <lib-mat-form-entity
             [dataPack]="panelType"
@@ -112,12 +112,12 @@
         <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
         
         <div class="col gap1 leftBorderS" style="margin-top: 1rem;">
-          <ng-container *ngFor="let item of INs$ | async; let i = index">
+          @for (item of INs$ | async; track item; let i = $index) {
             <app-module-editor-cv-form-line
               [item]="item"
               (removeRequest$)="removeIN$.next(i)"
             ></app-module-editor-cv-form-line>
-          </ng-container>
+          }
         </div>
       </div>
       
@@ -131,12 +131,12 @@
         <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
         
         <div class="col gap1 leftBorderS" style="margin-top: 1rem;">
-          <ng-container *ngFor="let item of OUTs$ | async; let i = index">
+          @for (item of OUTs$ | async; track item; let i = $index) {
             <app-module-editor-cv-form-line
               [item]="item"
               (removeRequest$)="removeOUT$.next(i)"
             ></app-module-editor-cv-form-line>
-          </ng-container>
+          }
         </div>
       </div>
       

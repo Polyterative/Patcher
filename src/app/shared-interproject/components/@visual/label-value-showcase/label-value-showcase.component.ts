@@ -9,10 +9,11 @@ import {
  *  UI ONLY COMPONENT
  */
 @Component({
-  selector:        'app-label-value-showcase',
-  templateUrl:     './label-value-showcase.component.html',
-  styleUrls:       ['./label-value-showcase.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-label-value-showcase',
+  templateUrl: './label-value-showcase.component.html',
+  styleUrls: ['./label-value-showcase.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class LabelValueShowcaseComponent {
   @Input()

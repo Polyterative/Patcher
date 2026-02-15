@@ -5,12 +5,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
-import {
-  AsyncPipe,
-  NgForOf,
-  NgIf
-} from "@angular/common";
-import { MatIcon } from "@angular/material/icon";
+import { AsyncPipe } from "@angular/common";
 import { MatBadge } from "@angular/material/badge";
 
 
@@ -25,12 +20,8 @@ interface LabelValueData {
 
 @Component({
   selector: 'app-lib-showcase-grid',
-  standalone: true,
   imports: [
     LabelValueShowcaseModule,
-    NgForOf,
-    MatIcon,
-    NgIf,
     AsyncPipe,
     MatBadge
   ],

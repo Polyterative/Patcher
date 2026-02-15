@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-  selector:        'app-module-cv-icon',
-  templateUrl:     './module-cv-icon.component.html',
-  styleUrls:       ['./module-cv-icon.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-module-cv-icon',
+  templateUrl: './module-cv-icon.component.html',
+  styleUrls: ['./module-cv-icon.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class ModuleCvIconComponent implements OnInit {
   @Input() type: 'in' | 'out';

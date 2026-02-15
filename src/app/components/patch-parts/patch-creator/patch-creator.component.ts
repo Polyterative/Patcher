@@ -32,10 +32,11 @@ export interface PatchCreatorInModel {
 }
 
 @Component({
-  selector:        'app-patch-creator',
-  templateUrl:     './patch-creator.component.html',
-  styleUrls:       ['./patch-creator.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-patch-creator',
+  templateUrl: './patch-creator.component.html',
+  styleUrls: ['./patch-creator.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchCreatorComponent implements OnInit {
   public readonly save$ = new Subject<void>();

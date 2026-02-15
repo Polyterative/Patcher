@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+
 
 @Component({
-  selector:        'app-timestamps-relative',
-  templateUrl:     './timestamps-relative.component.html',
-  styleUrls:       ['./timestamps-relative.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-timestamps-relative',
+  templateUrl: './timestamps-relative.component.html',
+  styleUrls: ['./timestamps-relative.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class TimestampsRelativeComponent implements OnInit {
   @Input()

@@ -1,29 +1,49 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { fadeInOnEnterAnimation, fadeOutOnLeaveAnimation } from 'angular-animations';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit
+} from '@angular/core';
+import {
+  fadeInOnEnterAnimation,
+  fadeOutOnLeaveAnimation
+} from 'angular-animations';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable
+} from 'rxjs';
+import {
+  filter,
+  take
+} from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
-import { defaultPatchMinimalViewConfig, PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+} from '../patch-parts/patch-minimal/patch-minimal.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
 
+
 @Component({
-  selector:        'app-patch-list',
-  templateUrl:     './patch-list.component.html',
-  styleUrls:       ['./patch-list.component.scss'],
-  animations:      [
+  selector: 'app-patch-list',
+  templateUrl: './patch-list.component.html',
+  styleUrls: ['./patch-list.component.scss'],
+  animations: [
     fadeInOnEnterAnimation({
-      anchor:          'enter',
-      duration:        225,
+      anchor: 'enter',
+      duration: 225,
       animateChildren: 'after'
     }),
     fadeOutOnLeaveAnimation({
-      anchor:   'leave',
+      anchor: 'leave',
       duration: 1
     })
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders:   [LocalDataFilterService]
+  viewProviders: [LocalDataFilterService],
+  standalone: false
 })
 export class PatchListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<PatchList>;

@@ -1,12 +1,11 @@
-<ng-container *ngIf="{
+@if ({
   patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
   user:(userManagerService.loggedUser$|async),
   singlePatchData:(dataService.singlePatchData$|async)
-  } as bag"
->
+}; as bag) {
   <div class="col parent"
   >
-    <ng-container *ngIf="bag.patchEditingPanelOpenState">
+    @if (bag.patchEditingPanelOpenState) {
       <div class="col gap1 padB1">
         <lib-mat-form-entity [control]="dataService.formData.name.control"
                              label="Patch name"
@@ -18,13 +17,15 @@
                              iconL1="description"
         ></lib-mat-form-entity>
       </div>
-    </ng-container>
-    <app-patch-micro *ngIf="!bag.patchEditingPanelOpenState"
-                     [data]="data"
-                     [viewConfig]="viewConfig"
-    ></app-patch-micro>
+    }
+    @if (!bag.patchEditingPanelOpenState) {
+      <app-patch-micro
+        [data]="data"
+        [viewConfig]="viewConfig"
+      ></app-patch-micro>
+    }
     <ng-content></ng-content>
-    <ng-container *ngIf="!viewConfig.hideButtons">
+    @if (!viewConfig.hideButtons) {
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
@@ -43,7 +44,7 @@
           <mat-icon>speaker_notes</mat-icon>
         </button>
         <div fxFlex="grow"></div>
-        <ng-container *ngIf="(bag.singlePatchData)&&bag.user&&bag.singlePatchData.author.id==bag.user.id">
+        @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id == bag.user.id) {
           <button mat-icon-button
                   matTooltip="Delete patch"
                   [disabled]="!bag.user"
@@ -51,8 +52,7 @@
           >
             <mat-icon>delete_forever</mat-icon>
           </button>
-          <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)==false">
-
+          @if ((dataService.patchEditingPanelOpenState$|async) == false) {
             <button mat-icon-button
                     matTooltip="Edit patch"
                     [disabled]="!bag.user"
@@ -60,8 +60,8 @@
             >
               <mat-icon>edit</mat-icon>
             </button>
-          </ng-container>
-          <ng-container *ngIf="(dataService.patchEditingPanelOpenState$|async)">
+          }
+          @if ((dataService.patchEditingPanelOpenState$|async)) {
             <button mat-icon-button
                     matTooltip="Close editor"
                     [disabled]="!bag.user"
@@ -69,9 +69,8 @@
             >
               <mat-icon>close</mat-icon>
             </button>
-          </ng-container>
-        </ng-container>
-
+          }
+        }
         <!--        <button mat-icon-button-->
         <!--                matTooltip="Show details"-->
         <!--                [routerLink]="['/patches/details',data.id]"-->
@@ -79,6 +78,6 @@
         <!--          <mat-icon>info</mat-icon>-->
         <!--        </button>-->
       </div>
-    </ng-container>
+    }
   </div>
-</ng-container>
+}

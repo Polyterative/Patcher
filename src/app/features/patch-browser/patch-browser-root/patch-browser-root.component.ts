@@ -17,10 +17,11 @@ import { MatPaginator } from "@angular/material/paginator";
 
 
 @Component({
-  selector:        'app-patch-browser-root',
-  templateUrl:     './patch-browser-root.component.html',
-  styleUrls:       ['./patch-browser-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-patch-browser-root',
+  templateUrl: './patch-browser-root.component.html',
+  styleUrls: ['./patch-browser-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class PatchBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
