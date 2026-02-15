@@ -21,13 +21,30 @@ export class SharedConstants {
     resetPassword: {
       invalidToken: "Invalid or missing token.",
       invalidRedirect: "That redirect URL isn't valid.",
-      passwordMismatch: "Passwords don’t match.",
-      resetFailed: "Password reset failed. Try again.",
-      resetPasswordTitle: "Reset password",
-      invalidTokenTitle: "Reset link not valid",
-      invalidTokenDescription: "Looks like this page was opened without a valid reset link. Grab the link from your email or request a new one.",
-      goToLogin: "Back to login",
-      resetPasswordButton: "Set new password"
+      passwordMismatch: "Oops! Those passwords don't match. Give it another try.",
+      resetFailed: "Something went wrong on our end. Mind trying again?",
+      resetPasswordTitle: "Create your new password",
+      invalidTokenTitle: "Hmm, this link isn't working",
+      invalidTokenDescription: "This reset link might have expired or wasn't opened correctly. No worries! Just grab the fresh link from your email or request a new one.",
+      goToLogin: "Take me to login",
+      resetPasswordButton: "Update my password",
+      verifyingLink: "Hang tight, we're verifying your link...",
+      passwordLabel: "New password",
+      confirmPasswordLabel: "Confirm new password",
+      passwordHint: "Choose a strong password (at least 8 characters) to keep your account secure.",
+      successTitle: "All set! Your password has been updated 🎉",
+      successDescription: "You're being redirected to login, or click below if you're in a hurry.",
+      redirectingIn: "Redirecting in",
+      seconds: "seconds",
+      goToLoginNow: "Go to login now",
+      // Specific error messages
+      samePassword: "Let's try a fresh password – this one's too similar to your old one.",
+      weakPassword: "Make it stronger! Mix in some letters, numbers, and special characters.",
+      passwordTooShort: "A bit longer please – we need at least 8 characters.",
+      passwordTooLong: "That's quite secure, but let's keep it under 30 characters.",
+      invalidSession: "Your reset session expired. Request a new link to continue.",
+      networkError: "Connection hiccup! Check your internet and try again.",
+      unknownError: "Something unexpected happened. Try again, or reach out if it keeps happening."
     }
   };
   

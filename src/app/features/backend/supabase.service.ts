@@ -1572,12 +1572,18 @@ export class SupabaseService {
           password: newPassword
         })
       ).pipe(
-        map(() => {
+        map((response) => {
+          // Check for errors in the response
+          if (response.error) {
+            throw this.createPasswordResetError(response.error);
+          }
           console.log(SharedConstants.messages.resetPassword?.resetPasswordTitle);
         }),
         catchError((error) => {
           console.error(SharedConstants.messages.resetPassword?.resetFailed, error);
-          return throwError(() => error);
+          // Parse and format the error
+          const formattedError = this.createPasswordResetError(error);
+          return throwError(() => formattedError);
         })
       );
     } else {
@@ -1585,7 +1591,6 @@ export class SupabaseService {
       if (!this.isValidEmail(emailOrToken)) {
         return throwError(() => new Error('Invalid email address.'));
       }
-      // DOENT WORK
       const redirectTo = `${ window.location.origin }/auth/reset-password`;
       return from(this.supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
         map((response) => {
@@ -1601,6 +1606,41 @@ export class SupabaseService {
     }
   }
   
+  /**
+   * Creates a formatted error from Supabase error responses
+   */
+  private createPasswordResetError(error: any): PasswordResetError {
+    // Handle various error formats from Supabase
+    let errorCode = error?.error_code || error?.code || error?.name;
+    let message = error?.msg || error?.message || error?.error_description;
+    let statusCode = error?.code;
+    
+    // Map error codes to user-friendly messages
+    const errorMessages = SharedConstants.messages.resetPassword;
+    
+    if (errorCode === 'same_password' || message?.toLowerCase().includes('same password')) {
+      return new PasswordResetError(errorMessages.samePassword, errorCode, statusCode);
+    }
+    
+    if (errorCode === 'weak_password' || message?.toLowerCase().includes('weak password')) {
+      return new PasswordResetError(errorMessages.weakPassword, errorCode, statusCode);
+    }
+    
+    if (errorCode === 'invalid_credentials' || errorCode === 'invalid_grant' ||
+      message?.toLowerCase().includes('invalid') || message?.toLowerCase().includes('expired')) {
+      return new PasswordResetError(errorMessages.invalidSession, errorCode, statusCode);
+    }
+    
+    if (errorCode === 'network_error' || message?.toLowerCase().includes('network') ||
+      message?.toLowerCase().includes('fetch')) {
+      return new PasswordResetError(errorMessages.networkError, errorCode, statusCode);
+    }
+    
+    // Default error message
+    const defaultMessage = message || errorMessages.unknownError;
+    return new PasswordResetError(defaultMessage, errorCode, statusCode);
+  }
+  
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -1612,7 +1652,12 @@ export class SupabaseService {
 }
 
 class PasswordResetError extends Error {
-  constructor(public message: string, public details?: string) {
+  constructor(
+    public message: string,
+    public errorCode?: string,
+    public statusCode?: number,
+    public details?: string
+  ) {
     super(message);
     this.name = 'PasswordResetError';
   }

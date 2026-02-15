@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit
 } from '@angular/core';
@@ -7,19 +8,7 @@ import {
   Router,
   RouterModule
 } from '@angular/router';
-import {
-  UntypedFormBuilder,
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators
-} from '@angular/forms';
 import { SupabaseService } from '../../../backend/supabase.service';
-import {
-  catchError,
-  of
-} from 'rxjs';
-import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { CommonModule } from '@angular/common';
 import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -27,9 +16,17 @@ import { HeroContentCardModule } from "src/app/shared-interproject/components/@v
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { SeoAndUtilsService } from '../../seo-and-utils.service';
+import { AuthChangeEvent } from '@supabase/supabase-js';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { UserResetPasswordDataService } from './user-reset-password-data.service';
+import { timer } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 
-const ERROR_MESSAGES = SharedConstants.messages.resetPassword;
+/**
+ * Delay before checking recovery session if no auth event is received
+ */
+const AUTH_CHECK_DELAY_MS = 1000;
 
 @Component({
   selector: 'app-reset-password-page',
@@ -42,60 +39,28 @@ const ERROR_MESSAGES = SharedConstants.messages.resetPassword;
     HeroContentCardModule,
     ScreenWrapperModule
   ],
-  providers: [SeoAndUtilsService],
+  providers: [SeoAndUtilsService, UserResetPasswordDataService],
   templateUrl: './reset-password-page.component.html',
-  styleUrls: ['./reset-password-page.component.scss']
+  styleUrls: ['./reset-password-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ResetPasswordPageComponent implements OnInit {
-  token: string | null = null;
-  redirectTo: string | null = null;
-  isSubmitting = false;
-  errorMessage: string = '';
-
-  formGroup: UntypedFormGroup;
-
-  passwordField: IMatFormEntityConfig = {
-    type: FormTypes.PASSWORD_NEW,
-    label: ERROR_MESSAGES.resetPasswordButton,
-    control: new UntypedFormControl('', [Validators.required]),
-    code: 'password',
-    flex: '100%'
-  };
-
-  confirmPasswordField: IMatFormEntityConfig = {
-    type: FormTypes.PASSWORD_NEW,
-    label: ERROR_MESSAGES.resetPasswordButton,
-    control: new UntypedFormControl('', [Validators.required]),
-    code: 'confirmPassword',
-    flex: '100%'
-  };
-  
-  sharedConstants = SharedConstants;
+export class ResetPasswordPageComponent extends SubManager implements OnInit {
 
   constructor(
-    private route: ActivatedRoute,
     private supabaseService: SupabaseService,
     protected router: Router,
-    private formBuilder: UntypedFormBuilder,
-    private seoAndUtilsService: SeoAndUtilsService
+    private route: ActivatedRoute,
+    private seoAndUtilsService: SeoAndUtilsService,
+    public dataService: UserResetPasswordDataService
   ) {
-    console.log('SeoAndUtilsService instantiated:', !!seoAndUtilsService);
-    this.formGroup = this.initializeForm();
+    super();
   }
   
   ngOnInit(): void {
-    this.extractQueryParams();
-
-    if (!this.isTokenValid()) {
-      this.showError(ERROR_MESSAGES.invalidToken);
-      return;
-    }
-
-    if (!this.isRedirectUrlValid()) {
-      this.showError(ERROR_MESSAGES.invalidRedirect);
-      this.redirectTo = null;
-      return;
-    }
+    // Check for token in query params first
+    this.checkAndVerifyToken();
+    
+    this.setupAuthStateListener();
     
     this.seoAndUtilsService.updateSeo({
       title: 'Reset Password',
@@ -103,68 +68,122 @@ export class ResetPasswordPageComponent implements OnInit {
     }, 'Reset Password');
   }
   
-  private initializeForm(): UntypedFormGroup {
-    return this.formBuilder.group({
-      password: this.passwordField.control,
-      confirmPassword: this.confirmPasswordField.control
+  /**
+   * Check for token_hash in query params and verify with Supabase
+   */
+  private checkAndVerifyToken(): void {
+    this.route.queryParams.pipe(take(1)).subscribe(async (params) => {
+      const tokenHash = params['token_hash'];
+      const type = params['type'];
+      
+      console.log('Query params:', {tokenHash, type});
+      
+      // Also check hash fragment for access_token (Supabase's standard flow)
+      const hash = window.location.hash;
+      const hashHasToken = hash.includes('access_token=') || hash.includes('access_token%3D');
+      const hashHasRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
+      
+      console.log('Hash fragment:', {hash, hashHasToken, hashHasRecovery});
+      
+      if (tokenHash && type === 'recovery') {
+        // Token found in query params - verify it
+        console.log('Found token_hash in query params, verifying...');
+        try {
+          const supabaseClient = (this.supabaseService as any).supabase;
+          const {data, error} = await supabaseClient.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery'
+          });
+          
+          if (error) {
+            console.error('Token verification failed:', error);
+            this.dataService.errorMessage$.next('Invalid or expired password reset link.');
+            this.dataService.setRecoverySession(false);
+          } else {
+            console.log('Token verified successfully:', data);
+            this.dataService.setRecoverySession(true);
+          }
+        } catch (error) {
+          console.error('Error verifying token:', error);
+          this.dataService.errorMessage$.next('Failed to verify password reset link.');
+          this.dataService.setRecoverySession(false);
+        }
+      } else if (hashHasToken && hashHasRecovery) {
+        // Token in hash fragment - let Supabase handle it automatically
+        console.log('Found token in hash fragment, letting Supabase handle it...');
+        // Don't set session state yet, wait for PASSWORD_RECOVERY event
+      } else {
+        // No token found
+        console.log('No recovery token found in URL');
+      }
     });
   }
   
-  private extractQueryParams(): void {
-    const queryParams = this.route.snapshot.queryParamMap;
-    this.token = queryParams.get('token') || null;
-    this.redirectTo = queryParams.get('redirect_to') || null;
-  }
-  
-  private showError(message: string): void {
-    this.errorMessage = message;
-    this.isSubmitting = false;
-  }
-  
-  private isTokenValid(): boolean {
-    return this.token ? /^[a-f0-9]{64}$/.test(this.token) : false;
-  }
-  
-  private isRedirectUrlValid(): boolean {
-    if (!this.redirectTo) return true;
-    try {
-      const parsedUrl = new URL(this.redirectTo);
-      return ['http:', 'https:'].includes(parsedUrl.protocol);
-    } catch {
-      return false;
-    }
-  }
-  
-  onSubmit(): void {
-    if (this.formGroup.invalid || !this.token) {
-      return; // Exit if the form is invalid or the token is missing
-    }
+  /**
+   * Set up listener for Supabase auth state changes
+   */
+  private setupAuthStateListener(): void {
+    const supabaseClient = (this.supabaseService as any).supabase;
     
-    const {password, confirmPassword} = this.formGroup.value;
-    
-    if (password !== confirmPassword) {
-      this.showError(ERROR_MESSAGES.passwordMismatch);
-      return;
-    }
-    
-    this.isSubmitting = true;
-    this.errorMessage = null;
-    
-    this.supabaseService
-      .resetPassword$(this.token, password)
-      .pipe(
-        catchError((error) => {
-          this.showError(error?.message || ERROR_MESSAGES.resetFailed);
-          return of(null);
-        })
-      )
-      .subscribe((result) => {
-        this.isSubmitting = false;
-        if (result === undefined) {
-          const redirectUrl = this.redirectTo || '/auth/login';
-          this.router.navigate([redirectUrl], {queryParams: {resetSuccess: true}});
+    const {data: authListener} = supabaseClient.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: any) => {
+        console.log('Auth state change:', event, session);
+        
+        if (event === 'PASSWORD_RECOVERY') {
+          this.dataService.setRecoverySession(true);
+        } else if (event === 'SIGNED_IN') {
+          this.dataService.checkForRecoveryInUrl();
+        } else {
+          // Check if session has not been checked yet
+          this.dataService.isSessionChecked$
+            .pipe(take(1))
+            .subscribe(isChecked => {
+              if (!isChecked) {
+                this.dataService.checkForRecoveryInUrl();
+              }
+            });
         }
+      }
+    );
+    
+    // Store the subscription and clean it up in ngOnDestroy via SubManager
+    if (authListener?.subscription) {
+      this.manageSub(authListener.subscription);
+    }
+    
+    // Fallback: check after delay if no auth event is received
+    timer(AUTH_CHECK_DELAY_MS)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.dataService.isSessionChecked$
+          .pipe(take(1))
+          .subscribe(isChecked => {
+            if (!isChecked) {
+              this.dataService.checkForRecoveryInUrl();
+            }
+          });
       });
+  }
+  
+  /**
+   * Handle password reset form submission
+   */
+  onSubmit(): void {
+    this.dataService.submitPasswordReset$.next();
+  }
+  
+  /**
+   * Navigate to login page
+   */
+  goToLogin(): void {
+    this.router.navigate(['/auth/login']);
+  }
+  
+  /**
+   * Navigate to login page after successful password reset
+   */
+  goToLoginAfterReset(): void {
+    this.dataService.performRedirect();
   }
   
   protected readonly SharedConstants = SharedConstants;
