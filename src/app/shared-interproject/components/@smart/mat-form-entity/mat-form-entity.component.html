@@ -10,10 +10,10 @@
                   [matTooltip]="tooltip"
                   fxFlex="100"
   >
-    <mat-label>{{ label }}</mat-label>
-    
-    <!-- Icon prefix -->
-    <mat-icon *ngIf="iconL1" matPrefix style="margin-right: 0.5rem; color: rgba(0, 0, 0, 0.54);">{{ iconL1 }}</mat-icon>
+    <mat-label>
+      <mat-icon *ngIf="iconL1" style="font-size: 18px; height: 18px; width: 18px; vertical-align: middle; margin-right: 0.25rem;">{{ iconL1 }}</mat-icon>
+      {{ label }}
+    </mat-label>
     
     <!--  <ng-container *ngIf="type===types.OKKO">-->
     <!--    <div fxFlex="grow"-->
@@ -369,7 +369,10 @@
                   [matTooltip]="tooltip"
                   fxFlexFill
   >
-    <mat-label>{{ label }}</mat-label>
+    <mat-label>
+      <mat-icon *ngIf="iconL1" style="font-size: 18px; height: 18px; width: 18px; vertical-align: middle; margin-right: 0.25rem;">{{ iconL1 }}</mat-icon>
+      {{ label }}
+    </mat-label>
     <input matInput
            [formControl]="control"
            [matDatepicker]="picker"
