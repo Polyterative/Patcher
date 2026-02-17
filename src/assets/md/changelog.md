@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0](https://github.com/Polyterative/Patcher/compare/v4.17.3...v5.0.0) (2026-02-17)
+
+
+### Features
+
+* **dialog-info-box:** create a reusable info box component for displaying tips ([7521463](https://github.com/Polyterative/Patcher/commit/7521463fe85f732e440b9e3358301fc5b4589221))
+* **dialog-info-box:** update styles to use brand-primary colors for consistency ([ecfb9bf](https://github.com/Polyterative/Patcher/commit/ecfb9bfd9e4f91b416f8d14c7e85246cd1fcb4b7))
+* **docs:** add testing guidelines for running tests with Yarn ([81534d3](https://github.com/Polyterative/Patcher/commit/81534d3b1c2fdaa4fae0b196f0c7a8c1965eb419))
+* **docs:** enhance guidelines with quick reference, file organization, and common patterns ([5f30b64](https://github.com/Polyterative/Patcher/commit/5f30b648844d6841c62a2da52d348021ff535823))
+* **docs:** update package manager guidelines to specify Yarn usage ([3e645f9](https://github.com/Polyterative/Patcher/commit/3e645f97571e4cb8194dbfa37e6eede6ee1f55e2))
+* **login-page:** add clarification message for password reset procedure ([5a77cda](https://github.com/Polyterative/Patcher/commit/5a77cda90c8596a02662c90709123470b4d12bac))
+* **module-browser:** update iconL1 from 'label' to 'search' for improved clarity ([7b5058f](https://github.com/Polyterative/Patcher/commit/7b5058fe189b18c84ea8731fd9ccb6765bde0bc7))
+* **patch-creator, rack-creator:** enhance dialog content with descriptions and usage tips ([1cccf00](https://github.com/Polyterative/Patcher/commit/1cccf005756459d8c9ea56710e68df713c51c261))
+* **patch-creator:** implement unique patch name generation and update dialog layout ([18fe745](https://github.com/Polyterative/Patcher/commit/18fe745d73c124649dd47110fbc7140965051334))
+* **rack-analysis:** add comprehensive tests for RackAnalysisService and improve module analysis methods ([555fe66](https://github.com/Polyterative/Patcher/commit/555fe66807bb1e0f3bb2a3f1a71630567cb6681b))
+* **rack-analysis:** implement RackAnalysisService for intelligent rack configuration analysis and recommendations ([75a92e1](https://github.com/Polyterative/Patcher/commit/75a92e18ffd92025c2afc81811fa125ba2bb8c18))
+* **rack-creator:** add unique name generation for rack creation ([ecd15ef](https://github.com/Polyterative/Patcher/commit/ecd15ef827b429d0120a2972d072fdaa167d9e1d))
+* **rack-creator:** enhance rack analysis with user modules and dynamic recommendations ([5215339](https://github.com/Polyterative/Patcher/commit/521533961fd6d5944df22fa317df7aa34954c93a))
+* **search:** implement accent-insensitive normalization for search functionality and update related components ([0736524](https://github.com/Polyterative/Patcher/commit/07365242495b5219ab44566053aec5ba21d18978))
+* **seo:** replace ngx-seo with custom SeoSocialShareData model and update related components ([581e6a7](https://github.com/Polyterative/Patcher/commit/581e6a7fc9487a44317b026364575c05a95e7b38))
+* **styles:** enhance heading styles ([9a57ae6](https://github.com/Polyterative/Patcher/commit/9a57ae64ae91c7f950d7c7f74e3069a5f410d6cd))
+
 ### [4.17.3](https://github.com/Polyterative/Patcher/compare/v4.17.2...v4.17.3) (2026-02-15)
 
 
