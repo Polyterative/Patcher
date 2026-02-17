@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrandPrimaryButtonModule } from '../../components/@visual/brand-primary-button/brand-primary-button.module';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
-import { MatFormEntityModule } from "../../components/@smart/mat-form-entity/mat-form-entity.module";
+import { MatFormEntityComponent } from "../../components/@smart/mat-form-entity/mat-form-entity.component";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 
@@ -18,7 +18,7 @@ import { MatButtonModule } from "@angular/material/button";
     MatButtonModule,
     BrandPrimaryButtonModule,
     MatDialogModule,
-    MatFormEntityModule
+    MatFormEntityComponent
   ]
 })
 export class ConfirmDialogModule {

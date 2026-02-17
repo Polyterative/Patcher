@@ -4,7 +4,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatCardModule } from "@angular/material/card";
 import { RouterModule } from '@angular/router';
 import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
@@ -28,7 +28,7 @@ import { SignupPageComponent } from './signup-page.component';
     EmptyStateModule,
     ScreenWrapperModule,
     FlexLayoutModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     MatCardModule,
     RouterModule
   ],

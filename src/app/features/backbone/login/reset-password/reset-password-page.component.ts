@@ -11,7 +11,7 @@ import {
 import { SupabaseService } from '../../../backend/supabase.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
@@ -36,7 +36,7 @@ const AUTH_CHECK_DELAY_MS = 1000;
     CommonModule,
     RouterModule,
     MatIconModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     BrandPrimaryButtonModule,
     HeroContentCardModule,
     ScreenWrapperModule,
