@@ -48,12 +48,6 @@ export class PatchCreatorComponent implements OnInit {
   public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
-  patchInfoItems = [
-    'Create connections between modules to document your signal flow',
-    'Share your patches publicly or keep them private',
-    'Add notes and descriptions to remember your creative ideas'
-  ];
-  
   fields = {
     // hp:   {
     //   label:   'hp',
