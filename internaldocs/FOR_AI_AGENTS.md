@@ -2,6 +2,13 @@
 
 **This project follows strict architectural patterns. You MUST adhere to these conventions.**
 
+## 📦 Package Manager
+
+**This project uses Yarn.** Always use `yarn` commands, never `npm`:
+
+- ✅ `yarn install`, `yarn add`, `yarn remove`
+- ❌ Never use `npm install` or generate `package-lock.json`
+
 ## ⚠️ Critical Rules
 
 ### 1. Service Architecture
