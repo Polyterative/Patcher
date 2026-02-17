@@ -34,12 +34,13 @@ If you are a **technical user** with a specific bug report, you may open an issu
 ## **Table of Contents**
 
 1. [**Introduction**](#introduction)
-2. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
-3. [**Using the Project**](#using-the-project)
-4. [**Project Dependencies**](#project-dependencies)
-5. [**DB Model Details**](#db-model-details)
-6. [**Pull Requests**](#pull-requests)
-7. [**License**](#license)
+2. [**User Guide**](#user-guide)
+3. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
+4. [**Using the Project**](#using-the-project)
+5. [**Project Dependencies**](#project-dependencies)
+6. [**DB Model Details**](#db-model-details)
+7. [**Pull Requests**](#pull-requests)
+8. [**License**](#license)
 
 ---
 
@@ -52,6 +53,23 @@ The project's mission is to build a complete management system for all the needs
 Another goal of the project is to build a database that is publicly accessible and this may include an API, possibly developed in the future. Modules' data will never be restricted by a paywall and will always be publicly accessible.
 
 The project is open-source and contributions are welcome.
+
+---
+
+## **User Guide**
+
+**New to Patcher? Looking for help on how to use the application?**
+
+👉 **[Read the User Guide](USER_GUIDE.md)** for a comprehensive introduction to all features, including:
+
+- How to browse and discover Eurorack modules
+- Creating and managing your patches
+- Planning and visualizing your racks
+- Managing your personal collection
+- Tips, best practices, and community resources
+
+The User Guide is designed for users of the application. For technical setup and development information, continue
+reading below.
 
 ---
 
