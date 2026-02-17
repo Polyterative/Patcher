@@ -2,92 +2,61 @@
 >
   <h1 mat-dialog-title>Create new rack</h1>
   
-  <mat-dialog-content class="col gap1">
-    <p style="font-size: 1rem">
-      You can always edit the rack name and number of rows later.
-    </p>
-    <lib-mat-form-entity [type]="fields.name.type"
-                         [control]="fields.name.control"
-                         [label]="fields.name.label"
-                         iconL1="label"
-    >
-    </lib-mat-form-entity>
-    
-    <div class="col gap0">
+  <mat-dialog-content>
+    <div class="col gap1">
+      <p style="font-size: 1rem">
+        You can always edit the rack name and number of rows later.
+      </p>
+      <lib-mat-form-entity [type]="fields.name.type"
+                           [control]="fields.name.control"
+                           [label]="fields.name.label"
+                           [hint]="(fields.name.control.value?.length || 0) + '/32'"
+                           iconL1="label"
+      >
+      </lib-mat-form-entity>
+      
       <lib-mat-form-entity [type]="fields.hp.type"
                            [control]="fields.hp.control"
                            [label]="fields.hp.label"
+                           [hint]="'Range: 2-216 HP'"
                            iconL1="straighten"
       >
       </lib-mat-form-entity>
-      <div *ngIf="rackAnalysis$ | async as analysis"
-           style="font-size: 0.75rem; color: rgba(0,0,0,0.6); margin-top: -0.5rem; margin-bottom: 0.5rem;">
-        <span *ngIf="analysis.standardAnalyses.length > 0">
-          <span *ngFor="let std of analysis.standardAnalyses; let last = last">
-            {{ std.standardName }}: {{ std.largestModuleHp }} HP<span *ngIf="!last">, </span>
-          </span>
-        </span>
-        <span *ngIf="analysis.standardAnalyses.length === 0">
-          Range: 2-216 HP per row
-        </span>
-      </div>
-    </div>
-    
-    <div class="col gap0">
+      
       <lib-mat-form-entity [type]="fields.rows.type"
                            [control]="fields.rows.control"
                            [label]="fields.rows.label"
+                           [hint]="'Range: 1-10 rows'"
                            iconL1="view_comfy"
       >
       </lib-mat-form-entity>
-      <div *ngIf="rackAnalysis$ | async as analysis"
-           style="font-size: 0.75rem; color: rgba(0,0,0,0.6); margin-top: -0.5rem; margin-bottom: 0.5rem;">
-        <span *ngIf="analysis.standardAnalyses.length > 0">
-          <span *ngFor="let std of analysis.standardAnalyses; let last = last">
-            {{ std.moduleCount }} × {{ std.standardName }} ({{ std.totalModulesHp }} HP)<span *ngIf="!last">, </span>
-          </span>
-        </span>
-        <span *ngIf="analysis.standardAnalyses.length === 0">
-          Range: 1-10 rows
-        </span>
-      </div>
-    </div>
-    
-    <div *ngIf="rackAnalysis$ | async as analysis" class="col gap0" style="margin-top: 0.5rem;">
-      <div style="font-size: 0.875rem; padding: 0.75rem; background: rgba(13,112,35,0.08); border-radius: 0.25rem;">
-        <div style="font-weight: 500; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.25rem;">💡</span>
-          <span>{{ analysis.recommendation }}</span>
-        </div>
-        
-        <div *ngIf="analysis.moduleCount > 0" style="margin-bottom: 0.75rem;">
-          <div
-            style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem; opacity: 0.8;">
-            <span>Utilization</span>
-            <span>{{ analysis.totalModulesHp }} / {{ analysis.totalCapacity }}
-              HP ({{ analysis.utilizationPercent | number:'1.0-0' }}%)</span>
+      
+      <div *ngIf="rackAnalysis$ | async as analysis" class="col gap0" style="margin-top: 0.5rem;">
+        <div *ngIf="analysis.primaryStandard"
+             style="font-size: 0.875rem; padding: 0.875rem 1rem; border-radius: 0.25rem; background: rgba(13,112,35,0.06); display: flex; flex-direction: column; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.1rem;">💡</span>
+            <span style="font-weight: 500;">Your Module Collection</span>
           </div>
-          <div style="height: 4px; width: 100%; background: rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden;">
-            <div [style.width.%]="analysis.utilizationPercent > 100 ? 100 : analysis.utilizationPercent"
-                 [style.background]="analysis.utilizationPercent > 100 ? '#f44336' : (analysis.utilizationPercent > 90 ? '#ff9800' : '#4caf50')"
-                 style="height: 100%; transition: width 0.3s ease;">
+          <div style="display: flex; flex-direction: column; gap: 0.25rem; padding-left: 1.75rem; font-size: 0.8rem;">
+            <div>
+              <span style="opacity: 0.7;">Total modules:</span>
+              <span style="opacity: 0.95; font-weight: 500;"> {{ analysis.moduleCount }}</span>
+            </div>
+            <div>
+              <span style="opacity: 0.7;">Largest module:</span>
+              <span style="opacity: 0.95; font-weight: 500;"> {{ analysis.primaryStandard.largestModuleHp }} HP</span>
+              <span style="opacity: 0.6;"> ({{ analysis.primaryStandard.standardName }})</span>
+            </div>
+            <div
+              style="margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid rgba(0,0,0,0.08); opacity: 0.65; font-size: 0.75rem;">
+              Make sure your rows are at least {{ analysis.primaryStandard.largestModuleHp }} HP to fit your largest
+              module
             </div>
           </div>
         </div>
-        
-        <div style="font-size: 0.75rem; opacity: 0.8; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;">
-          <span>Total capacity: <strong>{{ analysis.totalCapacity }} HP</strong></span>
-          <span *ngIf="analysis.moduleCount > 0">Modules: <strong>{{ analysis.moduleCount }}</strong></span>
-        </div>
-      </div>
-      
-      <div *ngIf="analysis.warningMessage"
-           style="font-size: 0.875rem; padding: 0.75rem; background: rgba(244,67,54,0.1); border-radius: 0.25rem; margin-top: 0.5rem; color: #d32f2f; display: flex; align-items: flex-start; gap: 0.5rem;">
-        <span style="font-size: 1.1rem; line-height: 1;">⚠️</span>
-        <span style="font-weight: 500;">{{ analysis.warningMessage }}</span>
       </div>
     </div>
-  
   </mat-dialog-content>
   <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
     <div fxFlex
