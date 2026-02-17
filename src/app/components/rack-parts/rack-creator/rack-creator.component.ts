@@ -37,9 +37,9 @@ import {
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { MinimalModule } from 'src/app/models/module';
 import {
-  RackAnalysis,
-  RackAnalysisService
-} from 'src/app/components/rack-parts/rack-analysis.service';
+  ModuleCollectionAnalysisService,
+  STANDARDS
+} from 'src/app/components/rack-parts/module-collection-analysis.service';
 
 
 export interface RackCreatorOutModel {
@@ -63,7 +63,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
   private _userModules$ = new BehaviorSubject<MinimalModule[]>([]);
   readonly userModules$ = this._userModules$.asObservable();
   
-  readonly rackAnalysis$: BehaviorSubject<RackAnalysis | null> = new BehaviorSubject<RackAnalysis | null>(null);
+  readonly rackAnalysis$: ReturnType<typeof combineLatest>;
   
   fields: {
     hp: {
@@ -96,7 +96,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
     public backend: SupabaseService,
     public dialogRef: MatDialogRef<RackCreatorComponent, RackCreatorOutModel>,
     @Inject(MAT_DIALOG_DATA) public data: RackCreatorInModel,
-    private rackAnalysisService: RackAnalysisService
+    private moduleCollectionAnalysisService: ModuleCollectionAnalysisService
   ) {
     super();
     
@@ -150,6 +150,26 @@ export class RackCreatorComponent extends SubManager implements OnInit {
       [this.fields.rows.code]: this.fields.rows.control
     });
     
+    // Initialize rackAnalysis$ after fields are set up
+    // Rack creator only cares about larger format modules (3U and above),
+    // so exclude small formats (Intellijel 1U and PulpLogic 1U)
+    this.rackAnalysis$ = combineLatest([
+      this.fields.hp.control.valueChanges.pipe(startWith(this.fields.hp.control.value)),
+      this.fields.rows.control.valueChanges.pipe(startWith(this.fields.rows.control.value)),
+      this.userModules$
+    ]).pipe(
+      map(([hp, rows, modules]) => {
+        // Filter out small 1U formats (Intellijel and PulpLogic), keep all larger formats
+        const largeFormatModules = (modules || []).filter(m => {
+          if (!m) return false;
+          const standardId = m.standard?.id ?? STANDARDS.EURORACK_3U.id;
+          // Exclude Intellijel 1U (id: 1) and PulpLogic 1U (id: 2)
+          return standardId !== STANDARDS.INTELLIJEL_1U.id && standardId !== STANDARDS.PULPLOGIC_1U.id;
+        });
+        return this.moduleCollectionAnalysisService.analyzeRackConfiguration(hp, rows, largeFormatModules);
+      })
+    );
+    
     
     this.save$
       .pipe(
@@ -185,17 +205,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
-    // Analyze rack configuration whenever HP or rows change
-    combineLatest([
-      this.fields.hp.control.valueChanges.pipe(startWith(this.fields.hp.control.value)),
-      this.fields.rows.control.valueChanges.pipe(startWith(this.fields.rows.control.value)),
-      this.userModules$
-    ])
-      .pipe(
-        map(([hp, rows, modules]) => this.rackAnalysisService.analyzeRackConfiguration(hp, rows, modules)),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(analysis => this.rackAnalysis$.next(analysis));
+    // rackAnalysis$ is now a direct Observable that the template subscribes to via async pipe
   }
   
 }
