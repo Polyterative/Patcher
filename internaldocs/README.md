@@ -2,6 +2,10 @@
 
 Project-specific guidelines for Patcher development.
 
+## 📦 Package Manager
+
+**This project uses Yarn.** Always use `yarn` commands (e.g., `yarn install`, `yarn add`), never `npm`.
+
 ## Files
 
 - **[FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md)** - ⚠️ **MANDATORY for AI coding agents**
