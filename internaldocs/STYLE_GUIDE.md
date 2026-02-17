@@ -21,18 +21,100 @@ export class MyDataService extends SubManager {
   // Public observables (readonly)
   public readonly data$ = this._data$.asObservable();
   
-  // Actions
+  // Action Subjects (events)
   public loadData$ = new Subject<void>();
+  public deleteItem$ = new Subject<number>();
   
-  constructor(private backend: SupabaseService) {
+  constructor(private backend: SupabaseService, private snackBar: MatSnackBar) {
     super();
+    this.initializeLoadHandler();
+    this.initializeDeleteHandler();
+  }
+  
+  private initializeLoadHandler(): void {
     this.loadData$.pipe(
       switchMap(() => this.backend.getData()),
       tap(data => this._data$.next(data)),
       takeUntil(this.destroy$)  // Required
     ).subscribe();
   }
+  
+  private initializeDeleteHandler(): void {
+    this.deleteItem$.pipe(
+      switchMap(id => this.backend.delete(id)),
+      tap(() => SharedConstants.successCustom(this.snackBar, 'Deleted')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.loadData$.next());
+  }
 }
+```
+
+## Event-Driven Architecture
+
+**All business logic happens through reactive event handlers in the constructor.**
+
+### Core Principles
+
+1. **Public Subjects for Actions** - Components emit events to Subjects
+2. **Constructor-Based Handlers** - All subscriptions initialized in constructor
+3. **No Public Methods** - Use event Subjects instead of methods
+4. **Declarative Streams** - Chain operators to describe behavior
+
+### Component Interaction
+
+```typescript
+// ✅ Component emits to Subject
+onClick()
+{
+  this.dataService.deleteItem$.next(itemId);
+}
+
+// ❌ Component calls method
+onClick()
+{
+  this.dataService.deleteItem(itemId);  // WRONG
+}
+```
+
+### Common Event Patterns
+
+**Simple Action:**
+
+```typescript
+this.loadData$.pipe(
+  switchMap(() => this.backend.getData()),
+  tap(data => this._data$.next(data)),
+  takeUntil(this.destroy$)
+).subscribe();
+```
+
+**Conditional with State:**
+
+```typescript
+this.updateItem$.pipe(
+  withLatestFrom(this.currentItem$),
+  map(([partial, current]) => ({...current, ...partial})),
+  switchMap(merged => this.backend.update(merged)),
+  takeUntil(this.destroy$)
+).subscribe(() => this.refreshData$.next());
+```
+
+**Multiple Event Triggers:**
+
+```typescript
+merge(this.userChange$, this.dataRefresh$).pipe(
+  switchMap(() => this.backend.getData()),
+  takeUntil(this.destroy$)
+).subscribe(data => this._data$.next(data));
+```
+
+**Debounced User Input:**
+
+```typescript
+this.searchField.valueChanges.pipe(
+  debounceTime(750),
+  takeUntil(this.destroy$)
+).subscribe(text => this.onSearch(text));
 ```
 
 ## Component Pattern
