@@ -116,32 +116,32 @@ $secondary-font:            'Noto Sans';
 @mixin heading-font {
   font-family:    NeutralFace, sans-serif;
 
-  $letterSpacing: .25rem;
+  //$letterSpacing: .25rem;
 
-  letter-spacing: $letterSpacing*1;
+  //letter-spacing: $letterSpacing*1;
 
-  @media (max-width: 1920px) {
-    letter-spacing: $letterSpacing*.5;
-  }
-  @media (max-width: 1270px) {
-    letter-spacing: $letterSpacing*.4;
-  }
-
-  @media (max-width: 1024px) {
-    letter-spacing: $letterSpacing*0.3;
-  }
-
-  @media (max-width: 576px) {
-    letter-spacing: $letterSpacing*0;
-  }
-
-  @media (max-width: 480px) {
-    letter-spacing: $letterSpacing*0;
-  }
-
-  @media (max-width: 360px) {
-    letter-spacing: $letterSpacing*0;
-  }
+  //@media (max-width: 1920px) {
+  //  letter-spacing: $letterSpacing*.5;
+  //}
+  //@media (max-width: 1270px) {
+  //  letter-spacing: $letterSpacing*.4;
+  //}
+  //
+  //@media (max-width: 1024px) {
+  //  letter-spacing: $letterSpacing*0.3;
+  //}
+  //
+  //@media (max-width: 576px) {
+  //  letter-spacing: $letterSpacing*0;
+  //}
+  //
+  //@media (max-width: 480px) {
+  //  letter-spacing: $letterSpacing*0;
+  //}
+  //
+  //@media (max-width: 360px) {
+  //  letter-spacing: $letterSpacing*0;
+  //}
 
 }
 
