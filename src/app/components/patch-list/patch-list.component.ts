@@ -19,6 +19,7 @@ import {
 } from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
+import { normalizeForSearch } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
@@ -85,8 +86,9 @@ export class PatchListComponent extends SubManager implements OnInit {
           this.filterService.filterEvent$
         ])
           .subscribe(([data, query]) => {
-            const result = data.filter(item => item.name.toLowerCase()
-                                                   .includes(query.toLowerCase()));
+            const normalizedQuery = normalizeForSearch(query);
+            const result = data.filter(item => normalizeForSearch(item.name)
+              .includes(normalizedQuery));
             this.filteredData$.next(result);
           })
       );

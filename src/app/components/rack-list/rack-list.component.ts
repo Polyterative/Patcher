@@ -21,6 +21,7 @@ import { RackList } from 'src/app/features/routes/rack/rack-browser-data.service
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { RackMinimalViewConfig } from '../rack-parts/rack-minimal/rack-minimal.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
+import { normalizeForSearch } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
 @Component({
@@ -72,8 +73,8 @@ export class RackListComponent extends SubManager implements OnInit {
           this.filterService.filterEvent$
         ])
           .subscribe(([data, query]) => {
-            const result = data.filter(item => item.name.toLowerCase()
-                                                   .includes(query.toLowerCase()));
+            const result = data.filter(item => normalizeForSearch(item.name)
+              .includes(normalizeForSearch(query)));
             this.filteredData$.next(result);
           })
       );
