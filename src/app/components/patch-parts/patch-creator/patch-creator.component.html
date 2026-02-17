@@ -18,10 +18,26 @@
       >
       </lib-mat-form-entity>
       
-      <app-dialog-info-box icon="💡"
-                           title="What you can do with patches"
-                           [items]="patchInfoItems"
-      ></app-dialog-info-box>
+      <app-lib-showcase-grid [data]="[
+        {
+          label: 'Document Signal Flow',
+          value: 'Create connections between modules to document your signal flow',
+          icon: 'account_tree',
+          size: 'auto'
+        },
+        {
+          label: 'Share Your Work',
+          value: 'Share your patches publicly or keep them private',
+          icon: 'share',
+          size: 'auto'
+        },
+        {
+          label: 'Remember Your Ideas',
+          value: 'Add notes and descriptions to remember your creative ideas',
+          icon: 'lightbulb',
+          size: 'auto'
+        }
+      ]"></app-lib-showcase-grid>
       <!--          <lib-mat-form-entity fxFlex="100"-->
       <!--                               [type]="fields.hp.type"-->
       <!--                               [control]="fields.hp.control"-->
