@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatCardModule } from "@angular/material/card";
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { CommentsDataService } from './comments-data.service';
@@ -35,7 +35,7 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
     CommonModule,
     MatCardModule,
     BrandPrimaryButtonModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     DevOnlyWindowModule,
     HeroContentCardModule,
     MatListItem,

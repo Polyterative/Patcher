@@ -25,6 +25,7 @@ import {
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { ModuleList } from '../module-browser-data.service';
 
 
@@ -97,8 +98,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
           this.filterService.filterEvent$
         ])
           .subscribe(([data, query]) => {
-            const result = data.filter(item => item.name.toLowerCase()
-              .includes(query.toLowerCase()));
+            const result = data.filter(item => normalizeForSearch(item.name)
+              .includes(normalizeForSearch(query)));
             
             this.filteredData$.next(result);
           })

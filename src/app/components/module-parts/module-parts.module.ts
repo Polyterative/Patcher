@@ -12,7 +12,8 @@ import { SharedPipesModule } from 'src/app/shared-interproject/pipes/shared-pipe
 import { AutoContentLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { FileDragHostModule } from '../../shared-interproject/components/@smart/file-drag-host/file-drag-host.module';
-import { MatFormEntityModule } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from '../../shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
+import { FormValidPipe } from '../../shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { RestrictedEntityModule } from '../../shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -85,7 +86,8 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
     BrandPrimaryButtonModule,
     FlexLayoutModule,
     MatDividerModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
+    FormValidPipe,
     MatChipsModule,
     HeroInfoBoxModule,
     MatIconModule,

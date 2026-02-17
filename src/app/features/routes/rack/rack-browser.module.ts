@@ -13,7 +13,7 @@ import { RackCompositeComponent } from 'src/app/features/routes/rack/rack-compos
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
 import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -103,7 +103,7 @@ const parentPrefix: string = 'racks';
     MatPaginatorModule,
     BrandPrimaryButtonModule,
     AutoContentLoadingIndicatorModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     MatToolbarModule,
     PageHeaderModule,
     DevOnlyWindowModule,
