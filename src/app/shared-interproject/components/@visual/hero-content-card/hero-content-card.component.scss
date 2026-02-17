@@ -9,6 +9,67 @@ mat-card {
 
 h1 {
   @extend .std-rounding;
+
+  // Explicitly include heading font styles to ensure proper rendering after Angular update
+  font-size: 4rem;
+
+  @media (max-width: 1270px) {
+    font-size: 3.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    font-size: 3rem;
+  }
+
+  @media (max-width: 576px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 360px) {
+    font-size: 1.5rem;
+  }
+
+  @include heading-font;
+  font-weight: 500;
+
+  & .material-icons, app-hero-content-card-head-icon {
+    font-size: .5em;
+    color: rgba(83, 83, 83, 0.98)
+  }
+}
+
+h2 {
+  font-size: 2.5rem;
+
+  @media (max-width: 576px) {
+    font-size: 2rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
+
+  @include heading-font;
+  font-weight: 500;
+}
+
+h3 {
+  font-size: 2rem;
+
+  @media (max-width: 576px) {
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1.2rem;
+  }
+
+  @include heading-font;
+  font-weight: 500;
 }
 
 @mixin darkBG {
