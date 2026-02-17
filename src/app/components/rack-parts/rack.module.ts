@@ -11,7 +11,7 @@ import { RackMinimalComponent } from 'src/app/components/rack-parts/rack-minimal
 import { RackModuleAdderDialogComponent } from 'src/app/components/rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
@@ -85,7 +85,7 @@ import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weigh
     BrandPrimaryButtonModule,
     FlexLayoutModule,
     MatDividerModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     MatIconModule,
     RouterModule,
     MatButtonModule,

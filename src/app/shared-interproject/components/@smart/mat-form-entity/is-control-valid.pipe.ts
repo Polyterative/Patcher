@@ -16,7 +16,7 @@ type LocalType = UntypedFormControl | UntypedFormGroup;
 @Pipe({
   name: 'formValid',
   pure: false,
-  standalone: false
+  standalone: true
 })
 export class FormValidPipe implements PipeTransform {
   valid = false;

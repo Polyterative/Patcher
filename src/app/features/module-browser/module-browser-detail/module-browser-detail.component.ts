@@ -28,6 +28,7 @@ import {
   CommentsDataService
 } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
+import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 
 
@@ -270,7 +271,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
             outs
           ]
             .flatMap(x => x)
-            .map(x => x.toLowerCase())
+            .map(x => normalizeForSearch(x))
             .map(x => x.replace(/[^a-z0-9]/g, ''))
             .filter(x => !!x)
             .map(x => x.trim())

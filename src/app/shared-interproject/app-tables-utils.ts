@@ -1,3 +1,6 @@
+import { normalizeForSearch } from './components/@smart/mat-form-entity/string-utils';
+
+
 export class AppTablesUtils {
 
   public static nestedObjectsFilterPredicate: (data, filter: string) => boolean = (data, filter: string) => {
@@ -5,12 +8,11 @@ export class AppTablesUtils {
       return AppTablesUtils.nestedFilterCheck(currentTerm, data, key);
     };
     const dataStr = Object.keys(data)
-                          .reduce(accumulator, '')
-                          .toLowerCase();
-    // Transform the filter by converting it to lowercase and removing whitespace.
-    const transformedFilter = filter.trim()
-                                    .toLowerCase();
-    return dataStr.indexOf(transformedFilter) !== -1;
+      .reduce(accumulator, '');
+    // Transform the filter by converting it to lowercase, removing accents and whitespace.
+    const normalizedDataStr = normalizeForSearch(dataStr);
+    const transformedFilter = normalizeForSearch(filter.trim());
+    return normalizedDataStr.indexOf(transformedFilter) !== -1;
   };
 
   public static nestedObjectsfilterPredicateIgnoreColumns(columns: string[]) {
@@ -25,13 +27,12 @@ export class AppTablesUtils {
       keys = keys.filter(item => columns.indexOf(item) < 0);
 
       const dataStr = keys
-      .reduce(accumulator, '')
-      .toLowerCase();
-
-      // Transform the filter by converting it to lowercase and removing whitespace.
-      const transformedFilter = filter.trim()
-                                      .toLowerCase();
-      return dataStr.indexOf(transformedFilter) !== -1;
+        .reduce(accumulator, '');
+      
+      // Transform the filter by converting it to lowercase, removing accents and whitespace.
+      const normalizedDataStr = normalizeForSearch(dataStr);
+      const transformedFilter = normalizeForSearch(filter.trim());
+      return normalizedDataStr.indexOf(transformedFilter) !== -1;
     };
   }
 

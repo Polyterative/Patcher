@@ -17,7 +17,7 @@ import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-mini
 import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.module';
 import { UserModulesModule } from 'src/app/features/routes/user-area/user-modules/user-modules.module';
 import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@smart/dev-only-window/dev-only-window.module';
-import { MatFormEntityModule } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
@@ -65,7 +65,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
     BrandPrimaryButtonModule,
     FlexLayoutModule,
     MatDividerModule,
-    MatFormEntityModule,
+    MatFormEntityComponent,
     MatIconModule,
     RouterModule,
     MatButtonModule,

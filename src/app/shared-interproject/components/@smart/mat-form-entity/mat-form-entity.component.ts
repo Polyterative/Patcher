@@ -13,12 +13,17 @@ import {
 import {
   AbstractControl,
   AsyncValidatorFn,
+  FormsModule,
+  ReactiveFormsModule,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
   ValidatorFn
 } from '@angular/forms';
-import { MatChipInputEvent } from '@angular/material/chips';
+import {
+  MatChipInputEvent,
+  MatChipsModule
+} from '@angular/material/chips';
 import {
   BehaviorSubject,
   merge,
@@ -34,6 +39,7 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { SubManager } from '../../../directives/subscription-manager';
+import { normalizeForSearch } from './string-utils';
 import {
   AppFormUtils,
   ErrorCodes
@@ -47,10 +53,26 @@ import {
 } from './form-element-models';
 import {
   FloatLabelType,
-  MatFormFieldAppearance
+  MatFormFieldAppearance,
+  MatFormFieldModule
 } from "@angular/material/form-field";
-import { MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
-import { TooltipPosition } from "@angular/material/tooltip";
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent
+} from "@angular/material/autocomplete";
+import {
+  MatTooltipModule,
+  TooltipPosition
+} from "@angular/material/tooltip";
+import { CommonModule } from '@angular/common';
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatButtonModule } from "@angular/material/button";
+import { MatInputModule } from "@angular/material/input";
+import { MatIconModule } from "@angular/material/icon";
+import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatNativeDateModule } from "@angular/material/core";
+import { MatSelectModule } from "@angular/material/select";
+import { MatDialogModule } from "@angular/material/dialog";
 
 
 export interface IMatFormEntityConfig {
@@ -77,7 +99,24 @@ export interface IMatFormEntityConfig {
   templateUrl: './mat-form-entity.component.html',
   styleUrls: ['./mat-form-entity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    FlexLayoutModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatDialogModule
+  ]
 })
 export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
   
@@ -348,8 +387,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                         .filter(opt =>
                           this.autocompleteCaseSensitiveComparison
                             ? opt.name.includes(input.name)
-                            : opt.name.toLowerCase()
-                              .includes(input.name.toLowerCase()));
+                            : normalizeForSearch(opt.name)
+                              .includes(normalizeForSearch(input.name)));
                     }
                     
                     return group;
@@ -366,8 +405,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                         .filter(opt =>
                           this.autocompleteCaseSensitiveComparison
                             ? opt.name.includes(input)
-                            : opt.name.toLowerCase()
-                              .includes(input.toLowerCase()));
+                            : normalizeForSearch(opt.name)
+                              .includes(normalizeForSearch(input)));
                     }
                     
                     return group;
@@ -446,12 +485,12 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
                 remainingOptions = allOptions
                   .map((x => x))
                   .filter(opt =>
-                    this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : opt.name.toLowerCase()
-                      .includes(input.name.toLowerCase()));
+                    this.autocompleteCaseSensitiveComparison ? opt.name.includes(input.name) : normalizeForSearch(opt.name)
+                      .includes(normalizeForSearch(input.name)));
               } else if (typeof input === 'string') {
                 remainingOptions = options.filter(opt =>
-                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                    .includes(input.toLowerCase()));
+                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : normalizeForSearch(opt.name)
+                    .includes(normalizeForSearch(input)));
                 
               } else {
                 remainingOptions = options;
@@ -520,8 +559,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
               
               if (typeof input === 'string') {
                 const filtered: ISelectable[] = options.filter(opt =>
-                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : opt.name.toLowerCase()
-                    .includes(input.toLowerCase()));
+                  this.autocompleteCaseSensitiveComparison ? opt.name.includes(input) : normalizeForSearch(opt.name)
+                    .includes(normalizeForSearch(input)));
                 
                 this.optionsFiltered.next(filtered);
                 

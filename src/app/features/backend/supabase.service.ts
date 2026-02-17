@@ -33,6 +33,7 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
@@ -994,7 +995,7 @@ export class SupabaseService {
     }
     
     if (description) {
-      query = query.ilike('description', `%${ description }%`);
+      query = query.ilike('description', `%${ normalizeForSearch(description) }%`);
     }
     
     
@@ -1008,7 +1009,7 @@ export class SupabaseService {
         .limit(1, {                                // take only one panel
           foreignTable: DbPaths.module_panels
         })
-        .ilike('name', `%${ name }%`)
+        .ilike('name', `%${ normalizeForSearch(name) }%`)
         .range(from, to)
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
@@ -1073,7 +1074,7 @@ export class SupabaseService {
       this.supabase.from(DbPaths.racks)
         .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
         .filter("public", "eq", true)
-        .ilike(`name,hp,rows,${ QueryJoins.author }`, `%${ name.trim().toLowerCase() }%`)
+        .ilike(`name,hp,rows,${ QueryJoins.author }`, `%${ normalizeForSearch(name.trim()) }%`)
         .range(from, effectiveTo)
         .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"})
     )
@@ -1133,7 +1134,7 @@ export class SupabaseService {
     }
     
     if (name) {
-      queryBuilder = queryBuilder.ilike('name', `%${ name }%`);
+      queryBuilder = queryBuilder.ilike('name', `%${ normalizeForSearch(name) }%`);
     }
     
     return rxFrom(queryBuilder.range(from, to))
