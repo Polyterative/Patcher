@@ -2,210 +2,343 @@
 
 **This project follows strict architectural patterns. You MUST adhere to these conventions.**
 
-## 📦 Package Manager
+## ⚡ Quick Reference (MUST READ FIRST)
 
-**This project uses Yarn.** Always use `yarn` commands, never `npm`:
+**Commands:** Use `yarn` (install/add/remove) never `npm`. Testing: `yarn test-headless` never raw `ng test`.
 
-- ✅ `yarn install`, `yarn add`, `yarn remove`
-- ❌ Never use `npm install` or generate `package-lock.json`
+**Event-Driven Architecture (CRITICAL):**
+- ✅ All logic in constructor via reactive streams
+- ✅ Public action Subjects (e.g., `loadData$`, `deleteItem$`)
+- ✅ Components call `.next()` on Subjects, never methods
+- ❌ Never create public methods for business logic
 
-## 🧪 Running Tests
+**Every Component/Service MUST:**
 
-**Always use the configured test commands from package.json:**
+1. Extend `SubManager`, call `super()` in constructor
+2. Use `takeUntil(this.destroy$)` on ALL subscriptions
+3. Use `$` suffix on observables/subjects
+4. Initialize event handlers in constructor
 
-- ✅ `yarn test-headless` - Runs tests once in headless Chrome
-- ❌ Never run raw `ng test` commands - the package.json scripts include proper ChromeHeadlessCI configuration
+**Data Services:**
+
+- `@Injectable()` (NOT root), provided in component decorator
+- Private `_state$` BehaviorSubject, public `readonly state$` observable
+- Public action Subjects for events
+
+**Never:**
+- Subscribe in components (use `async` pipe)
+- Create dialogs (use inline UI) or direct Supabase calls (use SupabaseService)
+- Create public methods that return observables (use Subjects)
+- Generate markdown summary files
+
+## 📁 File Organization & Imports
+
+**Key Imports:**
+```typescript
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { UserManagementService } from 'src/app/features/backend/user-management.service';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+```
+
+**File Locations:** Data services: `*-data.service.ts` in component directory. Components:
+`src/app/components/[feature]/`. Models: `src/app/models/`. Shared: `src/app/shared-interproject/`.
 
 ## ⚠️ Critical Rules
 
-### 1. Service Architecture
+### 1. Service Architecture & Subscription Management
 
-- **Data Services**: Always `@Injectable()` (component-scoped, NOT root)
-- **API Services**: `@Injectable({ providedIn: 'root' })`
-- See [ARCHITECTURE.md](./ARCHITECTURE.md) for details
+**Data Services:** `@Injectable()` (component-scoped, NOT root). **API Services:**
+`@Injectable({ providedIn: 'root' })`. See [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-### 2. Subscription Management
-
+**Always extend SubManager and use takeUntil:**
 ```typescript
-// ✅ REQUIRED: Extend SubManager
 export class MyComponent extends SubManager {
   constructor() {
-    super();  // REQUIRED
-  }
+    super();
+  } // REQUIRED
 }
 
-// ✅ REQUIRED: Use takeUntil(this.destroy$) on ALL subscriptions
-this.observable$.pipe(
-  // ... operators
-  takeUntil(this.destroy$)  // MUST HAVE
-).subscribe();
+// REQUIRED on ALL subscriptions:
+this.observable$.pipe(takeUntil(this.destroy$)).subscribe();
 
-// ✅ PREFERRED: Use async pipe in templates (no manual subscriptions)
+// PREFERRED: Use async pipe (no manual subscriptions)
 <div * ngIf = "data$ | async as data" > {
-{ data }
+{data}
 }
 </div>
 ```
 
-### 3. Data Service Pattern
-
-**Always follow this structure:**
+### 2. Data Service Pattern
 
 ```typescript
-
 @Injectable()  // NOT root!
 export class MyDataService extends SubManager {
-  // Private BehaviorSubjects
   private _data$ = new BehaviorSubject<Data[]>([]);
-  
-  // Public readonly observables
   public readonly data$ = this._data$.asObservable();
-  
-  // Public action Subjects
   public loadData$ = new Subject<void>();
   
   constructor(private backend: SupabaseService) {
     super();
-    // Initialize handlers
-  }
-  
-  private initializeHandler(): void {
     this.loadData$.pipe(
       switchMap(() => this.backend.getData()),
       tap(data => this._data$.next(data)),
-      takeUntil(this.destroy$)  // REQUIRED!
+      takeUntil(this.destroy$)
     ).subscribe();
   }
 }
 ```
 
-### 4. Naming Conventions
+### 3. Naming & Component Pattern
 
-- Observables: `data$`, `user$`, `isLoading$`
-- Private observables: `private _state$`
-- Action subjects: `loadData$`, `submitForm$`
-- **ALL observables/subjects MUST end with `$`**
-
-### 5. Component Pattern
+**Names:** Observables: `data$`, `user$`. Private: `_state$`. Actions: `loadData$`, `submitForm$`. **ALL must end
+with `$`**.
 
 ```typescript
 
-@Component({
-  providers: [MyDataService]  // Provide data service here
-})
+@Component({providers: [MyDataService]})
 export class MyComponent extends SubManager {
-  data$ = this.dataService.data$;  // Expose for template
+  data$ = this.dataService.data$;
   
   constructor(public dataService: MyDataService) {
-    super();  // REQUIRED
+    super();
   }
 }
 ```
 
-### 6. Error Handling
+### 4. Error Handling & UI
 
 ```typescript
-// ✅ Use SharedConstants for user messages
 SharedConstants.successSave(this.snackBar);
-SharedConstants.errorCustom(this.snackBar, 'Failed to load');
+SharedConstants.errorCustom(this.snackBar, 'Failed');
 
-// ✅ Log errors to console
 catchError(error => {
-  console.error('Operation failed:', error);
+  console.error('Failed:', error);
   SharedConstants.errorCustom(this.snackBar, 'Failed');
   return EMPTY;
 })
 ```
 
-### 7. UI Patterns
+**UI:** Inline UI with `BehaviorSubject<boolean>` toggles, not dialogs. Use `| async` pipe. Layout: `.row`, `.col`,
+`.gap1` from `tools.scss`.
 
-- **Prefer inline UI over dialogs**: Use `BehaviorSubject<boolean>` for toggles
-- **Use Angular Material icons**: `<mat-icon>edit</mat-icon>`
-- **Use async pipe**: Always use `| async` in templates
-- **Use layout classes**: `.row`, `.col`, `.gap1` from `tools.scss`
-
-### 8. Backend Calls
+### 5. Backend Calls
 
 ```typescript
-// ✅ Always through SupabaseService
+// ✅ Through SupabaseService
 this.backend.GET.currentUserModules()
 this.backend.update.module(data)
-this.backend.delete.modulePanel(panel)
-
-// ❌ Never directly instantiate Supabase client
+// ❌ Never directly instantiate Supabase
 ```
 
-## 🚫 Common Mistakes to Avoid
+### 6. Event-Driven Architecture with RxJS
 
-❌ `@Injectable({ providedIn: 'root' })` on data services  
-❌ Manual subscriptions without `takeUntil(this.destroy$)`  
-❌ Forgetting to extend `SubManager`  
-❌ Forgetting to call `super()` in constructor  
-❌ Not using `$` suffix on observables  
-❌ Using dialogs instead of inline UI  
-❌ Subscribing in components (use async pipe instead)  
-❌ Not using `readonly` on public observables  
-❌ **Creating markdown summary/report files** - Just do the work, don't generate documentation about what you did
+**⚠️ CRITICAL: All logic in constructor via reactive streams.**
 
-## 📚 Required Reading
+**✅ CORRECT - Handlers in constructor:**
+```typescript
+@Injectable()
+export class MyDataService extends SubManager {
+  private _data$ = new BehaviorSubject<Data[]>([]);
+  public readonly data$ = this._data$.asObservable();
+  public loadData$ = new Subject<void>();
+  public deleteItem$ = new Subject<number>();
+  
+  constructor(private backend: SupabaseService, private snackBar: MatSnackBar) {
+    super();
+    this.loadData$.pipe(
+      switchMap(() => this.backend.getData()),
+      tap(data => this._data$.next(data)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+    
+    this.deleteItem$.pipe(
+      switchMap(id => this.backend.delete(id)),
+      tap(() => SharedConstants.successCustom(this.snackBar, 'Deleted')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.loadData$.next());
+  }
+}
+```
 
-Before making changes:
+**❌ WRONG - Methods from components:**
+```typescript
+public
+deleteItem(id
+:
+number
+):
+void { /*DON'T*/}
+```
 
-1. [ARCHITECTURE.md](./ARCHITECTURE.md) - Understand the service layers
-2. [STYLE_GUIDE.md](./STYLE_GUIDE.md) - Follow naming and patterns
-3. [PATTERNS.md](./PATTERNS.md) - Use these templates
+**Component triggers events:**
+```typescript
+// ✅ Emit to Subject
+onClick()
+{ this.dataService.deleteItem$.next(itemId); }
+// ❌ NOT call method
+onClick()
+{ this.dataService.deleteItem(itemId); }
+```
 
-## ✅ Checklist for New Components/Services
+**Event Chaining Patterns:**
 
-**Data Service:**
+**Action → Backend → State:**
+```typescript
+this.addItem$.pipe(
+  switchMap(item => this.backend.add(item)),
+  tap(result => this._items$.next([...this._items$.value, result])),
+  takeUntil(this.destroy$)
+).subscribe();
+```
 
-- [ ] Extends `SubManager`
-- [ ] `@Injectable()` with no `providedIn`
-- [ ] Private BehaviorSubjects with `_` prefix
-- [ ] Public readonly observables
-- [ ] Public action Subjects
+**Multiple Event Triggers:**
+```typescript
+merge(this.userService.loggedUser$, this.updateData$).pipe(
+  switchMap(() => this.userService.loggedUser$),
+  switchMap(user => user ? this.backend.getData() : of([])),
+  takeUntil(this.destroy$)
+).subscribe(data => this._data$.next(data));
+```
+
+**Conditional Execution:**
+```typescript
+this.deleteModule$.pipe(
+  filter(id => id > 0),
+  switchMap(id => this.backend.delete.module(id)),
+  takeUntil(this.destroy$)
+).subscribe(() => SharedConstants.successCustom(this.snackBar, 'Deleted'));
+```
+
+**State-Dependent Actions:**
+```typescript
+this.updateItem$.pipe(
+  withLatestFrom(this.singleItemData$),
+  map(([partial, original]) => ({...original, ...partial})),
+  switchMap(merged => this.backend.update(merged)),
+  takeUntil(this.destroy$)
+).subscribe(() => this.refreshData$.next());
+```
+
+**Optimistic UI:**
+```typescript
+this.togglePrivacy$.pipe(
+  withLatestFrom(this.rackData$),
+  tap(([_, rack]) => this.isPrivate$.next(!rack.public)),
+  map(([_, rack]) => ({...rack, public: !rack.public})),
+  switchMap(rack => this.backend.update.rack(rack)),
+  takeUntil(this.destroy$)
+).subscribe();
+```
+
+**Debounced Search:**
+```typescript
+this.fields.search.control.valueChanges.pipe(
+  debounceTime(750),
+  takeUntil(this.destroy$)
+).subscribe(text => this.onFilterEvent(text));
+```
+
+**Server-Side Pagination:**
+```typescript
+private
+dataPackage$ = combineLatest([
+  this.skip$, this.take$, this.filter$, this.sort$
+]);
+
+this.updateList$.pipe(
+  withLatestFrom(this.dataPackage$),
+  switchMap(([_, [skip, take, filter, sort]]) =>
+    this.backend.GET.items(skip, take, filter, sort)
+  ),
+  takeUntil(this.destroy$)
+).subscribe(result => {
+  this.itemCount$.next(result.count);
+  this.items$.next(result.data);
+});
+```
+
+**Key RxJS Operators:**
+
+- `switchMap` - Backend calls (cancels previous)
+- `tap` - Side effects (state, logging, UI)
+- `map` - Transform data
+- `filter` - Conditional execution
+- `withLatestFrom` - Combine with latest from another stream
+- `combineLatest` - React to multiple streams
+- `merge` - Trigger on any event
+- `debounceTime` - Delay (search, forms)
+- `distinctUntilChanged` - Only emit on change
+- `catchError` - Error handling (return EMPTY or of(fallback))
+- `takeUntil(this.destroy$)` - **ALWAYS REQUIRED**
+
+## 🚫 Common Mistakes
+
+❌ `@Injectable({ providedIn: 'root' })` on data services | ❌ No `takeUntil(this.destroy$)` | ❌ Not extending
+`SubManager` or calling `super()` | ❌ Missing `$` suffix | ❌ Using dialogs vs inline UI | ❌ Subscribing in components (
+use async pipe) | ❌ Not using `readonly` on public observables | ❌ Using `npm` not `yarn` | ❌ Running `ng test` not
+`yarn test-headless` | ❌ Direct Supabase calls | ❌ **Public methods for logic (use Subjects)** | ❌ **Components calling
+methods (emit to Subjects)** | ❌ **Subscribing outside constructor** | ❌ **Creating markdown summaries**
+
+## 📚 Reference & Checklists
+
+**Read:** [ARCHITECTURE.md](./ARCHITECTURE.md), [STYLE_GUIDE.md](./STYLE_GUIDE.md), [PATTERNS.md](./PATTERNS.md)
+
+**Data Service Checklist:**
+
+- [ ] Extends `SubManager`, calls `super()`
+- [ ] `@Injectable()` no `providedIn`
+- [ ] Private BehaviorSubjects (`_`), public readonly observables, public action Subjects
 - [ ] All subscriptions have `takeUntil(this.destroy$)`
-- [ ] Calls `super()` in constructor
 
-**Component:**
+**Component Checklist:**
 
-- [ ] Extends `SubManager`
-- [ ] Calls `super()` in constructor
-- [ ] Provides data service in `@Component` decorator
-- [ ] Uses `async` pipe in template
-- [ ] Uses layout classes from `tools.scss`
+- [ ] Extends `SubManager`, calls `super()`
+- [ ] Provides data service in decorator
+- [ ] Uses `async` pipe and layout classes from `tools.scss`
 
-**Any Observable/Subject:**
+**Copy patterns from:** `module-detail-data.service.ts`, `user-login-data.service.ts`, `patch-detail-data.service.ts`
 
-- [ ] Has `$` suffix
-- [ ] Uses `takeUntil(this.destroy$)` if subscribed
+## 🔄 Development Workflow
 
-## 🔍 Code Review Points
+**Quick Reference:**
 
-When reviewing your changes, verify:
+```typescript
+// Add observable stream
+_newData$ = new BehaviorSubject<Type[]>([]);
+public readonly
+newData$ = this._newData$.asObservable();
 
-1. All new services extend `SubManager`
-2. All subscriptions use `takeUntil(this.destroy$)`
-3. Data services are component-scoped
-4. Observable naming follows conventions
-5. Templates use `async` pipe
-6. Error messages use `SharedConstants`
-7. Layout uses existing SCSS classes
+// Add action
+public
+performAction$ = new Subject<Payload>();
+// In constructor:
+this.performAction$.pipe(
+  switchMap(p => this.backend.call(p)),
+  tap(r => this._newData$.next(r)),
+  takeUntil(this.destroy$)
+).subscribe();
 
-## 💡 When in Doubt
+// Success/error
+SharedConstants.successSave(this.snackBar);
+SharedConstants.errorCustom(this.snackBar, 'Failed');
 
-**Copy existing patterns** from these files:
+// Template
+<div class="col gap2" *ngIf="dataService.data$ | async as data">
+  {
+{data.name}
+}
+</div>
+```
 
-- `module-detail-data.service.ts`
-- `user-login-data.service.ts`
-- `patch-detail-data.service.ts`
+**Troubleshooting:**
 
-These are reference implementations of the correct patterns.
+- Observable not updating? Check `.next()` on BehaviorSubject, verify `takeUntil(this.destroy$)`
+- Memory leaks? Verify extends `SubManager`, calls `super()`, all subscriptions have `takeUntil`
+- Data not loading? Check action Subject triggered, backend call correct, user authenticated
+- Styling issues? Use classes from `tools.scss`, avoid `!important`
 
-## 📣 Communication Guidelines
+## 📣 Communication
 
-- ❌ **DO NOT** generate markdown files summarizing your work or changes
-- ✅ Simply explain what you did in your response
-- ✅ Make the changes directly using the tools
-- ✅ Verify your changes with error checking
-- ❌ Do not create reports, summaries, or review documents as files without explicit instructions to do so
+✅ Explain changes directly | ✅ Verify with error checking | ❌ **NO markdown summaries/reports**
