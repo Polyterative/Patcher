@@ -35,16 +35,30 @@
       </lib-mat-form-entity>
       
       <ng-container *ngIf="rackAnalysis$ | async as analysis">
-        <app-dialog-info-box
-          *ngIf="analysis.primaryStandard"
-          icon="💡"
-          title="Your Module Collection"
-          [items]="[
-            'Total modules: ' + analysis.moduleCount,
-            'Largest module: ' + analysis.primaryStandard.largestModuleHp + ' HP (' + analysis.primaryStandard.standardName + ')',
-            'Make sure your rows are at least ' + analysis.primaryStandard.largestModuleHp + ' HP to fit your largest module'
-          ]"
-        ></app-dialog-info-box>
+        <ng-container *ngIf="analysis.primaryStandard">
+          <app-lib-showcase-grid
+            [data]="[
+              {
+                label: 'Total Modules',
+                value: 'You have ' + analysis.moduleCount + ' module' + (analysis.moduleCount !== 1 ? 's' : '') + ' in your collection',
+                icon: 'inventory_2',
+                size: 'auto'
+              },
+              {
+                label: 'Largest Module',
+                value: analysis.primaryStandard.largestModuleHp + ' HP (' + analysis.primaryStandard.standardName + ')',
+                icon: 'straighten',
+                size: 'auto'
+              },
+              {
+                label: 'Recommended Row Size',
+                value: 'Make sure your rows are at least ' + analysis.primaryStandard.largestModuleHp + ' HP to fit your largest module',
+                icon: 'info',
+                size: 'auto'
+              }
+            ]"
+          ></app-lib-showcase-grid>
+        </ng-container>
       </ng-container>
     </div>
   </mat-dialog-content>
