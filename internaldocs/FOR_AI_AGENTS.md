@@ -9,6 +9,13 @@
 - ✅ `yarn install`, `yarn add`, `yarn remove`
 - ❌ Never use `npm install` or generate `package-lock.json`
 
+## 🧪 Running Tests
+
+**Always use the configured test commands from package.json:**
+
+- ✅ `yarn test-headless` - Runs tests once in headless Chrome
+- ❌ Never run raw `ng test` commands - the package.json scripts include proper ChromeHeadlessCI configuration
+
 ## ⚠️ Critical Rules
 
 ### 1. Service Architecture
