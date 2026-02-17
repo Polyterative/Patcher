@@ -39,6 +39,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 
 
 @NgModule({
@@ -91,7 +92,8 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
     CleanCardModule,
     LibGraphModule,
     PatchMicroModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    LibShowcaseGridComponent
   ]
 })
 export class PatchModule {}
