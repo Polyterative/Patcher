@@ -36,6 +36,10 @@ import {
 } from "@angular/material/dialog";
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { MinimalModule } from 'src/app/models/module';
+import {
+  RackAnalysis,
+  RackAnalysisService
+} from 'src/app/components/rack-parts/rack-analysis.service';
 
 
 export interface RackCreatorOutModel {
@@ -45,25 +49,6 @@ export interface RackCreatorInModel {
   userModules?: MinimalModule[];
 }
 
-interface StandardAnalysis {
-  standardId: number;
-  standardName: string;
-  moduleCount: number;
-  largestModuleHp: number;
-  totalModulesHp: number;
-  canFitLargest: boolean;
-}
-
-interface RackAnalysis {
-  totalCapacity: number;
-  moduleCount: number;
-  totalModulesHp: number;
-  utilizationPercent: number;
-  recommendation: string;
-  warningMessage?: string;
-  standardAnalyses: StandardAnalysis[];
-  primaryStandard?: StandardAnalysis;
-}
 
 @Component({
   selector: 'app-rack-creator',
@@ -110,7 +95,8 @@ export class RackCreatorComponent extends SubManager implements OnInit {
     public snackBar: MatSnackBar,
     public backend: SupabaseService,
     public dialogRef: MatDialogRef<RackCreatorComponent, RackCreatorOutModel>,
-    @Inject(MAT_DIALOG_DATA) public data: RackCreatorInModel
+    @Inject(MAT_DIALOG_DATA) public data: RackCreatorInModel,
+    private rackAnalysisService: RackAnalysisService
   ) {
     super();
     
@@ -206,141 +192,10 @@ export class RackCreatorComponent extends SubManager implements OnInit {
       this.userModules$
     ])
       .pipe(
-        map(([hp, rows, modules]) => this.analyzeRackConfiguration(hp, rows, modules)),
+        map(([hp, rows, modules]) => this.rackAnalysisService.analyzeRackConfiguration(hp, rows, modules)),
         takeUntil(this.destroy$)
       )
       .subscribe(analysis => this.rackAnalysis$.next(analysis));
-  }
-  
-  private analyzeRackConfiguration(hp: number, rows: number, modules: MinimalModule[]): RackAnalysis {
-    const totalCapacity = Number(hp) * Number(rows);
-    
-    if (modules.length === 0) {
-      return {
-        totalCapacity,
-        moduleCount: 0,
-        totalModulesHp: 0,
-        utilizationPercent: 0,
-        recommendation: 'Standard eurorack case (84 HP × 2 rows)',
-        warningMessage: undefined,
-        standardAnalyses: [],
-        primaryStandard: undefined
-      };
-    }
-    
-    // Group modules by standard
-    const modulesByStandard = new Map<number, MinimalModule[]>();
-    modules.forEach(module => {
-      const standardId = module.standard?.id ?? 0;
-      if (!modulesByStandard.has(standardId)) {
-        modulesByStandard.set(standardId, []);
-      }
-      modulesByStandard.get(standardId)!.push(module);
-    });
-    
-    // Analyze each standard family
-    const standardAnalyses: StandardAnalysis[] = [];
-    modulesByStandard.forEach((standardModules, standardId) => {
-      const moduleHpValues = standardModules.map(m => m.hp);
-      const largestModuleHp = Math.max(...moduleHpValues);
-      const totalModulesHp = moduleHpValues.reduce((sum, hp) => sum + hp, 0);
-      const canFitLargest = hp >= largestModuleHp;
-      
-      const standardName = this.getStandardName(standardId);
-      
-      standardAnalyses.push({
-        standardId,
-        standardName,
-        moduleCount: standardModules.length,
-        largestModuleHp,
-        totalModulesHp,
-        canFitLargest
-      });
-    });
-    
-    // Sort by module count (descending) to find the primary standard
-    standardAnalyses.sort((a, b) => b.moduleCount - a.moduleCount);
-    
-    // Primary standard is the one with most modules
-    const primaryStandard = standardAnalyses[0];
-    
-    // Calculate overall stats
-    const totalModulesHp = standardAnalyses.reduce((sum, std) => sum + std.totalModulesHp, 0);
-    const utilizationPercent = (totalModulesHp / totalCapacity) * 100;
-    
-    // Calculate minimum rows needed if modules were grouped by standard
-    const minRowsNeeded = standardAnalyses.reduce((sum, std) => sum + Math.ceil(std.totalModulesHp / hp), 0);
-    
-    // Generate intelligent recommendation based on grouped standards
-    let recommendation: string;
-    let warningMessage: string | undefined = undefined;
-    
-    // Check for warnings across all standards
-    const problematicStandards = standardAnalyses.filter(std => !std.canFitLargest);
-    if (problematicStandards.length > 0) {
-      const issues = problematicStandards.map(std =>
-        `${ std.standardName }: ${ std.largestModuleHp } HP`
-      ).join(', ');
-      warningMessage = `⚠️ Largest modules won't fit in ${ hp } HP row - ${ issues }`;
-      recommendation = `Consider at least ${ Math.max(...problematicStandards.map(s => s.largestModuleHp)) } HP per row`;
-    } else if (standardAnalyses.length > 1) {
-      // Multiple standards detected - show all groups
-      const standardSummary = standardAnalyses
-        .map(std => `${ std.moduleCount } × ${ std.standardName }`)
-        .join(', ');
-      
-      if (rows < minRowsNeeded) {
-        recommendation = `Consider ${ minRowsNeeded }+ rows to separate ${ standardAnalyses.length } module families`;
-      } else if (utilizationPercent > 90) {
-        recommendation = `Tightly packed! ${ standardSummary } almost full`;
-      } else {
-        recommendation = `Good fit for ${ standardSummary } (${ utilizationPercent.toFixed(0) }% full)`;
-      }
-    } else if (standardAnalyses.length === 1) {
-      // Single standard family - use primary (which is the only one)
-      const std = primaryStandard;
-      const modulesLabel = std.moduleCount === 1 ? 'module' : 'modules';
-      
-      if (utilizationPercent > 100) {
-        const suggestedRows = Math.ceil(std.totalModulesHp / hp);
-        recommendation = `All ${ std.moduleCount } ${ std.standardName } ${ modulesLabel } need ${ suggestedRows }+ rows (${ std.totalModulesHp } HP total)`;
-      } else if (utilizationPercent > 80) {
-        recommendation = `Perfect for your ${ std.moduleCount } ${ std.standardName } ${ modulesLabel } (${ utilizationPercent.toFixed(0) }% full)`;
-      } else if (utilizationPercent > 50) {
-        recommendation = `Good size for ${ std.moduleCount } ${ std.standardName } ${ modulesLabel } (${ utilizationPercent.toFixed(0) }% full)`;
-      } else if (utilizationPercent > 20) {
-        recommendation = `Spacious for ${ std.moduleCount } ${ std.standardName } ${ modulesLabel } (${ utilizationPercent.toFixed(0) }% full)`;
-      } else {
-        recommendation = `Very spacious (${ utilizationPercent.toFixed(0) }% full)`;
-      }
-    } else {
-      // No modules - shouldn't happen but safe fallback
-      recommendation = 'Standard eurorack case (84 HP × 2 rows)';
-    }
-    
-    return {
-      totalCapacity,
-      moduleCount: modules.length,
-      totalModulesHp,
-      utilizationPercent,
-      recommendation,
-      warningMessage,
-      standardAnalyses,
-      primaryStandard
-    };
-  }
-  
-  private getStandardName(standardId: number): string {
-    switch (standardId) {
-      case 0:
-        return '3U Eurorack';
-      case 1:
-        return 'Intellijel 1U';
-      case 2:
-        return 'PulpLogic 1U';
-      default:
-        return 'Unknown';
-    }
   }
   
 }
