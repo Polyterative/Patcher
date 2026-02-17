@@ -1,49 +1,35 @@
-<ng-container
+<div class="col gap1"
 >
-  <div fxLayout="column"
-       fxLayoutGap="0.2em"
-  >
-    <div fxFlex="100"
-
-    >
-      <h1 mat-dialog-title>Create new patch</h1></div>
-    <div fxFlex="100"
-    >
-      <mat-dialog-content>
-      
-        <div fxFlex="100"
-             fxLayout="column wrap"
-             fxLayout.xs="column"
-             fxLayoutGap="1rem"
-        >
-        
-          <lib-mat-form-entity fxFlex="100"
-                               [type]="fields.name.type"
-                               [control]="fields.name.control"
-                               [label]="fields.name.label"
-                               iconL1="label"
-          >
-          </lib-mat-form-entity>
-          <!--          <lib-mat-form-entity fxFlex="100"-->
-          <!--                               [type]="fields.hp.type"-->
-          <!--                               [control]="fields.hp.control"-->
-          <!--                               [label]="fields.hp.label"-->
-          <!--          >-->
-          <!--          </lib-mat-form-entity>-->
-          <!--          <lib-mat-form-entity fxFlex="100"-->
-          <!--                               [type]="fields.rows.type"-->
-          <!--                               [control]="fields.rows.control"-->
-          <!--                               [label]="fields.rows.label"-->
-          <!--          >-->
-          <!--          </lib-mat-form-entity>-->
-        
-        </div>
-      
-      </mat-dialog-content>
+  <h1 mat-dialog-title>Create new patch</h1>
+  
+  <mat-dialog-content>
+    <div class="col gap1">
+      <p style="font-size: 1rem">
+        You can always edit the patch name later.
+      </p>
+      <lib-mat-form-entity [type]="fields.name.type"
+                           [control]="fields.name.control"
+                           [label]="fields.name.label"
+                           [hint]="(fields.name.control.value?.length || 0) + '/32'"
+                           iconL1="label"
+      >
+      </lib-mat-form-entity>
+      <!--          <lib-mat-form-entity fxFlex="100"-->
+      <!--                               [type]="fields.hp.type"-->
+      <!--                               [control]="fields.hp.control"-->
+      <!--                               [label]="fields.hp.label"-->
+      <!--          >-->
+      <!--          </lib-mat-form-entity>-->
+      <!--          <lib-mat-form-entity fxFlex="100"-->
+      <!--                               [type]="fields.rows.type"-->
+      <!--                               [control]="fields.rows.control"-->
+      <!--                               [label]="fields.rows.label"-->
+      <!--          >-->
+      <!--          </lib-mat-form-entity>-->
     </div>
-  </div>
+  </mat-dialog-content>
   <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
-    <div fxFlex="100"
+    <div fxFlex
          fxLayout="row"
          fxLayoutGap="2rem"
          fxLayoutGap.xs="0rem"
@@ -58,4 +44,4 @@
     </div>
   
   </mat-dialog-actions>
-</ng-container>
+</div>

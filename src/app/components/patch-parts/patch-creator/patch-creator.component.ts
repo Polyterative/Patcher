@@ -23,6 +23,12 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from "@angular/material/dialog";
+import {
+  adjectives,
+  animals,
+  colors,
+  uniqueNamesGenerator
+} from 'unique-names-generator';
 
 
 export interface PatchCreatorOutModel {
@@ -71,7 +77,7 @@ export class PatchCreatorComponent implements OnInit {
       label:   'Name',
       code:    'name',
       flex:    '6rem',
-      control: new UntypedFormControl('My new patch', Validators.compose([
+      control: new UntypedFormControl(this.generatePatchName(), Validators.compose([
         Validators.required,
         Validators.minLength(1),
         Validators.maxLength(32)
@@ -81,6 +87,15 @@ export class PatchCreatorComponent implements OnInit {
     }
   };
   protected destroyEvent$ = new Subject<void>();
+  
+  private generatePatchName(): string {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      separator: ' ',
+      style: 'capital',
+      length: 2
+    });
+  }
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
