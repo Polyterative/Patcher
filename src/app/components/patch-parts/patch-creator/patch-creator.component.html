@@ -5,7 +5,10 @@
   <mat-dialog-content>
     <div class="col gap1">
       <p style="font-size: 1rem">
-        You can always edit the patch name later.
+        A patch is a collection of modules and their connections.
+      </p>
+      <p style="font-size: 1rem">
+        You can always edit the patch name and add modules later.
       </p>
       <lib-mat-form-entity [type]="fields.name.type"
                            [control]="fields.name.control"
@@ -14,6 +17,27 @@
                            iconL1="label"
       >
       </lib-mat-form-entity>
+      
+      <div class="col gap0" style="margin-top: 0.5rem;">
+        <div
+          style="font-size: 0.875rem; padding: 0.875rem 1rem; border-radius: 0.25rem; background: rgba(13,112,35,0.06); display: flex; flex-direction: column; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.1rem;">💡</span>
+            <span style="font-weight: 500;">What you can do with patches</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1.75rem; font-size: 0.8rem;">
+            <div style="display: flex; align-items: start; gap: 0.5rem;">
+              <span>Create connections between modules to document your signal flow</span>
+            </div>
+            <div style="display: flex; align-items: start; gap: 0.5rem;">
+              <span>Share your patches publicly or keep them private</span>
+            </div>
+            <div style="display: flex; align-items: start; gap: 0.5rem;">
+              <span>Add notes and descriptions to remember your creative ideas</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <!--          <lib-mat-form-entity fxFlex="100"-->
       <!--                               [type]="fields.hp.type"-->
       <!--                               [control]="fields.hp.control"-->
