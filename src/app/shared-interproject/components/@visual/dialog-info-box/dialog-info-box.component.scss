@@ -1,11 +1,12 @@
 @use "sass:color";
+@use "src/app/style/brand-resources" as brand;
 
 .info-box {
   margin-top: 0.5rem;
   padding: 0.875rem 1rem;
   border-radius: 0.25rem;
-  background-color: color.adjust(#768597, $alpha: -0.95); // Very light info color background
-  border-left: 4px solid color.adjust(#768597, $alpha: -0.75); // Info color border
+  background-color: color.adjust(brand.$brand-primary, $alpha: -0.85); // Very light brand-primary background
+  border-left: 4px solid color.adjust(brand.$brand-primary, $alpha: -0.5); // Brand-primary border
 
   .info-header {
     display: flex;
@@ -38,7 +39,7 @@
 
       .bullet {
         flex-shrink: 0;
-        color: color.adjust(#768597, $alpha: -0.2); // Info color
+        color: color.adjust(brand.$brand-primary, $alpha: -0.3); // Brand-primary color
         font-weight: bold;
       }
 
