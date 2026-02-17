@@ -1,0 +1,12 @@
+<div class="info-box">
+  <div class="info-header">
+    <span class="info-icon">{{ icon }}</span>
+    <span class="info-title">{{ title }}</span>
+  </div>
+  <div class="info-content">
+    <div class="info-item" *ngFor="let item of items">
+      <span class="bullet">•</span>
+      <span class="item-text">{{ item }}</span>
+    </div>
+  </div>
+</div>

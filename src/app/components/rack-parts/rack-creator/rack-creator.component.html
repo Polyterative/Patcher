@@ -34,31 +34,18 @@
       >
       </lib-mat-form-entity>
       
-      <div *ngIf="rackAnalysis$ | async as analysis" class="col gap0" style="margin-top: 0.5rem;">
-        <div *ngIf="analysis.primaryStandard"
-             style="font-size: 0.875rem; padding: 0.875rem 1rem; border-radius: 0.25rem; background: rgba(13,112,35,0.06); display: flex; flex-direction: column; gap: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 1.1rem;">💡</span>
-            <span style="font-weight: 500;">Your Module Collection</span>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 0.25rem; padding-left: 1.75rem; font-size: 0.8rem;">
-            <div>
-              <span style="opacity: 0.7;">Total modules:</span>
-              <span style="opacity: 0.95; font-weight: 500;"> {{ analysis.moduleCount }}</span>
-            </div>
-            <div>
-              <span style="opacity: 0.7;">Largest module:</span>
-              <span style="opacity: 0.95; font-weight: 500;"> {{ analysis.primaryStandard.largestModuleHp }} HP</span>
-              <span style="opacity: 0.6;"> ({{ analysis.primaryStandard.standardName }})</span>
-            </div>
-            <div
-              style="margin-top: 0.25rem; padding-top: 0.5rem; border-top: 1px solid rgba(0,0,0,0.08); opacity: 0.65; font-size: 0.75rem;">
-              Make sure your rows are at least {{ analysis.primaryStandard.largestModuleHp }} HP to fit your largest
-              module
-            </div>
-          </div>
-        </div>
-      </div>
+      <ng-container *ngIf="rackAnalysis$ | async as analysis">
+        <app-dialog-info-box
+          *ngIf="analysis.primaryStandard"
+          icon="💡"
+          title="Your Module Collection"
+          [items]="[
+            'Total modules: ' + analysis.moduleCount,
+            'Largest module: ' + analysis.primaryStandard.largestModuleHp + ' HP (' + analysis.primaryStandard.standardName + ')',
+            'Make sure your rows are at least ' + analysis.primaryStandard.largestModuleHp + ' HP to fit your largest module'
+          ]"
+        ></app-dialog-info-box>
+      </ng-container>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">

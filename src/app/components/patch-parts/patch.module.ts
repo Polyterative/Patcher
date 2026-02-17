@@ -20,6 +20,7 @@ import { DevOnlyWindowModule } from 'src/app/shared-interproject/components/@sma
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { AdviceTooltipModule } from 'src/app/shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
@@ -78,6 +79,7 @@ import { MatSlideToggleModule } from "@angular/material/slide-toggle";
     UserModulesModule,
     MatToolbarModule,
     AdviceTooltipModule,
+    DialogInfoBoxComponent,
     HeroContentCardModule,
     MatDialogModule,
     HeroClickableTitleModule,

@@ -13,6 +13,7 @@ import { SharedAtomsModule } from 'src/app/components/shared-atoms/shared-atoms.
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { DialogInfoBoxComponent } from 'src/app/shared-interproject/components/@visual/dialog-info-box/dialog-info-box.component';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroClickableTitleModule } from 'src/app/shared-interproject/components/@visual/hero-clickable-title/hero-clickable-title.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
@@ -109,6 +110,7 @@ import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weigh
     InputDialogModule,
     StatisticsModule,
     AdviceTooltipModule,
+    DialogInfoBoxComponent,
     MatBadge,
     CalculateRowInformationPipe,
     RackImageComponent,
