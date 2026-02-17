@@ -121,7 +121,9 @@ export class UserAreaDataService extends SubManager {
     this.addRack$
       .pipe(
         switchMap(() => {
-          const data: RackCreatorInModel = {};
+          const data: RackCreatorInModel = {
+            userModules: this.modulesData$.value || []
+          };
           
           return this.dialog.open(
             RackCreatorComponent,
