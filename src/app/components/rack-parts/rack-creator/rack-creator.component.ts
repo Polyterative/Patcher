@@ -40,6 +40,12 @@ import {
   ModuleCollectionAnalysisService,
   STANDARDS
 } from 'src/app/components/rack-parts/module-collection-analysis.service';
+import {
+  adjectives,
+  animals,
+  colors,
+  uniqueNamesGenerator
+} from 'unique-names-generator';
 
 
 export interface RackCreatorOutModel {
@@ -134,7 +140,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
         label: 'Name',
         code: 'name',
         flex: '6rem',
-        control: new UntypedFormControl('My new rack', Validators.compose([
+        control: new UntypedFormControl(this.generateRackName(), Validators.compose([
           Validators.required,
           Validators.minLength(1),
           Validators.maxLength(32)
@@ -202,6 +208,15 @@ export class RackCreatorComponent extends SubManager implements OnInit {
         
         this.dialogRef.close();
       });
+  }
+  
+  private generateRackName(): string {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      separator: ' ',
+      style: 'capital',
+      length: 2
+    });
   }
   
   ngOnInit(): void {
