@@ -285,6 +285,8 @@ methods (emit to Subjects)** | ❌ **Subscribing outside constructor** | ❌ **C
 
 **Read:** [ARCHITECTURE.md](./ARCHITECTURE.md), [STYLE_GUIDE.md](./STYLE_GUIDE.md), [PATTERNS.md](./PATTERNS.md)
 
+**Product Status:** [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md) - Current planned features and work in progress
+
 **Data Service Checklist:**
 
 - [ ] Extends `SubManager`, calls `super()`
