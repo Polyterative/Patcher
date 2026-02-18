@@ -8,6 +8,114 @@ lib-hero-content-card {
   }
 }
 
+// ============================================
+// AUTH CONTAINER - Main wrapper for all auth sections
+// ============================================
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0; // Controlled by individual sections
+  width: 100%;
+}
+
+// ============================================
+// EMAIL SIGNUP SECTION
+// ============================================
+.email-signup-section {
+  width: 100%;
+  margin-bottom: 0;
+
+  // Inherits form structure from app-signup-email
+  // No additional styling needed
+}
+
+// ============================================
+// SSO SECTION - Social login buttons
+// ============================================
+.sso-section {
+  width: 100%;
+  margin-top: 0; // SSO component has its own top margin (24px)
+  margin-bottom: 0;
+
+  // The app-sso-buttons component handles all internal spacing
+  // We just ensure proper integration with surrounding sections
+}
+
+// ============================================
+// ALTERNATIVE ACTIONS SECTION - Login link
+// ============================================
+.alternative-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    margin-top: 24px;
+    padding-top: 20px;
+    gap: 10px;
+  }
+}
+
+.action-link-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &.login-link {
+    background-color: rgba(63, 81, 181, 0.04);
+    border-color: rgba(63, 81, 181, 0.12);
+
+    &:hover {
+      background-color: rgba(63, 81, 181, 0.08);
+      border-color: rgba(63, 81, 181, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(63, 81, 181, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(63, 81, 181, 0.1);
+    }
+
+    mat-card-subtitle.action-link {
+      color: rgba(0, 0, 0, 0.75);
+
+      strong {
+        color: var(--color-primary, #3f51b5);
+        font-weight: 600;
+      }
+    }
+  }
+
+  mat-card-subtitle.action-link {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 480px) {
+    padding: 11px 14px;
+
+    mat-card-subtitle.action-link {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// ============================================
+// UTILITY STYLES
+// ============================================
+
 // Info hint text - subtle and non-intrusive
 .info-hint {
   margin: 0 0 0.75rem 0;
@@ -21,6 +129,7 @@ lib-hero-content-card {
     font-size: 0.85rem;
   }
 }
+
 
 // Error notification styling
 .error-message {
@@ -112,47 +221,6 @@ lib-hero-content-card {
   }
 }
 
-// Signup actions section (login link)
-.signup-actions-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  padding: 1rem 0;
-}
-
-.action-link-wrapper {
-  display: flex;
-  justify-content: center;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-
-  &.login-link {
-    background-color: rgba(63, 81, 181, 0.04);
-
-    &:hover {
-      background-color: rgba(63, 81, 181, 0.08);
-      transform: translateY(-1px);
-    }
-  }
-
-  mat-card-subtitle.action-link {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--color-primary, #3f51b5);
-    }
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.875rem 0.75rem;
-  }
-}
 
 // Form field spacing for mobile
 @media (max-width: 480px) {
