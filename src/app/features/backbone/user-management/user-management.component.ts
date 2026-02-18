@@ -11,7 +11,6 @@ import {
   take
 } from 'rxjs/operators';
 import { RichUserModel } from 'src/app/features/backend/supabase.service';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 @Component({
@@ -47,17 +46,10 @@ export class UserManagementComponent implements OnInit {
       .subscribe((userProfile) => {
         const email = userProfile.email;
         if (email) {
-          this.userManagementService.resetPassword$(email).subscribe({
-            next: () => {
-              SharedConstants.successCustom(this.userManagementService.snackBar, SharedConstants.messages.passwordResetEmailSent);
-            },
-            error: (err) => {
-              SharedConstants.errorCustom(this.userManagementService.snackBar, SharedConstants.messages.passwordResetEmailFailed);
-              console.error('Failed to send password reset email:', err);
-            }
-          });
+          // resetPassword$ already handles success/error messages
+          this.userManagementService.resetPassword$(email).subscribe();
         } else {
-          SharedConstants.errorCustom(this.userManagementService.snackBar, SharedConstants.messages.noEmailFound);
+          // No email - this should never happen but handle edge case
           console.error('No email found for the logged-in user.');
         }
       });

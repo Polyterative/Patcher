@@ -40,7 +40,7 @@ describe('UserManagementService - User State Management', () => {
     expect((service as any).currentUserId).toBeUndefined();
     
     // Act
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -50,12 +50,12 @@ describe('UserManagementService - User State Management', () => {
   
   it('should clear currentUserId when user logs out', fakeAsync(() => {
     // Arrange
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     tick();
     expect((service as any).currentUserId).toBe(MOCK_SIMPLE_USER.id);
     
     // Act
-    service.loggedUser$.next(undefined);
+    (service as any)._loggedUser$.next(undefined);
     tick();
     
     // Assert
@@ -72,7 +72,7 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Act
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -91,7 +91,7 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Act
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -102,7 +102,7 @@ describe('UserManagementService - User State Management', () => {
   it('should clear userBoxService username when profile is undefined', fakeAsync(() => {
     // Arrange
     mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -110,7 +110,7 @@ describe('UserManagementService - User State Management', () => {
     mockUserDataHandlerService.store.user$.subscribe((user: any) => userBoxUser = user);
     
     // Act
-    service.loggedUserFullProfile$.next(undefined);
+    (service as any)._loggedUserFullProfile$.next(undefined);
     
     tick();
     
@@ -120,7 +120,7 @@ describe('UserManagementService - User State Management', () => {
   
   it('should NOT refetch profile when loggedUser$ changes to same user', fakeAsync(() => {
     // Arrange - Set up a profile for the user
-    service.loggedUserFullProfile$.next(MOCK_RICH_USER);
+    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
     let richProfile: any = MOCK_RICH_USER;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
@@ -130,7 +130,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.getRichUserSession$.calls.reset();
     
     // Act - Set loggedUser$ to the same user (MOCK_SIMPLE_USER has same ID as MOCK_RICH_USER)
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -142,7 +142,7 @@ describe('UserManagementService - User State Management', () => {
   
   it('should fetch new profile when loggedUser$ changes to different user', fakeAsync(() => {
     // Arrange - Set up a profile for first user
-    service.loggedUserFullProfile$.next(MOCK_RICH_USER);
+    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
     let richProfile: any = MOCK_RICH_USER;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
@@ -153,7 +153,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER_2));
     
     // Act - Switch to a different user (different ID)
-    service.loggedUser$.next(MOCK_SIMPLE_USER_2);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER_2);
     
     tick();
     
@@ -167,7 +167,7 @@ describe('UserManagementService - User State Management', () => {
     mockSupabaseService.getRichUserSession$.calls.reset();
     
     // Act
-    service.loggedUser$.next(undefined);
+    (service as any)._loggedUser$.next(undefined);
     
     tick();
     
@@ -186,7 +186,7 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Act
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -205,7 +205,7 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Act
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
