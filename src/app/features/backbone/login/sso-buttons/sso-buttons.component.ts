@@ -6,10 +6,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 export type SSOProvider =
-  'google'
+  | 'google'
   | 'apple'
   | 'github'
   | 'facebook'
@@ -17,9 +18,10 @@ export type SSOProvider =
   | 'twitter';
 
 interface ProviderConfig {
-  name: string;
-  icon: string;
-  color: string;
+  readonly name: string;
+  readonly icon: string;
+  readonly color: string;
+  readonly ariaLabel?: string;
 }
 
 /**
@@ -32,36 +34,113 @@ interface ProviderConfig {
  *
  * The button text uses "Continue with" which is neutral and works for both flows,
  * just like major platforms do.
+ *
+ * @example
+ * ```html
+ * <app-sso-buttons
+ *   [providers]="['google', 'apple', 'github']"
+ *   [showDivider]="true"
+ *   [dividerText]="'or'"
+ *   (providerSelected)="handleSSO($event)">
+ * </app-sso-buttons>
+ * ```
  */
 @Component({
   selector: 'app-sso-buttons',
   templateUrl: './sso-buttons.component.html',
   styleUrls: ['./sso-buttons.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatButtonModule]
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
+  ]
 })
 export class SSOButtonsComponent {
+  /** Array of SSO providers to display buttons for */
   @Input() providers: SSOProvider[] = ['google', 'apple', 'github'];
+  
+  /** Whether to show a divider above the buttons */
   @Input() showDivider = true;
+  
+  /** Text to display in the divider */
   @Input() dividerText = 'or';
+  
+  /** Whether the component is in a loading state */
+  @Input() isLoading = false;
+  
+  /** Emits when a user selects an SSO provider */
   @Output() providerSelected = new EventEmitter<SSOProvider>();
   
+  /** Tracks which provider is currently loading (if any) */
+  loadingProvider: SSOProvider | null = null;
+  
+  /** Configuration for each SSO provider */
   readonly config: Record<SSOProvider, ProviderConfig> = {
-    google: {name: 'Google', icon: 'G', color: '#4285f4'},
-    apple: {name: 'Apple', icon: '', color: '#000'},
-    github: {name: 'GitHub', icon: '', color: '#24292e'},
-    facebook: {name: 'Facebook', icon: 'f', color: '#1877f2'},
-    azure: {name: 'Microsoft', icon: '⊞', color: '#0078d4'},
-    twitter: {name: 'Twitter', icon: '𝕏', color: '#1da1f2'}
+    google: {
+      name: 'Google',
+      icon: 'G',
+      color: '#4285f4',
+      ariaLabel: 'Continue with Google account'
+    },
+    apple: {
+      name: 'Apple',
+      icon: '',
+      color: '#000',
+      ariaLabel: 'Continue with Apple ID'
+    },
+    github: {
+      name: 'GitHub',
+      icon: '',
+      color: '#24292e',
+      ariaLabel: 'Continue with GitHub account'
+    },
+    facebook: {
+      name: 'Facebook',
+      icon: 'f',
+      color: '#1877f2',
+      ariaLabel: 'Continue with Facebook account'
+    },
+    azure: {
+      name: 'Microsoft',
+      icon: '⊞',
+      color: '#0078d4',
+      ariaLabel: 'Continue with Microsoft account'
+    },
+    twitter: {
+      name: 'Twitter',
+      icon: '𝕏',
+      color: '#1da1f2',
+      ariaLabel: 'Continue with Twitter account'
+    }
   };
-
+  
+  /**
+   * Handles provider selection and emits the event
+   * Sets loading state for visual feedback
+   */
   selectProvider(provider: SSOProvider): void {
+    if (this.isLoading) {
+      return;
+    }
+    
+    this.loadingProvider = provider;
     this.providerSelected.emit(provider);
   }
-
+  
+  /**
+   * Gets the button text for a provider
+   * Uses "Continue with" - industry standard that works for both login and signup
+   * This is what Google, GitHub, Notion, Linear, and other modern apps use
+   */
   getButtonText(provider: SSOProvider): string {
-    // Use "Continue with" - industry standard that works for both login and signup
-    // This is what Google, GitHub, Notion, Linear, and other modern apps use
     return `Continue with ${ this.config[provider].name }`;
+  }
+  
+  /**
+   * Gets the ARIA label for a provider button
+   */
+  getAriaLabel(provider: SSOProvider): string {
+    return this.config[provider].ariaLabel || `Continue with ${ this.config[provider].name }`;
   }
 }
