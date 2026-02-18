@@ -7,6 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import {
   AuthError,
   createClient,
+  LockFunc,
+  navigatorLock,
   User
 } from '@supabase/supabase-js';
 import {
@@ -190,8 +192,26 @@ export class SupabaseService {
   
   readonly cacheResetter$ = cacheBuster$;
   
+  /**
+   * Custom lock wrapper to prevent NavigatorLockAcquireTimeoutError.
+   * This fixes the issue where Supabase's _autoRefreshTokenTick uses 0ms timeout,
+   * which causes lock acquisition to fail when multiple locks are requested simultaneously.
+   * See: https://github.com/supabase/auth-js/issues/873
+   */
+  private customLock: LockFunc = (name, acquireTimeout, fn) => {
+    // Ensure timeout is at least 1ms to avoid the ifAvailable flag issue
+    return navigatorLock(name, acquireTimeout || 1, fn);
+  };
   
-  private supabase = createClient<Database>(environment.supabase.url, environment.supabase.key);
+  private supabase = createClient<Database>(
+    environment.supabase.url,
+    environment.supabase.key,
+    {
+      auth: {
+        lock: this.customLock
+      }
+    }
+  );
   readonly get = {
     
     // patches:            (from = 0, to: number = this.defaultPag, columns = '*') => fromPromise(
