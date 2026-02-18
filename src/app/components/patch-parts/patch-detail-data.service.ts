@@ -81,6 +81,9 @@ export class PatchDetailDataService implements OnDestroy {
   readonly savePatchEditing$ = new Subject<void>();
   readonly deletePatch$ = new Subject<number>();
   //
+  isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
+  requestPatchPrivacyStatusChange$ = new Subject<void>();
+  //
   protected destroyEvent$ = new Subject<void>();
   shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   
@@ -110,7 +113,10 @@ export class PatchDetailDataService implements OnDestroy {
         switchMap(x => this.backend.get.patchWithId(x)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => this.singlePatchData$.next(x.data));
+      .subscribe(x => {
+        this.singlePatchData$.next(x.data);
+        this.isCurrentPatchPrivate$.next(!x.data.public);
+      });
     
     this.removePatchFromCollection$
       .pipe(
@@ -122,6 +128,20 @@ export class PatchDetailDataService implements OnDestroy {
         snackBar.open('Removed', undefined, {duration: 1000});
         this.updateSinglePatchData$.next(b);
       });
+    
+    // when user requests to change privacy status of patch, update backend
+    this.requestPatchPrivacyStatusChange$
+      .pipe(
+        withLatestFrom(this.singlePatchData$),
+        map(([_, patch]) => {
+          const updatedPatch = {...patch, public: !patch.public};
+          this.isCurrentPatchPrivate$.next(!updatedPatch.public);
+          return updatedPatch;
+        }),
+        switchMap(x => this.backend.update.patch(x)),
+        takeUntil(this.destroyEvent$),
+      )
+      .subscribe();
     
     this.formData.name.control.valueChanges
       .pipe(

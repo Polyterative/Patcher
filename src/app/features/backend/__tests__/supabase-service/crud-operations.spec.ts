@@ -174,7 +174,8 @@ describe('SupabaseService - CRUD Operations', () => {
         next: () => {
           expect(insertSpy).toHaveBeenCalledWith({
             name: 'My Awesome Patch',
-            authorid: 'patch-creator'
+            authorid: 'patch-creator',
+            public: true
           });
           done();
         },
