@@ -8,81 +8,128 @@ lib-hero-content-card {
   }
 }
 
-// Login actions section (signup and password reset links)
-.login-actions-section {
+// ============================================
+// AUTH CONTAINER - Main wrapper for all auth sections
+// ============================================
+.auth-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  padding: 1rem 0;
+  gap: 0; // Controlled by individual sections
+  width: 100%;
+}
+
+// ============================================
+// EMAIL LOGIN SECTION
+// ============================================
+.email-login-section {
+  width: 100%;
+  margin-bottom: 0;
+
+  // Inherits form structure from app-login-email
+  // No additional styling needed
+}
+
+// ============================================
+// SSO SECTION - Social login buttons
+// ============================================
+.sso-section {
+  width: 100%;
+  margin-top: 0; // SSO component has its own top margin (24px)
+  margin-bottom: 0;
+
+  // The app-sso-buttons component handles all internal spacing
+  // We just ensure proper integration with surrounding sections
+}
+
+// ============================================
+// ALTERNATIVE ACTIONS SECTION - Signup & Reset links
+// ============================================
+.alternative-actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    margin-top: 24px;
+    padding-top: 20px;
+    gap: 10px;
+  }
 }
 
 .action-link-wrapper {
   display: flex;
   justify-content: center;
-  padding: 0.75rem 1rem;
+  align-items: center;
+  padding: 12px 16px;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  border: 1px solid transparent;
 
   &.signup-link {
     background-color: rgba(63, 81, 181, 0.04);
+    border-color: rgba(63, 81, 181, 0.12);
 
     &:hover {
       background-color: rgba(63, 81, 181, 0.08);
+      border-color: rgba(63, 81, 181, 0.2);
       transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(63, 81, 181, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(63, 81, 181, 0.1);
+    }
+
+    mat-card-subtitle.action-link {
+      color: rgba(0, 0, 0, 0.75);
+
+      strong {
+        color: var(--color-primary, #3f51b5);
+        font-weight: 600;
+      }
     }
   }
 
   &.reset-link {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: transparent;
+    border-color: rgba(0, 0, 0, 0.08);
 
     &:hover {
       background-color: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.12);
       transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 
   mat-card-subtitle.action-link {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--color-primary, #3f51b5);
-    }
+    line-height: 1.4;
   }
 
   @media (max-width: 480px) {
-    padding: 0.875rem 0.75rem;
+    padding: 11px 14px;
+
+    mat-card-subtitle.action-link {
+      font-size: 0.875rem;
+    }
   }
 }
 
-.action-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 0.25rem 0;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  }
-
-  span {
-    padding: 0 1rem;
-    color: rgba(0, 0, 0, 0.54);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
-
-// Password reset container
+// ============================================
+// PASSWORD RESET CONTAINER
+// ============================================
 .password-reset-container {
   display: flex;
   flex-direction: column;
@@ -92,6 +139,22 @@ lib-hero-content-card {
 // Back button
 .back-button-wrapper {
   margin-bottom: 0.5rem;
+}
+
+// Reset hint text
+.reset-hint-text {
+  margin: 0.5rem 0;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.875rem;
+  }
 }
 
 // Password hint text
