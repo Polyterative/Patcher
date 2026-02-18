@@ -499,7 +499,8 @@ export class SupabaseService extends SubManager {
             .from(DbPaths.patches)
             .insert({
               ...data,
-              authorid: user.id
+              authorid: user.id,
+              public: true
             })
         )),
         remapErrors());
@@ -1197,6 +1198,7 @@ export class SupabaseService extends SubManager {
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
       .select(columns + connections, {count: 'exact'})
+      .filter("public", "eq", true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
     
     if (columns.includes('name')) {
