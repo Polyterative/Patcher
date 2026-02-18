@@ -13,10 +13,12 @@ import {
 import {
   catchError,
   filter,
+  startWith,
   switchMap,
   take,
   takeUntil,
-  tap
+  tap,
+  withLatestFrom
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
@@ -35,7 +37,10 @@ export class UserManagementService extends SubManager {
   // minimal data of the user, gets loaded super fast from the session
   loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
   //contains the full data of the user, gets loaded asynchrounously using the data from the session
-  loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>();
+  loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  
+  // Track current user ID for cross-tab sync comparison
+  private currentUserId: string | undefined = undefined;
   
   constructor(
     public snackBar: MatSnackBar,
@@ -65,13 +70,23 @@ export class UserManagementService extends SubManager {
       });
 
     // update loggedUserProfile$ when loggedUser$ changes
+    // This handles session restoration (page loads) where we have a user from session
+    // but need to fetch the full profile. During login, the full profile is set directly.
     this.loggedUser$
       .pipe(
-        tap(() => this.loggedUserFullProfile$.next(undefined)),
+        tap((user) => {
+          this.currentUserId = user?.id;
+        }),
         filter(x => !!x),
-        switchMap(() => this.backend.getRichUserSession$()),
-        //perform good the check of both values
-        filter(x => !!x && !!x.username && !!x.email),
+        // Check if we already have a profile for this user
+        withLatestFrom(this.loggedUserFullProfile$.pipe(startWith(undefined))),
+        // Only fetch if we don't have a profile or it's for a different user
+        filter(([user, profile]) => !profile || profile.id !== user.id),
+        switchMap(([user]) =>
+          this.backend.getRichUserSession$().pipe(
+            filter(x => !!x && !!x.username && !!x.email)
+          )
+        ),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
@@ -96,6 +111,23 @@ export class UserManagementService extends SubManager {
     ).subscribe(() => {
       this.router.navigate(['/auth/login']);
     });
+    
+    // Listen to login events from Supabase for cross-tab synchronization
+    // This enables cross-tab login sync when user logs in from another tab
+    this.backend.user.login$.pipe(
+      switchMap(() => this.backend.getUserSession$()),
+      filter(user => !!user),
+      // Only update if we're currently logged out or it's a different user
+      // This prevents unnecessary updates when already logged in as the same user
+      filter(user => !this.currentUserId || this.currentUserId !== user!.id),
+      tap(user => {
+        this.loggedUser$.next(user);
+      }),
+      filter(() => this.router.url.includes('/auth/login')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.router.navigate(['/']);
+    });
   }
   
   // high level login function
@@ -107,7 +139,10 @@ export class UserManagementService extends SubManager {
           return NEVER;
         }),
         tap(x => {
+          // Emit the full user data directly to avoid duplicate database calls
+          // The login$ already fetches the username, so we have complete data
           this.loggedUser$.next(x.user);
+          this.loggedUserFullProfile$.next(x.user);
         })
       );
   }
