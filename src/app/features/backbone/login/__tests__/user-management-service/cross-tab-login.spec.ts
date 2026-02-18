@@ -109,7 +109,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should update to new user when different user logs in', fakeAsync(() => {
     // Arrange: User 1 is logged in
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     (service as any).currentUserId = MOCK_SIMPLE_USER.id;
     
     mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER_2));
@@ -132,7 +132,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should NOT update when same user logs in again', fakeAsync(() => {
     // Arrange: User is already logged in
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     (service as any).currentUserId = MOCK_SIMPLE_USER.id;
     
     mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));

@@ -39,8 +39,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   
   it('should clear user state when logout$ event is emitted', fakeAsync(() => {
     // Arrange: Set up logged in user
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
-    service.loggedUserFullProfile$.next(MOCK_RICH_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
     let loggedUser: any;
     let loggedUserFullProfile: any;
@@ -67,7 +67,7 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   it('should navigate to login page when logout$ event is emitted', fakeAsync(() => {
     // Arrange: User is on home page
     mockRouter.url = '/home';
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
@@ -83,7 +83,7 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   it('should NOT navigate when logout$ event is emitted if already on login page', fakeAsync(() => {
     // Arrange: User is already on login page
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     mockRouter.navigate.calls.reset();
     
@@ -101,7 +101,7 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   it('should NOT navigate when logout$ event is emitted if on login subpage', fakeAsync(() => {
     // Arrange: User is on a login-related page
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login/forgot-password', writable: true});
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     mockRouter.navigate.calls.reset();
     
@@ -119,8 +119,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   it('should clear user state but not navigate when on login page', fakeAsync(() => {
     // Arrange
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
-    service.loggedUserFullProfile$.next(MOCK_RICH_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
     
     let loggedUser: any;
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -142,7 +142,7 @@ describe('UserManagementService - Cross-Tab Logout', () => {
   it('should handle multiple logout events gracefully', fakeAsync(() => {
     // Arrange
     Object.defineProperty(mockRouter, 'url', {value: '/home', writable: true, configurable: true});
-    service.loggedUser$.next(MOCK_SIMPLE_USER);
+    (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
     
