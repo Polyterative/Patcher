@@ -1,0 +1,101 @@
+.sso-buttons-container {
+  width: 100%;
+  margin: 24px 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  span {
+    padding: 0 16px;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+}
+
+.buttons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sso-button {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1.5px solid;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .provider-logo {
+    font-size: 20px;
+    font-weight: 700;
+    width: 24px;
+    text-align: center;
+  }
+}
+
+.sso-button-google {
+  border-color: #4285f4;
+  color: #4285f4;
+}
+
+.sso-button-apple {
+  border-color: #000;
+  color: #000;
+}
+
+.sso-button-github {
+  border-color: #24292e;
+  color: #24292e;
+}
+
+.sso-button-facebook {
+  border-color: #1877f2;
+  color: #1877f2;
+}
+
+.sso-button-azure {
+  border-color: #0078d4;
+  color: #0078d4;
+}
+
+.sso-button-twitter {
+  border-color: #1da1f2;
+  color: #1da1f2;
+}
+
+@media (prefers-color-scheme: dark) {
+  .divider {
+    &::before, &::after {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+    }
+
+    span {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+  .sso-button {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
