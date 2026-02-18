@@ -3,6 +3,13 @@
 }; as bag) {
   <div class="col gap1"
   >
+    @if (dataService.isCurrentPatchPrivate$|async) {
+      <app-advice-tooltip
+        [@enter]="{ value: '', params: { delay: 250}}"
+      >
+        This patch is private. It won't be listed in search but will be accessible to anyone who has the URL
+      </app-advice-tooltip>
+    }
     @if (bag.connections == null) {
       <lib-auto-content-loading-indicator
         [skipFirstData]="true"

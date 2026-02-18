@@ -46,6 +46,12 @@
         <div fxFlex="grow"></div>
         @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id == bag.user.id) {
           <button mat-icon-button
+                  [matTooltip]="data.public ? 'Make patch private' : 'Make patch public'"
+                  (click)="dataService.requestPatchPrivacyStatusChange$.next()"
+          >
+            <mat-icon>{{ (dataService.isCurrentPatchPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
+          </button>
+          <button mat-icon-button
                   matTooltip="Delete patch"
                   [disabled]="!bag.user"
                   (click)="dataService.deletePatch$.next(data.id)"

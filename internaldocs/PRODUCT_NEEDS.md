@@ -77,16 +77,54 @@ quality.
 
 ---
 
-## In Progress
+## Recently Completed
 
-### Allow Empty HP Slots in Racks
+### ✅ Private Patches (Feb 18, 2026)
 
-**Status:** In Progress  
-**Why:** Users want to position modules with gaps without using blank modules. Currently they must use blank module
-entities (IDs 4647-4666) which feels unintuitive.  
-**Problem:** Users don't discover that blanks exist for this purpose. Request features that already exist.  
-**Solution:** User education - add tooltips, help text, or "Add gap" quick action in rack editor  
-**Area:** Rack editor UI, FAQ/help system
+**What was done:**
+
+- Added `public` field to patches table schema (database.types.ts)
+- Extended PatchMinimal interface with Privatable (patch.ts)
+- Added privacy state management to patch service (isCurrentPatchPrivate$, requestPatchPrivacyStatusChange$)
+- Added privacy toggle button to patch UI (lock/public icon)
+- Added privacy tooltip when patch is private
+- New patches default to public
+
+**Pattern followed:** Same as racks (Privatable interface, toggle button, tooltip)
+
+**Files modified:**
+
+- `database.types.ts` - Added public field to patches table
+- `patch.ts` - Extended Privatable interface
+- `patch-detail-data.service.ts` - Privacy state + toggle handler
+- `patch-minimal.component.html` - Privacy toggle button
+- `patch-details.component.html` - Privacy tooltip
+- `supabase.service.ts` - Default public: true on patch creation
+
+**Tests updated/created:**
+
+- `integration-user-patches.spec.ts` - Integration tests for patch privacy (create, retrieve, update)
+- `patch-detail-data-service-privacy.spec.ts` - API surface tests (privacy observables exist and initialize correctly)
+- `crud-operations.spec.ts` - Updated to expect public: true field on patch creation
+- All tests passing ✅
+
+---
+
+### ✅ Blank Module Education (Feb 18, 2026)
+
+**What was done:**
+
+- Added FAQ entry explaining how to use blank modules for gaps and spacing
+- Added tooltip in rack editor when editable: "Need gaps in your rack? Right-click any module and select 'Replace with
+  blank'"
+- Enhanced context menu label from "Replace with blank" to "Replace with blank (add spacing)" with space_bar icon
+- Users now have multiple discovery paths for this existing feature
+
+**Files modified:**
+
+- `app-faq.component.ts` - New FAQ entry
+- `rack-editor.component.html` - Tooltip added
+- `rack-editor.component.ts` - Context menu label enhanced
 
 ---
 
@@ -174,19 +212,6 @@ modules)
 
 ---
 
-### Add Rack Modules to Collection
-
-**Why:** Users must navigate away from rack to add modules to collection - breaks workflow  
-**Current State:** "Add to collection" only available in module browser  
-**Goal:** Quick-add from rack context menu
-
-**Technical Needs:**
-
-- **Backend:** Already implemented - `add.userModule()` exists
-- **UI:** Add context menu option in rack editor
-- **Areas:** Rack editor component (context menu)
-
----
 
 ### Account Management (GDPR)
 
@@ -268,11 +293,6 @@ modules)
 **What:** Tags, folders, or custom groups for modules, patches, racks  
 **Scale:** Large feature - needs UX design, new database tables, filtering UI
 
-### Private Patches
-
-**Why:** Privacy control (already exists for racks)  
-**What:** Add `public` field to patches (follow rack `Privatable` pattern)  
-**Scale:** Small - straightforward implementation
 
 ### Store Integration
 

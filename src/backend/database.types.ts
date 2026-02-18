@@ -497,6 +497,7 @@ export type Database = {
           description: string | null
           id: number
           name: string | null
+          public: boolean
           updated: string
         }
         Insert: {
@@ -505,6 +506,7 @@ export type Database = {
           description?: string | null
           id?: number
           name?: string | null
+          public?: boolean
           updated?: string
         }
         Update: {
@@ -513,6 +515,7 @@ export type Database = {
           description?: string | null
           id?: number
           name?: string | null
+          public?: boolean
           updated?: string
         }
         Relationships: [
@@ -532,6 +535,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          public: boolean
           updated_at: string
           username: string | null
           website: string | null
@@ -542,6 +546,7 @@ export type Database = {
           created_at?: string
           email: string
           id: string
+          public?: boolean
           updated_at?: string
           username?: string | null
           website?: string | null
@@ -552,6 +557,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          public?: boolean
           updated_at?: string
           username?: string | null
           website?: string | null
