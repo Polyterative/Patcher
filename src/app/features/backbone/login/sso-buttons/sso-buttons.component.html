@@ -1,37 +1,21 @@
-<div class="sso-buttons-container" role="group" [attr.aria-label]="'Social authentication options'">
-  <!-- Divider with semantic meaning -->
+<div class="sso-buttons-container">
   @if (showDivider) {
-    <div class="divider" role="separator" aria-label="Alternative authentication methods">
-      <span>{{ dividerText }}</span>
-    </div>
+    <div class="divider"><span>{{ dividerText }}</span></div>
   }
   
-  <!-- SSO buttons grid -->
   <div class="buttons-grid">
     @for (provider of providers; track provider) {
-      <button
-        mat-stroked-button
-        class="sso-button sso-button-{{ provider }}"
-        [disabled]="isLoading"
-        [attr.aria-label]="'Continue with ' + config[provider].name"
-        [attr.data-provider]="provider"
-        (click)="selectProvider(provider)"
-        type="button"
-      >
-        <span class="provider-logo" aria-hidden="true">
-          {{ config[provider].icon }}
-        </span>
-        <span class="button-text">
-          {{ getButtonText(provider) }}
-        </span>
-        
-        <!-- Loading indicator -->
+      <button mat-stroked-button
+              class="sso-button"
+              [disabled]="isLoading"
+              [style.border-color]="config[provider].color"
+              [style.color]="config[provider].color"
+              [attr.aria-label]="getAriaLabel(provider)"
+              (click)="selectProvider(provider)">
+        <span class="provider-logo" aria-hidden="true">{{ config[provider].icon }}</span>
+        <span class="button-text">{{ getButtonText(provider) }}</span>
         @if (isLoading && loadingProvider === provider) {
-          <mat-spinner
-            class="loading-spinner"
-            diameter="20"
-            aria-label="Loading">
-          </mat-spinner>
+          <mat-spinner diameter="20"></mat-spinner>
         }
       </button>
     }
