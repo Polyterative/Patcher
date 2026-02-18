@@ -33,3 +33,5 @@ import './connection-health.spec';
 import './caching.spec';
 import './error-handling.spec';
 import './pattern-compliance.spec';
+import './crud-operations.spec';
+import './storage-cache.spec';
