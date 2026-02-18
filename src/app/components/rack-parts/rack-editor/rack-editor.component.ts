@@ -132,8 +132,8 @@ export class RackEditorComponent extends SubManager implements OnInit {
             },
             {
               id: 'replace-with-blank',
-              label: 'Replace with blank',
-              icon: 'copy_all',
+              label: 'Replace with blank (add spacing)',
+              icon: 'space_bar',
               data: rackedModule,
               disabled: false,
               click$: replaceWithBlank$

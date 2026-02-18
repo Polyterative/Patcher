@@ -41,10 +41,15 @@ export class AppFaqComponent {
       answer: 'Currently, direct importing of data from ModularGrid is not supported. ModularGrid has stated it does not intend to provide support for this project. However, you can manually add any module or rack through the website.'
     },
     {
+      question: 'How do I add gaps or spacing in my rack?',
+      icon: 'space_bar',
+      answer: 'Use blank modules! Right-click on any module in your rack and select "Replace with blank" to create empty space. Blanks are available in all common sizes (1-20 HP for Eurorack, 1-26 HP for Intellijel). You can also add blank modules directly from the module browser - just search for "blank".'
+    },
+    {
       question: 'How can I suggest a feature?',
       icon: 'lightbulb',
       link: 'https://discord.com/invite/JNy2HTb5ru',
-      answer: 'To suggest a feature, join our Discord server for discussions, or if it’s a technical suggestion, you can submit an issue on our GitHub repository. The link is available in the footer.'
+      answer: 'To suggest a feature, join our Discord server for discussions, or if it is a technical suggestion, you can submit an issue on our GitHub repository. The link is available in the footer.'
     },
     {
       question: 'How can I contribute to the project?',
