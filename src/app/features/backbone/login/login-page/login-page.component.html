@@ -14,9 +14,8 @@
             </section>
             
             <!-- SSO Authentication Section -->
-            <section class="sso-section" aria-label="Social login options">
+            <section class="sso-section" aria-label="Social login options" *ngIf="false">
               <app-sso-buttons
-                [providers]="['google', 'apple', 'github']"
                 [showDivider]="true"
                 [dividerText]="'or'"
                 (providerSelected)="handleSSOLogin($event)">
