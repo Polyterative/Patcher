@@ -37,6 +37,14 @@
                 the URL
               </app-advice-tooltip>
             }
+            @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
+              <app-advice-tooltip
+                [@enter]="{ value: '', params: { delay: 500}}"
+              >
+                💡 Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
+                Blanks are available in all sizes!
+              </app-advice-tooltip>
+            }
             <lib-clean-card [@enter]>
               <div class="col gap1">
                 <!-- Group 1: Rack Details -->
