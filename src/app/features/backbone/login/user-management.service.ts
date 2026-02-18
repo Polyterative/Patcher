@@ -38,22 +38,27 @@ export class UserManagementService extends SubManager {
   public readonly loggedUser$ = this._loggedUser$.asObservable();
   public readonly loggedUserFullProfile$ = this._loggedUserFullProfile$.asObservable();
   
-  // ACTIONS - Event subjects
+  // ACTIONS - Event subjects for triggering operations
+  /** Emits when user initiates logout */
   public logoffAction$ = new Subject<void>();
+  
+  /** Emits login credentials when user initiates login */
   public loginAction$ = new Subject<{
     email: string;
     password: string
   }>();
+  
+  /** Emits email address when user requests password reset */
   public resetPasswordAction$ = new Subject<string>();
   
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
   
   constructor(
-    public snackBar: MatSnackBar,
-    public router: Router,
-    public backend: SupabaseService,
-    public userBoxService: UserDataHandlerService
+    private snackBar: MatSnackBar,
+    private router: Router,
+    private backend: SupabaseService,
+    private userBoxService: UserDataHandlerService
   ) {
     super();
     
@@ -269,20 +274,21 @@ export class UserManagementService extends SubManager {
     );
   }
   
-  // what we want here is to check if the user is logged in, and if so, to get the user data from the backend in the next pipes
-  // this is needed to trigger the initial check of the session
+  /**
+   * Checks if user is logged in by verifying session cookies
+   * This triggers the initial session check on service initialization
+   */
   private checkUserInCookies(): void {
     this.backend.getUserSession$().pipe(
       take(1)
     ).subscribe(x => {
-        if (x) {
-          // explicitly set the user to x since we know that the user is logged in for sure
-          this._loggedUser$.next(x);
-        } else {
-          // explicitly set the user to undefined since we know that the user is not logged in for sure
-          this._loggedUser$.next(undefined);
+      if (x) {
+        // Explicitly set the user since we know they are logged in
+        this._loggedUser$.next(x);
+      } else {
+        // Explicitly set undefined since we know they are not logged in
+        this._loggedUser$.next(undefined);
       }
-      }
-    );
+    });
   }
 }
