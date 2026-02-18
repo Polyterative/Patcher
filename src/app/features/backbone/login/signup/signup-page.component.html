@@ -1,33 +1,41 @@
 <lib-screen-wrapper maxSize="32rem"
-                    style="margin-bottom:8rem"
->
-  <div class="gradientCard col gap1"
-  >
+                    style="margin-bottom:8rem">
+  <div class="gradientCard col gap1">
     <lib-hero-content-card titleBig="We haven't been introduced yet"
-                           style="padding-bottom: 32rem;"
-    >
-      <div class="col gap1"
-      >
-        <app-signup-email fxFlex="100"></app-signup-email>
+                           style="padding-bottom: 32rem;">
+      <div class="col gap1">
         
-        <!-- SSO Authentication Options (handles both login and signup) -->
-        <app-sso-buttons
-          [providers]="['google', 'apple', 'github']"
-          (providerSelected)="handleSSOSignup($event)">
-        </app-sso-buttons>
+        <div class="auth-container">
+          
+          <!-- Email/Password Signup Section -->
+          <section class="email-signup-section" aria-label="Email signup">
+            <app-signup-email fxFlex="100"></app-signup-email>
+          </section>
+          
+          <!-- SSO Authentication Section -->
+          <section class="sso-section" aria-label="Social signup options">
+            <app-sso-buttons
+              [providers]="['google', 'apple', 'github']"
+              [showDivider]="true"
+              [dividerText]="'or'"
+              (providerSelected)="handleSSOSignup($event)">
+            </app-sso-buttons>
+          </section>
+          
+          <!-- Alternative Actions Section -->
+          <section class="alternative-actions-section" aria-label="Alternative actions">
+            <div class="action-link-wrapper login-link"
+                 routerLink="/auth/login">
+              <mat-card-subtitle fxLayoutAlign="center"
+                                 class="action-link">
+                Already have an account? <strong>Log in</strong>
+              </mat-card-subtitle>
+            </div>
+          </section>
         
-        <!-- Action Links Section with improved spacing -->
-        <div class="signup-actions-section">
-          <div class="action-link-wrapper login-link"
-               routerLink="/auth/login">
-            <mat-card-subtitle fxLayoutAlign="center"
-                               class="action-link">
-              Login instead?
-            </mat-card-subtitle>
-          </div>
         </div>
+      
       </div>
     </lib-hero-content-card>
-  
   </div>
 </lib-screen-wrapper>
