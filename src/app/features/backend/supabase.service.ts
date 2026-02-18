@@ -207,25 +207,23 @@ export class SupabaseService {
               .order('updated', {ascending: false})
           ).pipe(
           remapErrors(),
-            map((x: any) => x), // map type as any , TODO: fix this
-            map((x => x.data))
+          map(x => x.data)
           )
         ),
       );
     },
     // if authorid is not provided, we will run it for the current user
-    currentUserRacks: (authorid?: string) => rxFrom(this.getUserSession$()
-      .pipe(
-        switchMap((user: SimpleUserModel) => this.supabase.from(DbPaths.racks)
+    currentUserRacks: (authorid?: string) => this.getUserSession$().pipe(
+      switchMap((user: SimpleUserModel) => rxFrom(
+        this.supabase.from(DbPaths.racks)
           .select(`*, ${ QueryJoins.author }`)
           .filter('authorid', 'eq', authorid ? authorid : user.id)
           .order('updated', {ascending: false})
-        ),
       ).pipe(
-        tap((x) => /*errorHandling*/ x),
-        map((x: any) => x), // map type as any , TODO: fix this
-        map((x => x.data))
+        remapErrors(),
+        map(x => x.data)
       )),
+    ),
     rackedModules: (rackid: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
@@ -272,8 +270,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        remapErrors(),
-        map((x: any) => x)// map type as any , TODO: fix this
+        remapErrors()
       ),
     patchesWithModule: (moduleid: number, from = 0, to: number = this.defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
       const patchIdList$ = rxFrom(
@@ -1034,8 +1031,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
     )
       .pipe(
-        remapErrors(),
-        map((x: any) => x), // map type as any , TODO: fix this
+        remapErrors()
       )
   }
   
@@ -1058,8 +1054,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        remapErrors(),
-        map((x: any) => x)// map type as any , TODO: fix this
+        remapErrors()
       );
   }
   
@@ -1233,8 +1228,7 @@ export class SupabaseService {
         .single()
     )
       .pipe(
-        remapErrors(),
-        map((x: any) => x)// map type as any , TODO: fix this
+        remapErrors()
       );
   }
   
@@ -1255,7 +1249,7 @@ export class SupabaseService {
     )
       .pipe(
         // remapErrors(),
-        map((x => x.data as any))
+        map(x => x.data)
       );
   }
   
@@ -1271,8 +1265,7 @@ export class SupabaseService {
         .order(orderBy ? orderBy : 'name')
     )
       .pipe(
-        remapErrors(),
-        map((x: any) => x),// map type as any , TODO: fix this
+        remapErrors()
       );
   }
   
