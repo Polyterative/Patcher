@@ -1,11 +1,11 @@
 import { UntypedFormControl } from '@angular/forms';
-import { DomSanitizer }       from "@angular/platform-browser";
-import { Observable }         from "rxjs";
+import { DomSanitizer } from "@angular/platform-browser";
+import { Observable } from "rxjs";
 import {
   filter,
   map
-}                             from "rxjs/operators";
-import DOMPurify              from "dompurify";
+} from "rxjs/operators";
+import DOMPurify from "dompurify";
 
 
 export class AppFormUtils {
@@ -18,15 +18,16 @@ export class AppFormUtils {
       input.hasError(ErrorCodes.form.errorCode.minlength) ? ErrorMessages.form.error_minLength :
         input.hasError(ErrorCodes.form.errorCode.maxlength) ? ErrorMessages.form.error_maxLength :
           input.hasError(ErrorCodes.form.errorCode.max) ? ErrorMessages.form.error_max :
-            input.hasError(ErrorCodes.form.errorCode.custom.codeNotValid) ? ErrorMessages.form.error_codeNotValid :
-              input.hasError(ErrorCodes.form.errorCode.custom.lessThanOneElement) ? ErrorMessages.form.error_lessThanOneElement :
-                input.hasError(ErrorCodes.form.errorCode.custom.notInOptions) ? ErrorMessages.form.error_notInOptions :
-                  input.hasError(ErrorCodes.form.errorCode.custom.numberNot) ? ErrorMessages.form.error_numberNot :
-                    input.hasError(ErrorCodes.form.errorCode.custom.numberNotInteger) ? ErrorMessages.form.error_numberNotInteger :
-                      input.hasError(ErrorCodes.form.errorCode.custom.numberNotPositiveInteger) ? ErrorMessages.form.error_numberNotPositiveInteger :
-                        input.hasError(ErrorCodes.form.errorCode.custom.numberBiggerThanInterval) ? ErrorMessages.form.error_numberBiggerThanInterval :
-                          input.hasError(ErrorCodes.form.errorCode.custom.doesNotContainHttps) ? ErrorMessages.form.error_doesNotContainHttps :
-                            input.hasError(ErrorCodes.form.errorCode.min) ? ErrorMessages.form.error_min : noErrorMessageChar;
+            input.hasError(ErrorCodes.form.errorCode.pattern) ? ErrorMessages.form.error_pattern :
+              input.hasError(ErrorCodes.form.errorCode.custom.codeNotValid) ? ErrorMessages.form.error_codeNotValid :
+                input.hasError(ErrorCodes.form.errorCode.custom.lessThanOneElement) ? ErrorMessages.form.error_lessThanOneElement :
+                  input.hasError(ErrorCodes.form.errorCode.custom.notInOptions) ? ErrorMessages.form.error_notInOptions :
+                    input.hasError(ErrorCodes.form.errorCode.custom.numberNot) ? ErrorMessages.form.error_numberNot :
+                      input.hasError(ErrorCodes.form.errorCode.custom.numberNotInteger) ? ErrorMessages.form.error_numberNotInteger :
+                        input.hasError(ErrorCodes.form.errorCode.custom.numberNotPositiveInteger) ? ErrorMessages.form.error_numberNotPositiveInteger :
+                          input.hasError(ErrorCodes.form.errorCode.custom.numberBiggerThanInterval) ? ErrorMessages.form.error_numberBiggerThanInterval :
+                            input.hasError(ErrorCodes.form.errorCode.custom.doesNotContainHttps) ? ErrorMessages.form.error_doesNotContainHttps :
+                              input.hasError(ErrorCodes.form.errorCode.min) ? ErrorMessages.form.error_min : noErrorMessageChar;
     
   }
   
@@ -40,6 +41,7 @@ export class ErrorCodes {
       required:  'required',
       minlength: 'minlength',
       maxlength: 'maxlength',
+      pattern: 'pattern',
       
       custom: {
         codeNotValid:             'codeNotValid',
@@ -64,6 +66,7 @@ export class ErrorMessages {
     error_maxLength:                'Length over maximum',
     error_max:                      'Value above the maximum',
     error_min:                      'Value below minimum',
+    error_pattern: 'Invalid format',
     error_lessThanOneElement:       'At least one element is required',
     error_codeNotValid:             'The code entered is invalid',
     error_notInOptions:             'Value not present in options',
