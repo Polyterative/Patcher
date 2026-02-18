@@ -55,37 +55,46 @@ describe('UserManagementService - Cross-Tab Login', () => {
     expect(mockSupabaseService.getUserSession$).toHaveBeenCalled();
   }));
   
-  it('should navigate to home when login$ event is emitted and on login page', fakeAsync(() => {
+  it('should update user state but NOT navigate when login$ event is emitted', fakeAsync(() => {
     // Arrange: User is on login page and logged out
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
     mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
+    let loggedUser: any;
+    service.loggedUser$.subscribe(user => loggedUser = user);
+    
     tick();
     
-    // Act: Emit login event
+    // Act: Emit login event (cross-tab login)
     mockSupabaseService.user.login$.emit();
     
     tick();
     
-    // Assert: Should navigate to home
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+    // Assert: Should update user state but NOT navigate
+    // Navigation is handled by the login page component itself
+    expect(loggedUser).toEqual(MOCK_SIMPLE_USER);
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
   
-  it('should NOT navigate when login$ event is emitted if not on login page', fakeAsync(() => {
+  it('should update user state but NOT navigate when login$ event is emitted on any page', fakeAsync(() => {
     // Arrange: User is on another page
     Object.defineProperty(mockRouter, 'url', {value: '/modules', writable: true});
     mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    
+    let loggedUser: any;
+    service.loggedUser$.subscribe(user => loggedUser = user);
     
     mockRouter.navigate.calls.reset();
     
     tick();
     
-    // Act: Emit login event
+    // Act: Emit login event (cross-tab login)
     mockSupabaseService.user.login$.emit();
     
     tick();
     
-    // Assert: Should NOT navigate
+    // Assert: Should update user state but NOT navigate
+    expect(loggedUser).toEqual(MOCK_SIMPLE_USER);
     expect(mockRouter.navigate).not.toHaveBeenCalled();
   }));
   
