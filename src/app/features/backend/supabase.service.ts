@@ -82,12 +82,21 @@ export type SupabaseStorageFile =
   | URLSearchParams
   | string;
 
+export type OAuthProvider =
+  'google'
+  | 'apple'
+  | 'github'
+  | 'facebook'
+  | 'azure'
+  | 'twitter';
+
 export type SimpleUserModel = Pick<User, 'id' | 'email' | 'created_at' | 'updated_at'>;
 
 export type RichUserModel =
   SimpleUserModel
   & {
-  username: string
+  username: string;
+  auth_provider?: string; // Track which provider was used (email, google, apple, etc.)
 };
 
 export interface SupabaseLoginResponse {
@@ -1437,6 +1446,101 @@ export class SupabaseService extends SubManager {
           }
         ),
       );
+  }
+  
+  /**
+   * Initiates OAuth login with a social provider (Google, Apple, GitHub, etc.)
+   * This will redirect the user to the provider's login page
+   * After successful authentication, the user will be redirected to the callback URL
+   *
+   * @param provider - The OAuth provider to use
+   * @param redirectTo - Optional custom redirect URL after successful authentication
+   * @returns Observable that completes after initiating the OAuth flow
+   */
+  loginWithOAuth$(provider: OAuthProvider, redirectTo?: string): Observable<void> {
+    const redirectUrl = redirectTo || `${ window.location.origin }/auth/callback`;
+    
+    return from(
+      this.supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+          // Request email scope to ensure we get the user's email
+          scopes: 'email'
+        }
+      })
+    ).pipe(
+      map((response) => {
+        if (response.error) {
+          throw response.error;
+        }
+        // OAuth flow initiated successfully
+        // User will be redirected to provider's login page
+        return void 0;
+      })
+    );
+  }
+  
+  /**
+   * Handles the OAuth callback after user returns from provider
+   * This should be called on the callback page to complete the authentication
+   *
+   * @returns Observable with the authenticated user or null if authentication failed
+   */
+  handleOAuthCallback$(): Observable<RichUserModel | null> {
+    return from(this.supabase.auth.getSession()).pipe(
+      switchMap((sessionResponse) => {
+        if (sessionResponse.error || !sessionResponse.data.session) {
+          return of(null);
+        }
+        
+        const user = sessionResponse.data.session.user;
+        
+        // Check if user has a profile/username already
+        return this.getRichUserSession$().pipe(
+          switchMap((richUser) => {
+            // If no username exists, this is a new OAuth user
+            if (!richUser || !richUser.username) {
+              // Create profile entry if it doesn't exist
+              return this.ensureOAuthUserProfile$(user).pipe(
+                map(() => richUser)
+              );
+            }
+            return of(richUser);
+          })
+        );
+      })
+    );
+  }
+  
+  /**
+   * Ensures an OAuth user has a profile entry
+   * Creates a profile with a temporary username that the user can change later
+   *
+   * @param user - The authenticated Supabase user
+   * @returns Observable that completes when profile is created/verified
+   */
+  private ensureOAuthUserProfile$(user: User): Observable<void> {
+    const email = user.email || '';
+    // Generate a temporary username from email or user_id
+    const tempUsername = email.split('@')[0] || `user_${ user.id.substring(0, 8) }`;
+    
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.profiles)
+        .upsert({
+          id: user.id,
+          email: email,
+          username: tempUsername,
+          confirmed: true,
+          created_at: user.created_at,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        })
+    ).pipe(
+      map(() => void 0)
+    );
   }
   
   signup$(username: string, email: string, password: string): SupabaseSignupResponse {
