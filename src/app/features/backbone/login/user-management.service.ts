@@ -140,6 +140,8 @@ export class UserManagementService extends SubManager {
   private initializeCrossTabLoginHandler(): void {
     // Listen to login events from Supabase for cross-tab synchronization
     // This enables cross-tab login sync when user logs in from another tab
+    // Note: Navigation is NOT handled here - it's the responsibility of the component
+    // that initiated the login (e.g., login page navigates to /user/area)
     this.backend.user.login$.pipe(
       switchMap(() => this.backend.getUserSession$()),
       filter(user => !!user),
@@ -149,11 +151,8 @@ export class UserManagementService extends SubManager {
       tap(user => {
         this._loggedUser$.next(user);
       }),
-      filter(() => this.router.url.includes('/auth/login')),
       takeUntil(this.destroy$)
-    ).subscribe(() => {
-      this.router.navigate(['/']);
-    });
+    ).subscribe();
   }
   
   private initializeLoginHandler(): void {

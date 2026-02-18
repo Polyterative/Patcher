@@ -14,7 +14,6 @@ import {
 import {
   catchError,
   concatMap,
-  delay,
   map,
   switchMap,
   takeUntil,
@@ -93,7 +92,6 @@ export class UserLoginDataService extends SubManager {
           this.fields.password.control.value
         )),
         tap(() => SharedConstants.successLogin(this.snackBar)),
-        delay(1000),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
