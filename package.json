@@ -53,7 +53,7 @@
     "@ngx-pwa/local-storage": "^21.0.0",
     "@sentry/angular": "^10.38.0",
     "@sentry/cli": "^2.38.0",
-    "@supabase/supabase-js": "^2.39.3",
+    "@supabase/supabase-js": "^2.46.1",
     "@typescript-eslint/types": "^8.0.0",
     "@typescript-eslint/utils": "^8.0.0",
     "angular-animations": "^0.11.0",
@@ -113,7 +113,7 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "protractor": "^7.0.0",
     "standard-version": "^9.5.0",
-    "supabase": "^2.22.6",
+    "supabase": "^2.76.9",
     "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   }
