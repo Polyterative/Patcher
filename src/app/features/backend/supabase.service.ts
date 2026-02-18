@@ -34,6 +34,7 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { Database } from 'src/backend/database.types';
@@ -146,13 +147,39 @@ function remapErrors<T>() {
 }
 
 @Injectable()
-export class SupabaseService {
+export class SupabaseService extends SubManager {
+  private authStateSubscription: {
+    unsubscribe: () => void
+  } | null = null;
+  
   constructor(
     public activated: ActivatedRoute,
     public snackBar: MatSnackBar
   ) {
+    super();
     // console.clear();
     
+    // Listen to auth state changes for cross-tab synchronization
+    const {data: authListener} = this.supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        this.user.logout$.emit();
+      } else if (event === 'SIGNED_IN' && session) {
+        this.user.login$.emit();
+      }
+    });
+    
+    // Store the subscription for cleanup on destroy
+    if (authListener?.subscription) {
+      this.authStateSubscription = authListener.subscription;
+    }
+  }
+  
+  override ngOnDestroy(): void {
+    // Clean up auth state listener
+    if (this.authStateSubscription) {
+      this.authStateSubscription.unsubscribe();
+    }
+    super.ngOnDestroy();
   }
   
   
