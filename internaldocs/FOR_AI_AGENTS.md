@@ -2,6 +2,24 @@
 
 **This project follows strict architectural patterns. You MUST adhere to these conventions.**
 
+## 🎯 Development Philosophy
+
+**Build in Layers - Never Skip Steps:**
+
+- Take time to understand requirements fully before implementing
+- Verify current state before making changes (explore codebase first)
+- Implement incrementally: database → backend → UI → polish
+- If something needs time to make sense, take that time
+- Simple is better than fast - build correctly, not quickly
+
+**Capture Guidelines:**
+When the user expresses a guideline, workflow preference, or decision principle:
+
+1. Add it to this document in the appropriate section
+2. Format it clearly and actionably
+3. Cross-reference with related sections if applicable
+4. Confirm the addition with the user
+
 ## ⚡ Quick Reference (MUST READ FIRST)
 
 **Commands:** Use `yarn` (install/add/remove) never `npm`. Testing: `yarn test-headless` never raw `ng test`.
