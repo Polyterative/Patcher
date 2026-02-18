@@ -9,18 +9,18 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { LoginEmailModule } from '../login-page/login-email/login-email.module';
+import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
 import { SignupEmailComponent } from './signup-email/signup-email.component';
-import { SignupGoogleComponent } from './signup-google/signup-google.component';
 import { SignupPageComponent } from './signup-page.component';
+import { MatError } from "@angular/material/input";
 
 
 @NgModule({
   declarations: [
     SignupPageComponent,
     SignupEmailComponent,
-    SignupGoogleComponent
   ],
-  imports:      [
+  imports: [
     CommonModule,
     BrandPrimaryButtonModule,
     LoginEmailModule,
@@ -30,12 +30,13 @@ import { SignupPageComponent } from './signup-page.component';
     FlexLayoutModule,
     MatFormEntityComponent,
     MatCardModule,
-    RouterModule
+    RouterModule,
+    MatError,
+    SSOButtonsComponent
   ],
-  exports:      [
+  exports: [
     SignupPageComponent,
     SignupEmailComponent,
-    SignupGoogleComponent
   ]
 })
 export class SignupPageModule {}

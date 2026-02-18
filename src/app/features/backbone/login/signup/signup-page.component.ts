@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { UserSignupDataService } from './user-signup-data.service';
 import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
+import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 
 
 @Component({
@@ -22,14 +23,23 @@ export class SignupPageComponent extends SubManager implements OnInit {
   constructor(
     public activated: ActivatedRoute,
     public dataService: UserSignupDataService,
-    readonly seoAndUtilsService: SeoAndUtilsService
-  
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    public loginInteraction: UserManagementService
   ) {
     super();
     this.seoAndUtilsService.updateSeo({}, 'Signup');
   }
   
   ngOnInit(): void {
+  }
+  
+  /**
+   * Handle SSO authentication when user selects a provider
+   * Note: SSO handles both login and signup automatically - if the user
+   * doesn't exist, an account is created. This follows industry best practices.
+   */
+  handleSSOSignup(provider: string): void {
+    this.loginInteraction.loginWithSSO(provider as any);
   }
   
 }
