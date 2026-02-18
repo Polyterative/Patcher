@@ -77,6 +77,13 @@ export class LoginPageComponent extends SubManager implements OnInit {
       });
   }
   
+  /**
+   * Handle SSO login when user selects a provider
+   */
+  handleSSOLogin(provider: string): void {
+    this.loginInteraction.loginWithSSO(provider as any);
+  }
+  
   protected readonly SharedConstants = SharedConstants;
   
 }

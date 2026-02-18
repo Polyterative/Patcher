@@ -1,0 +1,18 @@
+<div class="sso-buttons-container">
+  <div class="divider" *ngIf="showDivider">
+    <span>{{ dividerText }}</span>
+  </div>
+  
+  <div class="buttons-grid">
+    <button
+      *ngFor="let provider of providers"
+      mat-flat-button
+      class="sso-button sso-button-{{provider}}"
+      (click)="selectProvider(provider)"
+      type="button"
+    >
+      <span class="provider-logo">{{ config[provider].icon }}</span>
+      <span class="button-text">{{ getButtonText(provider) }}</span>
+    </button>
+  </div>
+</div>

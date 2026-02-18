@@ -14,7 +14,7 @@ import { SignupPageComponent } from './signup/signup-page.component';
 import { SignupPageModule } from './signup/signup-page.module';
 import { UserManagementService } from './user-management.service';
 import { ResetPasswordPageComponent } from './reset-password/reset-password-page.component';
-import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
+import { AuthCallbackComponent } from 'src/app/features/backbone/login/auth-callback.component';
 import { CompleteProfileComponent } from './complete-profile/complete-profile.component';
 import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
 
@@ -22,11 +22,7 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
 @NgModule({
   declarations: [
     AuthCallbackComponent,
-    CompleteProfileComponent,
-    SSOButtonsComponent
-  ],
-  exports: [
-    SSOButtonsComponent
+    CompleteProfileComponent
   ],
   providers: [UserManagementService],
   imports: [
@@ -40,6 +36,7 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
     MatIconModule,
     LoginPageModule,
     SignupPageModule,
+    SSOButtonsComponent,
     RouterModule.forRoot([
       {
         path: 'auth',
