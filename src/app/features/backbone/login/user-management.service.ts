@@ -101,7 +101,6 @@ export class UserManagementService {
   
   // high level logoff function
   logoff$(): void {
-    console.log('Logging out...');
     this.loggedUser$.next(undefined);
     from(this.backend.logoff$())
       .pipe(take(1))

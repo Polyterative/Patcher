@@ -115,13 +115,10 @@ export class UserResetPasswordDataService implements OnDestroy {
           // Set loading state
           this.isSubmitting$.next(true);
           
-          console.log('Submitting password reset...');
-          
           // Call reset password API
           return this.supabaseService.resetPassword$('', password).pipe(
             map(() => {
               // Success
-              console.log('Password reset successful');
               this.successMessage$.next(ERROR_MESSAGES.successTitle);
               this.isSubmitting$.next(false);
               
