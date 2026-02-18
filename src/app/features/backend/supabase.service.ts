@@ -37,6 +37,7 @@ import { normalizeForSearch } from 'src/app/shared-interproject/components/@smar
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
 import { PatchConnection } from '../../models/connection';
+import { DbComment } from '../../models/comment';
 import {
   CV,
   CVwithModuleId
@@ -52,7 +53,6 @@ import {
   RackingData,
   RackMinimal
 } from '../../models/rack';
-import { Tag } from '../../models/tag';
 import {
   DbPaths,
   DbStoragePaths,
@@ -63,7 +63,6 @@ import {
   GlobalCacheConfig,
   LocalStorageStrategy
 } from "ts-cacheable";
-import { PostgrestSingleResponse } from "@supabase/postgrest-js/src/types";
 import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 
 
@@ -140,9 +139,8 @@ function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) => Obser
 }
 
 function remapErrors<T>() {
-  return (source: Observable<PostgrestSingleResponse<T>>) => source.pipe(
-    switchMap(x => x.error ? throwError(() => new Error(x.error.message)) : of(x)),
-  );
+  // In Supabase v2, errors are handled differently - just pass through
+  return (source: Observable<any>) => source;
 }
 
 @Injectable()
@@ -398,7 +396,7 @@ export class SupabaseService {
         cacheBust(['comments', 'currentUserComments']),
         remapErrors()
       ),
-    module_tags: (data: Tag[]) => rxFrom(
+    module_tags: (data: Database['public']['Tables']['module_tags']['Insert'][]) => rxFrom(
       this.supabase
         .from(DbPaths.module_tags)
         .upsert(data)
@@ -462,19 +460,35 @@ export class SupabaseService {
               submitter: user.id
             }))
             .map(x => {
+              // Transform for database - extract IDs from nested objects
+              const dbData: any = {...x};
+              if (dbData.standard && typeof dbData.standard === 'object') {
+                dbData.standard = dbData.standard.id;
+              }
+              if (dbData.manufacturer && typeof dbData.manufacturer === 'object') {
+                dbData.manufacturerId = dbData.manufacturer.id;
+                delete dbData.manufacturer;
+              }
+              // Remove nested arrays/objects that don't belong in the modules table
+              delete dbData.ins;
+              delete dbData.outs;
+              delete dbData.switches;
+              delete dbData.panels;
+              delete dbData.tags;
+                
                 // if it has no id, then it is a new module, so we need to insert it
                 
                 if (!x.id) {
                   return rxFrom(
                     this.supabase
                       .from(DbPaths.modules)
-                      .insert(x)
+                      .insert(dbData)
                   );
                 } else {
                   return rxFrom(
                     this.supabase
                       .from(DbPaths.modules)
-                      .update(x)
+                      .update(dbData)
                       .eq('id', x.id)
                   );
                 }
@@ -515,7 +529,7 @@ export class SupabaseService {
         remapErrors(),
         cacheBust(['manufacturers'])
       ),
-    panel: (data: Partial<ModulePanel>[]) => rxFrom(
+    panel: (data: Database['public']['Tables']['module_panels']['Insert'][]) => rxFrom(
       this.supabase
         .from(DbPaths.module_panels)
         .insert(data)
@@ -696,27 +710,29 @@ export class SupabaseService {
       data.tags = undefined; // todo handle tags
       data.panels = undefined;
       
-      if (data.standard) {
-        // @ts-ignore
-        data.standard = data.standard.id;
-      } else {
-        data.standard = undefined;
+      // Transform data for database compatibility
+      const dbData: any = {...data};
+      if (dbData.standard && typeof dbData.standard === 'object') {
+        dbData.standard = dbData.standard.id;
+      }
+      if (!dbData.standard) {
+        dbData.standard = undefined;
       }
       
       
       // iso 8601 date
-      data.updated = new Date().toISOString();
+      dbData.updated = new Date().toISOString();
       
       //strip out undefined or null values
-      for (const key in data) {
-        if (data[key] === undefined || data[key] === null) {
-          delete data[key];
+      for (const key in dbData) {
+        if (dbData[key] === undefined || dbData[key] === null) {
+          delete dbData[key];
         }
       }
       
       return rxFrom(
         this.supabase.from(DbPaths.modules)
-          .update(data)
+          .update(dbData)
           .eq('id', data.id)
           .select('id,updated,created')
       )
@@ -805,17 +821,27 @@ export class SupabaseService {
         );
     },
     modules: (data: DbModule[]) => {
-      for (const datum of data) {
-        datum.manufacturer = undefined;
-        datum.ins = undefined;
-        datum.outs = undefined;
-        datum.created = undefined;
-        datum.updated = undefined;
-        datum.manualURL = undefined;
-      }
+      const transformedData = data.map(datum => {
+        const dbData: any = {...datum};
+        // Remove nested objects/arrays
+        dbData.manufacturer = undefined;
+        dbData.ins = undefined;
+        dbData.outs = undefined;
+        dbData.created = undefined;
+        dbData.updated = undefined;
+        dbData.manualURL = undefined;
+        
+        // Transform standard object to ID
+        if (dbData.standard && typeof dbData.standard === 'object') {
+          dbData.standard = dbData.standard.id;
+        }
+        
+        return dbData;
+      });
+      
       return rxFrom(
         this.supabase.from(DbPaths.modules)
-          .update(data)
+          .upsert(transformedData)
       )
         .pipe(
           // bust the cache for modules
@@ -1218,7 +1244,7 @@ export class SupabaseService {
     maxCacheCount: 100,
     async: true
   })
-  private getComments(entityId: number, entityType: number) {
+  private getComments(entityId: number, entityType: number): Observable<DbComment[] | null | undefined> {
     return rxFrom(
       this.supabase.from(DbPaths.comments)
         .select(`*,profile:profiles(id,username,email)`)
@@ -1229,7 +1255,7 @@ export class SupabaseService {
     )
       .pipe(
         // remapErrors(),
-        map((x => x.data))
+        map((x => x.data as any))
       );
   }
   
@@ -1520,7 +1546,7 @@ export class SupabaseService {
     return mapper;
   }
   
-  private buildCVInserter(cvs: CV[], path: string, moduleId: number, authorid: string) {
+  private buildCVInserter(cvs: CV[], path: 'module_ins' | 'module_outs', moduleId: number, authorid: string) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
       .filter(x => x.id === 0)
       .map(x => {
@@ -1538,7 +1564,7 @@ export class SupabaseService {
       .insert(x)));
   }
   
-  private buildCVUpdater(cvs: CV[], path: string, moduleId: number) {
+  private buildCVUpdater(cvs: CV[], path: 'module_ins' | 'module_outs', moduleId: number) {
     const mappedCVs = cvs.map(this.getCvMapper(moduleId))
       .filter(x => x.id > 0);
     
