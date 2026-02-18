@@ -131,8 +131,6 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
     
     const {data: authListener} = supabaseClient.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: any) => {
-        console.log('Auth state change:', event, session);
-        
         if (event === 'PASSWORD_RECOVERY') {
           this.dataService.setRecoverySession(true);
         } else if (event === 'SIGNED_IN') {
