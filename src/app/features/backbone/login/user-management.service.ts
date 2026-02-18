@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
-import {
-  ActivatedRoute,
-  Router
-} from '@angular/router';
+import { Router } from '@angular/router';
 import {
   from,
   NEVER,
-  Observable,
-  ReplaySubject
+  ReplaySubject,
+  Subject
 } from 'rxjs';
 import {
   catchError,
@@ -26,7 +23,6 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   RichUserModel,
   SimpleUserModel,
-  SupabaseLoginResponse,
   SupabaseService,
   SupabaseSignupResponse,
 } from '../../backend/supabase.service';
@@ -34,10 +30,21 @@ import {
 
 @Injectable()
 export class UserManagementService extends SubManager {
-  // minimal data of the user, gets loaded super fast from the session
-  loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
-  //contains the full data of the user, gets loaded asynchrounously using the data from the session
-  loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  // STATE - Private subjects
+  private _loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
+  private _loggedUserFullProfile$ = new ReplaySubject<RichUserModel | undefined>(1);
+  
+  // PUBLIC - Read-only observables
+  public readonly loggedUser$ = this._loggedUser$.asObservable();
+  public readonly loggedUserFullProfile$ = this._loggedUserFullProfile$.asObservable();
+  
+  // ACTIONS - Event subjects
+  public logoffAction$ = new Subject<void>();
+  public loginAction$ = new Subject<{
+    email: string;
+    password: string
+  }>();
+  public resetPasswordAction$ = new Subject<string>();
   
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
@@ -46,30 +53,38 @@ export class UserManagementService extends SubManager {
     public snackBar: MatSnackBar,
     public router: Router,
     public backend: SupabaseService,
-    public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
     super();
-    // these should not be activated here, as the undefinedness should be checked on the cookie check
-    // this.loggedUser$.next(undefined);
-    // this.loggedUserFullProfile$.next(undefined);
     
     this.checkUserInCookies();
     
+    this.initializeUserBoxHandler();
+    this.initializeProfileFetchHandler();
+    this.initializeUserBoxLogoffHandler();
+    this.initializeCrossTabLogoutHandler();
+    this.initializeCrossTabLoginHandler();
+    this.initializeLoginHandler();
+    this.initializeLogoffHandler();
+    this.initializeResetPasswordHandler();
+  }
+  
+  private initializeUserBoxHandler(): void {
     this.loggedUserFullProfile$
       .pipe(
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
-        
         if (x) {
           this.userBoxService.store.user$.next({username: x.username});
         } else {
           this.userBoxService.store.user$.next({username: undefined});
         }
       });
-
-    // update loggedUserProfile$ when loggedUser$ changes
+  }
+  
+  private initializeProfileFetchHandler(): void {
+    // Update loggedUserProfile$ when loggedUser$ changes
     // This handles session restoration (page loads) where we have a user from session
     // but need to fetch the full profile. During login, the full profile is set directly.
     this.loggedUser$
@@ -82,7 +97,7 @@ export class UserManagementService extends SubManager {
         withLatestFrom(this.loggedUserFullProfile$.pipe(startWith(undefined))),
         // Only fetch if we don't have a profile or it's for a different user
         filter(([user, profile]) => !profile || profile.id !== user.id),
-        switchMap(([user]) =>
+        switchMap(([_user]) =>
           this.backend.getRichUserSession$().pipe(
             filter(x => !!x && !!x.username && !!x.email)
           )
@@ -90,28 +105,34 @@ export class UserManagementService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
-        this.loggedUserFullProfile$.next(x);
+        this._loggedUserFullProfile$.next(x);
       });
-    
-    userBoxService.logoffButtonClick$.pipe(
+  }
+  
+  private initializeUserBoxLogoffHandler(): void {
+    this.userBoxService.logoffButtonClick$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      this.logoff$();
+      this.logoffAction$.next();
     });
-    
+  }
+  
+  private initializeCrossTabLogoutHandler(): void {
     // Listen to logout events from Supabase for cross-tab synchronization
     // This enables cross-tab logout without showing the success message again
     this.backend.user.logout$.pipe(
       tap(() => {
-        this.loggedUser$.next(undefined);
-        this.loggedUserFullProfile$.next(undefined);
+        this._loggedUser$.next(undefined);
+        this._loggedUserFullProfile$.next(undefined);
       }),
       filter(() => !this.router.url.includes('/auth/login')),
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.router.navigate(['/auth/login']);
     });
-    
+  }
+  
+  private initializeCrossTabLoginHandler(): void {
     // Listen to login events from Supabase for cross-tab synchronization
     // This enables cross-tab login sync when user logs in from another tab
     this.backend.user.login$.pipe(
@@ -121,7 +142,7 @@ export class UserManagementService extends SubManager {
       // This prevents unnecessary updates when already logged in as the same user
       filter(user => !this.currentUserId || this.currentUserId !== user!.id),
       tap(user => {
-        this.loggedUser$.next(user);
+        this._loggedUser$.next(user);
       }),
       filter(() => this.router.url.includes('/auth/login')),
       takeUntil(this.destroy$)
@@ -130,53 +151,103 @@ export class UserManagementService extends SubManager {
     });
   }
   
-  // high level login function
-  login$(email: string, password: string): Observable<SupabaseLoginResponse> {
-    return this.backend.login$(email, password)
-      .pipe(
+  private initializeLoginHandler(): void {
+    this.loginAction$.pipe(
+      switchMap(({email, password}) => this.backend.login$(email, password).pipe(
         catchError(() => {
           SharedConstants.errorLogin(this.snackBar);
           return NEVER;
-        }),
-        tap(x => {
-          // Emit the full user data directly to avoid duplicate database calls
-          // The login$ already fetches the username, so we have complete data
-          this.loggedUser$.next(x.user);
-          this.loggedUserFullProfile$.next(x.user);
         })
-      );
+      )),
+      tap(x => {
+        // Emit the full user data directly to avoid duplicate database calls
+        // The login$ already fetches the username, so we have complete data
+        this._loggedUser$.next(x.user);
+        this._loggedUserFullProfile$.next(x.user);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
   
-  signup(username: string, email: string, password: string): SupabaseSignupResponse {
-    return this.backend.signup$(username, email, password);
-  }
-  
-  // signupGoogle() {
-  //   return this.backend.signupGoogle();
-  // }
-  
-  // high level logoff function
-  logoff$(): void {
-    from(this.backend.logoff$())
-      .pipe(
-        take(1),
+  private initializeLogoffHandler(): void {
+    this.logoffAction$.pipe(
+      switchMap(() => from(this.backend.logoff$()).pipe(
         catchError((error) => {
           console.error('Logout failed:', error);
           SharedConstants.errorCustom(this.snackBar, SharedConstants.messages.operationFailed);
           return NEVER;
         })
-      )
-      .subscribe(() => {
+      )),
+      tap(() => {
         // State will be cleared by the auth state change listener
         // which triggers the cross-tab logout handler
         this.router.navigate(['/auth/login']);
         SharedConstants.successLogout(this.snackBar);
-      });
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
+  private initializeResetPasswordHandler(): void {
+    this.resetPasswordAction$.pipe(
+      switchMap(email => this.backend.resetPassword$(email).pipe(
+        catchError((error) => {
+          if (error?.error_code === 'over_email_send_rate_limit') {
+            SharedConstants.errorCustom(
+              this.snackBar,
+              SharedConstants.messages.overEmailSendRateLimit
+            );
+          } else {
+            SharedConstants.errorCustom(
+              this.snackBar,
+              SharedConstants.messages.operationFailed
+            );
+          }
+          return NEVER;
+        })
+      )),
+      tap(() => SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent)),
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
   
   /**
-   * Sends a password reset email to the user (for both authenticated and unauthenticated users).
-   * @param email The email address of the user.
+   * @deprecated This should be refactored to use a signup$ action subject
+   */
+  signup(username: string, email: string, password: string): SupabaseSignupResponse {
+    return this.backend.signup$(username, email, password);
+  }
+  
+  /**
+   * High-level login function
+   * @deprecated Components should eventually use the loginAction$ subject directly
+   */
+  login$(email: string, password: string) {
+    // For backward compatibility, return the backend observable directly
+    // This will be handled by the component's subscription
+    return this.backend.login$(email, password).pipe(
+      catchError(() => {
+        SharedConstants.errorLogin(this.snackBar);
+        return NEVER;
+      }),
+      tap(x => {
+        this._loggedUser$.next(x.user);
+        this._loggedUserFullProfile$.next(x.user);
+      })
+    );
+  }
+  
+  /**
+   * High-level logoff function
+   * Triggers the logout action subject
+   */
+  logoff$(): void {
+    this.logoffAction$.next();
+  }
+  
+  /**
+   * Sends a password reset email to the user
+   * @deprecated Components should eventually use the resetPasswordAction$ subject directly
    */
   resetPassword$(email: string) {
     return this.backend.resetPassword$(email).pipe(
@@ -206,10 +277,10 @@ export class UserManagementService extends SubManager {
     ).subscribe(x => {
         if (x) {
           // explicitly set the user to x since we know that the user is logged in for sure
-          this.loggedUser$.next(x);
+          this._loggedUser$.next(x);
         } else {
           // explicitly set the user to undefined since we know that the user is not logged in for sure
-          this.loggedUser$.next(undefined);
+          this._loggedUser$.next(undefined);
       }
       }
     );
