@@ -111,11 +111,14 @@ describe('UserManagementService - Manual Login/Logout', () => {
     it('should navigate to login page on successful logout', fakeAsync(() => {
       // Arrange
       mockSupabaseService.logoff$.and.returnValue(of({error: null}));
-      service.loggedUser$.next(MOCK_SIMPLE_USER);
+      
+      // Log the user in first
+      const loginResponse = {user: MOCK_SIMPLE_USER, returnUrl: '/'};
+      mockSupabaseService.login$.and.returnValue(of(loginResponse));
+      service.login$('test@example.com', 'password').subscribe();
+      tick();
       
       mockRouter.navigate.calls.reset();
-      
-      tick();
       
       // Act
       service.logoff$();
@@ -173,13 +176,9 @@ describe('UserManagementService - Manual Login/Logout', () => {
   });
   
   describe('logoffButtonClick$ integration', () => {
-    it('should call logoff$ when logoffButtonClick$ is emitted', fakeAsync(() => {
+    it('should trigger logout when logoffButtonClick$ is emitted', fakeAsync(() => {
       // Arrange
       mockSupabaseService.logoff$.and.returnValue(of({error: null}));
-      
-      // Since the service is already instantiated in beforeEach,
-      // we can just spy on logoff$ and test the integration
-      spyOn(service, 'logoff$').and.callThrough();
       
       const mockUserDataHandlerService = (service as any).userBoxService;
       
@@ -190,8 +189,9 @@ describe('UserManagementService - Manual Login/Logout', () => {
       
       tick();
       
-      // Assert: logoff$ should have been called
-      expect(service.logoff$).toHaveBeenCalled();
+      // Assert: backend logoff$ should have been called as a result
+      expect(mockSupabaseService.logoff$).toHaveBeenCalled();
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
     }));
   });
 });
