@@ -1810,6 +1810,57 @@ export class SupabaseService extends SubManager {
   private isValidPassword(password: string): boolean {
     return password.length >= 8; // Add more complexity checks if needed
   }
+  
+  /**
+   * Updates the username in the profiles table for the current user
+   * This works for both email/password and SSO users
+   *
+   * @param userId - The user ID to update
+   * @param newUsername - The new username to set
+   * @returns Observable that completes when username is updated
+   */
+  updateUsername$(userId: string, newUsername: string): Observable<void> {
+    const trimmedUsername = newUsername.trim();
+    
+    if (!trimmedUsername || trimmedUsername.length < 3) {
+      return throwError(() => new Error('Username must be at least 3 characters long.'));
+    }
+    
+    if (trimmedUsername.length > 30) {
+      return throwError(() => new Error('Username must be 30 characters or less.'));
+    }
+    
+    // Check if username contains only valid characters (alphanumeric, underscore, hyphen)
+    const validUsernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validUsernameRegex.test(trimmedUsername)) {
+      return throwError(() => new Error('Username can only contain letters, numbers, underscores, and hyphens.'));
+    }
+    
+    return rxFrom(
+      this.supabase
+        .from(DbPaths.profiles)
+        .update({
+          username: trimmedUsername,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+    ).pipe(
+      map((response) => {
+        if (response.error) {
+          // Check for unique constraint violation
+          if (response.error.code === '23505' || response.error.message?.includes('unique')) {
+            throw new Error('This username is already taken. Please choose another one.');
+          }
+          throw new Error(response.error.message || 'Failed to update username.');
+        }
+        return void 0;
+      }),
+      catchError((error) => {
+        console.error('Username update failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
 
 class PasswordResetError extends Error {
