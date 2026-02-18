@@ -51,6 +51,15 @@ export class UserManagementService extends SubManager {
   /** Emits email address when user requests password reset */
   public resetPasswordAction$ = new Subject<string>();
   
+  /** Emits when user initiates SSO login with a provider */
+  public ssoLoginAction$ = new Subject<{
+    provider: 'google' | 'apple' | 'github' | 'facebook' | 'azure' | 'twitter';
+    redirectUrl?: string;
+  }>();
+  
+  /** Emits when handling OAuth callback after redirect */
+  public handleOAuthCallbackAction$ = new Subject<void>();
+  
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
   
@@ -72,6 +81,8 @@ export class UserManagementService extends SubManager {
     this.initializeLoginHandler();
     this.initializeLogoffHandler();
     this.initializeResetPasswordHandler();
+    this.initializeSSOLoginHandler();
+    this.initializeOAuthCallbackHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -215,6 +226,44 @@ export class UserManagementService extends SubManager {
     ).subscribe();
   }
   
+  private initializeSSOLoginHandler(): void {
+    this.ssoLoginAction$.pipe(
+      switchMap(({provider, redirectUrl}) => this.backend.loginWithOAuth$(provider, redirectUrl).pipe(
+        catchError((error) => {
+          console.error('SSO login failed:', error);
+          SharedConstants.errorCustom(
+            this.snackBar,
+            'Social login failed. Please try again.'
+          );
+          return NEVER;
+        })
+      )),
+      // OAuth redirect happens automatically, no further action needed
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
+  private initializeOAuthCallbackHandler(): void {
+    this.handleOAuthCallbackAction$.pipe(
+      switchMap(() => this.backend.handleOAuthCallback$().pipe(
+        catchError((error) => {
+          console.error('OAuth callback handling failed:', error);
+          SharedConstants.errorCustom(
+            this.snackBar,
+            'Authentication failed. Please try again.'
+          );
+          return NEVER;
+        })
+      )),
+      filter(user => !!user),
+      tap(user => {
+        this._loggedUser$.next(user);
+        this._loggedUserFullProfile$.next(user);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
   /**
    * @deprecated This should be refactored to use a signup$ action subject
    */
@@ -271,6 +320,25 @@ export class UserManagementService extends SubManager {
       }),
       tap(() => SharedConstants.successCustom(this.snackBar, SharedConstants.messages.passwordResetEmailSent))
     );
+  }
+  
+  /**
+   * Initiates SSO login with a social provider
+   * This will redirect the user to the provider's authentication page
+   *
+   * @param provider - The OAuth provider (google, apple, github, etc.)
+   * @param redirectUrl - Optional custom redirect URL after successful authentication
+   */
+  loginWithSSO(provider: 'google' | 'apple' | 'github' | 'facebook' | 'azure' | 'twitter', redirectUrl?: string): void {
+    this.ssoLoginAction$.next({provider, redirectUrl});
+  }
+  
+  /**
+   * Handles the OAuth callback after user returns from provider
+   * Should be called on the callback page to complete authentication
+   */
+  handleOAuthCallback(): void {
+    this.handleOAuthCallbackAction$.next();
   }
   
   /**
