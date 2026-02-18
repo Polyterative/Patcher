@@ -4,12 +4,15 @@ import { Router } from '@angular/router';
 import {
   from,
   NEVER,
+  Observable,
   ReplaySubject,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import {
   catchError,
   filter,
+  map,
   startWith,
   switchMap,
   take,
@@ -60,6 +63,9 @@ export class UserManagementService extends SubManager {
   /** Emits when handling OAuth callback after redirect */
   public handleOAuthCallbackAction$ = new Subject<void>();
   
+  /** Emits when user wants to update their username */
+  public updateUsernameAction$ = new Subject<string>();
+  
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
   
@@ -83,6 +89,7 @@ export class UserManagementService extends SubManager {
     this.initializeResetPasswordHandler();
     this.initializeSSOLoginHandler();
     this.initializeOAuthCallbackHandler();
+    this.initializeUpdateUsernameHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -357,5 +364,60 @@ export class UserManagementService extends SubManager {
         this._loggedUser$.next(undefined);
       }
     });
+  }
+  
+  private initializeUpdateUsernameHandler(): void {
+    this.updateUsernameAction$.pipe(
+      withLatestFrom(this.loggedUserFullProfile$),
+      filter(([_, profile]) => !!profile),
+      switchMap(([newUsername, profile]) =>
+        this.backend.updateUsername$(profile!.id, newUsername).pipe(
+          catchError((error) => {
+            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
+            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            return NEVER;
+          })
+        )
+      ),
+      // Refresh the user profile after successful update
+      switchMap(() => this.backend.getRichUserSession$()),
+      filter(x => !!x),
+      tap(updatedProfile => {
+        this._loggedUserFullProfile$.next(updatedProfile);
+        SharedConstants.successCustom(this.snackBar, 'Username updated successfully!');
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
+  /**
+   * Updates the username for the currently logged-in user
+   * Works for both email/password and SSO users
+   *
+   * @param newUsername - The new username to set
+   * @returns Observable that completes when username is updated
+   */
+  updateUsername$(newUsername: string): Observable<void> {
+    return this.loggedUserFullProfile$.pipe(
+      take(1),
+      filter((profile): profile is RichUserModel => !!profile),
+      switchMap(profile =>
+        this.backend.updateUsername$(profile.id, newUsername).pipe(
+          catchError((error) => {
+            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
+            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            return throwError(() => error);
+          })
+        )
+      ),
+      // Refresh the user profile after successful update
+      switchMap(() => this.backend.getRichUserSession$()),
+      filter(x => !!x),
+      tap(updatedProfile => {
+        this._loggedUserFullProfile$.next(updatedProfile);
+        SharedConstants.successCustom(this.snackBar, 'Username updated successfully!');
+      }),
+      map(() => void 0)
+    );
   }
 }

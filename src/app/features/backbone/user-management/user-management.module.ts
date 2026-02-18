@@ -9,7 +9,9 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
+import { InputDialogModule } from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.module';
 import { MatCardModule } from "@angular/material/card";
+import { MatDialogModule } from "@angular/material/dialog";
 import { MatTooltipModule } from "@angular/material/tooltip";
 
 
@@ -43,6 +45,8 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     ScreenWrapperModule,
     LabelValueShowcaseModule,
     MatTooltipModule,
+    MatDialogModule,
+    InputDialogModule,
     TimeagoModule
   
   ],
