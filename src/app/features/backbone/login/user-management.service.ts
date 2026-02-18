@@ -15,8 +15,10 @@ import {
   filter,
   switchMap,
   take,
+  takeUntil,
   tap
 } from 'rxjs/operators';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserDataHandlerService } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
@@ -29,7 +31,7 @@ import {
 
 
 @Injectable()
-export class UserManagementService {
+export class UserManagementService extends SubManager {
   // minimal data of the user, gets loaded super fast from the session
   loggedUser$ = new ReplaySubject<SimpleUserModel | undefined>(1);
   //contains the full data of the user, gets loaded asynchrounously using the data from the session
@@ -42,6 +44,7 @@ export class UserManagementService {
     public activated: ActivatedRoute,
     public userBoxService: UserDataHandlerService
   ) {
+    super();
     // these should not be activated here, as the undefinedness should be checked on the cookie check
     // this.loggedUser$.next(undefined);
     // this.loggedUserFullProfile$.next(undefined);
@@ -49,7 +52,9 @@ export class UserManagementService {
     this.checkUserInCookies();
     
     this.loggedUserFullProfile$
-      .pipe()
+      .pipe(
+        takeUntil(this.destroy$)
+      )
       .subscribe(x => {
         
         if (x) {
@@ -66,14 +71,30 @@ export class UserManagementService {
         filter(x => !!x),
         switchMap(() => this.backend.getRichUserSession$()),
         //perform good the check of both values
-        filter(x => !!x && !!x.username && !!x.email)
+        filter(x => !!x && !!x.username && !!x.email),
+        takeUntil(this.destroy$)
       )
       .subscribe(x => {
         this.loggedUserFullProfile$.next(x);
       });
     
-    userBoxService.logoffButtonClick$.subscribe(() => {
+    userBoxService.logoffButtonClick$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
       this.logoff$();
+    });
+    
+    // Listen to logout events from Supabase for cross-tab synchronization
+    // This enables cross-tab logout without showing the success message again
+    this.backend.user.logout$.pipe(
+      tap(() => {
+        this.loggedUser$.next(undefined);
+        this.loggedUserFullProfile$.next(undefined);
+      }),
+      filter(() => !this.router.url.includes('/auth/login')),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.router.navigate(['/auth/login']);
     });
   }
   
@@ -101,15 +122,20 @@ export class UserManagementService {
   
   // high level logoff function
   logoff$(): void {
-    this.loggedUser$.next(undefined);
     from(this.backend.logoff$())
-      .pipe(take(1))
-      .subscribe(x => {
-        this.loggedUser$.next(undefined);
-        this.loggedUserFullProfile$.next(undefined);
+      .pipe(
+        take(1),
+        catchError((error) => {
+          console.error('Logout failed:', error);
+          SharedConstants.errorCustom(this.snackBar, SharedConstants.messages.operationFailed);
+          return NEVER;
+        })
+      )
+      .subscribe(() => {
+        // State will be cleared by the auth state change listener
+        // which triggers the cross-tab logout handler
         this.router.navigate(['/auth/login']);
         SharedConstants.successLogout(this.snackBar);
-        
       });
   }
   
