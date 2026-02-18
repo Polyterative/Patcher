@@ -1,28 +1,28 @@
 export class DbPaths {
   // Manufacturer
-  static modules: string = 'modules';
-  static moduleINs: string = 'module_ins';
-  static moduleOUTs: string = 'module_outs';
-  static manufacturers: string = 'manufacturers';
-  static user_modules: string = 'user_modules';
-  static racks: string = 'racks';
-  static rack_modules: string = 'rack_modules';
-  static rack_modules_grouped_by_moduleid: string = 'rack_modules_grouped_by_moduleid';
-  static patches_for_modules: string = 'patches_for_modules';
-  static patches: string = 'patches';
-  static patch_connections: string = 'patch_connections';
-  static module_tags: string = 'module_tags';
-  static module_panels: string = 'module_panels';
-  static tags: string = 'tags';
-  static standards: string = 'standards';
-  static profiles: string = 'profiles';
-  static comments: string = 'comments';
+  static modules = 'modules' as const;
+  static moduleINs = 'module_ins' as const;
+  static moduleOUTs = 'module_outs' as const;
+  static manufacturers = 'manufacturers' as const;
+  static user_modules = 'user_modules' as const;
+  static racks = 'racks' as const;
+  static rack_modules = 'rack_modules' as const;
+  static rack_modules_grouped_by_moduleid = 'rack_modules_grouped_by_moduleid' as const;
+  static patches_for_modules = 'patches_for_modules' as const;
+  static patches = 'patches' as const;
+  static patch_connections = 'patch_connections' as const;
+  static module_tags = 'module_tags' as const;
+  static module_panels = 'module_panels' as const;
+  static tags = 'tags' as const;
+  static standards = 'standards' as const;
+  static profiles = 'profiles' as const;
+  static comments = 'comments' as const;
   
 }
 
 export class DbStoragePaths {
-  static module_panels: string = 'module-panels';
-  static racks: string = 'racks';
+  static module_panels = 'module-panels' as const;
+  static racks = 'racks' as const;
   
 }
 
