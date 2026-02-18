@@ -239,9 +239,8 @@ export class SupabaseService {
     )
       .pipe(remapErrors())
       .pipe(
-        map((x: any) => x), // map type as any , TODO: fix this
-        map((x => x.data)),
-        map(x => x.map(y => ({
+        map((x: any) => x.data),
+        map(x => x.map((y: any) => ({
           module: y.module,
           rackingData: {
             id: y.id,
@@ -262,7 +261,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x)// map type as any , TODO: fix this
       )
     ,
     patchWithId: (id: number, columns = '*') => rxFrom(
@@ -332,7 +330,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x),// map type as any , TODO: fix this
         map((x => x.data))
       ),
     manufacturerWithId: (id: number, from = 0, to: number = this.defaultPag, columns = '*') => rxFrom(
@@ -349,7 +346,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x),// map type as any , TODO: fix this
       ),
     userWithId: (id: string, columns = '*') => rxFrom(
       this.supabase.from(DbPaths.profiles)
@@ -442,7 +438,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x), // map type as any , TODO: fix this
       ),
     patch: (data: {
       name: string
@@ -901,10 +896,9 @@ export class SupabaseService {
               .pipe(
                 // bust the cache
                 cacheBust(['rackWithId']),
-                map(x => filenameAndExtension));
+                map(_ => filenameAndExtension));
           })
         );
-      
     },
     deleteRackImage: (filenameAndExtension: string) => {
       filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
@@ -1080,7 +1074,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x)
       );
   }
   
@@ -1141,7 +1134,6 @@ export class SupabaseService {
       .pipe(
         map((x) => x),
         remapErrors(),
-        map((x: any) => x),
       );
   }
   
@@ -1168,7 +1160,6 @@ export class SupabaseService {
     )
       .pipe(
         remapErrors(),
-        map((x: any) => x), // map type as any , TODO: fix this
         map((x => x.data))
       );
   }
@@ -1308,8 +1299,7 @@ export class SupabaseService {
             .filter('profileid', 'eq', user.id)
         ).pipe(
           remapErrors(),
-          map((x: any) => x), // map type as any , TODO: fix this
-          map((x => x.data.map(y => y.module)))
+          map((x: any) => x.data.map((y: any) => y.module))
         )
       ),
     );
@@ -1487,7 +1477,7 @@ export class SupabaseService {
             .pipe(
               map(() => x),
               switchMap(x => rxFrom(this.supabase.auth.signOut())
-                .pipe(map(z => x)))
+                .pipe(map(_ => x)))
             )
         )
       );
