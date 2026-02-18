@@ -7,6 +7,13 @@
         <!-- Normal Login Form -->
         @if (!(dataService.showPasswordReset$ | async)) {
           <app-login-email fxFlex="100"></app-login-email>
+          
+          <!-- SSO Authentication Options (handles both login and signup) -->
+          <app-sso-buttons
+            [providers]="['google', 'apple', 'github']"
+            (providerSelected)="handleSSOLogin($event)">
+          </app-sso-buttons>
+          
           <!-- Action Links Section with improved spacing -->
           <div class="login-actions-section">
             <div class="action-link-wrapper signup-link"

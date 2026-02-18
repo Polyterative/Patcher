@@ -5,7 +5,7 @@ import {
 import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { UserManagementService } from '../user-management.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 
 
 /**

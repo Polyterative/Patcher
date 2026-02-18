@@ -18,6 +18,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { SSOButtonsComponent } from '../sso-buttons/sso-buttons.component';
 
 
 @NgModule({
@@ -42,7 +43,8 @@ import { FormsModule } from '@angular/forms';
     MatButtonModule,
     MatDialogModule,
     MatIconModule,
-    FormsModule
+    FormsModule,
+    SSOButtonsComponent
   ],
   exports:      [
     LoginPageComponent,

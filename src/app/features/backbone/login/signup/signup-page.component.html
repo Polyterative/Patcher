@@ -10,16 +10,11 @@
       >
         <app-signup-email fxFlex="100"></app-signup-email>
         
-        
-        @if (false) {
-          <app-brand-primary-button
-            style="padding-top: 1rem"
-            innerFlex="auto"
-            theme="positive"
-            (click$)="dataService.googleSignClick$.next()"
-          >Google Sign up
-          </app-brand-primary-button>
-        }
+        <!-- SSO Authentication Options (handles both login and signup) -->
+        <app-sso-buttons
+          [providers]="['google', 'apple', 'github']"
+          (providerSelected)="handleSSOSignup($event)">
+        </app-sso-buttons>
         
         <!-- Action Links Section with improved spacing -->
         <div class="signup-actions-section">
