@@ -79,39 +79,39 @@ export class SSOButtonsComponent {
   readonly config: Record<SSOProvider, ProviderConfig> = {
     google: {
       name: 'Google',
-      icon: 'G',
-      color: '#4285f4',
+      icon: '',
+      color: '#DB4437',
       ariaLabel: 'Continue with Google account'
     },
     apple: {
       name: 'Apple',
       icon: '',
-      color: '#000',
+      color: '#000000',
       ariaLabel: 'Continue with Apple ID'
     },
     github: {
       name: 'GitHub',
       icon: '',
-      color: '#24292e',
+      color: '#181717',
       ariaLabel: 'Continue with GitHub account'
     },
     facebook: {
       name: 'Facebook',
-      icon: 'f',
-      color: '#1877f2',
+      icon: '',
+      color: '#0866FF',
       ariaLabel: 'Continue with Facebook account'
     },
     azure: {
       name: 'Microsoft',
-      icon: '⊞',
-      color: '#0078d4',
+      icon: '',
+      color: '#00A4EF',
       ariaLabel: 'Continue with Microsoft account'
     },
     twitter: {
-      name: 'Twitter',
-      icon: '𝕏',
-      color: '#1da1f2',
-      ariaLabel: 'Continue with Twitter account'
+      name: 'X',
+      icon: '',
+      color: '#000000',
+      ariaLabel: 'Continue with X account'
     }
   };
   

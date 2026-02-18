@@ -32,7 +32,6 @@
 }
 
 .sso-button {
-  position: relative;
   height: 48px;
   display: flex;
   align-items: center;
@@ -43,163 +42,38 @@
   border-radius: 8px;
   border: 1.5px solid;
   background: #fff;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   cursor: pointer;
-  overflow: hidden;
 
-  // Hover state
-  &:not(:disabled):hover {
-    transform: translateY(-2px);
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  // Active state
-  &:not(:disabled):active {
+  &:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
-  // Focus state for keyboard navigation
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  // Disabled state
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 
   .provider-logo {
     font-size: 20px;
     font-weight: 700;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
   }
 
   .button-text {
     white-space: nowrap;
   }
-
-  .loading-spinner {
-    position: absolute;
-    right: 12px;
-  }
 }
 
-// Provider-specific colors
-.sso-button-google {
-  border-color: #4285f4;
-  color: #4285f4;
-
-  &:not(:disabled):hover {
-    background: rgba(66, 133, 244, 0.04);
-  }
-}
-
-.sso-button-apple {
-  border-color: #000;
-  color: #000;
-
-  &:not(:disabled):hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
-}
-
-.sso-button-github {
-  border-color: #24292e;
-  color: #24292e;
-
-  &:not(:disabled):hover {
-    background: rgba(36, 41, 46, 0.04);
-  }
-}
-
-.sso-button-facebook {
-  border-color: #1877f2;
-  color: #1877f2;
-
-  &:not(:disabled):hover {
-    background: rgba(24, 119, 242, 0.04);
-  }
-}
-
-.sso-button-azure {
-  border-color: #0078d4;
-  color: #0078d4;
-
-  &:not(:disabled):hover {
-    background: rgba(0, 120, 212, 0.04);
-  }
-}
-
-.sso-button-twitter {
-  border-color: #1da1f2;
-  color: #1da1f2;
-
-  &:not(:disabled):hover {
-    background: rgba(29, 161, 242, 0.04);
-  }
-}
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  .divider {
-    &::before,
-    &::after {
-      border-bottom-color: rgba(255, 255, 255, 0.12);
-    }
-
-    span {
-      color: rgba(255, 255, 255, 0.7);
-    }
-  }
-
-  .sso-button {
-    background: rgba(255, 255, 255, 0.05);
-
-    &:not(:disabled):hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-  }
-
-  // Increase contrast for dark mode
-  .sso-button-apple {
-    border-color: #fff;
-    color: #fff;
-  }
-}
-
-// Reduced motion support for accessibility
 @media (prefers-reduced-motion: reduce) {
   .sso-button {
     transition: none;
-
     &:hover {
       transform: none;
     }
-  }
-}
-
-// Mobile optimizations
-@media (max-width: 600px) {
-  .sso-button {
-    font-size: 14px;
-    height: 44px;
-
-    .provider-logo {
-      font-size: 18px;
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  .buttons-grid {
-    gap: 10px;
   }
 }
