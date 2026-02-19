@@ -6,9 +6,9 @@
 > 2. **Update steps inline as you go** — check off `[ ]` → `[x]` after completing each step; save the file before moving
      to the next step. Never leave Active half-finished when handing back.
 > 3. **On completion** — move the task to Completed as a one-line summary (date + what changed + key files/test counts),
-     then clear Active.
-> 4. **Domain detail lives here, not in PRODUCT_NEEDS.md** — keep implementation steps, file names, schema fields, and
-     test counts in this file only.
+     then clear Active. Also reset `CURRENT_FEATURE.md` to its Empty Template.
+> 4. **Domain detail lives in `CURRENT_FEATURE.md`** — implementation steps, file names, schema fields, test results,
+     and gotchas go there while a feature is in progress. Only a one-line entry per feature belongs here.
 > 5. **Do not duplicate** strategy rationale already in PRODUCT_NEEDS.md; one sentence of context per task is enough.
 
 **Tasks are ordered by priority within each section.**
@@ -43,6 +43,15 @@
 
 ---
 
+- [x] **E2E Test Setup — Playwright** (Feb 19) — Added `@playwright/test`; `playwright.config.ts`; `yarn test:e2e` /
+  `test:e2e:ci` / `playwright:install` scripts; `e2e/helpers/auth.ts`; 8 spec files (flows 1–8) with `test.todo` stubs;
+  removed Protractor; updated FOR_AI_AGENTS.md Commands table. Key files: `playwright.config.ts`,
+  `e2e/helpers/auth.ts`, `e2e/flow-01-signup.spec.ts` … `e2e/flow-08-delete-account.spec.ts`.
+- [x] **E2E — Module browser smoke test** (Feb 19) — Removed 8 unimplemented flow stubs; added
+  `e2e/module-browser.spec.ts` (4 passing tests: page loads, `div.card` visible, paginator status > 0, heading visible);
+  fixed selector — cards render as `div.card` not `mat-card`; `playwright.config.ts` `testMatch` narrowed to
+  `module-browser.spec.ts`.
+
 - [x] **Account Management — Password Change** (Feb 19) — `changePassword$` + `showPasswordForm$` toggle in
   `UserManagementService`; `updatePassword$` in `SupabaseService`; inline form (new + confirm, min 8 chars) in
   `user-management.component.html`; ReactiveFormsModule + Material modules added to `user-management.module.ts`. 9 tests
@@ -54,149 +63,20 @@
 
 *(none — pick from the backlog below)*
 
----
-
-## Planned: End-to-End Tests
-
-**Why:** Unit/service tests already cover business logic. E2E tests are needed to verify real UI flows — button clicks,
-state changes, navigation — from the user's perspective.
-
-**Tool decision:** Playwright (replace legacy Protractor). Reasons: Angular 21 compatible, no separate server required,
-async-friendly, headless-first. Protractor is EOL and already unused.
-
-**Scope:** Only interaction-heavy flows — the ones where the algorithm clicks buttons and verifies UI state. Pure data
-flows are already covered by existing Karma/Jasmine suites.
-
----
-
-### Flow 1 — Authentication: Sign Up → Email Confirmation → First Login
-
-**Covers:** `login-page`, `signup`, `complete-profile`, `auth-callback`
-
-- [ ] Navigate to `/login`
-- [ ] Click "Sign up" tab; fill email + password fields; click "Create account"
-- [ ] Assert confirmation-pending message is shown (no redirect yet)
-- [ ] Simulate auth callback (mock or use test inbox); navigate to `/auth/callback`
-- [ ] Assert redirect to home with user session active (toolbar shows username / avatar)
-
----
-
-### Flow 2 — Authentication: Login → Logout
-
-**Covers:** `login-page`, toolbar, `UserManagementService`
-
-- [ ] Navigate to `/login`; enter valid test credentials; click "Log in"
-- [ ] Assert toolbar reflects logged-in state (username visible, logout button present)
-- [ ] Click logout button
-- [ ] Assert toolbar reverts to logged-out state; unauthenticated nav items shown
-
----
-
-### Flow 3 — Rack: Create → Add Module → Verify Stats Update
-
-**Covers:** `rack-creator`, `rack-editor`, `rack-module-adder`, rack stats pipes
-
-- [ ] Log in as test user
-- [ ] Navigate to rack list; click "New rack" / "+" button
-- [ ] Fill rack name; submit creation form
-- [ ] Assert new rack appears in the rack list
-- [ ] Open the rack; click "Add module" in the rack editor
-- [ ] Search for a module by name; click to add it
-- [ ] Assert the module tile appears inside the rack grid
-- [ ] Assert rack HP stats (total HP used) updates to reflect the added module
-- [ ] Assert the blank-module filter: blank modules must NOT count toward HP/power stats
-
----
-
-### Flow 4 — Patch: Create → Toggle Privacy → Confirm UI Reflects State
-
-**Covers:** `patch-creator`, `patch-details`, privacy toggle button, `PatchDetailDataService.togglePrivacy$`
-
-- [ ] Log in as test user
-- [ ] Navigate to patch list; click "New patch"
-- [ ] Fill patch name; submit
-- [ ] Assert patch appears in list; open its detail page
-- [ ] Assert privacy badge shows "Public" (default)
-- [ ] Click the privacy toggle button
-- [ ] Assert privacy badge updates to "Private" without page reload
-- [ ] Click toggle again
-- [ ] Assert badge reverts to "Public"
-
----
-
-### Flow 5 — Patch: Add Connection → Verify Graph Node Appears
-
-**Covers:** `patch-editor`, `patch-graph`, connection list, `patch-connection-stats` pipe
-
-- [ ] Log in; open an existing patch with at least two modules in the rack
-- [ ] Click "Add connection" in the patch editor
-- [ ] Select source CV (module + port) from dropdowns
-- [ ] Select destination CV (different module + port)
-- [ ] Confirm/save the connection
-- [ ] Assert the connection appears in the connections list
-- [ ] Assert the patch graph renders a node for each module involved
-- [ ] Assert cable count in the stats panel increments by 1
-
----
-
-### Flow 6 — Module Browser: Search → Filter → Open Detail
-
-**Covers:** `module-browser-root`, `module-list`, `module-browser-detail`, search/filter UI
-
-- [ ] Navigate to `/modules`
-- [ ] Assert module list is populated (at least one module card visible)
-- [ ] Type a manufacturer name into the search/filter field
-- [ ] Assert list narrows to only matching modules
-- [ ] Click a module card
-- [ ] Assert module detail page loads with correct name and HP shown
-- [ ] Assert "Add to rack" / "Patches using this module" section is visible
-
----
-
-### Flow 7 — Module Submission: Submit New Module → Inline Manufacturer Creation
-
-**Covers:** `module-browser-adder`, inline manufacturer form, `module-adder-manufacturer-creation` path
-
-- [ ] Log in; navigate to module submission form
-- [ ] Fill module name, HP, and other required fields
-- [ ] In the manufacturer field, click "Add new manufacturer" inline trigger
-- [ ] Assert inline manufacturer form expands (no dialog/modal)
-- [ ] Fill manufacturer name; click "Create"
-- [ ] Assert inline form collapses and the new manufacturer is auto-selected in the dropdown
-- [ ] Submit the module form
-- [ ] Assert success snackbar appears
-
----
-
-### Flow 8 — Account Management: Delete Account Data
-
-**Covers:** `user-management.component`, `UserManagementService.deleteAccountAction$`, confirm dialog
-
-- [ ] Log in as a disposable test user
-- [ ] Navigate to account management page
-- [ ] Click "Delete my data" button
-- [ ] Assert confirmation dialog appears
-- [ ] Confirm deletion
-- [ ] Assert user is signed out and redirected to home/login
-- [ ] Assert re-login with same credentials fails (account gone)
-
----
-
-### Implementation Steps (when picked up)
-
-- [ ] Decide on Playwright vs keeping Protractor scaffold — recommend Playwright; remove Protractor
-- [ ] `yarn add -D @playwright/test` and `yarn playwright install --with-deps chromium`
-- [ ] Add `e2e` directory at project root with `playwright.config.ts`
-- [ ] Add `test:e2e` script to `package.json`: `playwright test --reporter=list`
-- [ ] Add `test:e2e:ci` script: `playwright test --reporter=list --workers=1`
-- [ ] Create one spec file per flow above under `e2e/` (e.g. `e2e/auth-login-logout.spec.ts`)
-- [ ] Set up a dedicated Supabase test project or use row-level test seeds to avoid polluting production data
-- [ ] Add auth helper (`e2e/helpers/auth.ts`) to create/dispose test sessions between flows
-- [ ] Update FOR_AI_AGENTS.md Commands table with the new `test:e2e` command
+> 📄 **Current feature detail → [CURRENT_FEATURE.md](./CURRENT_FEATURE.md)**  
+> Implementation steps, test results, and gotchas for the feature in progress live there, not here.
 
 ---
 
 ## Backlog
+
+### HIGH: E2E — Expand module-browser spec + implement remaining flows
+
+**Current state:** 4 smoke tests passing. See `CURRENT_FEATURE.md` for full detail, gotchas, and next steps.  
+**Remaining flows:** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch Connection,
+Module Submission, Sign Up, Delete Account.
+
+---
 
 ### HIGH: Multiple Module Instances in Patches
 

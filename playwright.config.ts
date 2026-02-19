@@ -1,0 +1,49 @@
+import {
+  defineConfig,
+  devices
+} from '@playwright/test';
+
+
+/**
+ * Playwright configuration for Patcher E2E tests.
+ *
+ * Run:
+ *   yarn test:e2e          — local, list reporter
+ *   yarn test:e2e:ci       — CI, single worker
+ *
+ * The dev server must be running at BASE_URL before tests are invoked.
+ * Set BASE_URL env var to override (e.g. staging URL).
+ */
+
+const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:5556';
+
+export default defineConfig({
+  testDir: './e2e',
+  testMatch: ['**/module-browser.spec.ts', '**/patch-browser.spec.ts', '**/rack-browser.spec.ts'],
+  /* Use Node-compatible tsconfig — root tsconfig uses "bundler" which breaks Playwright */
+  tsconfig: './e2e/tsconfig.json',
+  /* Each test gets its own timeout */
+  timeout: 30_000,
+  expect: {timeout: 5_000},
+  /* Fail fast on first failure in CI */
+  fullyParallel: true,
+  forbidOnly: !!process.env['CI'],
+  retries: process.env['CI'] ? 2 : 0,
+  workers: process.env['CI'] ? 1 : undefined,
+  reporter: 'list',
+  
+  use: {
+    baseURL: BASE_URL,
+    /* Collect trace only when retrying a failed test */
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    headless: true,
+  },
+  
+  projects: [
+    {
+      name: 'chromium',
+      use: {...devices['Desktop Chrome']},
+    },
+  ],
+});
