@@ -243,6 +243,24 @@ modules)
 ---
 
 
+### ✅ Account Management / Data Deletion (Feb 19, 2026)
+
+**What was done:**
+
+- Added `delete.allUserData()` to `SupabaseService` — deletes in dependency order: patch_connections → patches → rack_modules → racks → user_modules → comments; busts all related caches
+- Added `deleteAccountAction$` Subject to `UserManagementService` with full event-driven handler: confirm dialog → delete all data → clear local state → sign out → navigate to `/auth/login`
+- Added `MatDialog` injection to `UserManagementService`; added `ConfirmDialogModule` to `UserManagementModule` imports
+- Replaced the two disabled "Delete Account" / "Delete data" stub buttons with a single active **"Delete my data"** button that emits `deleteAccountAction$.next()`
+- Dialog clearly explains: data is deleted permanently, but the auth credential remains (full account removal requires contacting support — Supabase auth user deletion requires a server-side service_role call)
+
+**Files modified:**
+- `supabase.service.ts` — `delete.allUserData()` method
+- `user-management.service.ts` — `deleteAccountAction$` + `initializeDeleteAccountHandler()`, `MatDialog` injection
+- `user-management.module.ts` — `ConfirmDialogModule` added
+- `user-management.component.html` — button wired up
+
+---
+
 ### Account Management (GDPR)
 
 **Why:** Users cannot change password or delete account - GDPR compliance issue  
