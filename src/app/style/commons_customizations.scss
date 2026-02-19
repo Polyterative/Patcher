@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use "sass:color";
 
 @use "reset";
 @use "brand-resources";
@@ -400,3 +401,34 @@ $snack-toolbar-offset: 5em;
   opacity: 1;
   transform: translateY(0);
 }
+
+// ─── Danger / destructive action colouring ───────────────────────────────────
+// Apply to any button or icon that performs a destructive action (delete, remove, etc.)
+// Derived from $brand-negative (#700D0D) but brightened via SCSS color transformations.
+$danger-action-color: color.scale(brand-resources.$brand-negative, $lightness: +25%, $saturation: +25%);
+
+.danger-action {
+  color: $danger-action-color !important;
+
+  .mat-icon,
+  mat-icon {
+    color: $danger-action-color !important;
+  }
+}
+
+// When the danger-action class is on a mat-icon directly
+mat-icon.danger-action {
+  color: $danger-action-color !important;
+}
+
+// Context menu danger items
+.mat-mdc-menu-item.danger-action {
+  color: $danger-action-color !important;
+
+  .mat-icon,
+  mat-icon {
+    color: $danger-action-color !important;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────

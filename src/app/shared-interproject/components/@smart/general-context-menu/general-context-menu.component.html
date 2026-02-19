@@ -13,8 +13,9 @@
         <button mat-menu-item
                 (click)="menuItem.click$.next(menuItem)"
                 [disabled]="menuItem.disabled"
+                [class.danger-action]="menuItem.danger"
         >
-          <mat-icon>{{menuItem.icon}}</mat-icon>
+        <mat-icon [class.danger-action]="menuItem.danger">{{ menuItem.icon }}</mat-icon>
           <span>{{menuItem.label}}</span>
         </button>
       }
