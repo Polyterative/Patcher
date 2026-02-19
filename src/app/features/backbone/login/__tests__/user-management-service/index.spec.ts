@@ -22,3 +22,4 @@ import './cross-tab-login.spec';
 import './user-state.spec';
 import './login-logout.spec';
 import './memory-management.spec';
+import './password-change.spec';

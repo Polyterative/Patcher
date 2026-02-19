@@ -71,7 +71,8 @@ export function setupUserManagementServiceTest() {
     'getUserSession$',
     'getRichUserSession$',
     'signup$',
-    'resetPassword$'
+    'resetPassword$',
+    'updatePassword$'
   ]);
   
   // Add user object with event emitters
