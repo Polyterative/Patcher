@@ -49,6 +49,146 @@
 
 ---
 
+## Planned: End-to-End Tests
+
+**Why:** Unit/service tests already cover business logic. E2E tests are needed to verify real UI flows — button clicks,
+state changes, navigation — from the user's perspective.
+
+**Tool decision:** Playwright (replace legacy Protractor). Reasons: Angular 21 compatible, no separate server required,
+async-friendly, headless-first. Protractor is EOL and already unused.
+
+**Scope:** Only interaction-heavy flows — the ones where the algorithm clicks buttons and verifies UI state. Pure data
+flows are already covered by existing Karma/Jasmine suites.
+
+---
+
+### Flow 1 — Authentication: Sign Up → Email Confirmation → First Login
+
+**Covers:** `login-page`, `signup`, `complete-profile`, `auth-callback`
+
+- [ ] Navigate to `/login`
+- [ ] Click "Sign up" tab; fill email + password fields; click "Create account"
+- [ ] Assert confirmation-pending message is shown (no redirect yet)
+- [ ] Simulate auth callback (mock or use test inbox); navigate to `/auth/callback`
+- [ ] Assert redirect to home with user session active (toolbar shows username / avatar)
+
+---
+
+### Flow 2 — Authentication: Login → Logout
+
+**Covers:** `login-page`, toolbar, `UserManagementService`
+
+- [ ] Navigate to `/login`; enter valid test credentials; click "Log in"
+- [ ] Assert toolbar reflects logged-in state (username visible, logout button present)
+- [ ] Click logout button
+- [ ] Assert toolbar reverts to logged-out state; unauthenticated nav items shown
+
+---
+
+### Flow 3 — Rack: Create → Add Module → Verify Stats Update
+
+**Covers:** `rack-creator`, `rack-editor`, `rack-module-adder`, rack stats pipes
+
+- [ ] Log in as test user
+- [ ] Navigate to rack list; click "New rack" / "+" button
+- [ ] Fill rack name; submit creation form
+- [ ] Assert new rack appears in the rack list
+- [ ] Open the rack; click "Add module" in the rack editor
+- [ ] Search for a module by name; click to add it
+- [ ] Assert the module tile appears inside the rack grid
+- [ ] Assert rack HP stats (total HP used) updates to reflect the added module
+- [ ] Assert the blank-module filter: blank modules must NOT count toward HP/power stats
+
+---
+
+### Flow 4 — Patch: Create → Toggle Privacy → Confirm UI Reflects State
+
+**Covers:** `patch-creator`, `patch-details`, privacy toggle button, `PatchDetailDataService.togglePrivacy$`
+
+- [ ] Log in as test user
+- [ ] Navigate to patch list; click "New patch"
+- [ ] Fill patch name; submit
+- [ ] Assert patch appears in list; open its detail page
+- [ ] Assert privacy badge shows "Public" (default)
+- [ ] Click the privacy toggle button
+- [ ] Assert privacy badge updates to "Private" without page reload
+- [ ] Click toggle again
+- [ ] Assert badge reverts to "Public"
+
+---
+
+### Flow 5 — Patch: Add Connection → Verify Graph Node Appears
+
+**Covers:** `patch-editor`, `patch-graph`, connection list, `patch-connection-stats` pipe
+
+- [ ] Log in; open an existing patch with at least two modules in the rack
+- [ ] Click "Add connection" in the patch editor
+- [ ] Select source CV (module + port) from dropdowns
+- [ ] Select destination CV (different module + port)
+- [ ] Confirm/save the connection
+- [ ] Assert the connection appears in the connections list
+- [ ] Assert the patch graph renders a node for each module involved
+- [ ] Assert cable count in the stats panel increments by 1
+
+---
+
+### Flow 6 — Module Browser: Search → Filter → Open Detail
+
+**Covers:** `module-browser-root`, `module-list`, `module-browser-detail`, search/filter UI
+
+- [ ] Navigate to `/modules`
+- [ ] Assert module list is populated (at least one module card visible)
+- [ ] Type a manufacturer name into the search/filter field
+- [ ] Assert list narrows to only matching modules
+- [ ] Click a module card
+- [ ] Assert module detail page loads with correct name and HP shown
+- [ ] Assert "Add to rack" / "Patches using this module" section is visible
+
+---
+
+### Flow 7 — Module Submission: Submit New Module → Inline Manufacturer Creation
+
+**Covers:** `module-browser-adder`, inline manufacturer form, `module-adder-manufacturer-creation` path
+
+- [ ] Log in; navigate to module submission form
+- [ ] Fill module name, HP, and other required fields
+- [ ] In the manufacturer field, click "Add new manufacturer" inline trigger
+- [ ] Assert inline manufacturer form expands (no dialog/modal)
+- [ ] Fill manufacturer name; click "Create"
+- [ ] Assert inline form collapses and the new manufacturer is auto-selected in the dropdown
+- [ ] Submit the module form
+- [ ] Assert success snackbar appears
+
+---
+
+### Flow 8 — Account Management: Delete Account Data
+
+**Covers:** `user-management.component`, `UserManagementService.deleteAccountAction$`, confirm dialog
+
+- [ ] Log in as a disposable test user
+- [ ] Navigate to account management page
+- [ ] Click "Delete my data" button
+- [ ] Assert confirmation dialog appears
+- [ ] Confirm deletion
+- [ ] Assert user is signed out and redirected to home/login
+- [ ] Assert re-login with same credentials fails (account gone)
+
+---
+
+### Implementation Steps (when picked up)
+
+- [ ] Decide on Playwright vs keeping Protractor scaffold — recommend Playwright; remove Protractor
+- [ ] `yarn add -D @playwright/test` and `yarn playwright install --with-deps chromium`
+- [ ] Add `e2e` directory at project root with `playwright.config.ts`
+- [ ] Add `test:e2e` script to `package.json`: `playwright test --reporter=list`
+- [ ] Add `test:e2e:ci` script: `playwright test --reporter=list --workers=1`
+- [ ] Create one spec file per flow above under `e2e/` (e.g. `e2e/auth-login-logout.spec.ts`)
+- [ ] Set up a dedicated Supabase test project or use row-level test seeds to avoid polluting production data
+- [ ] Add auth helper (`e2e/helpers/auth.ts`) to create/dispose test sessions between flows
+- [ ] Update FOR_AI_AGENTS.md Commands table with the new `test:e2e` command
+
+---
+
 ## Backlog
 
 ### HIGH: Multiple Module Instances in Patches
