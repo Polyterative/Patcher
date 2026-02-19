@@ -115,10 +115,22 @@ this.showForm$.next(true);
 ### Backend Calls via SupabaseService
 
 ```typescript
-this.backend.GET.currentUserModules()
+// Paginated/filtered list queries → backend.GET namespace
+this.backend.GET.modules(skip, take, name, orderBy)
+this.backend.GET.manufacturers(0, 9999, 'id,name')
+
+// Entity lookups and user-scoped queries → backend.get namespace
+this.backend.get.patchWithId(id)
+this.backend.get.currentUserPatches()
+this.backend.get.rackedModules(rackId)
+
+// Writes
+this.backend.add.patch(data)
 this.backend.update.module(data)
 this.backend.delete.modulePanel(panel)
 ```
+
+Full namespace table and new method guide → [PATTERNS.md — API Calls](./PATTERNS.md).
 
 ### Always
 
