@@ -83,6 +83,7 @@ private patches, exports, advanced org), API access.
 | Rack stats blank filter              | ✅ Done              |                                     |
 | Blank module education               | ✅ Done              |                                     |
 | Bug sweep (Feb 19)                   | ✅ Done              |                                     |
+| Security audit – secrets in repo     | ✅ Done              | Gitleaks clean; .gitignore hardened |
 | Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                         |
 | Module review flagging               | 🔲 Backlog – Medium | See TODO.md                         |
 | Account mgmt – password change       | 🔲 Backlog – Medium | See TODO.md                         |
