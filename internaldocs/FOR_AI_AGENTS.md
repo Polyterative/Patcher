@@ -316,7 +316,8 @@ this.updateList$.pipe(
 use async pipe) | ❌ Not using `readonly` on public observables | ❌ Using `npm` not `yarn` | ❌ Running `ng test` not
 `yarn test-headless` | ❌ Direct Supabase calls | ❌ **Public methods for logic (use Subjects)** | ❌ **Components calling
 methods (emit to Subjects)** | ❌ **Subscribing outside constructor** | ❌ **Creating markdown summaries** | ❌ **Using
-terminal to read files or search code (use file tools)** | ❌ **Asking permission to explore the codebase (just do it)**
+terminal to read files or search code (use file tools)** | ❌ **Asking permission to explore the codebase (just do it)
+** | ❌ **Vague commit messages (`fix stuff`, `WIP`)** | ❌ **Non-conventional commit format**
 
 ## 📚 Reference & Checklists
 
@@ -341,7 +342,72 @@ terminal to read files or search code (use file tools)** | ❌ **Asking permissi
 
 ## 🔄 Development Workflow
 
-**Quick Reference:**
+### Work Completion Standard (REQUIRED)
+
+**Every session MUST follow this cycle — do not stop early:**
+
+1. **Work until commit-ready** — Keep going until all changes are complete, tested, and ready to commit. Never hand back
+   to the user with half-finished work.
+2. **Run tests after every change** — After each meaningful edit, run the most specific test available (
+   `yarn test-headless -- --include="..."`) to confirm nothing is broken before continuing.
+3. **Cleanup pass before finishing** — Before declaring work done, do one auto-review pass:
+  - Remove dead code, unused imports, commented-out blocks
+  - Verify naming conventions (`$` suffix, `_` private prefix)
+  - Check all subscriptions have `takeUntil(this.destroy$)`
+  - Ensure no `TODO`/`FIXME` left unaddressed from the current session
+  - Confirm templates use `async` pipe and layout classes (no inline styles)
+
+---
+
+### Git Commits — Conventional Commits (REQUIRED)
+
+**Every commit MUST follow the Conventional Commits spec.**
+
+Format: `<type>(<scope>): <description>`
+
+**Types:**
+
+| Type       | When to use                                             |
+|------------|---------------------------------------------------------|
+| `feat`     | New feature or user-visible capability                  |
+| `fix`      | Bug fix                                                 |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `perf`     | Performance improvement                                 |
+| `style`    | Formatting, whitespace — no logic change                |
+| `test`     | Adding or updating tests                                |
+| `docs`     | Documentation only (`.md` files, comments)              |
+| `chore`    | Build process, tooling, dependency updates              |
+| `revert`   | Reverting a previous commit                             |
+
+**Scope:** Angular module or feature name in kebab-case (e.g. `module-editor`, `rack-parts`, `supabase`, `auth`). Omit
+only if the change is truly cross-cutting.
+
+**Rules:**
+
+- Lowercase, imperative mood, no trailing period — `fix(auth): handle missing session token`
+- One concern per commit — split unrelated changes across multiple commits
+- Group by type in multi-change sessions: fixes together, refactors together, docs together
+- Breaking changes: append `!` after type/scope and add `BREAKING CHANGE:` footer
+
+**Examples:**
+
+```
+feat(module-browser): add "Others by manufacturer" section
+fix(module-editor): remove duplicate backend call in savePhysical$
+fix(components): remove readonly from @Input() causing TS2540 errors
+refactor(module-browser): replace deprecated fxLayout with CSS classes
+docs(product-needs): record Feb 19 autonomous bug fix sweep
+chore(deps): upgrade Angular to 17.3
+test(patch-detail): add privacy toggle integration tests
+```
+
+**Never:** ❌ Vague messages (`fix stuff`, `updates`, `WIP`) | ❌ Mix unrelated changes in one commit | ❌ Commit to `main`
+directly | ❌ Stop before changes are commit-ready | ❌ Skip test run after a change | ❌ Skip cleanup pass before
+finishing
+
+---
+
+### Code Quick Reference
 
 ```typescript
 // Add observable stream
