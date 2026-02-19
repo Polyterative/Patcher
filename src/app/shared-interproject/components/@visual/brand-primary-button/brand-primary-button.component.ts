@@ -33,6 +33,7 @@ export class BrandPrimaryButtonComponent {
   @Input() innerFlex: string = undefined;
   @Input() routerLink: string | any[] = undefined;
   @Input() autoFocus = false;
+  @Input() icon: string | undefined = undefined;
   
   doNothing() {
     // do not delete this

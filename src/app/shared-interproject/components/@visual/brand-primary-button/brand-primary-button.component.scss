@@ -2,6 +2,14 @@
 @use "src/app/style/brand-resources" as *;
 @use "src/app/style/commons_customizations";
 
+:host {
+  display: flex;
+
+  .brand-button {
+    flex: 1;
+  }
+}
+
 .brand-button {
   @extend .slight-rounding;
 
