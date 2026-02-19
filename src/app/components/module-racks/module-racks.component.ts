@@ -21,7 +21,7 @@ import {
 })
 export class ModuleRacksComponent implements OnInit {
   @Input()
-  readonly data$: Observable<RackMinimal[]>;
+  data$: Observable<RackMinimal[]>;
   viewConfig: RackMinimalViewConfig = {
     ...defaultRackMinimalViewConfig,
     hideButtons: true
