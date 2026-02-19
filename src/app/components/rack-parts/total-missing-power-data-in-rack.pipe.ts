@@ -3,6 +3,7 @@ import {
   PipeTransform
 } from '@angular/core';
 import { RackedModule } from '../../models/module';
+import { isBlankModule } from './rack-blank-module.constants';
 
 
 @Pipe({
@@ -14,17 +15,19 @@ export class TotalMissingPowerDataInRackPipe implements PipeTransform {
   transform(value: RackedModule[][]): number {
     
     //   return how many have null values as power in powerPos12, powerNeg12, powerPos5
-    // only unique modules are counted
+    // only unique modules are counted, blanks excluded
     
-    return value.flat().filter((module, index, self) => {
+    return value.flat()
+      .filter(module => !isBlankModule(module.module.id))
+      .filter((module, index, self) => {
         return self.findIndex((m) => m.module.id === module.module.id) === index;
-      }
-    ).reduce((accumulator, value) => {
-      if (value.module.powerPos12 == null || value.module.powerNeg12 == null || value.module.powerPos5 == null) {
-        accumulator++;
-      }
-      return accumulator;
-    }, 0);
+      })
+      .reduce((accumulator, value) => {
+        if (value.module.powerPos12 == null || value.module.powerNeg12 == null || value.module.powerPos5 == null) {
+          accumulator++;
+        }
+        return accumulator;
+      }, 0);
   }
 
 }
