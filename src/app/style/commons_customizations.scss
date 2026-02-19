@@ -309,6 +309,19 @@ mat-expansion-panel {
 // panelClass is applied to .mat-mdc-snack-bar-container.
 // We style the container and its inner surface directly to override MDC defaults.
 
+// Push all snackbars below the sticky toolbar (3em) + breathing gap.
+// Applied globally since every snackbar in this app sits top-right.
+$snack-toolbar-offset: 5em;
+
+.mat-mdc-snack-bar-container {
+  margin-top: $snack-toolbar-offset !important;
+
+  @media (max-width: 599px) {
+    max-width: calc(100vw - 1rem) !important;
+    min-width: 0 !important;
+  }
+}
+
 .snack-success {
   &.mat-mdc-snack-bar-container,
   .mat-mdc-snack-bar-container {
@@ -317,13 +330,14 @@ mat-expansion-panel {
   }
 
   .mdc-snackbar__surface {
-    background-color: brand-resources.$brand-positive-background !important;
+    background-color: #d4edda !important;
     border: 1px solid brand-resources.$brand-positive;
     border-radius: .375rem;
   }
 
   .mdc-snackbar__label {
     color: brand-resources.$brand-positive !important;
+    font-weight: 500;
   }
 }
 
@@ -335,13 +349,14 @@ mat-expansion-panel {
   }
 
   .mdc-snackbar__surface {
-    background-color: brand-resources.$brand-negative-background !important;
+    background-color: #f8d7da !important;
     border: 1px solid brand-resources.$brand-negative;
     border-radius: .375rem;
   }
 
   .mdc-snackbar__label {
     color: brand-resources.$brand-negative !important;
+    font-weight: 500;
   }
 }
 
@@ -353,13 +368,14 @@ mat-expansion-panel {
   }
 
   .mdc-snackbar__surface {
-    background-color: brand-resources.$brand-tertiary !important;
+    background-color: #dce8f5 !important;
     border: 1px solid brand-resources.$brand-primary;
     border-radius: .375rem;
   }
 
   .mdc-snackbar__label {
     color: brand-resources.$brand-primary !important;
+    font-weight: 500;
   }
 }
 
