@@ -3,15 +3,7 @@
   <app-module-cvs [data]="data"></app-module-cvs>
   @if (switches.length > 0) {
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
-    <div fxLayout="row wrap"
-         fxLayoutGap="1rem"
-    >
-      <!--      <mat-chip-list>-->
-      <!--        <ng-container *ngFor="let item of switches">-->
-      <!--          &lt;!&ndash;                            <mat-chip>{{item.name}}</mat-chip>&ndash;&gt;-->
-      <!--        </ng-container>-->
-      <!--      </mat-chip-list>-->
-    </div>
+    <div class="rowwrap gap1"></div>
   }
   @if ((data.panels.length > 1) && (!viewConfig.hidePanelsOptions)) {
     <mat-accordion>
@@ -23,16 +15,10 @@
           Available in {{data.panels.length}} versions
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div fxFlex="auto"
-           fxLayout="row wrap"
-           fxLayoutGap=".5rem grid"
-      >
-        @for (item of data.panels; track item; let i = $index) {
-          <div fxFlex="auto"
-               fxLayout="column"
-               fxLayoutGap="1rem"
-          >
-            <div fxFlex="auto">
+      <div class="rowwrap gap1">
+        @for (item of data.panels; track item) {
+          <div class="col gap1">
+            <div>
               @if (item.filename) {
                 <img
                   alt="{{item.filename}}"
@@ -44,9 +30,6 @@
                 >
               }
             </div>
-            <!--            <mat-chip>-->
-            <!--              {{item.filename}}-->
-            <!--            </mat-chip>-->
           </div>
         }
       </div>

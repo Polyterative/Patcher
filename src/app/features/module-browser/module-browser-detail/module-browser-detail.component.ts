@@ -161,7 +161,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
       // italian emoji
       label: 'New Groove 🇮🇹',
       icon: 'store',
-      tooltip: 'Search on Milk Audio Store'
+      tooltip: 'Search on New Groove'
     },
     {
       url: (name: string) => `https://escapefromnoise.com/search/?q=${ name }&lang=en`,
