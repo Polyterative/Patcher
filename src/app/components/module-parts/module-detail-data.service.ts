@@ -153,22 +153,22 @@ export class ModuleDetailDataService {
     this.addModuleToCollection$
       .pipe(
         switchMap(x => this.backend.add.userModule(x)),
-        withLatestFrom(this.updateSingleModuleData$),
+        withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([a, b]) => {
-        snackBar.open('Module added to your collection.', undefined, {duration: 1000, panelClass: 'snack-success'});
+      .subscribe(([a, b, module]) => {
+        snackBar.open(`"${ module?.name }" added to your collection.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });
     
     this.removeModuleFromCollection$
       .pipe(
         switchMap(x => this.backend.delete.userModule(x)),
-        withLatestFrom(this.updateSingleModuleData$),
+        withLatestFrom(this.updateSingleModuleData$, this.singleModuleData$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([a, b]) => {
-        snackBar.open('Module removed from your collection.', undefined, {duration: 1000, panelClass: 'snack-success'});
+      .subscribe(([a, b, module]) => {
+        snackBar.open(`"${ module?.name }" removed from your collection.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });
     
@@ -198,13 +198,12 @@ export class ModuleDetailDataService {
       .pipe(
         filter(x => x > 0),
         filter(x => this.appState.isDev),
-        switchMap(x => this.backend.delete.module(x)),
+        withLatestFrom(this.singleModuleData$),
+        switchMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => {
-        snackBar.open('Module deleted from the database.', undefined, {duration: 1000, panelClass: 'snack-success'});
-        // navigate to module browser
-        
+      .subscribe(module => {
+        snackBar.open(`"${ module?.name }" deleted from the database.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'browser']);
       });
     
@@ -212,11 +211,11 @@ export class ModuleDetailDataService {
       .pipe(
         filter(x => this.appState.isDev),
         withLatestFrom(this.singleModuleData$),
-        switchMap(([partial, original]) => this.backend.update.module({...original, ...partial})),
+        switchMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => {
-        snackBar.open('Module data updated.', undefined, {duration: 1000, panelClass: 'snack-success'});
+      .subscribe(module => {
+        snackBar.open(`"${ module?.name }" updated.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
     

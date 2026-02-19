@@ -30,7 +30,6 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 import { DbModule } from 'src/app/models/module';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -116,12 +115,14 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
           takeUntil(this.destroy$)
         )
         .subscribe(() => {
-          SharedConstants.successSave(this.snackBar);
+          const moduleName = this.data.module.name;
+          const rackName = this.fields.rack.control.value?.name;
           
           const duration = 5000;
           
-          this.snackBar.open(`Module added`, 'Open rack now', {
+          this.snackBar.open(`"${ moduleName }" added to "${ rackName }".`, 'Open rack', {
             duration: duration,
+            panelClass: 'snack-success'
           })
             .onAction()
             .pipe(
