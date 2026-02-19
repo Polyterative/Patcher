@@ -43,6 +43,8 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
+import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
+import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 
 
 @NgModule({
@@ -100,7 +102,9 @@ import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-c
     MatSlideToggleModule,
     LibShowcaseGridComponent,
     FormValidPipe,
-    StatisticsModule
+    StatisticsModule,
+    FlexboxRowFastModule,
+    ModuleBrowserModule
   ]
 })
 export class PatchModule {}

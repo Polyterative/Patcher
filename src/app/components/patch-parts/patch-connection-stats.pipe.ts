@@ -12,6 +12,8 @@ export interface PatchConnectionStats {
   uniqueModules: number;
   /** Number of output CVs that are connected to more than one input (multiples). */
   multiplesCount: number;
+  /** Number of unique module instances (module_id + instance_id pairs). Equals uniqueModules when no multi-instance modules exist. */
+  totalInstances: number;
 }
 
 /**
@@ -50,6 +52,15 @@ export class PatchConnectionStatsPipe implements PipeTransform {
     });
     const multiplesCount = Array.from(outputUseCounts.values()).filter(count => count > 1).length;
     
-    return {totalCables, uniqueModules, multiplesCount};
+    // Count unique module instances: (module_id, instance_id) pairs.
+    // When instance_id is undefined, the module counts as a single instance.
+    const instanceKeys = new Set<string>();
+    connections.forEach(c => {
+      instanceKeys.add(`${ c.a.module.id }_${ c.instance_id_a ?? 'none' }`);
+      instanceKeys.add(`${ c.b.module.id }_${ c.instance_id_b ?? 'none' }`);
+    });
+    const totalInstances = instanceKeys.size;
+    
+    return {totalCables, uniqueModules, multiplesCount, totalInstances};
   }
 }

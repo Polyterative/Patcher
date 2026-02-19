@@ -441,6 +441,8 @@ export type Database = {
         Row: {
           a: number
           b: number
+          instance_id_a: number | null
+          instance_id_b: number | null
           notes: string | null
           ordinal: number
           patchid: number
@@ -448,6 +450,8 @@ export type Database = {
         Insert: {
           a: number
           b: number
+          instance_id_a?: number | null
+          instance_id_b?: number | null
           notes?: string | null
           ordinal: number
           patchid: number
@@ -455,6 +459,8 @@ export type Database = {
         Update: {
           a?: number
           b?: number
+          instance_id_a?: number | null
+          instance_id_b?: number | null
           notes?: string | null
           ordinal?: number
           patchid?: number
@@ -475,6 +481,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "patch_connections_instance_id_a_fkey"
+            columns: ["instance_id_a"]
+            isOneToOne: false
+            referencedRelation: "patch_module_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patch_connections_instance_id_b_fkey"
+            columns: ["instance_id_b"]
+            isOneToOne: false
+            referencedRelation: "patch_module_instances"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "patch_connections_patchid_fkey"
             columns: ["patchid"]
             isOneToOne: false
@@ -484,6 +504,56 @@ export type Database = {
           {
             foreignKeyName: "patch_connections_patchid_fkey"
             columns: ["patchid"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["patchid"]
+          },
+        ]
+      }
+      patch_module_instances: {
+        Row: {
+          id: number
+          instance_label: string | null
+          module_id: number
+          patch_id: number
+        }
+        Insert: {
+          id?: never
+          instance_label?: string | null
+          module_id: number
+          patch_id: number
+        }
+        Update: {
+          id?: never
+          instance_label?: string | null
+          module_id?: number
+          patch_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patch_module_instances_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patch_module_instances_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "patches_for_modules"
+            referencedColumns: ["moduleid"]
+          },
+          {
+            foreignKeyName: "patch_module_instances_patch_id_fkey"
+            columns: ["patch_id"]
+            isOneToOne: false
+            referencedRelation: "patches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patch_module_instances_patch_id_fkey"
+            columns: ["patch_id"]
             isOneToOne: false
             referencedRelation: "patches_for_modules"
             referencedColumns: ["patchid"]

@@ -19,6 +19,9 @@ export class ModulePartNameComponent implements OnInit {
   @Input() data: MinimalModule;
 
   @Input() textSize: number | undefined = undefined
+  
+  /** Optional suffix displayed inline after the module name (e.g. instance label "(1)") */
+  @Input() suffix: string | undefined = undefined;
 
   constructor() { }
 

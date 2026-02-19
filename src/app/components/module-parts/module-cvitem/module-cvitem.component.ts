@@ -29,6 +29,7 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 export class ModuleCVItemComponent implements OnInit {
   @Input() readonly data: CV;
   @Input() readonly kind: 'in' | 'out';
+  @Input() instanceId: number | undefined;
   @Output() readonly click$ = new EventEmitter<CV>();
   
   highlightedFrom = new BehaviorSubject(false);
@@ -47,7 +48,7 @@ export class ModuleCVItemComponent implements OnInit {
       case 'in':
         this.patchService.selectedForConnection$
             .pipe(
-              map(data => data && data.b ? data.b.cv.id == this.data.id : false),
+              map(data => data && data.b ? data.b.cv.id == this.data.id && data.b.cv.instance_id == this.instanceId : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedFrom);
@@ -55,7 +56,7 @@ export class ModuleCVItemComponent implements OnInit {
       case 'out':
         this.patchService.selectedForConnection$
             .pipe(
-              map(data => data && data.a ? data.a.cv.id == this.data.id : false),
+              map(data => data && data.a ? data.a.cv.id == this.data.id && data.a.cv.instance_id == this.instanceId : false),
               takeUntil(this.destroyEvent$)
             )
             .subscribe(this.highlightedTo);
