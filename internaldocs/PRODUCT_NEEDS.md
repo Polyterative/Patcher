@@ -1,6 +1,14 @@
 # Product Needs
 
-**Purpose:** High-level product strategy, open design questions, and feature intent.  
+> **Rules for AI agents using this file:**
+> 1. **Strategy only** — this file contains *why* and *what* at product level. No implementation steps, file names,
+     schema fields, or test details.
+> 2. **Execution detail belongs in [TODO.md](./TODO.md)** — when picking up a feature, open TODO.md, not this file.
+> 3. **Keep open questions open** — do not resolve design questions here without explicit user instruction; add them to
+     the relevant TODO task when it becomes Active.
+> 4. **Update the status table** when a feature moves to done; compress completed strategy notes rather than deleting
+     them.
+
 **For execution detail, implementation steps, and task tracking → see [TODO.md](./TODO.md).**
 
 ---

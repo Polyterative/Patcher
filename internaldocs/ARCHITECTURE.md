@@ -1,7 +1,11 @@
 # Architecture
 
-> **⚠️ These patterns are MANDATORY.** If you're an AI agent, read [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md) for
-> enforcement rules.
+> **Rules for AI agents using this file:**
+> 1. **Structural reference only** — layers, service types, file layout, and state strategy.
+> 2. **Code patterns belong in [PATTERNS.md](./PATTERNS.md)** — do not add code examples here.
+> 3. **Enforcement rules → [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md).**
+
+> ⚠️ Architectural patterns are MANDATORY. See [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md) for enforcement rules.
 
 ## Stack
 
@@ -38,24 +42,12 @@ Supabase
 
 ## Key Pattern
 
-```typescript
+> Full template with code → [PATTERNS.md — Data Service Template](./PATTERNS.md)
 
-@Injectable()  // Component-scoped
-export class MyDataService extends SubManager {
-  private _data$ = new BehaviorSubject<Data[]>([]);
-  public readonly data$ = this._data$.asObservable();
-  public loadData$ = new Subject<void>();
-  
-  constructor(private backend: SupabaseService) {
-    super();
-    this.loadData$.pipe(
-      switchMap(() => this.backend.getData()),
-      tap(data => this._data$.next(data)),
-      takeUntil(this.destroy$)  // Always
-    ).subscribe();
-  }
-}
-```
+Summary:
+
+- Private `_data$` BehaviorSubject, public `readonly data$` observable, public action Subjects (`loadData$`, etc.)
+- All subscriptions initialized in constructor with `takeUntil(this.destroy$)`
 
 ## SubManager
 

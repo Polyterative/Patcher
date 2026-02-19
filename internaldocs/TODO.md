@@ -1,9 +1,12 @@
 # TODO
 
 > **Rules for AI agents using this file:**
-> 1. **Pick one task** from the Backlog, move it to Active, then execute all its steps.
-> 2. **Update steps inline** — check off `[ ]` → `[x]` as you go; never leave Active half-finished.
-> 3. **On completion** — compress the task to a one-line summary in the Completed section and clear Active.
+> 1. **Pick one task** from the Backlog — immediately cut it from Backlog and paste it under Active *before* doing any
+     other work. Do not start implementation until the file reflects the task as Active.
+> 2. **Update steps inline as you go** — check off `[ ]` → `[x]` after completing each step; save the file before moving
+     to the next step. Never leave Active half-finished when handing back.
+> 3. **On completion** — move the task to Completed as a one-line summary (date + what changed + key files/test counts),
+     then clear Active.
 > 4. **Domain detail lives here, not in PRODUCT_NEEDS.md** — keep implementation steps, file names, schema fields, and
      test counts in this file only.
 > 5. **Do not duplicate** strategy rationale already in PRODUCT_NEEDS.md; one sentence of context per task is enough.
@@ -57,17 +60,25 @@
 `patch_module_instances` table (more flexible). Lean toward the separate table — it allows naming instances and storing
 per-instance metadata without bloating the connections table.
 
+**⚠️ Graph rendering blocker (read before designing):** `patch-graph.component.ts` builds node IDs as
+`module.id.toString()` for module nodes and `module.id.toString() + cv.id` for CV nodes. Two instances of the same
+module will produce **identical node IDs** and collapse in the graph. Any instance design must produce distinct node
+IDs (e.g. `module.id + "_" + instance_id`) and the graph rendering pipeline must be updated to use them end-to-end
+before the feature will be visually correct.
+
 **Steps when picked:**
 
-- [ ] Read current `patch_connections` schema in `database.types.ts` and connection model in `connection.ts`
-- [ ] Read patch graph component(s) to understand rendering approach
-- [ ] Design `patch_module_instances` table shape (id, patch_id, module_id, instance_label, position)
+- [ ] Read `patch-graph.component.ts` fully to understand node/edge ID construction (see blocker note above)
+- [ ] Read `patch_connections` schema in `database.types.ts` and connection model in `connection.ts`
+- [ ] Read `patch-detail-data.service.ts` to understand how connections are loaded and passed to graph
+- [ ] Design `patch_module_instances` table shape (id, patch_id, module_id, instance_label)
 - [ ] Update `database.types.ts` with new table type
 - [ ] Add `get/add/delete` for instances in `supabase.service.ts`
-- [ ] Update `PatchConnection` model to reference `instance_id` instead of bare `module_id`
-- [ ] Update patch graph to render multiple nodes per module, labeled "Module (1)", "Module (2)"
-- [ ] Update patch editor to allow adding extra instances and duplicate-connecting them
-- [ ] Write unit tests for instance CRUD and graph rendering with duplicates
+- [ ] Update `PatchConnection` model to carry `instance_id` alongside `module_id` on `CVwithModule`
+- [ ] Update patch graph node/edge ID construction to include `instance_id` suffix — prevents ID collisions
+- [ ] Update patch graph to render module nodes labeled "Module (1)", "Module (2)" per instance
+- [ ] Update patch editor to allow adding extra instances and wiring them independently
+- [ ] Write unit tests for instance CRUD and graph node-ID uniqueness with duplicate modules
 
 ---
 
