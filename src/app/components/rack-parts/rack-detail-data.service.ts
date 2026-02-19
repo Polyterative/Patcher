@@ -56,7 +56,7 @@ import {
   Validators
 } from "@angular/forms";
 import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
-import domtoimage from 'dom-to-image';
+import { toJpeg } from 'html-to-image';
 import { MatDialog } from "@angular/material/dialog";
 
 
@@ -268,9 +268,9 @@ export class RackDetailDataService extends SubManager {
       tap(() => this.snackBar.open('⏲️ Generating image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
       switchMap(([_, references]) => from(
-        domtoimage.toJpeg(<any>references.screen.nativeElement, {
+        toJpeg(<any>references.screen.nativeElement, {
           quality: 0.9,
-          bgcolor: '#ffffff',
+          backgroundColor: '#ffffff',
         })
       )),
       withLatestFrom(this.singleRackData$),
@@ -301,9 +301,9 @@ export class RackDetailDataService extends SubManager {
       // generate the image, and convert it to a Blob
       switchMap(([_, references]) =>
         from(
-          domtoimage.toJpeg(<any>references.screen.nativeElement, {
+          toJpeg(<any>references.screen.nativeElement, {
             quality: 0.9,
-            bgcolor: '#ffffff',
+            backgroundColor: '#ffffff',
           })
         ).pipe(
           tap(() => this.showModuleCounters$.next(true)),
