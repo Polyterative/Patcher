@@ -82,6 +82,7 @@
                 <app-brand-primary-button
                   [disabled]="!dataService.formGroup.valid"
                   (click$)="dataService.submitModuleForm$.next()"
+                  icon="upload"
                   class="align-end"
                   style="margin-top: 1rem; margin-bottom: 1rem"
                 >
@@ -95,7 +96,7 @@
                   <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
                     You need to be logged in to submit a module
                   </mat-card-subtitle>
-                  <app-brand-primary-button routerLink="/auth/login" class="align-end">
+                  <app-brand-primary-button routerLink="/auth/login" icon="login" class="align-end">
                     Login
                   </app-brand-primary-button>
                 </div>

@@ -42,15 +42,11 @@
               <div style="margin-top: .5rem">
                 <app-brand-primary-button (click$)="dataService.savePatchEditing$.next()"
                                           theme="positive"
+                                          icon="save"
                                           fxLayoutAlign="end"
                                           [disabled]="(!(dataService.formData.name.control|formValid))||(!(dataService.formData.description.control|formValid))"
                 >
-                  <div class="row gap">
-                    <!--                    <mat-icon>save</mat-icon>-->
-                    <div>
-                      Save patch
-                    </div>
-                  </div>
+                  Save patch
                 </app-brand-primary-button>
               </div>
             </div>

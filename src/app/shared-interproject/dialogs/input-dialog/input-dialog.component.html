@@ -25,6 +25,7 @@
     <app-brand-primary-button (click$)="dialogRef.close({result: data.control.value})"
                               [disabled]="!(isValid$ | async)"
                               theme="positive"
+                              icon="check"
                               style="align-self: flex-end;"
     >Confirm
     </app-brand-primary-button>

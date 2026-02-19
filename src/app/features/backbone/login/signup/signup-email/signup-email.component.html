@@ -40,6 +40,7 @@
   <app-brand-primary-button style="padding-top: 1rem"
                             innerFlex="auto"
                             theme="positive"
+                            icon="person_add"
                             [error]="(dataService.fields.username.control.invalid||dataService.fields.email.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value!=''&&
 dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value)"
                             (click$)="dataService.mailSignClick$.next()"

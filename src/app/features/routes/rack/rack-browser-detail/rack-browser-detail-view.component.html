@@ -40,6 +40,7 @@
             Unlock to add modules or make changes
           </mat-label>
           <app-brand-primary-button (click$)="dataService.requestRackEditableStatusChange$.next()"
+                                    icon="lock_open"
           >
             Unlock rack now
           </app-brand-primary-button>
