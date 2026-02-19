@@ -27,8 +27,8 @@ When the user expresses a guideline, workflow preference, or decision principle:
 - **Prefer file tools over terminal:** Use `read_file`, `insert_edit_into_file`, `replace_string_in_file`,
   `grep_search`, `file_search`, and `list_dir` to explore and modify the codebase directly. Terminal calls (
   `run_in_terminal`) are a last resort.
-- **Terminal is only for:** Installing packages, running tests, or executing things that cannot be done with file tools
-  alone.
+- **Terminal is only for:** Installing packages (`yarn add …`), running tests (`yarn test-headless`), or executing things that cannot be done with file tools alone.
+- **Tests MUST use:** `yarn test-headless` — this is the only acceptable test command. Never `ng test`, never `npx ng test`.
 - **Never use terminal to:** Read files, search for patterns, check directory structure, or apply code changes — always
   use the dedicated tools instead.
 - **Batch file edits:** Group all changes to the same file into a single tool call rather than multiple sequential
@@ -40,7 +40,23 @@ When the user expresses a guideline, workflow preference, or decision principle:
 
 ## ⚡ Quick Reference (MUST READ FIRST)
 
-**Commands:** Use `yarn` (install/add/remove) never `npm`. Testing: `yarn test-headless` never raw `ng test`.
+**Commands:** Use `yarn` (install/add/remove) never `npm`. Testing: **always `yarn test-headless`** — never `ng test`, never `npx ng test`, never any other variant.
+
+**🚫 NEVER run tests like this:**
+```
+ng test ...
+npx ng test ...
+npx ng test --browsers=ChromeHeadlessCI ...
+```
+
+**✅ ALWAYS run tests like this:**
+```
+yarn test-headless
+```
+For a specific test file pattern, use `--include`:
+```
+yarn test-headless --include="**/my-file.spec.ts"
+```
 
 **Event-Driven Architecture (CRITICAL):**
 - ✅ All logic in constructor via reactive streams
