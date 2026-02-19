@@ -396,7 +396,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(updatedModule => {
         if (updatedModule) {
-          this.snackBar.open('Power data saved successfully.', undefined, {
+          this.snackBar.open('Power specs written to module.', undefined, {
             duration: 5000
           });
           this.dataService.updateSingleModuleData$.next(this.data.id);
@@ -431,7 +431,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         switchMap(() => this.backend.update.module({id: this.data.id})),
         catchError(error => {
           console.error('Error saving physical data:', error);
-          this.snackBar.open('An error occurred while saving physical data.', undefined, {
+          this.snackBar.open('Physical specs not saved — the server returned an error. Try again.', undefined, {
             duration: 5000
           });
           return EMPTY;
@@ -441,7 +441,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        this.snackBar.open('Physical data saved successfully.', undefined, {
+        this.snackBar.open('Physical specs written to module.', undefined, {
           duration: 5000
         });
       });

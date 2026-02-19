@@ -384,7 +384,7 @@ export class UserManagementService extends SubManager {
       filter(x => !!x),
       tap(updatedProfile => {
         this._loggedUserFullProfile$.next(updatedProfile);
-        SharedConstants.successCustom(this.snackBar, 'Username updated successfully!');
+        SharedConstants.successCustom(this.snackBar, 'Username updated — your profile has been synced.');
       }),
       takeUntil(this.destroy$)
     ).subscribe();
@@ -415,7 +415,7 @@ export class UserManagementService extends SubManager {
       filter(x => !!x),
       tap(updatedProfile => {
         this._loggedUserFullProfile$.next(updatedProfile);
-        SharedConstants.successCustom(this.snackBar, 'Username updated successfully!');
+        SharedConstants.successCustom(this.snackBar, 'Username updated — your profile has been synced.');
       }),
       map(() => void 0)
     );

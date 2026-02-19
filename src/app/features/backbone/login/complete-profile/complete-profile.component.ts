@@ -189,7 +189,7 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
           );
         }),
         tap(() => {
-          SharedConstants.successCustom(this.snackBar, 'Profile completed successfully!');
+          SharedConstants.successCustom(this.snackBar, 'Profile set up — username written to your account.');
           this.router.navigate(['/user/area']);
         }),
         catchError((error) => {
@@ -197,9 +197,9 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
           
           // Check for unique constraint violation
           if (error?.code === '23505' || error?.message?.includes('unique')) {
-            SharedConstants.errorCustom(this.snackBar, 'Username already taken. Please choose another.');
+            SharedConstants.errorCustom(this.snackBar, 'That username is already taken — pick a different one.');
           } else {
-            SharedConstants.errorCustom(this.snackBar, 'Failed to save username. Please try again.');
+            SharedConstants.errorCustom(this.snackBar, 'Username not saved — the database returned an error. Try again.');
           }
           
           this.saving = false;

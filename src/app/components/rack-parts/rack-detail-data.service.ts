@@ -238,16 +238,16 @@ export class RackDetailDataService extends SubManager {
             // The goal is to perform all changes without reloading the entire page to avoid layout shifting and flashing.
             
             return forkJoin(modulesInRow.map(module => this.backend.delete.rackedModule(module.rackingData.id))).pipe(
-              tap(() => SharedConstants.successCustom(this.snackBar, `Removed ${ modulesInRow.length } modules`)),
+              tap(() => SharedConstants.successCustom(this.snackBar, `${ modulesInRow.length } module${ modulesInRow.length === 1 ? '' : 's' } unracked from this row.`)),
               catchError((err) => {
                 console.error(`Error clearing row: ${ err }`);
-                SharedConstants.errorCustom(this.snackBar, 'Error clearing row, refresh the page and try again');
+                SharedConstants.errorCustom(this.snackBar, 'Row clear failed — the database returned an error. Refresh the page and try again.');
                   return of(undefined);
                 }
               )
             );
           } else {
-            SharedConstants.errorCustom(this.snackBar, 'Not applicable to this row');
+            SharedConstants.errorCustom(this.snackBar, 'This row type cannot be cleared.');
             
           }
           
