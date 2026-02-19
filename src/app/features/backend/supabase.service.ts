@@ -39,7 +39,10 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
-import { PatchConnection } from '../../models/connection';
+import {
+  PatchConnection,
+  PatchModuleInstance
+} from '../../models/connection';
 import { DbComment } from '../../models/comment';
 import {
   CV,
@@ -208,6 +211,7 @@ export class SupabaseService extends SubManager {
     tags: typeof SupabaseService.prototype.getTags;
     moduleWithId: typeof SupabaseService.prototype.getModuleWithId;
     patchConnections: typeof SupabaseService.prototype.getPatchConnections;
+    patchModuleInstances: typeof SupabaseService.prototype.getPatchModuleInstances;
     currentUserComments: typeof SupabaseService.prototype.getCurrentUserComments;
     patches: typeof SupabaseService.prototype.getPatches;
     rackWithId: typeof SupabaseService.prototype.getRackWithId;
@@ -220,6 +224,7 @@ export class SupabaseService extends SubManager {
     tags: this.getTags.bind(this),
     moduleWithId: this.getModuleWithId.bind(this),
     patchConnections: this.getPatchConnections.bind(this),
+    patchModuleInstances: this.getPatchModuleInstances.bind(this),
     currentUserComments: this.getCurrentUserComments.bind(this),
     patches: this.getPatches.bind(this),
     rackWithId: this.getRackWithId.bind(this),
@@ -589,7 +594,33 @@ export class SupabaseService extends SubManager {
         .from(DbPaths.module_panels)
         .insert(data)
     )
-      .pipe(remapErrors())
+      .pipe(remapErrors()),
+    patchModuleInstance: (patch_id: number, module_id: number, instance_label?: string) => rxFrom(
+      this.supabase
+        .from(DbPaths.patch_module_instances)
+        .insert({patch_id, module_id, instance_label: instance_label ?? null})
+        .select('id,patch_id,module_id,instance_label')
+        .single()
+    ).pipe(
+      remapErrors(),
+      map(x => x.data as PatchModuleInstance),
+      cacheBust(['patchConnections'])
+    ),
+    /** Batch insert multiple patch module instances in a single DB call */
+    patchModuleInstances: (rows: {
+      patch_id: number;
+      module_id: number;
+      instance_label: string | null
+    }[]) => rxFrom(
+      this.supabase
+        .from(DbPaths.patch_module_instances)
+        .insert(rows)
+        .select('id,patch_id,module_id,instance_label')
+    ).pipe(
+      remapErrors(),
+      map(x => x.data as PatchModuleInstance[]),
+      cacheBust(['patchConnections'])
+    )
   };
   
   readonly delete = {
@@ -690,8 +721,30 @@ export class SupabaseService extends SubManager {
     )
       .pipe(remapErrors())
     ,
+    patchModuleInstance: (id: number) => rxFrom(
+      this.supabase.from(DbPaths.patch_module_instances)
+        .delete()
+        .filter('id', 'eq', id)
+    ).pipe(
+      remapErrors(),
+      cacheBust(['patchConnections'])
+    ),
+    patchModuleInstancesForPatch: (patch_id: number) => rxFrom(
+      this.supabase.from(DbPaths.patch_module_instances)
+        .delete()
+        .filter('patch_id', 'eq', patch_id)
+    ).pipe(
+      remapErrors(),
+      cacheBust(['patchConnections'])
+    ),
     userPatch: (id: number) => this.getUserSession$()
       .pipe(
+        // delete module instances for this patch (FK to patches)
+        switchMap(user => rxFrom(
+          this.supabase.from(DbPaths.patch_module_instances)
+            .delete()
+            .filter('patch_id', 'eq', id)
+        ).pipe(map(() => user))),
         switchMap(user => rxFrom(
           this.supabase.from(DbPaths.patches)
             .delete()
@@ -773,6 +826,15 @@ export class SupabaseService extends SubManager {
               this.supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
             )
         ).pipe(remapErrors());
+        
+        // Step 1.5 — delete module instances for all patches authored by this user
+        const deletePatchModuleInstances$ = rxFrom(
+          this.supabase.from(DbPaths.patch_module_instances)
+            .delete()
+            .in('patch_id',
+              this.supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
+            )
+        ).pipe(remapErrors());
 
         // Step 2 — delete patches
         const deletePatches$ = rxFrom(
@@ -804,6 +866,7 @@ export class SupabaseService extends SubManager {
         ).pipe(remapErrors());
 
         return deletePatchConnections$.pipe(
+          switchMap(() => deletePatchModuleInstances$),
           switchMap(() => deletePatches$),
           switchMap(() => deleteRackModules$),
           switchMap(() => deleteRacks$),
@@ -984,7 +1047,18 @@ export class SupabaseService extends SubManager {
       .pipe(
         tap(x => SharedConstants.showSuccessUpdate(this.snackBar)),
         cacheBust(['patchConnections', 'patches'])
-      )
+      ),
+    patchModuleInstanceLabel: (id: number, instance_label: string | null) => rxFrom(
+      this.supabase.from(DbPaths.patch_module_instances)
+        .update({instance_label})
+        .eq('id', id)
+        .select('id,patch_id,module_id,instance_label')
+        .single()
+    ).pipe(
+      remapErrors(),
+      map(x => x.data as PatchModuleInstance),
+      cacheBust(['patchConnections'])
+    )
   };
   
   storage = {
@@ -1300,6 +1374,24 @@ export class SupabaseService extends SubManager {
         remapErrors(),
         map((x => x.data))
       );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patchConnections'))),
+    maxCacheCount: 50,
+    async: true
+  })
+  private getPatchModuleInstances(patch_id: number) {
+    return rxFrom(
+      this.supabase.from(DbPaths.patch_module_instances)
+        .select('id,patch_id,module_id,instance_label')
+        .filter('patch_id', 'eq', patch_id)
+        .order('id')
+    ).pipe(
+      remapErrors(),
+      map(x => x.data as PatchModuleInstance[])
+    );
   }
   
   @Cacheable({
@@ -1721,7 +1813,9 @@ export class SupabaseService extends SubManager {
       a: conn.a.id,
       b: conn.b.id,
       notes: conn.notes,
-      ordinal: i
+      ordinal: i,
+      instance_id_a: conn.instance_id_a ?? null,
+      instance_id_b: conn.instance_id_b ?? null
     }));
     
     const inserter$ = rxFrom(

@@ -450,6 +450,10 @@ yarn test-headless --include="**/my-service.spec.ts"
 yarn test-headless --include="**/__tests__/supabase-service/*.spec.ts"
 ```
 
+---
+
+## Loading / Deleting State Indicators
+
 ```typescript
 private _isLoadingList$ = new BehaviorSubject<boolean>(false);
 private _isSubmitting$ = new BehaviorSubject<boolean>(false);

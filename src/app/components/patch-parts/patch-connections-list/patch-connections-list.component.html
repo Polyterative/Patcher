@@ -4,6 +4,7 @@
       <app-patch-connection-minimal [data]="item"
                                     [index]="reverseOrder ? editorConnections.length - i : i+1"
                                     [isEditing]="isEditing"
+                                    [instanceLabelMap]="instanceLabelMap"
                                     (remove$)="dataService.removeConnectionFromEditor$.next($event)"
       ></app-patch-connection-minimal>
     </lib-clean-card>

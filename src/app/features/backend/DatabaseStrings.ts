@@ -11,6 +11,7 @@ export class DbPaths {
   static patches_for_modules = 'patches_for_modules' as const;
   static patches = 'patches' as const;
   static patch_connections = 'patch_connections' as const;
+  static patch_module_instances = 'patch_module_instances' as const;
   static module_tags = 'module_tags' as const;
   static module_panels = 'module_panels' as const;
   static tags = 'tags' as const;

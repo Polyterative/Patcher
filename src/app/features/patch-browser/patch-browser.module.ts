@@ -41,6 +41,7 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
+import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 
 
 const parentPrefix = 'patches';
@@ -115,7 +116,8 @@ const parentPrefix = 'patches';
     CleanCardModule,
     PatchListModule,
     MatSlideToggleModule,
-    CommentsModule
+    CommentsModule,
+    StatisticsModule
   ]
 })
 export class PatchBrowserModule {}

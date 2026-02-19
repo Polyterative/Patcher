@@ -3,5 +3,7 @@
                           infoText="Module name"
                           [textSize]="textSize"
 >
-  {{data.name}}
+  {{ data.name }}@if (suffix) {
+  <span class="instance-suffix">{{ suffix }}</span>
+}
 </app-hero-clickable-title>

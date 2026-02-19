@@ -1,7 +1,10 @@
 import { MinimalModule } from './module';
 
+
 export interface CVwithModule extends CV {
   module: MinimalModule;
+  /** Set when this CV belongs to a specific patch module instance */
+  instance_id?: number;
 }
 
 export interface CVwithModuleId extends CV {
