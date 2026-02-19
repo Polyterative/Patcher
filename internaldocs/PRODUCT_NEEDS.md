@@ -421,10 +421,10 @@ modules)
 
 ### iOS Clipboard Failure
 
-**Issue:** Copy-to-clipboard doesn't work on iOS Safari  
-**Cause:** iOS requires specific user interaction context for clipboard API  
-**Where:** Copy-on-click directive  
-**Fix:** Add fallback using execCommand() or textarea workaround
+**~~Issue: Copy-to-clipboard doesn't work on iOS Safari~~ ✅ Fixed (Feb 19, 2026)**  
+**Cause:** iOS Safari does not support the async Clipboard API in all contexts  
+**Where:** `app-copy-on-click.directive.ts`  
+**Fix applied:** Added textarea + `execCommand('copy')` fallback. Primary path uses `navigator.clipboard.writeText`; fallback kicks in when that API is unavailable.
 
 ### Duplicate Panel Detection Incomplete
 
@@ -435,9 +435,9 @@ modules)
 
 ### Rack Statistics Include Blanks
 
-**Issue:** Rack statistics count system blank modules in totals  
-**Where:** Rack statistics calculation (filters 3U modules but not blanks)  
-**Fix:** Filter out blank module IDs (4647-4666) before counting
+**~~Issue: Rack statistics count system blank modules in totals~~ ✅ Fixed (Feb 19, 2026)**  
+**Where:** Rack statistics pipes  
+**Fix applied:** Created `rack-blank-module.constants.ts` with `BLANK_MODULE_IDS` set (3U: 4647–4666, Intellijel 1U: 4711–4735) and `isBlankModule()` helper. All six stats pipes (`totalModulesOfRack`, `totalHpOfRack`, `totalPowerOfRack`, `totalWeightOfRack`, `totalDepthOfRack`, `totalMissingPowerDataInRack`) now filter blank IDs before computing. 30 new tests added in `rack-stats-blank-filter.spec.ts`.
 
 ### Safari Image Export Broken
 
