@@ -19,9 +19,12 @@ export class UrlCreatorService {
     
     navigator.clipboard.writeText(url)
              .then(() => {
-               this.snackBar.open('Copied URL to clipboard', undefined, {duration: 2000});
+               this.snackBar.open('Link copied to clipboard.', undefined, {duration: 2000, panelClass: 'snack-success'});
              }, err => {
-               this.snackBar.open('Could not copy URL to clipboard, try manually', undefined, {duration: 2000});
+               this.snackBar.open('Clipboard write failed — copy the URL from the address bar manually.', undefined, {
+                 duration: 2000,
+                 panelClass: 'snack-error'
+               });
              });
   }
 }
