@@ -45,6 +45,15 @@ testem.log
 Thumbs.db
 !/package-lock.json
 
+# Secrets & credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
 # Sentry Config File
 .sentryclirc
 src/environments/environment.ts
