@@ -319,4 +319,8 @@ export class ModuleBrowserDetailComponent implements OnInit {
   openManual(data: DbModule) {
     window.open(data.manualURL, '_blank');
   }
+  
+  openExternalLink(url: string) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
 }

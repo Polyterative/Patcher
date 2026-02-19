@@ -9,7 +9,6 @@ import { BrandPrimaryButtonModule } from '../brand-primary-button/brand-primary-
 import { CleanCardModule } from '../clean-card/clean-card.module';
 import { HeroLinkComponent } from './hero-link.component';
 import { MatDialogModule } from "@angular/material/dialog";
-import { MatButtonModule } from "@angular/material/button";
 
 
 @NgModule({
@@ -26,7 +25,6 @@ import { MatButtonModule } from "@angular/material/button";
     MatIconModule,
     RouterModule,
     EmptyStateModule,
-    MatButtonModule,
     CleanCardModule
   ]
 })
