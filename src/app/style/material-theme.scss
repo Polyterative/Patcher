@@ -1,0 +1,28 @@
+// ─── Custom Angular Material Theme ────────────────────────────────────────────
+// Replaces the indigo-pink prebuilt theme.
+// Primary colour is derived from the brand's blue ($brand-primary ≈ #3D73BC).
+// This eliminates the default pink accent that appeared on slide-toggles,
+// checkboxes, radio buttons and other accent-coloured components.
+// ──────────────────────────────────────────────────────────────────────────────
+
+@use '@angular/material' as mat;
+
+// M3 theme — uses the built-in Azure/Blue system palette as primary,
+// which sits closest to the brand's #3D73BC blue.
+// tertiary is left as Cyan (neutral complement; overrides the pink accent slot).
+$patcher-theme: mat.define-theme((
+        color: (
+                theme-type: light,
+                primary: mat.$azure-palette,
+                tertiary: mat.$cyan-palette,
+        ),
+        typography: (
+                brand-family: 'Roboto',
+                plain-family: 'Roboto',
+        ),
+));
+
+// Emit all component styles for the theme exactly once at the root level.
+:root {
+  @include mat.all-component-themes($patcher-theme);
+}
