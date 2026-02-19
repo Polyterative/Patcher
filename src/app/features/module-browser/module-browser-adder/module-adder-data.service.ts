@@ -10,12 +10,14 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
+  EMPTY,
   merge,
   Observable,
   of,
   Subject
 } from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   share,
@@ -43,6 +45,7 @@ import { DomSanitizer } from "@angular/platform-browser";
 
 import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
 import { Router } from "@angular/router";
+import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
 @Injectable()
@@ -52,6 +55,18 @@ export class ModuleAdderDataService extends SubManager {
   updateModulesList$ = new Subject<void>();
   //
   submitModuleForm$  = new Subject<void>();
+
+  // Inline manufacturer creation
+  showNewManufacturerForm$ = new BehaviorSubject<boolean>(false);
+  isCreatingManufacturer$ = new BehaviorSubject<boolean>(false);
+  newManufacturerNameControl = new UntypedFormControl('', Validators.compose([
+    Validators.required,
+    Validators.minLength(2),
+    Validators.maxLength(100)
+  ]));
+  createManufacturer$ = new Subject<void>();
+  
+  private _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
   
   formData: {
     standard: {
@@ -164,16 +179,7 @@ export class ModuleAdderDataService extends SubManager {
           Validators.required
         ])),
         type:     FormTypes.AUTOCOMPLETE,
-        options$: this.backend.GET.manufacturers(0, 99999, 'id,name')
-                    .pipe(
-                      map(x => x.data.map(z => ({
-                        id:   z.id.toString(),
-                        name: z.name
-                      }))),
-                      startWith([]),
-                      share() // protects against multiple network requests
-                    )
-        
+        options$: this._manufacturerOptions$.asObservable()
       },
       hp:           {
         label: 'HP',
@@ -209,7 +215,7 @@ export class ModuleAdderDataService extends SubManager {
         options$: this.formatTranslatorService.standards.data$.pipe(
           filter(x => x !== undefined),
           map(x => x.map(y => ({
-            id: y.id,
+            id: y.id.toString(),
             name: y.name
           }))),
           startWith([]),
@@ -253,6 +259,12 @@ export class ModuleAdderDataService extends SubManager {
       diy:         this.formData.diy.control
     });
     
+    // load manufacturers into options BehaviorSubject
+    this.backend.GET.manufacturers(0, 99999, 'id,name').pipe(
+      map(x => x.data.map(z => ({ id: z.id.toString(), name: z.name }))),
+      takeUntil(this.destroy$)
+    ).subscribe(opts => this._manufacturerOptions$.next(opts));
+
     // apply default on init
     this.formData.standard.options$.pipe(
       tap(() => this.formData.standard.control.disable()),
@@ -270,14 +282,14 @@ export class ModuleAdderDataService extends SubManager {
         
       });
     
-    // enable on init
-    this.formData.manufacturer.options$.pipe(
+    // enable manufacturer control once options are loaded
+    this._manufacturerOptions$.pipe(
       tap(() => this.formData.manufacturer.control.disable()),
       filter(x => x !== undefined),
       filter(x => x.length > 0),
       takeUntil(this.destroy$)
     )
-      .subscribe(x => {
+      .subscribe(() => {
         this.formData.manufacturer.control.enable();
       });
     
@@ -381,6 +393,38 @@ export class ModuleAdderDataService extends SubManager {
           }
         );
       });
+
+    // when user requests to create a new manufacturer inline
+    this.createManufacturer$.pipe(
+      filter(() => this.newManufacturerNameControl.valid),
+      tap(() => this.isCreatingManufacturer$.next(true)),
+      map(() => plainSanitize(this.sanitizer, this.newManufacturerNameControl.value.trim())),
+      switchMap(name => this.backend.add.manufacturers([{ name }]).pipe(
+        map(result => ({ name, data: result?.data })),
+        catchError(err => {
+          console.error('Failed to create manufacturer:', err);
+          SharedConstants.errorCustom(this.snackBar, 'Failed to create manufacturer');
+          this.isCreatingManufacturer$.next(false);
+          return EMPTY;
+        })
+      )),
+      tap(() => this.isCreatingManufacturer$.next(false)),
+      takeUntil(this.destroy$)
+    ).subscribe(({ name, data }) => {
+      const created = data?.[0];
+      if (created) {
+        // Update the manufacturer options$ to include the new entry and select it
+        const newOption = { id: created.id.toString(), name: created.name ?? name };
+        const currentOptions = this._manufacturerOptions$.value;
+        this._manufacturerOptions$.next([...currentOptions, newOption]);
+        this.formData.manufacturer.control.setValue(newOption);
+        SharedConstants.successCustom(this.snackBar, `Manufacturer "${name}" created successfully`);
+      } else {
+        SharedConstants.errorCustom(this.snackBar, 'Failed to create manufacturer');
+      }
+      this.newManufacturerNameControl.setValue('');
+      this.showNewManufacturerForm$.next(false);
+    });
     
   }
   
