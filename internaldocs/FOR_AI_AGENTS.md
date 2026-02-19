@@ -36,11 +36,13 @@
 
 ## ⚡ Commands (MUST READ)
 
-| Action               | Command                                             |
-|----------------------|-----------------------------------------------------|
-| Install              | `yarn` / `yarn add <pkg>` / `yarn remove <pkg>`     |
-| Test (always)        | `yarn test-headless`                                |
-| Test (specific file) | `yarn test-headless --include="**/my-file.spec.ts"` |
+| Action                | Command                                                                                                  |
+|-----------------------|----------------------------------------------------------------------------------------------------------|
+| Install               | `yarn` / `yarn add <pkg>` / `yarn remove <pkg>`                                                          |
+| Test (always)         | `yarn test-headless`                                                                                     |
+| Test (specific file)  | `yarn test-headless --include="**/my-file.spec.ts"`                                                      |
+| Test (specific suite) | `yarn test-headless --include="**/__tests__/supabase-service/*.spec.ts"`                                 |
+| Regenerate DB types   | `yarn updateBackendTypes` — run after any Supabase schema change to sync `src/backend/database.types.ts` |
 
 **🚫 NEVER:** `ng test`, `npx ng test`, `npm install`, any interactive/watch test command.
 
@@ -93,8 +95,21 @@
 
 ### 7. Error Handling
 
-- `SharedConstants.successSave(snackBar)` / `SharedConstants.errorCustom(snackBar, 'msg')` — no raw snackBar calls.
-- `catchError` must `return EMPTY` (or `of(fallback)`), never swallow errors silently.
+Use `SharedConstants` — never call `snackBar.open()` directly. Full method reference:
+
+| Method                            | Usage pattern                                                                | When                       |
+|-----------------------------------|------------------------------------------------------------------------------|----------------------------|
+| `successCustom(snackBar, msg)`    | direct call                                                                  | Custom success message     |
+| `successSave(snackBar)`           | direct call                                                                  | Generic save confirmation  |
+| `successDelete(snackBar)`         | direct call                                                                  | Item removed               |
+| `showSuccessUpdate(snackBar)`     | direct call                                                                  | Brief "Saved." toast (1 s) |
+| `errorCustom(snackBar, msg)`      | direct call                                                                  | Custom error message       |
+| `errorHandlerData(snackBar)`      | **pipe operator** — `catchError(SharedConstants.errorHandlerData(snackBar))` | Data load/save failure     |
+| `errorHandlerOperation(snackBar)` | **pipe operator**                                                            | Generic operation failure  |
+| `errorHandlerSignup(snackBar)`    | **pipe operator**                                                            | Auth signup failure        |
+| `errorHandlerLogin(snackBar)`     | **pipe operator**                                                            | Auth login failure         |
+
+`catchError` must always return `EMPTY` (or use one of the `errorHandler*` pipe operators that do this for you).
 
 ---
 
@@ -158,24 +173,36 @@ late will miss the emit
 
 ## 📚 Checklists
 
-**Data Service:**
-- [ ] Extends `SubManager`, calls `super()`
-- [ ] `@Injectable()` — no `providedIn`
-- [ ] Private `_BehaviorSubjects`, public `readonly` observables, public action Subjects
-- [ ] All subscriptions have `takeUntil(this.destroy$)`
+Verify these before considering any work done. They are **review criteria**, not TODO tasks.
 
-**Component:**
-- [ ] Extends `SubManager`, calls `super()`
-- [ ] Provides data service in decorator `providers: [MyDataService]`
-- [ ] Uses `async` pipe and layout classes from `tools.scss`
+**New Data Service — must have:**
 
-**Pre-finish cleanup:**
+- extends `SubManager`, calls `super()`
+- `@Injectable()` — no `providedIn`
+- private `_` BehaviorSubjects, public `readonly` observables, public action Subjects
+- all subscriptions have `takeUntil(this.destroy$)`
+- uses `ReplaySubject` for entity-ID triggers, `Subject` for actions/refreshes
 
-- [ ] Remove dead code, unused imports, commented-out blocks
-- [ ] Verify `$` suffix and `_` private prefix on all observables
-- [ ] All subscriptions have `takeUntil(this.destroy$)`
-- [ ] No `TODO`/`FIXME` left unaddressed from current session
-- [ ] Templates use `async` pipe and layout classes — no inline styles
+**New Component — must have:**
+
+- extends `SubManager`, calls `super()`
+- provides data service in `@Component({ providers: [MyDataService] })`
+- uses `async` pipe in template; layout classes from `tools.scss`; no inline styles
+
+**Pre-finish cleanup — verify:**
+
+- no dead code, unused imports, or commented-out blocks remain
+- `$` suffix on all observables/subjects; `_` prefix on all private BehaviorSubjects
+- all subscriptions have `takeUntil(this.destroy$)`
+- no `TODO`/`FIXME` left unaddressed from the current session
+- no `destroyEvent$` introduced — use `destroy$` from `SubManager`
+
+**New backend method — verify:**
+
+- table name registered in `DatabaseStrings.ts` (`DbPaths`)
+- write method has `cacheBust([...affectedKeys])`
+- read method has `@Cacheable(...)` if data is stable; cache key added to `CachedEntity` union
+- types updated in `database.types.ts`; if schema changed in Supabase, run `yarn updateBackendTypes`
 
 ---
 
