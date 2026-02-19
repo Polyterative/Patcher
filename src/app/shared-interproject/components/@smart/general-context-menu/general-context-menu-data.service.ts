@@ -11,6 +11,7 @@ export interface ContextMenuItem {
   icon?: string;
   label: string;
   disabled: boolean;
+  danger?: boolean;
   data?: any;
   click$: Subject<ContextMenuItem>;
   

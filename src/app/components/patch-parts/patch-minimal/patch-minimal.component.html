@@ -55,6 +55,7 @@
                   matTooltip="Delete patch"
                   [disabled]="!bag.user"
                   (click)="dataService.deletePatch$.next(data.id)"
+                  class="danger-action"
           >
             <mat-icon>delete_forever</mat-icon>
           </button>
