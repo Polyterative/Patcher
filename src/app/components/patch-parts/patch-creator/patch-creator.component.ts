@@ -122,15 +122,13 @@ export class PatchCreatorComponent implements OnInit {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
-          
-          // success and open the new patch action
-          this.snackBar.open('Patch created and saved to your library.', undefined, {
+          const patchName = this.fields.name.control.value;
+          this.snackBar.open(`"${ patchName }" created and saved to your library.`, undefined, {
             duration: 3000,
             panelClass: 'snack-success'
           })
             .onAction()
             .subscribe(() => {
-              // this.router.navigate(['patch', value.id]);
             });
       
           this.dialogRef.close();

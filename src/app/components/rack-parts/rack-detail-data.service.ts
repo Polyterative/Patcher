@@ -176,16 +176,18 @@ export class RackDetailDataService extends SubManager {
         map((rackedModule) => {
           if (rackedModule.module.standard.id === 0) {
             if (rackedModule.module.hp > 20) {
-              this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
-                duration: 2000
+              this.snackBar.open(`"${ rackedModule.module.name }" is ${ rackedModule.module.hp } HP — too big to replace with a blank (max 20 HP).`, undefined, {
+                duration: 4000,
+                panelClass: 'snack-error'
               });
               return [];
             }
           } else if (rackedModule.module.standard.id === 1) {
             // if Intellijel module is bigger than 26 then show snackbar and do not propagate the event
             if (rackedModule.module.hp > 26) {
-              this.snackBar.open('This module is too big to be replaced with a blank.', undefined, {
-                duration: 2000
+              this.snackBar.open(`"${ rackedModule.module.name }" is ${ rackedModule.module.hp } HP — too big to replace with a blank (max 26 HP).`, undefined, {
+                duration: 4000,
+                panelClass: 'snack-error'
               });
               return [];
             }
@@ -342,7 +344,7 @@ export class RackDetailDataService extends SubManager {
       takeUntil(this.destroyEvent$)
     )
       .subscribe(() => {
-        SharedConstants.successCustom(this.snackBar, 'Preview updated');
+        SharedConstants.successCustom(this.snackBar, `Preview image updated for "${ this.singleRackData$.value.name }".`);
         
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
         }
@@ -569,11 +571,11 @@ export class RackDetailDataService extends SubManager {
     // on rack delete, ask for confirmation and delete rack on backend
     this.deleteRack$
       .pipe(
-        switchMap(() => {
+        switchMap((rack) => {
           
           const data: ConfirmDialogDataInModel = {
             title: 'Deletion',
-            description: 'Are you sure you want to delete this item?',
+            description: `Are you sure you want to delete "${ rack.name }"?`,
             positive: {label: '✔️ Delete'},
             negative: {label: '❌ Cancel'}
           };
@@ -586,55 +588,60 @@ export class RackDetailDataService extends SubManager {
             }
           )
             .afterClosed()
-            .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
+            .pipe(
+              filter((x: ConfirmDialogDataOutModel) => x.answer),
+              map(() => rack)
             );
         }),
-        withLatestFrom(this.deleteRack$, this.rowedRackedModules$),
-        switchMap(([_, x]) => this.backend.delete.modulesOfRack(x.id).pipe(map(() => x))),
-        switchMap(x => this.backend.delete.commentsForRack(x.id).pipe(map(() => x))),
-        switchMap(x => x.image ? this.backend.storage.deleteRackImage(x.image).pipe(map(() => x)) : of(x)),
-        switchMap(x => this.backend.delete.userRack(x.id)),
+        switchMap(rack => this.backend.delete.modulesOfRack(rack.id).pipe(map(() => rack))),
+        switchMap(rack => this.backend.delete.commentsForRack(rack.id).pipe(map(() => rack))),
+        switchMap(rack => rack.image ? this.backend.storage.deleteRackImage(rack.image).pipe(map(() => rack)) : of(rack)),
+        switchMap(rack => this.backend.delete.userRack(rack.id).pipe(map(() => rack))),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => {
+      .subscribe((rack) => {
         this.router.navigate(['/user/area']);
-        SharedConstants.successDelete(this.snackBar);
+        SharedConstants.successCustom(this.snackBar, `"${ rack.name }" has been deleted.`);
       });
     
     // on rack duplicate, ask for confirmation and duplicate rack on the backend, including modules and their positions
     this.duplicateRack$
       .pipe(
         switchMap(() => this.askForConfirmationWhenDuplicatingRack()),
-        tap(() => this.snackBar.open('Creating new rack...', undefined,)),
-        withLatestFrom(this.duplicateRack$, this.userService.loggedUser$),
-        // create new rack, to the current user, with the same modules, but with an_updated_name, 
-        switchMap(([_, __, user]) => {
+        withLatestFrom(this.singleRackData$),
+        tap(([_, rack]) => this.snackBar.open(`Duplicating "${ rack.name }"…`, undefined,)),
+        map(([_, rack]) => rack),
+        withLatestFrom(this.userService.loggedUser$),
+        // create new rack, to the current user, with the same modules, but with an_updated_name,
+        switchMap(([rack, user]) => {
           // create new rack on the backend,with a new author: current user
           return this.createNewRackOnBackendForCurrentUser(user.id).pipe(
-            map(x => (x.data[0].id))
+            map(x => ({newRackId: x.data[0].id, originalName: rack.name}))
           );
         }),
         // wait for the new rack id to arrive, then update the rack modules with the new rack id,
-        switchMap(newlyCreatedRackId => {
-          history.replaceState({}, '', `/racks/details/${ newlyCreatedRackId }`);
+        switchMap(({newRackId, originalName}) => {
+          history.replaceState({}, '', `/racks/details/${ newRackId }`);
           
-          const rackModules = this.removeInformationFromModulesOfCurrentRack(newlyCreatedRackId);
+          const rackModules = this.removeInformationFromModulesOfCurrentRack(newRackId);
           
           // load the new empty rack
-          this.updateSingleRackData$.next(newlyCreatedRackId)
+          this.updateSingleRackData$.next(newRackId)
           return this.singleRackData$.pipe(
-            filter(x => x.id === newlyCreatedRackId),
+            filter(x => x.id === newRackId),
             take(1),
-            map(() => rackModules),
+            map(() => ({rackModules, originalName})),
           )
           }
         ),
         // wait for the new empty rack to arrive, then add the modules to the new rack
-        switchMap(rackModules => this.callBackendToUpdateModulesOfRack(rackModules, this.singleRackData$.value)),
+        switchMap(({rackModules, originalName}) => this.callBackendToUpdateModulesOfRack(rackModules, this.singleRackData$.value).pipe(
+          map(() => originalName)
+        )),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => {
-        SharedConstants.successCustom(this.snackBar, 'Rack Duplicated');
+      .subscribe((originalName) => {
+        SharedConstants.successCustom(this.snackBar, `"${ originalName }" duplicated successfully.`);
       });
     
     // add a module from bottom picker
@@ -643,11 +650,11 @@ export class RackDetailDataService extends SubManager {
         switchMap(module => this.backend.add.rackModule(
           module.id,
           this.singleRackData$.value.id
-        )),
+        ).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => {
-        snackBar.open('✅ Added', undefined, {duration: 4000});
+      .subscribe((module) => {
+        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }".`);
         
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
