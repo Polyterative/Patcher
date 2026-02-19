@@ -3,8 +3,8 @@
   >
     <app-module-minimal [data]="data.a.module"
                         [viewConfig]="viewConfig"
+                        [nameSuffix]="data.instance_id_a != null ? instanceLabelMap.get(data.instance_id_a) : undefined"
                         class="module"
-    
     >
       <mat-chip-listbox>
         <app-module-cvitem [data]="data.a"
@@ -15,6 +15,7 @@
     <app-patch-connection-symbol></app-patch-connection-symbol>
     <app-module-minimal [data]="data.b.module"
                         [viewConfig]="viewConfig"
+                        [nameSuffix]="data.instance_id_b != null ? instanceLabelMap.get(data.instance_id_b) : undefined"
                         class="module"
     >
       <mat-chip-listbox>

@@ -11,11 +11,15 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  EMPTY,
+  forkJoin,
+  Observable,
   of,
   ReplaySubject,
   Subject
 } from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   pairwise,
@@ -32,12 +36,16 @@ import {
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { UserManagementService } from '../../features/backbone/login/user-management.service';
 import { SupabaseService } from '../../features/backend/supabase.service';
-import { PatchConnection } from '../../models/connection';
 import {
-  CVConnectionEntity,
-  CVwithModule
-} from '../../models/cv';
+  PatchConnection,
+  PatchModuleInstance
+} from '../../models/connection';
+import { CVConnectionEntity } from '../../models/cv';
 import { Patch } from '../../models/patch';
+import {
+  DbModule,
+  MinimalModule
+} from '../../models/module';
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
@@ -81,8 +89,21 @@ export class PatchDetailDataService implements OnDestroy {
   readonly savePatchEditing$ = new Subject<void>();
   readonly deletePatch$ = new Subject<number>();
   //
+  // Module instances
+  patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
+  addModuleInstance$ = new Subject<MinimalModule>();
+  removeModuleInstance$ = new Subject<PatchModuleInstance>();
+  /** User's collection modules — set by PatchEditorComponent on init */
+  collectionModules$ = new BehaviorSubject<DbModule[]>([]);
+  //
   isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
   requestPatchPrivacyStatusChange$ = new Subject<void>();
+  /**
+   * Map from instance ID → display label (e.g. "(1)", "(2)").
+   * Only contains entries for modules that have 2+ instances.
+   * Used by read-only connection list to show which copy a connection belongs to.
+   */
+  instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
   //
   protected destroyEvent$ = new Subject<void>();
   shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
@@ -195,6 +216,14 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         filter(x => !!x),
         switchMap(x => this.backend.GET.patchConnections(x.id)),
+        // Normalize DB nulls → undefined to match the model's optional fields.
+        // DB returns `null` for missing instance_id_a/b; our model uses `?:` (undefined).
+        // Without this, `===` comparisons (duplicate detection, scrub, etc.) would break.
+        map((connections: PatchConnection[]) => connections?.map(c => ({
+          ...c,
+          instance_id_a: c.instance_id_a ?? undefined,
+          instance_id_b: c.instance_id_b ?? undefined
+        }))),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(data => this.patchConnections$.next(data));
@@ -280,16 +309,19 @@ export class PatchDetailDataService implements OnDestroy {
         } = this.selectedForConnection$.value;
         const patch: Patch = this.singlePatchData$.value;
         if (!selectedForConnection.a || !selectedForConnection.b || !patch) { return; }
-        const newConnection: {
-          patch: Patch;
-          a: CVwithModule;
-          b: CVwithModule
-        } = {
+        const newConnection: PatchConnection = {
           a: selectedForConnection.a.cv,
           b: selectedForConnection.b.cv,
-          patch
+          patch,
+          instance_id_a: selectedForConnection.a.cv.instance_id,
+          instance_id_b: selectedForConnection.b.cv.instance_id
         };
-        const isAlreadyInList: boolean = !!patchConnections.find(connection => connection.a.id === newConnection.a.id && connection.b.id === newConnection.b.id);
+        const isAlreadyInList: boolean = !!patchConnections.find(connection =>
+          connection.a.id === newConnection.a.id
+          && connection.b.id === newConnection.b.id
+          && connection.instance_id_a === newConnection.instance_id_a
+          && connection.instance_id_b === newConnection.instance_id_b
+        );
         if (!isAlreadyInList) {
           this.editorConnections$.next([
             ...patchConnections,
@@ -313,7 +345,9 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(([x, data]) => this.editorConnections$.next(
           data.filter(
-            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id))
+            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id
+              && connection.instance_id_a === x.instance_id_a
+              && connection.instance_id_b === x.instance_id_b))
         )
       );
     
@@ -372,6 +406,8 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.deletePatch$),
         switchMap(([z, x]) => this.backend.delete.patchConnectionsForPatch(x)
           .pipe(map(() => x))),
+        switchMap((x) => this.backend.delete.patchModuleInstancesForPatch(x)
+          .pipe(map(() => x))),
         switchMap((x) => this.backend.delete.patch(x)),
         takeUntil(this.destroyEvent$)
       )
@@ -379,11 +415,314 @@ export class PatchDetailDataService implements OnDestroy {
         this.router.navigate(['/user/area']);
       });
     
+    // -- Module instances --
+    
+    // Load instances when patch data arrives
+    this.singlePatchData$
+      .pipe(
+        filter(x => !!x),
+        switchMap(patch => this.backend.GET.patchModuleInstances(patch.id)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(instances => this.patchModuleInstances$.next(instances));
+    
+    // Build instance-label lookup map whenever instances change.
+    // Only includes labels for modules with 2+ instances.
+    this.patchModuleInstances$
+      .pipe(
+        map(instances => {
+          const labelMap = new Map<number, string>();
+          // Group by module_id
+          const byModule = new Map<number, PatchModuleInstance[]>();
+          for (const inst of instances) {
+            const list = byModule.get(inst.module_id) || [];
+            list.push(inst);
+            byModule.set(inst.module_id, list);
+          }
+          // Only label instances when a module has 2+ copies
+          for (const [, moduleInstances] of byModule) {
+            if (moduleInstances.length >= 2) {
+              moduleInstances.forEach((inst, idx) => {
+                labelMap.set(inst.id, inst.instance_label || `(${ idx + 1 })`);
+              });
+            }
+          }
+          return labelMap;
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(labelMap => this.instanceLabelMap$.next(labelMap));
+    
+    // Add a module instance (for "add another copy" — generates label)
+    // When sameModuleCount === 0, creates TWO instances so count jumps to 2.
+    // Otherwise, creates one instance. Labels are assigned by renumberModuleInstances$().
+    this.addModuleInstance$
+      .pipe(
+        withLatestFrom(this.singlePatchData$, this.patchModuleInstances$),
+        filter(([_, patch]) => !!patch),
+        switchMap(([module, patch, existingInstances]) => {
+          const sameModuleCount = existingInstances.filter(i => i.module_id === module.id).length;
+          
+          if (sameModuleCount === 0) {
+            // Jumpstart: batch insert two instances in a single DB call
+            return this.backend.add.patchModuleInstances([
+              {patch_id: patch.id, module_id: module.id, instance_label: '(1)'},
+              {patch_id: patch.id, module_id: module.id, instance_label: '(2)'}
+            ]).pipe(
+              catchError(err => {
+                console.error('Failed to add module instances:', err);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to add module copies.');
+                return EMPTY;
+              })
+            );
+          }
+          
+          // If there's currently only 1 instance (unlabeled), relabel + insert in parallel
+          if (sameModuleCount === 1) {
+            return forkJoin([
+              this.relabelExistingInstance$(existingInstances, module.id, '(1)'),
+              this.backend.add.patchModuleInstance(patch.id, module.id, '(2)')
+            ]).pipe(
+              // Extract only the new instance (relabel returns null or updated instance)
+              map(([_, newInstance]) => [newInstance]),
+              catchError(err => {
+                console.error('Failed to add module instance:', err);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to add module copy.');
+                return EMPTY;
+              })
+            );
+          }
+          
+          // 2+ instances: just add one more
+          return this.backend.add.patchModuleInstance(patch.id, module.id, `(${ sameModuleCount + 1 })`).pipe(
+            // Wrap single instance in array for uniform handling in subscribe
+            map(instance => [instance]),
+            catchError(err => {
+              console.error('Failed to add module instance:', err);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to add module copy.');
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(newInstances => {
+        this.patchModuleInstances$.next([...this.patchModuleInstances$.value, ...newInstances]);
+        const moduleId = newInstances[0]?.module_id;
+        if (moduleId != null) {
+          this.renumberModuleInstances$(moduleId).subscribe();
+        }
+        const msg = newInstances.length > 1 ? 'Module split into 2 copies.' : 'Copy added.';
+        SharedConstants.successCustom(this.snackBar, msg);
+      });
+    
+    // Remove a module instance (with confirmation if it has connections)
+    this.removeModuleInstance$
+      .pipe(
+        switchMap(instance => {
+          // Count connections referencing this instance
+          const connections = this.editorConnections$.value || [];
+          const connCount = connections.filter(
+            c => c.instance_id_a === instance.id || c.instance_id_b === instance.id
+          ).length;
+          
+          if (connCount > 0) {
+            // Show confirmation dialog
+            const dialogData: ConfirmDialogDataInModel = {
+              title: 'Remove copy',
+              description: `This copy has ${ connCount } connection${ connCount > 1 ? 's' : '' }. Removing it will disconnect ${ connCount > 1 ? 'them' : 'it' }. Continue?`,
+              positive: {label: 'Remove', theme: 'warning'},
+              negative: {label: 'Cancel', theme: 'primary'}
+            };
+            return this.dialog.open(ConfirmDialogComponent, {
+              data: dialogData,
+              disableClose: true,
+              width: '32rem'
+            }).afterClosed().pipe(
+              filter((result: ConfirmDialogDataOutModel) => result?.answer === true),
+              map(() => instance)
+            );
+          }
+          
+          // No connections — proceed immediately
+          return of(instance);
+        }),
+        switchMap(instance =>
+          this.backend.delete.patchModuleInstance(instance.id).pipe(
+            map(() => instance),
+            catchError(err => {
+              console.error('Failed to remove module instance:', err);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to remove instance.');
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(removed => {
+        this.patchModuleInstances$.next(
+          this.patchModuleInstances$.value.filter(i => i.id !== removed.id)
+        );
+        
+        // Scrub editorConnections$: mirror DB's ON DELETE SET NULL.
+        // Any connection referencing the deleted instance_id must have it
+        // set to undefined so that save doesn't write a stale FK.
+        const currentConnections = this.editorConnections$.value;
+        if (currentConnections) {
+          const scrubbed = currentConnections.map(conn => {
+            let changed = false;
+            const patched = {...conn};
+            if (patched.instance_id_a === removed.id) {
+              patched.instance_id_a = undefined;
+              changed = true;
+            }
+            if (patched.instance_id_b === removed.id) {
+              patched.instance_id_b = undefined;
+              changed = true;
+            }
+            return changed ? patched : conn;
+          });
+          this.editorConnections$.next(scrubbed);
+        }
+        
+        // Renumber surviving instances of this module sequentially
+        this.renumberModuleInstances$(removed.module_id).subscribe();
+        
+        SharedConstants.successCustom(this.snackBar, `Instance removed.`);
+      });
+    
   }
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
+  }
+  
+  /**
+   * Ensures an instance exists for the given module in the current patch.
+   * If one already exists, returns its id. If not, creates one and returns the new id.
+   * Used by module-cvs for lazy auto-create on first CV click.
+   */
+  ensureModuleInstance$(module: DbModule | MinimalModule) {
+    const patch = this.singlePatchData$.value;
+    if (!patch) { return EMPTY; }
     
+    // Check if an instance already exists
+    const existing = this.patchModuleInstances$.value.find(i => i.module_id === module.id);
+    if (existing) {
+      return of(existing.id);
+    }
+    
+    // Auto-create one
+    return this.backend.add.patchModuleInstance(patch.id, module.id, null).pipe(
+      map(instance => {
+        // Update local state so the editor cards react
+        this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
+        return instance.id;
+      }),
+      catchError(err => {
+        console.error('Failed to auto-create instance:', err);
+        return EMPTY;
+      })
+    );
+  }
+  
+  /**
+   * Relabels the first instance of a given module to the specified label.
+   * Used when a second copy is added — the original unlabeled instance gets "(1)".
+   */
+  private relabelExistingInstance$(
+    existingInstances: PatchModuleInstance[],
+    moduleId: number,
+    newLabel: string
+  ) {
+    const first = existingInstances.find(i => i.module_id === moduleId);
+    if (!first || first.instance_label === newLabel) { return of(null); }
+    return this.backend.update.patchModuleInstanceLabel(first.id, newLabel).pipe(
+      tap(updated => {
+        // Update local state
+        const current = this.patchModuleInstances$.value;
+        const idx = current.findIndex(i => i.id === first.id);
+        if (idx >= 0) {
+          current[idx] = {...current[idx], instance_label: newLabel};
+          this.patchModuleInstances$.next([...current]);
+        }
+      }),
+      catchError(err => {
+        console.error('Failed to relabel instance:', err);
+        return of(null);
+      })
+    );
+  }
+  
+  /**
+   * Renumber all instances of a module sequentially: (1), (2), (3), …
+   * Sorted by `id` (creation order) so the numbering is stable.
+   * Only updates instances whose label actually changed.
+   * Updates both DB and local `patchModuleInstances$`.
+   */
+  private renumberModuleInstances$(moduleId: number): Observable<null> {
+    const all = this.patchModuleInstances$.value;
+    const moduleInstances = all.filter(i => i.module_id === moduleId).sort((a, b) => a.id - b.id);
+    
+    // If 0 or 1 instances, no labels needed — clear label if present
+    if (moduleInstances.length <= 1) {
+      const single = moduleInstances[0];
+      if (single && single.instance_label != null) {
+        return this.backend.update.patchModuleInstanceLabel(single.id, null).pipe(
+          tap(() => {
+            const idx = all.findIndex(i => i.id === single.id);
+            if (idx >= 0) {
+              const updated = [...all];
+              updated[idx] = {...updated[idx], instance_label: null};
+              this.patchModuleInstances$.next(updated);
+            }
+          }),
+          map(() => null),
+          catchError(err => {
+            console.error('Failed to clear instance label:', err);
+            return of(null);
+          })
+        );
+      }
+      return of(null);
+    }
+    
+    // Build list of updates needed
+    const updates: {
+      instance: PatchModuleInstance;
+      newLabel: string
+    }[] = [];
+    moduleInstances.forEach((inst, idx) => {
+      const expectedLabel = `(${ idx + 1 })`;
+      if (inst.instance_label !== expectedLabel) {
+        updates.push({instance: inst, newLabel: expectedLabel});
+      }
+    });
+    
+    if (updates.length === 0) { return of(null); }
+    
+    // Fire all label updates in parallel
+    return forkJoin(
+      updates.map(u => this.backend.update.patchModuleInstanceLabel(u.instance.id, u.newLabel).pipe(
+        catchError(err => {
+          console.error(`Failed to renumber instance ${ u.instance.id }:`, err);
+          return of(null);
+        })
+      ))
+    ).pipe(
+      tap(() => {
+        // Update local state in one batch
+        const current = [...this.patchModuleInstances$.value];
+        for (const u of updates) {
+          const idx = current.findIndex(i => i.id === u.instance.id);
+          if (idx >= 0) {
+            current[idx] = {...current[idx], instance_label: u.newLabel};
+          }
+        }
+        this.patchModuleInstances$.next(current);
+      }),
+      map(() => null)
+    );
   }
 }

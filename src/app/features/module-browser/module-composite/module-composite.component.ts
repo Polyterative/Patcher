@@ -21,6 +21,8 @@ import { DbModule } from 'src/app/models/module';
 export class ModuleCompositeComponent implements OnInit {
   @Input() data: DbModule;
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
+  /** Passed through for instance-aware CV clicks in patch editing */
+  @Input() instanceId: number | undefined;
   
   constructor() {}
   

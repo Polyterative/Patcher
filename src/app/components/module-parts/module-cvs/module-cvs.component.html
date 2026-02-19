@@ -9,6 +9,7 @@
       <mat-chip-listbox>
         @for (item of outs; track item; let i = $index) {
           <app-module-cvitem [data]="item"
+                             [instanceId]="instanceId"
                              kind="out"
                              (click$)="outClick$.next([$event,data])"
                              [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
@@ -27,6 +28,7 @@
       <mat-chip-listbox>
         @for (item of ins; track item; let i = $index) {
           <app-module-cvitem [data]="item"
+                             [instanceId]="instanceId"
                              kind="in"
                              (click$)="inClick$.next([$event,data])"
                              [@enter]="{ value: '', params: { delay: (i * 25)+100}}"

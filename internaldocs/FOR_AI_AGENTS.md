@@ -165,11 +165,12 @@ already up; just run `yarn test:e2e`
 |-----------------------------------------------|----------------------|
 | Agent rules & workflow preferences            | `FOR_AI_AGENTS.md`   |
 | Active feature — steps, gotchas, test results | `CURRENT_FEATURE.md` |
-| Backlog & completed history                   | `TODO.md`            |
+| Backlog & active tasks                        | `TODO.md`            |
+| Finished features archive                     | `COMPLETED.md`       |
 | Product goals & strategy                      | `PRODUCT_NEEDS.md`   |
 
-**CURRENT_FEATURE.md workflow:** Read at session start. Update inline as you work. On completion: summarise in TODO.md,
-reset to Empty Template.
+**CURRENT_FEATURE.md workflow:** Read at session start. Update inline as you work. On completion: archive to
+COMPLETED.md, reset to Empty Template.
 
 ---
 
@@ -198,5 +199,6 @@ change: `!` suffix + `BREAKING CHANGE:` footer.
 
 ## 📣 Communication
 
-✅ Explain changes directly and concisely · Validate with error checking after edits  
-❌ No markdown summaries, reports, or reference guides unless explicitly requested  
+- ✅ Explain changes directly and concisely
+- ✅ Validate with error checking after edits
+- ❌ No markdown summaries, reports, or reference guides unless explicitly requested

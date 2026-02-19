@@ -12,11 +12,13 @@ function makeCV(id: number, moduleId: number, moduleName: string): CVwithModule 
   };
 }
 
-function makeConnection(outCvId: number, outModuleId: number, inCvId: number, inModuleId: number): PatchConnection {
+function makeConnection(outCvId: number, outModuleId: number, inCvId: number, inModuleId: number, instanceIdA?: number, instanceIdB?: number): PatchConnection {
   return {
     a: makeCV(outCvId, outModuleId, `Module ${ outModuleId }`),
     b: makeCV(inCvId, inModuleId, `Module ${ inModuleId }`),
-    patch: {id: 1} as Patch
+    patch: {id: 1} as Patch,
+    instance_id_a: instanceIdA,
+    instance_id_b: instanceIdB
   };
 }
 
@@ -113,5 +115,64 @@ describe('PatchConnectionStatsPipe', () => {
     expect(result.uniqueModules).toBe(1);
     expect(result.totalCables).toBe(1);
     expect(result.multiplesCount).toBe(0);
+  });
+  
+  // --- totalInstances tests ---
+  
+  it('should report totalInstances equal to uniqueModules when no instance IDs are set', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 20),
+      makeConnection(3, 30, 4, 40)
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.totalInstances).toBe(result.uniqueModules);
+    expect(result.totalInstances).toBe(4);
+  });
+  
+  it('should count 2 instances for one module with 2 different instance IDs', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 20, 100, 200), // module 10 instance 100 → module 20 instance 200
+      makeConnection(3, 10, 4, 20, 101, 200)  // module 10 instance 101 → module 20 instance 200
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.uniqueModules).toBe(2);    // modules 10 and 20
+    expect(result.totalInstances).toBe(3);   // 10_100, 10_101, 20_200
+  });
+  
+  it('should count totalInstances correctly in a mixed scenario with some instances and some without', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 20, 100, undefined), // module 10 has instance, module 20 does not
+      makeConnection(3, 10, 4, 30, 101, 300)         // module 10 second instance, module 30 has instance
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.uniqueModules).toBe(3);    // modules 10, 20, 30
+    expect(result.totalInstances).toBe(4);   // 10_100, 10_101, 20_none, 30_300
+  });
+  
+  it('should count self-connection on same instance as 1 instance', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 10, 100, 100) // self-patch: same module, same instance
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.uniqueModules).toBe(1);
+    expect(result.totalInstances).toBe(1);   // 10_100 counted once
+  });
+  
+  it('should count cross-instance self-connection as 2 instances', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 10, 100, 101) // same module, different instances
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.uniqueModules).toBe(1);    // both sides are module 10
+    expect(result.totalInstances).toBe(2);   // 10_100 and 10_101
+  });
+  
+  it('should report totalInstances equal to uniqueModules for a single connection without instances', () => {
+    const connections: PatchConnection[] = [
+      makeConnection(1, 10, 2, 20)
+    ];
+    const result = pipe.transform(connections)!;
+    expect(result.totalInstances).toBe(2);
+    expect(result.totalInstances).toBe(result.uniqueModules);
   });
 });
