@@ -31,6 +31,8 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Input() readonly data: PatchConnection;
   @Input() readonly isEditing = false;
   @Input() readonly isCreator = false;
+  /** Map from instance ID → display label (e.g. "(1)"). Only set for multi-instance modules. */
+  @Input() readonly instanceLabelMap: Map<number, string> = new Map();
   @Output() readonly remove$ = new EventEmitter<PatchConnection>();
   @Output() readonly create$ = new EventEmitter<PatchConnection>();
   types = FormTypes;

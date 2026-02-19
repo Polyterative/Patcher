@@ -10,10 +10,17 @@ import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
 } from 'angular-animations';
-import { Subject } from 'rxjs';
 import {
+  EMPTY,
+  of,
+  Subject
+} from 'rxjs';
+import {
+  catchError,
   filter,
-  takeUntil
+  switchMap,
+  takeUntil,
+  tap
 } from 'rxjs/operators';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { CV } from 'src/app/models/cv';
@@ -40,6 +47,8 @@ import { DbModule } from 'src/app/models/module';
 })
 export class ModuleCVsComponent implements OnInit {
   @Input() data: DbModule;
+  /** When set, CV clicks will include this instance_id in the emitted CVwithModule */
+  @Input() instanceId: number | undefined;
   
   ins: CV[] = [];
   outs: CV[] = [];
@@ -92,37 +101,62 @@ export class ModuleCVsComponent implements OnInit {
     this.inClick$
       .pipe(
         filter(() => this.patchService.patchEditingPanelOpenState$.value),
+        switchMap(([cv, module]) =>
+          this.ensureInstanceId$(module).pipe(
+            tap(resolvedId => {
+              this.patchService.clickOnModuleCV$.next({
+                cv: {...cv, module, instance_id: resolvedId},
+                kind: 'in'
+              });
+            }),
+            catchError(() => EMPTY)
+          )
+        ),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([cv, module]) => {
-        this.patchService.clickOnModuleCV$.next({
-          cv: {
-            ...cv,
-            module
-          },
-          kind: 'in'
-        });
-      });
+      .subscribe();
+    
     this.outClick$
       .pipe(
         filter(() => this.patchService.patchEditingPanelOpenState$.value),
+        switchMap(([cv, module]) =>
+          this.ensureInstanceId$(module).pipe(
+            tap(resolvedId => {
+              this.patchService.clickOnModuleCV$.next({
+                cv: {...cv, module, instance_id: resolvedId},
+                kind: 'out'
+              });
+            }),
+            catchError(() => EMPTY)
+          )
+        ),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([cv, module]) => {
-        this.patchService.clickOnModuleCV$.next({
-          cv: {
-            ...cv,
-            module
-          },
-          kind: 'out'
-        });
-      });
+      .subscribe();
     
   }
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
+  }
+  
+  /**
+   * If instanceId is already set (module has an instance), return it immediately.
+   * Otherwise, lazily auto-create an instance for this module in the current patch
+   * and return the new id.
+   */
+  private ensureInstanceId$(module: DbModule) {
+    if (this.instanceId != null) {
+      return of(this.instanceId);
+    }
+    // Auto-create: delegate to the data service
+    return this.patchService.ensureModuleInstance$(module).pipe(
+      tap(newId => {
+        // Cache for subsequent clicks on the same component
+        this.instanceId = newId;
+      })
+    );
   }
   
 }

@@ -37,6 +37,9 @@ export class PatchConnectionsListComponent implements OnInit {
   
   @Input() reverseOrder: boolean = false;
   
+  /** Map from instance ID → display label. Passed through to each connection row. */
+  @Input() instanceLabelMap: Map<number, string> = new Map();
+  
   constructor(
     public dataService: PatchDetailDataService
   ) { }

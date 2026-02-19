@@ -1,5 +1,4 @@
 @if ({
-  patchEditingPanelOpenState:(patchingService.patchEditingPanelOpenState$|async),
   filteredData:(filteredData$|async),
   data:(data$|async)
 }; as bag) {
@@ -24,16 +23,10 @@
           <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >
-            @if (!bag.patchEditingPanelOpenState) {
-              <app-module-minimal
-                [data]="item"
-                [viewConfig]="viewConfig"
-              ></app-module-minimal>
-            } @else {
-              <app-module-composite [data]="item"
-                                    [viewConfig]="viewConfig"
-              ></app-module-composite>
-            }
+            <app-module-minimal
+              [data]="item"
+              [viewConfig]="viewConfig"
+            ></app-module-minimal>
           </lib-clean-card>
         }
       </flexbox-row-fast>

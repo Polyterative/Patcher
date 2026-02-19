@@ -30,6 +30,8 @@ import {
 export class ModuleDetailsComponent implements OnInit {
   @Input() data: DbModule;
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
+  /** Passed through to app-module-cvs for instance-aware CV clicks */
+  @Input() instanceId: number | undefined;
   
   switches = [];
   

@@ -48,7 +48,8 @@
   }
   <ng-template #connectionList>
     @if ({
-      connections: (dataService.patchConnections$|async)
+      connections: (dataService.patchConnections$|async),
+      instanceLabelMap: (dataService.instanceLabelMap$|async)
     }; as bagA) {
       @if (data && bagA.connections && bagA.connections.length > 0) {
         @if (!(dataService.patchEditingPanelOpenState$|async)) {
@@ -58,14 +59,14 @@
                 { name: 'Cables', value: stats.totalCables },
                 { name: 'Modules', value: stats.uniqueModules },
                 { name: 'Multiples', value: stats.multiplesCount }
-              ]"></app-statistics>
+              ].concat(stats.totalInstances > stats.uniqueModules ? [{ name: 'Module copies', value: stats.totalInstances }] : [])"></app-statistics>
             </lib-hero-content-card>
           }
           <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
           >
-            <!--          <lib-clean-card>-->
             <app-patch-connections-list [editorConnections]="bagA.connections"
                                         [isEditing]="false"
+                                        [instanceLabelMap]="bagA.instanceLabelMap"
             ></app-patch-connections-list>
             <!--          </lib-clean-card>-->
           </lib-hero-content-card>

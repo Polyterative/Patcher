@@ -1,0 +1,29 @@
+# Completed Features
+
+> Archive of finished work. One-line summaries only. For strategy context see `PRODUCT_NEEDS.md`.
+
+---
+
+## Done
+
+| Feature                           | Date   | Notes                                                                                                                                          |
+|-----------------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Private patches                   | Feb 18 | `public` field, toggle, default public                                                                                                         |
+| User-submitted manufacturers      | Feb 19 | Inline creation form, auto-select on create                                                                                                    |
+| Account data deletion             | Feb 19 | `delete.allUserData()`, confirm dialog                                                                                                         |
+| Cable/multiples counter           | Feb 19 | `PatchConnectionStatsPipe`, statistics panel                                                                                                   |
+| iOS clipboard fix                 | Feb 19 | textarea + execCommand fallback                                                                                                                |
+| Rack stats blank filter           | Feb 19 | `BLANK_MODULE_IDS` filter in 6 stats pipes                                                                                                     |
+| Blank module education            | Feb 18 | FAQ entry, rack editor tooltip, context menu                                                                                                   |
+| Bug sweep                         | Feb 19 | Double backend call, snackBar, readonly, dead code                                                                                             |
+| Security audit – secrets in repo  | Feb 19 | Gitleaks clean, .gitignore hardened                                                                                                            |
+| Account mgmt – password change    | Feb 19 | Inline form, min 8 chars, 9 tests                                                                                                              |
+| Duplicate panel detection         | Feb 19 | Client-side validation in editor                                                                                                               |
+| E2E test setup – Playwright       | Feb 19 | Config, scripts, helpers, removed Protractor                                                                                                   |
+| E2E – module browser smoke test   | Feb 19 | 4 tests: page load, cards, paginator, heading                                                                                                  |
+| Multi-Instance DB + Manual UI     | Feb 20 | DB tables + CRUD done; manual UX frozen — replaced by auto-instance                                                                            |
+| Auto-Instance on Module Add       | Feb 20 | Collection-first editor, batch insert, null normalization, 284 tests                                                                           |
+| Instance-Aware CV Highlighting    | Feb 20 | Fix: only selected instance's CVs light up, 9 regression tests                                                                                 |
+| Instance Labels in Read-Only View | Feb 20 | `instanceLabelMap$` on data service, threaded through connection list to minimal row component, labels shown per-instance in read-only view    |
+| Instance delete confirmation      | Feb 20 | Confirmation dialog shown when deleting an instance that has active connections                                                                |
+| Instance-Aware Statistics card    | Feb 20 | Root cause: `StatisticsModule` missing from `PatchBrowserModule`; added import — stats card now renders Cables/Modules/Multiples/Module copies |

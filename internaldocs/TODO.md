@@ -5,7 +5,7 @@
      other work. Do not start implementation until the file reflects the task as Active.
 > 2. **Update steps inline as you go** — check off `[ ]` → `[x]` after completing each step; save the file before moving
      to the next step. Never leave Active half-finished when handing back.
-> 3. **On completion** — move the task to Completed as a one-line summary (date + what changed + key files/test counts),
+> 3. **On completion** — move the task to [COMPLETED.md](./COMPLETED.md) as a one-line summary (date + what changed),
      then clear Active. Also reset `CURRENT_FEATURE.md` to its Empty Template.
 > 4. **Domain detail lives in `CURRENT_FEATURE.md`** — implementation steps, file names, schema fields, test results,
      and gotchas go there while a feature is in progress. Only a one-line entry per feature belongs here.
@@ -23,67 +23,138 @@
 
 ---
 
-## Completed (compressed)
+## Completed
 
-- [x] **Bug sweep** (Feb 19) — Fixed double backend call, snackBar conventions, readonly @Input errors, fxLayout
-  deprecations, dead code, wrong tooltips across module-editor, module-details, module-browser-detail.
-- [x] **Private Patches** (Feb 18) — Added `public` field to patches; Privatable interface; toggle button + tooltip;
-  default public on creation. Tests: integration-user-patches, patch-detail-data-service-privacy, crud-operations.
-- [x] **Blank Module Education** (Feb 18) — FAQ entry, rack editor tooltip, enhanced context menu label "Replace with
-  blank (add spacing)".
-- [x] **User-Submitted Manufacturers** (Feb 19) — Inline manufacturer creation form in module submission;
-  BehaviorSubject options list; auto-select on create. 18 tests in module-adder-manufacturer-creation.spec.ts.
-- [x] **Account Data Deletion** (Feb 19) — `delete.allUserData()` in SupabaseService; deleteAccountAction$ handler in
-  UserManagementService with confirm dialog; single "Delete my data" button wired up.
-- [x] **Cable/Multiples Counter** (Feb 19) — PatchConnectionStatsPipe (cables, modules, multiples); statistics panel in
-  patch-composite. 10 tests in patch-connection-stats.spec.ts.
-- [x] **iOS Clipboard Fix** (Feb 19) — textarea + execCommand fallback in app-copy-on-click.directive.ts.
-- [x] **Rack Statistics Blank Filter** (Feb 19) — rack-blank-module.constants.ts; BLANK_MODULE_IDS filter in all 6 stats
-  pipes. 30 tests in rack-stats-blank-filter.spec.ts.
-
----
-
-- [x] **E2E Test Setup — Playwright** (Feb 19) — Added `@playwright/test`; `playwright.config.ts`; `yarn test:e2e` /
-  `test:e2e:ci` / `playwright:install` scripts; `e2e/helpers/auth.ts`; 8 spec files (flows 1–8) with `test.todo` stubs;
-  removed Protractor; updated FOR_AI_AGENTS.md Commands table. Key files: `playwright.config.ts`,
-  `e2e/helpers/auth.ts`, `e2e/flow-01-signup.spec.ts` … `e2e/flow-08-delete-account.spec.ts`.
-- [x] **E2E — Module browser smoke test** (Feb 19) — Removed 8 unimplemented flow stubs; added
-  `e2e/module-browser.spec.ts` (4 passing tests: page loads, `div.card` visible, paginator status > 0, heading visible);
-  fixed selector — cards render as `div.card` not `mat-card`; `playwright.config.ts` `testMatch` narrowed to
-  `module-browser.spec.ts`. ✅ Done Feb 19.
-
-- [x] **Account Management — Password Change** (Feb 19) — `changePassword$` + `showPasswordForm$` toggle in
-  `UserManagementService`; `updatePassword$` in `SupabaseService`; inline form (new + confirm, min 8 chars) in
-  `user-management.component.html`; ReactiveFormsModule + Material modules added to `user-management.module.ts`. 9 tests
-  in `password-change.spec.ts`.
-- [x] **Security Audit — Secrets & Credentials** (Feb 19) — Ran gitleaks on full history: 0 secrets in current tree,
-  8 historical findings (5× Supabase anon JWT — safe/public, 3× old Firebase/GCP API keys in deleted `firebase.ts`).
-  Fixed `.gitignore` (added `.env*`, `*.pem`, `*.key`, `*.p12`). Manual follow-ups: revoke 2 old GCP keys in console,
-  verify Supabase RLS in dashboard.
-- [x] **Duplicate Panel Detection** (Feb 19) — Proactive client-side check in module editor: `panelTypeAlreadyExists$`
-  observable blocks "Add Panel" button when selected color/type already exists on the module; `app-advice-tooltip`
-  warning
-  shown; eager init in `ngOnInit` ensures warning renders on first load without user interaction; existing `catchError`
-  retained as safety net. Key files: `module-editor.component.ts`, `.html`. 14 tests in
-  `duplicate-panel-detection.spec.ts`. Full suite: 240/240 pass.
-
-- [x] **Safari Image Export Fix (partial)** (Feb 19) — Replaced `dom-to-image` v2.6.0 with `html-to-image` v1.11.13;
-  updated import and both `toJpeg` call sites in `rack-detail-data.service.ts`; corrected `bgcolor` → `backgroundColor`.
-  Removed `dom-to-image` + `@types/dom-to-image`. **Result:** Safari now downloads an image (previously failed
-  entirely),
-  but the rendered output differs from Chrome — likely WebKit SVG/foreignObject rendering differences in
-  `html-to-image`.
-  Needs further investigation. Full suite: 240/240 pass.
+> Archived in [COMPLETED.md](./COMPLETED.md). 19 features done Feb 18–20.
 
 ---
 
 ## Active
 
-*(none)*
-  Safari/WebKit.
+> Nothing in progress. Pick from Backlog.
 
 ---
 
 ## Backlog
 
-*(empty — other tasks managed in separate branch)*
+### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
+
+**Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for
+now.  
+**Remaining flows (deferred):** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch
+Connection, Module Submission, Sign Up, Delete Account.
+
+---
+
+### HIGH: E2E — Multi-Instance Patching (Auto-Instance Feature)
+
+**Why:** The auto-instance feature (collection-first editor, "Add Copy", instance delete, connection scrub,
+self-connections) was verified with 30 unit tests but lacks E2E coverage through the real UI.  
+**Depends on:** E2E Authenticated Test Login (below) — patch editing requires a logged-in user.
+
+**Flows to cover:**
+
+- [ ] Open a patch in editor, verify collection modules appear as cards
+- [ ] Click "Add Copy" on a module with 0 instances → verify 2 cards appear with labels (1), (2)
+- [ ] Click "Add Copy" again → verify 3 cards appear with labels (1), (2), (3)
+- [ ] Connect an output CV from instance (1) to an input CV on another module → verify connection recorded
+- [ ] Connect the same output CV to instance (2) of the same module → verify accepted (not duplicate)
+- [ ] Attempt the exact same connection again → verify rejected as duplicate
+- [ ] Delete an instance that has connections → verify confirmation dialog appears
+- [ ] Confirm deletion → verify instance removed, connection scrubbed, remaining instances renumbered
+- [ ] Save patch and reload → verify connections and instances survive roundtrip
+- [ ] Legacy patch (pre-instance) → verify it loads and connections display correctly
+
+---
+
+### HIGH: E2E — Authenticated Test Login + Secrets Management
+
+**Why:** Many E2E flows (patch editing, rack creation, module instances, account management) require a logged-in user.
+Currently no auth helper exists (`e2e/helpers/` is empty). Test credentials must not leak — the project is open source.
+
+**Context:** The project already gitignores `environment.ts` and uses `generate-env.js` + env vars for CI secrets.
+The same pattern should extend to E2E test credentials.
+
+**Steps when picked:**
+
+- [ ] Create a dedicated Supabase test account (email/password) for E2E — not a real user account
+- [ ] Create `.env` file at project root for local dev (holds `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`)
+- [ ] Add `.env` to `.gitignore` (keep secrets out of repo)
+- [ ] Add `.env.example` to repo with placeholder values so contributors know what to set
+- [ ] Install `dotenv` (or use Playwright's built-in `dotenv` support via `playwright.config.ts`)
+- [ ] Create `e2e/helpers/auth.ts` — helper that logs in via Supabase Auth (email/password), stores session
+- [ ] Configure Playwright `globalSetup` or `storageState` to reuse auth across tests (avoid login per test)
+- [ ] Add `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` to CI environment (GitHub Actions secrets / Vercel env)
+- [ ] Write a smoke test that logs in and verifies the user menu appears
+- [ ] Document the setup in `FOR_AI_AGENTS.md` (how to set up `.env` for local E2E runs)
+
+---
+
+### MEDIUM: Module Review Flagging
+
+**Why:** No way for users to report bad data (wrong specs, duplicate entries, missing image).  
+**Constraint:** Needs a new database table; admin review UI is out of scope for first iteration — focus on user-facing
+flag submission only.
+
+**Steps when picked:**
+
+- [ ] Read `module-details` component to locate the right insertion point for a "Report issue" button
+- [ ] Read `supabase.service.ts` `add` namespace to understand insertion patterns
+- [ ] Add `module_flags` to `DbPaths` in `DatabaseStrings.ts`
+- [ ] Design `module_flags` table type in `database.types.ts` (id, module_id, user_id, category, note, created_at,
+  resolved)
+- [ ] Add `add.moduleFlag()` to `supabase.service.ts` with `cacheBust` (no cached key needed yet — it's a write-only
+  path for now)
+- [ ] Create `module-flag-data.service.ts` with `submitFlag$` Subject and inline form toggle
+- [ ] Add inline flag form to module-details (predefined categories: wrong specs / missing image / duplicate / other)
+- [ ] Show confirmation snackbar on success via SharedConstants.successCustom
+- [ ] Write tests for service API surface and flag submission flow
+
+---
+
+
+### LOW: Edit Module HP in Rack
+
+**Why:** Correcting a wrong HP value requires removing and re-adding the module.  
+**Decision:** Rack-specific override (don't touch global module data — too risky for all users).
+
+**Steps when picked:**
+
+- [ ] Read rack editor component and `rack_modules` schema in `database.types.ts`
+- [ ] Add nullable `hp_override` to the `rack_modules` Row/Insert/Update types in `database.types.ts`
+- [ ] Add `update.rackModuleHp(rackModuleId, hp)` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
+- [ ] Add inline HP edit affordance in rack editor (click-to-edit, validated number input)
+- [ ] Module rendering must prefer `hp_override` over module's default HP when set
+- [ ] Write tests for override logic and rack layout reflow
+
+---
+
+### BUG: Safari Image Export Rendering Differs
+
+**Why:** `dom-to-image` library renders differently in Safari vs Chrome. Download works but output image is not
+identical.  
+**Fix approach:** Replace with `modern-screenshot` (actively maintained, Safari-compatible).
+
+**Steps when picked:**
+
+- [ ] Grep for `dom-to-image` and `domToImage` usage to find all call sites
+- [ ] `yarn add modern-screenshot` and `yarn remove dom-to-image`
+- [ ] Replace `dom-to-image` calls with `modern-screenshot` equivalents
+- [ ] Remove `@types/dom-to-image` from devDependencies
+- [ ] Test export in Safari-compatible browser or CI
+
+---
+
+## Long-term Ideas (not yet broken into steps)
+
+- **Manufacturer Pages** — Dedicated page per manufacturer; `get.modulesBySameManufacturer()` backend method already
+  exists. Needs UI. SEO opportunity.
+- **Manufacturer Accounts** — Role-based auth expansion; manufacturers claim and manage their own modules. Large scope.
+- **User Profile Pages** — Public activity pages; requires privacy controls. Large scope.
+- **Patch Graph: Occupied Inputs Visualization** — Color/CSS indicator on already-connected inputs in graph.
+- **Patch Graph: User-Colored Nodes** — Let users color-code modules or connections for complex patch clarity.
+- **User Organization (Tags/Folders)** — Group modules, patches, racks. Needs new DB tables + filtering UI.
+- **PWA Support** — Angular PWA schematics, service worker, offline strategy.
+- **Store Integration** — Buy links to retailers; needs business partnerships.
+- **Dark Mode** — CSS variable-based theme system; large design scope.
+- **Better SQL RLS Policies** — Security/performance audit of row-level security; supports future roles.

@@ -4,14 +4,16 @@ Project-specific guidelines for Patcher development.
 
 ## Files
 
-| File                                   | Purpose                                                                         |
-|----------------------------------------|---------------------------------------------------------------------------------|
-| [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md) | ⚠️ **Start here.** Enforcement rules, autonomy rules, workflow, git conventions |
-| [ARCHITECTURE.md](./ARCHITECTURE.md)   | Service layers, project structure, state strategy                               |
-| [STYLE_GUIDE.md](./STYLE_GUIDE.md)     | Naming conventions, HTML/SCSS patterns, project conventions                     |
-| [PATTERNS.md](./PATTERNS.md)           | Canonical code templates — copy from here                                       |
-| [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md) | Product strategy, open design questions, feature status                         |
-| [TODO.md](./TODO.md)                   | Active tasks, backlog with steps, completed history                             |
+| File                                       | Purpose                                                                         |
+|--------------------------------------------|---------------------------------------------------------------------------------|
+| [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md)     | ⚠️ **Start here.** Enforcement rules, autonomy rules, workflow, git conventions |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)       | Service layers, project structure, state strategy                               |
+| [STYLE_GUIDE.md](./STYLE_GUIDE.md)         | Naming conventions, HTML/SCSS patterns, project conventions                     |
+| [PATTERNS.md](./PATTERNS.md)               | Canonical code templates — copy from here                                       |
+| [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md)     | Product strategy, open design questions, feature status                         |
+| [TODO.md](./TODO.md)                       | Active tasks, backlog with steps                                                |
+| [CURRENT_FEATURE.md](./CURRENT_FEATURE.md) | Working detail for the feature currently in progress                            |
+| [COMPLETED.md](./COMPLETED.md)             | Archive of finished features                                                    |
 
 ## Package Manager
 
