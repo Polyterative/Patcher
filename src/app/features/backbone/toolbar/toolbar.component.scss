@@ -1,5 +1,4 @@
-﻿@use '@angular/material' as mat;
-@use "../../../app.component";
+﻿@use "../../../app.component";
 @use "src/app/style/brand-resources.scss" as *;
 
 mat-toolbar-row {
@@ -71,7 +70,29 @@ mat-divider {
 
 .toolbar {
   background-color: $brand-primary;
-  //margin-bottom:    1em;
+
+  // Restore the hover/focus/active overlay that Material's color="primary"
+  // context used to inject automatically on child buttons.
+  a[mat-button],
+  a[mat-icon-button],
+  button[mat-button],
+  button[mat-icon-button] {
+    color: rgba(255, 255, 255, 0.95);
+
+    &:hover:not([disabled]) {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    &:focus-visible:not([disabled]) {
+      background-color: rgba(255, 255, 255, 0.12);
+      outline: 2px solid rgba(255, 255, 255, 0.6);
+      outline-offset: 2px;
+    }
+
+    &:active:not([disabled]) {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
 }
 
 .sticky {
