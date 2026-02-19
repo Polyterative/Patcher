@@ -84,7 +84,7 @@ export class CommentsDataService extends SubManager {
       withLatestFrom(this.requestCommentsUpdate$),
       takeUntil(this.destroy$)
     ).subscribe(([_, entity]) => {
-      SharedConstants.successCustom(this.snackBar, 'Comment deleted');
+      SharedConstants.successCustom(this.snackBar, 'Comment removed.');
       this.requestCommentsUpdate$.next(entity);
     });
     
@@ -124,7 +124,7 @@ export class CommentsDataService extends SubManager {
     ).subscribe(([_, entity]) => {
       this.resetField();
       
-      SharedConstants.successCustom(this.snackBar, 'Comment added');
+      SharedConstants.successCustom(this.snackBar, 'Comment posted.');
       this.requestCommentsUpdate$.next(entity);
     });
     
