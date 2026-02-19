@@ -326,8 +326,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         ),
         catchError(error => {
           console.error('Error saving INs/OUTs:', error);
-          this.snackBar.open('An error occurred while saving.', undefined, {
-            duration: 5000
+          this.snackBar.open('CV data not saved — the server returned an error. Try again.', undefined, {
+            duration: 5000,
+            panelClass: 'snack-error'
           });
           return EMPTY;
         }),
@@ -336,8 +337,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        this.snackBar.open('Thank you for your contribution!', undefined, {
-          duration: 5000
+        this.snackBar.open('CV data written to module.', undefined, {
+          duration: 5000,
+          panelClass: 'snack-success'
         });
       });
     
@@ -365,8 +367,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         switchMap(() => {
           // Check if the power form is valid
           if (this.formGroupPower.invalid) {
-            this.snackBar.open('Please enter valid power values.', undefined, {
-              duration: 5000
+            this.snackBar.open('Power form has invalid values — check the fields and try again.', undefined, {
+              duration: 5000,
+              panelClass: 'snack-error'
             });
             return EMPTY;
           }
@@ -387,8 +390,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }),
         catchError(error => {
           console.error('Error saving power data:', error);
-          this.snackBar.open('An error occurred while saving power data.', undefined, {
-            duration: 5000
+          this.snackBar.open('Power specs not saved — the server returned an error. Try again.', undefined, {
+            duration: 5000,
+            panelClass: 'snack-error'
           });
           return EMPTY;
         }),
@@ -397,7 +401,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .subscribe(updatedModule => {
         if (updatedModule) {
           this.snackBar.open('Power specs written to module.', undefined, {
-            duration: 5000
+            duration: 5000,
+            panelClass: 'snack-success'
           });
           this.dataService.updateSingleModuleData$.next(this.data.id);
         }
@@ -410,8 +415,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .pipe(
         switchMap(() => {
           if (this.formGroupPhysical.invalid) {
-            this.snackBar.open('Please enter valid physical values.', undefined, {
-              duration: 5000
+            this.snackBar.open('Physical form has invalid values — check the fields and try again.', undefined, {
+              duration: 5000,
+              panelClass: 'snack-error'
             });
             return EMPTY;
           }
@@ -432,7 +438,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         catchError(error => {
           console.error('Error saving physical data:', error);
           this.snackBar.open('Physical specs not saved — the server returned an error. Try again.', undefined, {
-            duration: 5000
+            duration: 5000,
+            panelClass: 'snack-error'
           });
           return EMPTY;
         }),
@@ -442,7 +449,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
         this.snackBar.open('Physical specs written to module.', undefined, {
-          duration: 5000
+          duration: 5000,
+          panelClass: 'snack-success'
         });
       });
     
@@ -486,19 +494,23 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         catchError(error => {
           console.error('Error during panel upload:', error);
           if (error && error.message && error.message.includes('duplicate key value violates')) {
-            // Duplicate panel exists: notify the user accordingly
-            this.snackBar.open('Panel already exists.', undefined, {duration: 10000});
+            this.snackBar.open('Panel already exists for this module — upload a different image or remove the existing one first.', undefined, {
+              duration: 10000,
+              panelClass: 'snack-error'
+            });
           } else {
-            // Generic error message for any other errors
-            this.snackBar.open('Something went wrong during the upload, please try again', undefined, {duration: 10000});
+            this.snackBar.open('Panel upload failed — the server returned an error. Try again.', undefined, {
+              duration: 10000,
+              panelClass: 'snack-error'
+            });
           }
           return EMPTY;
         })
       )
       .subscribe(() => {
         // Provide user feedback on successful panel upload
-        const message = '✔ Panel added, thanks! It is now available for the community';
-        this.snackBar.open(message, undefined, {duration: 10000});
+        const message = 'Panel image uploaded and attached to this module.';
+        this.snackBar.open(message, undefined, {duration: 10000, panelClass: 'snack-success'});
         // Reload the module data
         this.dataService.updateSingleModuleData$.next(this.data.id);
       });
@@ -507,8 +519,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   private shouldSaveInsOuts(ins: CV[], outs: CV[]): boolean {
     if (ins.length === 0 && outs.length === 0) {
-      this.snackBar.open('Nothing to save', undefined, {
-        duration: 2000
+      this.snackBar.open('No CV data to save — add ins or outs first.', undefined, {
+        duration: 2000,
+        panelClass: 'snack-info'
       });
       this.reload();
       return false;
@@ -526,8 +539,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       outs.length === this.data.outs.length;
     
     if (sameApproved && sameUnapproved) {
-      this.snackBar.open('All CVs are approved. Nothing to save.', undefined, {
-        duration: 3000
+      this.snackBar.open('All CV ports are already approved — nothing to update.', undefined, {
+        duration: 3000,
+        panelClass: 'snack-info'
       });
       this.reload();
       return false;

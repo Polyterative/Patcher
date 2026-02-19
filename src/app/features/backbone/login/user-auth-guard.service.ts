@@ -1,25 +1,25 @@
 import {
   inject,
   Injectable
-}                                from '@angular/core';
-import { MatSnackBar }           from "@angular/material/snack-bar";
+} from '@angular/core';
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   ActivatedRouteSnapshot,
   CanActivateFn,
   Router,
   RouterStateSnapshot
-}                                from '@angular/router';
+} from '@angular/router';
 import {
   map,
   of,
   tap
-}                                from 'rxjs';
+} from 'rxjs';
 import { UserManagementService } from './user-management.service';
-import { MatDialog }             from "@angular/material/dialog";
+import { MatDialog } from "@angular/material/dialog";
 import {
   switchMap,
   take
-}                                from "rxjs/operators";
+} from "rxjs/operators";
 
 
 @Injectable()
@@ -43,8 +43,9 @@ export class UserAuthGuard {
       tap((user) => {
         if (!user) {
           // this.dialog.open(LoginProposalComponent);
-          let snack = this.snackBar.open('Login to use this feature', 'Login now', {
-            duration: 10000
+          let snack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
+            duration: 10000,
+            panelClass: 'snack-info'
           });
       
           snack.onAction()

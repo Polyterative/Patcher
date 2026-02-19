@@ -124,8 +124,9 @@ export class PatchCreatorComponent implements OnInit {
         .subscribe(value => {
           
           // success and open the new patch action
-          this.snackBar.open('Patch created', undefined, {
-            duration: 3000
+          this.snackBar.open('Patch created and saved to your library.', undefined, {
+            duration: 3000,
+            panelClass: 'snack-success'
           })
             .onAction()
             .subscribe(() => {
