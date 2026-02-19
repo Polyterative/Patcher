@@ -3,6 +3,7 @@ import {
   PipeTransform
 } from '@angular/core';
 import { RackedModule } from '../../models/module';
+import { isBlankModule } from './rack-blank-module.constants';
 
 
 @Pipe({
@@ -12,8 +13,10 @@ import { RackedModule } from '../../models/module';
 export class TotalModulesOfRackPipe implements PipeTransform {
   
   transform(value: RackedModule[][]): number {
-    // total hp for all modules
-    return value.reduce((accumulator, value) => accumulator.concat(value), [])
+    // total module count, excluding blank spacing modules
+    return value
+      .reduce((accumulator, value) => accumulator.concat(value), [])
+      .filter(m => !isBlankModule(m.module.id))
       .length;
   }
   

@@ -3,6 +3,7 @@ import {
   PipeTransform
 } from '@angular/core';
 import { RackedModule } from '../../models/module';
+import { isBlankModule } from './rack-blank-module.constants';
 
 
 @Pipe({
@@ -12,9 +13,10 @@ import { RackedModule } from '../../models/module';
 export class TotalDepthOfRackPipe implements PipeTransform {
   
   transform(value: RackedModule[][]): number[] {
-    // Flatten the array and filter out undefined depths
+    // Flatten the array, exclude blanks, and filter out undefined depths
     const depths = value
       .flat()
+      .filter(module => !isBlankModule(module.module.id))
       .map(module => module.module.depth)
       .filter(depth => depth !== null);
     
