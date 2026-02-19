@@ -107,7 +107,7 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.updateSinglePatchData$
       .pipe(
-        tap(x => this.singlePatchData$.next(undefined)),
+        // tap(x => this.singlePatchData$.next(undefined)),
         tap(x => this.patchConnections$.next(null)),
         tap(x => this.editorConnections$.next(null)),
         switchMap(x => this.backend.get.patchWithId(x)),
@@ -115,8 +115,15 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(x => {
         this.singlePatchData$.next(x.data);
-        this.isCurrentPatchPrivate$.next(!x.data.public);
       });
+    
+    // when updated patch data is received, update privacy status observable
+    this.singlePatchData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(x => this.isCurrentPatchPrivate$.next(!x.public));
     
     this.removePatchFromCollection$
       .pipe(
@@ -130,14 +137,14 @@ export class PatchDetailDataService implements OnDestroy {
         this.updateSinglePatchData$.next(b);
       });
     
-    // when user requests to change privacy status of patch, update backend
+    // when user requests to change privacy status of patch, update local state and backend
     this.requestPatchPrivacyStatusChange$
       .pipe(
         withLatestFrom(this.singlePatchData$),
         map(([_, patch]) => {
-          const updatedPatch = {...patch, public: !patch.public};
-          this.isCurrentPatchPrivate$.next(!updatedPatch.public);
-          return updatedPatch;
+          patch.public = !patch.public;
+          this.isCurrentPatchPrivate$.next(!patch.public);
+          return {...patch}; // clone so backend.update.patch can't mutate the live object
         }),
         switchMap(x => this.backend.update.patch(x)),
         takeUntil(this.destroyEvent$),

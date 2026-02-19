@@ -40,6 +40,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
+import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 
 
 @NgModule({
@@ -93,7 +94,8 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
     LibGraphModule,
     PatchMicroModule,
     MatSlideToggleModule,
-    LibShowcaseGridComponent
+    LibShowcaseGridComponent,
+    FormValidPipe
   ]
 })
 export class PatchModule {}
