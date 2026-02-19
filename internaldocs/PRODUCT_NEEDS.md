@@ -79,6 +79,36 @@ quality.
 
 ## Recently Completed
 
+### ✅ Autonomous Bug Fix Sweep (Feb 19, 2026)
+
+**Scan findings & fixes:**
+
+- **Double backend call in `savePhysical$`** — `switchMap(() => this.backend.update.module({id}))` was chained after the real update, overwriting physical data with a stub `{id}`-only call. Removed the duplicate.
+- **`savePhysical$`/`savePower$`/`saveInsOuts$`/`savePanels$` raw snackBar calls** — All replaced with `SharedConstants.errorCustom` / `SharedConstants.successCustom` to match project conventions.
+- **`reload()` method subscribed outside constructor** — Removed the method; now calls `updateSingleModuleData$.next(this.data.id)` directly (same effect, correct pattern).
+- **Unused `URLReg` variable** — Dead code in `module-editor.component.ts`, removed.
+- **Duplicate comment block** — `// Subscription to save panels` was repeated twice, cleaned up.
+- **`style="margin: 10rem"` on `app-module-composite`** — Layout-breaking inline style removed from `module-browser-detail.component.html`.
+- **Wrong tooltip on New Groove link** — Tooltip said "Search on Milk Audio Store" (copy-paste error), corrected to "Search on New Groove".
+- **`readonly` on `@Input()` properties** — `ModuleRacksComponent`, `ModulePatchesComponent`, and `ModuleListComponent` all declared `@Input() readonly data$` (and `viewConfig`/other inputs), causing TS2540 compile errors. Removed `readonly` from all affected `@Input` declarations.
+- **Deprecated `fxLayout`/`fxLayoutAlign`/`fxFlex` directives** — Replaced with modern `rowwrap gap1` / `col gap1` CSS classes in `module-details.component.html` and `module-browser-detail.component.html`.
+- **Deprecated `fxHide`/`fxShow` on `mat-divider`** — Removed from `module-editor-cv-form-line.component.html`.
+- **Markdown asterisks in Angular template string** — `'Others by *manufacturer*'` doesn't render as bold; changed to plain string.
+- **Unused `$index` variable** in `module-details` panel `@for` loop — Removed.
+- **Commented-out dead code** in `module-details.component.html` (old chip-list block) — Removed.
+
+**Files modified:**
+- `module-editor.component.ts`
+- `module-browser-detail.component.html`
+- `module-browser-detail.component.ts`
+- `module-details.component.html`
+- `module-editor-cv-form-line.component.html`
+- `module-racks.component.ts`
+- `module-patches.component.ts`
+- `module-list.component.ts`
+
+---
+
 ### ✅ Private Patches (Feb 18, 2026)
 
 **What was done:**
