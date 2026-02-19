@@ -10,6 +10,8 @@
 
 > ⚠️ Copy these patterns exactly when creating new components/services.
 
+---
+
 ## Data Service Template
 
 ```typescript
@@ -18,17 +20,15 @@ export class FeatureDataService extends SubManager {
   // STATE
   private _data$ = new BehaviorSubject<Data[]>([]);
   private _isLoading$ = new BehaviorSubject<boolean>(false);
-  private _errorMessage$ = new BehaviorSubject<string>('');
-  
+
   // PUBLIC
   public readonly data$ = this._data$.asObservable();
   public readonly isLoading$ = this._isLoading$.asObservable();
-  public readonly errorMessage$ = this._errorMessage$.asObservable();
-  
+
   // ACTIONS
   public loadData$ = new Subject<void>();
   public submitForm$ = new Subject<FormData>();
-  
+
   constructor(
     private backend: SupabaseService,
     private snackBar: MatSnackBar
@@ -37,11 +37,11 @@ export class FeatureDataService extends SubManager {
     this.initializeLoadHandler();
     this.initializeSubmitHandler();
   }
-  
+
   private initializeLoadHandler(): void {
     this.loadData$.pipe(
       tap(() => this._isLoading$.next(true)),
-      switchMap(() => this.backend.getData()),
+      switchMap(() => this.backend.get.someData()),
       tap(data => this._data$.next(data)),
       catchError(error => {
         console.error('Load error:', error);
@@ -55,22 +55,56 @@ export class FeatureDataService extends SubManager {
 }
 ```
 
+---
+
 ## Component with Data Service
 
 ```typescript
 @Component({
   selector: 'app-feature',
-  providers: [FeatureDataService]  // Provide here
+  providers: [FeatureDataService]  // Provide here, not in module
 })
 export class FeatureComponent extends SubManager {
   data$ = this.dataService.data$;
-  
+
   constructor(public dataService: FeatureDataService) {
     super();
     dataService.loadData$.next();
   }
 }
 ```
+
+---
+
+## ReplaySubject Trigger Pattern
+
+Use `ReplaySubject<ID>` (not `Subject`) when a handler must fire immediately for late subscribers — e.g. loading a
+specific entity by ID when the component initialises.
+
+```typescript
+// Service
+updateSingleItem$ = new ReplaySubject<number>(); // replays last emitted ID to new subscribers
+singleItemData$ = new BehaviorSubject<Item | null>(null);
+
+// In constructor:
+this.updateSingleItem$.pipe(
+  tap(() => this.singleItemData$.next(null)),    // clear stale data while loading
+  switchMap(id => this.backend.get.itemWithId(id)),
+  tap(result => this.singleItemData$.next(result.data)),
+  takeUntil(this.destroy$)
+).subscribe();
+
+// Component triggers it:
+this.dataService.updateSingleItem$.next(itemId);
+```
+
+**When to use ReplaySubject vs Subject:**
+
+- `ReplaySubject<T>(1)` — entity detail pages (patch, module, rack); the ID must replay to graph/editor sub-components
+  that subscribe after the initial emit.
+- `Subject<void>` — list refreshes, form submits, toggle actions.
+
+---
 
 ## Toggle Pattern (Inline UI)
 
@@ -82,21 +116,16 @@ public toggleForm$ = new Subject<boolean>();
 
 private initializeToggleHandler(): void {
   this.toggleForm$.pipe(
-    tap(show => {
-      this._showForm$.next(show);
-      if (!show) this._errorMessage$.next('');
-    }),
+    tap(show => this._showForm$.next(show)),
     takeUntil(this.destroy$)
   ).subscribe();
 }
 ```
 
 ```html
-
 <button *ngIf="!(showForm$ | async)" (click)="dataService.toggleForm$.next(true)">
   Show Form
 </button>
-
 <div *ngIf="showForm$ | async">
   <button (click)="dataService.toggleForm$.next(false)">
     <mat-icon>arrow_back</mat-icon>
@@ -105,6 +134,8 @@ private initializeToggleHandler(): void {
   <app-form></app-form>
 </div>
 ```
+
+---
 
 ## Form with Validation
 
@@ -126,66 +157,58 @@ void {
 ```
 
 ```html
-
 <form [formGroup]="form" (ngSubmit)="submit()">
   <mat-form-field appearance="outline">
     <mat-label>Name</mat-label>
     <input matInput formControlName="name">
-    <mat-error *ngIf="form.get('name')?.hasError('required')">
-      Name is required
-    </mat-error>
+    <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
   </mat-form-field>
-  
-  <button
-    mat-raised-button
-    color="primary"
-    [disabled]="form.invalid || (isSubmitting$ | async)">
+  <button mat-raised-button color="primary" [disabled]="form.invalid || (isSubmitting$ | async)">
     Submit
   </button>
 </form>
 ```
 
+---
+
 ## Error & Success Messages
 
 ```typescript
-// Service
-private
-_errorMessage$ = new BehaviorSubject<string>('');
-private
-_successMessage$ = new BehaviorSubject<string>('');
-
-// Handler
-tap(() => {
-  this._successMessage$.next('Saved!');
-  this._errorMessage$.next('');
-}),
-  catchError(error => {
-    this._errorMessage$.next(error.message || 'Unknown error');
-    this._successMessage$.next('');
-    return EMPTY;
-  })
+// In a pipe handler:
+tap(() => SharedConstants.successCustom(this.snackBar, 'Saved!')),
+catchError(error => {
+  console.error('Error:', error);
+  SharedConstants.errorCustom(this.snackBar, error.message || 'Unknown error');
+  return EMPTY;
+})
 ```
 
 ```html
-
 <div *ngIf="errorMessage$ | async as error" class="message error">
   <mat-icon>error</mat-icon>
   <span>{{ error }}</span>
 </div>
-
-<div *ngIf="successMessage$ | async as success" class="message success">
-  <mat-icon>check_circle</mat-icon>
-  <span>{{ success }}</span>
-</div>
 ```
 
-## API Calls
+---
+
+## API Calls (backend namespace guide)
+
+`SupabaseService` has **two namespaces** — use the right one:
+
+| Namespace          | When to use                                                | Examples                                                                                               |
+|--------------------|------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| `backend.GET.*`    | Paginated / filtered list queries exposed via `GET` object | `backend.GET.modules(...)`, `backend.GET.manufacturers(...)`, `backend.GET.patches(...)`               |
+| `backend.get.*`    | Simple entity lookups and user-scoped queries              | `backend.get.patchWithId(id)`, `backend.get.currentUserPatches()`, `backend.get.rackedModules(rackId)` |
+| `backend.add.*`    | Create new records                                         | `backend.add.patch(data)`, `backend.add.manufacturers(data)`                                           |
+| `backend.update.*` | Update existing records                                    | `backend.update.patch(data)`, `backend.update.module(data)`                                            |
+| `backend.delete.*` | Delete records                                             | `backend.delete.userPatch(id)`, `backend.delete.modulePanel(panel)`                                    |
 
 ### Simple Load
 
 ```typescript
 this.loadData$.pipe(
-  switchMap(() => this.backend.GET.data()),
+  switchMap(() => this.backend.get.currentUserPatches()),
   tap(data => this._data$.next(data)),
   takeUntil(this.destroy$)
 ).subscribe();
@@ -196,10 +219,11 @@ this.loadData$.pipe(
 ```typescript
 this.loadData$.pipe(
   tap(() => this._isLoading$.next(true)),
-  switchMap(() => this.backend.GET.data()),
+  switchMap(() => this.backend.get.currentUserPatches()),
   tap(data => this._data$.next(data)),
   catchError(error => {
     console.error('Error:', error);
+    SharedConstants.errorCustom(this.snackBar, 'Failed to load');
     return EMPTY;
   }),
   finalize(() => this._isLoading$.next(false)),
@@ -211,8 +235,8 @@ this.loadData$.pipe(
 
 ```typescript
 this.submit$.pipe(
-  switchMap(() => this.backend.create(data)),
-  switchMap(created => this.backend.update(created.id, moreData)),
+  switchMap(data => this.backend.add.patch(data)),
+  switchMap(created => this.backend.update.patch({...created, extra: 'data'})),
   tap(() => SharedConstants.successSave(this.snackBar)),
   takeUntil(this.destroy$)
 ).subscribe();
@@ -223,40 +247,47 @@ this.submit$.pipe(
 ```typescript
 this.loadAll$.pipe(
   switchMap(() => forkJoin({
-    modules: this.backend.GET.modules(),
-    racks: this.backend.GET.racks()
+    patches: this.backend.get.currentUserPatches(),
+    racks: this.backend.get.currentUserRacks()
   })),
-  tap(({modules, racks}) => {
-    this._modules$.next(modules);
+  tap(({patches, racks}) => {
+    this._patches$.next(patches);
     this._racks$.next(racks);
   }),
   takeUntil(this.destroy$)
 ).subscribe();
 ```
 
-## Copy to Clipboard
+---
+
+## Adding a New Backend Method to SupabaseService
+
+When a new feature requires a new query or mutation, follow this checklist inside `supabase.service.ts`:
+
+1. **Register the table name** in `DatabaseStrings.ts` (`DbPaths`) before writing the method.
+2. **Read-only methods (in `GET` or `get` namespace):** Add `@Cacheable({ maxAge, cacheBusterObserver })` if the data
+   changes infrequently. Register the cache key in the `CachedEntity` union type.
+3. **Write methods (add/update/delete):** Always include a `cacheBust([...keys])` pipe operator after the write
+   succeeds. Bust every entity key that the write could invalidate.
+4. **Use the internal pipe helpers** already defined in the file:
+    - `cacheBust(keys)` — emits to `cacheBuster$` after success
+    - `catchErrors(this.snackBar)` — logs + shows error snackbar, returns `NEVER`
+    - `showSuccessMessage(this.snackBar)` — shows success snackbar
 
 ```typescript
-public
-copyToClipboard$ = new Subject<void>();
-
-private
-initializeCopyHandler()
-:
-void {
-  this.copyToClipboard$.pipe(
-    withLatestFrom(this.data$),
-    tap(([_, data]) => {
-      if (data) {
-        const text = `${ data.name } by ${ data.manufacturer }`;
-        navigator.clipboard.writeText(text);
-        SharedConstants.successCustom(this.snackBar, `Copied: ${ text }`);
-      }
-    }),
-    takeUntil(this.destroy$)
-  ).subscribe();
-}
+// Example: adding a new write method to backend.add
+addNewThing: (data: NewThingInsert) =>
+  rxFrom(
+    this.supabase.from(DbPaths.new_things).insert(data).select('id, name')
+  ).pipe(
+    remapErrors(),
+    map(x => x.data),
+    cacheBust(['new_things', 'relatedEntity']),  // bust anything stale
+    catchErrors(this.snackBar)
+  ),
 ```
+
+---
 
 ## Multiple Triggers (merge)
 
@@ -265,28 +296,48 @@ merge(
   this.userService.loggedUser$,
   this.updateData$
 ).pipe(
-  switchMap(() => this.backend.GET.data()),
+  switchMap(() => this.backend.get.currentUserPatches()),
   tap(data => this._data$.next(data)),
   takeUntil(this.destroy$)
 ).subscribe();
 ```
 
+---
+
+## Copy to Clipboard
+
+```typescript
+public copyToClipboard$ = new Subject<void>();
+
+private initializeCopyHandler(): void {
+  this.copyToClipboard$.pipe(
+    withLatestFrom(this.data$),
+    tap(([_, data]) => {
+      if (data) {
+        const text = `${data.name} by ${data.manufacturer}`;
+        navigator.clipboard.writeText(text);
+        SharedConstants.successCustom(this.snackBar, `Copied: ${text}`);
+      }
+    }),
+    takeUntil(this.destroy$)
+  ).subscribe();
+}
+```
+
+---
+
 ## Multiple Loading States
 
 ```typescript
-private
-_isLoadingList$ = new BehaviorSubject<boolean>(false);
-private
-_isSubmitting$ = new BehaviorSubject<boolean>(false);
-private
-_isDeletingId$ = new BehaviorSubject<string | null>(null);
+private _isLoadingList$ = new BehaviorSubject<boolean>(false);
+private _isSubmitting$ = new BehaviorSubject<boolean>(false);
+private _isDeletingId$ = new BehaviorSubject<number | null>(null);
 ```
 
 ```html
-
 <button
   [disabled]="(isDeletingId$ | async) === item.id"
-  (click)="delete(item.id)">
+  (click)="dataService.deleteItem$.next(item.id)">
   {{ (isDeletingId$ | async) === item.id ? 'Deleting...' : 'Delete' }}
 </button>
 ```
