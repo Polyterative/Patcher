@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "src/app/style/brand-resources" as *;
+
 // Countdown display
 .countdown-wrapper {
   margin-bottom: 1.5rem;
@@ -43,15 +46,15 @@
     border-radius: 4px;
 
     &.theme-success {
-      background: linear-gradient(90deg, #4CAF50 0%, #66BB6A 100%);
+      background: linear-gradient(90deg, $brand-positive 0%, color.scale($brand-positive, $lightness: +20%) 100%);
     }
 
     &.theme-info {
-      background: linear-gradient(90deg, #2196F3 0%, #42A5F5 100%);
+      background: linear-gradient(90deg, $brand-primary 0%, color.scale($brand-primary, $lightness: +20%) 100%);
     }
 
     &.theme-warning {
-      background: linear-gradient(90deg, #FF9800 0%, #FFB74D 100%);
+      background: linear-gradient(90deg, $brand-warning 0%, color.scale($brand-warning, $lightness: +20%) 100%);
     }
   }
 
