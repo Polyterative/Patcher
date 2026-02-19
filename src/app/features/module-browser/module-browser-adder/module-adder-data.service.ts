@@ -353,10 +353,10 @@ export class ModuleAdderDataService extends SubManager {
           
         }),
         filter(x => !!x),
-        switchMap((x: any) => this.backend.add.modules([x])),
+        switchMap((x: any) => this.backend.add.modules([x]).pipe(map(() => x))),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => {
+      .subscribe((module) => {
         
         this.formData.name.control.setValue('');
         this.formData.description.control.setValue('');
@@ -365,7 +365,7 @@ export class ModuleAdderDataService extends SubManager {
         
         // inform user that the module was added
         this.snackBar.open(
-          'Module submitted and published to the community.',
+          `"${ module.name }" submitted and published to the community.`,
           '',
           {
             duration: 7000,
