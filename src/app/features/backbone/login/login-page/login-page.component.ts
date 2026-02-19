@@ -52,9 +52,9 @@ export class LoginPageComponent extends SubManager implements OnInit {
     this.route.queryParams.pipe(take(1)).subscribe(params => {
       if (params['resetSuccess'] === 'true') {
         this.snackBar.open(
-          '✅ Password reset successful! You can now log in with your new password.',
+          'Password updated — sign in with your new credentials.',
           undefined,
-          {duration: 5000}
+          {duration: 5000, panelClass: 'snack-success'}
         );
       }
     });

@@ -54,79 +54,79 @@ export class SharedConstants {
   };
 
   static confirmMail(snackBar: MatSnackBar) {
-    snackBar.open("Confirm your email address before signing in — check your inbox.", undefined, {duration: 5000});
+    snackBar.open("Confirm your email address before signing in — check your inbox.", undefined, {duration: 5000, panelClass: 'snack-info'});
   }
 
   static successSignup(snackBar: MatSnackBar) {
-    snackBar.open("Account created. Welcome to Patcher!", undefined, {duration: 3000});
+    snackBar.open("Account created. Welcome to Patcher!", undefined, {duration: 3000, panelClass: 'snack-success'});
   }
 
   static showSuccessUpdate(snackBar: MatSnackBar) {
-    snackBar.open("Saved to database.", undefined, {duration: 1000});
+    snackBar.open("Saved to database.", undefined, {duration: 1000, panelClass: 'snack-success'});
   }
 
   static successCustom(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(msg ?? "Done.", undefined, {duration: 4000});
+    snackBar.open(msg ?? "Done.", undefined, {duration: 4000, panelClass: 'snack-success'});
   }
 
   static successDelete(snackBar: MatSnackBar) {
-    snackBar.open("Removed from database.", undefined, {duration: 4000});
+    snackBar.open("Removed from database.", undefined, {duration: 4000, panelClass: 'snack-success'});
   }
 
   static successSave(snackBar: MatSnackBar) {
-    snackBar.open("Saved.", undefined, {duration: 4000});
+    snackBar.open("Saved.", undefined, {duration: 4000, panelClass: 'snack-success'});
   }
 
   static successSaveShort(snackBar: MatSnackBar) {
-    snackBar.open("Saved.", undefined, {duration: 1000});
+    snackBar.open("Saved.", undefined, {duration: 1000, panelClass: 'snack-success'});
   }
-  
+
   static successLogin(snackBar: MatSnackBar) {
-    snackBar.open("Signed in.", undefined, {duration: 2000});
+    snackBar.open("Signed in.", undefined, {duration: 2000, panelClass: 'snack-success'});
   }
-  
+
   static successLogout(snackBar: MatSnackBar) {
-    snackBar.open("Signed out.", undefined, {duration: 2000});
+    snackBar.open("Signed out.", undefined, {duration: 2000, panelClass: 'snack-success'});
   }
-  
+
   static errorHandlerSignup<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000});
+      snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
-  
+
   static errorHandlerLogin<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.loginFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000});
+      snackBar.open(`${ SharedConstants.messages.loginFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
-  
+
   static errorHandlerData<T>(snackBar: MatSnackBar) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(SharedConstants.messages.dataNotSaved, undefined, {duration: 8000});
+      snackBar.open(SharedConstants.messages.dataNotSaved, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
   
   static errorHandlerOperation<T>(snackBar: MatSnackBar) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000});
+      snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
   
   static errorSignup<T>(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 5000});
+    snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 5000, panelClass: 'snack-error'});
   }
   
   static errorLogin<T>(snackBar: MatSnackBar) {
-    snackBar.open(SharedConstants.messages.loginFailed, undefined, {duration: 5000});
+    snackBar.open(SharedConstants.messages.loginFailed, undefined, {duration: 5000, panelClass: 'snack-error'});
   }
   
   static errorCustom<T>(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(msg ?? SharedConstants.messages.operationFailed, undefined, {duration: 5000});
+    snackBar.open(msg ?? SharedConstants.messages.operationFailed, undefined, {duration: 5000, panelClass: 'snack-error'});
   }
 }
 
