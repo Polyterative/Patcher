@@ -65,7 +65,8 @@
 
 ## Active
 
-*(none)*
+- [~] **Duplicate Panel Detection** — Proactive client-side check in module editor to prevent uploading panels with the
+  same color/type that already exist on the module.
 
 ---
 
