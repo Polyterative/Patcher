@@ -5,6 +5,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { BrandPrimaryButtonComponent } from './brand-primary-button.component';
 import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
 
 
 @NgModule({
@@ -13,6 +14,7 @@ import { MatButtonModule } from "@angular/material/button";
     CommonModule,
     FlexLayoutModule,
     MatButtonModule,
+    MatIconModule,
     RouterModule,
     A11yModule,
   ],

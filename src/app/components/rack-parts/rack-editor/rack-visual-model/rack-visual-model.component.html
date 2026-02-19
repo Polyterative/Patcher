@@ -39,13 +39,14 @@
       <div [@enter]="{ value: '', params: { delay: (1 * 25)+500}}"
            matTooltip="Please remove all modules from the last row to remove it"
            [matTooltipDisabled]="isLastRowEmpty(rowedRackedModules)">
-        <button mat-flat-button
-                (click)="rackDetailDataService.requestRemoveRow$.next()"
+        <app-brand-primary-button
+          theme="negative"
+          (click$)="rackDetailDataService.requestRemoveRow$.next()"
                 [disabled]="!isLastRowEmpty(rowedRackedModules)"
         >
           Remove last row
           <mat-icon>remove</mat-icon>
-        </button>
+        </app-brand-primary-button>
       </div>
     }
     <div fxFlex="1 1 auto"></div>
@@ -54,12 +55,13 @@
       <div
         [@enter]="{ value: '', params: { delay: (2 * 25)+500}}"
       >
-        <button mat-flat-button
-                (click)="rackDetailDataService.requestAddNewRow$.next()"
+        <app-brand-primary-button
+          theme="primary"
+          (click$)="rackDetailDataService.requestAddNewRow$.next()"
         >
           Add new row
           <mat-icon>add</mat-icon>
-        </button>
+        </app-brand-primary-button>
       </div>
     }
   </div>
