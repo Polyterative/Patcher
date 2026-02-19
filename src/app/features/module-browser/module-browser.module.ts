@@ -2,6 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModuleCompositeComponent } from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { ModuleListComponent } from 'src/app/features/module-browser/module-list/module-list.component';
@@ -39,6 +40,8 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
@@ -108,6 +111,9 @@ const parentPrefix = 'modules';
     MatIconModule,
     MatSnackBarModule,
     MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
     MatTooltipModule,
     MatDividerModule,
     MatPaginatorModule,

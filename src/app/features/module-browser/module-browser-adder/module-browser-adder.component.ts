@@ -46,6 +46,39 @@ export class ModuleBrowserAdderComponent implements OnInit {
     hideButtons: true,
     hideDates:   false
   };
+
+  readonly guidelinesData: Array<{ label: string; value: string; icon: string; size: string }> = [
+    {
+      label: 'Check for Duplicates',
+      value: 'Ensure the module is not already listed by checking the list on the right',
+      icon: 'search',
+      size: 'auto'
+    },
+    {
+      label: 'Avoid Panel Variations',
+      value: 'Please do not submit multiple modules for different panel variations; they are considered the same module (avoid SILVER, BLACK, etc.)',
+      icon: 'layers_clear',
+      size: 'auto'
+    },
+    {
+      label: 'Add Details After Submission',
+      value: 'You can add panel images, power specs, and inputs/outputs on the module detail page after submission',
+      icon: 'add_circle_outline',
+      size: 'auto'
+    },
+    {
+      label: 'Immediate Usability',
+      value: 'Submitted modules are usable immediately but will be reviewed by our team',
+      icon: 'flash_on',
+      size: 'auto'
+    },
+    {
+      label: 'Manufacturer Not Found?',
+      value: 'If your manufacturer is missing, click Create new manufacturer below the manufacturer field to add it',
+      icon: 'factory',
+      size: 'auto'
+    }
+  ];
   
   constructor(
     public dataService: ModuleAdderDataService,
