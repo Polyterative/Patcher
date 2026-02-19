@@ -158,34 +158,37 @@ quality.
 
 ---
 
+### ✅ User-Submitted Manufacturers (Feb 19, 2026)
+
+**What was done:**
+
+- Added inline "Create new manufacturer" button below the manufacturer autocomplete in the module submission form
+- When clicked, an inline form appears (no dialog) with a name input; typing a name and clicking "Create" calls `backend.add.manufacturers`
+- On success, the new manufacturer is automatically added to the options list and selected in the manufacturer field
+- The `backend.add.manufacturers` now returns `id,name` via `.select('id, name')` so the new entry can be auto-selected
+- The manufacturer options are now managed via a private `BehaviorSubject` (`_manufacturerOptions$`) so new entries can be injected reactively without re-fetching
+- Error handling follows `SharedConstants.errorCustom` / `SharedConstants.successCustom` pattern
+- Guidelines section on submission page updated from "Contact Us if Needed" to "Manufacturer Not Found?" with usage instructions
+- Loading state shown via `isCreatingManufacturer$` BehaviorSubject during creation
+
+**Pattern followed:** Inline UI with BehaviorSubject toggles (no dialogs), event-driven via `createManufacturer$` Subject, reactive state via `_manufacturerOptions$` BehaviorSubject
+
+**Files modified:**
+- `supabase.service.ts` — `add.manufacturers` now returns inserted id/name via `.select('id,name')`
+- `module-adder-data.service.ts` — `showNewManufacturerForm$`, `isCreatingManufacturer$`, `newManufacturerNameControl`, `createManufacturer$`, `_manufacturerOptions$` BehaviorSubject
+- `module-browser-adder.component.html` — inline manufacturer creation form with toggle
+- `module-browser.module.ts` — added `ReactiveFormsModule`, `MatFormFieldModule`, `MatInputModule`
+
+**Tests created:**
+- `module-adder-manufacturer-creation.spec.ts` — 18 tests covering: service creation, API surface, form validation, UI toggle, manufacturer options loading, creation flow (backend call, reset, auto-select, options update)
+
+---
+
 ## Planned - High Priority
 
-### User-Submitted Manufacturers
+### ~~User-Submitted Manufacturers~~ ✅ (see Recently Completed)
 
-**Why:** Users are blocked from submitting modules if manufacturer doesn't exist. Must contact admin via
-Discord/email.  
-**Current State:** Module submission only allows selecting from existing manufacturers (autocomplete dropdown)  
-**Goal:** Let users create manufacturers during module submission with approval workflow (same pattern as user-submitted
-modules)
-
-**Design Considerations:**
-
-- **Duplicate Prevention:** How to handle similar names? (e.g., "Mutable Instruments" vs "Mutable")
-- **Data Quality:** What's required vs optional for new manufacturer? (just name? website? logo?)
-- **Discovery:** Should pending manufacturers be visible to other users while awaiting approval?
-- **Ownership:** Can submitter edit their pending manufacturer before approval?
-
-**Technical Needs:**
-
-- **Database:** `manufacturers` table needs approval tracking (`submitter`, `isApproved`, `created`, `updated` fields)
-- **Backend:** Manufacturer CRUD operations, cache busting, user manufacturer queries
-- **UI:** "Create new manufacturer" option in module submission, autocomplete search to prevent duplicates, approval
-  status indicators
-- **Areas:** Database schema, Supabase service, module submission flow, manufacturer selector component
-
-**Nice to Have:** Bulk manufacturer submission (list input)
-
-**Related:** User-Generated Content Model strategy
+**Completed Feb 19, 2026** — Users can now create manufacturers inline during module submission.
 
 ---
 
