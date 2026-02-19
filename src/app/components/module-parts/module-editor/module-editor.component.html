@@ -89,10 +89,16 @@
         [updateData$]="savePanels$"
         loadingLabel="Saving data"
       >
+        @if (panelTypeAlreadyExists$ | async) {
+          <app-advice-tooltip>
+            This module already has a "{{ duplicatePanelTypeName$ | async }}" panel — choose a different type or remove
+            the existing one first
+          </app-advice-tooltip>
+        }
         <div class="row end-align" style="margin-top: 1rem;">
           <app-brand-primary-button
             (click$)="savePanels$.next()"
-            [disabled]="!(formGroupPanel | formValid) || !(fileDragHostService.files$ | async)?.length"
+            [disabled]="!(formGroupPanel | formValid) || !(fileDragHostService.files$ | async)?.length || (panelTypeAlreadyExists$ | async)"
             icon="add"
             theme="positive"
           >
