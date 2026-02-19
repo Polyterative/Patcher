@@ -281,9 +281,9 @@ export class PatchDetailDataService implements OnDestroy {
             newConnection
           ]);
           
-          SharedConstants.successCustom(this.snackBar, 'Connection added');
+          SharedConstants.successCustom(this.snackBar, 'CV connection recorded in this patch.');
         } else {
-          SharedConstants.successCustom(this.snackBar, 'Connection already exists');
+          SharedConstants.successCustom(this.snackBar, 'That connection is already in this patch.');
         }
       });
     
