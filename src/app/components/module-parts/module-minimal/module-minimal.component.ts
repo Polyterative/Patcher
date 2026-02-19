@@ -28,6 +28,8 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
 export class ModuleMinimalComponent implements OnInit {
   @Input() data: MinimalModule;
   @Input() viewConfig: ModuleMinimalViewConfig;
+  /** Optional suffix shown inline next to the module name (e.g. instance label) */
+  @Input() nameSuffix: string | undefined = undefined;
   
   isInCollection$: Observable<boolean>;
   

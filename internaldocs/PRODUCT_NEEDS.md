@@ -6,8 +6,7 @@
 > 2. **Execution detail belongs in [TODO.md](./TODO.md)** — when picking up a feature, open TODO.md, not this file.
 > 3. **Keep open questions open** — do not resolve design questions here without explicit user instruction; add them to
      the relevant TODO task when it becomes Active.
-> 4. **Update the status table** when a feature moves to done; compress completed strategy notes rather than deleting
-     them.
+> 4. **When a feature is done** — move it to [COMPLETED.md](./COMPLETED.md) and remove from the status table below.
 
 **For execution detail, implementation steps, and task tracking → see [TODO.md](./TODO.md).**
 
@@ -71,34 +70,50 @@ private patches, exports, advanced org), API access.
 
 ---
 
+### Multi-Instance UX Gaps
+
+The module-instances feature (code complete) introduced the ability to use the same module multiple times in a patch.
+Three user-facing gaps remain:
+
+1. **Ambiguous wiring from collection cards** — When a module has active instances, clicking its CVs from the collection
+   list creates connections with no instance association. This silently produces ambiguous data that renders as a "
+   mystery
+   node" in the graph. Users have no guard rail steering them to the instance cards instead.
+
+2. **Statistics count module types, not slots** — "4 modules" is misleading when the patch actually uses 6 physical
+   modules (two are duplicated). Users planning a build get incorrect counts. **🟡 Active — see CURRENT_FEATURE.md.**
+
+3. **No unsaved-changes warning on navigation** — When the user has made edits to a patch (connections added/removed,
+   metadata changed) and navigates away without saving, the work is silently lost. There is no "You have unsaved
+   changes" prompt. This is a basic data-loss prevention gap that affects trust in the editor.
+
+**Open question:** For gap #1, should the system prompt users to pick an instance, or should it prevent wiring from the
+collection card entirely when instances exist? Trade-off between flexibility and guardrails.
+
+---
+
 ## Feature Status Summary
 
-| Feature                              | Status              | Detail                                                                  |
-|--------------------------------------|---------------------|-------------------------------------------------------------------------|
-| Private patches                      | ✅ Done              |                                                                         |
-| User-submitted manufacturers         | ✅ Done              |                                                                         |
-| Account data deletion                | ✅ Done              |                                                                         |
-| Cable/multiples counter              | ✅ Done              |                                                                         |
-| iOS clipboard fix                    | ✅ Done              |                                                                         |
-| Rack stats blank filter              | ✅ Done              |                                                                         |
-| Blank module education               | ✅ Done              |                                                                         |
-| Bug sweep (Feb 19)                   | ✅ Done              |                                                                         |
-| Security audit – secrets in repo     | ✅ Done              | Gitleaks clean; .gitignore hardened                                     |
-| Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                                                             |
-| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                             |
-| Account mgmt – password change       | ✅ Done              | See TODO.md                                                             |
-| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                             |
-| Duplicate panel detection            | ✅ Done              | Client-side validation in editor                                        |
-| Safari image export                  | ⚠️ Partial          | Download works now; rendering differs from Chrome — needs investigation |
-| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                                   |
-| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                             |
-| User profile pages                   | 💡 Long-term        | Needs privacy design                                                    |
-| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                     |
-| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                           |
-| PWA support                          | 💡 Nice-to-have     |                                                                         |
-| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                      |
-| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                      |
-| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                                  |
+> Completed features archived in [COMPLETED.md](./COMPLETED.md).
+
+| Feature                              | Status              | Detail                                                              |
+|--------------------------------------|---------------------|---------------------------------------------------------------------|
+| Multiple module instances in patches | 🟡 In progress      | Core done; 3 UX gaps remain (see above)                             |
+| Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                 |
+| Instance UX: stats accuracy          | 🟡 Active           | `PatchConnectionStatsPipe` fix in progress — see CURRENT_FEATURE.md |
+| Patch editor: unsaved changes guard  | 🔲 Backlog – High   | No warning when navigating away from editor with unsaved changes    |
+| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                         |
+| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                         |
+| Safari image export                  | ⚠️ Partial          | Download works; rendering differs from Chrome — needs investigation |
+| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                               |
+| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                         |
+| User profile pages                   | 💡 Long-term        | Needs privacy design                                                |
+| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                 |
+| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                       |
+| PWA support                          | 💡 Nice-to-have     |                                                                     |
+| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                  |
+| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                  |
+| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                              |
 
 ---
 

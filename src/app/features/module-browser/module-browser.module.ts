@@ -146,6 +146,7 @@ const parentPrefix = 'modules';
   ],
   exports: [
     ModuleListComponent,
+    ModuleCompositeComponent,
     ModuleBrowserDetailComponent,
     ModuleBrowserRootComponent
   ]
