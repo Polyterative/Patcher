@@ -36,6 +36,7 @@ import { FileDragHostService } from 'src/app/shared-interproject/components/@sma
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 export interface FormCV {
@@ -46,7 +47,6 @@ export interface FormCV {
   isApproved: boolean;
 }
 
-let URLReg = '(https?://)?([\\da-z.-]+)\\.([a-z.]{2,6})[/\\w .-]*/?';
 
 @Component({
   selector: 'app-module-editor',
@@ -326,10 +326,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         ),
         catchError(error => {
           console.error('Error saving INs/OUTs:', error);
-          this.snackBar.open('CV data not saved — the server returned an error. Try again.', undefined, {
-            duration: 5000,
-            panelClass: 'snack-error'
-          });
+          SharedConstants.errorCustom(this.snackBar, 'CV data not saved — the server returned an error. Try again.');
           return EMPTY;
         }),
         withLatestFrom(this.dataService.updateSingleModuleData$),
@@ -337,10 +334,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        this.snackBar.open('CV data written to module.', undefined, {
-          duration: 5000,
-          panelClass: 'snack-success'
-        });
+        SharedConstants.successCustom(this.snackBar, 'CV data written to module.');
       });
     
     // Subscription for panelType control value changes
@@ -367,10 +361,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         switchMap(() => {
           // Check if the power form is valid
           if (this.formGroupPower.invalid) {
-            this.snackBar.open('Power form has invalid values — check the fields and try again.', undefined, {
-              duration: 5000,
-              panelClass: 'snack-error'
-            });
+            SharedConstants.errorCustom(this.snackBar, 'Power form has invalid values — check the fields and try again.');
             return EMPTY;
           }
           
@@ -390,23 +381,16 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }),
         catchError(error => {
           console.error('Error saving power data:', error);
-          this.snackBar.open('Power specs not saved — the server returned an error. Try again.', undefined, {
-            duration: 5000,
-            panelClass: 'snack-error'
-          });
+          SharedConstants.errorCustom(this.snackBar, 'Power specs not saved — the server returned an error. Try again.');
           return EMPTY;
         }),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(updatedModule => {
         if (updatedModule) {
-          this.snackBar.open('Power specs written to module.', undefined, {
-            duration: 5000,
-            panelClass: 'snack-success'
-          });
+          SharedConstants.successCustom(this.snackBar, 'Power specs written to module.');
           this.dataService.updateSingleModuleData$.next(this.data.id);
         }
-        
       });
     
     
@@ -415,10 +399,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       .pipe(
         switchMap(() => {
           if (this.formGroupPhysical.invalid) {
-            this.snackBar.open('Physical form has invalid values — check the fields and try again.', undefined, {
-              duration: 5000,
-              panelClass: 'snack-error'
-            });
+            SharedConstants.errorCustom(this.snackBar, 'Physical form has invalid values — check the fields and try again.');
             return EMPTY;
           }
           
@@ -434,13 +415,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
             }
           );
         }),
-        switchMap(() => this.backend.update.module({id: this.data.id})),
         catchError(error => {
           console.error('Error saving physical data:', error);
-          this.snackBar.open('Physical specs not saved — the server returned an error. Try again.', undefined, {
-            duration: 5000,
-            panelClass: 'snack-error'
-          });
+          SharedConstants.errorCustom(this.snackBar, 'Physical specs not saved — the server returned an error. Try again.');
           return EMPTY;
         }),
         withLatestFrom(this.dataService.updateSingleModuleData$),
@@ -448,14 +425,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(([, updateSingleModuleData]) => {
         this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        this.snackBar.open('Physical specs written to module.', undefined, {
-          duration: 5000,
-          panelClass: 'snack-success'
-        });
+        SharedConstants.successCustom(this.snackBar, 'Physical specs written to module.');
       });
     
     // Subscription to save panels (including image upload)
-// Subscription to save panels (including image upload)
     this.savePanels$
       .pipe(
         // Retrieve the first file from the file drag host service
@@ -494,23 +467,15 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         catchError(error => {
           console.error('Error during panel upload:', error);
           if (error && error.message && error.message.includes('duplicate key value violates')) {
-            this.snackBar.open('Panel already exists for this module — upload a different image or remove the existing one first.', undefined, {
-              duration: 10000,
-              panelClass: 'snack-error'
-            });
+            SharedConstants.errorCustom(this.snackBar, 'Panel already exists for this module — upload a different image or remove the existing one first.');
           } else {
-            this.snackBar.open('Panel upload failed — the server returned an error. Try again.', undefined, {
-              duration: 10000,
-              panelClass: 'snack-error'
-            });
+            SharedConstants.errorCustom(this.snackBar, 'Panel upload failed — the server returned an error. Try again.');
           }
           return EMPTY;
         })
       )
       .subscribe(() => {
-        // Provide user feedback on successful panel upload
-        const message = 'Panel image uploaded and attached to this module.';
-        this.snackBar.open(message, undefined, {duration: 10000, panelClass: 'snack-success'});
+        SharedConstants.successCustom(this.snackBar, 'Panel image uploaded and attached to this module.');
         // Reload the module data
         this.dataService.updateSingleModuleData$.next(this.data.id);
       });
@@ -519,11 +484,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   private shouldSaveInsOuts(ins: CV[], outs: CV[]): boolean {
     if (ins.length === 0 && outs.length === 0) {
-      this.snackBar.open('No CV data to save — add ins or outs first.', undefined, {
-        duration: 2000,
-        panelClass: 'snack-info'
-      });
-      this.reload();
+      SharedConstants.errorCustom(this.snackBar, 'No CV data to save — add ins or outs first.');
+      this.dataService.updateSingleModuleData$.next(this.data.id);
       return false;
     }
     
@@ -539,27 +501,12 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       outs.length === this.data.outs.length;
     
     if (sameApproved && sameUnapproved) {
-      this.snackBar.open('All CV ports are already approved — nothing to update.', undefined, {
-        duration: 3000,
-        panelClass: 'snack-info'
-      });
-      this.reload();
+      SharedConstants.successCustom(this.snackBar, 'All CV ports are already approved — nothing to update.');
+      this.dataService.updateSingleModuleData$.next(this.data.id);
       return false;
     }
     
     return true;
-  }
-  
-  private reload(): void {
-    of(null)
-      .pipe(withLatestFrom(this.dataService.updateSingleModuleData$))
-      .subscribe(([, data]) => {
-        if (data) {
-          this.dataService.updateSingleModuleData$.next(data);
-        } else {
-          console.error('No data to reload.');
-        }
-      });
   }
   
   private updateFormGroupAndContainer(
