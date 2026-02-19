@@ -10,7 +10,7 @@
     <lib-hero-content-card class="modulesBG"
                            titleBig="Module details"
     >
-      <div fxLayout.gt-md="row" fxLayout="column" fxLayoutGap="1rem"
+      <div class="rowwrap gap1"
       >
         <lib-screen-wrapper maxSize="36rem" class="fixed-width32"
         >
@@ -25,7 +25,6 @@
               } @else {
                 <app-module-composite [data]="(bag.data)"
                                       [viewConfig]="viewConfig"
-                                      style="margin: 10rem"
                 ></app-module-composite>
               }
             </lib-clean-card>
@@ -264,9 +263,7 @@
               ></app-module-editor>
             </lib-hero-content-card>
           }
-          <div fxLayout.gt-md="row"
-               fxLayout="column"
-               fxLayoutGap="1rem"
+          <div class="rowwrap gap1"
           >
             @if (viewConfig.hideRackedIn === false) {
               <lib-hero-content-card [sidesPadding]="false"
@@ -283,8 +280,7 @@
                   } @else {
                     <div class="col gap1 animate-fadein-slowest"
                     >
-                      <mat-card-subtitle fxLayoutAlign="center start"
-                                         style="padding: 1rem"
+                      <mat-card-subtitle style="padding: 1rem"
                       >No racks using this module yet. Try adding it to yours!
                       </mat-card-subtitle>
                     </div>
@@ -307,8 +303,7 @@
                   } @else {
                     <div class="col gap1 animate-fadein-slowest"
                     >
-                      <mat-card-subtitle fxLayoutAlign="center start"
-                                         style="padding: 1rem"
+                      <mat-card-subtitle style="padding: 1rem"
                       >No patches using this module yet. Try adding it to yours!
                       </mat-card-subtitle>
                     </div>
@@ -322,8 +317,7 @@
     </lib-hero-content-card>
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false) {
       <lib-hero-content-card
-        [titleNormal]="'Others by *'+(bag.data.manufacturer.name) + '*'"
-        fxFlex
+        [titleNormal]="'Others by ' + (bag.data.manufacturer.name)"
     >
         <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
                                             [updateData$]="dataService.updateSingleModuleData$"
@@ -336,8 +330,7 @@
           } @else {
             <div class="col gap1 animate-fadein-slowest"
             >
-              <mat-card-subtitle fxLayoutAlign="center start"
-                                 style="padding: 1rem"
+              <mat-card-subtitle style="padding: 1rem"
               >No more modules by this manufacturer yet.
               </mat-card-subtitle>
             </div>
