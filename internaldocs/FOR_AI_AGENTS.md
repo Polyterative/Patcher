@@ -22,7 +22,7 @@ When the user expresses a guideline, workflow preference, or decision principle:
 
 ## 🤖 Autonomy & Tool Priority (READ FIRST)
 
-**Maximize tool use, minimize terminal calls.**
+**Maximize tool use, minimize terminal calls. Never run interactive commads.**
 
 - **Prefer file tools over terminal:** Use `read_file`, `insert_edit_into_file`, `replace_string_in_file`,
   `grep_search`, `file_search`, and `list_dir` to explore and modify the codebase directly. Terminal calls (
