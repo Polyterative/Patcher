@@ -60,17 +60,10 @@
         
         <div class="row gap1">
           <app-brand-primary-button style="padding-top:4rem"
-                                    disabled="true"
-                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
+                                    (click$)="userManagementService.deleteAccountAction$.next()"
+                                    matTooltip="Permanently delete all your patches, racks, collections and comments. Your login credentials will remain — contact support for full account removal."
                                     theme="warning"
-          >Delete Account
-          </app-brand-primary-button>
-
-          <app-brand-primary-button style="padding-top:4rem"
-                                    disabled="true"
-                                    matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"
-                                    theme="warning"
-          >Delete data
+          >Delete my data
           </app-brand-primary-button>
         </div>
 

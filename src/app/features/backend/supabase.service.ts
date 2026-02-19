@@ -753,7 +753,65 @@ export class SupabaseService extends SubManager {
           catchErrors(this.snackBar),
           remapErrors()
         );
-    }
+    },
+    /**
+     * Deletes all user-generated data for the current user in the correct dependency order:
+     * patch_connections → patches → rack_modules → racks → user_modules → comments
+     *
+     * Note: This does NOT delete the auth user record (requires a server-side Edge Function
+     * with service_role key). After calling this, the caller should sign the user out.
+     */
+    allUserData: () => this.getUserSession$().pipe(
+      switchMap(user => {
+        const uid = user.id;
+        // Step 1 — delete patch connections for all patches authored by this user
+        const deletePatchConnections$ = rxFrom(
+          this.supabase.from(DbPaths.patch_connections)
+            .delete()
+            .in('patchid',
+              this.supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
+            )
+        ).pipe(remapErrors());
+
+        // Step 2 — delete patches
+        const deletePatches$ = rxFrom(
+          this.supabase.from(DbPaths.patches).delete().eq('authorid', uid)
+        ).pipe(remapErrors());
+
+        // Step 3 — delete rack modules for all racks authored by this user
+        const deleteRackModules$ = rxFrom(
+          this.supabase.from(DbPaths.rack_modules)
+            .delete()
+            .in('rackid',
+              this.supabase.from(DbPaths.racks).select('id').eq('authorid', uid) as any
+            )
+        ).pipe(remapErrors());
+
+        // Step 4 — delete racks
+        const deleteRacks$ = rxFrom(
+          this.supabase.from(DbPaths.racks).delete().eq('authorid', uid)
+        ).pipe(remapErrors());
+
+        // Step 5 — delete user module collection entries
+        const deleteUserModules$ = rxFrom(
+          this.supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)
+        ).pipe(remapErrors());
+
+        // Step 6 — delete all comments authored by this user
+        const deleteComments$ = rxFrom(
+          this.supabase.from(DbPaths.comments).delete().eq('authorId', uid)
+        ).pipe(remapErrors());
+
+        return deletePatchConnections$.pipe(
+          switchMap(() => deletePatches$),
+          switchMap(() => deleteRackModules$),
+          switchMap(() => deleteRacks$),
+          switchMap(() => deleteUserModules$),
+          switchMap(() => deleteComments$),
+          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'patches', 'patchConnections', 'rackWithId', 'racksMinimal', 'comments', 'currentUserComments'])
+        );
+      })
+    )
   };
   
   readonly update = {

@@ -10,6 +10,7 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
 import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { InputDialogModule } from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.module';
+import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatTooltipModule } from "@angular/material/tooltip";
@@ -47,6 +48,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     MatTooltipModule,
     MatDialogModule,
     InputDialogModule,
+    ConfirmDialogModule,
     TimeagoModule
   
   ],
