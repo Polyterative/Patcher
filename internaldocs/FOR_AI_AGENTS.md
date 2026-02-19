@@ -6,7 +6,8 @@
      in [PATTERNS.md](./PATTERNS.md), [STYLE_GUIDE.md](./STYLE_GUIDE.md), and [ARCHITECTURE.md](./ARCHITECTURE.md).
 > 3. **Capture new guidelines here** — if the user expresses a workflow preference or decision principle, add it to the
      appropriate section, format it clearly, and confirm with the user.
-> 4. **Product status → [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md). Active tasks → [TODO.md](./TODO.md).**
+> 4. **Product status → [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md). Active tasks → [TODO.md](./TODO.md). Current feature
+     detail → [CURRENT_FEATURE.md](./CURRENT_FEATURE.md).**
 
 ---
 
@@ -42,6 +43,8 @@
 | Test (always)         | `yarn test-headless`                                                                                     |
 | Test (specific file)  | `yarn test-headless --include="**/my-file.spec.ts"`                                                      |
 | Test (specific suite) | `yarn test-headless --include="**/__tests__/supabase-service/*.spec.ts"`                                 |
+| E2E tests (local)     | `yarn test:e2e` — requires `yarn start` running at `localhost:5556`                                      |
+| E2E tests (CI)        | `yarn test:e2e:ci` — single worker, list reporter                                                        |
 | Regenerate DB types   | `yarn updateBackendTypes` — run after any Supabase schema change to sync `src/backend/database.types.ts` |
 
 **🚫 NEVER:** `ng test`, `npx ng test`, `npm install`, any interactive/watch test command.
@@ -215,6 +218,23 @@ Verify these before considering any work done. They are **review criteria**, not
    half-finished work.
 3. **Run tests after every meaningful change** — use the most specific test command available.
 4. **Cleanup pass before finishing** — run the pre-finish checklist above.
+
+**File ownership — where things are saved:**
+
+| What                                                       | Where                          |
+|------------------------------------------------------------|--------------------------------|
+| Workflow preferences & agent rules                         | `FOR_AI_AGENTS.md` (this file) |
+| Active feature — steps, gotchas, test results, discoveries | `CURRENT_FEATURE.md`           |
+| Backlog, one-line completed history                        | `TODO.md`                      |
+| Product goals & strategy                                   | `PRODUCT_NEEDS.md`             |
+
+**CURRENT_FEATURE.md workflow:**
+
+- Open it at the start of every session and read it.
+- Update it inline as you work — check off steps, record discoveries, update test results.
+- When the feature is complete: add a one-line summary to TODO.md Completed, then reset `CURRENT_FEATURE.md` to the
+  Empty Template at the bottom of that file.
+- Never leave it stale — if something is discovered (wrong selector, API quirk, constraint), write it down immediately.
 
 ---
 
