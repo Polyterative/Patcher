@@ -1,6 +1,14 @@
 # Common Patterns
 
-> **⚠️ Use these templates.** Copy these patterns exactly when creating new components/services.
+> **Rules for AI agents using this file:**
+> 1. **This is the canonical pattern source.** When you need a code template, copy from here — do not invent new
+     patterns.
+> 2. **Do not add patterns that duplicate what is here** — extend by adding a new section only when a genuinely new
+     pattern is needed and confirmed by the user.
+> 3. **Naming conventions → [STYLE_GUIDE.md](./STYLE_GUIDE.md). Architecture
+     layers → [ARCHITECTURE.md](./ARCHITECTURE.md). Enforcement rules → [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md).**
+
+> ⚠️ Copy these patterns exactly when creating new components/services.
 
 ## Data Service Template
 
