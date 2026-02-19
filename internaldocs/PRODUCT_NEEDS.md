@@ -88,7 +88,7 @@ private patches, exports, advanced org), API access.
 | Module review flagging               | 🔲 Backlog – Medium | See TODO.md                         |
 | Account mgmt – password change       | ✅ Done              | See TODO.md                         |
 | Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                         |
-| Duplicate panel detection            | 🟡 Active           | See TODO.md                         |
+| Duplicate panel detection            | ✅ Done              | Client-side validation in editor    |
 | Safari image export                  | 🔲 Bug – Low        | See TODO.md                         |
 | Manufacturer pages                   | 💡 Long-term        | Backend method exists               |
 | Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion         |
