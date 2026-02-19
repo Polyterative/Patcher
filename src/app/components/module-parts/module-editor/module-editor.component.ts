@@ -14,6 +14,7 @@ import {
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
+  combineLatest,
   concat,
   EMPTY,
   from,
@@ -74,6 +75,13 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   INs$ = new BehaviorSubject<FormCV[]>([]);
   OUTs$ = new BehaviorSubject<FormCV[]>([]);
+  
+  /** Tracks panel color values already present on this module. */
+  private _existingPanelColors$ = new BehaviorSubject<Set<number>>(new Set());
+  /** True when the currently selected panel type already exists on the module. */
+  panelTypeAlreadyExists$ = new BehaviorSubject<boolean>(false);
+  /** The human-readable name of the duplicate panel type, for display in the warning. */
+  duplicatePanelTypeName$ = new BehaviorSubject<string>('');
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -160,6 +168,19 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       
     } else {
       console.error('Data input is undefined.');
+    }
+    
+    // Initialize existing panel colors for duplicate detection
+    if (this.data?.panels) {
+      this._existingPanelColors$.next(new Set(this.data.panels.map(p => p.color)));
+    }
+    
+    // Eagerly compute initial duplicate state so the warning renders on first load
+    const initialColor: number = this.panelType.control.value?.value;
+    const initialColors = this._existingPanelColors$.value;
+    if (initialColors.has(initialColor)) {
+      this.panelTypeAlreadyExists$.next(true);
+      this.duplicatePanelTypeName$.next(this.panelType.control.value?.name ?? '');
     }
   }
   
@@ -353,6 +374,19 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         if (!descValue || isDefaultDescription) {
           this.panelDescription.control.patchValue(panelTypeValue.name);
         }
+      });
+    
+    // Duplicate panel type detection: update panelTypeAlreadyExists$ when panel type selection or existing panels change
+    combineLatest([
+      this.panelType.control.valueChanges.pipe(startWith(this.panelType.control.value)),
+      this._existingPanelColors$
+    ])
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(([panelTypeValue, existingColors]) => {
+        const selectedColor: number = panelTypeValue?.value;
+        const isDuplicate = existingColors.has(selectedColor);
+        this.panelTypeAlreadyExists$.next(isDuplicate);
+        this.duplicatePanelTypeName$.next(isDuplicate ? panelTypeValue?.name ?? '' : '');
       });
     
     // Subscription for saving power data

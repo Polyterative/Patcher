@@ -60,12 +60,18 @@
   8 historical findings (5× Supabase anon JWT — safe/public, 3× old Firebase/GCP API keys in deleted `firebase.ts`).
   Fixed `.gitignore` (added `.env*`, `*.pem`, `*.key`, `*.p12`). Manual follow-ups: revoke 2 old GCP keys in console,
   verify Supabase RLS in dashboard.
+- [x] **Duplicate Panel Detection** (Feb 19) — Proactive client-side check in module editor: `panelTypeAlreadyExists$`
+  observable blocks "Add Panel" button when selected color/type already exists on the module; `app-advice-tooltip`
+  warning
+  shown; eager init in `ngOnInit` ensures warning renders on first load without user interaction; existing `catchError`
+  retained as safety net. Key files: `module-editor.component.ts`, `.html`. 14 tests in
+  `duplicate-panel-detection.spec.ts`. Full suite: 240/240 pass.
 
 ---
 
 ## Active
 
-- [~] **Duplicate Panel Detection** — Proactive client-side check in module editor to prevent uploading panels with the
+*(none)*
   same color/type that already exist on the module.
 
 ---
