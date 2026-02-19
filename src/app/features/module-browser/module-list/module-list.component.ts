@@ -49,12 +49,12 @@ import { ModuleList } from '../module-browser-data.service';
   standalone: false
 })
 export class ModuleListComponent extends SubManager implements OnInit {
-  @Input() readonly data$: Observable<ModuleList>;
-  @Input() readonly viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
+  @Input() data$: Observable<ModuleList>;
+  @Input() viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
   
-  @Input() readonly showSearch = false;
-  @Input() readonly showOrder = false;
-  @Input() readonly encloseVertically = true;
+  @Input() showSearch = false;
+  @Input() showOrder = false;
+  @Input() encloseVertically = true;
   
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
