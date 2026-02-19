@@ -31,6 +31,10 @@ import { ToolbarModule } from './features/backbone/toolbar/toolbar.module';
 import { PageHeaderModule } from './shared-interproject/components/@visual/page-header/page-header.module';
 import { ScreenWrapperModule } from './shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { MatDialogRef } from "@angular/material/dialog";
+import {
+  MAT_SNACK_BAR_DEFAULT_OPTIONS,
+  MatSnackBarConfig
+} from "@angular/material/snack-bar";
 
 import * as Sentry from "@sentry/angular";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
@@ -93,6 +97,13 @@ const matDatepickerLocaleIT = {
     {
       provide: MatDialogRef,
       useValue: {}
+    },
+    {
+      provide: MAT_SNACK_BAR_DEFAULT_OPTIONS,
+      useValue: {
+        verticalPosition: 'top',
+        horizontalPosition: 'end',
+      } as MatSnackBarConfig
     },
     {
       provide: ErrorHandler,
