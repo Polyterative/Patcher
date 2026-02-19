@@ -20,6 +20,24 @@ When the user expresses a guideline, workflow preference, or decision principle:
 3. Cross-reference with related sections if applicable
 4. Confirm the addition with the user
 
+## 🤖 Autonomy & Tool Priority (READ FIRST)
+
+**Maximize tool use, minimize terminal calls.**
+
+- **Prefer file tools over terminal:** Use `read_file`, `insert_edit_into_file`, `replace_string_in_file`,
+  `grep_search`, `file_search`, and `list_dir` to explore and modify the codebase directly. Terminal calls (
+  `run_in_terminal`) are a last resort.
+- **Terminal is only for:** Installing packages, running tests, or executing things that cannot be done with file tools
+  alone.
+- **Never use terminal to:** Read files, search for patterns, check directory structure, or apply code changes — always
+  use the dedicated tools instead.
+- **Batch file edits:** Group all changes to the same file into a single tool call rather than multiple sequential
+  terminal + file operations.
+- **Autonomous by default:** Do not ask for permission to read files or explore the codebase. Gather all necessary
+  context with tools, then act.
+
+---
+
 ## ⚡ Quick Reference (MUST READ FIRST)
 
 **Commands:** Use `yarn` (install/add/remove) never `npm`. Testing: `yarn test-headless` never raw `ng test`.
@@ -297,7 +315,8 @@ this.updateList$.pipe(
 `SubManager` or calling `super()` | ❌ Missing `$` suffix | ❌ Using dialogs vs inline UI | ❌ Subscribing in components (
 use async pipe) | ❌ Not using `readonly` on public observables | ❌ Using `npm` not `yarn` | ❌ Running `ng test` not
 `yarn test-headless` | ❌ Direct Supabase calls | ❌ **Public methods for logic (use Subjects)** | ❌ **Components calling
-methods (emit to Subjects)** | ❌ **Subscribing outside constructor** | ❌ **Creating markdown summaries**
+methods (emit to Subjects)** | ❌ **Subscribing outside constructor** | ❌ **Creating markdown summaries** | ❌ **Using
+terminal to read files or search code (use file tools)** | ❌ **Asking permission to explore the codebase (just do it)**
 
 ## 📚 Reference & Checklists
 
