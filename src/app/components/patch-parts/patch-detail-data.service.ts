@@ -146,7 +146,14 @@ export class PatchDetailDataService implements OnDestroy {
           this.isCurrentPatchPrivate$.next(!patch.public);
           return {...patch}; // clone so backend.update.patch can't mutate the live object
         }),
-        switchMap(x => this.backend.update.patch(x)),
+        switchMap(patch => this.backend.update.patch(patch).pipe(
+          tap(() => {
+            const msg = patch.public
+              ? `"${ patch.name }" is now public — visible to everyone.`
+              : `"${ patch.name }" is now private — only you can see it.`;
+            SharedConstants.successCustom(this.snackBar, msg);
+          })
+        )),
         takeUntil(this.destroyEvent$),
       )
       .subscribe();
