@@ -86,9 +86,9 @@ private patches, exports, advanced org), API access.
 | Security audit – secrets in repo     | ✅ Done              | Gitleaks clean; .gitignore hardened |
 | Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                         |
 | Module review flagging               | 🔲 Backlog – Medium | See TODO.md                         |
-| Account mgmt – password change       | 🔲 Backlog – Medium | See TODO.md                         |
+| Account mgmt – password change       | ✅ Done              | See TODO.md                         |
 | Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                         |
-| Duplicate panel detection            | 🔲 Bug – Medium     | See TODO.md                         |
+| Duplicate panel detection            | 🟡 Active           | See TODO.md                         |
 | Safari image export                  | 🔲 Bug – Low        | See TODO.md                         |
 | Manufacturer pages                   | 💡 Long-term        | Backend method exists               |
 | Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion         |
