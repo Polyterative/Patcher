@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
+  BehaviorSubject,
   from,
   NEVER,
   Observable,
@@ -75,6 +76,16 @@ export class UserManagementService extends SubManager {
   /** Emits when user requests to delete all their data and account */
   public deleteAccountAction$ = new Subject<void>();
   
+  /** Emits new password when user submits the inline password-change form */
+  public changePassword$ = new Subject<{
+    newPassword: string
+  }>();
+  
+  // Password form toggle
+  private _showPasswordForm$ = new BehaviorSubject<boolean>(false);
+  public readonly showPasswordForm$ = this._showPasswordForm$.asObservable();
+  public togglePasswordForm$ = new Subject<boolean>();
+  
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
   
@@ -101,6 +112,8 @@ export class UserManagementService extends SubManager {
     this.initializeOAuthCallbackHandler();
     this.initializeUpdateUsernameHandler();
     this.initializeDeleteAccountHandler();
+    this.initializeChangePasswordHandler();
+    this.initializeTogglePasswordFormHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -464,6 +477,32 @@ export class UserManagementService extends SubManager {
       tap(() => {
         SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. You have been signed out.');
         this.router.navigate(['/auth/login']);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
+  private initializeTogglePasswordFormHandler(): void {
+    this.togglePasswordForm$.pipe(
+      tap(show => this._showPasswordForm$.next(show)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+  
+  private initializeChangePasswordHandler(): void {
+    this.changePassword$.pipe(
+      switchMap(({newPassword}) =>
+        this.backend.updatePassword$(newPassword).pipe(
+          catchError((error) => {
+            const msg = error?.message || SharedConstants.messages.operationFailed;
+            SharedConstants.errorCustom(this.snackBar, msg);
+            return NEVER;
+          })
+        )
+      ),
+      tap(() => {
+        this._showPasswordForm$.next(false);
+        SharedConstants.successCustom(this.snackBar, 'Password updated successfully.');
       }),
       takeUntil(this.destroy$)
     ).subscribe();
