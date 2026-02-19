@@ -30,6 +30,8 @@
 **🚫 Never use terminal to:** read files · search patterns · check structure · apply edits  
 **🚫 Never run raw test commands** — always invoke via `package.json` scripts (`yarn <script>`).  
 **🚫 Never run:** `ng test` · `npx ng test` · `npm install` · any interactive/watch command  
+**🚫 Never start a dev server** (`yarn start`, `ng serve`, etc.) — the test environment is already running; assume it is
+up. Starting it yourself wastes time and violates the terminal-last rule.  
 **✅ Batch** all edits to the same file into a single tool call.  
 **✅ Act autonomously** — never ask permission to explore; gather context with tools, then act.
 
@@ -117,7 +119,9 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 ❌ New backend write without `cacheBust([...keys])` — leaves stale cache  
 ❌ New backend method without registering table in `DatabaseStrings.ts` first  
 ❌ `destroyEvent$` — legacy; use `destroy$` from `SubManager`  
-❌ Generating markdown summary/reference/docs files unless explicitly asked
+❌ Generating markdown summary/reference/docs files unless explicitly asked  
+❌ Starting a dev server (`yarn start`, `ng serve`, `curl` to check ports) before running e2e tests — the environment is
+already up; just run `yarn test:e2e`
 
 ---
 
