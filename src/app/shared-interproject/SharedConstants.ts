@@ -9,92 +9,96 @@ import { fadeInOnEnterAnimation } from "angular-animations";
 
 export class SharedConstants {
   static messages = {
-    passwordResetEmailSent: "Email sent. Check your inbox to reset your password.",
-    passwordResetRequestReceived: "Got it. Check your email for the reset link.",
-    passwordResetEmailFailed: "Couldn't send the reset email. If you already tried, peek at your inbox.",
-    noEmailFound: "We can't find an email for this account. Please contact support.",
-    overEmailSendRateLimit: "Too many reset requests. Try again in a bit.",
-    operationFailed: "❌ Something went wrong. Try again.",
-    dataNotSaved: "❌ Couldn't save your changes. Try again.",
-    loginFailed: "❌ Login failed. Check your details and retry.",
-    signupFailed: "❌ Signup didn't go through. Check the form and try again.",
-    passwordResetEmailSentTitle: "Check your email 📧",
+    // Auth — password reset flow
+    passwordResetEmailSent: "Reset link sent — check your inbox (and spam, just in case).",
+    passwordResetRequestReceived: "Request received. Your reset link is on its way.",
+    passwordResetEmailFailed: "Couldn't send the reset email. Double-check the address or try again shortly.",
+    noEmailFound: "No account found with that email address. Try a different one or reach out to support.",
+    overEmailSendRateLimit: "You've requested too many resets in a short window. Wait a moment before trying again.",
+    
+    // Generic operation outcomes — provide context, not just status
+    operationFailed: "The action didn't complete — the server returned an error. Try again or refresh the page.",
+    dataNotSaved: "Your changes weren't written to the database. Check your connection and try saving again.",
+    loginFailed: "Sign-in failed — the credentials didn't match any account. Check your email and password.",
+    signupFailed: "Account creation didn't go through. Review the form fields and try again.",
+    passwordResetEmailSentTitle: "Check your inbox",
+
     resetPassword: {
-      invalidToken: "Invalid or missing token.",
-      invalidRedirect: "That redirect URL isn't valid.",
-      passwordMismatch: "Oops! Those passwords don't match. Give it another try.",
-      resetFailed: "Something went wrong on our end. Mind trying again?",
-      resetPasswordTitle: "Let's get you a new password",
-      invalidTokenTitle: "Hmm, this link isn't working",
-      invalidTokenDescription: "This reset link might have expired or wasn't opened correctly. No worries! Just grab the fresh link from your email or request a new one.",
-      goToLogin: "Take me to login",
-      resetPasswordButton: "Update my password",
-      verifyingLink: "Hang tight, we're verifying your link...",
+      invalidToken: "The reset token is invalid or missing — the URL may have been truncated.",
+      invalidRedirect: "The redirect destination in this link isn't allowed.",
+      passwordMismatch: "The two passwords you entered don't match. Re-type them carefully.",
+      resetFailed: "Password update failed on the server side. Wait a moment and try again.",
+      resetPasswordTitle: "Set a new password",
+      invalidTokenTitle: "This link isn't valid",
+      invalidTokenDescription: "The reset link has expired or was opened incorrectly. Grab a fresh one from your email, or request a new link below.",
+      goToLogin: "Back to login",
+      resetPasswordButton: "Save new password",
+      verifyingLink: "Verifying your reset link…",
       passwordLabel: "New password",
       confirmPasswordLabel: "Confirm new password",
-      passwordHint: "Choose a strong password (at least 8 characters) to keep your account secure.",
-      successTitle: "All set! Your password has been updated 🎉",
-      successDescription: "You're being redirected to login, or click below if you're in a hurry.",
+      passwordHint: "At least 8 characters — mix letters, numbers, and symbols for a stronger password.",
+      successTitle: "Password updated",
+      successDescription: "Your credentials have been changed. You'll be redirected to login, or go now.",
       redirectingIn: "Redirecting in",
       seconds: "seconds",
-      goToLoginNow: "Go to login now",
-      // Specific error messages
-      samePassword: "Let's try a fresh password – this one's too similar to your old one.",
-      weakPassword: "Make it stronger! Mix in some letters, numbers, and special characters.",
-      passwordTooShort: "A bit longer please – we need at least 8 characters.",
-      passwordTooLong: "That's quite secure, but let's keep it under 30 characters.",
-      invalidSession: "Your reset session expired. Request a new link to continue.",
-      networkError: "Connection hiccup! Check your internet and try again.",
-      unknownError: "Something unexpected happened. Try again, or reach out if it keeps happening."
+      goToLoginNow: "Go to login",
+      // Field-level validation errors
+      samePassword: "New password must differ from your current one.",
+      weakPassword: "Password is too weak — add uppercase letters, numbers, or special characters.",
+      passwordTooShort: "Password must be at least 8 characters long.",
+      passwordTooLong: "Password must not exceed 30 characters.",
+      invalidSession: "Your reset session has expired. Request a new link to continue.",
+      networkError: "Network error — check your connection and try again.",
+      unknownError: "An unexpected error occurred. Try again, or contact support if it persists."
     }
   };
-  
+
   static confirmMail(snackBar: MatSnackBar) {
-    snackBar.open("Confirm your email before logging in.", undefined, {duration: 5000});
+    snackBar.open("Confirm your email address before signing in — check your inbox.", undefined, {duration: 5000});
   }
-  
+
   static successSignup(snackBar: MatSnackBar) {
-    snackBar.open("✅ You're in! Welcome 🎉", undefined, {duration: 3000});
+    snackBar.open("Account created. Welcome to Patcher!", undefined, {duration: 3000});
   }
-  
+
   static showSuccessUpdate(snackBar: MatSnackBar) {
-    snackBar.open("✅ Changes saved.", undefined, {duration: 1000});
+    snackBar.open("Saved to database.", undefined, {duration: 1000});
   }
-  
+
   static successCustom(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(`✅ ${ msg }`, undefined, {duration: 4000});
+    snackBar.open(msg ?? "Done.", undefined, {duration: 4000});
   }
-  
+
   static successDelete(snackBar: MatSnackBar) {
-    snackBar.open("✅ Deleted.", undefined, {duration: 4000});
+    snackBar.open("Removed from database.", undefined, {duration: 4000});
   }
-  
+
   static successSave(snackBar: MatSnackBar) {
-    snackBar.open("✅ Saved.", undefined, {duration: 4000});
+    snackBar.open("Saved.", undefined, {duration: 4000});
   }
-  
+
   static successSaveShort(snackBar: MatSnackBar) {
-    snackBar.open("✅ Saved.", undefined, {duration: 1000});
+    snackBar.open("Saved.", undefined, {duration: 1000});
   }
   
   static successLogin(snackBar: MatSnackBar) {
-    snackBar.open("✅ Welcome back!", undefined, {duration: 2000});
+    snackBar.open("Signed in.", undefined, {duration: 2000});
   }
   
   static successLogout(snackBar: MatSnackBar) {
-    snackBar.open("✅ Logged out.", undefined, {duration: 2000});
+    snackBar.open("Signed out.", undefined, {duration: 2000});
   }
   
   static errorHandlerSignup<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.signupFailed } ${ msg }`, undefined, {duration: 8000});
+      snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000});
       return EMPTY;
     });
   }
   
   static errorHandlerLogin<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.loginFailed } ${ msg }`, undefined, {duration: 8000});
+      snackBar.open(`${ SharedConstants.messages.loginFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000});
       return EMPTY;
     });
   }
@@ -114,15 +118,15 @@ export class SharedConstants {
   }
   
   static errorSignup<T>(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(`${ SharedConstants.messages.signupFailed } ${ msg }`, undefined, {duration: 5000});
+    snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 5000});
   }
   
   static errorLogin<T>(snackBar: MatSnackBar) {
-    snackBar.open(`${ SharedConstants.messages.loginFailed }`, undefined, {duration: 5000});
+    snackBar.open(SharedConstants.messages.loginFailed, undefined, {duration: 5000});
   }
   
   static errorCustom<T>(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(`❌ ${ msg }`, undefined, {duration: 5000});
+    snackBar.open(msg ?? SharedConstants.messages.operationFailed, undefined, {duration: 5000});
   }
 }
 

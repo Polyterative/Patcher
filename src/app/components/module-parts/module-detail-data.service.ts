@@ -69,7 +69,7 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        SharedConstants.successCustom(this.snackBar, 'Panel deleted');
+        SharedConstants.successCustom(this.snackBar, 'Panel image removed from module.');
         
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
@@ -83,7 +83,7 @@ export class ModuleDetailDataService {
         if (b) {
           let text: string = `${ b.name } by ${ b.manufacturer.name }`;
           navigator.clipboard.writeText(text);
-          SharedConstants.successCustom(snackBar, `Copied: ${ text }`);
+          SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`);
         }
       });
     
