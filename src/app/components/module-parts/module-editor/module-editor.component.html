@@ -22,6 +22,7 @@
           <app-brand-primary-button
             (click$)="savePower$.next()"
             [disabled]="!(formGroupPower | formValid)"
+            icon="save"
             theme="positive"
           >
             Save Power Data
@@ -49,6 +50,7 @@
           <app-brand-primary-button
             (click$)="savePhysical$.next()"
             [disabled]="!(formGroupPhysical | formValid)"
+            icon="save"
             theme="positive"
           >
             Save physical properties
@@ -91,6 +93,7 @@
           <app-brand-primary-button
             (click$)="savePanels$.next()"
             [disabled]="!(formGroupPanel | formValid) || !(fileDragHostService.files$ | async)?.length"
+            icon="add"
             theme="positive"
           >
             Add Panel
@@ -161,6 +164,7 @@
           <app-brand-primary-button
             (click$)="saveInsOuts$.next()"
             [disabled]="!(formGroupA | formValid) || !(formGroupB | formValid)"
+            icon="save"
             theme="positive"
           >
             Save INs and OUTs
