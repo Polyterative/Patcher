@@ -50,6 +50,68 @@
                 >Reset Password
                 </app-brand-primary-button>
               </div>
+              
+              <!-- Inline password-change form -->
+              @if (userManagementService.showPasswordForm$ | async) {
+                <form class="col gap1"
+                      [formGroup]="passwordForm"
+                      (ngSubmit)="submitPasswordChange()"
+                >
+                  <mat-form-field appearance="outline">
+                    <mat-label>New password</mat-label>
+                    <input matInput
+                           type="password"
+                           formControlName="newPassword"
+                           autocomplete="new-password"
+                    >
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">Password is required
+                    </mat-error>
+                    <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">At least 8 characters
+                      required
+                    </mat-error>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Confirm new password</mat-label>
+                    <input matInput
+                           type="password"
+                           formControlName="confirmPassword"
+                           autocomplete="new-password"
+                    >
+                    <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">Confirm password is
+                      required
+                    </mat-error>
+                    <mat-error
+                      *ngIf="passwordForm.hasError('confirmMismatch') && passwordForm.get('confirmPassword')?.touched">
+                      Passwords do not match
+                    </mat-error>
+                  </mat-form-field>
+                  <div class="row gap1">
+                    <button mat-raised-button
+                            color="primary"
+                            type="submit"
+                            [disabled]="passwordForm.invalid"
+                    >
+                      <mat-icon>check_circle</mat-icon>
+                      Save new password
+                    </button>
+                    <button mat-stroked-button
+                            type="button"
+                            (click)="userManagementService.togglePasswordForm$.next(false); passwordForm.reset()"
+                    >
+                      <mat-icon>close</mat-icon>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <app-brand-primary-button
+                  (click$)="userManagementService.togglePasswordForm$.next(true)"
+                  icon="lock"
+                  matTooltip="Change your password directly without leaving this page"
+                  theme="primary"
+                >Change Password
+                </app-brand-primary-button>
+              }
               <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
               </app-label-value-showcase>
               <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}

@@ -5,7 +5,11 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  AbstractControl,
   FormControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
   Validators
 } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -24,6 +28,19 @@ import {
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 
+/** Cross-field validator: confirm password must match new password */
+export function confirmMatchesNewValidator(): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const newPwd = group.get('newPassword')?.value;
+    const confirm = group.get('confirmPassword')?.value;
+    if (newPwd && confirm && newPwd !== confirm) {
+      return {confirmMismatch: true};
+    }
+    return null;
+  };
+}
+
+
 @Component({
   selector: 'app-user-management',
   templateUrl: './user-management.component.html',
@@ -33,6 +50,18 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 })
 export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;
+  
+  passwordForm = new FormGroup(
+    {
+      newPassword: new FormControl('', [Validators.required, Validators.minLength(8)]),
+      confirmPassword: new FormControl('', [Validators.required])
+    },
+    {
+      validators: [
+        confirmMatchesNewValidator()
+      ]
+    }
+  );
   
   constructor(
     public userManagementService: UserManagementService,
@@ -47,6 +76,15 @@ export class UserManagementComponent implements OnInit {
         description: 'Personal account management.'
       }, 'Account Management');
     }
+  }
+  
+  submitPasswordChange(): void {
+    if (this.passwordForm.invalid) {
+      return;
+    }
+    const {newPassword} = this.passwordForm.value;
+    this.userManagementService.changePassword$.next({newPassword: newPassword!});
+    this.passwordForm.reset();
   }
   
   changeUsername(): void {

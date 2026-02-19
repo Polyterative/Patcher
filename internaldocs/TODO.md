@@ -43,6 +43,13 @@
 
 ---
 
+- [x] **Account Management — Password Change** (Feb 19) — `changePassword$` + `showPasswordForm$` toggle in
+  `UserManagementService`; `updatePassword$` in `SupabaseService`; inline form (new + confirm, min 8 chars) in
+  `user-management.component.html`; ReactiveFormsModule + Material modules added to `user-management.module.ts`. 9 tests
+  in `password-change.spec.ts`.
+
+---
+
 ## Active
 
 *(none — pick from the backlog below)*
@@ -244,22 +251,6 @@ flag submission only.
 
 ---
 
-### MEDIUM: Account Management — Password Change
-
-**Why:** GDPR + basic UX: users with password accounts cannot change their password.  
-**Note:** Data deletion is already done. This covers the remaining account management gap.
-
-**Steps when picked:**
-
-- [ ] Read `user-management.component.html` and `user-management.service.ts` to understand current state
-- [ ] Add `changePassword$` Subject to `UserManagementService`; handler calls `supabase.auth.updateUser({ password })`
-- [ ] Add inline password-change form (current password + new password + confirm) to `user-management.component.html`
-- [ ] Show BehaviorSubject toggle `showPasswordForm$` to expand/collapse form inline (no dialog)
-- [ ] Validate: new ≠ current, min 8 chars, confirm matches
-- [ ] Success/error via SharedConstants conventions
-- [ ] Write tests for form validation and service API surface
-
----
 
 ### LOW: Edit Module HP in Rack
 

@@ -1922,6 +1922,30 @@ export class SupabaseService extends SubManager {
       })
     );
   }
+  
+  /**
+   * Changes the password for the currently authenticated user.
+   * Requires an active session — this is for in-app password change, not password reset.
+   *
+   * @param newPassword - The new password to set (min 8 characters)
+   * @returns Observable that completes when the password is updated
+   */
+  updatePassword$(newPassword: string): Observable<void> {
+    return from(
+      this.supabase.auth.updateUser({password: newPassword})
+    ).pipe(
+      map((response) => {
+        if (response.error) {
+          throw new Error(response.error.message || 'Password update failed.');
+        }
+        return void 0;
+      }),
+      catchError((error) => {
+        console.error('Password change failed:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
 
 class PasswordResetError extends Error {
