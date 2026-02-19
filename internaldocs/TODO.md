@@ -71,9 +71,9 @@ before the feature will be visually correct.
 - [ ] Read `patch-graph.component.ts` fully to understand node/edge ID construction (see blocker note above)
 - [ ] Read `patch_connections` schema in `database.types.ts` and connection model in `connection.ts`
 - [ ] Read `patch-detail-data.service.ts` to understand how connections are loaded and passed to graph
-- [ ] Design `patch_module_instances` table shape (id, patch_id, module_id, instance_label)
-- [ ] Update `database.types.ts` with new table type
-- [ ] Add `get/add/delete` for instances in `supabase.service.ts`
+- [ ] Design `patch_module_instances` table type in `database.types.ts` (id, patch_id, module_id, instance_label)
+- [ ] Add `patch_module_instances` to `DbPaths` in `DatabaseStrings.ts`
+- [ ] Add `get/add/delete` for instances in `supabase.service.ts` with `cacheBust(['patchConnections'])` on writes
 - [ ] Update `PatchConnection` model to carry `instance_id` alongside `module_id` on `CVwithModule`
 - [ ] Update patch graph node/edge ID construction to include `instance_id` suffix — prevents ID collisions
 - [ ] Update patch graph to render module nodes labeled "Module (1)", "Module (2)" per instance
@@ -91,10 +91,12 @@ flag submission only.
 **Steps when picked:**
 
 - [ ] Read `module-details` component to locate the right insertion point for a "Report issue" button
-- [ ] Read `supabase.service.ts` to understand add/get patterns
-- [ ] Design `module_flags` table (id, module_id, user_id, category, note, created_at, resolved)
-- [ ] Update `database.types.ts` with ModuleFlag type
-- [ ] Add `add.moduleFlag()` to `supabase.service.ts`
+- [ ] Read `supabase.service.ts` `add` namespace to understand insertion patterns
+- [ ] Add `module_flags` to `DbPaths` in `DatabaseStrings.ts`
+- [ ] Design `module_flags` table type in `database.types.ts` (id, module_id, user_id, category, note, created_at,
+  resolved)
+- [ ] Add `add.moduleFlag()` to `supabase.service.ts` with `cacheBust` (no cached key needed yet — it's a write-only
+  path for now)
 - [ ] Create `module-flag-data.service.ts` with `submitFlag$` Subject and inline form toggle
 - [ ] Add inline flag form to module-details (predefined categories: wrong specs / missing image / duplicate / other)
 - [ ] Show confirmation snackbar on success via SharedConstants.successCustom
@@ -126,9 +128,9 @@ flag submission only.
 
 **Steps when picked:**
 
-- [ ] Read rack editor component and rack_modules schema in `database.types.ts`
-- [ ] Add nullable `hp_override` column to `rack_modules` table type in `database.types.ts`
-- [ ] Add `update.rackModuleHp(rackModuleId, hp)` to `supabase.service.ts`
+- [ ] Read rack editor component and `rack_modules` schema in `database.types.ts`
+- [ ] Add nullable `hp_override` to the `rack_modules` Row/Insert/Update types in `database.types.ts`
+- [ ] Add `update.rackModuleHp(rackModuleId, hp)` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
 - [ ] Add inline HP edit affordance in rack editor (click-to-edit, validated number input)
 - [ ] Module rendering must prefer `hp_override` over module's default HP when set
 - [ ] Write tests for override logic and rack layout reflow

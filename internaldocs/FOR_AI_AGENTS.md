@@ -84,7 +84,12 @@
 ### 6. Backend Calls
 
 - Always through `SupabaseService` — never instantiate Supabase directly.
-- `this.backend.GET.currentUserModules()`, `this.backend.update.module(data)`, etc.
+- **Two read namespaces** — `backend.GET.*` for paginated/filtered list queries; `backend.get.*` for entity lookups and
+  user-scoped queries. Both are correct; use the one that matches what already exists for that entity.
+- Write namespaces: `backend.add.*`, `backend.update.*`, `backend.delete.*`.
+- Full namespace table → [PATTERNS.md — API Calls](./PATTERNS.md).
+- When adding a new backend method: register table in `DatabaseStrings.ts` first, add `cacheBust()` on writes, add
+  `@Cacheable` on reads. See [PATTERNS.md — Adding a New Backend Method](./PATTERNS.md).
 
 ### 7. Error Handling
 
@@ -100,6 +105,9 @@ Data services:  *-data.service.ts  (in component directory)
 Components:     src/app/components/[feature]/
 Models:         src/app/models/
 Shared:         src/app/shared-interproject/
+Backend:        src/app/features/backend/supabase.service.ts
+Table names:    src/app/features/backend/DatabaseStrings.ts  ← register new tables here FIRST
+DB types:       src/backend/database.types.ts               ← update when adding new tables
 ```
 
 ```typescript
@@ -110,7 +118,13 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 ```
 
-**Copy patterns from:** `module-detail-data.service.ts`, `user-login-data.service.ts`, `patch-detail-data.service.ts`
+**Copy patterns from:**
+
+- `patch-detail-data.service.ts` — full real-world data service with `ReplaySubject` trigger, privacy toggle, connection
+  editing
+- `module-detail-data.service.ts` — entity detail with `updateSingleModuleData$` trigger pattern
+- `rack-detail-data.service.ts` — rack editor state management
+- `user-login-data.service.ts` — auth flow patterns
 
 ---
 
@@ -132,7 +146,13 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 ❌ Generating markdown summary/reference/docs files  
 ❌ Using terminal to read files or search code (use file tools)  
 ❌ Asking permission to explore the codebase (just do it)  
-❌ Vague commit messages (`fix stuff`, `WIP`)
+❌ Vague commit messages (`fix stuff`, `WIP`)  
+❌ Writing a new backend method without registering the table in `DatabaseStrings.ts` first  
+❌ Writing a new add/update/delete method without `cacheBust([...keys])` — leaves stale cache  
+❌ Using `Subject` instead of `ReplaySubject` for entity-ID triggers on detail pages — child components that subscribe
+late will miss the emit  
+❌ Using `destroyEvent$` — this is a legacy pattern in older services. New services must extend `SubManager` and use
+`this.destroy$`
 
 ---
 

@@ -62,11 +62,18 @@ src/app/
 ├── components/          # Reusable UI
 ├── features/            # Feature modules
 │   ├── backbone/        # Auth, core
-│   ├── backend/         # Backend services
+│   ├── backend/
+│   │   ├── supabase.service.ts    # All backend calls (GET/get/add/update/delete namespaces)
+│   │   └── DatabaseStrings.ts     # DbPaths (table names), QueryJoins (select joins) — register new tables here first
 │   └── [features]/
 ├── models/              # TypeScript interfaces
 ├── shared-interproject/ # Shared utils
 └── style/               # Global SCSS
+```
+
+```
+src/backend/
+└── database.types.ts    # Supabase-generated schema types — update when adding new tables
 ```
 
 ## State Management
