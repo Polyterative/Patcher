@@ -50,7 +50,7 @@
 - [x] **E2E — Module browser smoke test** (Feb 19) — Removed 8 unimplemented flow stubs; added
   `e2e/module-browser.spec.ts` (4 passing tests: page loads, `div.card` visible, paginator status > 0, heading visible);
   fixed selector — cards render as `div.card` not `mat-card`; `playwright.config.ts` `testMatch` narrowed to
-  `module-browser.spec.ts`.
+  `module-browser.spec.ts`. ✅ Done Feb 19.
 
 - [x] **Account Management — Password Change** (Feb 19) — `changePassword$` + `showPasswordForm$` toggle in
   `UserManagementService`; `updatePassword$` in `SupabaseService`; inline form (new + confirm, min 8 chars) in
@@ -61,7 +61,7 @@
 
 ## Active
 
-*(none — pick from the backlog below)*
+### [~] HIGH: Multiple Module Instances in Patches
 
 > 📄 **Current feature detail → [CURRENT_FEATURE.md](./CURRENT_FEATURE.md)**  
 > Implementation steps, test results, and gotchas for the feature in progress live there, not here.
@@ -70,11 +70,12 @@
 
 ## Backlog
 
-### HIGH: E2E — Expand module-browser spec + implement remaining flows
+### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
 
-**Current state:** 4 smoke tests passing. See `CURRENT_FEATURE.md` for full detail, gotchas, and next steps.  
-**Remaining flows:** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch Connection,
-Module Submission, Sign Up, Delete Account.
+**Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for
+now.  
+**Remaining flows (deferred):** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch
+Connection, Module Submission, Sign Up, Delete Account.
 
 ---
 
