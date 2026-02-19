@@ -41,6 +41,8 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
+import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
+import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 
 
 @NgModule({
@@ -50,14 +52,16 @@ import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat
     PatchCreatorComponent,
     PatchDetailsComponent,
     PatchGraphComponent,
-    PatchConnectionsListComponent
+    PatchConnectionsListComponent,
+    PatchConnectionStatsPipe
   ],
   exports:      [
     PatchMinimalComponent,
     PatchEditorComponent,
     PatchDetailsComponent,
     PatchGraphComponent,
-    PatchConnectionsListComponent
+    PatchConnectionsListComponent,
+    PatchConnectionStatsPipe
   ],
   providers:    [PatchDetailDataService],
   imports: [
@@ -95,7 +99,8 @@ import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat
     PatchMicroModule,
     MatSlideToggleModule,
     LibShowcaseGridComponent,
-    FormValidPipe
+    FormValidPipe,
+    StatisticsModule
   ]
 })
 export class PatchModule {}

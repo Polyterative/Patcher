@@ -295,6 +295,30 @@ modules)
 
 ## Ideas (Not Prioritized)
 
+### ✅ Cable/Multiples Counter (Feb 19, 2026)
+
+**What was done:**
+
+- Added `PatchConnectionStatsPipe` (`patch-connection-stats.pipe.ts`) that derives three statistics from a
+  `PatchConnection[]`:
+  - **Cables** — total number of connections in the patch
+  - **Modules** — count of unique modules referenced across all connections
+  - **Multiples** — count of output CVs that drive more than one input (i.e. signals split via multiples)
+- Integrated `app-statistics` panel into `patch-composite.component.html` — it appears above the connections list for
+  any patch that has connections, only in view mode (not while editing)
+- Registered and exported `PatchConnectionStatsPipe` in `PatchModule`; added `StatisticsModule` to `PatchModule` imports
+- 10 unit tests in `patch-connection-stats.spec.ts` covering: null/empty inputs, single cable, unique module
+  deduplication, zero multiples, single multiple, two multiples, large patch, self-patch edge case
+
+**Files modified/created:**
+
+- `patch-connection-stats.pipe.ts` — new pipe
+- `patch-connection-stats.spec.ts` — new tests
+- `patch.module.ts` — registered pipe + StatisticsModule
+- `patch-composite.component.html` — added statistics panel
+
+---
+
 ### Patch Graph Enhancements
 
 **Occupied Inputs Visualization**  
