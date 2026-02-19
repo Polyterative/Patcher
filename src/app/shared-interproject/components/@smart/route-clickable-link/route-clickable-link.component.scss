@@ -26,7 +26,11 @@
   }
 
   &:hover {
-    background-color: color.adjust($brand-tertiary, $alpha: -0.9);
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.28);
   }
 
   transition:    125ms;

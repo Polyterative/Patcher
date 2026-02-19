@@ -1,3 +1,5 @@
+@use "src/app/style/brand-resources" as *;
+
 // Hero content card wrapper
 lib-hero-content-card {
   padding-bottom: 32rem;
@@ -70,26 +72,26 @@ lib-hero-content-card {
   border: 1px solid transparent;
 
   &.signup-link {
-    background-color: rgba(63, 81, 181, 0.04);
-    border-color: rgba(63, 81, 181, 0.12);
+    background-color: rgba($brand-primary, 0.04);
+    border-color: rgba($brand-primary, 0.12);
 
     &:hover {
-      background-color: rgba(63, 81, 181, 0.08);
-      border-color: rgba(63, 81, 181, 0.2);
+      background-color: rgba($brand-primary, 0.08);
+      border-color: rgba($brand-primary, 0.2);
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(63, 81, 181, 0.15);
+      box-shadow: 0 2px 8px rgba($brand-primary, 0.15);
     }
 
     &:active {
       transform: translateY(0);
-      box-shadow: 0 1px 4px rgba(63, 81, 181, 0.1);
+      box-shadow: 0 1px 4px rgba($brand-primary, 0.1);
     }
 
     mat-card-subtitle.action-link {
       color: rgba(0, 0, 0, 0.75);
 
       strong {
-        color: var(--color-primary, #3f51b5);
+        color: $brand-primary;
         font-weight: 600;
       }
     }
@@ -198,7 +200,7 @@ lib-hero-content-card {
     font-size: 4rem;
     width: 4rem;
     height: 4rem;
-    color: #f44336;
+    color: $brand-negative;
     margin-bottom: 1rem;
   }
 
@@ -221,17 +223,17 @@ lib-hero-content-card {
     gap: 0.75rem;
     padding: 1rem 1.25rem;
     margin: 0.5rem 0;
-    background-color: #fff3f3;
-    border-left: 4px solid #ff4444;
+    background-color: $brand-negative-background;
+    border-left: 4px solid $brand-negative;
     border-radius: 8px;
-    color: #d32f2f;
+    color: $brand-negative;
     text-align: left;
 
     mat-icon {
       font-size: 1.5rem;
       width: 1.5rem;
       height: 1.5rem;
-      color: #d32f2f;
+      color: $brand-negative;
       flex-shrink: 0;
       margin-top: 0.125rem;
     }
@@ -239,7 +241,7 @@ lib-hero-content-card {
     p {
       margin: 0;
       line-height: 1.5;
-      color: #d32f2f;
+      color: $brand-negative;
       flex: 1;
     }
   }
@@ -269,7 +271,7 @@ lib-hero-content-card {
     margin-bottom: 1rem;
 
     &.success-icon {
-      color: #4CAF50;
+      color: $brand-positive;
     }
   }
 
