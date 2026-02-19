@@ -22,6 +22,7 @@
               [disabled]="!dataService.fields.submit.control.valid||(!dataService.fields.submit.control.value.length>0)"
               (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
               [innerFlex]="'100%'"
+              icon="send"
             >Submit comment
             </app-brand-primary-button>
           </div>

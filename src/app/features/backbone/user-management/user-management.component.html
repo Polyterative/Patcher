@@ -17,6 +17,7 @@
             >
               <app-brand-primary-button fxFlex="100"
                                         innerFlex="fill"
+                                        icon="logout"
                                         style="padding-bottom:4rem"
                                         (click$)="userManagementService.logoff$()"
                                         theme="warning"
@@ -29,6 +30,7 @@
                 </app-label-value-showcase>
                 <app-brand-primary-button
                   (click$)="changeUsername()"
+                  icon="edit"
                   matTooltip="Change your display name"
                   theme="primary"
                 >Change
@@ -42,6 +44,7 @@
                 </app-label-value-showcase>
                 <app-brand-primary-button
                   (click$)="resetPassword()"
+                  icon="lock_reset"
                   matTooltip="Send a password reset email to your registered email address"
                   theme="primary"
                 >Reset Password
