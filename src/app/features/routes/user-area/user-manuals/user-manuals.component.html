@@ -12,14 +12,11 @@
         <div class="col gap1"
         >
           @if (data.length > 0) {
-            <div class="rowwrap gap1"
-            >
+            <mat-chip-listbox>
               @for (item of data; track item) {
-                <button mat-raised-button
-                        (click)="openManual(item.manualURL)">{{ item.name }}
-                </button>
+                <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
               }
-            </div>
+            </mat-chip-listbox>
           } @else {
             <mat-card-subtitle
               style="padding: 1rem; align-self: center; text-align: center; width: 100%"

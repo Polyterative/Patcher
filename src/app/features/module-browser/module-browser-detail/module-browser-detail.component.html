@@ -111,51 +111,54 @@
                     </div>
                   </lib-clean-card>
                   @if (bag.data) {
-                    <div class="col gap1"
-                    >
-                      <div class="row gap1">
-                        <!--              each 50%w -->
-                        <button mat-flat-button
-                          style="width: 50%"
-                          (click)="submitSimilar(bag.data)"
+                    <div class="row gap1" style="width: 100%">
+                      <!-- Left slot: always visible -->
+                      <div style="flex: 1; display: flex">
+                        <app-brand-primary-button
+                          theme="light"
+                          style="width: 100%"
+                          (click$)="submitSimilar(bag.data)"
                           [disabled]="!bag.user"
                           [matTooltip]="bag.user?'':'Please log in to submit a module'"
+                          icon="upload"
                         >
-                          <mat-icon>upload</mat-icon>
                           Submit similar module
-                        </button>
+                        </app-brand-primary-button>
+                      </div>
+                      <!-- Right slot: editor toggle or manual -->
+                      <div style="flex: 1; display: flex">
                         @if (!bag.data.isComplete) {
-                          @if (bag.data
-                          && (dataService.moduleEditingPanelOpenState$|async) === false) {
-                            <button mat-flat-button color="primary"
-                                    style="width: 50%"
-                                    [disabled]="!bag.user"
-                                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                          @if ((dataService.moduleEditingPanelOpenState$|async) === false) {
+                            <app-brand-primary-button
+                              theme="primary"
+                              style="width: 100%"
+                              [disabled]="!bag.user"
+                              (click$)="dataService.moduleEditingPanelOpenState$.next(true)"
+                              icon="edit"
                             >
-                              <mat-icon>edit</mat-icon>
                               Open editor
-                            </button>
-                          }
-                          @if (bag.data
-                          && (dataService.moduleEditingPanelOpenState$|async) === true) {
-                            <button mat-flat-button color="primary"
-                                    style="width: 50%"
-                                    [disabled]="!bag.user"
-                                    (click)="dataService.moduleEditingPanelOpenState$.next(!dataService.moduleEditingPanelOpenState$.value)"
+                            </app-brand-primary-button>
+                          } @else {
+                            <app-brand-primary-button
+                              theme="primary"
+                              style="width: 100%"
+                              [disabled]="!bag.user"
+                              (click$)="dataService.moduleEditingPanelOpenState$.next(false)"
+                              icon="close"
                             >
-                              <mat-icon>close</mat-icon>
                               Close editor
-                            </button>
+                            </app-brand-primary-button>
                           }
                         }
-                        @if (bag.data && bag.data.isComplete && bag.data.manualURL) {
-                          <button mat-flat-button
-                                  style="width: 50%"
-                                  (click)="openManual(bag.data)"
+                        @if (bag.data.isComplete && bag.data.manualURL) {
+                          <app-brand-primary-button
+                            theme="light"
+                            style="width: 100%"
+                            (click$)="openManual(bag.data)"
+                            icon="menu_book"
                           >
-                            <mat-icon>menu_book</mat-icon>
                             Open manual
-                          </button>
+                          </app-brand-primary-button>
                         }
                       </div>
                     </div>
@@ -166,19 +169,17 @@
           }
           @if (bag.data) {
             <lib-hero-content-card titleNormal="Search on" [sidesPadding]="false">
-              <div class="rowwrap gap1">
+              <mat-chip-set class="rowwrap gap1">
                 @for (link of searchLinks; track link) {
-                  <a [href]="link.url(bag.data.name, bag.data.manufacturer.name)"
-                     rel="noopener noreferrer" target="_blank" [attr.aria-label]="'Search on ' + link.label">
-                    <button mat-flat-button>
-                      @if (link.icon) {
-                        <mat-icon>{{ link.icon }}</mat-icon>
-                      }
-                      <span>{{ link.label }}</span>
-                    </button>
-                  </a>
+                  <mat-chip
+                    [matTooltip]="link.tooltip"
+                    (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
+                  >
+                    <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
+                    {{ link.label }}
+                  </mat-chip>
                 }
-              </div>
+              </mat-chip-set>
             </lib-hero-content-card>
           }
           @if (appState.isDev && bag.data && bag.user) {
@@ -186,63 +187,63 @@
                                    [sidesPadding]="false">
               <div class="rowwrap gap2">
                 @if (bag.data.isComplete === false) {
-                  <button mat-flat-button color="warn"
-                          (click)="dataService.deleteModule$.next(bag.data.id)">Delete module
-                  </button>
+                  <app-brand-primary-button theme="negative"
+                                            (click$)="dataService.deleteModule$.next(bag.data.id)">Delete module
+                  </app-brand-primary-button>
                 }
                 @if (bag.data.isComplete === false) {
-                  <button mat-flat-button color="warn"
-                          (click)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
-                  </button>
+                  <app-brand-primary-button theme="negative"
+                                            (click$)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.standard.id !== 1) {
-                  <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="primary"
+                                            (click$)="dataService.changeModule$.next({
                 standard:{
                 id:1,
                 name:''
                 }
                 })">
                     Convert to 1U Intellijel
-                  </button>
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.standard.id !== 0) {
-                  <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="primary"
+                                            (click$)="dataService.changeModule$.next({
                 standard:{
                 id:0,
                 name:''
                 }
                 })">Convert to 3U Doepfer
-              </button>
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isComplete === false) {
-              <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="positive"
+                                            (click$)="dataService.changeModule$.next({
                 isComplete:true
                 })">Mark as complete
-              </button>
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isComplete === true) {
-              <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="warning"
+                                            (click$)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as incomplete
-              </button>
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isApproved === false) {
-              <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="positive"
+                                            (click$)="dataService.changeModule$.next({
                 isApproved:true
                 })">Mark as approved
-              </button>
+                  </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isApproved === true) {
-              <button mat-flat-button color="primary"
-                      (click)="dataService.changeModule$.next({
+                  <app-brand-primary-button theme="warning"
+                                            (click$)="dataService.changeModule$.next({
                 isComplete:false
                 })">Mark as unapproved
-              </button>
+                  </app-brand-primary-button>
                 }
                 <!--                <pre>-->
                 <!--                  {{ bag.data|json }}-->

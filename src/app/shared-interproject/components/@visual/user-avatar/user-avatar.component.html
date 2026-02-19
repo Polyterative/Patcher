@@ -32,26 +32,26 @@
           <div fxFlex="100"
                fxLayoutAlign="end"
         >
-            <button mat-stroked-button
-                    (click)="logoff$.emit()"
+            <app-brand-primary-button theme="warning"
+                                      (click$)="logoff$.emit()"
           >Logoff
-            </button>
+            </app-brand-primary-button>
           </div>
         }
       </div>
     } @else {
       <div class="col gap1"
       >
-        <button mat-flat-button
-                color="accent"
-                (click)="login$.emit()"
+        <app-brand-primary-button
+          theme="primary"
+          (click$)="login$.emit()"
         >Login
-        </button>
-        <button mat-flat-button
-                color="primary"
-                (click)="signup$.emit()"
+        </app-brand-primary-button>
+        <app-brand-primary-button
+          theme="primary"
+          (click$)="signup$.emit()"
         >Sign up
-        </button>
+        </app-brand-primary-button>
       </div>
     }
   
