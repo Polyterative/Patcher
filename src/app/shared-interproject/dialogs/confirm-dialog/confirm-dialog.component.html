@@ -1,4 +1,4 @@
-﻿<h1 mat-dialog-title>{{ title }}</h1>
+﻿﻿<h1 mat-dialog-title>{{ title }}</h1>
 @if (description) {
   <mat-dialog-content>
     {{ description }}
@@ -13,6 +13,7 @@
         (click$)="dialogRef.close({answer:false})"
         [disabled]="negative&&negative.disabled?negative.disabled:false"
         [theme]="negative?.theme?negative.theme:'negative'"
+        icon="close"
         autoFocus="true"
       >
         {{ negative && negative.label ? negative.label : "No" }}
@@ -24,6 +25,7 @@
         [disabled]="positive&&positive.disabled?positive.disabled:false"
         [theme]="positive?.theme?positive.theme:'positive'"
         theme="positive"
+        icon="check"
         autoFocus="false"
       >
         {{ positive && positive.label ? positive.label : "Yes" }}
