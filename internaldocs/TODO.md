@@ -71,8 +71,8 @@
 
 ## Active
 
-*(none)*
-  same color/type that already exist on the module.
+- [~] **Safari Image Export Fix** — Replace `dom-to-image` with `html-to-image` to fix rack image export on
+  Safari/WebKit.
 
 ---
 
