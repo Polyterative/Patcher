@@ -144,6 +144,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
               icon: 'delete',
               data: rackedModule,
               disabled: false,
+              danger: true,
               click$: deleteModule$
             },
             {
@@ -169,6 +170,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
               icon: 'delete_sweep',
               data: rackedModule,
               disabled: false,
+              danger: true,
               click$: deleteRow$
             },
           ]);

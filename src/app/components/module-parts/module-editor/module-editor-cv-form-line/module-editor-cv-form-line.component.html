@@ -5,11 +5,12 @@
       <button mat-icon-button
               [disabled]="!(item.id==0)"
               (click)="removeRequest$.next()"
+              class="danger-action"
       >
         @if (item.isApproved !== undefined && item.isApproved) {
           <mat-icon>check</mat-icon>
         } @else {
-          <mat-icon>
+          <mat-icon class="danger-action">
             delete
           </mat-icon>
         }

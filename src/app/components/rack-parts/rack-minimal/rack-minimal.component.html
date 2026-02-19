@@ -40,6 +40,7 @@
                   [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
                   [disabled]="!bag.isCurrentRackEditable"
                   (click)="dataService.deleteRack$.next(data)"
+                  class="danger-action"
           >
             <mat-icon>delete_forever</mat-icon>
           </button>

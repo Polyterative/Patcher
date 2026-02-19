@@ -53,7 +53,7 @@
     <div class="row gap0 padT0 space-between parent">
       <mat-icon [matTooltip]="isCreator?'Clear selection':'Remove connection'"
                 (click)="remove$.next(data)"
-                class="transparentize-quarter clickable opacizeOnHover deleteIcon"
+                class="transparentize-quarter clickable opacizeOnHover deleteIcon danger-action"
       >delete
       </mat-icon>
       @if (isCreator) {
