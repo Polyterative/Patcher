@@ -2,54 +2,31 @@
 
 Project-specific guidelines for Patcher development.
 
-## 📦 Package Manager
-
-**This project uses Yarn.** Always use `yarn` commands (e.g., `yarn install`, `yarn add`), never `npm`.
-
 ## Files
 
-- **[FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md)** - ⚠️ **MANDATORY for AI coding agents**
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Service layers, project structure, key patterns
-- **[STYLE_GUIDE.md](./STYLE_GUIDE.md)** - TypeScript, HTML, SCSS conventions
-- **[PATTERNS.md](./PATTERNS.md)** - Common code patterns and templates
+| File                                   | Purpose                                                                         |
+|----------------------------------------|---------------------------------------------------------------------------------|
+| [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md) | ⚠️ **Start here.** Enforcement rules, autonomy rules, workflow, git conventions |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)   | Service layers, project structure, state strategy                               |
+| [STYLE_GUIDE.md](./STYLE_GUIDE.md)     | Naming conventions, HTML/SCSS patterns, project conventions                     |
+| [PATTERNS.md](./PATTERNS.md)           | Canonical code templates — copy from here                                       |
+| [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md) | Product strategy, open design questions, feature status                         |
+| [TODO.md](./TODO.md)                   | Active tasks, backlog with steps, completed history                             |
 
-## Quick Start
+## Package Manager
 
-### Key Principles
+**Always `yarn`.** Never `npm`.  
+**Tests always `yarn test-headless`.** Never `ng test`.
 
-1. All services/components extend `SubManager`
-2. Data services are component-scoped (`@Injectable()`)
-3. Always use `takeUntil(this.destroy$)` on subscriptions
-4. Use `async` pipe in templates
-5. State management via BehaviorSubject
-6. User messages via `SharedConstants`
-
-### Typical Flow
+## Layer Map
 
 ```
 Component → Data Service → API Service → Supabase
 ```
 
-### Essential Pattern
-
-```typescript
-@Injectable()
-export class MyDataService extends SubManager {
-  private _data$ = new BehaviorSubject<Data[]>([]);
-  public readonly data$ = this._data$.asObservable();
-  public loadData$ = new Subject<void>();
-  
-  constructor(private backend: SupabaseService) {
-    super();
-    this.loadData$.pipe(
-      switchMap(() => this.backend.getData()),
-      tap(data => this._data$.next(data)),
-      takeUntil(this.destroy$)
-    ).subscribe();
-  }
-}
-```
+Full pattern templates → [PATTERNS.md](./PATTERNS.md).
 
 ## Contributing
 
-This is a living wiki. Update when patterns evolve or new conventions emerge.
+This is a living wiki. When patterns evolve or new conventions emerge, update the appropriate canonical file and do not
+duplicate across files.
