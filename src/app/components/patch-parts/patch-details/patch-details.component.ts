@@ -4,6 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
+import { fadeInOnEnterAnimation } from 'angular-animations';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Patch } from 'src/app/models/patch';
@@ -14,6 +15,13 @@ import { Patch } from 'src/app/models/patch';
   templateUrl: './patch-details.component.html',
   styleUrls: ['./patch-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    fadeInOnEnterAnimation({
+      anchor: 'enter',
+      duration: 1525,
+      animateChildren: 'after'
+    })
+  ],
   standalone: false
 })
 export class PatchDetailsComponent implements OnInit {
