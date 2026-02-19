@@ -24,42 +24,49 @@
                 ></lib-mat-form-entity>
 
                 <!-- Inline manufacturer creation -->
-                <div class="row" style="margin-top: -0.5rem; margin-bottom: 0.25rem;"
-                     [hidden]="dataService.showNewManufacturerForm$ | async">
-                  <button mat-button color="primary" type="button"
-                          (click)="dataService.showNewManufacturerForm$.next(true)"
-                          matTooltip="Manufacturer not in list? Create it here">
-                    <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle;">add</mat-icon>
-                    Create new manufacturer
-                  </button>
-                </div>
-                <div class="col gap1" style="padding: 0.75rem; border: 1px solid rgba(63,81,181, 0.3); border-radius: 4px; margin-bottom: 0.5rem;"
-                     [hidden]="!(dataService.showNewManufacturerForm$ | async)">
-                  <mat-card-subtitle style="margin: 0; font-weight: 500;">
-                    <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;">factory</mat-icon>
-                    Create new manufacturer
-                  </mat-card-subtitle>
-                  <mat-form-field appearance="outline" style="width: 100%;">
-                    <mat-label>Manufacturer name</mat-label>
-                    <input matInput
-                           [formControl]="dataService.newManufacturerNameControl"
-                           placeholder="e.g. My Modular Co."
-                           (keydown.enter)="dataService.createManufacturer$.next()">
-                    <mat-hint>Enter the exact manufacturer name</mat-hint>
-                  </mat-form-field>
-                  <div class="row gap1">
-                    <button mat-flat-button color="primary" type="button"
-                            [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async)"
-                            (click)="dataService.createManufacturer$.next()">
-                      <mat-icon>save</mat-icon>
-                      Create
-                    </button>
-                    <button mat-button type="button"
-                            (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
-                      Cancel
+                @if ((dataService.showNewManufacturerForm$ | async) !== true) {
+                  <div class="row" style="margin-top: -0.5rem; margin-bottom: 0.25rem;">
+                    <button mat-button color="primary" type="button"
+                            (click)="dataService.showNewManufacturerForm$.next(true)"
+                            matTooltip="Manufacturer not in list? Create it here">
+                      <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle;">add
+                      </mat-icon>
+                      Create new manufacturer
                     </button>
                   </div>
-                </div>
+                }
+                @if ((dataService.showNewManufacturerForm$ | async) === true) {
+                  <div class="col gap1"
+                       style="padding: 0.75rem; border: 1px solid rgba(63,81,181, 0.3); border-radius: 4px; margin-bottom: 0.5rem;">
+                    <mat-card-subtitle style="margin: 0; font-weight: 500;">
+                      <mat-icon
+                        style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;">
+                        factory
+                      </mat-icon>
+                      Create new manufacturer
+                    </mat-card-subtitle>
+                    <mat-form-field appearance="outline" style="width: 100%;">
+                      <mat-label>Manufacturer name</mat-label>
+                      <input matInput
+                             [formControl]="dataService.newManufacturerNameControl"
+                             placeholder="e.g. My Modular Co."
+                             (keydown.enter)="dataService.createManufacturer$.next()">
+                      <mat-hint>Enter the exact manufacturer name</mat-hint>
+                    </mat-form-field>
+                    <div class="row gap1">
+                      <button mat-flat-button color="primary" type="button"
+                              [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async)"
+                              (click)="dataService.createManufacturer$.next()">
+                        <mat-icon>save</mat-icon>
+                        Create
+                      </button>
+                      <button mat-button type="button"
+                              (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                }
 
                 <lib-mat-form-entity
                   [dataPack]="dataService.formData.name"
