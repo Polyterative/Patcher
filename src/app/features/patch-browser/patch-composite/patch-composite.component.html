@@ -52,14 +52,23 @@
     }; as bagA) {
       @if (data && bagA.connections && bagA.connections.length > 0) {
         @if (!(dataService.patchEditingPanelOpenState$|async)) {
+          @if (bagA.connections | patchConnectionStats; as stats) {
+            <lib-hero-content-card titleNormal="Patch Statistics">
+              <app-statistics [statistics]="[
+                { name: 'Cables', value: stats.totalCables },
+                { name: 'Modules', value: stats.uniqueModules },
+                { name: 'Multiples', value: stats.multiplesCount }
+              ]"></app-statistics>
+            </lib-hero-content-card>
+          }
           <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
           >
             <!--          <lib-clean-card>-->
             <app-patch-connections-list [editorConnections]="bagA.connections"
                                         [isEditing]="false"
             ></app-patch-connections-list>
-          <!--          </lib-clean-card>-->
-        </lib-hero-content-card>
+            <!--          </lib-clean-card>-->
+          </lib-hero-content-card>
         }
       }
     }
