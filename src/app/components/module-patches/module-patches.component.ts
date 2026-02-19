@@ -20,7 +20,7 @@ import {
   standalone: false
 })
 export class ModulePatchesComponent implements OnInit {
-  @Input() readonly data$: Observable<PatchMinimal[]>;
+  @Input() data$: Observable<PatchMinimal[]>;
   
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
