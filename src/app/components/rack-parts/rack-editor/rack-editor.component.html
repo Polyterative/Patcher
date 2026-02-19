@@ -37,11 +37,11 @@
                 the URL
               </app-advice-tooltip>
             }
-            @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
+            @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
               <app-advice-tooltip
                 [@enter]="{ value: '', params: { delay: 500}}"
               >
-                💡 Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
+                Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
                 Blanks are available in all sizes!
               </app-advice-tooltip>
             }
