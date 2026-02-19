@@ -61,7 +61,8 @@
                 <mat-icon class="state-icon success-icon">check_circle</mat-icon>
                 <h2>{{ SharedConstants.messages.passwordResetEmailSentTitle }}</h2>
                 <p>{{ successMessage }}</p>
-                <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary">
+                <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary"
+                                          icon="arrow_back">
                   Back to login
                 </app-brand-primary-button>
               </div>
@@ -94,6 +95,7 @@
                 [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
                 innerFlex="auto"
                 theme="positive"
+                icon="send"
                 (click$)="dataService.requestPasswordReset$.next()">
                 {{ (dataService.isSubmittingReset$ | async) ? 'Sending...' : 'Send reset link' }}
               </app-brand-primary-button>

@@ -23,6 +23,7 @@
                             [error]="dataService.fields.user.control.invalid||dataService.fields.password.control.invalid"
                             innerFlex="auto"
                             theme="positive"
+                            icon="login"
                             (click$)="dataService.mailLoginClick$.next()"
   >Log in
   </app-brand-primary-button>
