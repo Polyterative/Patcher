@@ -1,498 +1,98 @@
 # Product Needs
 
-**For AI Agents:** This document tracks product features and technical debt. Each item includes business context,
-technical requirements, and current status. Use this to understand both WHAT to build and WHY it matters.
+**Purpose:** High-level product strategy, open design questions, and feature intent.  
+**For execution detail, implementation steps, and task tracking → see [TODO.md](./TODO.md).**
 
 ---
 
-## Product Strategy Considerations
+## Product Strategy
 
 ### User-Generated Content Model
 
-**Pattern:** Approval workflow for user submissions (modules, manufacturers, panels)  
-**Current:** Modules have `isApproved`, `submitter` tracking. Manufacturers do NOT.  
-**Strategy:** Consistent UGC pattern across all entity types - encourages community contribution while maintaining
-quality.  
-**Open Questions:**
+Approval workflow for user submissions (modules, manufacturers, panels). Modules have `isApproved` / `submitter`
+tracking; manufacturers do not yet follow the same pattern. Goal: consistent UGC trust model across all entity types.
 
-- Should approved users bypass approval? (trust system)
-- How to handle abuse/spam flags?
-- Notification system for contributors when approved/rejected?
+**Open questions:** Trust tiers (approved users bypass review)? Abuse/spam handling? Contributor notifications on
+approval/rejection?
+
+---
 
 ### Privacy & Sharing Philosophy
 
-**Current State:** Racks have public/private toggle. Patches do NOT. User profiles do NOT exist.  
-**Strategy Decision Needed:** What should be public by default? What requires opt-in?  
-**Considerations:**
+Racks have public/private toggle. Patches now also have privacy (opt-in public). User profiles do not exist yet.
 
-- Patches more personal than racks (creativity vs hardware inventory)
-- User profiles enable community but require privacy controls
-- Balance discoverability with user comfort
+**Decision needed:** Default visibility per entity type. Patches feel more personal than racks (creativity vs hardware
+inventory). User profiles require privacy controls before launch.
 
-### Mobile-First vs Desktop-First
+---
 
-**Current:** Desktop-optimized interface  
-**Tension:** Patch graph complex for mobile, but users want on-the-go access  
-**Strategy Options:**
+### Mobile Strategy
 
-1. PWA for mobile-specific UX (simpler views)
-2. Responsive design with degraded mobile experience
-3. Mobile app with different feature set
+Currently desktop-optimized. The patch graph is complex; mobile is a tension point.
 
-**Decision:** Impacts PWA priority, UI refactoring scope
+**Options:** (1) PWA with simplified mobile views, (2) responsive degraded experience, (3) separate mobile app. Decision
+drives PWA priority and UI refactoring scope.
+
+---
 
 ### Data Integrity vs User Freedom
 
-**Examples:**
+Where accuracy is enforced globally (module HP, manufacturer names) vs where users get flexibility (rack-specific
+overrides, custom labels). The same question applies to manufacturer accounts (verification overhead) and user-submitted
+data (quality bar vs friction).
 
-- Edit Module HP: Global change affects all users vs rack-specific flexibility
-- Manufacturer accounts: Trust vs verification overhead
-- User-submitted data: Quality bar vs contribution friction
-
-**Philosophy Needed:** Where do we prioritize accuracy vs enabling user customization?
-
-### Community Building vs Solo Usage
-
-**Current:** Platform usable solo, but features trending toward community (user submissions, sharing)  
-**Tension:** Social features add complexity and moderation needs  
-**Questions:**
-
-- Should we encourage user interaction? (comments, follows, likes?)
-- Is this a tool or a social platform?
-- How much moderation capacity do we have?
-
-**Impact:** User profiles, manufacturer accounts, flagging systems all assume community engagement
-
-### Monetization Considerations (Future)
-
-**Current:** Free platform  
-**Potential Paths:**
-
-- Store integration (affiliate revenue)
-- Manufacturer partnerships (listings, verified accounts)
-- Premium features (private patches, advanced organization, exports)
-- API access for third parties
-
-**Impact:** Feature prioritization (store integration, manufacturer accounts, PWA, data export)
+**Philosophy needed** before building edit-HP, manufacturer accounts, or bulk data tools.
 
 ---
 
-## Recently Completed
+### Community vs Solo Tool
 
-### ✅ Autonomous Bug Fix Sweep (Feb 19, 2026)
+Platform currently works solo. Features are trending community (submissions, sharing, flagging). Social features add
+moderation overhead.
 
-**Scan findings & fixes:**
-
-- **Double backend call in `savePhysical$`** — `switchMap(() => this.backend.update.module({id}))` was chained after the real update, overwriting physical data with a stub `{id}`-only call. Removed the duplicate.
-- **`savePhysical$`/`savePower$`/`saveInsOuts$`/`savePanels$` raw snackBar calls** — All replaced with `SharedConstants.errorCustom` / `SharedConstants.successCustom` to match project conventions.
-- **`reload()` method subscribed outside constructor** — Removed the method; now calls `updateSingleModuleData$.next(this.data.id)` directly (same effect, correct pattern).
-- **Unused `URLReg` variable** — Dead code in `module-editor.component.ts`, removed.
-- **Duplicate comment block** — `// Subscription to save panels` was repeated twice, cleaned up.
-- **`style="margin: 10rem"` on `app-module-composite`** — Layout-breaking inline style removed from `module-browser-detail.component.html`.
-- **Wrong tooltip on New Groove link** — Tooltip said "Search on Milk Audio Store" (copy-paste error), corrected to "Search on New Groove".
-- **`readonly` on `@Input()` properties** — `ModuleRacksComponent`, `ModulePatchesComponent`, and `ModuleListComponent` all declared `@Input() readonly data$` (and `viewConfig`/other inputs), causing TS2540 compile errors. Removed `readonly` from all affected `@Input` declarations.
-- **Deprecated `fxLayout`/`fxLayoutAlign`/`fxFlex` directives** — Replaced with modern `rowwrap gap1` / `col gap1` CSS classes in `module-details.component.html` and `module-browser-detail.component.html`.
-- **Deprecated `fxHide`/`fxShow` on `mat-divider`** — Removed from `module-editor-cv-form-line.component.html`.
-- **Markdown asterisks in Angular template string** — `'Others by *manufacturer*'` doesn't render as bold; changed to plain string.
-- **Unused `$index` variable** in `module-details` panel `@for` loop — Removed.
-- **Commented-out dead code** in `module-details.component.html` (old chip-list block) — Removed.
-
-**Files modified:**
-- `module-editor.component.ts`
-- `module-browser-detail.component.html`
-- `module-browser-detail.component.ts`
-- `module-details.component.html`
-- `module-editor-cv-form-line.component.html`
-- `module-racks.component.ts`
-- `module-patches.component.ts`
-- `module-list.component.ts`
+**Key question:** Is this a tool or a social platform? Answer drives user profiles, comments, follows, flagging systems.
 
 ---
 
-### ✅ Private Patches (Feb 18, 2026)
+### Monetization (Future)
 
-**What was done:**
+Currently free. Potential paths: store affiliate links, manufacturer partnerships/verified listings, premium features (
+private patches, exports, advanced org), API access.
 
-- Added `public` field to patches table schema (database.types.ts)
-- Extended PatchMinimal interface with Privatable (patch.ts)
-- Added privacy state management to patch service (isCurrentPatchPrivate$, requestPatchPrivacyStatusChange$)
-- Added privacy toggle button to patch UI (lock/public icon)
-- Added privacy tooltip when patch is private
-- New patches default to public
-
-**Pattern followed:** Same as racks (Privatable interface, toggle button, tooltip)
-
-**Files modified:**
-
-- `database.types.ts` - Added public field to patches table
-- `patch.ts` - Extended Privatable interface
-- `patch-detail-data.service.ts` - Privacy state + toggle handler
-- `patch-minimal.component.html` - Privacy toggle button
-- `patch-details.component.html` - Privacy tooltip
-- `supabase.service.ts` - Default public: true on patch creation
-
-**Tests updated/created:**
-
-- `integration-user-patches.spec.ts` - Integration tests for patch privacy (create, retrieve, update)
-- `patch-detail-data-service-privacy.spec.ts` - API surface tests (privacy observables exist and initialize correctly)
-- `crud-operations.spec.ts` - Updated to expect public: true field on patch creation
-- All tests passing ✅
+**Impact:** Directly affects priority of store integration, manufacturer accounts, PWA, and data export features.
 
 ---
 
-### ✅ Blank Module Education (Feb 18, 2026)
-
-**What was done:**
-
-- Added FAQ entry explaining how to use blank modules for gaps and spacing
-- Added tooltip in rack editor when editable: "Need gaps in your rack? Right-click any module and select 'Replace with
-  blank'"
-- Enhanced context menu label from "Replace with blank" to "Replace with blank (add spacing)" with space_bar icon
-- Users now have multiple discovery paths for this existing feature
-
-**Files modified:**
-
-- `app-faq.component.ts` - New FAQ entry
-- `rack-editor.component.html` - Tooltip added
-- `rack-editor.component.ts` - Context menu label enhanced
-
----
-
-### ✅ User-Submitted Manufacturers (Feb 19, 2026)
-
-**What was done:**
-
-- Added inline "Create new manufacturer" button below the manufacturer autocomplete in the module submission form
-- When clicked, an inline form appears (no dialog) with a name input; typing a name and clicking "Create" calls `backend.add.manufacturers`
-- On success, the new manufacturer is automatically added to the options list and selected in the manufacturer field
-- The `backend.add.manufacturers` now returns `id,name` via `.select('id, name')` so the new entry can be auto-selected
-- The manufacturer options are now managed via a private `BehaviorSubject` (`_manufacturerOptions$`) so new entries can be injected reactively without re-fetching
-- Error handling follows `SharedConstants.errorCustom` / `SharedConstants.successCustom` pattern
-- Guidelines section on submission page updated from "Contact Us if Needed" to "Manufacturer Not Found?" with usage instructions
-- Loading state shown via `isCreatingManufacturer$` BehaviorSubject during creation
-
-**Pattern followed:** Inline UI with BehaviorSubject toggles (no dialogs), event-driven via `createManufacturer$` Subject, reactive state via `_manufacturerOptions$` BehaviorSubject
-
-**Files modified:**
-- `supabase.service.ts` — `add.manufacturers` now returns inserted id/name via `.select('id,name')`
-- `module-adder-data.service.ts` — `showNewManufacturerForm$`, `isCreatingManufacturer$`, `newManufacturerNameControl`, `createManufacturer$`, `_manufacturerOptions$` BehaviorSubject
-- `module-browser-adder.component.html` — inline manufacturer creation form with toggle
-- `module-browser.module.ts` — added `ReactiveFormsModule`, `MatFormFieldModule`, `MatInputModule`
-
-**Tests created:**
-- `module-adder-manufacturer-creation.spec.ts` — 18 tests covering: service creation, API surface, form validation, UI toggle, manufacturer options loading, creation flow (backend call, reset, auto-select, options update)
-
----
-
-## Planned - High Priority
-
-### ~~User-Submitted Manufacturers~~ ✅ (see Recently Completed)
-
-**Completed Feb 19, 2026** — Users can now create manufacturers inline during module submission.
-
----
-
-### Multiple Module Instances in Patches
-
-**Why:** Users cannot model patches with multiple copies of same module (common in real setups)  
-**Current State:** Patch connections link module IDs directly - one instance per module only  
-**Blocker:** Database schema assumes one module = one node in patch graph
-
-**Design Considerations:**
-
-- **Identity:** How do users distinguish instances? Auto-numbering vs user naming?
-- **Connections:** Can users copy connections from one instance to another?
-- **Visualization:** How to keep graph readable with multiple instances? Grouping? Spacing?
-- **Workflow:** Add multiple at once or duplicate existing instances?
-- **Persistence:** Instance names/positions part of patch data or user preferences?
-
-**Technical Needs:**
-
-- **Database:** Patch connections need instance support (add instance IDs OR new instance tracking table)
-- **Backend:** Connection queries must handle instances, patch data must include instance info
-- **UI:** Patch graph must display/distinguish multiple instances ("Maths (1)", "Maths (2)"), allow naming/managing
-  instances
-- **Decision Needed:** Instance tracking approach (extend patch_connections vs new table)
-- **Areas:** Database schema, patch connection model, patch graph visualization, patch editor
-
-**Related:** Mobile-First strategy (graph complexity on small screens)
-
----
-
-## Planned - Medium Priority
-
-### Module Review Flagging
-
-**Why:** Users cannot report incorrect module data. No feedback mechanism for data quality issues.  
-**Goal:** Users can flag modules for admin review
-
-**Design Considerations:**
-
-- **Categories:** Predefined issue types (wrong specs, missing image, duplicate) vs free text?
-- **Visibility:** Show flag count to users? Risk of pile-on vs transparency?
-- **Resolution:** Notify flaggers when issue resolved? Close flags automatically when module edited?
-- **Abuse Prevention:** Rate limiting? Reputation system?
-- **Admin Workflow:** Triage vs detailed review? Bulk actions?
-
-**Technical Needs:**
-
-- **Database:** New `module_flags` table for tracking reports
-- **Backend:** Flag CRUD operations, admin query endpoints
-- **UI:** "Report issue" button on module detail, admin review interface
-- **Areas:** Database schema, Supabase service, module detail page, new admin area
-
-**Related:** User-Generated Content Model (trust systems, notifications)
-
----
-
-
-### ✅ Account Management / Data Deletion (Feb 19, 2026)
-
-**What was done:**
-
-- Added `delete.allUserData()` to `SupabaseService` — deletes in dependency order: patch_connections → patches → rack_modules → racks → user_modules → comments; busts all related caches
-- Added `deleteAccountAction$` Subject to `UserManagementService` with full event-driven handler: confirm dialog → delete all data → clear local state → sign out → navigate to `/auth/login`
-- Added `MatDialog` injection to `UserManagementService`; added `ConfirmDialogModule` to `UserManagementModule` imports
-- Replaced the two disabled "Delete Account" / "Delete data" stub buttons with a single active **"Delete my data"** button that emits `deleteAccountAction$.next()`
-- Dialog clearly explains: data is deleted permanently, but the auth credential remains (full account removal requires contacting support — Supabase auth user deletion requires a server-side service_role call)
-
-**Files modified:**
-- `supabase.service.ts` — `delete.allUserData()` method
-- `user-management.service.ts` — `deleteAccountAction$` + `initializeDeleteAccountHandler()`, `MatDialog` injection
-- `user-management.module.ts` — `ConfirmDialogModule` added
-- `user-management.component.html` — button wired up
-
----
-
-### Account Management (GDPR)
-
-**Why:** Users cannot change password or delete account - GDPR compliance issue  
-**Current State:** No user settings page exists  
-**Goal:** Standard account management features
-
-**Design Considerations:**
-
-- **Data Export:** GDPR requires data portability - export patches/racks/collections?
-- **Account Deletion:** Hard delete vs anonymization? Impact on public patches/racks?
-- **Retention:** What happens to user-contributed modules/manufacturers after deletion?
-- **Confirmation:** Email verification for sensitive operations? Cooldown period for deletion?
-- **Migration Path:** Password-based vs OAuth users - different flows?
-
-**Technical Needs:**
-
-- **Backend:** Supabase auth operations (password change, account deletion with cascade)
-- **UI:** New settings page with password form, delete confirmation
-- **Areas:** Supabase service auth methods, new settings route/component
-
-**Related:** Privacy & Sharing Philosophy (what stays public after deletion?)
-
----
-
-## Planned - Low Priority
-
-### Edit Module HP in Rack
-
-**Why:** Users must remove and re-add modules to change HP  
-**Decision Needed:** Global edit (affects all users) vs rack-specific override (requires DB schema change)
-
-**Design Considerations:**
-
-- **Scope Impact:** Global edits benefit everyone but require admin-level trust. Rack-specific keeps data clean but adds
-  complexity.
-- **Use Cases:** Correcting errors (global) vs custom panels/variations (rack-specific)
-- **Permissions:** Who can globally edit? Only submitter? Admins? Manufacturers?
-- **Validation:** Prevent invalid HP values, ensure rack layout still valid after change
-- **History:** Track HP changes for audit/rollback?
-
-**Technical Needs:**
-
-- **UI:** Inline editing with validation and layout reflow
-- **Backend:** Module update operation (if global) OR new rack-module override schema (if rack-specific)
-- **Areas:** Rack editor, module model (potentially)
-
-**Related:** Data Integrity vs User Freedom (core philosophy question)
-
----
-
-## Ideas (Not Prioritized)
-
-### ✅ Cable/Multiples Counter (Feb 19, 2026)
-
-**What was done:**
-
-- Added `PatchConnectionStatsPipe` (`patch-connection-stats.pipe.ts`) that derives three statistics from a
-  `PatchConnection[]`:
-  - **Cables** — total number of connections in the patch
-  - **Modules** — count of unique modules referenced across all connections
-  - **Multiples** — count of output CVs that drive more than one input (i.e. signals split via multiples)
-- Integrated `app-statistics` panel into `patch-composite.component.html` — it appears above the connections list for
-  any patch that has connections, only in view mode (not while editing)
-- Registered and exported `PatchConnectionStatsPipe` in `PatchModule`; added `StatisticsModule` to `PatchModule` imports
-- 10 unit tests in `patch-connection-stats.spec.ts` covering: null/empty inputs, single cable, unique module
-  deduplication, zero multiples, single multiple, two multiples, large patch, self-patch edge case
-
-**Files modified/created:**
-
-- `patch-connection-stats.pipe.ts` — new pipe
-- `patch-connection-stats.spec.ts` — new tests
-- `patch.module.ts` — registered pipe + StatisticsModule
-- `patch-composite.component.html` — added statistics panel
-
----
-
-### Patch Graph Enhancements
-
-**Occupied Inputs Visualization**  
-**Why:** Hard to see which inputs are already connected in complex patches  
-**How:** Visual indicator (color/CSS class) on connected inputs  
-**Area:** Patch graph component
-
-**Cable/Multiples Counter**  
-**Why:** Users don't know how many physical cables they'll need  
-**How:** Count connections, identify splits (multiples), display statistics  
-**Area:** Patch detail view
-
-**User-Colored Nodes**  
-**Why:** Complex patches hard to visually organize  
-**Current:** Colors hardcoded by type (inputs/outputs/CV)  
-**How:** Allow user to color-code modules or connections  
-**Area:** Patch graph component, patch data model
-
----
-
-## Nice to Have
-
-### User Organization
-
-**Why:** Power users need to organize large collections  
-**What:** Tags, folders, or custom groups for modules, patches, racks  
-**Scale:** Large feature - needs UX design, new database tables, filtering UI
-
-
-### Store Integration
-
-**Why:** Help users find where to buy modules  
-**What:** Buy links to retailers  
-**Scope:** Needs business partnerships, affiliate tracking
-
-### PWA Support
-
-**Why:** Better mobile experience  
-**What:** Installable app, offline support  
-**How:** Angular PWA schematics, service worker, offline strategy
-
----
-
-## Long Term
-
-### Manufacturer Features
-
-**Manufacturer Pages**  
-**Why:** Showcase manufacturers and their full module catalog  
-**What:** Dedicated page per manufacturer with all modules and info  
-**Backend Ready:** Query method exists (`get.modulesBySameManufacturer()`)  
-**Needs:** UI design and implementation
-
-**Design Considerations:**
-
-- **Content:** Just module list or editorial (brand story, video, news)?
-- **SEO:** Big opportunity for organic traffic - priority?
-- **Partnership:** Reach out to manufacturers for official content/verification?
-- **Related Items:** Link to user racks featuring their modules? Popular patches?
-
-**Manufacturer Accounts**  
-**Why:** Let manufacturers maintain their own module data  
-**What:** Role-based system for manufacturers to edit own modules  
-**Scope:** Large - requires auth system expansion, role system, claim/verification workflow  
-**Areas:** User model, permissions, module editor
-
-**Design Considerations:**
-
-- **Verification:** How to prove manufacturer identity? Email domain? Social proof?
-- **Scope:** Can they edit only their modules or also manage brand page?
-- **Moderation:** Do admin-approved edits from manufacturers bypass review?
-- **Incentive:** What's in it for manufacturers? Analytics? Featured placement?
-- **Liability:** Are they responsible for accuracy? Terms of service implications?
-
-**Related:** Community Building strategy, Monetization (partnership revenue)
-
----
-
-### Platform Features
-
-**User Profile Pages**  
-**Why:** Social features, showcase user's work  
-**What:** Public pages showing user activity, collections, racks, patches  
-**Scope:** Large - needs privacy controls, comprehensive UX design
-
-**Design Considerations:**
-
-- **Identity:** Real names vs usernames? Avatar requirements?
-- **Discoverability:** How do users find each other? Search? Recommendations?
-- **Activity:** Show edit history? Contributions? Reputation score?
-- **Privacy Granularity:** All-or-nothing vs selective sharing per item type?
-- **Interaction:** Allow following? Direct messages? Comments on profiles?
-
-**Related:** Privacy & Sharing Philosophy, Community Building strategy
-
-**Dark Mode**  
-**Why:** User preference, accessibility  
-**What:** Theme toggle for entire application  
-**Scope:** Large - requires design system overhaul with CSS variables, theme service
-
-**Design Considerations:**
-
-- **Scope:** Just dark/light or multiple themes? User-created themes?
-- **Default:** System preference detection or manual toggle?
-- **Images:** Module panels optimized for dark backgrounds? Inversion issues?
-- **Accessibility:** Does dark mode solve contrast issues or create new ones?
-- **Branding:** Does dark mode align with brand identity?
-
-**Better SQL Policies**  
-**Why:** Security and performance  
-**What:** Audit and optimize database row-level security policies  
-**Type:** Operational task, not a feature
-
-**Design Considerations:**
-
-- **User Roles:** Do policies need to support future roles (manufacturer, moderator)?
-- **Performance:** Are policies causing slow queries? Index optimization?
-- **Privacy:** Are user submissions truly private until approved?
-- **Data Leaks:** Can users access data they shouldn't through creative queries?
-
----
-
-## Bugs
-
-### iOS Clipboard Failure
-
-**~~Issue: Copy-to-clipboard doesn't work on iOS Safari~~ ✅ Fixed (Feb 19, 2026)**  
-**Cause:** iOS Safari does not support the async Clipboard API in all contexts  
-**Where:** `app-copy-on-click.directive.ts`  
-**Fix applied:** Added textarea + `execCommand('copy')` fallback. Primary path uses `navigator.clipboard.writeText`; fallback kicks in when that API is unavailable.
-
-### Duplicate Panel Detection Incomplete
-
-**Issue:** Only checks database key constraints, not if image content is identical  
-**Impact:** Users can upload same image multiple times  
-**Where:** Module editor panel upload  
-**Fix:** Add image hash comparison before upload
-
-### Rack Statistics Include Blanks
-
-**~~Issue: Rack statistics count system blank modules in totals~~ ✅ Fixed (Feb 19, 2026)**  
-**Where:** Rack statistics pipes  
-**Fix applied:** Created `rack-blank-module.constants.ts` with `BLANK_MODULE_IDS` set (3U: 4647–4666, Intellijel 1U: 4711–4735) and `isBlankModule()` helper. All six stats pipes (`totalModulesOfRack`, `totalHpOfRack`, `totalPowerOfRack`, `totalWeightOfRack`, `totalDepthOfRack`, `totalMissingPowerDataInRack`) now filter blank IDs before computing. 30 new tests added in `rack-stats-blank-filter.spec.ts`.
-
-### Safari Image Export Broken
-
-**Issue:** domtoimage library incompatible with Safari rendering engine  
-**Where:** Rack image export functionality  
-**Fix:** Replace with html2canvas or modern-screenshot library
+## Feature Status Summary
+
+| Feature                              | Status              | Detail                              |
+|--------------------------------------|---------------------|-------------------------------------|
+| Private patches                      | ✅ Done              |                                     |
+| User-submitted manufacturers         | ✅ Done              |                                     |
+| Account data deletion                | ✅ Done              |                                     |
+| Cable/multiples counter              | ✅ Done              |                                     |
+| iOS clipboard fix                    | ✅ Done              |                                     |
+| Rack stats blank filter              | ✅ Done              |                                     |
+| Blank module education               | ✅ Done              |                                     |
+| Bug sweep (Feb 19)                   | ✅ Done              |                                     |
+| Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                         |
+| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                         |
+| Account mgmt – password change       | 🔲 Backlog – Medium | See TODO.md                         |
+| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                         |
+| Duplicate panel detection            | 🔲 Bug – Medium     | See TODO.md                         |
+| Safari image export                  | 🔲 Bug – Low        | See TODO.md                         |
+| Manufacturer pages                   | 💡 Long-term        | Backend method exists               |
+| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion         |
+| User profile pages                   | 💡 Long-term        | Needs privacy design                |
+| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes |
+| User organization (tags/folders)     | 💡 Long-term        | New DB tables                       |
+| PWA support                          | 💡 Nice-to-have     |                                     |
+| Store integration                    | 💡 Nice-to-have     | Needs partnerships                  |
+| Dark mode                            | 💡 Nice-to-have     | Large design scope                  |
+| Better SQL RLS policies              | 💡 Long-term        | Operational / security              |
 
 ---
 
 ## Won't Fix
 
-**Larger "+" Icon for Adding Modules**  
-**Reason:** Design decision - current size intentional for clean UI
+- **Larger "+" icon for adding modules** — Design decision, current size is intentional.
