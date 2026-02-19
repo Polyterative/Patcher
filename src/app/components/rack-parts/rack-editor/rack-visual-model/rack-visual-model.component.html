@@ -41,11 +41,11 @@
            [matTooltipDisabled]="isLastRowEmpty(rowedRackedModules)">
         <app-brand-primary-button
           theme="negative"
+          icon="remove"
           (click$)="rackDetailDataService.requestRemoveRow$.next()"
                 [disabled]="!isLastRowEmpty(rowedRackedModules)"
         >
           Remove last row
-          <mat-icon>remove</mat-icon>
         </app-brand-primary-button>
       </div>
     }
@@ -57,10 +57,10 @@
       >
         <app-brand-primary-button
           theme="primary"
+          icon="add"
           (click$)="rackDetailDataService.requestAddNewRow$.next()"
         >
           Add new row
-          <mat-icon>add</mat-icon>
         </app-brand-primary-button>
       </div>
     }
