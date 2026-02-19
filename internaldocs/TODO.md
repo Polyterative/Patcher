@@ -155,16 +155,16 @@ flag submission only.
 
 ### BUG: Safari Image Export Broken
 
-**Why:** domtoimage library is incompatible with Safari's rendering engine.  
+**Why:** `dom-to-image` library is incompatible with Safari's rendering engine.  
 **Fix approach:** Replace with `modern-screenshot` (actively maintained, Safari-compatible).
 
 **Steps when picked:**
 
-- [ ] Grep for domtoimage usage to find all call sites
-- [ ] `yarn add modern-screenshot`
-- [ ] Replace domtoimage calls with modern-screenshot equivalents
+- [ ] Grep for `dom-to-image` and `domToImage` usage to find all call sites
+- [ ] `yarn add modern-screenshot` and `yarn remove dom-to-image`
+- [ ] Replace `dom-to-image` calls with `modern-screenshot` equivalents
+- [ ] Remove `@types/dom-to-image` from devDependencies
 - [ ] Test export in Safari-compatible browser or CI
-- [ ] Remove domtoimage from package.json
 
 ---
 
