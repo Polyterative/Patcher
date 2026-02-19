@@ -29,6 +29,12 @@ import {
   SupabaseService,
   SupabaseSignupResponse,
 } from '../../backend/supabase.service';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+} from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 
 
 @Injectable()
@@ -65,6 +71,9 @@ export class UserManagementService extends SubManager {
   
   /** Emits when user wants to update their username */
   public updateUsernameAction$ = new Subject<string>();
+
+  /** Emits when user requests to delete all their data and account */
+  public deleteAccountAction$ = new Subject<void>();
   
   // Track current user ID for cross-tab sync comparison
   private currentUserId: string | undefined = undefined;
@@ -73,7 +82,8 @@ export class UserManagementService extends SubManager {
     private snackBar: MatSnackBar,
     private router: Router,
     private backend: SupabaseService,
-    private userBoxService: UserDataHandlerService
+    private userBoxService: UserDataHandlerService,
+    private dialog: MatDialog
   ) {
     super();
     
@@ -90,6 +100,7 @@ export class UserManagementService extends SubManager {
     this.initializeSSOLoginHandler();
     this.initializeOAuthCallbackHandler();
     this.initializeUpdateUsernameHandler();
+    this.initializeDeleteAccountHandler();
   }
   
   private initializeUserBoxHandler(): void {
@@ -367,8 +378,7 @@ export class UserManagementService extends SubManager {
   }
   
   private initializeUpdateUsernameHandler(): void {
-    this.updateUsernameAction$.pipe(
-      withLatestFrom(this.loggedUserFullProfile$),
+    this.updateUsernameAction$.pipe(      withLatestFrom(this.loggedUserFullProfile$),
       filter(([_, profile]) => !!profile),
       switchMap(([newUsername, profile]) =>
         this.backend.updateUsername$(profile!.id, newUsername).pipe(
@@ -420,5 +430,42 @@ export class UserManagementService extends SubManager {
       }),
       map(() => void 0)
     );
+  }
+
+  private initializeDeleteAccountHandler(): void {
+    this.deleteAccountAction$.pipe(
+      switchMap(() => {
+        const dialogData: ConfirmDialogDataInModel = {
+          title: 'Delete all your data',
+          description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. You will be signed out immediately after.\n\nNote: your login credentials will remain active — contact support if you need full account removal.',
+          positive: { label: 'Delete my data', theme: 'warning' },
+          negative: { label: 'Cancel', theme: 'primary' }
+        };
+        return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
+          ConfirmDialogComponent,
+          { data: dialogData, disableClose: true, width: '36rem' }
+        ).afterClosed();
+      }),
+      filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
+      switchMap(() => this.backend.delete.allUserData().pipe(
+        catchError((error) => {
+          console.error('Data deletion failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Data deletion failed. Please try again or contact support.');
+          return NEVER;
+        })
+      )),
+      tap(() => {
+        this._loggedUser$.next(undefined);
+        this._loggedUserFullProfile$.next(undefined);
+      }),
+      switchMap(() => from(this.backend.logoff$()).pipe(
+        catchError(() => NEVER)
+      )),
+      tap(() => {
+        SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. You have been signed out.');
+        this.router.navigate(['/auth/login']);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
   }
 }
