@@ -372,6 +372,7 @@ export class UserManagementService extends SubManager {
       filter(([_, profile]) => !!profile),
       switchMap(([newUsername, profile]) =>
         this.backend.updateUsername$(profile!.id, newUsername).pipe(
+          map(() => newUsername),
           catchError((error) => {
             const errorMessage = error?.message || SharedConstants.messages.operationFailed;
             SharedConstants.errorCustom(this.snackBar, errorMessage);
@@ -380,11 +381,11 @@ export class UserManagementService extends SubManager {
         )
       ),
       // Refresh the user profile after successful update
-      switchMap(() => this.backend.getRichUserSession$()),
-      filter(x => !!x),
-      tap(updatedProfile => {
-        this._loggedUserFullProfile$.next(updatedProfile);
-        SharedConstants.successCustom(this.snackBar, 'Username updated — your profile has been synced.');
+      switchMap((newUsername) => this.backend.getRichUserSession$().pipe(map(profile => ({profile, newUsername})))),
+      filter(({profile}) => !!profile),
+      tap(({profile, newUsername}) => {
+        this._loggedUserFullProfile$.next(profile);
+        SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
       takeUntil(this.destroy$)
     ).subscribe();
@@ -415,7 +416,7 @@ export class UserManagementService extends SubManager {
       filter(x => !!x),
       tap(updatedProfile => {
         this._loggedUserFullProfile$.next(updatedProfile);
-        SharedConstants.successCustom(this.snackBar, 'Username updated — your profile has been synced.');
+        SharedConstants.successCustom(this.snackBar, `Username changed to "${ newUsername }" — your profile has been synced.`);
       }),
       map(() => void 0)
     );
