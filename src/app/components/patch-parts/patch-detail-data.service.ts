@@ -125,7 +125,7 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b]) => {
-        snackBar.open('Removed', undefined, {duration: 1000});
+        snackBar.open('Patch removed from your library.', undefined, {duration: 1000, panelClass: 'snack-success'});
         this.updateSinglePatchData$.next(b);
       });
     

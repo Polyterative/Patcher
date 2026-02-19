@@ -61,7 +61,7 @@ export class FileDragHostService implements OnDestroy {
           withLatestFrom(this.files$),
           tap(([newFiles, oldPool]) => {
             if (newFiles.length === 0) {
-              this.snackBar.open('💔 File not valid, try again', undefined, {duration: 8000});
+              this.snackBar.open('File not accepted — check the format and try again.', undefined, {duration: 8000, panelClass: 'snack-error'});
             }
           }),
           filter(([newFiles, oldPool]) => newFiles.length > 0),

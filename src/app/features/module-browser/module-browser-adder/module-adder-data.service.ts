@@ -365,14 +365,11 @@ export class ModuleAdderDataService extends SubManager {
         
         // inform user that the module was added
         this.snackBar.open(
-          `
-            Module submitted!
-            Thank you very much for your contribution! 🙏
-            It is now available to everyone
-            `,
+          'Module submitted and published to the community.',
           '',
           {
-            duration: 7000
+            duration: 7000,
+            panelClass: 'snack-success'
           });
         
         // navigate to the module browser page

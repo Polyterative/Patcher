@@ -157,7 +157,7 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b]) => {
-        snackBar.open('Added', undefined, {duration: 1000});
+        snackBar.open('Module added to your collection.', undefined, {duration: 1000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });
     
@@ -168,7 +168,7 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b]) => {
-        snackBar.open('Removed', undefined, {duration: 1000});
+        snackBar.open('Module removed from your collection.', undefined, {duration: 1000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(b);
       });
     
@@ -202,7 +202,7 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        snackBar.open('Deleted', undefined, {duration: 1000});
+        snackBar.open('Module deleted from the database.', undefined, {duration: 1000, panelClass: 'snack-success'});
         // navigate to module browser
         
         this.router.navigate(['/modules', 'browser']);
@@ -216,7 +216,7 @@ export class ModuleDetailDataService {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        snackBar.open('Changed', undefined, {duration: 1000});
+        snackBar.open('Module data updated.', undefined, {duration: 1000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
     
