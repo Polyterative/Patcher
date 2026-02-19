@@ -132,6 +132,7 @@
               <div class="row gap1">
                 @if (bag.isCurrentRackPropertyOfCurrentUser) {
                   <app-brand-primary-button style="padding: 1rem 0;"
+                                            [icon]="bag.isCurrentRackEditable ? 'lock' : 'lock_open'"
                                             (click$)="dataService.requestRackEditableStatusChange$.next()"
                   >
                     {{ bag.isCurrentRackEditable ? "Lock rack" : "Unlock rack" }}
@@ -139,6 +140,7 @@
                 }
                 @if ((bag.rowedRackedModules|totalHpOfRack) > 0) {
                   <app-brand-primary-button style="padding: 1rem 0;"
+                                            icon="download"
                                             (click$)="dataService.downloadRackImageToUserComputer$.next()"
                                             matTooltip="Will download an image file of the rack to your computer"
                                             matTooltipPosition="above"
@@ -149,6 +151,7 @@
                 }
                 @if (bag.isCurrentRackPropertyOfCurrentUser && (bag.rowedRackedModules|totalHpOfRack) > 0) {
                   <app-brand-primary-button style="padding: 1rem 0;"
+                                            icon="image"
                                             (click$)="dataService.updateRackImagePreview$.next()"
                                             matTooltip="Will update the rack preview image to help you identify it in the lists"
                                             matTooltipPosition="above"
