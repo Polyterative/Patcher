@@ -73,32 +73,32 @@ private patches, exports, advanced org), API access.
 
 ## Feature Status Summary
 
-| Feature                              | Status              | Detail                                  |
-|--------------------------------------|---------------------|-----------------------------------------|
-| Private patches                      | ✅ Done              |                                         |
-| User-submitted manufacturers         | ✅ Done              |                                         |
-| Account data deletion                | ✅ Done              |                                         |
-| Cable/multiples counter              | ✅ Done              |                                         |
-| iOS clipboard fix                    | ✅ Done              |                                         |
-| Rack stats blank filter              | ✅ Done              |                                         |
-| Blank module education               | ✅ Done              |                                         |
-| Bug sweep (Feb 19)                   | ✅ Done              |                                         |
-| Security audit – secrets in repo     | ✅ Done              | Gitleaks clean; .gitignore hardened     |
-| Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                             |
-| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                             |
-| Account mgmt – password change       | ✅ Done              | See TODO.md                             |
-| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                             |
-| Duplicate panel detection            | ✅ Done              | Client-side validation in editor        |
-| Safari image export                  | 🟡 Active           | Replace dom-to-image with html-to-image |
-| Manufacturer pages                   | 💡 Long-term        | Backend method exists                   |
-| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion             |
-| User profile pages                   | 💡 Long-term        | Needs privacy design                    |
-| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes     |
-| User organization (tags/folders)     | 💡 Long-term        | New DB tables                           |
-| PWA support                          | 💡 Nice-to-have     |                                         |
-| Store integration                    | 💡 Nice-to-have     | Needs partnerships                      |
-| Dark mode                            | 💡 Nice-to-have     | Large design scope                      |
-| Better SQL RLS policies              | 💡 Long-term        | Operational / security                  |
+| Feature                              | Status              | Detail                                                                  |
+|--------------------------------------|---------------------|-------------------------------------------------------------------------|
+| Private patches                      | ✅ Done              |                                                                         |
+| User-submitted manufacturers         | ✅ Done              |                                                                         |
+| Account data deletion                | ✅ Done              |                                                                         |
+| Cable/multiples counter              | ✅ Done              |                                                                         |
+| iOS clipboard fix                    | ✅ Done              |                                                                         |
+| Rack stats blank filter              | ✅ Done              |                                                                         |
+| Blank module education               | ✅ Done              |                                                                         |
+| Bug sweep (Feb 19)                   | ✅ Done              |                                                                         |
+| Security audit – secrets in repo     | ✅ Done              | Gitleaks clean; .gitignore hardened                                     |
+| Multiple module instances in patches | 🔲 Backlog – High   | See TODO.md                                                             |
+| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                             |
+| Account mgmt – password change       | ✅ Done              | See TODO.md                                                             |
+| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                             |
+| Duplicate panel detection            | ✅ Done              | Client-side validation in editor                                        |
+| Safari image export                  | ⚠️ Partial          | Download works now; rendering differs from Chrome — needs investigation |
+| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                                   |
+| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                             |
+| User profile pages                   | 💡 Long-term        | Needs privacy design                                                    |
+| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                     |
+| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                           |
+| PWA support                          | 💡 Nice-to-have     |                                                                         |
+| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                      |
+| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                      |
+| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                                  |
 
 ---
 

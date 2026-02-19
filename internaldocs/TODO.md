@@ -67,11 +67,19 @@
   retained as safety net. Key files: `module-editor.component.ts`, `.html`. 14 tests in
   `duplicate-panel-detection.spec.ts`. Full suite: 240/240 pass.
 
+- [x] **Safari Image Export Fix (partial)** (Feb 19) — Replaced `dom-to-image` v2.6.0 with `html-to-image` v1.11.13;
+  updated import and both `toJpeg` call sites in `rack-detail-data.service.ts`; corrected `bgcolor` → `backgroundColor`.
+  Removed `dom-to-image` + `@types/dom-to-image`. **Result:** Safari now downloads an image (previously failed
+  entirely),
+  but the rendered output differs from Chrome — likely WebKit SVG/foreignObject rendering differences in
+  `html-to-image`.
+  Needs further investigation. Full suite: 240/240 pass.
+
 ---
 
 ## Active
 
-- [~] **Safari Image Export Fix** — Replace `dom-to-image` with `html-to-image` to fix rack image export on
+*(none)*
   Safari/WebKit.
 
 ---
