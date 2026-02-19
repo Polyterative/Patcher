@@ -578,6 +578,7 @@ export class SupabaseService extends SubManager {
       this.supabase
         .from(DbPaths.manufacturers)
         .insert(data)
+        .select('id,name')
     )
       .pipe(
         remapErrors(),
