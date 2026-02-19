@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { MatCardTitle } from "@angular/material/card";
 import { MatIcon } from "@angular/material/icon";
-import { MatButton } from "@angular/material/button";
+import { BrandPrimaryButtonModule } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module";
 
 
 @Component({
@@ -13,7 +13,7 @@ import { MatButton } from "@angular/material/button";
   imports: [
     MatCardTitle,
     MatIcon,
-    MatButton
+    BrandPrimaryButtonModule
   ],
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',

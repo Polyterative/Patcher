@@ -1,9 +1,7 @@
 @if ({contextInformation: contextInformation$ | async}; as bag) {
   @if (bag.contextInformation) {
-    <button mat-stroked-button (click)="openURL()"
-            color="primary"
-    >
+    <app-brand-primary-button theme="primary" (click$)="openURL()">
       {{ bag.contextInformation.description }}
-    </button>
+    </app-brand-primary-button>
   }
 }

@@ -32,12 +32,13 @@
          fxLayoutGap="2rem"
          fxLayoutGap.xs="0rem"
     >
-      <button mat-stroked-button
+      <app-brand-primary-button
+        theme="primary"
               fxFlex="grow"
               [routerLink]="!disabled?link:null"
               [disabled]="disabled"
       >Apri
-      </button>
+      </app-brand-primary-button>
 
     </div>
   </mat-dialog-actions>
