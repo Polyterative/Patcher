@@ -125,7 +125,8 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([a, b]) => {
-        snackBar.open('Patch removed from your library.', undefined, {duration: 1000, panelClass: 'snack-success'});
+        const patchName = this.singlePatchData$.value?.name;
+        snackBar.open(`"${ patchName }" removed from your library.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSinglePatchData$.next(b);
       });
     
@@ -281,9 +282,9 @@ export class PatchDetailDataService implements OnDestroy {
             newConnection
           ]);
           
-          SharedConstants.successCustom(this.snackBar, 'CV connection recorded in this patch.');
+          SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
         } else {
-          SharedConstants.successCustom(this.snackBar, 'That connection is already in this patch.');
+          SharedConstants.errorCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" is already in this patch.`);
         }
       });
     
