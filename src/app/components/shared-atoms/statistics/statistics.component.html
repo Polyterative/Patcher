@@ -1,16 +1,17 @@
 @if (statistics && statistics.length > 0) {
-  <div>
-    <div class="row wrap gap2"
-    >
-      @for (statistic of statistics; track statistic) {
-        <div>
-          <div style="min-width: 8rem">
-            <app-label-value-showcase [label]="statistic.name">
-              {{ statistic.value }}
-            </app-label-value-showcase>
+  <lib-hero-content-card [titleNormal]="title ?? ''">
+    <div style="width: 100%">
+      <div class="rowwrap gap2">
+        @for (statistic of statistics; track statistic) {
+          <div>
+            <div style="min-width: 8rem">
+              <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
+                {{ statistic.value }}
+              </app-label-value-showcase>
+            </div>
           </div>
-        </div>
-      }
+        }
+      </div>
     </div>
-  </div>
+  </lib-hero-content-card>
 }
