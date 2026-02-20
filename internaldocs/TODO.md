@@ -31,7 +31,7 @@
 
 ## Active
 
-> Nothing in progress. Pick from Backlog.
+(none)
 
 ---
 

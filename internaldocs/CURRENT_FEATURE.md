@@ -10,15 +10,6 @@
 
 ---
 
-## No feature in progress
-
-Pick the next task from [TODO.md](./TODO.md), cut it to Active, and fill in this file before writing any code.
-
----
-
-## Empty Template
-
-```
 ## Feature: <name>
 
 **Status:** 🔴 Not started
@@ -50,4 +41,3 @@ Pick the next task from [TODO.md](./TODO.md), cut it to Active, and fill in this
 ### Steps
 
 - [ ] Step 1 —
-```
