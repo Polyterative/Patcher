@@ -16,9 +16,11 @@
             </lib-clean-card>
           </div>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <app-patch-details [data]="data"></app-patch-details>
-          <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+          @if (!isEditing) {
+            <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
+            <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+          }
           <app-comments-root></app-comments-root>
         </div>
       </div>
@@ -36,7 +38,6 @@
             </app-patch-minimal>
           </lib-clean-card>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <app-comments-root></app-comments-root>
         </div>
         <div class="col gap1"
@@ -47,7 +48,10 @@
           ></app-patch-details>
         </div>
       </div>
-      <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+      @if (!isEditing) {
+        <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
+        <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+      }
     }
   }
   <ng-template #statsCard>
@@ -62,29 +66,30 @@
             { name: 'Cables', value: stats.totalCables, icon: 'cable' },
             { name: 'Modules', value: stats.uniqueModules, icon: 'view_module' },
             { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' }
-          ].concat(stats.totalInstances > stats.uniqueModules ? [{ name: 'Module copies', value: stats.totalInstances, icon: 'content_copy' }] : [])"></app-statistics>
+          ]"></app-statistics>
         }
       }
     }
   </ng-template>
   <ng-template #moduleCopiesSummary>
-    @if ((dataService.multiInstanceSummary$|async); as summary) {
-      @if (summary.length > 0) {
-        <lib-hero-content-card titleNormal="Module Copies">
-          <div class="col gap0">
-            @for (entry of summary; track entry.moduleId) {
-              <div class="row gap1" style="align-items: center">
-                <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">content_copy</mat-icon>
-                <span>
+    @if ((dataService.patchConnections$|async); as connections) {
+      @if (connections | patchConnectionCopies; as copies) {
+        @if (copies.length > 0) {
+          <lib-hero-content-card titleNormal="Module Copies">
+            <div class="col gap0">
+              @for (entry of copies; track entry.moduleId) {
+                <div class="row gap1" style="align-items: center">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">content_copy</mat-icon>
+                  <span>
                     <strong>{{ entry.moduleName }}</strong>
                     <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
-                    &nbsp;×&thinsp;{{ entry.instanceCount }}
-                  <!--                    <span style="opacity: 0.5; font-size: 0.85em">&nbsp;{{ entry.labels.join(', ') }}</span>-->
+                    &nbsp;×&thinsp;{{ entry.connectedCopies }}
                   </span>
-              </div>
-            }
-          </div>
-        </lib-hero-content-card>
+                </div>
+              }
+            </div>
+          </lib-hero-content-card>
+        }
       }
     }
   </ng-template>
