@@ -25,13 +25,13 @@
 
 ## Completed
 
-> Archived in [COMPLETED.md](./COMPLETED.md). 20 features done Feb 18–20.
+> Archived in [COMPLETED.md](./COMPLETED.md). 22 features done Feb 18–20.
 
 ---
 
 ## Active
 
-*(No active tasks — pick from Backlog or archive CURRENT_FEATURE.md)*
+(none)
 
 ---
 

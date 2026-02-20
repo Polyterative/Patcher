@@ -91,26 +91,28 @@
                       <div class="row gap0" style="align-items: center">
                         @if (card.connectionCount > 0) {
                           <span
-                            matTooltip="This copy has {{ card.connectionCount }} connection{{ card.connectionCount > 1 ? 's' : '' }}"
+                            [matTooltip]="card.connectionCount + ' connection' + (card.connectionCount > 1 ? 's' : '') + ':\n' + card.connectionNames.join('\n')"
                             style="font-size: 0.75rem; opacity: 0.6; display: flex; align-items: center; gap: 2px">
                               <mat-icon style="font-size: 14px; width: 14px; height: 14px">cable</mat-icon>
                             {{ card.connectionCount }}
                             </span>
                         }
-                        <button mat-icon-button
-                                matTooltip="Add another copy of this module"
-                                (click)="onAddCopy(card)"
-                        >
-                          <mat-icon>content_copy</mat-icon>
-                        </button>
                         @if (card.instanceCount > 1) {
                           <button mat-icon-button
+                                  class="delete-instance-btn"
                                   matTooltip="Remove this copy"
                                   (click)="dataService.removeModuleInstance$.next(card.instance)"
                           >
                             <mat-icon>delete_outline</mat-icon>
                           </button>
                         }
+                        <button mat-icon-button
+                                [matTooltip]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
+                                [disabled]="card.instanceCount >= maxInstances || addingCopy.has(card.module.id)"
+                                (click)="onAddCopy(card)"
+                        >
+                          <mat-icon>content_copy</mat-icon>
+                        </button>
                       </div>
                     </div>
                     <app-module-composite [data]="card.module"

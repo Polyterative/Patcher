@@ -14,7 +14,10 @@ import {
   map,
   takeUntil
 } from 'rxjs/operators';
-import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import {
+  MAX_INSTANCES_PER_MODULE,
+  PatchDetailDataService
+} from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { Patch } from 'src/app/models/patch';
 import {
@@ -39,6 +42,8 @@ export interface EditorModuleCard {
   instanceCount: number;
   /** How many connections reference this instance (for indicator + delete confirmation) */
   connectionCount: number;
+  /** Human-readable connection summaries for tooltip (max 10) */
+  connectionNames: string[];
 }
 
 @Component({
@@ -51,6 +56,7 @@ export interface EditorModuleCard {
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
   //
+  readonly maxInstances = MAX_INSTANCES_PER_MODULE;
   modulesViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideLabels:        true,
@@ -64,6 +70,9 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   /** Collection modules + instances merged into a flat card list */
   editorCards$ = new BehaviorSubject<EditorModuleCard[]>([]);
+  
+  /** Module IDs currently in-flight for copy — prevents spam-clicking */
+  addingCopy = new Set<number>();
   
   /** Whether collection modules have been loaded at least once */
   collectionLoaded$ = new BehaviorSubject<boolean>(false);
@@ -101,11 +110,16 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           this.buildEditorCards(modules, instances, connections || [])),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(cards => this.editorCards$.next(cards));
+      .subscribe(cards => {
+        // Clear in-flight copy flags for modules whose cards have updated
+        this.addingCopy.clear();
+        this.editorCards$.next(cards);
+      });
   }
   
   /** Trigger adding another copy of the same module */
   onAddCopy(card: EditorModuleCard): void {
+    this.addingCopy.add(card.module.id);
     this.dataService.addModuleInstance$.next(card.module);
   }
   
@@ -137,34 +151,60 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       
       if (count <= 1) {
         const inst = moduleInstances[0] ?? undefined;
-        const connCount = inst
-          ? connections.filter(c => c.instance_id_a === inst.id || c.instance_id_b === inst.id).length
-          : 0;
+        const instConns = inst
+          ? connections.filter(c => c.instance_id_a === inst.id || c.instance_id_b === inst.id)
+          : [];
         // 0 or 1 instance → single card
         cards.push({
           module,
           instance: inst,
           label: undefined,
           instanceCount: count,
-          connectionCount: connCount
+          connectionCount: instConns.length,
+          connectionNames: this.buildConnectionNames(instConns, inst?.id)
         });
       } else {
         // N instances → N cards with labels
         moduleInstances.forEach((inst, idx) => {
-          const connCount = connections.filter(
+          const instConns = connections.filter(
             c => c.instance_id_a === inst.id || c.instance_id_b === inst.id
-          ).length;
+          );
           cards.push({
             module,
             instance: inst,
             label: inst.instance_label || `(${ idx + 1 })`,
             instanceCount: count,
-            connectionCount: connCount
+            connectionCount: instConns.length,
+            connectionNames: this.buildConnectionNames(instConns, inst.id)
           });
         });
       }
     }
     
     return cards;
+  }
+  
+  /**
+   * Build human-readable connection summaries for an instance's tooltip.
+   * Shows "CV → OtherModule: CV" for each connection, capped at 10.
+   */
+  private buildConnectionNames(
+    conns: PatchConnection[],
+    instanceId: number | undefined
+  ): string[] {
+    if (!instanceId || conns.length === 0) return [];
+    
+    const names = conns.slice(0, 10).map(c => {
+      const isA = c.instance_id_a === instanceId;
+      const thisCv = isA ? c.a : c.b;
+      const otherCv = isA ? c.b : c.a;
+      return `${ thisCv.name } → ${ otherCv.module.name }: ${ otherCv.name }`;
+    });
+    
+    if (conns.length > 10) {
+      names.push(`… and ${ conns.length - 10 } more`);
+    }
+    
+    return names;
   }
 }

@@ -1,6 +1,12 @@
 @use "sass:color";
 @use "sass:map";
 
+@use "src/app/style/brand-resources" as *;
+
+.delete-instance-btn {
+  color: $brand-warning;
+}
+
 .leftBorderS {
   border-left-width: .5rem;
   border-left-style: solid;
