@@ -36,7 +36,9 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([]))
       },
       update: {
-        patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null}))
+        patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null})),
+        patchSilent: jasmine.createSpy('patchSilent').and.returnValue(of({data: null, error: null})),
+        patchConnectionsSilent: jasmine.createSpy('patchConnectionsSilent').and.returnValue(of({data: null, error: null}))
       },
       delete: {
         userPatch: jasmine.createSpy('userPatch').and.returnValue(of({data: null, error: null})),

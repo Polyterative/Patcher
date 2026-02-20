@@ -81,11 +81,10 @@ Three user-facing gaps remain:
    node" in the graph. Users have no guard rail steering them to the instance cards instead.
 
 2. **Statistics count module types, not slots** — "4 modules" is misleading when the patch actually uses 6 physical
-   modules (two are duplicated). Users planning a build get incorrect counts. **🟡 Active — see CURRENT_FEATURE.md.**
+   modules (two are duplicated). Users planning a build get incorrect counts.
 
-3. **No unsaved-changes warning on navigation** — When the user has made edits to a patch (connections added/removed,
-   metadata changed) and navigates away without saving, the work is silently lost. There is no "You have unsaved
-   changes" prompt. This is a basic data-loss prevention gap that affects trust in the editor.
+3. **~~No unsaved-changes warning on navigation~~** — ✅ Resolved by auto-save (Feb 2026). Patch editing now persists
+   all changes immediately (name, description, connections), matching rack behavior. No manual save needed.
 
 **Open question:** For gap #1, should the system prompt users to pick an instance, or should it prevent wiring from the
 collection card entirely when instances exist? Trade-off between flexibility and guardrails.
@@ -98,10 +97,9 @@ collection card entirely when instances exist? Trade-off between flexibility and
 
 | Feature                              | Status              | Detail                                                              |
 |--------------------------------------|---------------------|---------------------------------------------------------------------|
-| Multiple module instances in patches | 🟡 In progress      | Core done; 3 UX gaps remain (see above)                             |
+| Multiple module instances in patches | 🟡 In progress      | Core done; 2 UX gaps remain (see above); mixed-save bug resolved    |
 | Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                 |
-| Instance UX: stats accuracy          | 🟡 Active           | `PatchConnectionStatsPipe` fix in progress — see CURRENT_FEATURE.md |
-| Patch editor: unsaved changes guard  | 🔲 Backlog – High   | No warning when navigating away from editor with unsaved changes    |
+| Instance UX: stats accuracy          | 🔲 Backlog – High   | `PatchConnectionStatsPipe` counts module types, not physical slots  |
 | Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                         |
 | Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                         |
 | Safari image export                  | ⚠️ Partial          | Download works; rendering differs from Chrome — needs investigation |
