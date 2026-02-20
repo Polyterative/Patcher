@@ -18,6 +18,13 @@ export interface PatchModuleInstance {
   patch_id: number;
   module_id: number;
   instance_label: string | null;
+  /** Populated when query joins the modules table */
+  module?: {
+    name: string;
+    manufacturer?: {
+      name: string
+    } | null;
+  } | null;
 }
 
 export interface PatchConnection {
