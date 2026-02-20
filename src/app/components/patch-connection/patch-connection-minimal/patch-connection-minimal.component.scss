@@ -25,11 +25,19 @@
   max-height: 20rem;
 }
 
-.deleteIcon {
-  align-self: center;
+
+.action-icons {
+  align-items: center;
+  gap: 8px;
 }
 
-.add-note-btn {
-  opacity: 0.6;
-  font-size: 0.8rem;
+.editing-row {
+  align-items: center;
+}
+
+.note-inline {
+  flex: 1 1 0;
+  min-width: 0;
+  // suppress the bottom margin the mat-form-field adds so the row height stays compact
+  margin-bottom: -1.25em;
 }
