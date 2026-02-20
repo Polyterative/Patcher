@@ -15,6 +15,7 @@
               </app-patch-minimal>
             </lib-clean-card>
           </div>
+          <ng-template *ngTemplateOutlet="statsCard"></ng-template>
           <app-patch-details [data]="data"></app-patch-details>
           <ng-template *ngTemplateOutlet="connectionList"></ng-template>
           <app-comments-root></app-comments-root>
@@ -33,6 +34,7 @@
             >
             </app-patch-minimal>
           </lib-clean-card>
+          <ng-template *ngTemplateOutlet="statsCard"></ng-template>
           <app-comments-root></app-comments-root>
         </div>
         <div class="col gap1"
@@ -46,6 +48,23 @@
       <ng-template *ngTemplateOutlet="connectionList"></ng-template>
     }
   }
+  <ng-template #statsCard>
+    @if ({
+      connections: (dataService.patchConnections$|async)
+    }; as bagS) {
+      @if (data && bagS.connections && bagS.connections.length > 0) {
+        @if (bagS.connections | patchConnectionStats; as stats) {
+          <app-statistics
+            title="Patch Statistics"
+            [statistics]="[
+            { name: 'Cables', value: stats.totalCables, icon: 'cable' },
+            { name: 'Modules', value: stats.uniqueModules, icon: 'view_module' },
+            { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' }
+          ].concat(stats.totalInstances > stats.uniqueModules ? [{ name: 'Module copies', value: stats.totalInstances, icon: 'content_copy' }] : [])"></app-statistics>
+        }
+      }
+    }
+  </ng-template>
   <ng-template #connectionList>
     @if ({
       connections: (dataService.patchConnections$|async),
@@ -53,22 +72,12 @@
     }; as bagA) {
       @if (data && bagA.connections && bagA.connections.length > 0) {
         @if (!(dataService.patchEditingPanelOpenState$|async)) {
-          @if (bagA.connections | patchConnectionStats; as stats) {
-            <lib-hero-content-card titleNormal="Patch Statistics">
-              <app-statistics [statistics]="[
-                { name: 'Cables', value: stats.totalCables },
-                { name: 'Modules', value: stats.uniqueModules },
-                { name: 'Multiples', value: stats.multiplesCount }
-              ].concat(stats.totalInstances > stats.uniqueModules ? [{ name: 'Module copies', value: stats.totalInstances }] : [])"></app-statistics>
-            </lib-hero-content-card>
-          }
           <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
           >
             <app-patch-connections-list [editorConnections]="bagA.connections"
                                         [isEditing]="false"
                                         [instanceLabelMap]="bagA.instanceLabelMap"
             ></app-patch-connections-list>
-            <!--          </lib-clean-card>-->
           </lib-hero-content-card>
         }
       }
