@@ -10,4 +10,22 @@
 
 ---
 
-*(No feature in progress. Pick a task from [TODO.md](./TODO.md) to start.)*
+## Feature: (none)
+
+**Status:** Idle
+**Started:** —
+**Key files (to read first):**
+
+- (none)
+
+---
+
+### Goal
+
+(Describe the feature goal here when a new task is picked up.)
+
+---
+
+### Steps
+
+- [ ] (Steps will be added when a feature is picked up from TODO.md backlog.)
