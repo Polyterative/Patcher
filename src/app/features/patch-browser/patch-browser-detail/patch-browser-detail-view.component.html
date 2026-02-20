@@ -18,16 +18,6 @@
           ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
-      <!--      <ng-container *ngIf="bag.data"-->
-      <!--      >-->
-      <!--        -->
-      <!--        <lib-screen-wrapper maxSize="45rem"-->
-      <!--                            style="padding-bottom: 2rem;"-->
-      <!--        >-->
-      <!--          <app-comments-root-->
-      <!--          ></app-comments-root>-->
-      <!--        </lib-screen-wrapper>-->
-      <!--      </ng-container>-->
     </div>
   }
   @if (bag.patchEditingPanelOpenState) {
@@ -49,16 +39,6 @@
       @if (bag.data && bag.patchEditingPanelOpenState) {
       <lib-hero-content-card titleNormal="Connections Editor"
       >
-        <!--        <div class="col gap2">-->
-        <!--          <div class="row gap1">-->
-        <!--            <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"-->
-        <!--                              (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"-->
-        <!--                              class="toggle">-->
-        <!--              <div style="cursor: pointer;">-->
-        <!--                Show panels images-->
-        <!--              </div>-->
-        <!--            </mat-slide-toggle>-->
-        <!--          </div>-->
         <app-patch-editor [data]="(bag.data)"
         ></app-patch-editor>
         <!--        </div>-->

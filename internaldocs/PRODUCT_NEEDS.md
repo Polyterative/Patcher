@@ -52,6 +52,21 @@ data (quality bar vs friction).
 
 ---
 
+### Collections Track Membership, Not Quantity
+
+A user's module collection records **whether they own a module** — not how many copies. There is no "I own 3 Maths" in
+the collection. The "copies" concept exists only inside patches: the system creates internal instances to track which
+physical copy of a module a cable connects to. This distinction matters for UI:
+
+- **Collection = membership only.** Add/remove. No quantity field. No "how many do you own" prompt.
+- **Patch instances = internal wiring concept.** The system needs them to distinguish "output from copy 1" vs "output
+  from copy 2." But the user doesn't need to see instance counts or labels as raw statistics.
+- **User-facing statistics should derive from connections**, not from internal instance bookkeeping. Show cables,
+  modules
+  used, multiples (one output driving multiple inputs). Don't show how many instances the system allocated.
+
+---
+
 ### Community vs Solo Tool
 
 Platform currently works solo. Features are trending community (submissions, sharing, flagging). Social features add
@@ -80,8 +95,10 @@ Three user-facing gaps remain:
    mystery
    node" in the graph. Users have no guard rail steering them to the instance cards instead.
 
-2. **Statistics count module types, not slots** — "4 modules" is misleading when the patch actually uses 6 physical
-   modules (two are duplicated). Users planning a build get incorrect counts.
+2. **~~Statistics count module types, not slots~~** — ✅ Resolved (Feb 2026). Statistics now show only Cables, Modules,
+   and Multiples — all derived from connections. The raw "Module copies" counter (which leaked internal instance counts)
+   has been removed. The Module Copies summary card now derives from connections (modules with 2+ distinct connected
+   copies) rather than internal instance bookkeeping.
 
 3. **~~No unsaved-changes warning on navigation~~** — ✅ Resolved by auto-save (Feb 2026). Patch editing now persists
    all changes immediately (name, description, connections), matching rack behavior. No manual save needed.
@@ -95,23 +112,23 @@ collection card entirely when instances exist? Trade-off between flexibility and
 
 > Completed features archived in [COMPLETED.md](./COMPLETED.md).
 
-| Feature                              | Status              | Detail                                                              |
-|--------------------------------------|---------------------|---------------------------------------------------------------------|
-| Multiple module instances in patches | 🟡 In progress      | Core done; 2 UX gaps remain (see above); mixed-save bug resolved    |
-| Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                 |
-| Instance UX: stats accuracy          | 🔲 Backlog – High   | `PatchConnectionStatsPipe` counts module types, not physical slots  |
-| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                         |
-| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                         |
-| Safari image export                  | ⚠️ Partial          | Download works; rendering differs from Chrome — needs investigation |
-| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                               |
-| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                         |
-| User profile pages                   | 💡 Long-term        | Needs privacy design                                                |
-| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                 |
-| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                       |
-| PWA support                          | 💡 Nice-to-have     |                                                                     |
-| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                  |
-| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                  |
-| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                              |
+| Feature                              | Status              | Detail                                                                          |
+|--------------------------------------|---------------------|---------------------------------------------------------------------------------|
+| Multiple module instances in patches | 🟡 In progress      | Core done; 1 UX gap remains (ambiguous wiring); stats rework resolved           |
+| Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                             |
+| Instance UX: stats accuracy          | ✅ Done              | Stats show Cables/Modules/Multiples only; Module Copies card connection-derived |
+| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                                     |
+| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                                     |
+| Safari image export                  | ⚠️ Partial          | Download works; rendering differs from Chrome — needs investigation             |
+| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                                           |
+| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                                     |
+| User profile pages                   | 💡 Long-term        | Needs privacy design                                                            |
+| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                             |
+| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                                   |
+| PWA support                          | 💡 Nice-to-have     |                                                                                 |
+| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                              |
+| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                              |
+| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                                          |
 
 ---
 
