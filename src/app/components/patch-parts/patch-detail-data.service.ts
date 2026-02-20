@@ -53,6 +53,9 @@ import {
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
+/** Maximum number of instances (copies) allowed per module in a single patch. */
+export const MAX_INSTANCES_PER_MODULE = 20;
+
 /** Summary entry for modules that have 2+ instances in a patch. */
 export interface MultiInstanceModuleSummary {
   moduleId: number;
@@ -551,6 +554,13 @@ export class PatchDetailDataService implements OnDestroy {
         filter(([_, patch]) => !!patch),
         switchMap(([module, patch, existingInstances]) => {
           const sameModuleCount = existingInstances.filter(i => i.module_id === module.id).length;
+          
+          // Enforce copy limit — account for jumpstart (count=0 → creates 2)
+          const wouldBeCount = sameModuleCount + (sameModuleCount === 0 ? 2 : 1);
+          if (wouldBeCount > MAX_INSTANCES_PER_MODULE) {
+            SharedConstants.errorCustom(this.snackBar, `Maximum of ${ MAX_INSTANCES_PER_MODULE } copies per module reached.`);
+            return EMPTY;
+          }
           
           if (sameModuleCount === 0) {
             // Jumpstart: batch insert two instances in a single DB call
