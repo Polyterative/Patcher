@@ -16,7 +16,6 @@
             </lib-clean-card>
           </div>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
           <app-patch-details [data]="data" [isEditing]="isEditing"></app-patch-details>
           @if (isEditing) {
@@ -39,7 +38,6 @@
             </app-patch-minimal>
           </lib-clean-card>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
           <app-comments-root></app-comments-root>
         </div>
@@ -70,28 +68,6 @@
             { name: 'Modules', value: stats.uniqueModules, icon: 'view_module' },
             { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' }
           ]"></app-statistics>
-        }
-      }
-    }
-  </ng-template>
-  <ng-template #moduleCopiesSummary>
-    @if ((dataService.patchConnections$|async); as connections) {
-      @if (connections | patchConnectionCopies; as copies) {
-        @if (copies.length > 0) {
-          <lib-hero-content-card titleNormal="Module Copies">
-            <div class="col gap0">
-              @for (entry of copies; track entry.moduleId) {
-                <div class="row gap1" style="align-items: center">
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">content_copy</mat-icon>
-                  <span>
-                    <strong>{{ entry.moduleName }}</strong>
-                    <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
-                    &nbsp;×&thinsp;{{ entry.connectedCopies }}
-                  </span>
-                </div>
-              }
-            </div>
-          </lib-hero-content-card>
         }
       }
     }
