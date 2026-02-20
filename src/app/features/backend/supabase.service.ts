@@ -1067,6 +1067,26 @@ export class SupabaseService extends SubManager {
       .pipe(
         cacheBust(['patchConnections', 'patches'])
       ),
+    /** Targeted single-row note update. Uses composite natural key. Silent (no toast). */
+    patchConnectionNoteSilent: (conn: PatchConnection) => {
+      let query = this.supabase
+        .from(DbPaths.patch_connections)
+        .update({notes: conn.notes ?? null})
+        .eq('patchid', conn.patch.id)
+        .eq('a', conn.a.id)
+        .eq('b', conn.b.id);
+      // nullable FK columns must use .is() when null, .eq() when non-null
+      query = conn.instance_id_a == null
+        ? query.is('instance_id_a', null)
+        : query.eq('instance_id_a', conn.instance_id_a);
+      query = conn.instance_id_b == null
+        ? query.is('instance_id_b', null)
+        : query.eq('instance_id_b', conn.instance_id_b);
+      return rxFrom(query).pipe(
+        remapErrors(),
+        cacheBust(['patchConnections'])
+      );
+    },
     patchModuleInstanceLabel: (id: number, instance_label: string | null) => rxFrom(
       this.supabase.from(DbPaths.patch_module_instances)
         .update({instance_label})
