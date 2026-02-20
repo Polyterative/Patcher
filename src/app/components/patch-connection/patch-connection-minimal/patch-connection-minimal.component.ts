@@ -12,6 +12,11 @@ import {
   Validators
 } from '@angular/forms';
 import { Subject } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  takeUntil
+} from 'rxjs/operators';
 import { PatchConnection } from 'src/app/models/connection';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
@@ -36,6 +41,8 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Input() readonly instanceLabelMap: Map<number, string> = new Map();
   @Output() readonly remove$ = new EventEmitter<PatchConnection>();
   @Output() readonly create$ = new EventEmitter<PatchConnection>();
+  /** Injected from patch-connections-list; emits the connection whose notes changed for backend sync. */
+  @Input() readonly noteSync$?: Subject<PatchConnection>;
   types = FormTypes;
   
   @Input() viewConfig: ModuleMinimalViewConfig = {
@@ -80,8 +87,18 @@ export class PatchConnectionMinimalComponent implements OnInit {
       this.showNotes = true;
     }
     
-    this.notes.control.valueChanges.subscribe(value => this.data.notes = value);
-    
+    // Only wire the sync pipeline when a sync subject is actually provided (i.e. editing mode).
+    // In read-only rendering noteSync$ is undefined, so nothing below runs — no accidental writes.
+    if (!this.noteSync$) { return; }
+
+    this.notes.control.valueChanges.pipe(
+      debounceTime(600),
+      distinctUntilChanged(),
+      takeUntil(this.destroyEvent$)
+    ).subscribe(value => {
+      this.data.notes = value || undefined;
+      this.noteSync$?.next(this.data);
+    });
   }
   
   ngOnDestroy(): void {
