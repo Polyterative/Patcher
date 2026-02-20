@@ -15,9 +15,12 @@ import {
 })
 export class StatisticsComponent implements OnInit {
   
+  @Input() title: string | null = null;
+
   @Input() statistics: {
     name: string;
     value: number;
+    icon?: string;
   }[] | null;
   
   constructor() {
