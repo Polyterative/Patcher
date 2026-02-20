@@ -43,7 +43,6 @@ import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-edi
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
-import { PatchConnectionCopiesPipe } from 'src/app/components/patch-parts/patch-connection-copies.pipe';
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
@@ -58,7 +57,6 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
     PatchGraphComponent,
     PatchConnectionsListComponent,
     PatchConnectionStatsPipe,
-    PatchConnectionCopiesPipe,
     PatchConnectionUniqueModulesPipe
   ],
   exports:      [
@@ -68,7 +66,6 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
     PatchGraphComponent,
     PatchConnectionsListComponent,
     PatchConnectionStatsPipe,
-    PatchConnectionCopiesPipe,
     PatchConnectionUniqueModulesPipe
   ],
   providers:    [PatchDetailDataService],
