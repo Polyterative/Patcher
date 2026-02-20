@@ -294,3 +294,45 @@ $standardUnit: .5rem;
 .half-sizing {
   transform: scale(0.5);
 }
+
+// ── Browser sidebar layout ─────────────────────────────────────────────────
+// Shared by module-browser, patch-browser and rack-browser pages.
+// Left aside = filters; right div = results grid.
+.sidebar-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.filter-sidebar {
+  width: 260px;
+  min-width: 260px;
+  flex-shrink: 0;
+
+  &__heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.browser-content-area {
+  flex: 1 1 0;
+  min-width: 0; // prevent flex blowout
+}
+
+@media (max-width: 959px) {
+  .sidebar-layout {
+    flex-direction: column;
+  }
+
+  .filter-sidebar {
+    width: 100%;
+    min-width: unset;
+  }
+}
