@@ -49,6 +49,16 @@ import {
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
+/** Summary entry for modules that have 2+ instances in a patch. */
+export interface MultiInstanceModuleSummary {
+  moduleId: number;
+  moduleName: string;
+  manufacturerName: string;
+  instanceCount: number;
+  labels: string[];
+}
+
+
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
   updateSinglePatchData$ = new ReplaySubject<number>();
@@ -104,6 +114,11 @@ export class PatchDetailDataService implements OnDestroy {
    * Used by read-only connection list to show which copy a connection belongs to.
    */
   instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
+  /**
+   * Summary of modules with 2+ instances. Emits [] when no multi-instance modules exist.
+   * Derived from patchModuleInstances$ + patchConnections$ (for module names).
+   */
+  multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
   //
   protected destroyEvent$ = new Subject<void>();
   shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
@@ -131,6 +146,8 @@ export class PatchDetailDataService implements OnDestroy {
         // tap(x => this.singlePatchData$.next(undefined)),
         tap(x => this.patchConnections$.next(null)),
         tap(x => this.editorConnections$.next(null)),
+        tap(() => this.patchModuleInstances$.next([])),
+        tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
         switchMap(x => this.backend.get.patchWithId(x)),
         takeUntil(this.destroyEvent$)
       )
@@ -452,6 +469,43 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(labelMap => this.instanceLabelMap$.next(labelMap));
+    
+    // Build multi-instance summary for read-only display.
+    // Uses module name/manufacturer from the joined instance query (primary source).
+    this.patchModuleInstances$
+      .pipe(
+        map(instances => {
+          if (!instances.length) { return []; }
+          
+          // Group instances by module_id
+          const byModule = new Map<number, PatchModuleInstance[]>();
+          for (const inst of instances) {
+            const list = byModule.get(inst.module_id) || [];
+            list.push(inst);
+            byModule.set(inst.module_id, list);
+          }
+          
+          const summary: MultiInstanceModuleSummary[] = [];
+          for (const [moduleId, moduleInstances] of byModule) {
+            if (moduleInstances.length >= 2) {
+              // Module name comes from the Supabase join on the instance row
+              const firstWithModule = moduleInstances.find(i => i.module?.name);
+              summary.push({
+                moduleId,
+                moduleName: firstWithModule?.module?.name ?? `Module #${ moduleId }`,
+                manufacturerName: firstWithModule?.module?.manufacturer?.name ?? '',
+                instanceCount: moduleInstances.length,
+                labels: moduleInstances
+                  .sort((a, b) => a.id - b.id)
+                  .map((inst, idx) => inst.instance_label || `(${ idx + 1 })`)
+              });
+            }
+          }
+          return summary;
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(summary => this.multiInstanceSummary$.next(summary));
     
     // Add a module instance (for "add another copy" — generates label)
     // When sameModuleCount === 0, creates TWO instances so count jumps to 2.

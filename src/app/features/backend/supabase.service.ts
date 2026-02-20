@@ -124,6 +124,7 @@ type CachedEntity =
   | 'currentUserModules'
   | 'moduleWithId'
   | 'patchConnections'
+  | 'patchModuleInstances'
   | 'patches'
   | 'currentUserComments'
   | 'rackWithId'
@@ -604,7 +605,7 @@ export class SupabaseService extends SubManager {
     ).pipe(
       remapErrors(),
       map(x => x.data as PatchModuleInstance),
-      cacheBust(['patchConnections'])
+      cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
     /** Batch insert multiple patch module instances in a single DB call */
     patchModuleInstances: (rows: {
@@ -619,7 +620,7 @@ export class SupabaseService extends SubManager {
     ).pipe(
       remapErrors(),
       map(x => x.data as PatchModuleInstance[]),
-      cacheBust(['patchConnections'])
+      cacheBust(['patchConnections', 'patchModuleInstances'])
     )
   };
   
@@ -727,7 +728,7 @@ export class SupabaseService extends SubManager {
         .filter('id', 'eq', id)
     ).pipe(
       remapErrors(),
-      cacheBust(['patchConnections'])
+      cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
     patchModuleInstancesForPatch: (patch_id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_module_instances)
@@ -735,7 +736,7 @@ export class SupabaseService extends SubManager {
         .filter('patch_id', 'eq', patch_id)
     ).pipe(
       remapErrors(),
-      cacheBust(['patchConnections'])
+      cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
     userPatch: (id: number) => this.getUserSession$()
       .pipe(
@@ -1057,7 +1058,7 @@ export class SupabaseService extends SubManager {
     ).pipe(
       remapErrors(),
       map(x => x.data as PatchModuleInstance),
-      cacheBust(['patchConnections'])
+      cacheBust(['patchConnections', 'patchModuleInstances'])
     )
   };
   
@@ -1378,14 +1379,14 @@ export class SupabaseService extends SubManager {
 
   @Cacheable({
     maxAge: defaultCacheTime,
-    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patchConnections'))),
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patchModuleInstances'))),
     maxCacheCount: 50,
     async: true
   })
   private getPatchModuleInstances(patch_id: number) {
     return rxFrom(
       this.supabase.from(DbPaths.patch_module_instances)
-        .select('id,patch_id,module_id,instance_label')
+        .select('id,patch_id,module_id,instance_label,module:modules(name,manufacturer:manufacturers(name))')
         .filter('patch_id', 'eq', patch_id)
         .order('id')
     ).pipe(
@@ -1778,6 +1779,7 @@ export class SupabaseService extends SubManager {
       "manufacturers",
       "currentUserModules",
       "patchConnections",
+      "patchModuleInstances",
       "rackWithId",
       "patches",
       "currentUserComments"

@@ -5,7 +5,10 @@ import {
   MatDialogModule
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import {
+  of,
+  Subject
+} from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -73,6 +76,7 @@ describe('PatchDetailDataService - Instance Management', () => {
   
   beforeEach(() => {
     mockSupabaseService = {
+      cacheResetter$: new Subject<any>(),
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null}))
       },
@@ -847,6 +851,264 @@ describe('PatchDetailDataService - Instance Management', () => {
       
       expect(toInsert.instance_id_a).toBe(501);
       expect(toInsert.instance_id_b).toBe(502);
+    });
+  });
+  
+  // -------------------------------------------------------------------
+  // Instance label map rebuild on data reload (save/reopen scenario)
+  // -------------------------------------------------------------------
+  describe('instanceLabelMap$ rebuild on singlePatchData$ re-emit', () => {
+    
+    it('should populate instanceLabelMap$ when patchModuleInstances$ has 2+ instances for a module', () => {
+      // Simulate instances loaded from backend
+      const instances: PatchModuleInstance[] = [
+        {id: 8001, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 8002, patch_id: 100, module_id: 20, instance_label: '(2)'}
+      ];
+      
+      service.patchModuleInstances$.next(instances);
+      
+      const labelMap = service.instanceLabelMap$.value;
+      expect(labelMap.size).toBe(2);
+      expect(labelMap.get(8001)).toBe('(1)');
+      expect(labelMap.get(8002)).toBe('(2)');
+    });
+    
+    it('should NOT include entries in instanceLabelMap$ for modules with only 1 instance', () => {
+      const instances: PatchModuleInstance[] = [
+        {id: 8010, patch_id: 100, module_id: 20, instance_label: null}
+      ];
+      
+      service.patchModuleInstances$.next(instances);
+      
+      const labelMap = service.instanceLabelMap$.value;
+      expect(labelMap.size).toBe(0);
+    });
+    
+    it('should clear instanceLabelMap$ when patchModuleInstances$ becomes empty', () => {
+      // First populate
+      service.patchModuleInstances$.next([
+        {id: 8020, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 8021, patch_id: 100, module_id: 20, instance_label: '(2)'}
+      ]);
+      expect(service.instanceLabelMap$.value.size).toBe(2);
+      
+      // Then clear (simulates reload returning empty)
+      service.patchModuleInstances$.next([]);
+      expect(service.instanceLabelMap$.value.size).toBe(0);
+    });
+    
+    it('should rebuild instanceLabelMap$ when backend returns instances on singlePatchData$ re-emit', (done) => {
+      // Configure mock to return instances when called
+      const backendInstances: PatchModuleInstance[] = [
+        {id: 9001, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 9002, patch_id: 100, module_id: 20, instance_label: '(2)'},
+        {id: 9003, patch_id: 100, module_id: 20, instance_label: '(3)'}
+      ];
+      mockSupabaseService.GET.patchModuleInstances.and.returnValue(of(backendInstances));
+      mockSupabaseService.get.patchWithId.and.returnValue(of({data: fakePatch, error: null}));
+      
+      // Trigger a full reload cycle (simulates what save or editor close does)
+      service.updateSinglePatchData$.next(fakePatch.id);
+      
+      setTimeout(() => {
+        // patchModuleInstances$ should have the backend data
+        const instances = service.patchModuleInstances$.value;
+        expect(instances.length).toBe(3);
+        
+        // instanceLabelMap$ should be rebuilt
+        const labelMap = service.instanceLabelMap$.value;
+        expect(labelMap.size).toBe(3);
+        expect(labelMap.get(9001)).toBe('(1)');
+        expect(labelMap.get(9002)).toBe('(2)');
+        expect(labelMap.get(9003)).toBe('(3)');
+        done();
+      }, 100);
+    });
+    
+    it('should have empty instanceLabelMap$ when backend returns no instances on reload', (done) => {
+      // First, populate with local instances
+      service.patchModuleInstances$.next([
+        {id: 9010, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 9011, patch_id: 100, module_id: 20, instance_label: '(2)'}
+      ]);
+      expect(service.instanceLabelMap$.value.size).toBe(2);
+      
+      // Configure mock to return EMPTY instances (simulates RLS blocking or data loss)
+      mockSupabaseService.GET.patchModuleInstances.and.returnValue(of([]));
+      mockSupabaseService.get.patchWithId.and.returnValue(of({data: fakePatch, error: null}));
+      
+      // Trigger reload
+      service.updateSinglePatchData$.next(fakePatch.id);
+      
+      setTimeout(() => {
+        // If backend returns empty, instances and label map should be empty
+        const instances = service.patchModuleInstances$.value;
+        expect(instances.length).toBe(0);
+        
+        const labelMap = service.instanceLabelMap$.value;
+        expect(labelMap.size).toBe(0);
+        done();
+      }, 100);
+    });
+    
+    it('should use instance_label from DB data, falling back to index-based label', () => {
+      // One instance has a label, the other doesn't
+      const instances: PatchModuleInstance[] = [
+        {id: 9020, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 9021, patch_id: 100, module_id: 20, instance_label: null}
+      ];
+      
+      service.patchModuleInstances$.next(instances);
+      
+      const labelMap = service.instanceLabelMap$.value;
+      expect(labelMap.size).toBe(2);
+      expect(labelMap.get(9020)).toBe('(1)');
+      // Fallback: index 1 → "(2)"
+      expect(labelMap.get(9021)).toBe('(2)');
+    });
+  });
+  
+  // -------------------------------------------------------------------
+  // multiInstanceSummary$ — read-only module copies summary
+  // -------------------------------------------------------------------
+  describe('multiInstanceSummary$', () => {
+    
+    it('should emit empty array when no instances exist', () => {
+      service.patchModuleInstances$.next([]);
+      
+      expect(service.multiInstanceSummary$.value).toEqual([]);
+    });
+    
+    it('should emit empty array when all modules have only 1 instance', () => {
+      service.patchModuleInstances$.next([
+        {id: 100, patch_id: 1, module_id: 10, instance_label: null}
+      ]);
+      
+      expect(service.multiInstanceSummary$.value).toEqual([]);
+    });
+    
+    it('should produce summary for modules with 2+ instances using joined module data', () => {
+      service.patchModuleInstances$.next([
+        {id: 100, patch_id: 1, module_id: 10, instance_label: '(1)', module: {name: 'VCA', manufacturer: {name: 'Doepfer'}}},
+        {id: 101, patch_id: 1, module_id: 10, instance_label: '(2)', module: {name: 'VCA', manufacturer: {name: 'Doepfer'}}}
+      ]);
+      
+      const summary = service.multiInstanceSummary$.value;
+      expect(summary.length).toBe(1);
+      expect(summary[0].moduleId).toBe(10);
+      expect(summary[0].moduleName).toBe('VCA');
+      expect(summary[0].manufacturerName).toBe('Doepfer');
+      expect(summary[0].instanceCount).toBe(2);
+      expect(summary[0].labels).toEqual(['(1)', '(2)']);
+    });
+    
+    it('should derive module names from instance.module, not connections', () => {
+      service.patchModuleInstances$.next([
+        {id: 200, patch_id: 1, module_id: 20, instance_label: '(1)', module: {name: 'Filter', manufacturer: {name: 'Mutable'}}},
+        {id: 201, patch_id: 1, module_id: 20, instance_label: '(2)', module: {name: 'Filter', manufacturer: {name: 'Mutable'}}},
+        {id: 202, patch_id: 1, module_id: 20, instance_label: '(3)', module: {name: 'Filter', manufacturer: {name: 'Mutable'}}}
+      ]);
+      // No connections needed — names come from the instance join
+      
+      const summary = service.multiInstanceSummary$.value;
+      expect(summary.length).toBe(1);
+      expect(summary[0].moduleName).toBe('Filter');
+      expect(summary[0].manufacturerName).toBe('Mutable');
+      expect(summary[0].instanceCount).toBe(3);
+    });
+    
+    it('should fall back to "Module #id" when instance has no joined module data', () => {
+      service.patchModuleInstances$.next([
+        {id: 300, patch_id: 1, module_id: 99, instance_label: '(1)'},
+        {id: 301, patch_id: 1, module_id: 99, instance_label: '(2)'}
+      ]);
+      
+      const summary = service.multiInstanceSummary$.value;
+      expect(summary.length).toBe(1);
+      expect(summary[0].moduleName).toBe('Module #99');
+      expect(summary[0].manufacturerName).toBe('');
+    });
+    
+    it('should produce summary even when connections are null (no dependency on connections)', () => {
+      service.patchModuleInstances$.next([
+        {id: 400, patch_id: 1, module_id: 10, instance_label: '(1)', module: {name: 'Osc', manufacturer: {name: 'Make Noise'}}},
+        {id: 401, patch_id: 1, module_id: 10, instance_label: '(2)', module: {name: 'Osc', manufacturer: {name: 'Make Noise'}}}
+      ]);
+      service.patchConnections$.next(null);
+      
+      const summary = service.multiInstanceSummary$.value;
+      expect(summary.length).toBe(1);
+      expect(summary[0].moduleName).toBe('Osc');
+      expect(summary[0].instanceCount).toBe(2);
+    });
+  });
+  
+  // -------------------------------------------------------------------
+  // Public read scenario — instances loaded for non-owner
+  // -------------------------------------------------------------------
+  describe('Public read scenario — instances loaded regardless of auth state', () => {
+    
+    it('should populate instanceLabelMap$ when backend returns instances for a non-owner patch', (done) => {
+      // Simulate a non-owner scenario: getUserSession$ returns a different user
+      mockSupabaseService.getUserSession$.and.returnValue(
+        of({id: 'other-user', email: 'other@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
+      );
+      
+      const instances: PatchModuleInstance[] = [
+        {id: 7001, patch_id: 100, module_id: 10, instance_label: '(1)'},
+        {id: 7002, patch_id: 100, module_id: 10, instance_label: '(2)'}
+      ];
+      mockSupabaseService.GET.patchModuleInstances.and.returnValue(of(instances));
+      mockSupabaseService.GET.patchConnections.and.returnValue(of([makeConnection(1, 2, 7001, undefined)]));
+      mockSupabaseService.get.patchWithId.and.returnValue(of({data: fakePatch, error: null}));
+      
+      service.updateSinglePatchData$.next(fakePatch.id);
+      
+      setTimeout(() => {
+        // Instances should be loaded (no auth gate)
+        expect(service.patchModuleInstances$.value.length).toBe(2);
+        
+        // Label map should be populated
+        const labelMap = service.instanceLabelMap$.value;
+        expect(labelMap.size).toBe(2);
+        expect(labelMap.get(7001)).toBe('(1)');
+        expect(labelMap.get(7002)).toBe('(2)');
+        
+        // Multi-instance summary should also be populated
+        const summary = service.multiInstanceSummary$.value;
+        expect(summary.length).toBe(1);
+        expect(summary[0].instanceCount).toBe(2);
+        done();
+      }, 100);
+    });
+    
+    it('should populate instanceLabelMap$ when user is not authenticated (null session)', (done) => {
+      // Simulate unauthenticated user
+      mockSupabaseService.getUserSession$.and.returnValue(of(null));
+      
+      const instances: PatchModuleInstance[] = [
+        {id: 7010, patch_id: 100, module_id: 20, instance_label: '(1)'},
+        {id: 7011, patch_id: 100, module_id: 20, instance_label: '(2)'},
+        {id: 7012, patch_id: 100, module_id: 20, instance_label: '(3)'}
+      ];
+      mockSupabaseService.GET.patchModuleInstances.and.returnValue(of(instances));
+      mockSupabaseService.GET.patchConnections.and.returnValue(of([makeConnection(1, 2, undefined, 7010)]));
+      mockSupabaseService.get.patchWithId.and.returnValue(of({data: fakePatch, error: null}));
+      
+      service.updateSinglePatchData$.next(fakePatch.id);
+      
+      setTimeout(() => {
+        // Instances should be loaded even without auth
+        expect(service.patchModuleInstances$.value.length).toBe(3);
+        
+        const labelMap = service.instanceLabelMap$.value;
+        expect(labelMap.size).toBe(3);
+        expect(labelMap.get(7010)).toBe('(1)');
+        expect(labelMap.get(7011)).toBe('(2)');
+        expect(labelMap.get(7012)).toBe('(3)');
+        done();
+      }, 100);
     });
   });
 });
