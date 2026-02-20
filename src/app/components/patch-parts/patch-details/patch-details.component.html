@@ -20,6 +20,16 @@
       @if ({
         length: (bag.connections.length)
       }; as bagA) {
+        @if (!isEditing && bagA.length > 0) {
+          @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
+            <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'">
+              <app-patch-connections-list [editorConnections]="bag.connections"
+                                          [isEditing]="false"
+                                          [instanceLabelMap]="instanceLabelMap"
+              ></app-patch-connections-list>
+            </lib-hero-content-card>
+          }
+        }
         @if (bagA.length > 0) {
           <lib-hero-content-card [titleNormal]="'Connections graph'"
           >
@@ -28,16 +38,9 @@
             </lib-clean-card>
           </lib-hero-content-card>
         } @else {
-          <lib-hero-content-card titleNormal="Connections">
-            <div class="col gap1 animate-fadein-slowest"
-            >
-              <mat-card-subtitle fxLayoutAlign="center start">It looks like this patch has no
-                connections
-              </mat-card-subtitle>
-              <mat-card-subtitle fxLayoutAlign="center start">¯\_(ツ)_/¯
-              </mat-card-subtitle>
-            </div>
-          </lib-hero-content-card>
+          <app-advice-tooltip [@enter]="{ value: '', params: { delay: 150 } }">
+            This patch has no connections yet. Open the editor to start patching.
+          </app-advice-tooltip>
         }
       }
     }

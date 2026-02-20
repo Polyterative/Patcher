@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -56,10 +57,27 @@ export class PatchConnectionMinimalComponent implements OnInit {
   };
   
   protected destroyEvent$ = new Subject<void>();
+  showNotes = false;
   
+  constructor(private cdr: ChangeDetectorRef) {
+  }
+  
+  showNoteInput(): void {
+    this.showNotes = true;
+    this.cdr.markForCheck();
+  }
+  
+  onNoteBlur(): void {
+    if (!this.notes.control.value?.trim()) {
+      this.showNotes = false;
+      this.cdr.markForCheck();
+    }
+  }
+
   ngOnInit(): void {
     if (this.data.notes) {
       this.notes.control.patchValue(this.data.notes);
+      this.showNotes = true;
     }
     
     this.notes.control.valueChanges.subscribe(value => this.data.notes = value);

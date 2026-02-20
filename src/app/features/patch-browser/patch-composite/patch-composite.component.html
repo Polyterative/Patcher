@@ -16,10 +16,11 @@
             </lib-clean-card>
           </div>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <app-patch-details [data]="data"></app-patch-details>
-          @if (!isEditing) {
-            <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
-            <ng-template *ngTemplateOutlet="connectionList"></ng-template>
+          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
+          <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
+          <app-patch-details [data]="data" [isEditing]="isEditing"></app-patch-details>
+          @if (isEditing) {
+            <app-patch-editor [data]="data"></app-patch-editor>
           }
           <app-comments-root></app-comments-root>
         </div>
@@ -38,20 +39,22 @@
             </app-patch-minimal>
           </lib-clean-card>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
+          <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
           <app-comments-root></app-comments-root>
         </div>
-        <div class="col gap1"
+        <div class="col gap1 right-col"
              fxFlex="grow"
         >
           <app-patch-details fxFlex="grow"
                              [data]="data"
+                             [isEditing]="isEditing"
           ></app-patch-details>
+          @if (isEditing) {
+            <app-patch-editor [data]="data"></app-patch-editor>
+          }
         </div>
       </div>
-      @if (!isEditing) {
-        <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
-        <ng-template *ngTemplateOutlet="connectionList"></ng-template>
-      }
     }
   }
   <ng-template #statsCard>
@@ -93,19 +96,27 @@
       }
     }
   </ng-template>
-  <ng-template #connectionList>
-    @if ({
-      connections: (dataService.patchConnections$|async),
-      instanceLabelMap: (dataService.instanceLabelMap$|async)
-    }; as bagA) {
-      @if (data && bagA.connections && bagA.connections.length > 0) {
-        <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
-        >
-          <app-patch-connections-list [editorConnections]="bagA.connections"
-                                      [isEditing]="false"
-                                      [instanceLabelMap]="bagA.instanceLabelMap"
-          ></app-patch-connections-list>
-        </lib-hero-content-card>
+  <ng-template #uniqueModulesSummary>
+    @if ((dataService.patchConnections$|async); as connections) {
+      @if (connections | patchConnectionUniqueModules; as modules) {
+        @if (modules.length > 0) {
+          <lib-hero-content-card titleNormal="Modules needed">
+            <div class="col gap0">
+              @for (entry of modules; track entry.moduleId) {
+                <div class="row gap1" style="align-items: center">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">developer_board</mat-icon>
+                  <span>
+                    <strong>{{ entry.moduleName }}</strong>
+                    <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
+                    @if (entry.copies > 1) {
+                      &nbsp;×&thinsp;{{ entry.copies }}
+                    }
+                  </span>
+                </div>
+              }
+            </div>
+          </lib-hero-content-card>
+        }
       }
     }
   </ng-template>
