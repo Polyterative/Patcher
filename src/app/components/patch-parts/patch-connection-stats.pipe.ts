@@ -10,6 +10,13 @@ export interface PatchConnectionStats {
   totalCables: number;
   /** Number of unique modules referenced in any connection. */
   uniqueModules: number;
+  /**
+   * Number of unique module instances referenced in any connection.
+   * When instance IDs are present a single physical module type may contribute
+   * more than one instance (e.g. two VCOs of the same model).
+   * Falls back to uniqueModules when no instance information is available.
+   */
+  totalInstances: number;
   /** Number of output CVs that are connected to more than one input (multiples). */
   multiplesCount: number;
   /** Average number of cables per module, rounded to 1 decimal place. */
@@ -45,6 +52,17 @@ export class PatchConnectionStatsPipe implements PipeTransform {
     });
     const uniqueModules = moduleIds.size;
     
+    // Count unique *instances*: a module may appear multiple times with different
+    // instance_id values (e.g. two identical VCOs).  We key on "moduleId_instanceId";
+    // when instance_id is absent we use the sentinel string "none" so the pair still
+    // contributes exactly one instance per unique module.
+    const instanceKeys = new Set<string>();
+    connections.forEach(c => {
+      instanceKeys.add(`${ c.a.module.id }_${ c.instance_id_a ?? 'none' }`);
+      instanceKeys.add(`${ c.b.module.id }_${ c.instance_id_b ?? 'none' }`);
+    });
+    const totalInstances = instanceKeys.size;
+    
     // A "multiple" is an output CV that drives more than one input.
     // Count how many times each output CV (by ID) appears across all connections.
     const outputUseCounts = new Map<number, number>();
@@ -63,6 +81,6 @@ export class PatchConnectionStatsPipe implements PipeTransform {
     // Annotated: cable has a non-empty note
     const annotatedConnections = connections.filter(c => !!c.notes?.trim()).length;
     
-    return {totalCables, uniqueModules, multiplesCount, avgCablesPerModule, annotatedConnections};
+    return {totalCables, uniqueModules, totalInstances, multiplesCount, avgCablesPerModule, annotatedConnections};
   }
 }
