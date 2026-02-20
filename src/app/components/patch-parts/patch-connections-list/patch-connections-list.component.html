@@ -5,6 +5,7 @@
                                     [index]="reverseOrder ? editorConnections.length - i : i+1"
                                     [isEditing]="isEditing"
                                     [instanceLabelMap]="instanceLabelMap"
+                                    [noteSync$]="effectiveNoteSync$"
                                     (remove$)="dataService.removeConnectionFromEditor$.next($event)"
       ></app-patch-connection-minimal>
     </lib-clean-card>

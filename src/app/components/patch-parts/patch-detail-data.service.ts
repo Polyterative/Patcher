@@ -105,7 +105,9 @@ export class PatchDetailDataService implements OnDestroy {
   removeConnectionFromEditor$ = new Subject<PatchConnection>();
   readonly deletePatch$ = new Subject<number>();
   /** Serializes connection writes to the backend (mirrors rack's requestRackedModulesDbSync$). */
-  private readonly requestConnectionDbSync$ = new Subject<void>();
+  readonly requestConnectionDbSync$ = new Subject<void>();
+  /** Targeted single-row note sync — emits the full PatchConnection whose notes changed. */
+  readonly requestNoteSync$ = new Subject<PatchConnection>();
   //
   // Module instances
   patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
@@ -425,6 +427,21 @@ export class PatchDetailDataService implements OnDestroy {
             })
           );
         }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe();
+    
+    // Targeted note auto-save: switchMap is correct (last value wins, idempotent write)
+    this.requestNoteSync$
+      .pipe(
+        switchMap(conn =>
+          this.backend.update.patchConnectionNoteSilent(conn).pipe(
+            catchError(err => {
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save note — check your connection.');
+              return EMPTY;
+            })
+          )
+        ),
         takeUntil(this.destroyEvent$)
       )
       .subscribe();

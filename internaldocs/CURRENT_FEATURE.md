@@ -10,8 +10,44 @@
 
 ---
 
-## Feature: *(none in progress)*
+## Feature: —
 
-**Status:** 🔵 Idle | **Started:** —
+**Status:** 🔲 Not started
 
-No feature is currently active. Pick the next item from `TODO.md`, define all three layers here, then begin.
+### Root cause
+
+_Fill in before coding._
+
+### Key files
+
+| File | Role |
+|------|------|
+|      |      |
+
+### Data-flow analysis
+
+_Fill in before coding._
+
+### Constraints
+
+_Fill in before coding._
+
+---
+
+### Implementation Steps
+
+#### Layer 1 — MVP
+
+- [ ] L1-1
+- [ ] L1-2
+- [ ] L1-3 — Validate.
+
+#### Layer 2 — Structural
+
+- [ ] L2-1
+- [ ] L2-2 — Validate.
+
+#### Layer 3 — Polish
+
+- [ ] L3-1
+- [ ] L3-2 — Validate.
