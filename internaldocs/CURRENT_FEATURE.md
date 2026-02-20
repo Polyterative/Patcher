@@ -10,34 +10,4 @@
 
 ---
 
-## Feature: <name>
-
-**Status:** 🔴 Not started
-**Started:** <date>
-**Key files (to read first):**
-
-- `path/to/file` — why it matters
-
----
-
-### Goal
-
-<one paragraph>
-
----
-
-### Problem
-
-<what is broken or missing>
-
----
-
-### Gotchas / Discoveries
-
-- <note>
-
----
-
-### Steps
-
-- [ ] Step 1 —
+*(No feature in progress. Pick a task from [TODO.md](./TODO.md) to start.)*

@@ -997,6 +997,19 @@ export class SupabaseService extends SubManager {
           cacheBust(['patches', 'patchConnections'])
         );
     },
+    /** Silent variant — same as patch but without success toast. For auto-save. */
+    patchSilent: (data: Patch) => {
+      data.author = undefined;
+      return rxFrom(
+        this.supabase.from(DbPaths.patches)
+          .update(data)
+          .eq('id', data.id)
+          .single()
+      )
+        .pipe(
+          cacheBust(['patches', 'patchConnections'])
+        );
+    },
     modules: (data: DbModule[]) => {
       const transformedData = data.map(datum => {
         const dbData: any = {...datum};
@@ -1047,6 +1060,11 @@ export class SupabaseService extends SubManager {
     patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
       .pipe(
         tap(x => SharedConstants.showSuccessUpdate(this.snackBar)),
+        cacheBust(['patchConnections', 'patches'])
+      ),
+    /** Silent variant — same as patchConnections but without success toast. For auto-save. */
+    patchConnectionsSilent: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
+      .pipe(
         cacheBust(['patchConnections', 'patches'])
       ),
     patchModuleInstanceLabel: (id: number, instance_label: string | null) => rxFrom(
