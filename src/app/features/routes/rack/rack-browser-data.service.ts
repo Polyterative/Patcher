@@ -35,6 +35,7 @@ export type RackList = RackMinimal[] | null;
 export class RackBrowserDataService implements OnDestroy {
   racksList$ = new BehaviorSubject<RackList>(null);
   updateRacksList$ = new Subject<void>();
+  resetForm$ = new Subject<void>();
   
   ////
   serversideTableRequestData = {
@@ -189,6 +190,18 @@ export class RackBrowserDataService implements OnDestroy {
           this.onFilterEvent(x);
           // this.updateData$.next();
         });
+    
+    this.resetForm$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        this.fields.search.control.setValue('', {emitEvent: false});
+        this.fields.order.control.setValue({id: 'updated', name: 'Updated ↓'}, {emitEvent: false});
+        this.serversideTableRequestData.filter$.next('');
+        this.serversideTableRequestData.sort$.next(['updated', 'desc']);
+        this.serversideTableRequestData.skip$.next(0);
+        this.paginatorToFistPage$.next();
+        this.updateRacksList$.next();
+      });
   }
   
   ngOnDestroy(): void {

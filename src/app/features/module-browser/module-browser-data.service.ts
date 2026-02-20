@@ -370,28 +370,22 @@ export class ModuleBrowserDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(() => {
-        this.backend.cacheResetter$.next([
-          "modules"
-        ]);
-        
+        this.backend.cacheResetter$.next(['modules']);
+
         this.fields.name.control.setValue('', {emitEvent: false});
-          
-          this.fields.order.control.setValue(this.orderStartingValue);
-          this.fields.manufacturers.control.setValue('');
-          this.fields.hp.control.setValue('');
-          this.fields.hpCondition.control.setValue({
-            id: '=',
-            name: 'exactly'
-          });
-        this.fields.standard.control.setValue({
-          id: undefined,
-          name: 'All'
-        });
+        this.fields.description.control.setValue('', {emitEvent: false});
+        this.fields.order.control.setValue(this.orderStartingValue, {emitEvent: false});
+        this.fields.manufacturers.control.setValue('', {emitEvent: false});
+        this.fields.hp.control.setValue('', {emitEvent: false});
+        this.fields.hpCondition.control.setValue({id: '=', name: 'exactly'}, {emitEvent: false});
+        this.fields.standard.control.setValue({id: undefined, name: 'All'}, {emitEvent: false});
         
-        this.fields.description.control.setValue('');
+        this.serversideTableRequestData.filter$.next('');
+        this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
+        this.serversideTableRequestData.skip$.next(0);
         this.paginatorToFistPage$.next();
-        }
-      );
+        this.updateModulesList$.next();
+      });
     
     this.fields.name.control.valueChanges
       .pipe(
