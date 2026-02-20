@@ -44,6 +44,7 @@ import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat
 import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-connection-stats.pipe';
 import { PatchConnectionCopiesPipe } from 'src/app/components/patch-parts/patch-connection-copies.pipe';
+import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 
@@ -57,7 +58,8 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
     PatchGraphComponent,
     PatchConnectionsListComponent,
     PatchConnectionStatsPipe,
-    PatchConnectionCopiesPipe
+    PatchConnectionCopiesPipe,
+    PatchConnectionUniqueModulesPipe
   ],
   exports:      [
     PatchMinimalComponent,
@@ -66,7 +68,8 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
     PatchGraphComponent,
     PatchConnectionsListComponent,
     PatchConnectionStatsPipe,
-    PatchConnectionCopiesPipe
+    PatchConnectionCopiesPipe,
+    PatchConnectionUniqueModulesPipe
   ],
   providers:    [PatchDetailDataService],
   imports: [
