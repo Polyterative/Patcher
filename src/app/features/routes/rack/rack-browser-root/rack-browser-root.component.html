@@ -4,18 +4,19 @@
                          class="racksBG"
                          description="Browse and discover racks, get GAS and iterate on your setup"
   >
-    <div class="col"
-    >
-      <div fxLayout="row"
-           fxLayout.lt-sm="column"
-           fxLayoutGap="1rem"
-      >
+    <div class="sidebar-layout">
+      
+      <!-- ── Left sidebar: all filters ── -->
+      <aside class="filter-sidebar col gap1">
+        
+        <span class="filter-sidebar__heading">Filters</span>
+        
         <lib-mat-form-entity [control]="dataService.fields.search.control"
                              [type]="dataService.formTypes.TEXT"
                              [label]="dataService.fields.search.label"
                              iconL1="search"
         ></lib-mat-form-entity>
-        
+
         <lib-mat-form-entity [control]="dataService.fields.order.control"
                              [options$]="dataService.fields.order.options$"
                              [type]="dataService.formTypes.SELECT"
@@ -23,23 +24,35 @@
                              [label]="dataService.fields.order.label"
                              iconL1="sort"
         ></lib-mat-form-entity>
-  
-        <div fxFlex="grow"></div>
-      </div>
+        
+        <div class="col gap1">
+          <button mat-stroked-button
+                  (click)="dataService.resetForm$.next()"
+                  [matTooltip]="'Reset all filters'"
+          >
+            <mat-icon>refresh</mat-icon>
+            Reset filters
+          </button>
+        </div>
       
-      <app-rack-list [data$]="dataService.racksList$"
-                     [viewConfig]="viewConfig"
-      ></app-rack-list>
-      <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
-                     [pageSizeOptions]="[20,25,50,100]"
-                     [length]="dataService.serversideAdditionalData.itemsCount$|async"
-                     (page)="dataService.onPageEvent($event)"
-                     showFirstLastButtons
-                     style="margin-top:1rem;"
-      ></mat-paginator>
-      <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
-                                         [updateData$]="dataService.updateRacksList$"
-      ></lib-auto-update-loading-indicator>
+      </aside>
+      
+      <!-- ── Right column: results ── -->
+      <div class="browser-content-area col gap1">
+        <app-rack-list [data$]="dataService.racksList$"
+                       [viewConfig]="viewConfig"
+        ></app-rack-list>
+        <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
+                       [pageSizeOptions]="[20,25,50,100]"
+                       [length]="dataService.serversideAdditionalData.itemsCount$|async"
+                       (page)="dataService.onPageEvent($event)"
+                       showFirstLastButtons
+        ></mat-paginator>
+        <lib-auto-update-loading-indicator [data$]="dataService.racksList$"
+                                           [updateData$]="dataService.updateRacksList$"
+        ></lib-auto-update-loading-indicator>
+      </div>
+    
     </div>
   </lib-hero-content-card>
 </div>

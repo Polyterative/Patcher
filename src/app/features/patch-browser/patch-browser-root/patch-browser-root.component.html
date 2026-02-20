@@ -4,18 +4,19 @@
                          class="patchesBG"
                          description="Browse and discover patches, get inspired and exchange ideas"
   >
-    <div class="col gap"
-    >
-      <div fxLayout="row"
-           fxLayout.lt-sm="column"
-           fxLayoutGap="1rem"
-      >
+    <div class="sidebar-layout">
+      
+      <!-- ── Left sidebar: all filters ── -->
+      <aside class="filter-sidebar col gap1">
+        
+        <span class="filter-sidebar__heading">Filters</span>
+        
         <lib-mat-form-entity [control]="dataService.fields.search.control"
                              [type]="dataService.formTypes.TEXT"
                              [label]="dataService.fields.search.label"
                              iconL1="search"
         ></lib-mat-form-entity>
-        
+
         <lib-mat-form-entity [control]="dataService.fields.order.control"
                              [options$]="dataService.fields.order.options$"
                              [type]="dataService.formTypes.SELECT"
@@ -23,24 +24,35 @@
                              [label]="dataService.fields.order.label"
                              iconL1="sort"
         ></lib-mat-form-entity>
-  
-        <div fxFlex="grow"></div>
-      </div>
+        
+        <div class="col gap1">
+          <button mat-stroked-button
+                  (click)="dataService.resetForm$.next()"
+                  [matTooltip]="'Reset all filters'"
+          >
+            <mat-icon>refresh</mat-icon>
+            Reset filters
+          </button>
+        </div>
       
-      <app-patch-list [data$]="dataService.patchesList$"
-                      [viewConfig]="viewConfig"
-      ></app-patch-list>
-      <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
-                     [pageSizeOptions]="[20,25,50,100]"
-                     [length]="dataService.serversideAdditionalData.itemsCount$|async"
-                     (page)="dataService.onPageEvent($event)"
-                     showFirstLastButtons
-                     style="margin-top:1rem;"
-      ></mat-paginator>
-      <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
-                                          [updateData$]="dataService.updatePatchesList$"
-      ></lib-auto-content-loading-indicator>
+      </aside>
+      
+      <!-- ── Right column: results ── -->
+      <div class="browser-content-area col gap1">
+        <app-patch-list [data$]="dataService.patchesList$"
+                        [viewConfig]="viewConfig"
+        ></app-patch-list>
+        <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
+                       [pageSizeOptions]="[20,25,50,100]"
+                       [length]="dataService.serversideAdditionalData.itemsCount$|async"
+                       (page)="dataService.onPageEvent($event)"
+                       showFirstLastButtons
+        ></mat-paginator>
+        <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
+                                            [updateData$]="dataService.updatePatchesList$"
+        ></lib-auto-content-loading-indicator>
+      </div>
+    
     </div>
-    <!--  <pre>{{(dataService.data$|async)|json}}</pre>-->
   </lib-hero-content-card>
 </div>
