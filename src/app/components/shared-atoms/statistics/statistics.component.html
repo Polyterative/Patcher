@@ -1,8 +1,8 @@
-@if (statistics && statistics.length > 0) {
+@if (visibleStatistics && visibleStatistics.length > 0) {
   <lib-hero-content-card [titleNormal]="title ?? ''">
     <div style="width: 100%">
       <div class="rowwrap gap2">
-        @for (statistic of statistics; track statistic) {
+        @for (statistic of visibleStatistics; track statistic) {
           <div>
             <div style="min-width: 8rem">
               <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
