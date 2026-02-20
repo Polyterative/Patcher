@@ -66,7 +66,9 @@
             [statistics]="[
             { name: 'Cables', value: stats.totalCables, icon: 'cable' },
             { name: 'Modules', value: stats.uniqueModules, icon: 'view_module' },
-            { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' }
+            { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' },
+            { name: 'Cables / module', value: stats.avgCablesPerModule, icon: 'insights' },
+            { name: 'Annotated', value: stats.annotatedConnections, icon: 'edit_note' }
           ]"></app-statistics>
         }
       }
