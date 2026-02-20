@@ -16,6 +16,7 @@
             </lib-clean-card>
           </div>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <app-patch-details [data]="data"></app-patch-details>
           <ng-template *ngTemplateOutlet="connectionList"></ng-template>
           <app-comments-root></app-comments-root>
@@ -35,6 +36,7 @@
             </app-patch-minimal>
           </lib-clean-card>
           <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+          <ng-template *ngTemplateOutlet="moduleCopiesSummary"></ng-template>
           <app-comments-root></app-comments-root>
         </div>
         <div class="col gap1"
@@ -65,21 +67,40 @@
       }
     }
   </ng-template>
+  <ng-template #moduleCopiesSummary>
+    @if ((dataService.multiInstanceSummary$|async); as summary) {
+      @if (summary.length > 0) {
+        <lib-hero-content-card titleNormal="Module Copies">
+          <div class="col gap0">
+            @for (entry of summary; track entry.moduleId) {
+              <div class="row gap1" style="align-items: center">
+                <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">content_copy</mat-icon>
+                <span>
+                    <strong>{{ entry.moduleName }}</strong>
+                    <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
+                    &nbsp;×&thinsp;{{ entry.instanceCount }}
+                  <!--                    <span style="opacity: 0.5; font-size: 0.85em">&nbsp;{{ entry.labels.join(', ') }}</span>-->
+                  </span>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+      }
+    }
+  </ng-template>
   <ng-template #connectionList>
     @if ({
       connections: (dataService.patchConnections$|async),
       instanceLabelMap: (dataService.instanceLabelMap$|async)
     }; as bagA) {
       @if (data && bagA.connections && bagA.connections.length > 0) {
-        @if (!(dataService.patchEditingPanelOpenState$|async)) {
-          <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
-          >
-            <app-patch-connections-list [editorConnections]="bagA.connections"
-                                        [isEditing]="false"
-                                        [instanceLabelMap]="bagA.instanceLabelMap"
-            ></app-patch-connections-list>
-          </lib-hero-content-card>
-        }
+        <lib-hero-content-card [titleNormal]="bagA.connections.length+' Connections'"
+        >
+          <app-patch-connections-list [editorConnections]="bagA.connections"
+                                      [isEditing]="false"
+                                      [instanceLabelMap]="bagA.instanceLabelMap"
+          ></app-patch-connections-list>
+        </lib-hero-content-card>
       }
     }
   </ng-template>
