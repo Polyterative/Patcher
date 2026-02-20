@@ -18,7 +18,7 @@
     </div>
   }
 </div>
-<div
+<div style="height: 100%; width: 100%;"
 >
   @if (nodes$|async; as nodes) {
     @if (edges$|async; as edges) {
@@ -27,7 +27,6 @@
           @if (nodes.length > 0 && edges.length > 0) {
             <lib-graph [nodes]="nodes"
                        [edges]="edges"
-                       style="height: 53.5rem;width: 100%;"
                        class="animate-fadein-slowest"
                        [@enter]
             ></lib-graph>

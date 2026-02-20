@@ -36,14 +36,6 @@
           ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
-      @if (bag.data && bag.patchEditingPanelOpenState) {
-      <lib-hero-content-card titleNormal="Connections Editor"
-      >
-        <app-patch-editor [data]="(bag.data)"
-        ></app-patch-editor>
-        <!--        </div>-->
-      </lib-hero-content-card>
-      }
     </div>
   }
   <ng-template #patch>

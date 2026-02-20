@@ -53,3 +53,9 @@ $palette: (
 .instances {
   background-color: color.adjust(map.get($palette, c), $alpha: -0.7);
 }
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
