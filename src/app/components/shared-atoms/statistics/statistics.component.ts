@@ -23,6 +23,10 @@ export class StatisticsComponent implements OnInit {
     icon?: string;
   }[] | null;
   
+  get visibleStatistics() {
+    return this.statistics?.filter(s => s.value > 0) ?? [];
+  }
+  
   constructor() {
   }
   

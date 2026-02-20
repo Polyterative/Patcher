@@ -12,8 +12,10 @@ export interface PatchConnectionStats {
   uniqueModules: number;
   /** Number of output CVs that are connected to more than one input (multiples). */
   multiplesCount: number;
-  /** Number of unique module instances (module_id + instance_id pairs). Equals uniqueModules when no multi-instance modules exist. */
-  totalInstances: number;
+  /** Average number of cables per module, rounded to 1 decimal place. */
+  avgCablesPerModule: number;
+  /** Number of connections that have a user note attached. */
+  annotatedConnections: number;
 }
 
 /**
@@ -52,15 +54,15 @@ export class PatchConnectionStatsPipe implements PipeTransform {
     });
     const multiplesCount = Array.from(outputUseCounts.values()).filter(count => count > 1).length;
     
-    // Count unique module instances: (module_id, instance_id) pairs.
-    // When instance_id is undefined, the module counts as a single instance.
-    const instanceKeys = new Set<string>();
-    connections.forEach(c => {
-      instanceKeys.add(`${ c.a.module.id }_${ c.instance_id_a ?? 'none' }`);
-      instanceKeys.add(`${ c.b.module.id }_${ c.instance_id_b ?? 'none' }`);
-    });
-    const totalInstances = instanceKeys.size;
+    // Average cables per module: each cable has two endpoints, total endpoint
+    // uses = totalCables * 2, divide by unique module count for a density figure.
+    const avgCablesPerModule = uniqueModules > 0
+      ? Math.round((totalCables * 2 / uniqueModules) * 10) / 10
+      : 0;
     
-    return {totalCables, uniqueModules, multiplesCount, totalInstances};
+    // Annotated: cable has a non-empty note
+    const annotatedConnections = connections.filter(c => !!c.notes?.trim()).length;
+    
+    return {totalCables, uniqueModules, multiplesCount, avgCablesPerModule, annotatedConnections};
   }
 }
