@@ -26,28 +26,6 @@
     </app-module-minimal>
   </div>
   
-  @if (isEditing && !isCreator) {
-    @if (showNotes) {
-      <lib-mat-form-entity [type]="types.AREA"
-                           [control]="notes.control"
-                           label="Notes"
-                           [disabled]="!isEditing"
-                           [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
-                           [ngClass]="{'padT0':notes.control.value.length>0}"
-                           iconL1="note"
-                           (focusout)="onNoteBlur()"
-      ></lib-mat-form-entity>
-    } @else {
-      <button mat-button
-              class="add-note-btn"
-              (click)="showNoteInput()"
-      >
-        <mat-icon>note_add</mat-icon>
-        Add note
-      </button>
-    }
-  }
-  
   @if (!isEditing) {
     <div class="row gap0 padT0"
     >
@@ -62,12 +40,37 @@
     </div>
   }
   @if (isEditing) {
-    <div class="row gap0 padT0 space-between parent">
-      <mat-icon [matTooltip]="isCreator?'Clear selection':'Remove connection'"
+    <div class="row gap0 padT0 space-between parent editing-row">
+      <div class="row gap0 action-icons">
+        <button mat-icon-button
+                [matTooltip]="isCreator?'Clear selection':'Remove connection'"
                 (click)="remove$.next(data)"
-                class="transparentize-quarter clickable opacizeOnHover deleteIcon danger-action"
-      >delete
-      </mat-icon>
+                class="transparentize-quarter opacizeOnHover danger-action"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+        @if (!isCreator && !showNotes) {
+          <button mat-icon-button
+                  matTooltip="Add note"
+                  (click)="showNoteInput()"
+                  class="transparentize-quarter opacizeOnHover"
+          >
+            <mat-icon>note_add</mat-icon>
+          </button>
+        }
+      </div>
+      @if (!isCreator && showNotes) {
+        <lib-mat-form-entity class="note-inline"
+                             [type]="types.AREA"
+                             [control]="notes.control"
+                             label="Notes"
+                             [disabled]="!isEditing"
+                             [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
+                             [ngClass]="{'padT0':notes.control.value.length>0}"
+                             iconL1="note"
+                             (focusout)="onNoteBlur()"
+        ></lib-mat-form-entity>
+      }
       @if (isCreator) {
         <app-brand-primary-button
           (click$)="create$.next(data)"
