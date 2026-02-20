@@ -13,6 +13,7 @@ import {
   BehaviorSubject,
   EMPTY,
   forkJoin,
+  merge,
   Observable,
   of,
   ReplaySubject,
@@ -20,6 +21,9 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  concatMap,
+  debounceTime,
+  distinctUntilChanged,
   filter,
   map,
   pairwise,
@@ -96,8 +100,9 @@ export class PatchDetailDataService implements OnDestroy {
   });
   confirmSelectedConnection$ = new Subject<void>();
   removeConnectionFromEditor$ = new Subject<PatchConnection>();
-  readonly savePatchEditing$ = new Subject<void>();
   readonly deletePatch$ = new Subject<number>();
+  /** Serializes connection writes to the backend (mirrors rack's requestRackedModulesDbSync$). */
+  private readonly requestConnectionDbSync$ = new Subject<void>();
   //
   // Module instances
   patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
@@ -212,6 +217,28 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(input => this.singlePatchData$.value.description = input);
+    
+    // Auto-save patch metadata (name/description) with debounce
+    merge(
+      this.formData.name.control.valueChanges,
+      this.formData.description.control.valueChanges
+    ).pipe(
+      debounceTime(800),
+      distinctUntilChanged(),
+      withLatestFrom(this.singlePatchData$),
+      filter(([_, patch]) => !!patch),
+      filter(() => this.formData.name.control.valid && this.formData.description.control.valid),
+      switchMap(([_, patch]) =>
+        this.backend.update.patchSilent({...patch}).pipe(
+          catchError(err => {
+            console.error('Failed to auto-save patch metadata:', err);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+            return EMPTY;
+          })
+        )
+      ),
+      takeUntil(this.destroyEvent$)
+    ).subscribe();
     
     this.singlePatchData$
       .pipe(
@@ -344,6 +371,7 @@ export class PatchDetailDataService implements OnDestroy {
             ...patchConnections,
             newConnection
           ]);
+          this.requestConnectionDbSync$.next();
           
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
         } else {
@@ -360,36 +388,43 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.editorConnections$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([x, data]) => this.editorConnections$.next(
+      .subscribe(([x, data]) => {
+        this.editorConnections$.next(
           data.filter(
             connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id
               && connection.instance_id_a === x.instance_id_a
               && connection.instance_id_b === x.instance_id_b))
-        )
-      );
+        );
+        this.requestConnectionDbSync$.next();
+      });
     
-    this.savePatchEditing$
+    // Auto-save connections: serialize writes with concatMap to prevent race conditions
+    this.requestConnectionDbSync$
       .pipe(
         withLatestFrom(this.editorConnections$, this.singlePatchData$),
-        switchMap(([_, patchConnections, patch]) => {
+        concatMap(([_, connections, patch]) => {
           if (!patch) { return of(null); }
-          if (patchConnections === null) { // connections not loaded yet, only patch update
-            return this.backend.update.patch(patch);
+          if (connections === null) { return of(null); }
+          if (connections.length === 0) {
+            return this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
+              catchError(err => {
+                console.error('Failed to save connections:', err);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+                return EMPTY;
+              })
+            );
           }
-          if (patchConnections.length === 0) { // user cleared all connections
-            return this.backend.delete.patchConnectionsForPatch(patch.id)
-              .pipe(switchMap(() => this.backend.update.patch(patch)));
-          }
-          return this.backend.update.patchConnections(patchConnections)
-            .pipe(switchMap(() => this.backend.update.patch(patch)));
+          return this.backend.update.patchConnectionsSilent(connections).pipe(
+            catchError(err => {
+              console.error('Failed to save connections:', err);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+              return EMPTY;
+            })
+          );
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(() => {
-        if (this.singlePatchData$.value) {
-          this.updateSinglePatchData$.next(this.singlePatchData$.value.id);
-        }
-      });
+      .subscribe();
     
     this.deletePatch$
       .pipe(
@@ -637,6 +672,7 @@ export class PatchDetailDataService implements OnDestroy {
             return changed ? patched : conn;
           });
           this.editorConnections$.next(scrubbed);
+          this.requestConnectionDbSync$.next();
         }
         
         // Renumber surviving instances of this module sequentially

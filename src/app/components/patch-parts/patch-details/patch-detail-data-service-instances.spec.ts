@@ -86,7 +86,9 @@ describe('PatchDetailDataService - Instance Management', () => {
       },
       update: {
         patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null})),
+        patchSilent: jasmine.createSpy('patchSilent').and.returnValue(of({data: null, error: null})),
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of({data: null, error: null})),
+        patchConnectionsSilent: jasmine.createSpy('patchConnectionsSilent').and.returnValue(of({data: null, error: null})),
         patchModuleInstanceLabel: jasmine.createSpy('patchModuleInstanceLabel').and.callFake(
           (id: number, label: string | null) => {
             // Look up the module_id from the service's current state
