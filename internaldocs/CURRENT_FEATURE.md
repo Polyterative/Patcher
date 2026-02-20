@@ -1,31 +1,17 @@
 # Current Feature / AI RAM
 
-> **Rules for AI agents using this file:**
-> 1. **Read this file at the start of every session** — it describes the feature currently being developed.
-> 2. **Keep it updated as you work** — check off steps, add discoveries.
-> 3. **One feature at a time** — when a feature is complete, archive to [COMPLETED.md](./COMPLETED.md),
-     > then reset this file to the Empty Template at the bottom of this file.
-> 4. **This file owns the detail; TODO.md owns the backlog.** — implementation steps, gotchas, file names live here.
-     > TODO.md only holds a one-line entry per feature while it is in progress.
+> **Rules for AI agents:**
+> 1. Read this file at the start of every session.
+> 2. Keep it updated — check off steps, add discoveries.
+> 3. One feature at a time — archive to [COMPLETED.md](./COMPLETED.md) when done, then reset.
+> 4. This file owns implementation detail; `TODO.md` owns the backlog.
+> 5. **Every feature uses three layers** (MVP → Structural → Polish). Define all three before coding. Complete each
+     layer before starting the next. Layout before interactions.
 
 ---
 
-## Feature: (none)
+## Feature: *(none in progress)*
 
-**Status:** Idle
-**Started:** —
-**Key files (to read first):**
+**Status:** 🔵 Idle | **Started:** —
 
-- (none)
-
----
-
-### Goal
-
-(Describe the feature goal here when a new task is picked up.)
-
----
-
-### Steps
-
-- [ ] (Steps will be added when a feature is picked up from TODO.md backlog.)
+No feature is currently active. Pick the next item from `TODO.md`, define all three layers here, then begin.

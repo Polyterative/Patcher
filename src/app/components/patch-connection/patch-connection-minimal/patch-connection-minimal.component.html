@@ -27,14 +27,25 @@
   </div>
   
   @if (isEditing && !isCreator) {
-    <lib-mat-form-entity [type]="types.AREA"
-                         [control]="notes.control"
-                         label="Notes"
-                         [disabled]="!isEditing"
-                         [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
-                         [ngClass]="{'padT0':notes.control.value.length>0}"
-                         iconL1="note"
-    ></lib-mat-form-entity>
+    @if (showNotes) {
+      <lib-mat-form-entity [type]="types.AREA"
+                           [control]="notes.control"
+                           label="Notes"
+                           [disabled]="!isEditing"
+                           [hint]="notes.control.value.length>900?notes.control.value.length+'/999':undefined"
+                           [ngClass]="{'padT0':notes.control.value.length>0}"
+                           iconL1="note"
+                           (focusout)="onNoteBlur()"
+      ></lib-mat-form-entity>
+    } @else {
+      <button mat-button
+              class="add-note-btn"
+              (click)="showNoteInput()"
+      >
+        <mat-icon>note_add</mat-icon>
+        Add note
+      </button>
+    }
   }
   
   @if (!isEditing) {
