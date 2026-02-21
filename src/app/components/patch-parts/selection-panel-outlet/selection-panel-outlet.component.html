@@ -5,17 +5,46 @@
         <mat-icon class="panel-icon">cable</mat-icon>
         <span class="panel-title">Your selection</span>
         <!-- global close removed; per-side deselects are shown near the selected slot -->
-        <ng-container *ngIf="(bridge.confirmed$ | async); else actions">
+        <ng-container *ngIf="bridge.confirmed$ | async">
           <span class="panel-confirmed">
             <mat-icon>check_circle</mat-icon>
             Recorded
           </span>
         </ng-container>
-        <ng-template #actions></ng-template>
       </div>
       
       @if (sel.a && sel.b) {
-        <!-- Both sides selected: show connection preview + confirm -->
+        <!-- Both sides selected: show per-side deselects + connection preview + confirm -->
+        <div class="panel-preview-actions">
+          <div class="panel-slot">
+            <mat-icon class="slot-icon">call_made</mat-icon>
+            <div class="slot-body">
+              <div class="slot-title">
+                <strong>{{ sel.a.cv.module.name }}</strong>
+                <button mat-icon-button class="deselect-chip" matTooltip="Deselect output"
+                        (click)="bridge.resetA$.next()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <div class="slot-cv">{{ sel.a.cv.name }}</div>
+            </div>
+          </div>
+          <div class="panel-slot">
+            <mat-icon class="slot-icon">call_received</mat-icon>
+            <div class="slot-body">
+              <div class="slot-title">
+                <!-- Hide repeated module name when both are same -->
+                <strong *ngIf="sel.a.cv.module.id !== sel.b.cv.module.id">{{ sel.b.cv.module.name }}</strong>
+                <button mat-icon-button class="deselect-chip" matTooltip="Deselect input"
+                        (click)="bridge.resetB$.next()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <div class="slot-cv">{{ sel.b.cv.name }}</div>
+            </div>
+          </div>
+        </div>
+        
         <app-patch-connection-minimal
           [data]="{
             a: sel.a.cv,
@@ -25,6 +54,7 @@
           [isEditing]="true"
           [isCreator]="true"
           [instanceLabelMap]="(bridge.instanceLabelMap$ | async)"
+          [confirmed]="(bridge.confirmed$ | async)"
           (remove$)="bridge.reset$.next()"
           (create$)="bridge.confirm$.next()"
         ></app-patch-connection-minimal>
@@ -32,11 +62,11 @@
         <!-- Only one side selected: show step hint + per-side deselect -->
         <div class="panel-hint">
           <mat-icon class="hint-icon">arrow_forward</mat-icon>
-          @if (sel.a) {
-            Output selected — now pick an input
-          } @else {
-            Input selected — now pick an output
-          }
+        @if (sel.a) {
+          Output selected — now pick an input
+        } @else {
+          Input selected — now pick an output
+        }
         </div>
         <div class="panel-a-label">
           <mat-icon class="hint-icon">@if (sel.a) {
