@@ -8,6 +8,8 @@
 
 | Feature                                                                     | Date  | Notes                                                                                       |
 |-----------------------------------------------------------------------------|-------|---------------------------------------------------------------------------------------------|
+| Safari image export fix                                                     | 02-21 | Replaced `html-to-image` with `modern-screenshot`; 1 file, 2 call sites (`domToJpeg`)       |
+| Patch editor UX — CV badge, inline labels, Add Copy flicker fix             | 02-21 | `connectionCount$` wired, badge shown, inline row labels, trackingId tracks module cards    |
 | Empty state visible on browser pages                                        | 02-21 | `empty-state` component now shows icon + "No results found" text; added MatIconModule       |
 | Private patches                                                             | 02-18 | `public` field, toggle, default public                                                      |
 | Blank module education                                                      | 02-18 | FAQ entry, rack editor tooltip, context menu                                                |
