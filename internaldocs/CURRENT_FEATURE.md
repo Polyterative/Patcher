@@ -10,6 +10,296 @@
 
 ---
 
-## Feature: (none)
+## Feature: Sticky Floating "Current Selection" Panel in Patch Editor
 
-**Status:** No active feature — pick next from `TODO.md`.
+**Status:** 🟡 Active — Layer 4 refinements in progress
+**Design rationale:** `PRODUCT_NEEDS.md` → *Sticky "Current Selection" Panel — Design Analysis*
+
+### Goal
+
+A **floating overlay** at the root stacking context that shows connection-creation progress in real time:
+
+- Not rendered when neither CV is selected (zero layout cost)
+- **Fades in** (150 ms, fade + translateY) the moment *any* CV is selected (either input or output first)
+- Visible above all editor content, anchored bottom-left of the viewport
+- Shows a richer partial-selection card when only one side is chosen, regardless of which side came first
+- Per-side deselect buttons so users can undo just the input or just the output without restarting
+- Single dismiss action (no duplicate close + delete); deselect replaces full cancel when partial
+- Confirm button mutates into a "recorded ✓" indicator after confirming — panel then fades out
+- Falls back to inline layout on narrow viewports (< 800 px)
+
+---
+
+## Architecture — Root-level outlet + bridge service ✅ (implemented)
+
+**Data flow:**
+
+```
+PatchDetailDataService  (module-scoped — writes state)
+         │   mirrors selectedForConnection$, singlePatchData$, instanceLabelMap$ on every change
+         ▼
+SelectionPanelBridgeService  (provided in AppModule — message bus)
+         │   BehaviorSubject<SelectionState>  +  action Subjects (resetA$, resetB$, confirm$)
+         ▼
+SelectionPanelOutletComponent  (standalone, in app.component.html — reads state, emits actions)
+         │   position: fixed, bottom-left, conditionally rendered
+         └─  app-patch-connection-minimal  (existing component)
+```
+
+Action direction: **outlet → bridge → PatchDetailDataService**.
+
+---
+
+### Key Files
+
+| File                                                                      | Change                                                                                                      |
+|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `src/app/components/patch-parts/selection-panel-bridge.service.ts`        | ✅ Done — `@Injectable()`, no `providedIn`; typed; action buses `resetA$`, `resetB$`, `confirm$`             |
+| `src/app/components/patch-parts/selection-panel-outlet/` (3 files)        | ✅ Done — `standalone: true`; conditional rendering; animation; partial-hint; needs Layer 4 refinements      |
+| `src/app/components/patch-parts/patch-detail-data.service.ts`             | ✅ Done — mirrors to bridge; subscribes to action buses; clears on destroy; needs `resetA$`/`resetB$` wiring |
+| `src/app/components/patch-parts/patch-editor/patch-editor.component.html` | ✅ Done — static column removed; full-width modules grid                                                     |
+| `src/app/app.component.html` / `app.module.ts`                            | ✅ Done — outlet rendered at root; bridge provided in AppModule                                              |
+
+---
+
+### Three Layers ✅ Complete
+
+**Layer 1 — MVP (layout):** Bridge service + outlet; PatchDetailDataService → bridge; root render; static column
+removed. ✅  
+**Layer 2 — Structural (behaviour):** Conditional render; confirm/reset; aria; bridge cleared on destroy. ✅  
+**Layer 3 — Polish (animation + responsive):** `fadeSlideUp`; narrow-viewport fallback. ✅
+
+---
+
+### Steps
+
+#### Layers 1–3 ✅ Complete
+
+All scaffold, wiring, animation, and responsive work is done. See COMPLETED.md for detailed history.
+
+---
+
+### Dataflow Optimization Analysis
+
+#### Current state: imperative subscribe-and-mutate pattern
+
+Almost every stream in `PatchDetailDataService` uses the subscribe-and-mutate pattern:
+
+```
+someSource$.pipe(...).subscribe(v => someBehaviorSubject$.next(v));
+```
+
+This works but has compounding problems at scale:
+
+- **Hidden coupling**: `selectedForConnection$` is set by three separate `.subscribe()` calls
+  (`resetSelectedForConnection$`, `clickOnModuleCV$`, and bridge action buses). The only way to understand
+  what drives it is to grep the whole file.
+- **Temporal races**: `withLatestFrom(this.editorConnections$)` reads a snapshot — if
+  `editorConnections$` emits between the trigger and the `withLatestFrom` snap, the stale value is used.
+  `concatMap` on `requestConnectionDbSync$` mitigates this partially but doesn't fix the root cause.
+- **Duplicate state**: `selectedForConnection$` is maintained in `PatchDetailDataService` AND mirrored
+  into `bridge.selectionState$` via a separate subscription. Two sources of truth that can drift if
+  any emission path is missed.
+- **Manual bridge mirroring**: Three separate subscriptions mirror `selectedForConnection$`,
+  `singlePatchData$`, `instanceLabelMap$` to the bridge. Every new field that needs to cross the bridge
+  requires adding another mirror subscription.
+- **`confirmSelectedConnection$` reads `.value` directly**:
+  `const selectedForConnection = this.selectedForConnection$.value` bypasses the reactive chain entirely — no
+  opportunity to compose or intercept.
+- **Instance removal scrubs connections imperatively**: The `.subscribe(removed => { ... })` block
+  does 4 separate imperative operations (update instances, scrub connections, sync, renumber). Hard
+  to test, hard to trace.
+- **No stale-selection guard on instance deletion**: When `removeModuleInstance$` completes, the code
+  scrubs `editorConnections$` but does NOT check whether the removed instance is the one currently
+  selected in `selectedForConnection$`. A dangling ghost selection can then be confirmed and written
+  to the DB with a stale FK.
+
+#### Target pattern: declarative derived streams
+
+The scalable Angular/RxJS pattern is to express derived state as a **single `pipe()` chain that `combineLatest`
+or `merge` all its sources**, and keep `BehaviorSubject` only at the imperative "command" boundaries
+(form inputs, user gestures). Example:
+
+```
+// Instead of:
+this.A$.subscribe(v => this.B$.next(transform(v)));
+
+// Use:
+readonly B$ = this.A$.pipe(map(transform), shareReplay(1));
+```
+
+For `selectedForConnection$` specifically, the clean form is:
+
+```typescript
+readonly
+selectedForConnection$ = merge(
+        this.resetSelectedForConnection$.pipe(map(() => ({a: null, b: null}))),
+        this.clickOnModuleCV$.pipe(
+                scan((state, cv) => cv.kind === 'out'
+                                ? {...state, a: cv}
+                                : {...state, b: cv},
+                        {a: null, b: null}
+                )
+        ),
+        this.bridge.resetA$.pipe(withLatestFrom(...), map(...)),
+        this.bridge.resetB$.pipe(withLatestFrom(...), map(...)),
+        // invalidation: clear stale side when instance is removed
+        this.removeModuleInstance$.pipe(...map
+to
+null
+selection
+if matching...
+),
+).
+pipe(startWith({a: null, b: null}), shareReplay(1));
+```
+
+The bridge then becomes a **pass-through view** — it can subscribe to these declarative streams
+instead of receiving `.next()` calls. Long-term, the bridge itself could be eliminated by letting
+the outlet inject `PatchDetailDataService` directly (with lazy loading guards), but that's out of
+scope here.
+
+#### Specific bugs and gaps identified
+
+| #  | Location                                | Bug / Gap                                                                                                                                                                                                                                                        |
+|----|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| B1 | `patch-detail-data.service.ts` L334–345 | `clickOnModuleCV$` uses `withLatestFrom(selectedForConnection$)` — if two rapid clicks arrive, the second `withLatestFrom` snap could be stale (race window). `scan` is the correct operator here.                                                               |
+| B2 | `patch-detail-data.service.ts` L662–712 | `removeModuleInstance$` scrubs `editorConnections$` but never checks `selectedForConnection$`. If the deleted instance's CV was selected (either `.a` or `.b`), the selection is dangling. Confirming then writes a connection with a now-invalid `instance_id`. |
+| B3 | `selection-panel-outlet` template       | Outer guard `@if (sel.a)` means output-first flow shows the panel, but input-first (`sel.b` only) does not. The panel is invisible until the second click for that order.                                                                                        |
+| B4 | `SelectionPanelBridgeService`           | `reset$` and `confirm$` exist but `resetA$` / `resetB$` do not yet. Per-side deselect is not wired at all.                                                                                                                                                       |
+| B5 | `confirmSelectedConnection$`            | After a successful confirm, `resetSelectedForConnection$` is never called — the old selection stays visible in the bridge until the user clicks something else. The panel shows a stale state.                                                                   |
+| B6 | `SelectionPanelBridgeService`           | Three separate mirror subscriptions (`selectedForConnection$`, `singlePatchData$`, `instanceLabelMap$`) in the service. Adding a fourth field requires touching three places.                                                                                    |
+| B7 | `SelectionPanelBridgeService`           | No `confirmed$` signal. After `confirm$` fires and the connection is recorded, the outlet has no way to show the "Recorded ✓" indicator before the panel fades.                                                                                                  |
+
+#### Optimization plan — what to do (without full rewrite)
+
+A full declarative rewrite of `PatchDetailDataService` is a separate task. The goal here is to fix
+the identified bugs and introduce the bridge improvements needed for Layer 4 UI, while keeping the
+existing subscribe-and-mutate structure stable. Specific targeted changes:
+
+1. **Replace `withLatestFrom` with `scan` in `clickOnModuleCV$`** — eliminates B1 race.
+2. **Add stale-selection guard in `removeModuleInstance$` subscribe** — after scrubbing connections,
+   also call `resetSelectedForConnection$` if the removed instance's id matches `sel.a.cv.instance_id`
+   or `sel.b.cv.instance_id` — fixes B2.
+3. **Add `resetA$`, `resetB$` to bridge; wire in service** — fixes B4, enables 4c deselect UI.
+4. **Add `confirmed$` BehaviorSubject to bridge; emit from service after successful confirm** — fixes B7, enables 4d.
+5. **Auto-reset selection after confirm** — after recording, call `resetSelectedForConnection$.next()` — fixes B5.
+6. **Fix outer guard in outlet template** — `@if (sel.a || sel.b)` — fixes B3.
+
+---
+
+#### Layer 4 — Refinements (in progress)
+
+##### 4a — Panel visible regardless of which side is selected first  *(fixes B3)*
+
+**Bug:** `clickOnModuleCV$` puts an `out` CV into `sel.a` and an `in` CV into `sel.b`. The outlet template gates
+on `@if (sel.a)` — so starting with an `in` click (which sets only `sel.b`) never shows the panel.
+
+- [ ] In the outlet template: change the outer guard from `@if (sel.a)` to `@if (sel.a || sel.b)` so the panel
+  appears for both click orders
+- [ ] In the partial-hint branch (one side only): detect which side is populated and render the right slot:
+     - `sel.a` (output selected): show "Output selected — now pick an input"
+     - `sel.b` (input selected): show "Input selected — now pick an output"
+       Use a computed label: `sel.a ? sel.a : sel.b` for the CV label row; show `kind` chip accordingly
+
+##### 4b — Richer partial-selection card
+
+Currently the partial card only shows module name + CV name. Add:
+
+- [ ] Module **manufacturer name** in a dimmer sub-line (`cv.module.manufacturer?.name`) if available
+- [ ] A direction icon: `call_made` for outputs, `call_received` for inputs — placed left of the CV name
+- [ ] A dimmed "waiting for…" label on the *other* side (e.g. "Waiting for input…" or "Waiting for output…")
+  styled as an empty dashed placeholder slot so the two-slot layout is always visible
+
+##### 4c — Remove duplicate close/cancel; add per-side deselect  *(fixes B4)*
+
+Currently the panel header has a global `close` button, and `app-patch-connection-minimal` also exposes a
+`(remove$)` which resets everything. This is redundant.
+
+- [ ] Add `resetA$` and `resetB$` Subjects to `SelectionPanelBridgeService`
+- [ ] In `PatchDetailDataService`: subscribe `bridge.resetA$` → emit `{ a: null, b: sel.b }` into
+  `selectedForConnection$`; subscribe `bridge.resetB$` → emit `{ a: sel.a, b: null }`
+- [ ] Remove the global `close` button from the panel header entirely
+- [ ] In the partial-hint view: show a small deselect button (`×`) next to the selected CV chip that emits
+  `bridge.resetA$.next()` or `bridge.resetB$.next()` depending on which slot is filled
+- [ ] In the full (both-sides) view: show per-side deselect `×` icons on the input and output slot labels so
+  users can undo one side without cancelling the whole connection
+
+##### 4d — Confirm button → "recorded" indicator  *(fixes B5, B7)*
+
+After `(create$)` is emitted, the connection is saved. The panel currently lingers with stale selection state
+(B5). We want brief positive feedback and then a clean fade-out.
+
+- [ ] Add `confirmed$` BehaviorSubject<boolean> (default `false`) to `SelectionPanelBridgeService`
+- [ ] In `PatchDetailDataService` after successful `isAlreadyInList` check: call
+  `this.bridge.confirmed$.next(true)`, then immediately call `this.resetSelectedForConnection$.next()`
+  (so the selection data is cleared; the outlet stays visible only because `confirmed$` is still `true`)
+- [ ] Ensure `bridge.confirmed$` resets to `false` whenever `reset$`, `resetA$`, or `resetB$` fires
+- [ ] In the outlet template: when `bridge.confirmed$ | async` is `true`, replace the confirm button with a
+  read-only success chip (`check_circle` icon + "Recorded" label, styled in accent green)
+- [ ] After 800 ms auto-dismiss: in the outlet component `ngOnInit`, subscribe to `bridge.confirmed$` and
+  schedule `setTimeout(() => bridge.reset$.next(), 800)` when it becomes `true` — this clears selection and
+  resets `confirmed$`, causing the panel to fade out gracefully
+
+##### 4e — Stale-selection guard on instance deletion  *(fixes B2)*
+
+When `removeModuleInstance$` completes, `editorConnections$` is scrubbed. But `selectedForConnection$` is
+not checked — a dangling CV selection referencing the deleted instance can then be confirmed, writing a DB row
+with an invalid FK.
+
+- [ ] In the `removeModuleInstance$` subscribe block, after scrubbing connections, read
+  `this.selectedForConnection$.value`; if `sel.a?.cv.instance_id === removed.id` or
+  `sel.b?.cv.instance_id === removed.id`, call `this.resetSelectedForConnection$.next()` to clear
+  the dangling selection
+- [ ] Also ensure `bridge.confirmed$` resets to `false` in this path (since reset$ fires, it's covered
+  automatically if the confirmed$ reset is wired to reset$ — see 4d)
+
+##### 4f — Replace `withLatestFrom` with `scan` in CV click handler  *(fixes B1)*
+
+`clickOnModuleCV$` currently uses `withLatestFrom(selectedForConnection$)` — if two rapid clicks arrive
+before the BehaviorSubject ticks, the second snap could be stale.
+
+- [ ] Replace the `withLatestFrom` + `switch` block in `clickOnModuleCV$` with a `scan` operator:
+  ```typescript
+  this.clickOnModuleCV$.pipe(
+    scan(
+      (state, cv) => cv.kind === 'out'
+        ? {...state, a: cv}
+        : {...state, b: cv},
+      {a: null, b: null} as { a: CVConnectionEntity | null; b: CVConnectionEntity | null }
+    ),
+    takeUntil(this.destroyEvent$)
+  ).subscribe(state => this.selectedForConnection$.next(state));
+  ```
+  Note: `scan` accumulates correctly across rapid emissions without a snapshot race. The reset stream
+  must inject a sentinel — either combine with `resetSelectedForConnection$` using `merge` + a resetting
+  scan seed, or keep the existing separate `resetSelectedForConnection$` subscription (simpler, fine for now).
+
+##### 4g — Smoke-test + unit tests
+
+- [ ] Smoke-test: idle → no panel; output-first click → partial hint (output slot); input-first click → partial
+  hint (input slot); both sides → full preview; deselect one side → back to partial; confirm → "Recorded" chip →
+  panel fades; delete instance while selected → selection clears immediately; navigate away → panel gone
+- [ ] Run `yarn test --testPathPattern="patch-editor|patch-detail-data|selection-panel"` and fix breakages
+
+---
+
+### Gotchas / Discoveries
+
+- `SelectionPanelBridgeService` has no `providedIn` metadata. Both `PatchDetailDataService` and
+  `SelectionPanelOutletComponent` resolve it upward to `AppModule` — this is correct and intentional.
+- The animation `@keyframes` is applied to `.panel-card`, not `:host`. Applying `transform` to the `position:fixed`
+  host would create a new stacking context and break fixed positioning.
+- `sel.a` = output CV; `sel.b` = input CV — this matches `clickOnModuleCV$` switch logic in
+  `PatchDetailDataService`. The partial-hint branch must check both to handle either-order flows.
+- `bridge.resetA$` / `resetB$` are new action buses following the same pattern as `reset$` and `confirm$`.
+- The `confirmed$` auto-dismiss timeout lives in the outlet component, not in the service, to keep side effects
+  out of the bridge (which is a pure message bus).
+- `scan` in `clickOnModuleCV$` eliminates the `withLatestFrom` snapshot race. The existing
+  `resetSelectedForConnection$` subscription that zeroes `selectedForConnection$` still works correctly
+  alongside it because `selectedForConnection$` is a BehaviorSubject — resetting it via `.next({a:null,b:null})`
+  is idempotent regardless of `scan` state (the scan seed starts fresh on the next emission since the
+  BehaviorSubject value is the shared truth, not scan's internal accumulator).
+- The stale-selection guard in `removeModuleInstance$` must run **after** the instance is confirmed deleted
+  (inside the final `.subscribe(removed => {...})` block), not in the `switchMap` — consistent with where
+  the connection scrub already lives.

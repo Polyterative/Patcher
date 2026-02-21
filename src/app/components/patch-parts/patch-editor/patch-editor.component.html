@@ -26,43 +26,7 @@
           ></app-patch-connections-list>
         </lib-hero-content-card>
       }
-      <div class="row gap1"
-      >
-        <div class="gap1 col" style="min-width: 26rem"
-        >
-          <lib-hero-content-card class="selection"
-                                 titleNormal="Your selection"
-                                 description="The connection you want to create"
-                                 style="min-width: 26rem; max-width: 26rem"
-                                 [showHelpButton]="true"
-          >
-            @if (bag.selectedForConnection.a && bag.selectedForConnection.b) {
-              <lib-clean-card
-              >
-              <app-patch-connection-minimal [data]="{
-                                                            a:bag.selectedForConnection.a.cv,
-                                                            b:bag.selectedForConnection.b.cv,
-                                                            patch:dataService.singlePatchData$|async
-                                                            }"
-                                            [isEditing]="true"
-                                            [isCreator]="true"
-                                            (remove$)="dataService.resetSelectedForConnection$.next()"
-                                            (create$)="dataService.confirmSelectedConnection$.next()"
-              ></app-patch-connection-minimal>
-              </lib-clean-card>
-            } @else {
-              <div class="animate-fadein-long">
-                <app-advice-tooltip>Click on the ins and outs to create connections
-                </app-advice-tooltip>
-              </div>
-              <div style="height:9rem;width:auto"
-                   fxLayoutAlign="center center"
-              >The connection will appear here
-              </div>
-            }
-          </lib-hero-content-card>
-        </div>
-        <lib-hero-content-card
+      <lib-hero-content-card
           [titleNormal]="'Modules (' + (bag.cards?.length || 0) + ')'"
           class="modulesBG"
           description="Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module."
@@ -125,7 +89,6 @@
             </flexbox-row-fast>
           }
         </lib-hero-content-card>
-      </div>
     </div>
   }
 }

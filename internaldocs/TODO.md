@@ -31,7 +31,10 @@
 
 ## Active
 
-(none)
+### HIGH: UX — Sticky Floating "Current Selection" Panel in Patch Editor
+
+Convert the static `26rem` selection column into a floating overlay; full detail
+in [CURRENT_FEATURE.md](./CURRENT_FEATURE.md).
 
 ---
 
