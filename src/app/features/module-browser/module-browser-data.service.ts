@@ -9,7 +9,6 @@ import {
 } from '@angular/forms';
 import {
   BehaviorSubject,
-  combineLatest,
   merge,
   Observable,
   of,
@@ -23,13 +22,9 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
-  withLatestFrom
+  takeUntil
 } from 'rxjs/operators';
-import {
-  DbModule,
-  MinimalModule
-} from '../../models/module';
+import { MinimalModule } from '../../models/module';
 import {
   FormTypes,
   getCleanedValueId,
@@ -41,31 +36,27 @@ import { PageEvent } from "@angular/material/paginator";
 
 export type ModuleList = MinimalModule[] | null;
 
+const DEFAULT_HP_CONDITION = {id: '=', name: 'exactly'};
+const DEFAULT_STANDARD = {id: undefined, name: 'All'};
+
 @Injectable()
 export class ModuleBrowserDataService implements OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   
   modulesList$ = new BehaviorSubject<ModuleList>(null);
-  userModulesList$ = new BehaviorSubject<DbModule[]>([]);
   updateModulesList$ = new Subject<void>();
   
   serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$: new BehaviorSubject<[string, string]>([
-      '',
-      ''
-    ]) // { example:  "active": "name",// "direction": "desc"// }
+    sort$: new BehaviorSubject<[string, string]>(['', ''])
   };
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
   };
   
-  orderStartingValue = {
-    id: 'updated',
-    name: 'Updated ↓'
-  };
+  readonly orderStartingValue = {id: 'updated', name: 'Updated ↓'};
   
   fields: {
     name: {
@@ -134,32 +125,11 @@ export class ModuleBrowserDataService implements OnDestroy {
   
   paginatorToFistPage$ = new Subject<void>();
   canReset$: Observable<boolean>;
-  private filterStateForced$ = new Subject<void>();
-  private serversideDataPackage$ = combineLatest([
-    this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
-  ]);
   resetForm$: Subject<void> = new Subject<void>();
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
     this.serversideTableRequestData.skip$.next(($event.pageIndex) * $event.pageSize);
-    this.updateModulesList$.next();
-  }
-  
-  onFilterEvent(userText: string) {
-    this.serversideTableRequestData.skip$.next(0);
-    this.serversideTableRequestData.filter$.next(userText);
-    this.updateModulesList$.next();
-  }
-  
-  onSortEvent(column: string, direction = 'asc'): void {
-    this.serversideTableRequestData.sort$.next([
-      column,
-      direction
-    ]);
     this.updateModulesList$.next();
   }
   
@@ -273,47 +243,22 @@ export class ModuleBrowserDataService implements OnDestroy {
         label: 'HP must be...',
         code: 'hpCondition',
         flex: '8rem',
-        control: new UntypedFormControl({
-          id: '=',
-          name: 'exactly'
-        }),
+        control: new UntypedFormControl(DEFAULT_HP_CONDITION),
         type: FormTypes.SELECT,
         options$: of([
-          {
-            id: '=',
-            name: 'exactly'
-          },
-          {
-            id: '!=',
-            name: 'different than'
-          },
-          {
-            id: '>',
-            name: 'more than'
-          },
-          {
-            id: '<',
-            name: 'less than'
-          },
-          {
-            id: '>=',
-            name: 'more or exactly'
-          },
-          {
-            id: '<=',
-            name: 'less or exactly'
-          },
-        
+          {id: '=', name: 'exactly'},
+          {id: '!=', name: 'different than'},
+          {id: '>', name: 'more than'},
+          {id: '<', name: 'less than'},
+          {id: '>=', name: 'more or exactly'},
+          {id: '<=', name: 'less or exactly'},
         ])
       },
       standard: {
         label: 'Standard',
         code: 'standard',
         flex: '8rem',
-        control: new UntypedFormControl({
-          id: undefined,
-          name: 'All'
-        }),
+        control: new UntypedFormControl(DEFAULT_STANDARD),
         type: FormTypes.SELECT,
         options$: of([
           {
@@ -336,48 +281,79 @@ export class ModuleBrowserDataService implements OnDestroy {
       }
     };
     
-    this.canReset$ = combineLatest([
-      this.fields.name.control.valueChanges.pipe(startWith(this.fields.name.control.value)),
-      this.fields.description.control.valueChanges.pipe(startWith(this.fields.description.control.value)),
-      this.fields.manufacturers.control.valueChanges.pipe(startWith(this.fields.manufacturers.control.value)),
-      this.fields.hp.control.valueChanges.pipe(startWith(this.fields.hp.control.value)),
-      this.fields.hpCondition.control.valueChanges.pipe(startWith(this.fields.hpCondition.control.value)),
-      this.fields.standard.control.valueChanges.pipe(startWith(this.fields.standard.control.value)),
-      this.fields.order.control.valueChanges.pipe(startWith(this.fields.order.control.value)),
-    ]).pipe(
-      map(([name, description, manufacturers, hp, hpCondition, standard, order]) =>
-        name !== '' ||
-        description !== '' ||
-        isOption(manufacturers) ||
-        hp !== '' ||
-        (hpCondition && hpCondition.id !== '=') ||
-        (standard && standard.id !== undefined) ||
-        (order && order.id !== this.orderStartingValue.id)
-      ),
+    this.canReset$ = merge(
+      this.fields.name.control.valueChanges,
+      this.fields.description.control.valueChanges,
+      this.fields.manufacturers.control.valueChanges,
+      this.fields.hp.control.valueChanges,
+      this.fields.hpCondition.control.valueChanges,
+      this.fields.standard.control.valueChanges,
+      this.fields.order.control.valueChanges
+    ).pipe(
+      startWith(null),
+      map(() => {
+        const hp = this.fields.hp.control.value;
+        const hpCondition = this.fields.hpCondition.control.value;
+        const standard = this.fields.standard.control.value;
+        const order = this.fields.order.control.value;
+        return (
+          this.fields.name.control.value !== '' ||
+          this.fields.description.control.value !== '' ||
+          isOption(this.fields.manufacturers.control.value) ||
+          (hp !== '' && hp !== null) ||
+          (hpCondition && hpCondition.id !== '=') ||
+          (standard && standard.id !== undefined) ||
+          (order && order.id !== this.orderStartingValue.id)
+        );
+      }),
       distinctUntilChanged(),
       shareReplay(1)
     );
-
-    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
+    
+    // Single merged pipeline drives all filter-field side-effects.
+    // debounceTime collapses the burst of setValue() calls from a reset into one fetch.
+    merge(
+      this.fields.name.control.valueChanges,
+      this.fields.description.control.valueChanges,
+      this.fields.manufacturers.control.valueChanges,
+      this.fields.hp.control.valueChanges,
+      this.fields.hpCondition.control.valueChanges,
+      this.fields.standard.control.valueChanges,
+      this.fields.order.control.valueChanges
+    ).pipe(
+      debounceTime(750),
+      takeUntil(this.destroyEvent$)
+    ).subscribe(() => {
+      const orderVal = this.fields.order.control.value;
+      const nameVal = this.fields.name.control.value ?? '';
+      this.serversideTableRequestData.filter$.next(nameVal);
+      this.serversideTableRequestData.sort$.next([
+        orderVal?.id ?? '',
+        orderVal?.name?.includes('↑') ? 'asc' : 'desc'
+      ]);
+      this.serversideTableRequestData.skip$.next(0);
+      this.paginatorToFistPage$.next();
+      this.updateModulesList$.next();
+    });
     
     this.updateModulesList$
       .pipe(
-        debounceTime(750),
-        withLatestFrom(this.serversideDataPackage$),
-        switchMap(([z, [skip, take, filter, sort]]) => {
-          const sortColumnName: string = sort[0] ? sort[0] : null;
-          const sortDirection = sort[1];
+        switchMap(() => {
+          const skip = this.serversideTableRequestData.skip$.value;
+          const take = this.serversideTableRequestData.take$.value;
+          const filter = this.serversideTableRequestData.filter$.value;
+          const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
+          const standard = this.fields.standard.control.value?.id;
           
-          const standard = this.fields.standard.control.value.id;
-          
-          return this.backend.GET.modules(skip,
+          return this.backend.GET.modules(
+            skip,
             (skip + take) - 1,
             filter,
-            sortColumnName,
-            sortDirection,
+            sortCol || null,
+            sortDir,
             parseInt(getCleanedValueId(this.fields.manufacturers.control)),
             parseInt(this.fields.hp.control.value),
-            this.fields.hpCondition.control.value.id,
+            this.fields.hpCondition.control.value?.id,
             standard,
             this.fields.description.control.value
           );
@@ -390,65 +366,21 @@ export class ModuleBrowserDataService implements OnDestroy {
       });
     
     this.resetForm$
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
+      .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => {
         this.backend.cacheResetter$.next(['modules']);
 
-        this.fields.name.control.setValue('', {emitEvent: false});
-        this.fields.description.control.setValue('', {emitEvent: false});
-        this.fields.order.control.setValue(this.orderStartingValue, {emitEvent: false});
-        this.fields.manufacturers.control.setValue('', {emitEvent: false});
-        this.fields.hp.control.setValue('', {emitEvent: false});
-        this.fields.hpCondition.control.setValue({id: '=', name: 'exactly'}, {emitEvent: false});
-        this.fields.standard.control.setValue({id: undefined, name: 'All'}, {emitEvent: false});
-        
+        this.fields.name.control.setValue('');
+        this.fields.description.control.setValue('');
+        this.fields.order.control.setValue(this.orderStartingValue);
+        this.fields.manufacturers.control.setValue('');
+        this.fields.hp.control.setValue('');
+        this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION);
+        this.fields.standard.control.setValue(DEFAULT_STANDARD);
+
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);
-        this.paginatorToFistPage$.next();
-        this.updateModulesList$.next();
-      });
-    
-    this.fields.name.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(x => {
-        this.paginatorToFistPage$.next();
-        this.onFilterEvent(x);
-      });
-    
-    this.fields.manufacturers.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => this.updateModulesList$.next());
-    
-    this.fields.hp.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => this.updateModulesList$.next());
-    
-    this.fields.hpCondition.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => this.updateModulesList$.next());
-    
-    this.fields.standard.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => this.updateModulesList$.next());
-    
-    this.fields.description.control.valueChanges
-      .pipe(
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => {
         this.paginatorToFistPage$.next();
         this.updateModulesList$.next();
       });
