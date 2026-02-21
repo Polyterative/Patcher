@@ -5,4 +5,15 @@
      class="item-cvitem"
 >
   {{data.name}}
+  @if ((patchService.patchEditingPanelOpenState$ | async) && (connectionCount$ | async) > 0) {
+    <span class="cv-conn-badge"
+          [class.cv-conn-badge--multi]="(connectionCount$ | async) > 1"
+          [@badgeEnter]
+          [@badgeLeave]>
+      <mat-icon class="cv-conn-badge__icon">cable</mat-icon>
+      @for (count of [(connectionCount$ | async)]; track count) {
+        <span [@popOnEnter]>{{ count }}</span>
+      }
+    </span>
+  }
 </div>
