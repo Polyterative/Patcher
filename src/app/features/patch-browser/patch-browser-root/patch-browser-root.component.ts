@@ -13,6 +13,7 @@ import {
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { PatchBrowserDataService } from 'src/app/features/patch-browser/patch-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { MatPaginator } from "@angular/material/paginator";
 
 
@@ -25,6 +26,7 @@ import { MatPaginator } from "@angular/material/paginator";
 })
 export class PatchBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  readonly formTypes = FormTypes;
   viewConfig: PatchMinimalViewConfig = {
     ...defaultPatchMinimalViewConfig,
     hideButtons: true,
