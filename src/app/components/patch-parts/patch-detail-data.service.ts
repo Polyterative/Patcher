@@ -366,7 +366,22 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(acc => {
+        // If this event is a CV click and the new state differs from the previous selection,
+        // clear the confirmed flag synchronously so the outlet immediately switches back to edit mode.
+        if (acc.lastEvent === 'cv') {
+          const prev = this.selectedForConnection$.value || {a: null, b: null};
+          const cur = acc.state || {a: null, b: null};
+          const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
+          const sameA = idOf(prev.a) === idOf(cur.a);
+          const sameB = idOf(prev.b) === idOf(cur.b);
+          if (!(sameA && sameB) && this.bridge.confirmed$.value) {
+            this.bridge.confirmed$.next(false);
+          }
+        }
+        
+        // publish new selection
         this.selectedForConnection$.next(acc.state);
+
         // whenever a reset (any kind) occurs, clear the confirmed flag so outlet shows normal controls
         if (acc.lastEvent && acc.lastEvent.indexOf('reset') === 0) {
           this.bridge.confirmed$.next(false);
@@ -762,6 +777,23 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(v => this.bridge.selectionState$.next(v));
     
+    // Clear confirmed$ whenever the selection actually changes while confirmed is true.
+    // This handles user edits after a confirm (e.g., swapping one side) so the "Recorded" state
+    // doesn't persist incorrectly.
+    this.selectedForConnection$
+      .pipe(
+        pairwise(),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([prev, cur]) => {
+        const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
+        const sameA = idOf(prev.a) === idOf(cur.a);
+        const sameB = idOf(prev.b) === idOf(cur.b);
+        if (!(sameA && sameB) && this.bridge.confirmed$.value) {
+          this.bridge.confirmed$.next(false);
+        }
+      });
+    
     this.singlePatchData$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(v => this.bridge.patchData$.next(v));
@@ -778,6 +810,15 @@ export class PatchDetailDataService implements OnDestroy {
     this.bridge.confirm$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => this.confirmSelectedConnection$.next());
+    
+    // Ensure any new CV click clears confirmed state immediately (defensive guard).
+    this.clickOnModuleCV$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        if (this.bridge.confirmed$.value) {
+          this.bridge.confirmed$.next(false);
+        }
+      });
     
   }
   

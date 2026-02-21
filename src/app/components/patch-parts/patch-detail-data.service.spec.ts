@@ -95,4 +95,29 @@ describe('PatchDetailDataService selection behavior', () => {
     }, 10);
   });
   
+  it('clears confirmed flag when selection changes after confirm', (done) => {
+    const out1: CVConnectionEntity = {cv: {id: 1, name: 'Out1', module: {id: 11, name: 'M'}, instance_id: 100}, kind: 'out'} as any;
+    const inp1: CVConnectionEntity = {cv: {id: 2, name: 'In1', module: {id: 12, name: 'N'}, instance_id: 200}, kind: 'in'} as any;
+    const out2: CVConnectionEntity = {cv: {id: 3, name: 'Out2', module: {id: 13, name: 'O'}, instance_id: 300}, kind: 'out'} as any;
+    
+    // simulate selecting both and confirming
+    service.clickOnModuleCV$.next(out1);
+    service.clickOnModuleCV$.next(inp1);
+    // mark confirmed
+    bridge.confirmed$.next(true);
+    
+    // now change one side (select a different output)
+    bridge.confirmed$.subscribe(() => {
+      // if it toggles, we'll observe; ignore intermediate emissions
+    });
+    
+    // change output to out2
+    service.clickOnModuleCV$.next(out2);
+    
+    setTimeout(() => {
+      expect(bridge.confirmed$.value).toBeFalse();
+      done();
+    }, 10);
+  });
+
 });
