@@ -8,6 +8,7 @@
 
 | Feature                                                                     | Date  | Notes                                                                                       |
 |-----------------------------------------------------------------------------|-------|---------------------------------------------------------------------------------------------|
+| Empty state visible on browser pages                                        | 02-21 | `empty-state` component now shows icon + "No results found" text; added MatIconModule       |
 | Private patches                                                             | 02-18 | `public` field, toggle, default public                                                      |
 | Blank module education                                                      | 02-18 | FAQ entry, rack editor tooltip, context menu                                                |
 | User-submitted manufacturers                                                | 02-19 | Inline creation form, auto-select on create                                                 |
