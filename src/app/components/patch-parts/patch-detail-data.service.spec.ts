@@ -104,18 +104,18 @@ describe('PatchDetailDataService selection behavior', () => {
     service.clickOnModuleCV$.next(out1);
     service.clickOnModuleCV$.next(inp1);
     // mark confirmed
-    bridge.confirmed$.next(true);
+    bridge.record$.next();
     
-    // now change one side (select a different output)
-    bridge.confirmed$.subscribe(() => {
-      // if it toggles, we'll observe; ignore intermediate emissions
-    });
+    // observe confirmed$ (derived observable) and capture its last value
+    let lastConfirmed: boolean | undefined = undefined;
+    const sub = bridge.confirmed$.subscribe(v => lastConfirmed = v);
     
     // change output to out2
     service.clickOnModuleCV$.next(out2);
     
     setTimeout(() => {
-      expect(bridge.confirmed$.value).toBeFalse();
+      expect(lastConfirmed).toBeFalse();
+      sub.unsubscribe();
       done();
     }, 10);
   });

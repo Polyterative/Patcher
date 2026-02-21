@@ -5,6 +5,13 @@ import {
 } from 'rxjs';
 import { CVConnectionEntity } from '../../models/cv';
 import { Patch } from '../../models/patch';
+import {
+  map,
+  mergeWith,
+  shareReplay,
+  skip,
+  startWith
+} from 'rxjs/operators';
 
 
 /**
@@ -43,6 +50,20 @@ export class SelectionPanelBridgeService {
   /** Outlet emits here to clear only side B (input). */
   readonly resetB$ = new Subject<void>();
   
-  /** Service emits `true` here briefly to indicate a recorded connection; outlet can show a success chip. */
-  readonly confirmed$ = new BehaviorSubject<boolean>(false);
+  /** Service emits into this when a connection is recorded. Consumers should not write to `confirmed$` directly. */
+  readonly record$ = new Subject<void>();
+  
+  /** Derived stream: emits `true` briefly when `record$` emits, and emits `false` whenever `selectionState$` changes.
+   *  Starts with `false` and replays last value for late subscribers. This keeps confirmation state declarative.
+   */
+  readonly confirmed$ = (
+    // when a record event occurs -> true
+    this.record$.pipe(map(() => true))
+  ).pipe(
+    // revert to false whenever selection changes (skip initial seed)
+    mergeWith(this.selectionState$.pipe(skip(1), map(() => false))),
+    startWith(false),
+    // replay latest to new subscribers
+    shareReplay(1)
+  );
 }
