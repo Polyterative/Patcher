@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## MANDATORY: First action every session
+
+**Read `internaldocs/CURRENT_FEATURE.md` before doing anything else.** No exceptions.
+
 ## Session Start
 
 **Workflow is strictly gated — do not skip phases:**
@@ -12,7 +16,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. **Code** — only after the plan is written and confirmed. Work until commit-ready; run tests after every meaningful change.
 5. **On completion** — archive to `COMPLETED.md`, reset `CURRENT_FEATURE.md` to empty template.
 
-**Never start coding before steps 2–3 are complete.**
+**The user's workflow: plan → write plan into `CURRENT_FEATURE.md` → wait for explicit user confirmation → then and only then execute.**
+
+**Never write a single line of code before the user has explicitly confirmed the plan in `CURRENT_FEATURE.md`.**
 
 ## Commands
 
