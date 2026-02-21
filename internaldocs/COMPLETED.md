@@ -43,3 +43,4 @@
 | Edit FAB — Position Fix + Service-Layer Toggle Routing                      | 02-21 | fixed position bottom-right; `requestPatchEditingToggle$` added to services                 |
 | Edit FAB — Opacity + Padding Polish                                         | 02-21 | opacity 0.8 at rest → 1 on hover; padding-left/right 1.5rem                                 |
 | Graph Stale-State Indicator + Debounced Auto-Refresh                        | 02-21 | `isStale$` + overlay; 3 s debounce on `editorConnections$`; height-lock on rebuild          |
+| Bug fix — connection note textarea clipped on multi-line                    | 02-21 | `align-items: flex-start` on editing-row; removed negative margin; padding-top on icons     |
