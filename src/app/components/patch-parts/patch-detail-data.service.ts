@@ -144,19 +144,8 @@ export class PatchDetailDataService implements OnDestroy {
     private bridge: SelectionPanelBridgeService
   ) {
     
-    // merge(this.userService.user$, this.updateSinglePatchData$)
-    //   .pipe(
-    //     switchMap(x => this.userService.user$),
-    //     switchMap(x => !!x ? this.backend.get.userPatches() : of([])),
-    //     takeUntil(this.destroyEvent$)
-    //   )
-    //   .subscribe(x => {
-    //     this.userPatchsList$.next(x);
-    //   });
-    
     this.updateSinglePatchData$
       .pipe(
-        // tap(x => this.singlePatchData$.next(undefined)),
         tap(x => this.patchConnections$.next(null)),
         tap(x => this.editorConnections$.next(null)),
         tap(() => this.patchModuleInstances$.next([])),
@@ -324,67 +313,41 @@ export class PatchDetailDataService implements OnDestroy {
       this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as any)))
     )
       .pipe(
-        scan((acc: {
-          state: {
-            a: CVConnectionEntity | null;
-            b: CVConnectionEntity | null
-          };
-          lastEvent: string | null
+        scan((state: {
+          a: CVConnectionEntity | null;
+          b: CVConnectionEntity | null
         }, ev: any) => {
-          const prevState = acc.state;
-          let nextState = {...prevState};
+          let next = {...state};
           switch (ev.type) {
             case 'reset':
-              nextState = {a: null, b: null};
+              next = {a: null, b: null};
               break;
             case 'resetA':
-              nextState = {a: null, b: prevState.b};
+              next = {a: null, b: state.b};
               break;
             case 'resetB':
-              nextState = {a: prevState.a, b: null};
+              next = {a: state.a, b: null};
               break;
             case 'cv':
               const x: CVConnectionEntity = ev.cv;
               if (x.kind === 'in') {
-                nextState = {a: prevState.a, b: x};
+                next = {a: state.a, b: x};
               } else {
-                nextState = {a: x, b: prevState.b};
+                next = {a: x, b: state.b};
               }
               break;
             default:
             // noop
           }
-          return {state: nextState, lastEvent: ev.type};
-        }, {state: {a: null, b: null}, lastEvent: null} as {
-          state: {
-            a: CVConnectionEntity | null;
-            b: CVConnectionEntity | null
-          };
-          lastEvent: string | null
+          return next;
+        }, {a: null, b: null} as {
+          a: CVConnectionEntity | null;
+          b: CVConnectionEntity | null
         }),
-        // Compare the computed accumulator with current published selection so we can deterministically
-        // clear the confirmed flag when a real change occurred (covers CV clicks and programmatic updates).
-        withLatestFrom(this.selectedForConnection$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([acc, prevPublished]) => {
-        const cur = acc.state || {a: null, b: null};
-        
-        // If this event is a CV click and the new state differs from the previously published selection,
-        // clear the confirmed flag synchronously so the outlet immediately switches back to edit mode.
-        // if (acc.lastEvent === 'cv') {
-        //   const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
-        //   const sameA = idOf(prevPublished.a) === idOf(cur.a);
-        //   const sameB = idOf(prevPublished.b) === idOf(cur.b);
-        //   if (!(sameA && sameB) && this.bridge.confirmed$.value) {
-        //     this.bridge.confirmed$.next(false);
-        //   }
-        // }
-        
-        // publish new selection (confirmed$ is derived in the bridge and will emit false on selectionState changes)
-        this.selectedForConnection$.next(cur);
-        
-        // clearing confirmed is declarative: selectionState$ change will cause bridge.confirmed$ => false
+      .subscribe((state) => {
+        this.selectedForConnection$.next(state);
       });
     
     this.confirmSelectedConnection$
@@ -757,15 +720,16 @@ export class PatchDetailDataService implements OnDestroy {
         // Renumber surviving instances of this module sequentially
         this.renumberModuleInstances$(removed.module_id).subscribe();
         
-        // If the removed instance was selected in the current selection, clear that side
+        // If the removed instance was selected, clear only the affected side(s)
         const sel = this.selectedForConnection$.value;
-        let shouldClear = false;
-        if (sel?.a?.cv?.instance_id === removed.id || sel?.b?.cv?.instance_id === removed.id) {
-          shouldClear = true;
-        }
-        if (shouldClear) {
-          // clear entire selection to keep behavior simple and safe
+        const aAffected = sel?.a?.cv?.instance_id === removed.id;
+        const bAffected = sel?.b?.cv?.instance_id === removed.id;
+        if (aAffected && bAffected) {
           this.resetSelectedForConnection$.next();
+        } else if (aAffected) {
+          this.bridge.resetA$.next();
+        } else if (bAffected) {
+          this.bridge.resetB$.next();
         }
         
         SharedConstants.successCustom(this.snackBar, `Instance removed.`);
