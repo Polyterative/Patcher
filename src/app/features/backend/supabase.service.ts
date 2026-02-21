@@ -698,12 +698,17 @@ export class SupabaseService extends SubManager {
       .pipe(remapErrors())
     ,
     patch: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.patches)
+      this.supabase.from(DbPaths.patch_module_instances)
         .delete()
-        // .filter('profileid', 'eq', this.getUser().id)
-        .filter('id', 'eq', id)
+        .filter('patch_id', 'eq', id)
     )
       .pipe(
+        switchMap(() => rxFrom(
+          this.supabase.from(DbPaths.patches)
+            .delete()
+            // .filter('profileid', 'eq', this.getUser().id)
+            .filter('id', 'eq', id)
+        )),
         // delete all comments for this patch
         switchMap(() => rxFrom(
           this.supabase.from(DbPaths.comments)
@@ -711,7 +716,8 @@ export class SupabaseService extends SubManager {
             .filter('entityId', 'eq', id)
             .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
         )),
-        remapErrors()
+        remapErrors(),
+        cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
       )
     ,
     patchConnectionsForPatch: (id: number) => rxFrom(
@@ -720,7 +726,10 @@ export class SupabaseService extends SubManager {
         .filter('patchid', 'eq', id)
       // .filter('moduleid', 'eq', id)
     )
-      .pipe(remapErrors())
+      .pipe(
+        remapErrors(),
+        cacheBust(['patchConnections', 'patches'])
+      )
     ,
     patchModuleInstance: (id: number) => rxFrom(
       this.supabase.from(DbPaths.patch_module_instances)
@@ -759,7 +768,8 @@ export class SupabaseService extends SubManager {
             .filter('entityId', 'eq', id)
             .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
         )),
-        remapErrors()
+        remapErrors(),
+        cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
       )
     ,
     userRack: (id: number) => this.getUserSession$()
