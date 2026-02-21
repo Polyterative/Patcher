@@ -1,0 +1,189 @@
+@use "sass:color";
+@use "src/app/style/brand-resources" as *;
+
+// ── Animation keyframes ───────────────────────────────────────────────────────
+// Applied to the inner .panel-card element, NOT the :host, so the transform
+// does not create a new stacking context that could trap fixed-position children.
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Host: viewport-anchored, out of document flow ────────────────────────────
+:host {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 1000;
+  // Pointer events disabled on the host so the panel never accidentally
+  // blocks clicks on content behind it; re-enabled on the inner card.
+  pointer-events: none;
+}
+
+// ── Inner card: the visible floating panel ────────────────────────────────────
+.panel-card {
+  pointer-events: all;
+  width: 26rem;
+  max-width: calc(100vw - 3rem);
+  background-color: color.adjust(#5ED0B4, $alpha: -0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(94, 208, 180, 0.35);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  // Fade + slide-up animation on panel appearance
+  animation: fadeSlideUp 150ms ease-out both;
+}
+
+// ── Header row ────────────────────────────────────────────────────────────────
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-icon {
+  opacity: 0.7;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+// ── Hint text (one side selected) ─────────────────────────────────────────────
+.panel-hint {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hint-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+// ── Side A label (shown when only A is selected) ──────────────────────────────
+.panel-a-label {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.panel-kind-chip {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.5;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+// ── Cancel button ─────────────────────────────────────────────────────────────
+.panel-btn-cancel {
+  opacity: 0.6;
+  margin-left: auto;
+}
+
+// ── Narrow viewport: hide the floating panel ──────────────────────────────────
+// (patch-editor will show an inline fallback at this breakpoint)
+@media (max-width: 799px) {
+  :host {
+    display: none;
+  }
+}
+
+
+// ── Inner card: the visible floating panel ────────────────────────────────────
+.panel-card {
+  pointer-events: all;
+  width: 26rem;
+  max-width: calc(100vw - 3rem);
+  background-color: color.adjust(#5ED0B4, $alpha: -0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(94, 208, 180, 0.35);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+// ── Header row ────────────────────────────────────────────────────────────────
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-icon {
+  opacity: 0.7;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+// ── Hint text ─────────────────────────────────────────────────────────────────
+.panel-hint {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  line-height: 1.4;
+}
+
+// ── Action row ────────────────────────────────────────────────────────────────
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-btn {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.panel-btn-cancel {
+  opacity: 0.6;
+}
+
+// ── Narrow viewport: hide the floating panel ──────────────────────────────────
+// (patch-editor will show an inline fallback at this breakpoint)
+@media (max-width: 799px) {
+  :host {
+    display: none;
+  }
+}

@@ -46,9 +46,6 @@ $palette: (
   background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
 }
 
-.selection {
-  background-color: color.adjust(map.get($palette, b), $alpha: -0.7);
-}
 
 .instances {
   background-color: color.adjust(map.get($palette, c), $alpha: -0.7);

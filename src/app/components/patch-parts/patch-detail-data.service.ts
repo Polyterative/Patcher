@@ -27,6 +27,7 @@ import {
   filter,
   map,
   pairwise,
+  scan,
   switchMap,
   take,
   takeUntil,
@@ -51,6 +52,7 @@ import {
   MinimalModule
 } from '../../models/module';
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
 
 
 /** Maximum number of instances (copies) allowed per module in a single patch. */
@@ -138,7 +140,8 @@ export class PatchDetailDataService implements OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     public userService: UserManagementService,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    private bridge: SelectionPanelBridgeService
   ) {
     
     // merge(this.userService.user$, this.updateSinglePatchData$)
@@ -313,38 +316,56 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
-    this.resetSelectedForConnection$
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(value => this.selectedForConnection$.next({
-        a: null,
-        b: null
-      }));
+    // merged reset + click stream below will drive selectedForConnection$ (reset included)
     
-    this.clickOnModuleCV$
+    // Use merged stream with scan to accumulate selection state and allow reset to reset the accumulator
+    merge(
+      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as any))),
+      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any)))
+    )
       .pipe(
-        withLatestFrom(this.selectedForConnection$),
+        scan((state: {
+          a: CVConnectionEntity | null;
+          b: CVConnectionEntity | null
+        }, ev: any) => {
+          if (ev.type === 'reset') {
+            return {a: null, b: null};
+          }
+          const x: CVConnectionEntity = ev.cv;
+          if (x.kind === 'in') {
+            return {a: state.a, b: x};
+          }
+          return {a: x, b: state.b};
+        }, {a: null, b: null} as {
+          a: CVConnectionEntity | null;
+          b: CVConnectionEntity | null
+        }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([x, z]) => {
-        
-        switch (x.kind) {
-          case 'in':
-            this.selectedForConnection$.next({
-              a: z.a,
-              b: x
-            });
-            break;
-          case 'out':
-            
-            this.selectedForConnection$.next({
-              a: x,
-              b: z.b
-            });
-            break;
-        }
-        
+      .subscribe(state => this.selectedForConnection$.next(state));
+    
+    // Bridge action buses (per-side resets)
+    this.bridge.resetA$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        const cur = this.selectedForConnection$.value;
+        this.selectedForConnection$.next({a: null, b: cur.b});
+        this.bridge.confirmed$.next(false);
       });
     
+    this.bridge.resetB$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        const cur = this.selectedForConnection$.value;
+        this.selectedForConnection$.next({a: cur.a, b: null});
+        this.bridge.confirmed$.next(false);
+      });
+    
+    // Ensure confirmed$ is reset whenever a reset happens
+    this.bridge.reset$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => this.bridge.confirmed$.next(false));
+
     this.confirmSelectedConnection$
       .pipe(
         withLatestFrom(this.editorConnections$),
@@ -377,8 +398,13 @@ export class PatchDetailDataService implements OnDestroy {
             newConnection
           ]);
           this.requestConnectionDbSync$.next();
-          
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
+          
+          // notify outlet of confirmation and clear selection
+          this.bridge.confirmed$.next(true);
+          // clear selection immediately so underlying state is consistent
+          this.resetSelectedForConnection$.next();
+          
         } else {
           SharedConstants.errorCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" is already in this patch.`);
         }
@@ -570,15 +596,15 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.singlePatchData$, this.patchModuleInstances$),
         filter(([_, patch]) => !!patch),
         switchMap(([module, patch, existingInstances]) => {
-          const sameModuleCount = existingInstances.filter(i => i.module_id === module.id).length;
-          
+          const sameModuleCount = (existingInstances || []).filter(i => i.module_id === module.id).length;
+
           // Enforce copy limit — account for jumpstart (count=0 → creates 2)
           const wouldBeCount = sameModuleCount + (sameModuleCount === 0 ? 2 : 1);
           if (wouldBeCount > MAX_INSTANCES_PER_MODULE) {
             SharedConstants.errorCustom(this.snackBar, `Maximum of ${ MAX_INSTANCES_PER_MODULE } copies per module reached.`);
             return EMPTY;
           }
-          
+
           if (sameModuleCount === 0) {
             // Jumpstart: batch insert two instances in a single DB call
             return this.backend.add.patchModuleInstances([
@@ -592,7 +618,7 @@ export class PatchDetailDataService implements OnDestroy {
               })
             );
           }
-          
+
           // If there's currently only 1 instance (unlabeled), relabel + insert in parallel
           if (sameModuleCount === 1) {
             return forkJoin([
@@ -608,7 +634,7 @@ export class PatchDetailDataService implements OnDestroy {
               })
             );
           }
-          
+
           // 2+ instances: just add one more
           return this.backend.add.patchModuleInstance(patch.id, module.id, `(${ sameModuleCount + 1 })`).pipe(
             // Wrap single instance in array for uniform handling in subscribe
@@ -705,12 +731,48 @@ export class PatchDetailDataService implements OnDestroy {
         // Renumber surviving instances of this module sequentially
         this.renumberModuleInstances$(removed.module_id).subscribe();
         
+        // If the removed instance was selected in the current selection, clear that side
+        const sel = this.selectedForConnection$.value;
+        let shouldClear = false;
+        if (sel?.a?.cv?.instance_id === removed.id || sel?.b?.cv?.instance_id === removed.id) {
+          shouldClear = true;
+        }
+        if (shouldClear) {
+          // clear entire selection to keep behavior simple and safe
+          this.resetSelectedForConnection$.next();
+        }
+        
         SharedConstants.successCustom(this.snackBar, `Instance removed.`);
       });
+    
+    // ── Bridge mirroring — push state into SelectionPanelBridgeService ─────
+    this.selectedForConnection$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(v => this.bridge.selectionState$.next(v));
+    
+    this.singlePatchData$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(v => this.bridge.patchData$.next(v));
+    
+    this.instanceLabelMap$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(v => this.bridge.instanceLabelMap$.next(v));
+    
+    // ── Bridge action buses (outlet → bridge → service) ───────────────────
+    this.bridge.reset$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => this.resetSelectedForConnection$.next());
+    
+    this.bridge.confirm$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => this.confirmSelectedConnection$.next());
     
   }
   
   ngOnDestroy(): void {
+    // Clear the bridge so the floating panel disappears when navigating away
+    this.bridge.selectionState$.next({a: null, b: null});
+    this.bridge.patchData$.next(undefined);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
   }
@@ -720,9 +782,9 @@ export class PatchDetailDataService implements OnDestroy {
    * If one already exists, returns its id. If not, creates one and returns the new id.
    * Used by module-cvs for lazy auto-create on first CV click.
    */
-  ensureModuleInstance$(module: DbModule | MinimalModule) {
+  ensureModuleInstance$(module: DbModule | MinimalModule): Observable<number> {
     const patch = this.singlePatchData$.value;
-    if (!patch) { return EMPTY; }
+    if (!patch) { return EMPTY as Observable<number>; }
     
     // Check if an instance already exists
     const existing = this.patchModuleInstances$.value.find(i => i.module_id === module.id);
@@ -735,11 +797,11 @@ export class PatchDetailDataService implements OnDestroy {
       map(instance => {
         // Update local state so the editor cards react
         this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
-        return instance.id;
+        return instance.id as number;
       }),
       catchError(err => {
         console.error('Failed to auto-create instance:', err);
-        return EMPTY;
+        return EMPTY as Observable<number>;
       })
     );
   }
