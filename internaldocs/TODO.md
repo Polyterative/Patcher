@@ -31,15 +31,6 @@
 
 ## Active
 
-### HIGH: UX — Sticky Floating "Current Selection" Panel in Patch Editor
-
-Convert the static `26rem` selection column into a floating overlay; full detail
-in [CURRENT_FEATURE.md](./CURRENT_FEATURE.md).
-
----
-
-## Backlog
-
 ### HIGH: BUG — Empty state broken on browser pages (Module / Patch / Rack)
 
 **Why:** After the sidebar layout refactor the empty-state UI (shown when a search returns zero results) may no longer
@@ -54,6 +45,8 @@ render correctly on all three browser pages. Needs investigation and fix.
 - [ ] Run e2e smoke tests for all three pages
 
 ---
+
+## Backlog
 
 ### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
 

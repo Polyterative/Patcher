@@ -126,28 +126,11 @@
                       </div>
                       <!-- Right slot: editor toggle or manual -->
                       <div style="flex: 1; display: flex">
-                        @if (!bag.data.isComplete) {
-                          @if ((dataService.moduleEditingPanelOpenState$|async) === false) {
-                            <app-brand-primary-button
-                              theme="primary"
-                              style="width: 100%"
-                              [disabled]="!bag.user"
-                              (click$)="dataService.moduleEditingPanelOpenState$.next(true)"
-                              icon="edit"
-                            >
-                              Open editor
-                            </app-brand-primary-button>
-                          } @else {
-                            <app-brand-primary-button
-                              theme="primary"
-                              style="width: 100%"
-                              [disabled]="!bag.user"
-                              (click$)="dataService.moduleEditingPanelOpenState$.next(false)"
-                              icon="close"
-                            >
-                              Close editor
-                            </app-brand-primary-button>
-                          }
+                        @if (bag.user) {
+                          <app-edit-fab
+                            [editMode$]="dataService.moduleEditingPanelOpenState$"
+                            (toggle$)="dataService.requestModuleEditingToggle$.next()"
+                          ></app-edit-fab>
                         }
                         @if (bag.data.isComplete && bag.data.manualURL) {
                           <app-brand-primary-button

@@ -27,6 +27,8 @@
                             [viewConfig]="viewConfig"
             ></app-rack-micro>
           </lib-clean-card>
+        } @empty {
+          <app-empty-state></app-empty-state>
         }
       </flexbox-row-fast>
     </div>

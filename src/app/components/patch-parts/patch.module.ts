@@ -46,6 +46,7 @@ import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-c
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
+import { EditFabModule } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module';
 
 
 @NgModule({
@@ -107,7 +108,8 @@ import { ModuleBrowserModule } from 'src/app/features/module-browser/module-brow
     FormValidPipe,
     StatisticsModule,
     FlexboxRowFastModule,
-    ModuleBrowserModule
+    ModuleBrowserModule,
+    EditFabModule
   ]
 })
 export class PatchModule {}
