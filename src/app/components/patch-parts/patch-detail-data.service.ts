@@ -307,17 +307,16 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(value => this.resetSelectedForConnection$.next());
     
+    // when editing panel closes (was open -> closed), trigger patch refresh
     this.patchEditingPanelOpenState$
       .pipe(
         pairwise(),
-        filter(x => x[0] == true && x[1] == false),
-        filter(x => !!this.singlePatchData$.value),
+        filter(x => x[0] === true && x[1] === false),
+        filter(() => !!this.singlePatchData$.value),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
+      .subscribe(() => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
-    // Use a single merged event stream (clicks + resets, including per-side resets)
-    // so the internal scan accumulator reflects ALL sources of selection changes.
     merge(
       this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as any))),
       this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any))),
@@ -363,35 +362,30 @@ export class PatchDetailDataService implements OnDestroy {
           };
           lastEvent: string | null
         }),
+        // Compare the computed accumulator with current published selection so we can deterministically
+        // clear the confirmed flag when a real change occurred (covers CV clicks and programmatic updates).
+        withLatestFrom(this.selectedForConnection$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(acc => {
-        // If this event is a CV click and the new state differs from the previous selection,
-        // clear the confirmed flag synchronously so the outlet immediately switches back to edit mode.
-        if (acc.lastEvent === 'cv') {
-          const prev = this.selectedForConnection$.value || {a: null, b: null};
-          const cur = acc.state || {a: null, b: null};
-          const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
-          const sameA = idOf(prev.a) === idOf(cur.a);
-          const sameB = idOf(prev.b) === idOf(cur.b);
-          if (!(sameA && sameB) && this.bridge.confirmed$.value) {
-            this.bridge.confirmed$.next(false);
-          }
-        }
+      .subscribe(([acc, prevPublished]) => {
+        const cur = acc.state || {a: null, b: null};
         
-        // publish new selection
-        this.selectedForConnection$.next(acc.state);
-
-        // whenever a reset (any kind) occurs, clear the confirmed flag so outlet shows normal controls
-        if (acc.lastEvent && acc.lastEvent.indexOf('reset') === 0) {
-          this.bridge.confirmed$.next(false);
-        }
+        // If this event is a CV click and the new state differs from the previously published selection,
+        // clear the confirmed flag synchronously so the outlet immediately switches back to edit mode.
+        // if (acc.lastEvent === 'cv') {
+        //   const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
+        //   const sameA = idOf(prevPublished.a) === idOf(cur.a);
+        //   const sameB = idOf(prevPublished.b) === idOf(cur.b);
+        //   if (!(sameA && sameB) && this.bridge.confirmed$.value) {
+        //     this.bridge.confirmed$.next(false);
+        //   }
+        // }
+        
+        // publish new selection (confirmed$ is derived in the bridge and will emit false on selectionState changes)
+        this.selectedForConnection$.next(cur);
+        
+        // clearing confirmed is declarative: selectionState$ change will cause bridge.confirmed$ => false
       });
-    
-    // Ensure confirmed$ is reset whenever a full reset happens via the bridge reset$
-    this.bridge.reset$
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(() => this.bridge.confirmed$.next(false));
     
     this.confirmSelectedConnection$
       .pipe(
@@ -427,10 +421,8 @@ export class PatchDetailDataService implements OnDestroy {
           this.requestConnectionDbSync$.next();
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
           
-          // notify outlet of confirmation and clear selection
-          // Mark as confirmed but KEEP the current selection so user can tweak one side.
-          // The outlet will show a "Recorded" indicator and the per-side deselects remain available.
-          this.bridge.confirmed$.next(true);
+          // notify outlet of confirmation: emit a record event. Keep the current selection so user can tweak one side.
+          this.bridge.record$.next();
           
         } else {
           SharedConstants.errorCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" is already in this patch.`);
@@ -777,23 +769,6 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(v => this.bridge.selectionState$.next(v));
     
-    // Clear confirmed$ whenever the selection actually changes while confirmed is true.
-    // This handles user edits after a confirm (e.g., swapping one side) so the "Recorded" state
-    // doesn't persist incorrectly.
-    this.selectedForConnection$
-      .pipe(
-        pairwise(),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(([prev, cur]) => {
-        const idOf = (c: CVConnectionEntity | null) => c?.cv?.id ?? null;
-        const sameA = idOf(prev.a) === idOf(cur.a);
-        const sameB = idOf(prev.b) === idOf(cur.b);
-        if (!(sameA && sameB) && this.bridge.confirmed$.value) {
-          this.bridge.confirmed$.next(false);
-        }
-      });
-    
     this.singlePatchData$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(v => this.bridge.patchData$.next(v));
@@ -810,16 +785,6 @@ export class PatchDetailDataService implements OnDestroy {
     this.bridge.confirm$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => this.confirmSelectedConnection$.next());
-    
-    // Ensure any new CV click clears confirmed state immediately (defensive guard).
-    this.clickOnModuleCV$
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(() => {
-        if (this.bridge.confirmed$.value) {
-          this.bridge.confirmed$.next(false);
-        }
-      });
-    
   }
   
   ngOnDestroy(): void {
