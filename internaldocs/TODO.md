@@ -35,17 +35,7 @@
 
 ## Active
 
-### LOW: Patch Editor UX — Three polish improvements (CV indicator, inline labels, Add Copy flicker)
-
-**Why:** Three small quality-of-life improvements for the patch editor identified Feb 21.
-
-**Steps:**
-
-- [ ] CV connection indicator: wire `connectionCount$` in `ModuleCVItemComponent`, show badge in template
-- [ ] Inline IN/OUT labels: restructure `module-cvs.component.html` sections to `row` so count label sits beside chips
-- [ ] Add Copy flicker fix: add `trackingId` to `EditorModuleCard`, use it in `@for` track expression
-- [ ] Update unit tests for `ModuleCVItemComponent`
-- [ ] Run targeted tests
+_None._
 
 ---
 
@@ -142,23 +132,6 @@ flag submission only.
 - [ ] Write tests for override logic and rack layout reflow
 
 ---
-
-### BUG: Safari Image Export Rendering Differs
-
-**Why:** `dom-to-image` library renders differently in Safari vs Chrome. Download works but output image is not
-identical.  
-**Fix approach:** Replace with `modern-screenshot` (actively maintained, Safari-compatible).
-
-**Steps when picked:**
-
-- [ ] Grep for `dom-to-image` and `domToImage` usage to find all call sites
-- [ ] `yarn add modern-screenshot` and `yarn remove dom-to-image`
-- [ ] Replace `dom-to-image` calls with `modern-screenshot` equivalents
-- [ ] Remove `@types/dom-to-image` from devDependencies
-- [ ] Test export in Safari-compatible browser or CI
-
----
-
 
 ---
 
