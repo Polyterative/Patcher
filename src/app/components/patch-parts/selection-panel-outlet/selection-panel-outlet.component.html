@@ -5,12 +5,6 @@
         <mat-icon class="panel-icon">cable</mat-icon>
         <span class="panel-title">Your selection</span>
         <!-- global close removed; per-side deselects are shown near the selected slot -->
-        <ng-container *ngIf="bridge.confirmed$ | async">
-          <span class="panel-confirmed">
-            <mat-icon>check_circle</mat-icon>
-            Recorded
-          </span>
-        </ng-container>
       </div>
       
       @if (sel.a && sel.b) {
