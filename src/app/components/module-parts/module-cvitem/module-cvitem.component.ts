@@ -27,8 +27,8 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   standalone: false
 })
 export class ModuleCVItemComponent implements OnInit {
-  @Input() readonly data: CV;
-  @Input() readonly kind: 'in' | 'out';
+  @Input() data: CV;
+  @Input() kind: 'in' | 'out';
   @Input() instanceId: number | undefined;
   @Output() readonly click$ = new EventEmitter<CV>();
   
