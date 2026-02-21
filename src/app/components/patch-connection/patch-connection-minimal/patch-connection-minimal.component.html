@@ -14,9 +14,8 @@
                           [viewConfig]="viewConfig"
                           [nameSuffix]="data.instance_id_a != null ? instanceLabelMap.get(data.instance_id_a) : undefined"
       >
-        <mat-chip-listbox>
-          <mat-chip class="cv-chip" color="primary">{{ data.a.name }}</mat-chip>
-        </mat-chip-listbox>
+        <app-module-cvitem [data]="data.a" kind="out"
+                           [instanceId]="data.instance_id_a ?? undefined"></app-module-cvitem>
       </app-module-minimal>
     </div>
     <app-patch-connection-symbol></app-patch-connection-symbol>
@@ -33,9 +32,7 @@
                           [viewConfig]="viewConfig"
                           [nameSuffix]="data.instance_id_b != null ? instanceLabelMap.get(data.instance_id_b) : undefined"
       >
-        <mat-chip-listbox>
-          <mat-chip class="cv-chip" color="accent">{{ data.b.name }}</mat-chip>
-        </mat-chip-listbox>
+        <app-module-cvitem [data]="data.b" kind="in" [instanceId]="data.instance_id_b ?? undefined"></app-module-cvitem>
       </app-module-minimal>
     </div>
   </div>
