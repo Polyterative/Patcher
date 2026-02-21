@@ -198,6 +198,23 @@ Automated checks: local headless Karma run returned: `316 SUCCESS` on the projec
 
 ---
 
+## Pre-flight check — issues found from previous session (weaker model)
+
+> Reviewed on 2026-02-21. No logic bugs found. The following are rule violations left behind.
+
+| File                                  | Issue                                                                                                                                                           |
+|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `selection-panel-bridge.service.ts`   | Constructor has two raw subscriptions with no `takeUntil`; service does not extend `SubManager`                                                                 |
+| `selection-panel-bridge.service.ts`   | `startWith(false)` is placed after `distinctUntilChanged()` in `confirmed$` — emits a redundant `false` on subscribe, bypassing dedup                           |
+| `selection-panel-outlet.component.ts` | Does not extend `SubManager`; `ngOnInit` subscription on `bridge.confirmed$` has no `takeUntil` — leaky                                                         |
+| `selection-panel-outlet.component.ts` | Dead timer code: `confirmedTimer` + `clearConfirmedTimer()` declared but timer is never set                                                                     |
+| `patch-detail-data.service.ts`        | Three commented-out code blocks (violates no-dead-code rule)                                                                                                    |
+| `patch-detail-data.service.ts`        | `withLatestFrom(this.selectedForConnection$)` in scan chain is dead — `prevPublished` is never read (commented block was removed but `withLatestFrom` was left) |
+
+These will be fixed as part of Layer 5 execution (add to step list below).
+
+---
+
 ## Layer 5 — Deselect button integration + duplicate name removal
 
 **Status:** 🟡 Planned — awaiting user confirmation
@@ -242,8 +259,11 @@ what they affect.
   3. Update outlet template — remove `.panel-preview-actions`; bind new inputs/outputs
 - [ ] 
   4. Clean up outlet SCSS — remove duplicate blocks + dead selectors
-- [ ] 
-  5. Run `yarn test-headless` — verify no regressions
+- [ ]
+  5. Fix pre-flight violations: SubManager + takeUntil on bridge service and outlet; remove dead timer code; remove
+     commented-out blocks from data service; remove unused `withLatestFrom` from scan chain
+- [ ]
+  6. Run `yarn test-headless` — verify no regressions
 
 ### Edge cases
 
