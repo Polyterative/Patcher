@@ -18,6 +18,8 @@ import {
 import {
   debounceTime,
   distinctUntilChanged,
+  map,
+  shareReplay,
   startWith,
   switchMap,
   takeUntil,
@@ -75,8 +77,8 @@ export class PatchBrowserDataService implements OnDestroy {
   };
   
   paginatorToFistPage$ = new Subject<void>();
+  canReset$: Observable<boolean>;
   protected destroyEvent$ = new Subject<void>();
-  dirty = false;
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
@@ -159,7 +161,19 @@ export class PatchBrowserDataService implements OnDestroy {
         
       }
     }
-  
+    
+    this.canReset$ = combineLatest([
+      this.fields.search.control.valueChanges.pipe(startWith(this.fields.search.control.value)),
+      this.fields.order.control.valueChanges.pipe(startWith(this.fields.order.control.value)),
+    ]).pipe(
+      map(([search, order]) =>
+        search !== '' ||
+        (order && order.id !== 'updated')
+      ),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
   
     this.updatePatchesList$
@@ -176,8 +190,6 @@ export class PatchBrowserDataService implements OnDestroy {
         .subscribe(x => {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.patchesList$.next(x.data);
-  
-          this.dirty = true;
         });
   
     this.fields.search.control.valueChanges.pipe(
