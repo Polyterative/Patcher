@@ -7,9 +7,29 @@
 }
 
 .module {
-  // occupy all possible vertical space
   flex: 1 0 45%;
+}
 
+.slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 2px;
+}
+
+.slot-direction-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+.slot-deselect {
+  opacity: 0.5;
+
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .root {

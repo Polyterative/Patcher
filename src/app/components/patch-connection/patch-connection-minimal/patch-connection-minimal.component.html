@@ -1,25 +1,43 @@
 <div class="col root">
   <div class="row gap0 col-lt-MD"
   >
-    <app-module-minimal [data]="data.a.module"
-                        [viewConfig]="viewConfig"
-                        [nameSuffix]="data.instance_id_a != null ? instanceLabelMap.get(data.instance_id_a) : undefined"
-                        class="module"
-    >
-      <mat-chip-listbox>
-        <mat-chip class="cv-chip" color="primary">{{ data.a.name }}</mat-chip>
-      </mat-chip-listbox>
-    </app-module-minimal>
+    <div class="col gap0 module">
+      @if (isCreator && showDeselectButtons) {
+        <div class="slot-header">
+          <mat-icon class="slot-direction-icon">call_made</mat-icon>
+          <button mat-icon-button class="slot-deselect" matTooltip="Deselect output" (click)="deselectA$.emit()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+      <app-module-minimal [data]="data.a.module"
+                          [viewConfig]="viewConfig"
+                          [nameSuffix]="data.instance_id_a != null ? instanceLabelMap.get(data.instance_id_a) : undefined"
+      >
+        <mat-chip-listbox>
+          <mat-chip class="cv-chip" color="primary">{{ data.a.name }}</mat-chip>
+        </mat-chip-listbox>
+      </app-module-minimal>
+    </div>
     <app-patch-connection-symbol></app-patch-connection-symbol>
-    <app-module-minimal [data]="data.b.module"
-                        [viewConfig]="viewConfig"
-                        [nameSuffix]="data.instance_id_b != null ? instanceLabelMap.get(data.instance_id_b) : undefined"
-                        class="module"
-    >
-      <mat-chip-listbox>
-        <mat-chip class="cv-chip" color="accent">{{ data.b.name }}</mat-chip>
-      </mat-chip-listbox>
-    </app-module-minimal>
+    <div class="col gap0 module">
+      @if (isCreator && showDeselectButtons) {
+        <div class="slot-header">
+          <mat-icon class="slot-direction-icon">call_received</mat-icon>
+          <button mat-icon-button class="slot-deselect" matTooltip="Deselect input" (click)="deselectB$.emit()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+      <app-module-minimal [data]="data.b.module"
+                          [viewConfig]="viewConfig"
+                          [nameSuffix]="data.instance_id_b != null ? instanceLabelMap.get(data.instance_id_b) : undefined"
+      >
+        <mat-chip-listbox>
+          <mat-chip class="cv-chip" color="accent">{{ data.b.name }}</mat-chip>
+        </mat-chip-listbox>
+      </app-module-minimal>
+    </div>
   </div>
   
   @if (!isEditing) {
@@ -95,7 +113,5 @@
       >#{{ index }}
       </mat-card-subtitle>
     }
-  </ng-template>
-  <ng-template #notesT>
   </ng-template>
 </div>

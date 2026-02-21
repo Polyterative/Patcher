@@ -9,8 +9,10 @@ import {
   map,
   shareReplay,
   startWith,
+  takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { CVConnectionEntity } from '../../models/cv';
 import { Patch } from '../../models/patch';
 import { PatchConnection } from '../../models/connection';
@@ -34,7 +36,7 @@ export interface ConnectionKey {
  * (standalone) resolve this upward to AppModule injector.
  */
 @Injectable()
-export class SelectionPanelBridgeService {
+export class SelectionPanelBridgeService extends SubManager {
   
   /** Current CV connection selection state — mirrored from PatchDetailDataService. */
   readonly selectionState$ = new BehaviorSubject<{
@@ -101,15 +103,16 @@ export class SelectionPanelBridgeService {
       
       return false;
     }),
-    distinctUntilChanged(),
     startWith(false),
+    distinctUntilChanged(),
     shareReplay(1)
   );
   
   // When a record event occurs, capture the current selectionState$ into recordedKey$ so it persists
   // until explicitly changed by another record or external clearing.
   constructor() {
-    this.record$.pipe(withLatestFrom(this.selectionState$)).subscribe(([_, sel]) => {
+    super();
+    this.record$.pipe(withLatestFrom(this.selectionState$), takeUntil(this.destroy$)).subscribe(([_, sel]) => {
       if (!sel?.a || !sel?.b) {
         // nothing to record
         return;
@@ -124,7 +127,9 @@ export class SelectionPanelBridgeService {
     });
     // If the recorded key exists but the editorConnections list no longer contains it (deleted), clear it.
     // This treats deletion as a "new event" that invalidates the previously recorded key.
-    combineLatest([this.recordedKey$, this.editorConnections$]).subscribe(([rk, conns]) => {
+    combineLatest([this.recordedKey$, this.editorConnections$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([rk, conns]) => {
       if (!rk) return;
       if (!conns) return;
       const norm = (v: number | null | undefined) => (v === null ? undefined : v);
