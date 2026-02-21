@@ -217,7 +217,7 @@ These will be fixed as part of Layer 5 execution (add to step list below).
 
 ## Layer 5 — Deselect button integration + duplicate name removal
 
-**Status:** 🟡 Planned — awaiting user confirmation
+**Status:** 🟢 Complete — 316 tests passing
 
 ### Problem
 
@@ -243,27 +243,30 @@ what they affect.
 | File                                      | Change                                                                                                                                                                                    |
 |-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `patch-connection-minimal.component.ts`   | Add `@Input() showDeselectButtons = false`, `@Output() readonly deselectA$`, `@Output() readonly deselectB$`                                                                              |
-| `patch-connection-minimal.component.html` | When `isCreator && showDeselectButtons`, render `.slot-header` row (direction icon + deselect button) above each `app-module-minimal`                                                     |
+| `patch-connection-minimal.component.html` | Modules wrapped in `col` divs; optional `.slot-header` with direction icon + deselect button guarded by `isCreator && showDeselectButtons`; removed dead `#notesT` template               |
 | `patch-connection-minimal.component.scss` | Add `.slot-header`, `.slot-direction-icon`, `.slot-deselect` styles                                                                                                                       |
 | `selection-panel-outlet.component.html`   | Remove `.panel-preview-actions` block; add `[showDeselectButtons]="true"` `(deselectA$)="bridge.resetA$.next()"` `(deselectB$)="bridge.resetB$.next()"` to `app-patch-connection-minimal` |
-| `selection-panel-outlet.component.scss`   | Remove duplicate rule blocks; remove unused `.panel-slot` / `.panel-preview-actions` / `.slot-*` styles                                                                                   |
+| `selection-panel-outlet.component.scss`   | Remove duplicate rule blocks; remove dead `.panel-btn-cancel` selector                                                                                                                    |
+| `selection-panel-outlet.component.ts`     | Extends `SubManager`; removed dead timer code and empty `ngOnInit` subscription                                                                                                           |
+| `selection-panel-bridge.service.ts`       | Extends `SubManager`; `takeUntil(this.destroy$)` on constructor subs; `startWith(false)` moved before `distinctUntilChanged()`                                                            |
+| `patch-detail-data.service.ts`            | Removed 3 commented-out blocks; removed dead `withLatestFrom` + `lastEvent` from scan accumulator; simplified scan to track state only                                                    |
 
 ### Steps
 
-- [ ] 
+- [x]
   1. Add `showDeselectButtons`, `deselectA$`, `deselectB$` to `PatchConnectionMinimalComponent`
-- [ ] 
+- [x]
   2. Update `patch-connection-minimal.component.html` — slot header rows with direction icon + deselect button, guarded
      by `isCreator && showDeselectButtons`
-- [ ] 
+- [x]
   3. Update outlet template — remove `.panel-preview-actions`; bind new inputs/outputs
-- [ ] 
+- [x]
   4. Clean up outlet SCSS — remove duplicate blocks + dead selectors
-- [ ]
+- [x]
   5. Fix pre-flight violations: SubManager + takeUntil on bridge service and outlet; remove dead timer code; remove
      commented-out blocks from data service; remove unused `withLatestFrom` from scan chain
-- [ ]
-  6. Run `yarn test-headless` — verify no regressions
+- [x]
+  6. Run `yarn test-headless` — 316 SUCCESS, no regressions
 
 ### Edge cases
 
