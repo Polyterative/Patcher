@@ -40,8 +40,11 @@ export class PatchConnectionMinimalComponent implements OnInit {
   @Input() confirmed: boolean | null = null;
   /** Map from instance ID → display label (e.g. "(1)"). Only set for multi-instance modules. */
   @Input() instanceLabelMap: Map<number, string> = new Map();
+  @Input() showDeselectButtons = false;
   @Output() readonly remove$ = new EventEmitter<PatchConnection>();
   @Output() readonly create$ = new EventEmitter<PatchConnection>();
+  @Output() readonly deselectA$ = new EventEmitter<void>();
+  @Output() readonly deselectB$ = new EventEmitter<void>();
   /** Injected from patch-connections-list; emits the connection whose notes changed for backend sync. */
   @Input() readonly noteSync$?: Subject<PatchConnection>;
   types = FormTypes;

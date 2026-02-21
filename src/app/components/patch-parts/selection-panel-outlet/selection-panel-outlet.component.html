@@ -8,37 +8,7 @@
       </div>
       
       @if (sel.a && sel.b) {
-        <!-- Both sides selected: show per-side deselects + connection preview + confirm -->
-        <div class="panel-preview-actions">
-          <div class="panel-slot">
-            <mat-icon class="slot-icon">call_made</mat-icon>
-            <div class="slot-body">
-              <div class="slot-title">
-                <strong>{{ sel.a.cv.module.name }}</strong>
-                <button mat-icon-button class="deselect-chip" matTooltip="Deselect output"
-                        (click)="bridge.resetA$.next()">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <div class="slot-cv">{{ sel.a.cv.name }}</div>
-            </div>
-          </div>
-          <div class="panel-slot">
-            <mat-icon class="slot-icon">call_received</mat-icon>
-            <div class="slot-body">
-              <div class="slot-title">
-                <!-- Hide repeated module name when both are same -->
-                <strong *ngIf="sel.a.cv.module.id !== sel.b.cv.module.id">{{ sel.b.cv.module.name }}</strong>
-                <button mat-icon-button class="deselect-chip" matTooltip="Deselect input"
-                        (click)="bridge.resetB$.next()">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-              <div class="slot-cv">{{ sel.b.cv.name }}</div>
-            </div>
-          </div>
-        </div>
-        
+        <!-- Both sides selected: connection preview with integrated deselect controls -->
         <app-patch-connection-minimal
           [data]="{
             a: sel.a.cv,
@@ -47,10 +17,13 @@
           }"
           [isEditing]="true"
           [isCreator]="true"
+          [showDeselectButtons]="true"
           [instanceLabelMap]="(bridge.instanceLabelMap$ | async)"
           [confirmed]="(bridge.confirmed$ | async)"
           (remove$)="bridge.reset$.next()"
           (create$)="bridge.confirm$.next()"
+          (deselectA$)="bridge.resetA$.next()"
+          (deselectB$)="bridge.resetB$.next()"
         ></app-patch-connection-minimal>
       } @else {
         <!-- Only one side selected: show step hint + per-side deselect -->
