@@ -37,6 +37,21 @@
 
 ## Backlog
 
+### HIGH: BUG — Empty state broken on browser pages (Module / Patch / Rack)
+
+**Why:** After the sidebar layout refactor the empty-state UI (shown when a search returns zero results) may no longer
+render correctly on all three browser pages. Needs investigation and fix.
+
+**Steps when picked:**
+
+- [ ] Load each browser page, apply a filter that returns zero results, verify empty state renders
+- [ ] Check `app-module-list`, `app-patch-list`, `app-rack-list` components for empty-state template/condition
+- [ ] Fix any broken binding or missing pass-through of the empty state from sidebar-layout restructure
+- [ ] Confirm empty state disappears once results load (not permanently shown)
+- [ ] Run e2e smoke tests for all three pages
+
+---
+
 ### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
 
 **Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for

@@ -10,8 +10,6 @@
 
 ---
 
-## Feature: Filter Sidebar — Reset-Button Guard + Manufacturer Autocomplete Fix
+## Feature: (none)
 
-**Status:** ✅ Complete — archived to COMPLETED.md
-
-All checklist items done. 313/313 tests pass. No active feature — pick next from `TODO.md`.
+**Status:** No active feature — pick next from `TODO.md`.
