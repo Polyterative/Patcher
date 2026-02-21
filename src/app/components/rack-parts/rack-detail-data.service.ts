@@ -56,7 +56,7 @@ import {
   Validators
 } from "@angular/forms";
 import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
-import { toJpeg } from 'html-to-image';
+import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
 
 
@@ -267,12 +267,15 @@ export class RackDetailDataService extends SubManager {
     this.downloadRackImageToUserComputer$.pipe(
       tap(() => this.snackBar.open('⏲️ Generating image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
-      switchMap(([_, references]) => from(
-        toJpeg(<any>references.screen.nativeElement, {
+      switchMap(([_, references]) => {
+        const el = references.screen.nativeElement;
+        return from(domToJpeg(el, {
           quality: 0.9,
           backgroundColor: '#ffffff',
-        })
-      )),
+          width: el.scrollWidth,
+          height: el.scrollHeight,
+        }));
+      }),
       withLatestFrom(this.singleRackData$),
       takeUntil(this.destroyEvent$)
     )
@@ -299,13 +302,14 @@ export class RackDetailDataService extends SubManager {
       delay(50), // wait for the screen to be ready
       withLatestFrom(this.currentDownloadElementRef$),
       // generate the image, and convert it to a Blob
-      switchMap(([_, references]) =>
-        from(
-          toJpeg(<any>references.screen.nativeElement, {
-            quality: 0.9,
-            backgroundColor: '#ffffff',
-          })
-        ).pipe(
+      switchMap(([_, references]) => {
+        const el = references.screen.nativeElement;
+        return from(domToJpeg(el, {
+          quality: 0.9,
+          backgroundColor: '#ffffff',
+          width: el.scrollWidth,
+          height: el.scrollHeight,
+        })).pipe(
           tap(() => this.showModuleCounters$.next(true)),
           // Convert the image data to a Blob
           map(imageData => {
@@ -317,8 +321,8 @@ export class RackDetailDataService extends SubManager {
             const byteArray = new Uint8Array(byteNumbers);
             return new Blob([byteArray], {type: 'image/jpeg'});
           })
-        )
-      ),
+        );
+      }),
       // Upload the Blob to the backend
       switchMap(imageBlob => {
         const fileName = `${ this.singleRackData$.value.id }`;
