@@ -316,56 +316,68 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(value => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
-    // merged reset + click stream below will drive selectedForConnection$ (reset included)
-    
-    // Use merged stream with scan to accumulate selection state and allow reset to reset the accumulator
+    // Use a single merged event stream (clicks + resets, including per-side resets)
+    // so the internal scan accumulator reflects ALL sources of selection changes.
     merge(
       this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as any))),
-      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any)))
+      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any))),
+      this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as any))),
+      this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as any)))
     )
       .pipe(
-        scan((state: {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
+        scan((acc: {
+          state: {
+            a: CVConnectionEntity | null;
+            b: CVConnectionEntity | null
+          };
+          lastEvent: string | null
         }, ev: any) => {
-          if (ev.type === 'reset') {
-            return {a: null, b: null};
+          const prevState = acc.state;
+          let nextState = {...prevState};
+          switch (ev.type) {
+            case 'reset':
+              nextState = {a: null, b: null};
+              break;
+            case 'resetA':
+              nextState = {a: null, b: prevState.b};
+              break;
+            case 'resetB':
+              nextState = {a: prevState.a, b: null};
+              break;
+            case 'cv':
+              const x: CVConnectionEntity = ev.cv;
+              if (x.kind === 'in') {
+                nextState = {a: prevState.a, b: x};
+              } else {
+                nextState = {a: x, b: prevState.b};
+              }
+              break;
+            default:
+            // noop
           }
-          const x: CVConnectionEntity = ev.cv;
-          if (x.kind === 'in') {
-            return {a: state.a, b: x};
-          }
-          return {a: x, b: state.b};
-        }, {a: null, b: null} as {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
+          return {state: nextState, lastEvent: ev.type};
+        }, {state: {a: null, b: null}, lastEvent: null} as {
+          state: {
+            a: CVConnectionEntity | null;
+            b: CVConnectionEntity | null
+          };
+          lastEvent: string | null
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(state => this.selectedForConnection$.next(state));
-    
-    // Bridge action buses (per-side resets)
-    this.bridge.resetA$
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(() => {
-        const cur = this.selectedForConnection$.value;
-        this.selectedForConnection$.next({a: null, b: cur.b});
-        this.bridge.confirmed$.next(false);
+      .subscribe(acc => {
+        this.selectedForConnection$.next(acc.state);
+        // whenever a reset (any kind) occurs, clear the confirmed flag so outlet shows normal controls
+        if (acc.lastEvent && acc.lastEvent.indexOf('reset') === 0) {
+          this.bridge.confirmed$.next(false);
+        }
       });
     
-    this.bridge.resetB$
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(() => {
-        const cur = this.selectedForConnection$.value;
-        this.selectedForConnection$.next({a: cur.a, b: null});
-        this.bridge.confirmed$.next(false);
-      });
-    
-    // Ensure confirmed$ is reset whenever a reset happens
+    // Ensure confirmed$ is reset whenever a full reset happens via the bridge reset$
     this.bridge.reset$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => this.bridge.confirmed$.next(false));
-
+    
     this.confirmSelectedConnection$
       .pipe(
         withLatestFrom(this.editorConnections$),
@@ -401,9 +413,9 @@ export class PatchDetailDataService implements OnDestroy {
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
           
           // notify outlet of confirmation and clear selection
+          // Mark as confirmed but KEEP the current selection so user can tweak one side.
+          // The outlet will show a "Recorded" indicator and the per-side deselects remain available.
           this.bridge.confirmed$.next(true);
-          // clear selection immediately so underlying state is consistent
-          this.resetSelectedForConnection$.next();
           
         } else {
           SharedConstants.errorCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" is already in this patch.`);
@@ -552,7 +564,7 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(labelMap => this.instanceLabelMap$.next(labelMap));
     
     // Build multi-instance summary for read-only display.
-    // Uses module name/manufacturer from the joined instance query (primary source).
+    // Uses module name/manufacturer from the joined instance row (primary source).
     this.patchModuleInstances$
       .pipe(
         map(instances => {

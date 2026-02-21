@@ -38,20 +38,17 @@ import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
   ]
 })
 export class SelectionPanelOutletComponent implements OnInit, OnDestroy {
+  // no auto-dismiss timer — confirmed state is shown but selection is preserved so user can tweak
   private confirmedTimer: any = null;
 
   constructor(public bridge: SelectionPanelBridgeService) {
   }
   
   ngOnInit(): void {
-    this.bridge.confirmed$.subscribe(confirmed => {
-      if (confirmed) {
-        // auto-dismiss after brief delay to show recorded indicator
-        this.clearConfirmedTimer();
-        this.confirmedTimer = setTimeout(() => {
-          this.bridge.reset$.next();
-        }, 800);
-      }
+    // Keep a subscription so change detection sees confirmed$ changes, but do not auto-dismiss.
+    this.bridge.confirmed$.subscribe(() => {
+      // Intentionally no auto-dismiss — outlet will show the Recorded indicator and allow
+      // the user to change one side without losing the other.
     });
   }
   
