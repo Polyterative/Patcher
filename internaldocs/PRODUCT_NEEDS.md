@@ -108,84 +108,13 @@ collection card entirely when instances exist? Trade-off between flexibility and
 
 ---
 
-### Sticky "Current Selection" Panel — Design Analysis
-
-#### Problem Statement
-
-The **"Your selection"** card in the patch editor currently occupies a **fixed, full-height left column** (min/max
-`26rem`) at all times — even when the user has made no selection and the panel shows only a placeholder hint. This
-permanently steals layout space from the modules grid, forcing modules to wrap or compress regardless of how many cards
-the user is working with.
-
-Two things need to happen simultaneously:
-
-1. The panel must be **out of the way** when it is not needed.
-2. When a selection *is* active, it must be **impossible to miss** — the user needs to see it while scrolling and
-   clicking across many module cards.
-
-#### Design Specialist Analysis
-
-**Current pattern (static column):** Appropriate for productivity dashboards where the side panel is always active (e.g.
-Figma's properties panel, VS Code's sidebar). Wrong pattern here because the selection state is *transient* — it exists
-only between the first CV click and the "confirm connection" action. Static columns should only be used for persistent
-content.
-
-**Recommended pattern: Floating overlay panel (sticky positioned, conditionally rendered)**
-
-A floating panel is the correct paradigm for *contextual ephemeral state*:
-
-- It does not participate in the document flow and therefore takes zero width from the module grid.
-- It appears only when there is something to show (a CV is selected), removing the ambient noise of the placeholder.
-- It can be anchored to a corner of the editor viewport (bottom-left, or top-left below the connection list) so it is
-  always in the user's peripheral vision without covering the modules.
-- Angular Material's `cdkOverlay` or a simple `position: fixed` / `position: sticky` approach on a host element
-  inside the editor scroll container both work; the simpler CSS-only route is preferred.
-
-**Hierarchy of interaction affordances:**
-
-- *Not selected → no panel at all.* The user's entire screen width is given to the module grid.
-- *First CV clicked → panel fades in* with the selected-CV pill (side A). Drawn to a corner, compact height.
-- *Second CV clicked → panel expands* with both sides shown plus the Confirm/Cancel buttons.
-- *After confirm or cancel → panel fades out.*
-
-The transition should be quick (150–200 ms) and use a fade + slight upward translate so it feels like a toast or
-notification, not a layout shift.
-
-#### Product Strategy
-
-The current selection block is one of the few pieces of UI in the editor that *only exists while the user is in a
-specific micro-task* (creating a connection). Treating it as a permanent column conflates the editor's two modes:
-browsing/inspection and active wiring. Separating them spatially gives users a clearer mental model of when they are "in
-wiring mode."
-
-This also unblocks a long-term goal: a wider module grid means users can compare more module panels side-by-side,
-reducing the need to scroll during complex patches. Every pixel of recovered horizontal space directly reduces cognitive
-load when working on dense patches.
-
-**Trade-off to resolve:** The overlay panel must not cover the very CVs the user is trying to click. Anchoring it to
-the **bottom-left** corner of the editor viewport works well for most layouts (module cards are center/right-biased);
-alternatively, a **slim top bar** (below the connections list) that expands in place is lower-risk for small screens.
-
-**Accessibility note:** A floating panel that appears/disappears must announce itself to screen readers
-(`aria-live="polite"` on the host) and must be reachable by keyboard (focus management on panel appearance).
-
-#### Open Questions
-
-- Fixed corner vs. contextual anchor (snap to clicked CV position)?
-- Should the panel be dismissible with `Escape` (resetting the selection)?
-- On viewports narrower than ~800 px, should the panel fall back to the current static-column layout to avoid covering
-  content?
-- Should the panel show a step indicator ("1 of 2 CVs selected") for discoverability with new users?
-
----
-
 ## Feature Status Summary
 
 > Completed features archived in [COMPLETED.md](./COMPLETED.md).
 
 | Feature                              | Status              | Detail                                                                          |
 |--------------------------------------|---------------------|---------------------------------------------------------------------------------|
-| Sticky floating selection panel      | 🟡 Active           | Design in PRODUCT_NEEDS.md; implementation steps in CURRENT_FEATURE.md          |
+| Sticky floating selection panel      | ✅ Done              | position:fixed overlay; bridge service; deselect buttons                        |
 | Multiple module instances in patches | 🟡 In progress      | Core done; 1 UX gap remains (ambiguous wiring); stats rework resolved           |
 | Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                             |
 | Instance UX: stats accuracy          | ✅ Done              | Stats show Cables/Modules/Multiples only; Module Copies card connection-derived |
