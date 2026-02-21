@@ -55,6 +55,7 @@ import {
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
+import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
 
 
 const parentPrefix = 'modules';
@@ -143,6 +144,7 @@ const parentPrefix = 'modules';
     CommentsModule,
     CopyableDirective,
     LibShowcaseGridComponent,
+    EditFabModule,
   ],
   exports: [
     ModuleListComponent,

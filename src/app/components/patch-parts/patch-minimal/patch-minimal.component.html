@@ -59,24 +59,6 @@
           >
             <mat-icon>delete_forever</mat-icon>
           </button>
-          @if ((dataService.patchEditingPanelOpenState$|async) == false) {
-            <button mat-icon-button
-                    matTooltip="Edit patch"
-                    [disabled]="!bag.user"
-                    (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-          }
-          @if ((dataService.patchEditingPanelOpenState$|async)) {
-            <button mat-icon-button
-                    matTooltip="Close editor"
-                    [disabled]="!bag.user"
-                    (click)="dataService.patchEditingPanelOpenState$.next(!dataService.patchEditingPanelOpenState$.value)"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
-          }
         }
         <!--        <button mat-icon-button-->
         <!--                matTooltip="Show details"-->
@@ -85,6 +67,12 @@
         <!--          <mat-icon>info</mat-icon>-->
         <!--        </button>-->
       </div>
+      @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id == bag.user.id) {
+        <app-edit-fab
+          [editMode$]="dataService.patchEditingPanelOpenState$"
+          (toggle$)="dataService.requestPatchEditingToggle$.next()"
+        ></app-edit-fab>
+      }
     }
   </div>
 }
