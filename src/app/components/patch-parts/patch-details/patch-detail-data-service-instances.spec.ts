@@ -10,6 +10,7 @@ import {
   Subject
 } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
@@ -142,6 +143,7 @@ describe('PatchDetailDataService - Instance Management', () => {
       imports: [MatSnackBarModule, MatDialogModule],
       providers: [
         PatchDetailDataService,
+        SelectionPanelBridgeService,
         {provide: SupabaseService, useValue: mockSupabaseService},
         {provide: UserManagementService, useValue: mockUserService},
         {provide: Router, useValue: mockRouter},

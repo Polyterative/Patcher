@@ -1,0 +1,57 @@
+@if ((bridge.selectionState$ | async); as sel) {
+  @if (sel.a || sel.b) {
+    <div class="panel-card" role="status" aria-live="polite">
+      <div class="panel-header">
+        <mat-icon class="panel-icon">cable</mat-icon>
+        <span class="panel-title">Your selection</span>
+        <!-- global close removed; per-side deselects are shown near the selected slot -->
+        <ng-container *ngIf="(bridge.confirmed$ | async); else actions">
+          <span class="panel-confirmed">
+            <mat-icon>check_circle</mat-icon>
+            Recorded
+          </span>
+        </ng-container>
+        <ng-template #actions></ng-template>
+      </div>
+      
+      @if (sel.a && sel.b) {
+        <!-- Both sides selected: show connection preview + confirm -->
+        <app-patch-connection-minimal
+          [data]="{
+            a: sel.a.cv,
+            b: sel.b.cv,
+            patch: (bridge.patchData$ | async)
+          }"
+          [isEditing]="true"
+          [isCreator]="true"
+          [instanceLabelMap]="(bridge.instanceLabelMap$ | async)"
+          (remove$)="bridge.reset$.next()"
+          (create$)="bridge.confirm$.next()"
+        ></app-patch-connection-minimal>
+      } @else {
+        <!-- Only one side selected: show step hint + per-side deselect -->
+        <div class="panel-hint">
+          <mat-icon class="hint-icon">arrow_forward</mat-icon>
+          @if (sel.a) {
+            Output selected — now pick an input
+          } @else {
+            Input selected — now pick an output
+          }
+        </div>
+        <div class="panel-a-label">
+          <mat-icon class="hint-icon">@if (sel.a) {
+            call_made
+          } @else {
+            call_received
+          }</mat-icon>
+          <strong>{{ (sel.a ? sel.a.cv : sel.b.cv).module.name }}</strong> — {{ (sel.a ? sel.a.cv : sel.b.cv).name }}
+          <span class="panel-kind-chip">{{ (sel.a ? sel.a.kind : sel.b.kind) }}</span>
+          <button mat-icon-button class="deselect-btn" matTooltip="Deselect"
+                  (click)="(sel.a ? bridge.resetA$.next() : bridge.resetB$.next())">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+}
