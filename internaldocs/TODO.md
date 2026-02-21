@@ -27,9 +27,27 @@
 
 > Archived in [COMPLETED.md](./COMPLETED.md). 22 features done Feb 18–20.
 
+> **ABANDONED Feb 21:** Integration test for first-click CV highlight bug (
+`patch-editor-cv-highlight.integration.spec.ts`). Test created and confirmed failing; fix deemed not worth the effort.
+> Test file left in place as documentation of the race condition.
+
 ---
 
 ## Active
+
+### LOW: Patch Editor UX — Three polish improvements (CV indicator, inline labels, Add Copy flicker)
+
+**Why:** Three small quality-of-life improvements for the patch editor identified Feb 21.
+
+**Steps:**
+
+- [ ] CV connection indicator: wire `connectionCount$` in `ModuleCVItemComponent`, show badge in template
+- [ ] Inline IN/OUT labels: restructure `module-cvs.component.html` sections to `row` so count label sits beside chips
+- [ ] Add Copy flicker fix: add `trackingId` to `EditorModuleCard`, use it in `@for` track expression
+- [ ] Update unit tests for `ModuleCVItemComponent`
+- [ ] Run targeted tests
+
+---
 
 ### HIGH: BUG — Empty state broken on browser pages (Module / Patch / Rack)
 
@@ -153,6 +171,9 @@ identical.
 - [ ] Replace `dom-to-image` calls with `modern-screenshot` equivalents
 - [ ] Remove `@types/dom-to-image` from devDependencies
 - [ ] Test export in Safari-compatible browser or CI
+
+---
+
 
 ---
 

@@ -2,8 +2,8 @@
   <lib-hero-content-card [titleNormal]="title ?? ''">
     <div style="width: 100%">
       <div class="rowwrap gap2">
-        @for (statistic of visibleStatistics; track statistic) {
-          <div>
+        @for (statistic of visibleStatistics; track statistic; let i = $index) {
+          <div [@enter]="{ value: '', params: { delay: i * 40 } }" [@exit]>
             <div style="min-width: 8rem">
               <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
                 {{ statistic.value }}

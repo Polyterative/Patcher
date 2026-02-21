@@ -91,3 +91,27 @@
   //border-radius: .5rem;
   border: .1rem solid rgba(0, 0, 0, 0.15);
 }
+
+.cv-conn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+  font-size: 0.65rem;
+  line-height: 1;
+  opacity: 0.45;
+  font-weight: 600;
+  // Fade handled by Angular animation; CSS transition only for opacity class changes
+  transition: opacity 120ms ease-in-out;
+
+  &--multi {
+    opacity: 0.75;
+  }
+
+  &__icon {
+    font-size: 10px;
+    width: 10px;
+    height: 10px;
+    line-height: 1;
+  }
+}

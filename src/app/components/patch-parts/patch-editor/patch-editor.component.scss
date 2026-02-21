@@ -7,6 +7,29 @@
   color: $brand-warning;
 }
 
+.module-card-body {
+  position: relative;
+
+  .module-card-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    backdrop-filter: blur(4px) brightness(1.7);
+    opacity: 0.6;
+    transition: opacity 175ms ease-in-out;
+  }
+
+  &:hover .module-card-actions {
+    opacity: 1;
+  }
+}
+
 .leftBorderS {
   border-left-width: .5rem;
   border-left-style: solid;

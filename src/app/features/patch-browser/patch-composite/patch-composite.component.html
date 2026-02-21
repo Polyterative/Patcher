@@ -57,7 +57,7 @@
   }
   <ng-template #statsCard>
     @if ({
-      connections: (dataService.patchConnections$|async)
+      connections: (dataService.editorConnections$|async)
     }; as bagS) {
       @if (data && bagS.connections && bagS.connections.length > 0) {
         @if (bagS.connections | patchConnectionStats; as stats) {
@@ -75,13 +75,15 @@
     }
   </ng-template>
   <ng-template #uniqueModulesSummary>
-    @if ((dataService.patchConnections$|async); as connections) {
+    @if ((dataService.editorConnections$|async); as connections) {
       @if (connections | patchConnectionUniqueModules; as modules) {
         @if (modules.length > 0) {
           <lib-hero-content-card titleNormal="Modules needed">
             <div class="col gap0">
-              @for (entry of modules; track entry.moduleId) {
-                <div class="row gap1" style="align-items: center">
+              @for (entry of modules; track entry.moduleId; let i = $index) {
+                <div class="row gap1" style="align-items: center"
+                     [@enter]="{ value: '', params: { delay: i * 40 } }"
+                     [@exit]>
                   <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">developer_board</mat-icon>
                   <span>
                     <strong>{{ entry.moduleName }}</strong>
