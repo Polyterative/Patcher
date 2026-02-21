@@ -15,6 +15,9 @@ import {
 } from '@angular/material/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
@@ -38,6 +41,8 @@ import {
 
 import * as Sentry from "@sentry/angular";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
+import { SelectionPanelOutletComponent } from 'src/app/components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
+import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
 
 
 const locale: {
@@ -69,10 +74,11 @@ const matDatepickerLocaleIT = {
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
+    SelectionPanelOutletComponent,
     RouterModule,
     BrowserAnimationsModule,
     ToolbarModule,
@@ -87,9 +93,13 @@ const matDatepickerLocaleIT = {
     MatDividerModule,
     BackboneModule,
     AppFaqComponent,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
 //keep as last (for routes)
   ],
   providers:    [
+    SelectionPanelBridgeService,
     locale,
     matDatepickerLocale,
     matDatepickerLocaleIT,
