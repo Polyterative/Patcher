@@ -44,6 +44,12 @@ export interface EditorModuleCard {
   connectionCount: number;
   /** Human-readable connection summaries for tooltip (max 10) */
   connectionNames: string[];
+  /**
+   * Stable identity key for @for tracking.
+   * Uses instance.id when set; falls back to -(module.id) so the key never flips
+   * when the first instance is created (avoids DOM re-creation → no re-animation).
+   */
+  trackingId: number;
 }
 
 @Component({
@@ -161,7 +167,10 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           label: undefined,
           instanceCount: count,
           connectionCount: instConns.length,
-          connectionNames: this.buildConnectionNames(instConns, inst?.id)
+          connectionNames: this.buildConnectionNames(instConns, inst?.id),
+          // Stable key: prefer instance.id; fall back to negative module.id so the key
+          // never changes when the first instance is lazily created (prevents re-animation).
+          trackingId: inst?.id ?? -module.id
         });
       } else {
         // N instances → N cards with labels
@@ -175,7 +184,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
             label: inst.instance_label || `(${ idx + 1 })`,
             instanceCount: count,
             connectionCount: instConns.length,
-            connectionNames: this.buildConnectionNames(instConns, inst.id)
+            connectionNames: this.buildConnectionNames(instConns, inst.id),
+            trackingId: inst.id
           });
         });
       }
