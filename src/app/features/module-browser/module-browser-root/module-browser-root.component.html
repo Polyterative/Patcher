@@ -28,6 +28,7 @@
                              [options$]="dataService.fields.manufacturers.options$"
                              [label]="dataService.fields.manufacturers.label"
                              [disableVoidSelection]="false"
+                             [autocompleteCanBeVoid]="true"
                              iconL1="business"
         ></lib-mat-form-entity>
 
@@ -67,6 +68,7 @@
           </app-brand-primary-button>
           <button mat-stroked-button
                   (click)="dataService.resetForm$.next()"
+                  [disabled]="!(dataService.canReset$ | async)"
                   [matTooltip]="'Reset all filters'"
           >
             <mat-icon>refresh</mat-icon>

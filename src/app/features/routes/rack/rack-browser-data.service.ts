@@ -17,6 +17,8 @@ import {
 import {
   debounceTime,
   distinctUntilChanged,
+  map,
+  shareReplay,
   startWith,
   switchMap,
   takeUntil,
@@ -75,6 +77,7 @@ export class RackBrowserDataService implements OnDestroy {
   };
   
   paginatorToFistPage$ = new Subject<void>();
+  canReset$: Observable<boolean>;
   protected destroyEvent$ = new Subject<void>();
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
@@ -82,7 +85,6 @@ export class RackBrowserDataService implements OnDestroy {
     this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
   ]);
-  dirty = false;
   
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
@@ -159,7 +161,19 @@ export class RackBrowserDataService implements OnDestroy {
         
       }
     };
-  
+    
+    this.canReset$ = combineLatest([
+      this.fields.search.control.valueChanges.pipe(startWith(this.fields.search.control.value)),
+      this.fields.order.control.valueChanges.pipe(startWith(this.fields.order.control.value)),
+    ]).pipe(
+      map(([search, order]) =>
+        search !== '' ||
+        (order && order.id !== 'updated')
+      ),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
   
     this.updateRacksList$
@@ -177,8 +191,6 @@ export class RackBrowserDataService implements OnDestroy {
       .subscribe((x: any) => {
           this.serversideAdditionalData.itemsCount$.next(x.count);
           this.racksList$.next(x.data);
-  
-          this.dirty = true;
         });
   
     this.fields.search.control.valueChanges.pipe(
