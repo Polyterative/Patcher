@@ -414,10 +414,12 @@ export class PatchDetailDataService implements OnDestroy {
           && connection.instance_id_b === newConnection.instance_id_b
         );
         if (!isAlreadyInList) {
-          this.editorConnections$.next([
+          const nextList = [
             ...patchConnections,
             newConnection
-          ]);
+          ];
+          this.editorConnections$.next(nextList);
+          this.bridge.editorConnections$.next(nextList);
           this.requestConnectionDbSync$.next();
           SharedConstants.successCustom(this.snackBar, `${ newConnection.a.module.name } "${ newConnection.a.name }" → ${ newConnection.b.module.name } "${ newConnection.b.name }" recorded.`);
           
@@ -431,7 +433,10 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.patchConnections$
       .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(x => this.editorConnections$.next(x));
+      .subscribe(x => {
+        this.editorConnections$.next(x);
+        this.bridge.editorConnections$.next(x);
+      });
     
     this.removeConnectionFromEditor$
       .pipe(
@@ -439,12 +444,13 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(([x, data]) => {
-        this.editorConnections$.next(
-          data.filter(
-            connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id
-              && connection.instance_id_a === x.instance_id_a
-              && connection.instance_id_b === x.instance_id_b))
-        );
+        const next = data.filter(
+          connection => !(connection.a.id === x.a.id && connection.b.id === x.b.id
+            && connection.instance_id_a === x.instance_id_a
+            && connection.instance_id_b === x.instance_id_b))
+        ;
+        this.editorConnections$.next(next);
+        this.bridge.editorConnections$.next(next);
         this.requestConnectionDbSync$.next();
       });
     
@@ -744,6 +750,7 @@ export class PatchDetailDataService implements OnDestroy {
             return changed ? patched : conn;
           });
           this.editorConnections$.next(scrubbed);
+          this.bridge.editorConnections$.next(scrubbed);
           this.requestConnectionDbSync$.next();
         }
         
