@@ -10,6 +10,7 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  merge,
   Observable,
   of,
   Subject
@@ -19,6 +20,7 @@ import {
   distinctUntilChanged,
   map,
   share,
+  shareReplay,
   startWith,
   switchMap,
   takeUntil,
@@ -30,7 +32,8 @@ import {
 } from '../../models/module';
 import {
   FormTypes,
-  getCleanedValueId
+  getCleanedValueId,
+  isOption
 } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SupabaseService } from '../backend/supabase.service';
 import { PageEvent } from "@angular/material/paginator";
@@ -130,7 +133,8 @@ export class ModuleBrowserDataService implements OnDestroy {
   }
   
   paginatorToFistPage$ = new Subject<void>();
-  dirty = false;
+  canReset$: Observable<boolean>;
+  private filterStateForced$ = new Subject<void>();
   private serversideDataPackage$ = combineLatest([
     this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
     this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
@@ -332,6 +336,28 @@ export class ModuleBrowserDataService implements OnDestroy {
       }
     };
     
+    this.canReset$ = combineLatest([
+      this.fields.name.control.valueChanges.pipe(startWith(this.fields.name.control.value)),
+      this.fields.description.control.valueChanges.pipe(startWith(this.fields.description.control.value)),
+      this.fields.manufacturers.control.valueChanges.pipe(startWith(this.fields.manufacturers.control.value)),
+      this.fields.hp.control.valueChanges.pipe(startWith(this.fields.hp.control.value)),
+      this.fields.hpCondition.control.valueChanges.pipe(startWith(this.fields.hpCondition.control.value)),
+      this.fields.standard.control.valueChanges.pipe(startWith(this.fields.standard.control.value)),
+      this.fields.order.control.valueChanges.pipe(startWith(this.fields.order.control.value)),
+    ]).pipe(
+      map(([name, description, manufacturers, hp, hpCondition, standard, order]) =>
+        name !== '' ||
+        description !== '' ||
+        isOption(manufacturers) ||
+        hp !== '' ||
+        (hpCondition && hpCondition.id !== '=') ||
+        (standard && standard.id !== undefined) ||
+        (order && order.id !== this.orderStartingValue.id)
+      ),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
     this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
     
     this.updateModulesList$
@@ -361,8 +387,6 @@ export class ModuleBrowserDataService implements OnDestroy {
       .subscribe(x => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
         this.modulesList$.next(x.data);
-        
-        this.dirty = true;
       });
     
     this.resetForm$
