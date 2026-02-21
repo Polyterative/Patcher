@@ -243,14 +243,8 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(data => {
-        this.formData.name.control.reset();
-        this.formData.description.control.reset();
-        
-        this.formData.name.control.patchValue(data.name);
-        
-        if (!!data.description) {
-          this.formData.description.control.patchValue(data.description);
-        }
+        this.formData.name.control.reset(data.name, {emitEvent: false});
+        this.formData.description.control.reset(data.description ?? '', {emitEvent: false});
       });
     
     this.singlePatchData$
