@@ -33,12 +33,13 @@ import {
   standalone: false
 })
 export class PatchConnectionMinimalComponent implements OnInit {
-  @Input() readonly index?: number;
-  @Input() readonly data: PatchConnection;
-  @Input() readonly isEditing = false;
-  @Input() readonly isCreator = false;
+  @Input() index?: number;
+  @Input() data: PatchConnection;
+  @Input() isEditing = false;
+  @Input() isCreator = false;
+  @Input() confirmed: boolean | null = null;
   /** Map from instance ID → display label (e.g. "(1)"). Only set for multi-instance modules. */
-  @Input() readonly instanceLabelMap: Map<number, string> = new Map();
+  @Input() instanceLabelMap: Map<number, string> = new Map();
   @Output() readonly remove$ = new EventEmitter<PatchConnection>();
   @Output() readonly create$ = new EventEmitter<PatchConnection>();
   /** Injected from patch-connections-list; emits the connection whose notes changed for backend sync. */

@@ -125,7 +125,8 @@ or `merge` all its sources**, and keep `BehaviorSubject` only at the imperative 
 this.A$.subscribe(v => this.B$.next(transform(v)));
 
 // Use:
-readonly B$ = this.A$.pipe(map(transform), shareReplay(1));
+readonly
+B$ = this.A$.pipe(map(transform), shareReplay(1));
 ```
 
 For `selectedForConnection$` specifically, the clean form is:
@@ -171,7 +172,9 @@ scope here.
 | B6 | `SelectionPanelBridgeService`           | Three separate mirror subscriptions (`selectedForConnection$`, `singlePatchData$`, `instanceLabelMap$`) in the service. Adding a fourth field requires touching three places.                                                                                    |
 | B7 | `SelectionPanelBridgeService`           | No `confirmed$` signal. After `confirm$` fires and the connection is recorded, the outlet has no way to show the "Recorded ✓" indicator before the panel fades.                                                                                                  |
 
-#### Optimization plan — what to do (without full rewrite)
+---
+
+### Optimization plan — what to do (without full rewrite)
 
 A full declarative rewrite of `PatchDetailDataService` is a separate task. The goal here is to fix
 the identified bugs and introduce the bridge improvements needed for Layer 4 UI, while keeping the
@@ -188,16 +191,16 @@ existing subscribe-and-mutate structure stable. Specific targeted changes:
 
 ---
 
-#### Layer 4 — Refinements (in progress)
+### Layer 4 — Refinements (in progress)
 
 ##### 4a — Panel visible regardless of which side is selected first  *(fixes B3)*
 
 **Bug:** `clickOnModuleCV$` puts an `out` CV into `sel.a` and an `in` CV into `sel.b`. The outlet template gates
 on `@if (sel.a)` — so starting with an `in` click (which sets only `sel.b`) never shows the panel.
 
-- [ ] In the outlet template: change the outer guard from `@if (sel.a)` to `@if (sel.a || sel.b)` so the panel
+- [x] In the outlet template: change the outer guard from `@if (sel.a)` to `@if (sel.a || sel.b)` so the panel
   appears for both click orders
-- [ ] In the partial-hint branch (one side only): detect which side is populated and render the right slot:
+- [x] In the partial-hint branch (one side only): detect which side is populated and render the right slot:
      - `sel.a` (output selected): show "Output selected — now pick an input"
      - `sel.b` (input selected): show "Input selected — now pick an output"
        Use a computed label: `sel.a ? sel.a : sel.b` for the CV label row; show `kind` chip accordingly
@@ -216,30 +219,34 @@ Currently the partial card only shows module name + CV name. Add:
 Currently the panel header has a global `close` button, and `app-patch-connection-minimal` also exposes a
 `(remove$)` which resets everything. This is redundant.
 
-- [ ] Add `resetA$` and `resetB$` Subjects to `SelectionPanelBridgeService`
-- [ ] In `PatchDetailDataService`: subscribe `bridge.resetA$` → emit `{ a: null, b: sel.b }` into
+- [x] Add `resetA$` and `resetB$` Subjects to `SelectionPanelBridgeService`
+- [x] In `PatchDetailDataService`: subscribe `bridge.resetA$` → emit `{ a: null, b: sel.b }` into
   `selectedForConnection$`; subscribe `bridge.resetB$` → emit `{ a: sel.a, b: null }`
-- [ ] Remove the global `close` button from the panel header entirely
-- [ ] In the partial-hint view: show a small deselect button (`×`) next to the selected CV chip that emits
+- [x] Remove the global `close` button from the panel header entirely
+- [x] In the partial-hint view: show a small deselect button (`×`) next to the selected CV chip that emits
   `bridge.resetA$.next()` or `bridge.resetB$.next()` depending on which slot is filled
-- [ ] In the full (both-sides) view: show per-side deselect `×` icons on the input and output slot labels so
+- [x] In the full (both-sides) view: show per-side deselect `×` icons on the input and output slot labels so
   users can undo one side without cancelling the whole connection
 
 ##### 4d — Confirm button → "recorded" indicator  *(fixes B5, B7)*
 
-After `(create$)` is emitted, the connection is saved. The panel currently lingers with stale selection state
-(B5). We want brief positive feedback and then a clean fade-out.
+New findings and change of scope: after reviewing UX needs the Recorded flow should not immediately
+close the panel. Instead the Confirm button must flip into a non-interactive "Recorded" label (so the
+user sees confirmation) and the selection must be kept — the user can then tweak one side (deselect one
+slot or choose a different CV) and confirm again. The outlet will still expose the global reset if they want
+to cancel everything.
 
-- [ ] Add `confirmed$` BehaviorSubject<boolean> (default `false`) to `SelectionPanelBridgeService`
-- [ ] In `PatchDetailDataService` after successful `isAlreadyInList` check: call
-  `this.bridge.confirmed$.next(true)`, then immediately call `this.resetSelectedForConnection$.next()`
-  (so the selection data is cleared; the outlet stays visible only because `confirmed$` is still `true`)
-- [ ] Ensure `bridge.confirmed$` resets to `false` whenever `reset$`, `resetA$`, or `resetB$` fires
-- [ ] In the outlet template: when `bridge.confirmed$ | async` is `true`, replace the confirm button with a
-  read-only success chip (`check_circle` icon + "Recorded" label, styled in accent green)
-- [ ] After 800 ms auto-dismiss: in the outlet component `ngOnInit`, subscribe to `bridge.confirmed$` and
-  schedule `setTimeout(() => bridge.reset$.next(), 800)` when it becomes `true` — this clears selection and
-  resets `confirmed$`, causing the panel to fade out gracefully
+- [x] Add `confirmed$` BehaviorSubject<boolean> (default `false`) to `SelectionPanelBridgeService`
+- [x] In `PatchDetailDataService` after successful `isAlreadyInList` check: call
+  `this.bridge.confirmed$.next(true)`, but DO NOT immediately call `resetSelectedForConnection$.next()` — keep selection
+  live.
+- [x] Ensure `bridge.confirmed$` resets to `false` whenever `reset$`, `resetA$`, or `resetB$` fires
+- [x] In the outlet template: when `bridge.confirmed$ | async` is `true`, show a read-only success chip (`check_circle`
+  icon + "Recorded")
+- [x] In `app-patch-connection-minimal` add an `@Input() confirmed` so it swaps the Confirm button for the Recorded
+  indicator while preserving selection
+- [ ] (opt) Add a short auto-dismiss if you want the panel to eventually hide without losing the UX nuance (currently
+  intentionally omitted)
 
 ##### 4e — Stale-selection guard on instance deletion  *(fixes B2)*
 
@@ -247,11 +254,11 @@ When `removeModuleInstance$` completes, `editorConnections$` is scrubbed. But `s
 not checked — a dangling CV selection referencing the deleted instance can then be confirmed, writing a DB row
 with an invalid FK.
 
-- [ ] In the `removeModuleInstance$` subscribe block, after scrubbing connections, read
+- [x] In the `removeModuleInstance$` subscribe block, after scrubbing connections, read
   `this.selectedForConnection$.value`; if `sel.a?.cv.instance_id === removed.id` or
   `sel.b?.cv.instance_id === removed.id`, call `this.resetSelectedForConnection$.next()` to clear
   the dangling selection
-- [ ] Also ensure `bridge.confirmed$` resets to `false` in this path (since reset$ fires, it's covered
+- [x] Also ensure `bridge.confirmed$` resets to `false` in this path (since reset$ fires, it's covered
   automatically if the confirmed$ reset is wired to reset$ — see 4d)
 
 ##### 4f — Replace `withLatestFrom` with `scan` in CV click handler  *(fixes B1)*
@@ -259,47 +266,58 @@ with an invalid FK.
 `clickOnModuleCV$` currently uses `withLatestFrom(selectedForConnection$)` — if two rapid clicks arrive
 before the BehaviorSubject ticks, the second snap could be stale.
 
-- [ ] Replace the `withLatestFrom` + `switch` block in `clickOnModuleCV$` with a `scan` operator:
-  ```typescript
-  this.clickOnModuleCV$.pipe(
-    scan(
-      (state, cv) => cv.kind === 'out'
-        ? {...state, a: cv}
-        : {...state, b: cv},
-      {a: null, b: null} as { a: CVConnectionEntity | null; b: CVConnectionEntity | null }
-    ),
-    takeUntil(this.destroyEvent$)
-  ).subscribe(state => this.selectedForConnection$.next(state));
-  ```
-  Note: `scan` accumulates correctly across rapid emissions without a snapshot race. The reset stream
-  must inject a sentinel — either combine with `resetSelectedForConnection$` using `merge` + a resetting
-  scan seed, or keep the existing separate `resetSelectedForConnection$` subscription (simpler, fine for now).
+- [x] Replace the `withLatestFrom` + `switch` block in `clickOnModuleCV$` with a `scan` operator (implemented in
+  service)
 
 ##### 4g — Smoke-test + unit tests
 
-- [ ] Smoke-test: idle → no panel; output-first click → partial hint (output slot); input-first click → partial
+- [x] Smoke-test: idle → no panel; output-first click → partial hint (output slot); input-first click → partial
   hint (input slot); both sides → full preview; deselect one side → back to partial; confirm → "Recorded" chip →
-  panel fades; delete instance while selected → selection clears immediately; navigate away → panel gone
-- [ ] Run `yarn test --testPathPattern="patch-editor|patch-detail-data|selection-panel"` and fix breakages
+  panel remains visible and allows tweaking; delete instance while selected → selection clears immediately; navigate
+  away → panel gone
+- [x] Unit tests added for selection/deselect flows and the cancel→input resurrection bug
 
 ---
 
-### Gotchas / Discoveries
+### New findings (user feedback)
 
-- `SelectionPanelBridgeService` has no `providedIn` metadata. Both `PatchDetailDataService` and
-  `SelectionPanelOutletComponent` resolve it upward to `AppModule` — this is correct and intentional.
-- The animation `@keyframes` is applied to `.panel-card`, not `:host`. Applying `transform` to the `position:fixed`
-  host would create a new stacking context and break fixed positioning.
-- `sel.a` = output CV; `sel.b` = input CV — this matches `clickOnModuleCV$` switch logic in
-  `PatchDetailDataService`. The partial-hint branch must check both to handle either-order flows.
-- `bridge.resetA$` / `resetB$` are new action buses following the same pattern as `reset$` and `confirm$`.
-- The `confirmed$` auto-dismiss timeout lives in the outlet component, not in the service, to keep side effects
-  out of the bridge (which is a pure message bus).
-- `scan` in `clickOnModuleCV$` eliminates the `withLatestFrom` snapshot race. The existing
-  `resetSelectedForConnection$` subscription that zeroes `selectedForConnection$` still works correctly
-  alongside it because `selectedForConnection$` is a BehaviorSubject — resetting it via `.next({a:null,b:null})`
-  is idempotent regardless of `scan` state (the scan seed starts fresh on the next emission since the
-  BehaviorSubject value is the shared truth, not scan's internal accumulator).
-- The stale-selection guard in `removeModuleInstance$` must run **after** the instance is confirmed deleted
-  (inside the final `.subscribe(removed => {...})` block), not in the `switchMap` — consistent with where
-  the connection scrub already lives.
+During implementation and user review we discovered a few UX clarifications which changed the polish behavior:
+
+- The Confirm action must not immediately close the panel. The user needs the ability to confirm, see a
+  persistent "Recorded" indicator, then optionally change only one side (for cases when they want to keep
+  the other side and swap the input/out). We implemented this: the `confirmed$` signal is emitted and the
+  Confirm button is replaced with a `Recorded` chip; the selection stays live until the user resets or
+  changes a side.
+- Per-side deselect controls must be visually integrated with the module slot (small deselect chip, not a
+  big icon floating far away). The outlet template now renders `deselect-chip` controls inline next to
+  the module title; the `app-patch-connection-minimal` component will show a Recorded indicator instead of
+  a Confirm button when `confirmed` is true.
+- When both CVs belong to the same module, repeating the module name is noisy. The outlet now hides the
+  second module name in that case (we still show each CV name) to keep the preview compact and readable.
+
+These UX changes have been applied in code and documented above.
+
+---
+
+### Remaining items / follow-ups
+
+- [ ] Decide whether to auto-dismiss the panel after a short timeout when `confirmed$` becomes `true`.
+  Pros: panel eventually clears without user action; Cons: user could be mid-editing and lose context. For
+  now we left auto-dismiss out (the outlet shows the Recorded chip and the selection remains until the user acts).
+- [ ] Tidy up small TypeScript template warnings (unused lambda args, a few leftover `readonly` uses in unrelated files)
+- [ ] Add Playwright e2e that navigates the full flow (select output → cancel → select input; both → deselect one side;
+  confirm → recorded chip remains and then tweak one side)
+- [ ] If desired, convert `PatchDetailDataService` selection logic to a fully-declarative `selectedForConnection$`
+  observable (low-risk but larger refactor).
+
+---
+
+### Notes for reviewers / QA
+
+- Test the confirm flow carefully: confirm should change the button to a Recorded chip and NOT clear the other side.
+- Confirming twice (without changing the selection) will attempt to create a duplicate and will show an error snack.
+- Deleting an instance that is currently selected will clear that selected side immediately and show a success snack.
+
+---
+
+End of feature file.
