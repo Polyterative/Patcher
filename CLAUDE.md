@@ -150,6 +150,8 @@ Internal pipe helpers in `supabase.service.ts`: `cacheBust(keys)` · `catchError
 - New backend write without `cacheBust([...keys])` — stale cache
 - New backend method without registering table in `DatabaseStrings.ts` first
 - `destroyEvent$` — legacy; use `destroy$` from `SubManager`
+- Staging files without checking `git status` first — user commits between sessions; always verify what is actually
+  uncommitted before `git add`
 
 ## Git
 
@@ -164,6 +166,13 @@ Examples:
 Types: `feat` · `fix` · `docs` · `style` · `refactor` · `perf` · `test` · `chore`
 
 **Always ask before committing** unless the user has explicitly said to commit. **Never push** — the user handles that.
+
+**Before staging:** always run `git status` + `git diff HEAD --stat` first. The user commits between context switches —
+files you modified may already be in HEAD. Only stage files that are actually modified. Staging already-committed files
+wastes time and produces empty commits.
+
+**When explicitly told to commit (e.g. "commit automatically if tests pass"):** do it immediately without asking again.
+Run tests, then stage only the relevant new files and commit.
 
 ## Communication
 
