@@ -28,6 +28,7 @@
         <div class="col gap1">
           <button mat-stroked-button
                   (click)="dataService.resetForm$.next()"
+                  [disabled]="!(dataService.canReset$ | async)"
                   [matTooltip]="'Reset all filters'"
           >
             <mat-icon>refresh</mat-icon>
