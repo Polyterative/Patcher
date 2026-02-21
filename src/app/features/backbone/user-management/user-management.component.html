@@ -37,21 +37,7 @@
                 </app-brand-primary-button>
               </div>
               <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
-              <div class="row gap1" fxLayoutAlign="start center">
-                <app-label-value-showcase label="Password (hidden)"
-                                          fxFlex="grow"
-                >********
-                </app-label-value-showcase>
-                <app-brand-primary-button
-                  (click$)="resetPassword()"
-                  icon="lock_reset"
-                  matTooltip="Send a password reset email to your registered email address"
-                  theme="primary"
-                >Reset Password
-                </app-brand-primary-button>
-              </div>
-              
-              <!-- Inline password-change form -->
+              <!-- Password section -->
               @if (userManagementService.showPasswordForm$ | async) {
                 <form class="col gap1"
                       [formGroup]="passwordForm"
@@ -104,13 +90,19 @@
                   </div>
                 </form>
               } @else {
-                <app-brand-primary-button
-                  (click$)="userManagementService.togglePasswordForm$.next(true)"
-                  icon="lock"
-                  matTooltip="Change your password directly without leaving this page"
-                  theme="primary"
-                >Change Password
-                </app-brand-primary-button>
+                <div class="row gap1" fxLayoutAlign="start center">
+                  <app-label-value-showcase label="Password"
+                                            fxFlex="grow"
+                  >••••••••
+                  </app-label-value-showcase>
+                  <app-brand-primary-button
+                    (click$)="userManagementService.togglePasswordForm$.next(true)"
+                    icon="lock"
+                    matTooltip="Change your password directly without leaving this page"
+                    theme="primary"
+                  >Change
+                  </app-brand-primary-button>
+                </div>
               }
               <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
               </app-label-value-showcase>
