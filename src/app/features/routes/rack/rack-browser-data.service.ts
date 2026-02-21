@@ -6,10 +6,10 @@ import {
   FormControl,
   UntypedFormControl
 } from '@angular/forms';
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { PageEvent } from "@angular/material/paginator";
 import {
   BehaviorSubject,
-  combineLatest,
+  merge,
   Observable,
   of,
   Subject
@@ -21,40 +21,42 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
-  withLatestFrom
+  takeUntil
 } from 'rxjs/operators';
 import { RackMinimal } from 'src/app/models/rack';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { PageEvent } from "@angular/material/paginator";
 
 
 export type RackList = RackMinimal[] | null;
+
+const RACK_ORDER_OPTIONS = [
+  {id: 'name', name: 'Name ↑'},
+  {id: 'name', name: 'Name ↓'},
+  {id: 'created', name: 'Created ↑'},
+  {id: 'created', name: 'Created ↓'},
+  {id: 'updated', name: 'Updated ↑'},
+  {id: 'updated', name: 'Updated ↓'},
+];
+
+const RACK_DEFAULT_ORDER = {id: 'updated', name: 'Updated ↓'};
 
 @Injectable()
 export class RackBrowserDataService implements OnDestroy {
   racksList$ = new BehaviorSubject<RackList>(null);
   updateRacksList$ = new Subject<void>();
   resetForm$ = new Subject<void>();
-  
-  ////
+
   serversideTableRequestData = {
     skip$:   new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$:   new BehaviorSubject<[string, string]>([
-      '',
-      ''
-    ]) // { example:  "active": "name",// "direction": "desc"// }
+    sort$: new BehaviorSubject<[string, string]>(['', ''])
   };
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
   };
-  
-  formTypes = FormTypes;
-  
+
   fields: {
     search: {
       code: string;
@@ -73,141 +75,95 @@ export class RackBrowserDataService implements OnDestroy {
         name: string;
         id: string
       }[]>
-    }
+    };
   };
-  
+
   paginatorToFistPage$ = new Subject<void>();
   canReset$: Observable<boolean>;
   protected destroyEvent$ = new Subject<void>();
-  private serversideDataPackage$ = combineLatest([
-    this.serversideTableRequestData.skip$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.take$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.filter$.pipe(distinctUntilChanged()),
-    this.serversideTableRequestData.sort$.pipe(distinctUntilChanged())
-  ]);
-  
+
   onPageEvent($event: PageEvent) {
     this.serversideTableRequestData.take$.next($event.pageSize);
     this.serversideTableRequestData.skip$.next(($event.pageIndex) * $event.pageSize);
     this.updateRacksList$.next();
   }
   
-  onFilterEvent(userText: string) {
-    this.serversideTableRequestData.skip$.next(0);
-    this.serversideTableRequestData.filter$.next(userText);
-    this.updateRacksList$.next();
-  }
-  
-  onSortEvent(column: string, direction = 'asc'): void {
-    this.serversideTableRequestData.sort$.next([
-      column,
-      direction
-    ]);
-    this.updateRacksList$.next();
-  }
-  
-  constructor(
-    private userService: UserManagementService,
-    private snackBar: MatSnackBar,
-    private backend: SupabaseService
-  ) {
-    
+  constructor(private backend: SupabaseService) {
     this.fields = {
       search: {
         label: 'Search rack...',
         code: 'search',
         flex: '6rem',
         control: new UntypedFormControl(''),
-        type: FormTypes.TEXT
-        
+        type: FormTypes.TEXT,
       },
       order: {
         label: 'Order by',
         code: 'order',
         flex: '6rem',
-        control: new UntypedFormControl({
-          id: 'updated',
-          name: 'Updated'
-        }),
+        control: new UntypedFormControl(RACK_DEFAULT_ORDER),
         type: FormTypes.SELECT,
-        options$: of([
-          {
-            id: 'name',
-            name: 'Name ↑'
-          },
-          {
-            id: 'name',
-            name: 'Name ↓'
-          },
-          {
-            id: 'created',
-            name: 'Created ↑'
-          },
-          {
-            id: 'created',
-            name: 'Created ↓'
-          },
-          {
-            id: 'updated',
-            name: 'Updated ↑'
-          },
-          {
-            id: 'updated',
-            name: 'Updated ↓'
-          }
-        ])
-          .pipe(
-            startWith([]))
-        
-      }
+        options$: of(RACK_ORDER_OPTIONS),
+      },
     };
-    
-    this.canReset$ = combineLatest([
-      this.fields.search.control.valueChanges.pipe(startWith(this.fields.search.control.value)),
-      this.fields.order.control.valueChanges.pipe(startWith(this.fields.order.control.value)),
-    ]).pipe(
-      map(([search, order]) =>
-        search !== '' ||
-        (order && order.id !== 'updated')
-      ),
+
+    this.canReset$ = merge(
+      this.fields.search.control.valueChanges,
+      this.fields.order.control.valueChanges
+    ).pipe(
+      startWith(null),
+      map(() => {
+        const order = this.fields.order.control.value;
+        return (
+          this.fields.search.control.value !== '' ||
+          (order && order.id !== 'updated')
+        );
+      }),
       distinctUntilChanged(),
       shareReplay(1)
     );
-
-    this.fields.order.control.valueChanges.subscribe(data => this.onSortEvent(data.id, data.name.includes('↑') ? 'asc' : 'desc'));
-  
-    this.updateRacksList$
-        .pipe(
-          withLatestFrom(this.serversideDataPackage$),
-          switchMap(([_, [skip, take, filter, sort]]) => {
-            const sortColumnName: string = sort[0] ? sort[0] : null;
-            const sortDirection = sort[1];
-  
-            // return this.backend.get.racks(skip, (skip + take) - 1, filter, sortColumnName);
-            return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortColumnName, sortDirection);
-          }),
-          takeUntil(this.destroyEvent$)
-        )
-      .subscribe((x: any) => {
-          this.serversideAdditionalData.itemsCount$.next(x.count);
-          this.racksList$.next(x.data);
-        });
-  
-    this.fields.search.control.valueChanges.pipe(
+    
+    // Single merged pipeline — debounce collapses reset burst into one fetch.
+    merge(
+      this.fields.search.control.valueChanges,
+      this.fields.order.control.valueChanges
+    ).pipe(
       debounceTime(750),
       takeUntil(this.destroyEvent$)
-    )
-        .subscribe(x => {
-          this.paginatorToFistPage$.next();
-          this.onFilterEvent(x);
-          // this.updateData$.next();
-        });
+    ).subscribe(() => {
+      const orderVal = this.fields.order.control.value;
+      const searchVal = this.fields.search.control.value ?? '';
+      this.serversideTableRequestData.filter$.next(searchVal);
+      this.serversideTableRequestData.sort$.next([
+        orderVal?.id ?? '',
+        orderVal?.name?.includes('↑') ? 'asc' : 'desc'
+      ]);
+      this.serversideTableRequestData.skip$.next(0);
+      this.paginatorToFistPage$.next();
+      this.updateRacksList$.next();
+    });
     
+    this.updateRacksList$
+      .pipe(
+        switchMap(() => {
+          const skip = this.serversideTableRequestData.skip$.value;
+          const take = this.serversideTableRequestData.take$.value;
+          const filter = this.serversideTableRequestData.filter$.value;
+          const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
+          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir);
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe((x: any) => {
+        this.serversideAdditionalData.itemsCount$.next(x.count);
+        this.racksList$.next(x.data);
+      });
+
     this.resetForm$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => {
-        this.fields.search.control.setValue('', {emitEvent: false});
-        this.fields.order.control.setValue({id: 'updated', name: 'Updated ↓'}, {emitEvent: false});
+        this.fields.search.control.setValue('');
+        this.fields.order.control.setValue(RACK_DEFAULT_ORDER);
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next(['updated', 'desc']);
         this.serversideTableRequestData.skip$.next(0);
@@ -219,6 +175,5 @@ export class RackBrowserDataService implements OnDestroy {
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
-    
   }
 }

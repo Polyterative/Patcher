@@ -13,6 +13,7 @@ import {
 } from 'src/app/components/rack-parts/rack-minimal/rack-minimal.component';
 import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { MatPaginator } from "@angular/material/paginator";
 
 
@@ -25,7 +26,7 @@ import { MatPaginator } from "@angular/material/paginator";
 })
 export class RackBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  
+  readonly formTypes = FormTypes;
   protected destroyEvent$ = new Subject<void>();
   
   viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
