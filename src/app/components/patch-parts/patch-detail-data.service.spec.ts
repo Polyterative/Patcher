@@ -27,12 +27,16 @@ describe('PatchDetailDataService selection behavior', () => {
   beforeEach(() => {
     // Lightweight stubs for the constructor dependencies
     bridge = new SelectionPanelBridgeService();
-    const backendStub: any = {getUserSession$: () => of(null), GET: {patchConnections: (_: any) => of([])}};
+    const backendStub: any = {
+      getUserSession$: () => of(null),
+      GET: {patchConnections: (_: any) => of([])},
+      delete: {patchModuleInstance: (_: any) => of({})}
+    };
     const router = routerStub as any;
     const snack = snackStub as any;
     const dialog = dialogStub as any;
     const userService = new DummyUserService() as any;
-    
+
     service = new PatchDetailDataService(router, snack, dialog, userService, backendStub, bridge);
   });
   
@@ -95,6 +99,54 @@ describe('PatchDetailDataService selection behavior', () => {
     }, 10);
   });
   
+  it('when the instance on side A is deleted, only side A is cleared', (done) => {
+    const instanceA: any = {id: 101, module_id: 11};
+    const instanceB: any = {id: 201, module_id: 12};
+    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 101}, kind: 'out'} as any;
+    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 201}, kind: 'in'} as any;
+
+    service.patchModuleInstances$.next([instanceA, instanceB]);
+    service.clickOnModuleCV$.next(out);
+    service.clickOnModuleCV$.next(inp);
+
+    const states: any[] = [];
+    const sub = service.selectedForConnection$.subscribe(s => states.push(s));
+
+    service.removeModuleInstance$.next(instanceA);
+
+    setTimeout(() => {
+      const last = states[states.length - 1];
+      expect(last.a).toBeNull();
+      expect(last.b).toBeTruthy();
+      sub.unsubscribe();
+      done();
+    }, 10);
+  });
+
+  it('when the instance on side B is deleted, only side B is cleared', (done) => {
+    const instanceA: any = {id: 101, module_id: 11};
+    const instanceB: any = {id: 201, module_id: 12};
+    const out: CVConnectionEntity = {cv: {id: 1, name: 'Out', module: {id: 11, name: 'M'}, instance_id: 101}, kind: 'out'} as any;
+    const inp: CVConnectionEntity = {cv: {id: 2, name: 'In', module: {id: 12, name: 'N'}, instance_id: 201}, kind: 'in'} as any;
+
+    service.patchModuleInstances$.next([instanceA, instanceB]);
+    service.clickOnModuleCV$.next(out);
+    service.clickOnModuleCV$.next(inp);
+
+    const states: any[] = [];
+    const sub = service.selectedForConnection$.subscribe(s => states.push(s));
+
+    service.removeModuleInstance$.next(instanceB);
+
+    setTimeout(() => {
+      const last = states[states.length - 1];
+      expect(last.a).toBeTruthy();
+      expect(last.b).toBeNull();
+      sub.unsubscribe();
+      done();
+    }, 10);
+  });
+
   it('clears confirmed flag when selection changes after confirm', (done) => {
     const out1: CVConnectionEntity = {cv: {id: 1, name: 'Out1', module: {id: 11, name: 'M'}, instance_id: 100}, kind: 'out'} as any;
     const inp1: CVConnectionEntity = {cv: {id: 2, name: 'In1', module: {id: 12, name: 'N'}, instance_id: 200}, kind: 'in'} as any;
