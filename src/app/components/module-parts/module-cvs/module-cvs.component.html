@@ -3,39 +3,43 @@
   @if (outs.length > 0) {
     <div class="col gap0 outs"
     >
-      <mat-card-subtitle>
-        {{ outs.length }} OUTs ↗
-      </mat-card-subtitle>
-      <mat-chip-listbox>
-        @for (item of outs; track item; let i = $index) {
-          <app-module-cvitem [data]="item"
-                             [instanceId]="instanceId"
-                             kind="out"
-                             (click$)="outClick$.next([$event,data])"
-                             [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                             [@leave]="{ value: '', params: { delay:  0 }}"
-          ></app-module-cvitem>
-        }
-      </mat-chip-listbox>
+      <div class="row gap0 cvs-section-row">
+        <mat-card-subtitle class="cvs-section-label">
+          {{ outs.length }} OUTs ↗
+        </mat-card-subtitle>
+        <mat-chip-listbox>
+          @for (item of outs; track item; let i = $index) {
+            <app-module-cvitem [data]="item"
+                               [instanceId]="instanceId"
+                               kind="out"
+                               (click$)="outClick$.next([$event,data])"
+                               [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                               [@leave]="{ value: '', params: { delay:  0 }}"
+            ></app-module-cvitem>
+          }
+        </mat-chip-listbox>
+      </div>
     </div>
   }
   @if (ins.length > 0) {
     <div class="col gap0 ins"
     >
-      <mat-card-subtitle>
-        {{ ins.length }} INs ↘
-      </mat-card-subtitle>
-      <mat-chip-listbox>
-        @for (item of ins; track item; let i = $index) {
-          <app-module-cvitem [data]="item"
-                             [instanceId]="instanceId"
-                             kind="in"
-                             (click$)="inClick$.next([$event,data])"
-                             [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-                             [@leave]="{ value: '', params: { delay:  5 }}"
-          ></app-module-cvitem>
-        }
-      </mat-chip-listbox>
+      <div class="row gap0 cvs-section-row">
+        <mat-card-subtitle class="cvs-section-label">
+          {{ ins.length }} INs ↘
+        </mat-card-subtitle>
+        <mat-chip-listbox>
+          @for (item of ins; track item; let i = $index) {
+            <app-module-cvitem [data]="item"
+                               [instanceId]="instanceId"
+                               kind="in"
+                               (click$)="inClick$.next([$event,data])"
+                               [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+                               [@leave]="{ value: '', params: { delay:  5 }}"
+            ></app-module-cvitem>
+          }
+        </mat-chip-listbox>
+      </div>
     </div>
   }
 </div>

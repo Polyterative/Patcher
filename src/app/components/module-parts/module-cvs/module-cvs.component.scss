@@ -15,3 +15,18 @@ mat-card-subtitle {
 .outs {
   background-color: color.adjust($color-cv-out, $alpha: -$transpAm);
 }
+
+.cvs-section-row {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cvs-section-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin: 0;
+  padding-top: 0.5rem;
+  padding-right: 0.25rem;
+  // Keep the label vertically centred with the first row of chips
+  align-self: center;
+}

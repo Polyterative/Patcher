@@ -7,7 +7,7 @@
      fxLayoutAlign="end center"
      style="position: absolute;background-color: rgba(255,255,255,0.8)!important;z-index: 5;"
 >
-  
+
   @for (item of legend; track item) {
     <div class="row gap0"
     >
@@ -18,8 +18,18 @@
     </div>
   }
 </div>
-<div style="height: 100%; width: 100%;"
+<div class="graph-container"
+     #graphContainer
 >
+  @if (isStale$ | async) {
+    <div class="graph-stale-overlay">
+      <span class="stale-label">Graph is outdated — updating…</span>
+      <button mat-stroked-button
+              (click)="refreshNow()"
+      >Refresh now
+      </button>
+    </div>
+  }
   @if (nodes$|async; as nodes) {
     @if (edges$|async; as edges) {
       @if (patchDetailDataService.patchConnections$|async; as patchConnections) {
@@ -28,6 +38,7 @@
             <lib-graph [nodes]="nodes"
                        [edges]="edges"
                        class="animate-fadein-slowest"
+                       [class.stale]="isStale$ | async"
                        [@enter]
             ></lib-graph>
           } @else {

@@ -1,15 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit
+  ElementRef,
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { fadeInAnimation } from 'angular-animations';
 import {
   BehaviorSubject,
   delay,
-  forkJoin
+  forkJoin,
+  merge,
+  Subject
 } from 'rxjs';
 import {
+  debounceTime,
   filter,
   map,
   switchMap,
@@ -57,6 +62,14 @@ export class PatchGraphComponent extends SubManager implements OnInit {
 
   nodes$: BehaviorSubject<GraphNode[]> = new BehaviorSubject([]);
   edges$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
+  
+  @ViewChild('graphContainer') private graphContainer: ElementRef<HTMLDivElement>;
+
+  private _isStale$ = new BehaviorSubject<boolean>(false);
+  readonly isStale$ = this._isStale$.asObservable();
+  
+  private _manualRefresh$ = new Subject<void>();
+  private _graphBuiltOnce = false;
 
   legend = [
     {label: 'Module', color: '#8974E4'},
@@ -75,34 +88,66 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   }
 
   ngOnInit(): void {
-    this.patchDetailDataService.patchConnections$
+    // Mark graph stale on any editorConnections$ change, but only after the
+    // first build has completed (guards against false-stale on initial data load)
+    this.patchDetailDataService.editorConnections$
       .pipe(
+        filter(() => this._graphBuiltOnce),
+        filter(Boolean),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this._isStale$.next(true));
+    
+    const autoRefresh$ = this.patchDetailDataService.editorConnections$.pipe(
+      filter(() => this._graphBuiltOnce),
+      filter(Boolean),
+      debounceTime(3000)
+    );
+    
+    const manualRefresh$ = this._manualRefresh$.pipe(
+      withLatestFrom(this.patchDetailDataService.editorConnections$),
+      map(([, connections]) => connections),
+      filter(Boolean)
+    );
+    
+    merge(
+      this.patchDetailDataService.patchConnections$.pipe(filter(Boolean)),
+      autoRefresh$,
+      manualRefresh$
+    )
+      .pipe(
+        tap(() => {
+          const el = this.graphContainer?.nativeElement;
+          if (el) { el.style.height = el.offsetHeight + 'px'; }
+        }),
         tap(() => this.nodes$.next([])),
         tap(() => this.edges$.next([])),
-        filter(data => !!data),
+        tap(() => this._isStale$.next(false)),
         switchMap(connections => {
           const uniqueModuleIds = [...new Set(
             this.extractModuleInstances(connections).map(i => i.moduleId)
           )];
           return forkJoin(
             uniqueModuleIds.map(id => this.backend.GET.moduleWithId(id).pipe(map(m => m.data)))
-          );
+          ).pipe(map(modules => ({modules, connections})));
         }),
         delay(500),
-        withLatestFrom(this.patchDetailDataService.patchConnections$),
         takeUntil(this.destroy$)
       )
-      .subscribe(([modules, connections]: [DbModule[], PatchConnection[]]) => {
-        
+      .subscribe(({modules, connections}: {
+        modules: DbModule[],
+        connections: PatchConnection[]
+      }) => {
+
         this.sizeConstant = this.sizeConstant * ((modules.length / connections.length) / 1.5);
         const nodesDictionary: NodesDictionary = {};
         const allModuleJackEdges: {
           [id: string]: GraphEdge
         } = {};
-        
+
         // Build a lookup from module id → DbModule
         const moduleLookup = new Map<number, DbModule>(modules.map(m => [m.id, m]));
-        
+
         // Enumerate unique instances: (moduleId, instanceId)
         const instances = this.extractModuleInstances(connections);
         
@@ -196,9 +241,16 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         
         this.nodes$.next(Object.values(nodesDictionary).filter(x => x !== undefined));
         this.edges$.next([...onlyUsedModuleJacksEdges, ...patchEdges]);
+        this._graphBuiltOnce = true;
+        const el = this.graphContainer?.nativeElement;
+        if (el) { el.style.height = ''; }
       });
   }
   
+  refreshNow(): void {
+    this._manualRefresh$.next();
+  }
+
   private buildNode(nodeId: string, CV: CVwithModule, color: string): GraphNode {
     return {
       id: nodeId,
