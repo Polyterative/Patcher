@@ -45,40 +45,10 @@ Action direction: **outlet → bridge → PatchDetailDataService**.
 
 ## Active bug — Spurious auto-save on patch open
 
-**Status:** 🟡 Planned
+**Status:** 🟢 Fixed — 318 tests passing
 
-### Root cause
-
-On every patch open the following cascade fires:
-
-1. `updateSinglePatchData$` → `backend.get.patchWithId()` → `singlePatchData$.next(data)`
-2. The `singlePatchData$` initialization subscriber calls `reset()` then `patchValue(data.name)` on both form controls
-3. Both calls emit through `valueChanges` (Angular default behaviour)
-4. The auto-save pipeline is subscribed to those same `valueChanges` — it sees the emissions as user edits, waits 800
-   ms, and calls `backend.update.patchSilent()`
-
-`distinctUntilChanged()` on the auto-save stream does not help because the value genuinely changes (`null` → actual
-name) during initialization.
-
-### Fix
-
-Pass `{emitEvent: false}` to the form control calls inside the initialization subscriber. Angular's form API provides
-this option specifically for programmatic value setting that must not be treated as user input.
-
-Collapse the current four-line `reset()` + `patchValue()` pattern into two `reset(value, {emitEvent: false})` calls.
-
-**File:** `patch-detail-data.service.ts` only — lines 246–253.
-
-### Steps
-
-- [ ] Replace `reset()` + `patchValue()` in the `singlePatchData$` initialization subscriber with
-  `reset(value, {emitEvent: false})`
-- [ ] Run `yarn test-headless` — verify no regressions
-
-### Risk
-
-Very low. `{emitEvent: false}` only suppresses events on this initialization path. All user-triggered `valueChanges`
-still flow through normally to the auto-save and local mutation subscribers.
+Form controls now initialized with `reset(value, {emitEvent: false})` so programmatic population on patch load does not
+trigger the auto-save pipeline. Fix is in `patch-detail-data.service.ts`.
 
 ---
 
