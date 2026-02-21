@@ -48,6 +48,8 @@ export class ModuleDetailDataService {
   deleteModule$ = new Subject<number>();
   deleteLastPanel$ = new Subject<DbModule>();
   changeModule$ = new Subject<Partial<DbModule>>();
+  /** Toggle the module editing panel open/closed through the service layer. */
+  requestModuleEditingToggle$ = new Subject<void>();
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
@@ -218,6 +220,14 @@ export class ModuleDetailDataService {
         snackBar.open(`"${ module?.name }" updated.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
       });
+    
+    // when user toggles edit mode via the FAB, flip the editing panel state
+    this.requestModuleEditingToggle$
+      .pipe(
+        withLatestFrom(this.moduleEditingPanelOpenState$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([_, current]) => this.moduleEditingPanelOpenState$.next(!current));
     
   }
   
