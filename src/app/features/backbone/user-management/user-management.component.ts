@@ -125,21 +125,4 @@ export class UserManagementComponent implements OnInit {
       });
   }
   
-  resetPassword(): void {
-    this.userManagementService.loggedUserFullProfile$
-      .pipe(
-        filter((userProfile): userProfile is RichUserModel => userProfile !== undefined),
-        take(1)
-      )
-      .subscribe((userProfile) => {
-        const email = userProfile.email;
-        if (email) {
-          // resetPassword$ already handles success/error messages
-          this.userManagementService.resetPassword$(email).subscribe();
-        } else {
-          // No email - this should never happen but handle edge case
-          console.error('No email found for the logged-in user.');
-        }
-      });
-  }
 }
