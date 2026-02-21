@@ -120,6 +120,8 @@ export class PatchDetailDataService implements OnDestroy {
   //
   isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
   requestPatchPrivacyStatusChange$ = new Subject<void>();
+  /** Toggle the patch editing panel open/closed through the service layer. */
+  requestPatchEditingToggle$ = new Subject<void>();
   /**
    * Map from instance ID → display label (e.g. "(1)", "(2)").
    * Only contains entries for modules that have 2+ instances.
@@ -197,6 +199,14 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$),
       )
       .subscribe();
+    
+    // when user toggles edit mode via the FAB, flip the editing panel state
+    this.requestPatchEditingToggle$
+      .pipe(
+        withLatestFrom(this.patchEditingPanelOpenState$),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(([_, current]) => this.patchEditingPanelOpenState$.next(!current));
     
     this.formData.name.control.valueChanges
       .pipe(

@@ -1,0 +1,11 @@
+@if (editMode$ | async; as editing) {
+  <button mat-fab extended (click)="toggle$.emit()" [class.bouncing]="bouncing$ | async">
+    <mat-icon>close</mat-icon>
+    Done
+  </button>
+} @else {
+  <button mat-fab extended (click)="toggle$.emit()" [class.bouncing]="bouncing$ | async">
+    <mat-icon>edit</mat-icon>
+    Edit
+  </button>
+}

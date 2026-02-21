@@ -17,12 +17,6 @@
       }; as bag) {
         @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
           <button mat-icon-button
-                  [matTooltip]="bag.isCurrentRackEditable ? 'Lock rack' : 'Unlock rack'"
-                  (click)="dataService.requestRackEditableStatusChange$.next()"
-          >
-            <mat-icon>{{ bag.isCurrentRackEditable ? 'lock_open' : 'lock_outline' }}</mat-icon>
-          </button>
-          <button mat-icon-button
                   [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
                   (click)="dataService.requestRackPrivacyStatusChange$.next()"
                   [disabled]="!bag.isCurrentRackEditable"
@@ -54,12 +48,17 @@
       >
         <mat-icon>file_copy</mat-icon>
       </button>
-      <!--    <button mat-icon-button-->
-      <!--       matTooltip="Show details"-->
-      <!--       [routerLink]="['/racks/details',data.id]"-->
-      <!--    >-->
-      <!--      <mat-icon>info</mat-icon>-->
-    <!--    </button>-->
-  </div>
+    </div>
+    @if ({
+      isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
+      user: (userManagerService.loggedUser$|async)
+    }; as bag) {
+      @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+        <app-edit-fab
+          [editMode$]="dataService.isCurrentRackEditable$"
+          (toggle$)="dataService.requestRackEditableStatusChange$.next()"
+        ></app-edit-fab>
+      }
+    }
   }
 </div>

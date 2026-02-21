@@ -52,6 +52,7 @@ import { TotalPowerOfRackPipe } from "src/app/components/rack-parts/total-power-
 import { TotalMissingPowerDataInRackPipe } from "src/app/components/rack-parts/total-missing-power-data-in-rack.pipe";
 import { TotalDepthOfRackPipe } from "src/app/components/rack-parts/total-depth-of-rack.pipe";
 import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weight-of-rack.pipe";
+import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
 
 
 @NgModule({
@@ -120,6 +121,7 @@ import { TotalWeightOfRackPipe } from "src/app/components/rack-parts/total-weigh
     TotalMissingPowerDataInRackPipe,
     TotalDepthOfRackPipe,
     TotalWeightOfRackPipe,
+    EditFabModule,
   ]
 })
 export class RackModule {

@@ -1,0 +1,41 @@
+@keyframes fab-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(-14px);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+  80% {
+    transform: translateY(-3px);
+  }
+}
+
+:host {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: block;
+  opacity: 0.8;
+  transition: opacity 125ms ease-in-out;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  button {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  button.bouncing {
+    animation: fab-bounce 600ms ease-out 1;
+  }
+}
