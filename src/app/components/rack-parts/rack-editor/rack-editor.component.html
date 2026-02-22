@@ -14,7 +14,7 @@
       </lib-auto-content-loading-indicator>
     } @else {
     <lib-hero-content-card [description]="
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'Changes saved automatically / Right click on modules for more options / Add modules from below':'Unlock to make changes')):'')"
+                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'Changes saved automatically / Right click on modules for more options / Add modules from below':'Press Edit to make changes')):'')"
                            descriptionAlign="alignTextEnd"
                            class="transition-all-long"
                            [ngClass]="{
@@ -130,14 +130,6 @@
               <!--              create space between these-->
               <div fxFlex="1 1 auto"></div>
               <div class="row gap1">
-                @if (bag.isCurrentRackPropertyOfCurrentUser) {
-                  <app-brand-primary-button style="padding: 1rem 0;"
-                                            [icon]="bag.isCurrentRackEditable ? 'lock' : 'lock_open'"
-                                            (click$)="dataService.requestRackEditableStatusChange$.next()"
-                  >
-                    {{ bag.isCurrentRackEditable ? "Lock rack" : "Unlock rack" }}
-                  </app-brand-primary-button>
-                }
                 @if ((bag.rowedRackedModules|totalHpOfRack) > 0) {
                   <app-brand-primary-button style="padding: 1rem 0;"
                                             icon="download"
