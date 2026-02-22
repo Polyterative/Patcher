@@ -36,7 +36,9 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     hideHP:           false,
     hideTags:         false,
     hideManufacturer: false,
-    hideLabels:       true
+    hideLabels: true,
+    tagsShowCounts: false,
+    tagsMaxCount: 5
   };
   
   protected destroyEvent$ = new Subject<void>();
