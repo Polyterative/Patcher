@@ -70,6 +70,8 @@ export interface ModuleMinimalViewConfig {
   hidePatchedIn: boolean;
   hideRackedIn: boolean;
   hideBySameManufacturer: boolean;
+  tagsShowCounts: boolean;
+  tagsMaxCount: number | null;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
@@ -85,5 +87,7 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   ellipseDescription: true,
   hidePatchedIn: false,
   hideRackedIn: false,
-  hideBySameManufacturer: false
+  hideBySameManufacturer: false,
+  tagsShowCounts: true,
+  tagsMaxCount: null
 };
