@@ -786,7 +786,7 @@ export type Database = {
           {
             foreignKeyName: "user_module_tags_authorid_fkey"
             columns: ["authorid"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

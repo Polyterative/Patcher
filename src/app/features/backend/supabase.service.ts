@@ -129,6 +129,7 @@ type CachedEntity =
   | 'currentUserComments'
   | 'rackWithId'
   | 'racksMinimal'
+  | 'userModuleTags'
   | void;
 const cacheBuster$ = new Subject<CachedEntity[]>();
 
@@ -411,6 +412,24 @@ export class SupabaseService extends SubManager {
         .single()
     )
       .pipe(remapErrors()),
+    myVotes: () => this.getMyVotes(),
+    allTags: () => this.getAllTagsCached(),
+    tagVotesForModule: (moduleTagIds: number[]) => rxFrom(
+      this.supabase
+        .from(DbPaths.user_module_tags)
+        .select('moduletagid')
+        .in('moduletagid', moduleTagIds)
+    ).pipe(
+      remapErrors(),
+      map(x => {
+        const rows: { moduletagid: number }[] = (x.data as any) ?? [];
+        const countMap = new Map<number, number>();
+        for (const row of rows) {
+          countMap.set(row.moduletagid, (countMap.get(row.moduletagid) ?? 0) + 1);
+        }
+        return Array.from(countMap.entries()).map(([moduleTagId, count]) => ({moduleTagId, count}));
+      })
+    ),
     statistics: () => zip(
       rxFrom(
         this.supabase.from(DbPaths.modules)
@@ -474,6 +493,27 @@ export class SupabaseService extends SubManager {
         cacheBust(['currentUserModules']),
         remapErrors()
       ),
+    userModuleTag: (moduleTagId: number) => this.getUserSession$().pipe(
+      switchMap(user => rxFrom(
+        this.supabase
+          .from(DbPaths.user_module_tags)
+          .insert({moduletagid: moduleTagId, authorid: user.id})
+      )),
+      cacheBust(['userModuleTags']),
+      remapErrors()
+    ),
+    moduleTagLink: (moduleId: number, tagId: number) => this.getUserSession$().pipe(
+      switchMap(() => rxFrom(
+        this.supabase
+          .from(DbPaths.module_tags)
+          .insert({moduleid: moduleId, tagid: tagId})
+          .select('id')
+          .single()
+      )),
+      cacheBust(['modules', 'moduleWithId']),
+      remapErrors(),
+      map((x: any) => ({id: x.data?.id as number}))
+    ),
     rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
       this.supabase
         .from(DbPaths.rack_modules)
@@ -681,8 +721,17 @@ export class SupabaseService extends SubManager {
       )),
       cacheBust(['currentUserModules', 'currentUserComments']),
       remapErrors()
-    )
-    ,
+    ),
+    userModuleTag: (moduleTagId: number) => this.getUserSession$().pipe(
+      switchMap(user => rxFrom(
+        this.supabase.from(DbPaths.user_module_tags)
+          .delete()
+          .filter('authorid', 'eq', user.id)
+          .filter('moduletagid', 'eq', moduleTagId)
+      )),
+      cacheBust(['userModuleTags']),
+      remapErrors()
+    ),
     rackedModule: (id: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .delete()
@@ -1582,6 +1631,23 @@ export class SupabaseService extends SubManager {
     );
   }
   
+  @Cacheable({
+    maxAge: smallCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('userModuleTags'))),
+  })
+  private getMyVotes(): Observable<number[]> {
+    return this.getUserSession$().pipe(
+      switchMap(user => rxFrom(
+        this.supabase
+          .from(DbPaths.user_module_tags)
+          .select('moduletagid')
+          .filter('authorid', 'eq', user.id)
+      )),
+      remapErrors(),
+      map(x => ((x.data as any) ?? []).map((row: any) => row.moduletagid as number))
+    );
+  }
+
   private getTags() {
     return rxFrom(
       this.supabase.from(DbPaths.tags)
@@ -1591,6 +1657,20 @@ export class SupabaseService extends SubManager {
         // remapErrors(),
         map((x => x.data))
       );
+  }
+  
+  @Cacheable({
+    maxAge: longCacheTime,
+  })
+  private getAllTagsCached(): Observable<any[]> {
+    return rxFrom(
+      this.supabase.from(DbPaths.tags)
+        .select('*')
+        .order('type', {ascending: true})
+        .order('name', {ascending: true})
+    ).pipe(
+      map((x: any) => (x.data ?? []))
+    );
   }
   
   private errorMsg() {

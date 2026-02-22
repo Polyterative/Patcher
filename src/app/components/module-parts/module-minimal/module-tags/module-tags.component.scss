@@ -1,0 +1,38 @@
+mat-chip-option:not([disabled]) {
+  cursor: pointer;
+}
+
+
+mat-chip-option {
+  transition: opacity 0.2s ease;
+
+  &.zero-votes {
+    opacity: 0.55;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.add-perspective-btn {
+  align-self: flex-start;
+  opacity: 0.65;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.proposer-panel {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.muted {
+  opacity: 0.55;
+}

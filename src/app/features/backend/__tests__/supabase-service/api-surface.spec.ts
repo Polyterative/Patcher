@@ -71,7 +71,10 @@ describe('SupabaseService - API Surface', () => {
         'racksWithModule',
         'patchWithId',
         'patchesWithModule',
-        'standards'
+        'standards',
+        'tagVotesForModule',
+        'myVotes',
+        'allTags'
       ];
       
       expectedMethods.forEach(method => {
@@ -92,9 +95,11 @@ describe('SupabaseService - API Surface', () => {
         'rack',
         'comment',
         'userModule',
+        'userModuleTag',
         'moduleINs',
         'moduleOUTs',
-        'rackModule'
+        'rackModule',
+        'moduleTagLink'
       ];
       
       expectedMethods.forEach(method => {
@@ -134,7 +139,8 @@ describe('SupabaseService - API Surface', () => {
         'patch',
         'module',
         'comment',
-        'rackedModule'
+        'rackedModule',
+        'userModuleTag'
       ];
       
       expectedMethods.forEach(method => {
