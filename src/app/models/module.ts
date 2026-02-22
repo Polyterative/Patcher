@@ -33,7 +33,13 @@ export interface MinimalModule extends Timestamped {
    *   {{data.standard == 0 ? '' : data.standard == 1 ? 'Intellijel 1U' : data.standard == 2 ? 'PulpLo Logic 1U' : ""}}
    */
   standard: Standard;
-  tags: { tag: Tag }[];
+  tags: {
+    id: number;
+    tag: Tag;
+    voteCount: {
+      moduletagid: number
+    }[];
+  }[];
   panels: ModulePanel[];
 }
 

@@ -15,6 +15,7 @@ export class DbPaths {
   static module_tags = 'module_tags' as const;
   static module_panels = 'module_panels' as const;
   static tags = 'tags' as const;
+  static user_module_tags = 'user_module_tags' as const;
   static standards = 'standards' as const;
   static profiles = 'profiles' as const;
   static comments = 'comments' as const;
@@ -53,7 +54,7 @@ export class QueryJoins {
   static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,weight,depth,powerPos12,powerNeg12,powerPos5,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
 
 // Module Tags
-  static module_tags: string = `tags:${ DbPaths.module_tags }(tag:${ DbPaths.tags }(*))`;
+  static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
 
 // Module Panels
   static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
