@@ -37,12 +37,12 @@
         >
           <mat-label
           >
-            Unlock to add modules or make changes
+            Press Edit to add modules or make changes
           </mat-label>
           <app-brand-primary-button (click$)="dataService.requestRackEditableStatusChange$.next()"
-                                    icon="lock_open"
+                                    icon="edit"
           >
-            Unlock rack now
+            Edit rack
           </app-brand-primary-button>
         </div>
       }
