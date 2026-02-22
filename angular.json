@@ -16,9 +16,10 @@
           "style":             "scss",
           "changeDetection":   "OnPush",
           "export":            true,
-          "skipTests":         true,
+          "skipTests": false,
           "flat":              false,
-          "skipImport":        false
+          "skipImport": false,
+          "standalone": true
         },
         "@schematics/angular:pipe":      {
           "skipTests":  true,
@@ -168,7 +169,8 @@
   },
   "schematics": {
     "@schematics/angular:component": {
-      "type": "component"
+      "type": "component",
+      "standalone": true
     },
     "@schematics/angular:directive": {
       "type": "directive"
