@@ -38,7 +38,8 @@ import {
 })
 export class RackBrowserDetailViewComponent implements OnInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
-    ...defaultModuleMinimalViewConfig
+    ...defaultModuleMinimalViewConfig,
+    tagsShowCounts: false
   };
   
   protected destroyEvent$ = new Subject<void>();
