@@ -6,11 +6,147 @@
 > 3. One feature at a time — archive to [COMPLETED.md](./COMPLETED.md) when done, then reset.
 > 4. This file owns implementation detail; `TODO.md` owns the backlog.
 > 5. **Every feature uses three layers** (MVP → Structural → Polish). Define all three before coding. Complete each
-     > layer before starting the next. Layout before interactions.
+     >      > layer before starting the next. Layout before interactions.
 
 ---
 
-## Active: Community Tag Contributions
+## Active: SEO Tagging & Rich Link Previews
+
+Goal: search engines, AI discovery bots, and messaging apps (WhatsApp, Telegram, Slack, Discord, iMessage, LinkedIn)
+should see rich, entity-specific previews when any Patcher link is shared — title, description, and a branded image.
+
+---
+
+### Audit — Current State (2026-02-22)
+
+#### What exists
+
+- `src/index.html` — has `<meta name="description">`, `<title>Patcher.xyz</title>`, favicons. **Zero** OG/Twitter Card
+  tags in static HTML.
+- `robots.txt` — allows all, points to sitemap.
+- `sitemap.xml` — static, hand-written, all `lastmod` dates are 2021/2022, mixes `www.patcher.xyz` and `patcher.xyz`
+  (canonical mismatch), only covers `/modules/details/:id` and a few browser pages. No patches, racks, or new modules.
+- `SeoAndUtilsService` (`features/backbone/seo-and-utils.service.ts`) — Angular service that updates `<title>`, `og:*`,
+  `twitter:*` tags at runtime via `Meta.updateTag()`. Detail pages for modules, patches, and racks each call
+  `updateSeo()` with entity-specific data (name, description, keywords, manufacturer, etc.).
+- `SeoSocialShareData` model (`models/seo.model.ts`) — interface with title, description, image, url, type, author,
+  keywords, published, modified.
+- `patcher_seo_hero.png` — generic hero image (1200×630-ish), used as default `og:image` for all pages.
+- **No SSR / no Angular Universal / no prerendering.** App is a pure client-side SPA on Vercel.
+
+#### Critical problems
+
+| # | Problem                                  | Impact                                                                                                                         |
+|---|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| 1 | **No SSR → social previews are broken**  | Crawlers (WhatsApp, Telegram, Slack, Discord, Twitter, Facebook, LinkedIn) don't execute JS. They see the bare `index.html` with generic title/description and **no** OG tags. Every shared link looks the same. |
+| 2 | No OG/Twitter meta in `index.html`       | Even the generic fallback tags are missing from the static shell. `SeoAndUtilsService` adds them via JS only.                  |
+| 3 | Sitemap stale & incomplete               | Dates from 2021/2022; missing patches, racks, info pages; mixes `www` and non-`www` URLs.                                     |
+| 4 | No `<link rel="canonical">`               | Duplicate-content risk across `www` vs non-`www`, trailing slashes, etc.                                                       |
+| 5 | No structured data (JSON-LD / Schema.org) | Search engines and AI cannot identify entity types (Product, MusicGroup, SoftwareApplication, etc.).                           |
+| 6 | No entity-specific OG images             | Even if tags worked, every page falls back to the same generic hero PNG. No "GitHub-style" per-entity preview.                 |
+| 7 | No AI-discovery files                    | No `llms.txt`, no `/.well-known/ai-plugin.json` — AI crawlers get nothing structured.                                         |
+
+**Bottom line:** sharing `patcher.xyz/modules/details/72` on any messaging app currently shows the same generic
+"Patcher.xyz" card as sharing `patcher.xyz/home`. The dynamic SEO work in `SeoAndUtilsService` is invisible to all
+crawlers.
+
+---
+
+### Plan
+
+Recommended approach: **Vercel Edge Middleware** to intercept bot requests and serve a lightweight HTML page with
+correct
+meta tags, fetching entity data from Supabase at the edge. Regular users still get the SPA unchanged. This avoids an
+Angular SSR migration while fully solving the crawler problem.
+
+#### MVP Layer — Bot-aware meta tag injection
+
+**Deliverable:** when a bot/crawler requests any page, it receives a minimal HTML document with correct `og:title`,
+`og:description`, `og:image`, `og:url`, `twitter:card`, canonical URL. Human users are unaffected.
+
+Steps:
+
+- [ ] **M1 — Add default OG/Twitter meta tags to `index.html`** as a safe fallback (generic site-level).
+- [ ] **M2 — Create `middleware.ts`** at project root.
+  - Detect bot User-Agents (facebookexternalhit, Twitterbot, Slackbot, WhatsApp, TelegramBot, LinkedInBot,
+    Discordbot, Googlebot, Bingbot, ChatGPT-User, Applebot, etc.).
+  - For bot requests, parse the URL path to determine entity type and ID:
+    - `/modules/details/:id` → fetch module from Supabase (`name`, `manufacturer`, `description`, `hp`, `image`).
+    - `/patches/details/:id` → fetch patch.
+    - `/racks/details/:id` → fetch rack.
+    - All other paths → use site defaults.
+  - Return a minimal HTML response with `<head>` populated with correct OG, Twitter, canonical, and JSON-LD tags.
+  - Include a `<meta http-equiv="refresh">` or `<noscript>` fallback so that if a real user somehow hits this path,
+    they are redirected.
+  - For non-bot requests, call `next()` to serve the SPA as usual.
+- [ ] **M3 — Update `vercel.json`** to integrate middleware (likely zero config needed for root middleware).
+- [ ] **M4 — Add fallback OG tags to `index.html`** so that `og:title`, `og:description`, `og:image` exist in the
+  static shell (the middleware will override them for bots, but this ensures there's always _something_).
+- [ ] **Gate:** share a module link in Telegram/WhatsApp/Slack → verify entity-specific title, description, and image
+  show up. Use Facebook Sharing Debugger, Twitter Card Validator.
+
+#### Structural Layer — Dynamic OG images & sitemap
+
+**Deliverable:** each entity gets a branded, auto-generated preview image (like GitHub repo cards). Sitemap becomes
+dynamic.
+
+Steps:
+
+- [ ] **S1 — Create OG image API route** (`api/og.ts` or `api/og/[type]/[id].ts`) using `@vercel/og` (Satori).
+  - For modules: render module name, manufacturer, HP, panel image thumbnail, tag badges.
+  - For patches: render patch name, connection count, module names involved.
+  - For racks: render rack name, module count.
+  - Fallback: generic Patcher branding.
+  - Output: 1200×630 PNG.
+- [ ] **S2 — Wire OG image URL into middleware** — bot HTML now uses
+  `https://patcher.xyz/api/og/module/72` as `og:image`.
+- [ ] **S3 — Dynamic sitemap endpoint** (`api/sitemap.xml.ts`).
+  - Query Supabase for all modules, patches, racks.
+  - Generate sitemap XML with proper `lastmod` from entity `updated` timestamps.
+  - Use consistent `https://patcher.xyz/...` (no `www`).
+- [ ] **S4 — Update `robots.txt`** to point to the dynamic sitemap endpoint.
+- [ ] **S5 — Add `<link rel="canonical">` injection** in middleware for bots, and dynamically in
+  `SeoAndUtilsService` for SPA users.
+- [ ] **Gate:** OG image renders correctly for modules, patches, racks. Sitemap validates at
+  `google.com/ping?sitemap=...`. Images are ≤ 1 MB and load in < 2s.
+
+#### Polish Layer — Structured data & AI discovery
+
+**Deliverable:** full JSON-LD structured data on every entity page, AI-friendly files, and refined OG image design.
+
+Steps:
+
+- [ ] **P1 — JSON-LD structured data in middleware** for bot responses.
+  - Module → Schema.org `Product` with `name`, `brand`, `description`, `image`.
+  - Patch → `CreativeWork` with modules as `mentions`.
+  - Rack → `ItemList` with contained modules.
+  - Home → `WebSite` + `Organization`.
+- [ ] **P2 — Add `llms.txt`** at `/llms.txt` (Vercel rewrite or static asset) describing what Patcher is and how
+  to navigate its content — aimed at AI crawlers.
+- [ ] **P3 — Refine OG image design** — add Patcher logo watermark, consistent typography, color scheme matching
+  the app's material theme.
+- [ ] **P4 — Add `og:image:width` / `og:image:height`** to speed up preview rendering in messaging apps.
+- [ ] **P5 — Cache headers** — set `Cache-Control` on OG images and bot HTML responses for CDN caching.
+- [ ] **Gate:** Google Rich Results Test passes for module pages. ChatGPT/Perplexity can describe a specific module
+  when given its URL. `llms.txt` is accessible.
+
+---
+
+### Key architectural decisions
+
+- **Edge Middleware over SSR:** avoids touching the Angular build pipeline. The middleware is a standalone TypeScript
+  file
+  at the Vercel project root. The SPA continues to work exactly as before.
+- **Supabase fetch at the edge:** the middleware makes a single lightweight Supabase REST call per bot request. The
+  Supabase anon key is public (already used client-side), so no secret management is needed.
+- **`@vercel/og` for images:** Satori renders React-like JSX to SVG→PNG at the edge. No headless browser needed. Fast,
+  cheap, cacheable.
+- **Existing `SeoAndUtilsService` stays:** it continues to handle title/meta for JS-rendered SPA navigation. The
+  middleware only serves bots.
+
+---
+
+### Previous Feature: Community Tag Contributions
 
 Users can collectively describe what a module does by voting on tags and proposing new tag→module links.
 Tags are a fixed global taxonomy (`tags` table). The community signals which ones apply to each module.
