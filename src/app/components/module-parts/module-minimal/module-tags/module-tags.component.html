@@ -1,20 +1,61 @@
-@if (data.tags && data.tags.length > 0) {
-  <div class="col gap0"
-  >
-    <!--  <mat-card-subtitle>-->
-    <!--    {{data.tags.length}} Tag(s)-->
-  <!--  </mat-card-subtitle>-->
-  <!--  <ng-container *ngFor="let item of data.tags|onlyTagOfType:0">-->
-  <!--    {{item.name}}-->
-    <!--  </ng-container>-->
-    <mat-chip-listbox class="padT0 padB0">
-      @for (item of data.tags|orderTagsByType; track item; let i = $index) {
-        <mat-chip
-          [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-          [@leave]="{ value: '', params: { delay:  5 }}"
-        >{{ item.tag.name }}
-        </mat-chip>
+@if (data.tags || showCounts) {
+  @let tagVotes = (tagVoteService.tagVotes$ | async);
+  @let myVotes = (tagVoteService.myVotes$ | async);
+  @let isLoggedIn = (tagVoteService.isLoggedIn$ | async);
+  @let proposerOpen = (proposerOpen$ | async);
+  @let availableTags = (availableTags$ | async);
+  @let visibleTags = (visibleTags$ | async);
+  <div class="col gap0">
+    @if (visibleTags && visibleTags.length > 0) {
+      <mat-chip-listbox class="padT0 padB0" [multiple]="true">
+        @for (item of visibleTags; track item.id; let i = $index) {
+          <mat-chip-option
+            [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+            [@leave]="{ value: '', params: { delay: 5 }}"
+            [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
+            [matTooltip]="showCounts ? (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags') : ''"
+            [selected]="showCounts && myVotes?.has(item.id)"
+            (click)="isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
+          >{{ item.tag.name }}@if (showCounts) {
+            · {{ tagVotes?.get(item.id) ?? 0 }}
+          }
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    }
+    @if (showCounts && isLoggedIn) {
+      @if (!proposerOpen) {
+        <button mat-button
+                class="add-perspective-btn"
+                (click)="proposerOpen$.next(true)"
+                [matTooltip]="'Suggest a tag for this module'"
+        >
+          <mat-icon>add</mat-icon>
+          Add tag
+        </button>
+      } @else {
+        <div class="col gap1 proposer-panel">
+          <div class="row gap1" style="align-items: center">
+            <span class="mat-body-2">Pick a tag to suggest:</span>
+            <button mat-icon-button (click)="proposerOpen$.next(false)" matTooltip="Cancel">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          @if (availableTags && availableTags.length > 0) {
+            <mat-chip-listbox class="padT0 padB0" [multiple]="false">
+              @for (tag of availableTags; track tag.id) {
+                <mat-chip-option
+                  (click)="proposeTag(tag)"
+                  [matTooltip]="'Add \'' + tag.name + '\' to this module'"
+                >{{ tag.name }}
+                </mat-chip-option>
+              }
+            </mat-chip-listbox>
+          } @else {
+            <span class="mat-caption muted">All tags are already on this module.</span>
+          }
+        </div>
       }
-    </mat-chip-listbox>
-</div>
+    }
+  </div>
 }

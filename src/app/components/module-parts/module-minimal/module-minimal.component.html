@@ -40,6 +40,8 @@
     @if (!viewConfig.hideTags) {
       <app-module-tags
         [data]="data"
+        [showCounts]="viewConfig.tagsShowCounts"
+        [maxTags]="viewConfig.tagsMaxCount"
       ></app-module-tags>
     }
     <ng-content></ng-content>
