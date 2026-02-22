@@ -24,14 +24,14 @@
             <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
           </button>
           <button mat-icon-button
-                  [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Unlock rack to rename'"
+                  [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Edit rack to rename'"
                   [disabled]="!bag.isCurrentRackEditable"
                   (click)="dataService.renameCurrentRack$.next()"
           >
             <mat-icon>mode_edit</mat-icon>
           </button>
           <button mat-icon-button
-                  [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Unlock rack to delete'"
+                  [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
                   [disabled]="!bag.isCurrentRackEditable"
                   (click)="dataService.deleteRack$.next(data)"
                   class="danger-action"
