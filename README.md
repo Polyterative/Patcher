@@ -1,42 +1,51 @@
-![image](https://github.com/user-attachments/assets/aeb72af3-8e20-44f5-aad8-2ca547251532)
-![My_collection__patcher xyz_-_Google_Chrome__2024-10-29_00-43](https://github.com/user-attachments/assets/68635b4f-7ae8-4841-8356-7b7720d89e97)
-
-<br>
-<br>
-
-<h1 align="center">
-  <a href="https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1" target="_blank">PROJECT ROADMAP</a>
-</h1>
-
-<br>
-
 <p align="center">
-  This roadmap provides a clear view of the project's ongoing developments, including bug fixes, feature requests, future enhancements, and budget tracking. Here, you'll find the most up-to-date information on what we're working on and what’s planned for the future.
+  <img src="https://github.com/user-attachments/assets/aeb72af3-8e20-44f5-aad8-2ca547251532" alt="Patcher screenshot" />
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/68635b4f-7ae8-4841-8356-7b7720d89e97" alt="Patcher collection view" />
 </p>
 
 <br>
+
+<h2 align="center">The patch manager for Eurorack artists.</h2>
+<p align="center">Document your patches, plan your racks, and explore a free modular database — all in one place.<br>
+<a href="https://patcher.xyz">patcher.xyz</a> &nbsp;·&nbsp; <a href="https://discord.gg/N6Z32xJR">Discord</a> &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a></p>
+
 <br>
 
 ---
 
 <br>
 
-### FOR USERS: HOW TO REQUEST NEW FEATURES OR REPORT BUGS
+## 🎉 What's New in v5.1.0
 
-If you’re a user with feedback or ideas, please join our community on [Discord](https://discord.gg/N6Z32xJR) to discuss them with us first. Our Discord server is the primary space for conversations, discussions, and feedback, so we encourage you to bring any thoughts or suggestions there.
+**Patcher v5.1.0 is live** — the patch editor is now everything it was meant to be, with auto-save, instance-aware
+patching, a redesigned connection flow, and the deepest UX overhaul we've ever shipped.
 
-If you are a **technical user** with a specific bug report, you may open an issue directly on GitHub if the problem isn’t already mentioned in the [Project Roadmap](https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1).
+See the full [CHANGELOG](CHANGELOG.md) for details.
+
+<br>
+
+---
+
+<br>
+
+### Feedback & bug reports
+
+Have an idea or found something broken? Come talk to us on [Discord](https://discord.gg/N6Z32xJR) — it's the fastest way
+to reach the team and the right place for feature discussions.
+
+Technical bug reports can also be opened as [GitHub issues](https://github.com/Polyterative/Patcher/issues).
 
 <br>
 <br>
-
 
 ## **Table of Contents**
 
 1. [**Introduction**](#introduction)
-2. [**User Guide**](#user-guide)
-3. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
-4. [**Using the Project**](#using-the-project)
+2. [**Why Patcher?**](#why-patcher)
+3. [**User Guide**](#user-guide)
+4. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
 5. [**Project Dependencies**](#project-dependencies)
 6. [**DB Model Details**](#db-model-details)
 7. [**Pull Requests**](#pull-requests)
@@ -46,13 +55,87 @@ If you are a **technical user** with a specific bug report, you may open an issu
 
 ## **Introduction**
 
-**Patcher** is designed to assist with Eurorack setups, providing a modern interface and robust functionality.
+**Patcher** is a free, open-source web application for Eurorack modular synthesizer artists. It brings together
+everything you need to work with modular equipment: a patch editor, a rack planner, a personal module collection, and a
+curated public database of hardware — all in a single, fast interface.
 
-The project's mission is to build a complete management system for all the needs of artists who use modular equipment. Priorities include ease and speed of use, aesthetic cleanliness, and correctness of data.
+The database is publicly accessible and will always remain free. No paywalls, no account required to browse.
 
-Another goal of the project is to build a database that is publicly accessible and this may include an API, possibly developed in the future. Modules' data will never be restricted by a paywall and will always be publicly accessible.
+Contributions are welcome — whether that's code, module data, or feedback.
 
-The project is open-source and contributions are welcome.
+---
+
+## **Why Patcher?**
+
+Most tools in this space stop at rack planning or image exports. Patcher is a living patch document — it understands
+your modules, tracks every connection, and keeps everything in sync as your setup evolves.
+
+A few things that make it different:
+
+---
+
+### ⚡ Fast by design
+
+Everything is optimised for speed. Adding a module, wiring a connection, or jotting down a note takes seconds — not a
+sequence of modals and confirmations. The interface gets out of your way so you can focus on the music.
+
+---
+
+### 📱 Works on any device
+
+Patcher runs in the browser, on desktop and mobile alike. Sketch a patch idea on your phone between sessions, then open
+the same document on your computer and pick up exactly where you left off.
+
+---
+
+### 🔁 Tracks every copy of every module
+
+When you use the same module more than once in a patch, Patcher keeps each copy distinct — connections are anchored to
+the right physical unit, labels are automatic, and nothing gets mixed up. Reopen the patch days later and the wiring is
+exactly as you left it.
+
+> *Instance-aware patching — shipped in v5.1.0.*
+
+---
+
+### 💾 Nothing gets lost
+
+Changes persist automatically. Notes, connection updates, patch state — all saved without ever touching a save button.
+Close the tab, lose power, come back: everything is there.
+
+> *Auto-save — shipped in v5.1.0.*
+
+---
+
+### 🔌 Wiring is frictionless
+
+Adding a connection is a two-step interaction: pick an output, pick an input, confirm. A floating panel stays visible
+while you work and clears itself the moment a connection lands. No modals, no page navigation.
+
+> *Redesigned connection flow — shipped in v5.1.0.*
+
+---
+
+### 📊 Understand a patch without counting cables
+
+Patcher surfaces connection statistics automatically — total cables, outputs driving multiple inputs, modules in use.
+Complexity becomes readable at a glance.
+
+> *Patch statistics panel — shipped in v5.1.0.*
+
+---
+
+### 🔒 Full control over what you share
+
+Patches and racks can each be kept private or made public independently. Public content is discoverable by the
+community; everything else stays yours.
+
+---
+
+### 🌍 A database built on accuracy
+
+Every module in the database is curated for correctness — HP, manufacturer, CV specs. The data is free, publicly
+accessible, and never behind a paywall. If something is missing, you can submit it directly from the interface.
 
 ---
 
@@ -83,15 +166,11 @@ To set up the project locally, follow the steps below:
    **Note:** We use **Yarn** as our package manager. Please do not generate a `package-lock.json` file.
 4. **Run** `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
----
-
-## **Using the Project**
-
-The `develop` branch is where the code gets advanced. The `production` branch gets directly uploaded via automated tools. Be aware of this when navigating the project.
-
-To use the project's features, navigate to the appropriate section of the interface and follow the prompts. If you encounter any issues, refer to the documentation or raise an issue on GitHub.
+> **Branches:** `develop` is where active work happens. `production` is deployed automatically — do not push to it
+> directly.
 
 ---
+
 
 ## **Project Dependencies**
 
