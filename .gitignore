@@ -69,3 +69,6 @@ e2e/flow-0*.spec.ts
 
 # Local IDE run artifacts
 /.run/TESTS.run.xml
+
+# Local screenshot artifacts
+/output/playwright/
