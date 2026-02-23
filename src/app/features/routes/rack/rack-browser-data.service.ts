@@ -45,6 +45,8 @@ const RACK_DEFAULT_ORDER = {id: 'updated', name: 'Updated ↓'};
 
 @Injectable()
 export class RackBrowserDataService implements OnDestroy {
+  private static readonly MAX_LOADING_MS = 2_000;
+  
   racksList$ = new BehaviorSubject<RackList>(null);
   updateRacksList$ = new Subject<void>();
   resetForm$ = new Subject<void>();
@@ -152,34 +154,51 @@ export class RackBrowserDataService implements OnDestroy {
           const take = this.serversideTableRequestData.take$.value;
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
-          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir).pipe(
-            timeoutWith(2_000, of({
-              count: 0,
-              data: [],
-              error: {message: 'Rack list request timed out after 2 seconds'}
-            }))
-          );
+          const previousData = this.racksList$.value ?? [];
+          const previousCount = this.serversideAdditionalData.itemsCount$.value ?? previousData.length;
+          
+          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir)
+            .pipe(
+              map((response: any) => {
+                if (response?.error) {
+                  return {
+                    kind: 'error' as const,
+                    error: response.error,
+                    count: previousCount,
+                    data: previousData
+                  };
+                }
+                
+                return {
+                  kind: 'success' as const,
+                  count: response?.count ?? 0,
+                  data: Array.isArray(response?.data) ? response.data : []
+                };
+              }),
+              timeoutWith(RackBrowserDataService.MAX_LOADING_MS, of({
+                kind: 'timeout' as const,
+                count: previousCount,
+                data: previousData
+              })),
+              catchError(error => of({
+                kind: 'error' as const,
+                error,
+                count: previousCount,
+                data: previousData
+              }))
+            );
         }),
-        map((response: any) => {
-          if (response?.error) {
-            console.error('[rack-browser] Failed to load racks list', response.error);
-            return {
-              count: 0,
-              data: []
-            };
+        map(result => {
+          if (result.kind === 'timeout') {
+            console.error('[rack-browser] Racks list request timed out after 2 seconds');
+          } else if (result.kind === 'error') {
+            console.error('[rack-browser] Failed to load racks list', result.error);
           }
           
           return {
-            count: response?.count ?? 0,
-            data: Array.isArray(response?.data) ? response.data : []
+            count: result.count,
+            data: result.data
           };
-        }),
-        catchError(error => {
-          console.error('[rack-browser] Racks list request crashed', error);
-          return of({
-            count: 0,
-            data: []
-          });
         }),
         takeUntil(this.destroyEvent$)
       )
