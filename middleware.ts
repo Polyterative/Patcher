@@ -1,21 +1,22 @@
-import {
-  NextRequest,
-  NextResponse
-} from 'next/server';
-
-
 const SITE_URL = 'https://patcher.xyz';
 const SITE_NAME = 'Patcher.xyz';
 const DEFAULT_DESCRIPTION = 'Manager and database for musicians using modular gear, with a focus on saving and visualizing patch-notes.';
 const DEFAULT_IMAGE = `${ SITE_URL }/assets/png/patcher_seo_hero.png`;
-const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://sozmatmywjpstwidzlss.supabase.co').replace(/\/+$/, '');
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
-  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYxODA4NDU1OCwiZXhwIjoxOTMzNjYwNTU4fQ.3pSLsqyaCAGgISvOrHMt2CIX9hQowty2r8etzMwlpy8';
+const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
+const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_FETCH_TIMEOUT_MS = 1800;
 
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
 
 type EntityType = 'site' | 'module' | 'patch' | 'rack';
+type DetailType = Exclude<EntityType, 'site'>;
+
+interface RouteMatch {
+  type: DetailType;
+  id: number;
+}
 
 interface ShareMetadata {
   type: EntityType;
@@ -63,35 +64,38 @@ interface RackRow {
   updated?: string;
 }
 
-export default async function middleware(request: NextRequest) {
-  const pathname = normalizePathname(request.nextUrl.pathname);
+export default async function middleware(request: Request): Promise<Response | void> {
+  const requestUrl = new URL(request.url);
+  const pathname = normalizePathname(requestUrl.pathname);
 
-  if (request.nextUrl.searchParams.has('__spa')) {
-    return NextResponse.next();
+  if (requestUrl.searchParams.has('__spa')) {
+    return;
   }
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return NextResponse.next();
+    return;
   }
 
   if (isBypassPath(pathname)) {
-    return NextResponse.next();
+    return;
   }
 
   const userAgent = request.headers.get('user-agent') || '';
   if (!BOT_UA_REGEX.test(userAgent)) {
-    return NextResponse.next();
+    return;
   }
 
   const canonicalUrl = `${ SITE_URL }${ pathname }`;
   const metadata = await buildMetadata(pathname, canonicalUrl);
-  const html = renderHtml(metadata);
+  const html = request.method === 'HEAD' ? '' : renderHtml(metadata);
 
-  return new NextResponse(html, {
+  return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, s-maxage=300, stale-while-revalidate=86400'
+      'cache-control': 'public, s-maxage=300, stale-while-revalidate=86400',
+      'x-content-type-options': 'nosniff',
+      'x-robots-tag': 'index, follow, max-image-preview:large'
     }
   });
 }
@@ -117,34 +121,61 @@ function normalizePathname(pathname: string): string {
 }
 
 async function buildMetadata(pathname: string, canonicalUrl: string): Promise<ShareMetadata> {
-  const moduleMatch = pathname.match(/^\/modules\/details\/(\d+)$/);
-  if (moduleMatch) {
-    const moduleId = parseInt(moduleMatch[1], 10);
-    const moduleMetadata = await getModuleMetadata(moduleId, canonicalUrl);
+  const routeMatch = parseDetailRoute(pathname);
+  if (!routeMatch) {
+    return defaultMetadata(canonicalUrl);
+  }
+
+  if (routeMatch.type === 'module') {
+    const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl);
     if (moduleMetadata) {
       return moduleMetadata;
     }
   }
 
-  const patchMatch = pathname.match(/^\/patches\/details\/(\d+)$/);
-  if (patchMatch) {
-    const patchId = parseInt(patchMatch[1], 10);
-    const patchMetadata = await getPatchMetadata(patchId, canonicalUrl);
+  if (routeMatch.type === 'patch') {
+    const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl);
     if (patchMetadata) {
       return patchMetadata;
     }
   }
 
-  const rackMatch = pathname.match(/^\/racks\/details\/(\d+)$/);
-  if (rackMatch) {
-    const rackId = parseInt(rackMatch[1], 10);
-    const rackMetadata = await getRackMetadata(rackId, canonicalUrl);
+  if (routeMatch.type === 'rack') {
+    const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl);
     if (rackMetadata) {
       return rackMetadata;
     }
   }
 
   return defaultMetadata(canonicalUrl);
+}
+
+function parseDetailRoute(pathname: string): RouteMatch | undefined {
+  const moduleMatch = pathname.match(/^\/modules\/details\/(\d+)$/);
+  if (moduleMatch) {
+    return {
+      type: 'module',
+      id: parseInt(moduleMatch[1], 10)
+    };
+  }
+
+  const patchMatch = pathname.match(/^\/patches\/details\/(\d+)$/);
+  if (patchMatch) {
+    return {
+      type: 'patch',
+      id: parseInt(patchMatch[1], 10)
+    };
+  }
+
+  const rackMatch = pathname.match(/^\/racks\/details\/(\d+)$/);
+  if (rackMatch) {
+    return {
+      type: 'rack',
+      id: parseInt(rackMatch[1], 10)
+    };
+  }
+
+  return undefined;
 }
 
 async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promise<ShareMetadata | undefined> {
@@ -308,12 +339,21 @@ function resolveRackImage(image?: string): string {
 }
 
 async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): Promise<T | undefined> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return undefined;
+  }
+
+  const abortController = new AbortController();
+  const timeoutHandle = setTimeout(() => abortController.abort(), SUPABASE_FETCH_TIMEOUT_MS);
+
   const response = await fetch(`${ SUPABASE_URL }/rest/v1/${ tableName }?${ params.toString() }`, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
       authorization: `Bearer ${ SUPABASE_ANON_KEY }`
-    }
+    },
+    signal: abortController.signal
   }).catch(() => undefined);
+  clearTimeout(timeoutHandle);
 
   if (!response || !response.ok) {
     return undefined;
@@ -358,6 +398,8 @@ function renderHtml(metadata: ShareMetadata): string {
   <meta property="og:url" content="${ canonical }">
   <meta property="og:image" content="${ image }">
   <meta property="og:image:secure_url" content="${ image }">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${ title }">
 
   <meta name="twitter:card" content="summary_large_image">
@@ -368,9 +410,11 @@ function renderHtml(metadata: ShareMetadata): string {
   <meta name="twitter:image:alt" content="${ title }">
 
   <script type="application/ld+json">${ jsonLd }</script>
+  <meta http-equiv="refresh" content="0;url=${ redirectUrl }">
   <script>if(!(${ BOT_UA_REGEX }).test(navigator.userAgent)){window.location.replace(${ redirectScriptTarget });}</script>
 </head>
 <body>
+  <noscript><meta http-equiv="refresh" content="0;url=${ redirectUrl }"></noscript>
   <p>Continue to <a href="${ redirectUrl }">${ canonical }</a></p>
 </body>
 </html>`;
