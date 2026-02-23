@@ -1,3 +1,10 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .leftBorderS {
   border-left-width: var(--cv-rows-border, .5rem);
   border-left-style: solid;
@@ -10,6 +17,9 @@
 }
 
 .module-editor-workflow {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   gap: 0.7rem;
   --cv-row-grid-desktop: 3.2rem minmax(9.5rem, 1fr) minmax(6.75rem, 8.25rem) minmax(6.75rem, 8.25rem);
   --cv-row-grid-tablet: 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem);
@@ -54,13 +64,26 @@
 
 .setup-grid {
   display: grid;
-  grid-template-columns: minmax(19rem, 1.15fr) minmax(17rem, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 0.7rem;
   align-items: start;
+  width: 100%;
+  max-width: 100%;
 }
 
 .setup-cluster {
   margin-bottom: 0.25rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.setup-specs,
+.setup-panel,
+.setup-field-stack,
+.setup-panel-content,
+.setup-panel-upload,
+.setup-panel-fields {
+  min-width: 0;
 }
 
 .setup-subblock {
@@ -68,11 +91,32 @@
   border-radius: 0.55rem;
   background: #ffffff;
   padding: 0.5rem;
+  overflow: hidden;
+  width: 100%;
 
   .mat-card-title {
     font-size: 1rem;
     margin: 0;
   }
+}
+
+.setup-field-stack > lib-mat-form-entity {
+  display: block;
+  min-width: 0;
+}
+
+.setup-panel-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+}
+
+.setup-panel-upload {
+  display: block;
+  width: 100%;
 }
 
 .workflow-block + .workflow-block {
@@ -165,6 +209,12 @@
   .cv-row-legend {
     grid-template-columns: var(--cv-row-grid-tablet);
     width: min(100%, var(--cv-row-max-width-tablet));
+  }
+}
+
+@media (max-width: 900px) {
+  .setup-panel-content {
+    grid-template-columns: 1fr;
   }
 }
 
