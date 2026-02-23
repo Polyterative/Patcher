@@ -24,10 +24,12 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  distinctUntilChanged,
   finalize,
   filter,
   last,
   map,
+  shareReplay,
   startWith,
   switchMap,
   tap,
@@ -77,6 +79,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   // Subjects and Observables
   readonly saveAll$ = new Subject<void>();
   readonly saveInProgress$ = new BehaviorSubject<boolean>(false);
+  readonly saveJustCompleted$ = new BehaviorSubject<boolean>(false);
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
@@ -94,6 +97,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   panelTypeAlreadyExists$ = new BehaviorSubject<boolean>(false);
   /** The human-readable name of the duplicate panel type, for display in the warning. */
   duplicatePanelTypeName$ = new BehaviorSubject<string>('');
+  readonly hasPendingChanges$: Observable<boolean>;
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -144,6 +148,19 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   ) {
     this.initializeFormControls();
     this.initializeFormGroups();
+    this.hasPendingChanges$ = combineLatest([
+      this.formGroupA.valueChanges.pipe(startWith(this.formGroupA.value)),
+      this.formGroupB.valueChanges.pipe(startWith(this.formGroupB.value)),
+      this.formGroupPower.valueChanges.pipe(startWith(this.formGroupPower.value)),
+      this.formGroupPhysical.valueChanges.pipe(startWith(this.formGroupPhysical.value)),
+      this.INs$,
+      this.OUTs$,
+      this.fileDragHostService.files$
+    ]).pipe(
+      map(() => this.computeHasPendingChanges()),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
     this.initializeSubscriptions();
   }
   
@@ -459,9 +476,40 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           this.markEditorFormsPristine();
           this.fileDragHostService.removeAllFiles$.emit();
           this.dataService.updateSingleModuleData$.next(this.data.id);
+          this.showSaveCompletedState();
           SharedConstants.successCustom(this.snackBar, `Saved ${ saved.join(', ') }.`);
         })
       );
+  }
+
+  get isSaveFabDisabled(): boolean {
+    return this.saveInProgress$.value
+      || !this.formGroupA.valid
+      || !this.formGroupB.valid
+      || !this.formGroupPower.valid
+      || !this.formGroupPhysical.valid
+      || this.isPanelSaveBlocked()
+      || !this.computeHasPendingChanges();
+  }
+
+  get saveFabLabel(): string {
+    if (this.saveInProgress$.value) {
+      return 'Saving...';
+    }
+    if (this.saveJustCompleted$.value) {
+      return 'Saved';
+    }
+    return this.computeHasPendingChanges() ? 'Save' : 'No changes';
+  }
+
+  get saveFabIcon(): string {
+    if (this.saveInProgress$.value) {
+      return 'sync';
+    }
+    if (this.saveJustCompleted$.value) {
+      return 'check';
+    }
+    return 'save';
   }
 
   private validatePendingChanges(
@@ -566,6 +614,25 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       cv.a.markAsPristine();
       cv.b.markAsPristine();
     });
+  }
+
+  private isPanelSaveBlocked(): boolean {
+    const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
+    return shouldSavePanel && (this.formGroupPanel.invalid || this.panelTypeAlreadyExists$.value);
+  }
+
+  private computeHasPendingChanges(): boolean {
+    const ins = this.formCVToCV(this.INs$.value);
+    const outs = this.formCVToCV(this.OUTs$.value);
+    return this.hasInsOutsChanges(ins, outs)
+      || this.formGroupPower.dirty
+      || this.formGroupPhysical.dirty
+      || (this.fileDragHostService.files$.value?.length ?? 0) > 0;
+  }
+
+  private showSaveCompletedState(): void {
+    this.saveJustCompleted$.next(true);
+    setTimeout(() => this.saveJustCompleted$.next(false), 1400);
   }
   
   private updateFormGroupAndContainer(
