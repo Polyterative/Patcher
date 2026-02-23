@@ -1,7 +1,7 @@
-const SITE_URL = 'https://patcher.xyz';
+const PRIMARY_SITE_URL = 'https://patcher.xyz';
 const SITE_NAME = 'Patcher.xyz';
 const DEFAULT_DESCRIPTION = 'Manager and database for musicians using modular gear, with a focus on saving and visualizing patch-notes.';
-const DEFAULT_IMAGE = `${ SITE_URL }/assets/png/patcher_seo_hero.png`;
+const CANONICAL_ORIGIN_OVERRIDE = (process.env.SEO_CANONICAL_ORIGIN || '').replace(/\/+$/, '');
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
@@ -31,6 +31,7 @@ interface ShareMetadata {
   description: string;
   image: string;
   url: string;
+  source: string;
   published?: string;
   modified?: string;
   jsonLd: Record<string, unknown>;
@@ -76,6 +77,8 @@ interface RackRow {
 export default async function middleware(request: Request): Promise<Response | void> {
   const requestUrl = new URL(request.url);
   const pathname = normalizePathname(requestUrl.pathname);
+  const requestOrigin = normalizeOrigin(requestUrl.origin);
+  const canonicalOrigin = CANONICAL_ORIGIN_OVERRIDE || requestOrigin || PRIMARY_SITE_URL;
 
   if (requestUrl.searchParams.has('__spa')) {
     return;
@@ -94,9 +97,9 @@ export default async function middleware(request: Request): Promise<Response | v
     return;
   }
 
-  const canonicalUrl = `${ SITE_URL }${ pathname }`;
+  const canonicalUrl = `${ canonicalOrigin }${ pathname }`;
   const cachedMetadata = readMetadataCache(canonicalUrl);
-  const metadata = cachedMetadata || await buildMetadata(pathname, canonicalUrl);
+  const metadata = cachedMetadata || await buildMetadata(pathname, canonicalUrl, canonicalOrigin);
   const cacheState = cachedMetadata ? 'hit' : 'miss';
 
   if (!cachedMetadata) {
@@ -112,7 +115,8 @@ export default async function middleware(request: Request): Promise<Response | v
       'cache-control': 'public, s-maxage=900, stale-while-revalidate=86400',
       'x-content-type-options': 'nosniff',
       'x-robots-tag': 'index, follow, max-image-preview:large',
-      'x-patcher-seo-cache': cacheState
+      'x-patcher-seo-cache': cacheState,
+      'x-patcher-seo-source': metadata.source
     }
   });
 }
@@ -137,34 +141,46 @@ function normalizePathname(pathname: string): string {
   return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 }
 
-async function buildMetadata(pathname: string, canonicalUrl: string): Promise<ShareMetadata> {
+function normalizeOrigin(origin: string): string {
+  return origin.replace(/\/+$/, '');
+}
+
+function getDefaultImage(origin: string): string {
+  return `${ origin }/assets/png/patcher_seo_hero.png`;
+}
+
+async function buildMetadata(pathname: string, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata> {
   const routeMatch = parseDetailRoute(pathname);
   if (!routeMatch) {
-    return defaultMetadata(canonicalUrl);
+    return defaultMetadata(canonicalUrl, siteOrigin, 'non-detail');
+  }
+
+  if (!SUPABASE_ANON_KEY) {
+    return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-no-key`);
   }
 
   if (routeMatch.type === 'module') {
-    const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl);
+    const moduleMetadata = await getModuleMetadata(routeMatch.id, canonicalUrl, siteOrigin);
     if (moduleMetadata) {
       return moduleMetadata;
     }
   }
 
   if (routeMatch.type === 'patch') {
-    const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl);
+    const patchMetadata = await getPatchMetadata(routeMatch.id, canonicalUrl, siteOrigin);
     if (patchMetadata) {
       return patchMetadata;
     }
   }
 
   if (routeMatch.type === 'rack') {
-    const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl);
+    const rackMetadata = await getRackMetadata(routeMatch.id, canonicalUrl, siteOrigin);
     if (rackMetadata) {
       return rackMetadata;
     }
   }
 
-  return defaultMetadata(canonicalUrl);
+  return defaultMetadata(canonicalUrl, siteOrigin, `${ routeMatch.type }-not-found`);
 }
 
 function parseDetailRoute(pathname: string): RouteMatch | undefined {
@@ -246,7 +262,7 @@ function pruneMetadataCache(): void {
   }
 }
 
-async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promise<ShareMetadata | undefined> {
+async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
   params.set('select', 'id,name,description,hp,created,updated,manufacturer:manufacturerId(name),panels:module_panels(filename,color)');
   params.set('id', `eq.${ moduleId }`);
@@ -274,7 +290,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promis
   const panelFilename = moduleRow.panels?.[0]?.filename;
   const image = panelFilename
     ? `${ SUPABASE_URL }/storage/v1/object/public/module-panels/${ encodeURIComponent(panelFilename) }`
-    : DEFAULT_IMAGE;
+    : getDefaultImage(siteOrigin);
 
   return {
     type: 'module',
@@ -282,6 +298,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promis
     description,
     image,
     url: canonicalUrl,
+    source: 'module',
     published: moduleRow.created,
     modified: moduleRow.updated,
     jsonLd: {
@@ -301,7 +318,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promis
   };
 }
 
-async function getPatchMetadata(patchId: number, canonicalUrl: string): Promise<ShareMetadata | undefined> {
+async function getPatchMetadata(patchId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
   params.set('select', 'id,name,description,created,updated');
   params.set('id', `eq.${ patchId }`);
@@ -324,8 +341,9 @@ async function getPatchMetadata(patchId: number, canonicalUrl: string): Promise<
     type: 'patch',
     title,
     description,
-    image: DEFAULT_IMAGE,
+    image: getDefaultImage(siteOrigin),
     url: canonicalUrl,
+    source: 'patch',
     published: patchRow.created,
     modified: patchRow.updated,
     jsonLd: {
@@ -333,13 +351,13 @@ async function getPatchMetadata(patchId: number, canonicalUrl: string): Promise<
       '@type': 'CreativeWork',
       name: patchName,
       description,
-      image: DEFAULT_IMAGE,
+      image: getDefaultImage(siteOrigin),
       url: canonicalUrl
     }
   };
 }
 
-async function getRackMetadata(rackId: number, canonicalUrl: string): Promise<ShareMetadata | undefined> {
+async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
   params.set('select', 'id,name,description,hp,rows,image,created,updated');
   params.set('id', `eq.${ rackId }`);
@@ -358,7 +376,7 @@ async function getRackMetadata(rackId: number, canonicalUrl: string): Promise<Sh
     DEFAULT_DESCRIPTION
   );
 
-  const image = resolveRackImage(rackRow.image);
+  const image = resolveRackImage(rackRow.image, siteOrigin);
 
   return {
     type: 'rack',
@@ -366,6 +384,7 @@ async function getRackMetadata(rackId: number, canonicalUrl: string): Promise<Sh
     description,
     image,
     url: canonicalUrl,
+    source: 'rack',
     published: rackRow.created,
     modified: rackRow.updated,
     jsonLd: {
@@ -379,26 +398,28 @@ async function getRackMetadata(rackId: number, canonicalUrl: string): Promise<Sh
   };
 }
 
-function defaultMetadata(canonicalUrl: string): ShareMetadata {
+function defaultMetadata(canonicalUrl: string, siteOrigin: string, source = 'default'): ShareMetadata {
+  const defaultImage = getDefaultImage(siteOrigin);
   return {
     type: 'site',
     title: SITE_NAME,
     description: DEFAULT_DESCRIPTION,
-    image: DEFAULT_IMAGE,
+    image: defaultImage,
     url: canonicalUrl,
+    source,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: SITE_NAME,
-      url: SITE_URL,
+      url: siteOrigin,
       description: DEFAULT_DESCRIPTION
     }
   };
 }
 
-function resolveRackImage(image?: string): string {
+function resolveRackImage(image: string | undefined, siteOrigin: string): string {
   if (!image) {
-    return DEFAULT_IMAGE;
+    return getDefaultImage(siteOrigin);
   }
   if (image.startsWith('http://') || image.startsWith('https://')) {
     return image;

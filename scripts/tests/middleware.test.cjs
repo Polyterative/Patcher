@@ -86,6 +86,7 @@ test('returns entity-specific metadata for bot detail requests', async () => {
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('x-patcher-seo-cache'), 'miss');
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'module');
   assert.equal(getCalls(), 1);
   assert.match(html, /Test Module by Acme/);
   assert.match(html, /og:title/);
@@ -114,6 +115,7 @@ test('serves default metadata for bot requests outside detail routes', async () 
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('x-patcher-seo-cache'), 'miss');
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'non-detail');
   assert.equal(getCalls(), 0);
   assert.match(html, /Patcher\.xyz/);
 });
@@ -127,6 +129,23 @@ test('fails open to default metadata when SUPABASE_ANON_KEY is empty', async () 
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('x-patcher-seo-cache'), 'miss');
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'module-no-key');
   assert.equal(getCalls(), 0);
   assert.match(html, /Patcher\.xyz/);
+});
+
+test('uses request host for canonical and og:url metadata', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload(modulePayload);
+
+  const response = await middleware(new Request('https://dev.patcher.xyz/modules/details/72', {
+    method: 'GET',
+    headers: {
+      'user-agent': 'Slackbot-LinkExpanding 1.0'
+    }
+  }));
+  const html = await response.text();
+
+  assert.match(html, /rel="canonical" href="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
+  assert.match(html, /property="og:url" content="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
 });
