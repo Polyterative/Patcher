@@ -5,7 +5,9 @@
            [class.cv-row-status--draft]="isRemovable"
            [class.cv-row-status--locked]="!isRemovable"
            [matTooltip]="statusLabel"
+           matTooltipPosition="above"
       >
+        <mat-icon class="cv-row-status-icon">{{ statusIcon }}</mat-icon>
         {{ statusCompactLabel }}
       </div>
       <button mat-icon-button
@@ -16,6 +18,7 @@
               [attr.data-cv-removable]="isRemovable"
               [matTooltip]="actionTooltip"
               matTooltipPosition="above"
+              matTooltipShowDelay="120"
               (click)="requestRemove()"
       >
         <mat-icon>{{ actionIcon }}</mat-icon>

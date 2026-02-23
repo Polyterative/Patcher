@@ -114,14 +114,15 @@ Steps:
 
 Steps:
 
-- [ ] Refine status badge/iconography density and tooltip copy.
-- [ ] Harmonize new adder controls with brand button system (contrast, hover, focus).
+- [x] Refine status badge/iconography density and tooltip copy.
+- [x] Harmonize new adder controls with brand button system (contrast, hover, focus).
 - [x] Reposition the unified save action into a FAB-style affordance consistent with existing edit FAB placement and motion language.
 - [x] Define FAB save states: idle (`Save`), dirty (`Save` emphasized), saving (`Saving...`/spinner), done (`Saved` short confirmation then idle).
 - [x] Ensure FAB save does not overlap row controls on desktop/mobile (safe-area + bottom spacing + scroll-aware offset).
-- [ ] Remove the standalone “Review & save” section and replace it with compact inline policy copy near the editor header.
-- [ ] Validate keyboard and screen-reader semantics for row actions.
-- [ ] Validate keyboard and screen-reader semantics for the save FAB (focus order, label updates, disabled explanation).
+- [x] Remove the standalone “Review & save” section and replace it with compact inline policy copy near the editor
+  header.
+- [x] Validate keyboard and screen-reader semantics for row actions.
+- [x] Validate keyboard and screen-reader semantics for the save FAB (focus order, label updates, disabled explanation).
 - [ ] Gate: focused UX test pass + stakeholder signoff screenshots.
 
 ---

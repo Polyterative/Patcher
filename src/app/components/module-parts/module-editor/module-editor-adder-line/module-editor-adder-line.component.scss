@@ -6,12 +6,17 @@
   min-width: 9rem;
   border-radius: 999px;
   border: 1px solid #4d6f96 !important;
-  background-color: #edf3fa !important;
+  background-color: #e7f0fb !important;
   color: #25517e !important;
   box-shadow: none !important;
+  transition: background-color 120ms ease-in-out, box-shadow 120ms ease-in-out;
 
   &:hover {
-    background-color: #dfebf8 !important;
+    background-color: #dbe9f9 !important;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px #f4f8fd, 0 0 0 4px #5d83ad !important;
   }
 }
 
