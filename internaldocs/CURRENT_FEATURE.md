@@ -66,8 +66,8 @@ Angular SSR migration while fully solving the crawler problem.
 
 Steps:
 
-- [ ] **M1 — Add default OG/Twitter meta tags to `index.html`** as a safe fallback (generic site-level).
-- [ ] **M2 — Create `middleware.ts`** at project root.
+- [x] **M1 — Add default OG/Twitter meta tags to `index.html`** as a safe fallback (generic site-level).
+- [x] **M2 — Create `middleware.ts`** at project root.
   - Detect bot User-Agents (facebookexternalhit, Twitterbot, Slackbot, WhatsApp, TelegramBot, LinkedInBot,
     Discordbot, Googlebot, Bingbot, ChatGPT-User, Applebot, etc.).
   - For bot requests, parse the URL path to determine entity type and ID:
@@ -79,8 +79,8 @@ Steps:
   - Include a `<meta http-equiv="refresh">` or `<noscript>` fallback so that if a real user somehow hits this path,
     they are redirected.
   - For non-bot requests, call `next()` to serve the SPA as usual.
-- [ ] **M3 — Update `vercel.json`** to integrate middleware (likely zero config needed for root middleware).
-- [ ] **M4 — Add fallback OG tags to `index.html`** so that `og:title`, `og:description`, `og:image` exist in the
+- [x] **M3 — Update `vercel.json`** to integrate middleware (no file changes required; root `middleware.ts` is auto-detected by Vercel).
+- [x] **M4 — Add fallback OG tags to `index.html`** so that `og:title`, `og:description`, `og:image` exist in the
   static shell (the middleware will override them for bots, but this ensures there's always _something_).
 - [ ] **Gate:** share a module link in Telegram/WhatsApp/Slack → verify entity-specific title, description, and image
   show up. Use Facebook Sharing Debugger, Twitter Card Validator.
