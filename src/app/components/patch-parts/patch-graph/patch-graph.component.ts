@@ -77,7 +77,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     {label: 'CV in', color: '#4483F2'}
   ];
 
-  private sizeConstant = 5;
+  private readonly baseSizeConstant = 5;
 
   constructor(
     public patchDetailDataService: PatchDetailDataService,
@@ -139,7 +139,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         connections: PatchConnection[]
       }) => {
 
-        this.sizeConstant = this.sizeConstant * ((modules.length / connections.length) / 1.5);
+        const sizeConstant = this.computeSizeConstant(modules.length, connections.length);
         const nodesDictionary: NodesDictionary = {};
         const allModuleJackEdges: {
           [id: string]: GraphEdge
@@ -170,7 +170,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             id: moduleNodeId,
             label: moduleLabel,
             color: this.legend[0].color,
-            size: this.sizeConstant * 7.5,
+            size: sizeConstant * 7.5,
             x: 1,
             y: 1,
             data: {type: 'module', module}
@@ -181,7 +181,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           const outNodes: GraphNode[] = module.outs.map(jack => ({
             id: moduleNodeId + jack.id,
             color: this.legend[1].color,
-            size: this.sizeConstant * 5,
+            size: sizeConstant * 5,
             x: 1, y: 1,
             label: `${ module.name } ${ jack.name }`
           }));
@@ -189,18 +189,18 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           const inNodes: GraphNode[] = module.ins.map(jack => ({
             id: moduleNodeId + jack.id,
             color: this.legend[2].color,
-            size: this.sizeConstant * 5,
+            size: sizeConstant * 5,
             x: 1, y: 1,
             label: `${ module.name } ${ jack.name }`
           }));
           
           const insEdges: GraphEdge[] = inNodes.map(n => ({
             id: n.id, from: n.id, to: moduleNodeId,
-            label: '', color: '#c0c0c0', size: this.sizeConstant, type: 'arrow'
+            label: '', color: '#c0c0c0', size: sizeConstant, type: 'arrow'
           }));
           const outsEdges: GraphEdge[] = outNodes.map(n => ({
             id: n.id, from: moduleNodeId, to: n.id,
-            label: '', color: '#c0c0c0', size: this.sizeConstant, type: 'arrow'
+            label: '', color: '#c0c0c0', size: sizeConstant, type: 'arrow'
           }));
           
           insEdges.forEach(edge => allModuleJackEdges[edge.id] = edge);
@@ -212,11 +212,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           const suffixB = connection.instance_id_b != null ? `_${ connection.instance_id_b }` : '';
           const cvNodeIdA = connection.a.module.id.toString() + suffixA + connection.a.id;
           if (!nodesDictionary[cvNodeIdA]) {
-            nodesDictionary[cvNodeIdA] = this.buildNode(cvNodeIdA, connection.a, '#E2523C');
+            nodesDictionary[cvNodeIdA] = this.buildNode(cvNodeIdA, connection.a, '#E2523C', sizeConstant);
           }
           const cvNodeIdB = connection.b.module.id.toString() + suffixB + connection.b.id;
           if (!nodesDictionary[cvNodeIdB]) {
-            nodesDictionary[cvNodeIdB] = this.buildNode(cvNodeIdB, connection.b, '#4483F2');
+            nodesDictionary[cvNodeIdB] = this.buildNode(cvNodeIdB, connection.b, '#4483F2', sizeConstant);
           }
         });
         
@@ -228,7 +228,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           return {
             id: from + to, from, to,
             type: 'arrow', color: '#c0c0c0',
-            size: this.sizeConstant * 2, x: 1, y: 1,
+            size: sizeConstant * 2, x: 1, y: 1,
             label: `${ connection.notes ?? '' }`
           };
         });
@@ -251,14 +251,24 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     this._manualRefresh$.next();
   }
 
-  private buildNode(nodeId: string, CV: CVwithModule, color: string): GraphNode {
+  private buildNode(nodeId: string, CV: CVwithModule, color: string, sizeConstant: number): GraphNode {
     return {
       id: nodeId,
       label: `${ CV.name }`,
       color,
-      size: this.sizeConstant * 4,
+      size: sizeConstant * 4,
       x: 1, y: 1
     };
+  }
+
+  private computeSizeConstant(modulesCount: number, connectionsCount: number): number {
+    if (modulesCount <= 0 || connectionsCount <= 0) {
+      return this.baseSizeConstant;
+    }
+
+    const ratio = (modulesCount / connectionsCount) / 1.5;
+    const scaled = this.baseSizeConstant * ratio;
+    return Math.max(1.5, Math.min(6, scaled));
   }
   
   /** Extract unique (moduleId, instanceId) pairs from patch connections. */
