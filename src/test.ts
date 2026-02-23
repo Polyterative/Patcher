@@ -8,6 +8,17 @@ import {
 } from '@angular/platform-browser-dynamic/testing';
 
 
+const originalConsoleWarn = console.warn.bind(console);
+
+console.warn = (...args: unknown[]): void => {
+  const [firstArg] = args;
+  const message = typeof firstArg === 'string' ? firstArg : '';
+  if (message.includes('Multiple GoTrueClient instances detected in the same browser context')) {
+    return;
+  }
+  originalConsoleWarn(...args);
+};
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,

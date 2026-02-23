@@ -25,13 +25,8 @@ test.describe('Module Details', () => {
     // Wait for the page to load
     await page.waitForLoadState('domcontentloaded');
     
-    // Target ONLY the main module card, not the "Others by same manufacturer" section
-    // The main card is inside the first lib-screen-wrapper with fixed-width32 class
-    const mainModuleSection = page.locator('lib-screen-wrapper.fixed-width32').first();
-    await expect(mainModuleSection).toBeVisible({timeout: 15_000});
-    
-    // Within that section, get the module composite
-    const moduleComposite = mainModuleSection.locator('app-module-composite');
+    // The details layout no longer uses `fixed-width32`; target the main module composite directly.
+    const moduleComposite = page.locator('app-module-composite').first();
     await expect(moduleComposite).toBeVisible({timeout: 5_000});
     
     // The tags component MUST be present in the main module details
