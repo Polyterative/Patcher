@@ -18,15 +18,19 @@ import {
   concat,
   EMPTY,
   from,
+  Observable,
   of,
   Subject
 } from 'rxjs';
 import {
   catchError,
+  finalize,
   filter,
+  last,
   map,
   startWith,
   switchMap,
+  tap,
   takeUntil,
   withLatestFrom
 } from 'rxjs/operators';
@@ -71,10 +75,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   
   // Subjects and Observables
-  readonly saveInsOuts$ = new Subject<void>();
-  readonly savePanels$ = new Subject<void>();
-  readonly savePower$ = new Subject<void>();
-  readonly savePhysical$ = new Subject<void>();
+  readonly saveAll$ = new Subject<void>();
+  readonly saveInProgress$ = new BehaviorSubject<boolean>(false);
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
@@ -192,6 +194,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       this.panelTypeAlreadyExists$.next(true);
       this.duplicatePanelTypeName$.next(this.panelType.control.value?.name ?? '');
     }
+
+    this.markEditorFormsPristine();
   }
   
   ngOnDestroy(): void {
@@ -337,32 +341,13 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         this.removeCvWithUndo(index, 'OUT');
       });
     
-    // Subscription for saving INs and OUTs
-    this.saveInsOuts$
+    this.saveAll$
       .pipe(
-        map(() => [
-          this.formCVToCV(this.INs$.value),
-          this.formCVToCV(this.OUTs$.value)
-        ]),
-        filter(([ins, outs]) => this.shouldSaveInsOuts(ins, outs)),
-        switchMap(([ins, outs]) =>
-          concat(
-            this.backend.update.moduleINsOUTs(this.data.id, ins, outs),
-            this.backend.update.module({id: this.data.id})
-          )
-        ),
-        catchError(error => {
-          console.error('Error saving INs/OUTs:', error);
-          SharedConstants.errorCustom(this.snackBar, 'CV data not saved — the server returned an error. Try again.');
-          return EMPTY;
-        }),
-        withLatestFrom(this.dataService.updateSingleModuleData$),
+        filter(() => !this.saveInProgress$.value),
+        switchMap(() => this.persistAllChanges$()),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([, updateSingleModuleData]) => {
-        this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        SharedConstants.successCustom(this.snackBar, 'CV data written to module.');
-      });
+      .subscribe();
     
     // Subscription for panelType control value changes
     this.panelType.control.valueChanges
@@ -395,158 +380,192 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         this.duplicatePanelTypeName$.next(isDuplicate ? panelTypeValue?.name ?? '' : '');
       });
     
-    // Subscription for saving power data
-    this.savePower$
-      .pipe(
-        switchMap(() => {
-          // Check if the power form is valid
-          if (this.formGroupPower.invalid) {
-            SharedConstants.errorCustom(this.snackBar, 'Power form has invalid values — check the fields and try again.');
-            return EMPTY;
-          }
-          
-          // Gather power data from controls
-          const powerData = {
+  }
+
+  private persistAllChanges$(): Observable<unknown> {
+    const ins = this.formCVToCV(this.INs$.value);
+    const outs = this.formCVToCV(this.OUTs$.value);
+
+    const shouldSaveInsOuts = this.hasInsOutsChanges(ins, outs);
+    const shouldSavePower = this.formGroupPower.dirty;
+    const shouldSavePhysical = this.formGroupPhysical.dirty;
+    const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
+
+    if (!this.validatePendingChanges(shouldSavePower, shouldSavePhysical, shouldSavePanel)) {
+      return EMPTY;
+    }
+
+    if (!shouldSaveInsOuts && !shouldSavePower && !shouldSavePhysical && !shouldSavePanel) {
+      SharedConstants.successCustom(this.snackBar, 'No pending changes to save.');
+      return EMPTY;
+    }
+
+    const operations: Observable<unknown>[] = [];
+
+    if (shouldSavePower || shouldSavePhysical) {
+      operations.push(this.backend.update.module({
+        id: this.data.id,
+        ...(shouldSavePower
+          ? {
             powerPos12: this.powerRailPositive.control.value,
             powerNeg12: this.powerRailNegative.control.value,
             powerPos5: this.powerRailFiveVolts.control.value
-          };
-          
-          // Perform a single update call with the full module data merged with the power data.
-          // Ensure that the backend update method returns the updated module.
-          return this.backend.update.module({
-            ...this.data,
-            ...powerData
-          });
-        }),
-        catchError(error => {
-          console.error('Error saving power data:', error);
-          SharedConstants.errorCustom(this.snackBar, 'Power specs not saved — the server returned an error. Try again.');
-          return EMPTY;
-        }),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(updatedModule => {
-        if (updatedModule) {
-          SharedConstants.successCustom(this.snackBar, 'Power specs written to module.');
-          this.dataService.updateSingleModuleData$.next(this.data.id);
-        }
-      });
-    
-    
-    // subscription for adding depth and weight
-    this.savePhysical$
-      .pipe(
-        switchMap(() => {
-          if (this.formGroupPhysical.invalid) {
-            SharedConstants.errorCustom(this.snackBar, 'Physical form has invalid values — check the fields and try again.');
-            return EMPTY;
           }
-          
-          const physicalData = {
+          : {}),
+        ...(shouldSavePhysical
+          ? {
             weight: this.weight.control.value !== '' ? this.weight.control.value : undefined,
             depth: this.depth.control.value !== '' ? this.depth.control.value : undefined
-          };
-          
-          return this.backend.update.module({
-              ...this.data,
-              weight: physicalData.weight,
-              depth: physicalData.depth
-            }
-          );
-        }),
-        catchError(error => {
-          console.error('Error saving physical data:', error);
-          SharedConstants.errorCustom(this.snackBar, 'Physical specs not saved — the server returned an error. Try again.');
-          return EMPTY;
-        }),
-        withLatestFrom(this.dataService.updateSingleModuleData$),
-        takeUntil(this.destroyEvent$),
-      )
-      .subscribe(([, updateSingleModuleData]) => {
-        this.dataService.updateSingleModuleData$.next(updateSingleModuleData);
-        SharedConstants.successCustom(this.snackBar, 'Physical specs written to module.');
-      });
-    
-    // Subscription to save panels (including image upload)
-    this.savePanels$
+          }
+          : {})
+      }));
+    }
+
+    if (shouldSavePanel) {
+      operations.push(this.savePendingPanel$());
+    }
+
+    if (shouldSaveInsOuts) {
+      operations.push(this.backend.update.moduleINsOUTs(this.data.id, ins, outs));
+    }
+
+    const savedSections: string[] = [];
+    if (shouldSavePower || shouldSavePhysical) {
+      savedSections.push('module specs');
+    }
+    if (shouldSavePanel) {
+      savedSections.push('panel');
+    }
+    if (shouldSaveInsOuts) {
+      savedSections.push('IN/OUT ports');
+    }
+
+    this.saveInProgress$.next(true);
+    return concat(...operations, this.backend.update.module({id: this.data.id}))
       .pipe(
-        // Retrieve the first file from the file drag host service
-        map(() => this.fileDragHostService.files$.value[0]),
-        // Convert the file to an ArrayBuffer and get the file name and type
-        switchMap(file =>
-          from(file.arrayBuffer()).pipe(
-            withLatestFrom(of([file.name, file.type]))
-          )
-        ),
-        // Construct a new filename and upload the file to the server
-        switchMap(([fileBuffer, [filename, fileType]]) => {
-          // Extract the extension from the original filename
-          const extension: string = filename.split('.').pop();
-          // Build a new filename using the module's name, manufacturer, panel type, and standard,
-          // sanitized using safeString to avoid invalid characters.
-          const name: string = `${ this.safeString(this.data.name) }-${ this.safeString(this.data.manufacturer.name) }-${ this.panelType.control.value.name }-${ this.safeString(this.data.standard.name) }`;
-          const filenameAndExtension: string = `${ name }.${ extension }`;
-          // Upload the file to the server
-          return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
-        }),
-        // Add the panel to the database with the returned filename and panel details
-        switchMap(dbFilename =>
-          this.backend.add.panel([
-            {
-              filename: dbFilename,
-              color: +this.panelType.control.value.value,
-              description: this.panelDescription.control.value,
-              moduleid: this.data.id
-            }
-          ])
-        ),
-        // Update the module to refresh its last updated datetime
-        switchMap(() => this.backend.update.module({id: this.data.id})),
-        // Error handling: inspect the error message to detect duplicate entry errors
-        catchError(error => {
-          console.error('Error during panel upload:', error);
+        last(),
+        map((): string[] => savedSections),
+        catchError((error): Observable<string[]> => {
+          console.error('Error saving module editor changes:', error);
           if (error && error.message && error.message.includes('duplicate key value violates')) {
             SharedConstants.errorCustom(this.snackBar, 'Panel already exists for this module — upload a different image or remove the existing one first.');
           } else {
-            SharedConstants.errorCustom(this.snackBar, 'Panel upload failed — the server returned an error. Try again.');
+            SharedConstants.errorCustom(this.snackBar, 'Changes not saved — the server returned an error. Try again.');
           }
           return EMPTY;
+        }),
+        finalize(() => this.saveInProgress$.next(false)),
+        tap((saved: string[]) => {
+          this.markEditorFormsPristine();
+          this.fileDragHostService.removeAllFiles$.emit();
+          this.dataService.updateSingleModuleData$.next(this.data.id);
+          SharedConstants.successCustom(this.snackBar, `Saved ${ saved.join(', ') }.`);
         })
-      )
-      .subscribe(() => {
-        SharedConstants.successCustom(this.snackBar, 'Panel image uploaded and attached to this module.');
-        // Reload the module data
-        this.dataService.updateSingleModuleData$.next(this.data.id);
-      });
-    
+      );
   }
-  
-  private shouldSaveInsOuts(ins: CV[], outs: CV[]): boolean {
-    if (ins.length === 0 && outs.length === 0) {
-      SharedConstants.errorCustom(this.snackBar, 'No CV data to save — add ins or outs first.');
-      this.dataService.updateSingleModuleData$.next(this.data.id);
+
+  private validatePendingChanges(
+    shouldSavePower: boolean,
+    shouldSavePhysical: boolean,
+    shouldSavePanel: boolean
+  ): boolean {
+    if (shouldSavePower && this.formGroupPower.invalid) {
+      SharedConstants.errorCustom(this.snackBar, 'Power form has invalid values — check the fields and try again.');
       return false;
     }
-    
-    const approvedIns = ins.filter(cv => cv.isApproved);
-    const approvedOuts = outs.filter(cv => cv.isApproved);
-    
-    const sameApproved =
-      approvedIns.length === this.data.ins.length &&
-      approvedOuts.length === this.data.outs.length;
-    
-    const sameUnapproved =
-      ins.length === this.data.ins.length &&
-      outs.length === this.data.outs.length;
-    
-    if (sameApproved && sameUnapproved) {
-      SharedConstants.successCustom(this.snackBar, 'All CV ports are already approved — nothing to update.');
-      this.dataService.updateSingleModuleData$.next(this.data.id);
+
+    if (shouldSavePhysical && this.formGroupPhysical.invalid) {
+      SharedConstants.errorCustom(this.snackBar, 'Physical form has invalid values — check the fields and try again.');
       return false;
     }
-    
+
+    if (shouldSavePanel) {
+      if (this.formGroupPanel.invalid) {
+        SharedConstants.errorCustom(this.snackBar, 'Panel fields are invalid — check panel type and description.');
+        return false;
+      }
+      if (this.panelTypeAlreadyExists$.value) {
+        SharedConstants.errorCustom(this.snackBar, `This module already has a "${ this.duplicatePanelTypeName$.value }" panel.`);
+        return false;
+      }
+    }
+
     return true;
+  }
+
+  private savePendingPanel$(): Observable<unknown> {
+    const file = this.fileDragHostService.files$.value[0];
+    if (!file) {
+      return EMPTY;
+    }
+
+    return from(file.arrayBuffer()).pipe(
+      withLatestFrom(of([file.name, file.type] as const)),
+      switchMap(([fileBuffer, [filename, fileType]]) => {
+        const extension: string = filename.split('.').pop();
+        const name: string = `${ this.safeString(this.data.name) }-${ this.safeString(this.data.manufacturer.name) }-${ this.panelType.control.value.name }-${ this.safeString(this.data.standard.name) }`;
+        const filenameAndExtension: string = `${ name }.${ extension }`;
+        return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
+      }),
+      switchMap(dbFilename =>
+        this.backend.add.panel([{
+          filename: dbFilename,
+          color: +this.panelType.control.value.value,
+          description: this.panelDescription.control.value,
+          moduleid: this.data.id
+        }])
+      )
+    );
+  }
+
+  private hasInsOutsChanges(ins: CV[], outs: CV[]): boolean {
+    const existingIns = this.data?.ins ?? [];
+    const existingOuts = this.data?.outs ?? [];
+    return !this.areCvListsEqual(ins, existingIns) || !this.areCvListsEqual(outs, existingOuts);
+  }
+
+  private areCvListsEqual(a: CV[], b: CV[]): boolean {
+    if (a.length !== b.length) {
+      return false;
+    }
+    return a.every((cv, i) => {
+      const left = this.toComparableCv(cv);
+      const right = this.toComparableCv(b[i]);
+      return left.id === right.id
+        && left.name === right.name
+        && left.min === right.min
+        && left.max === right.max
+        && left.isApproved === right.isApproved;
+    });
+  }
+
+  private toComparableCv(cv: CV): Required<Pick<CV, 'id' | 'name' | 'min' | 'max' | 'isApproved'>> {
+    return {
+      id: cv?.id ?? 0,
+      name: (cv?.name ?? '').trim(),
+      min: cv?.min ?? 0,
+      max: cv?.max ?? 0,
+      isApproved: cv?.isApproved ?? false
+    };
+  }
+
+  private markEditorFormsPristine(): void {
+    this.formGroupPower.markAsPristine();
+    this.formGroupPhysical.markAsPristine();
+    this.formGroupPanel.markAsPristine();
+    this.formGroupA.markAsPristine();
+    this.formGroupB.markAsPristine();
+
+    this.INs$.value.forEach(cv => {
+      cv.name.markAsPristine();
+      cv.a.markAsPristine();
+      cv.b.markAsPristine();
+    });
+    this.OUTs$.value.forEach(cv => {
+      cv.name.markAsPristine();
+      cv.a.markAsPristine();
+      cv.b.markAsPristine();
+    });
   }
   
   private updateFormGroupAndContainer(

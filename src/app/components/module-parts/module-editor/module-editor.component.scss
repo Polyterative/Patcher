@@ -9,6 +9,50 @@
   padding-top: .5rem;
 }
 
+.module-editor-workflow {
+  gap: 0.7rem;
+
+  .mat-card-subtitle {
+    padding-top: 0;
+  }
+}
+
+.workflow-strip {
+  margin-bottom: 0.15rem;
+}
+
+.workflow-block {
+  border: 1px solid #d8e2ee;
+  border-radius: 0.65rem;
+  background: #f8fbff;
+  padding: 0.75rem;
+}
+
+.workflow-block--review {
+  border-color: #d6e5d1;
+  background: #f7fbf5;
+}
+
+.workflow-block-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+
+  .mat-card-title {
+    margin: 0;
+  }
+
+  .mat-card-subtitle {
+    margin: 0;
+    color: #657788;
+  }
+}
+
+.workflow-prepare-grid {
+  align-items: flex-start;
+}
+
 .cv-summary-chips {
   margin: 0;
 }
@@ -18,6 +62,7 @@
 }
 
 .cv-edit-section-header {
+  align-items: baseline;
   margin-bottom: 0.2rem;
 }
 
@@ -47,6 +92,10 @@
   margin-top: 0.15rem !important;
 }
 
+.workflow-review-text {
+  margin-top: 0.1rem;
+}
+
 @media (max-width: 1160px) {
   .cv-row-legend {
     grid-template-columns: 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem);
@@ -64,5 +113,9 @@
 
   .cv-edit-section {
     padding-top: 0.2rem;
+  }
+
+  .workflow-block {
+    padding: 0.6rem;
   }
 }
