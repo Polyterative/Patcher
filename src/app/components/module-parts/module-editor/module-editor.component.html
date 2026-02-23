@@ -173,7 +173,10 @@
             [disabled]="isSaveFabDisabled"
             (click)="saveAll$.next()"
             [class.save-fab--saving]="saveInProgress$ | async"
-            aria-label="Save all module editor changes"
+            [attr.aria-label]="saveFabAriaLabel"
+            [matTooltip]="saveFabDisabledReason || 'Save all pending changes'"
+            matTooltipPosition="above"
+            matTooltipShowDelay="120"
     >
       <mat-icon>{{ saveFabIcon }}</mat-icon>
       {{ saveFabLabel }}
