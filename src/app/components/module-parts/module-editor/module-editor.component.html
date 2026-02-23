@@ -1,15 +1,6 @@
 <lib-clean-card>
   <div class="col gap1 module-editor-workflow">
-    <mat-card-subtitle class="workflow-inline-note">
-      Done closes editing. Save writes all pending setup and port changes for this module.
-    </mat-card-subtitle>
-
-    <section class="workflow-block workflow-block--setup">
-      <div class="workflow-block-header">
-        <mat-card-title>Setup</mat-card-title>
-        <mat-card-subtitle>Adjust specs and panel details before sharing edits.</mat-card-subtitle>
-      </div>
-
+    <div class="setup-cluster">
       <div class="setup-grid">
         <div class="col gap1 setup-specs">
           <section class="setup-subblock col gap1">
@@ -60,26 +51,24 @@
 
           @if (panelTypeAlreadyExists$ | async) {
             <app-advice-tooltip>
-              This module already has a "{{ duplicatePanelTypeName$ | async }}" panel — choose a different type or remove
-              the existing one first
+              A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type or remove
+              the existing panel first.
             </app-advice-tooltip>
           }
         </section>
       </div>
-    </section>
+    </div>
 
     <section class="workflow-block workflow-block--ports">
       <div class="workflow-block-header">
         <mat-card-title>Edit ports</mat-card-title>
-        <mat-card-subtitle>Add IN/OUT rows and verify voltage ranges.</mat-card-subtitle>
       </div>
 
       <div class="col gap1">
       <!-- INs Section -->
       <div class="col gap1 cv-edit-section">
         <div class="row gap1 cv-edit-section-header">
-          <mat-card-title>INs</mat-card-title>
-          <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
+          <mat-card-title>Inputs</mat-card-title>
         </div>
 
         <div class="rowwrap gap1 cv-controls-row">
@@ -88,7 +77,7 @@
                           aria-label="Input CV summary"
             >
               <mat-chip>{{ summary.total }} total</mat-chip>
-              <mat-chip>{{ summary.editable }} editable</mat-chip>
+              <mat-chip>{{ summary.editable }} draft</mat-chip>
               <mat-chip>{{ summary.locked }} locked</mat-chip>
             </mat-chip-set>
           }
@@ -118,8 +107,7 @@
       <!-- OUTs Section -->
       <div class="col gap1 cv-edit-section">
         <div class="row gap1 cv-edit-section-header">
-          <mat-card-title>OUTs</mat-card-title>
-          <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
+          <mat-card-title>Outputs</mat-card-title>
         </div>
 
         <div class="rowwrap gap1 cv-controls-row">
@@ -128,7 +116,7 @@
                           aria-label="Output CV summary"
             >
               <mat-chip>{{ summary.total }} total</mat-chip>
-              <mat-chip>{{ summary.editable }} editable</mat-chip>
+              <mat-chip>{{ summary.editable }} draft</mat-chip>
               <mat-chip>{{ summary.locked }} locked</mat-chip>
             </mat-chip-set>
           }
@@ -156,10 +144,6 @@
       </div>
 
       </div>
-
-      <mat-card-subtitle class="workflow-policy-note">
-        Any saved changes affect all users. Update values only when data is missing or clearly incorrect.
-      </mat-card-subtitle>
     </section>
 
     <button class="save-fab"

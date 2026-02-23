@@ -34,6 +34,7 @@ export class ModuleDetailDataService {
   singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
   moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
   userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
   addModuleToCollection$ = new Subject<number>();
@@ -102,7 +103,10 @@ export class ModuleDetailDataService {
     // get module data
     this.updateSingleModuleData$
       .pipe(
-        tap(x => this.singleModuleData$.next(undefined)),
+        tap(x => {
+          this.singleModuleData$.next(undefined);
+          this.moduleEditorHasPendingChanges$.next(false);
+        }),
         switchMap(x => this.backend.GET.moduleWithId(x)),
         takeUntil(this.destroyEvent$)
       )
@@ -227,7 +231,12 @@ export class ModuleDetailDataService {
         withLatestFrom(this.moduleEditingPanelOpenState$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([_, current]) => this.moduleEditingPanelOpenState$.next(!current));
+      .subscribe(([_, current]) => {
+        if (current) {
+          this.moduleEditorHasPendingChanges$.next(false);
+        }
+        this.moduleEditingPanelOpenState$.next(!current);
+      });
     
   }
   
