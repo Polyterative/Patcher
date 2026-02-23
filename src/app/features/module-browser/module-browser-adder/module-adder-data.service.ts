@@ -275,7 +275,7 @@ export class ModuleAdderDataService extends SubManager {
       .subscribe(x => {
         this.formData.standard.control.enable();
         
-        const found: any = x.find(y => y.id === 0);
+        const found: any = x.find(y => y.id === 0 || y.id === '0');
         if (found) {
           this.formData.standard.control.setValue(found);
         }

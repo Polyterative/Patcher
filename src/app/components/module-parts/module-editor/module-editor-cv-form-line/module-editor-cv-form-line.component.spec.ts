@@ -2,6 +2,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FormCV } from '../module-editor-data.service';
 import { ModuleEditorCvFormLineComponent } from './module-editor-cv-form-line.component';
 
+
 function makeFormCV(partial: Partial<FormCV> = {}): FormCV {
   return {
     id: partial.id ?? 1,
@@ -33,6 +34,7 @@ describe('ModuleEditorCvFormLineComponent', () => {
     expect(component.actionIcon).toBe('check_circle');
     expect(component.actionAriaLabel).toBe('CV row is locked');
     expect(component.actionTooltip).toContain('cannot be removed');
+    expect(component.statusCompactLabel).toBe('Approved');
   });
 
   it('should mark non-approved stored rows as locked saved rows', () => {
@@ -43,6 +45,7 @@ describe('ModuleEditorCvFormLineComponent', () => {
     expect(component.statusLabel).toBe('Saved');
     expect(component.actionIcon).toBe('lock');
     expect(component.actionAriaLabel).toBe('CV row is locked');
+    expect(component.statusCompactLabel).toBe('Saved');
   });
 
   it('should emit remove request only for removable rows', () => {
@@ -56,5 +59,14 @@ describe('ModuleEditorCvFormLineComponent', () => {
     component.item = makeFormCV({id: 77});
     component.requestRemove();
     expect(emitSpy).toHaveBeenCalledTimes(1);
+  });
+  
+  it('logs an error when initialized without an item', () => {
+    const component = new ModuleEditorCvFormLineComponent();
+    const errorSpy = spyOn(console, 'error');
+    
+    component.ngOnInit();
+    
+    expect(errorSpy).toHaveBeenCalled();
   });
 });

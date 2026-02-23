@@ -5,13 +5,19 @@ describe('UrlCreatorService', () => {
   let service: UrlCreatorService;
   let mockSnackBar: jasmine.SpyObj<any>;
   
+  function clipboardSpy(): jasmine.Spy {
+    return jasmine.isSpy(navigator.clipboard.writeText)
+      ? navigator.clipboard.writeText as jasmine.Spy
+      : spyOn(navigator.clipboard, 'writeText');
+  }
+  
   beforeEach(() => {
     mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
     service = new UrlCreatorService({} as any, mockSnackBar, {} as any);
   });
   
   it('calls navigator.clipboard.writeText with window.location.origin + path', async () => {
-    spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+    clipboardSpy().and.returnValue(Promise.resolve());
     const path = '/modules/details/42';
     const expectedUrl = window.location.origin + path;
     
@@ -21,7 +27,7 @@ describe('UrlCreatorService', () => {
   });
   
   it('calls snackBar.open with success message when clipboard resolves', async () => {
-    spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
+    clipboardSpy().and.returnValue(Promise.resolve());
     
     service.copyLinkToClipboard('/test');
     await Promise.resolve();
@@ -34,7 +40,7 @@ describe('UrlCreatorService', () => {
   });
   
   it('calls snackBar.open with error message when clipboard rejects', async () => {
-    spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.reject(new Error('denied')));
+    clipboardSpy().and.returnValue(Promise.reject(new Error('denied')));
     
     service.copyLinkToClipboard('/test');
     await Promise.resolve();
@@ -48,7 +54,7 @@ describe('UrlCreatorService', () => {
   
   it('constructs URL from window.location.origin and arbitrary path', async () => {
     let capturedUrl = '';
-    spyOn(navigator.clipboard, 'writeText').and.callFake((url: string) => {
+    clipboardSpy().and.callFake((url: string) => {
       capturedUrl = url;
       return Promise.resolve();
     });
