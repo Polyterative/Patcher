@@ -42,6 +42,13 @@
     "node": ">=18.19.0 <26"
   },
   "private": true,
+  "resolutions": {
+    "body-parser": "1.20.4",
+    "braces": "3.0.3",
+    "cross-spawn": "7.0.6",
+    "qs": "6.15.0",
+    "ws": "8.19.0"
+  },
   "dependencies": {
     "@angular/animations": "^21.1.4",
     "@angular/cdk": "^21.1.4",
