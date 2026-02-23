@@ -44,14 +44,27 @@ function modulePayload() {
   }];
 }
 
+function rackPayload(image = 'rack-preview.jpeg') {
+  return [{
+    id: 91,
+    name: 'Rack 91',
+    description: 'Rack description',
+    hp: 104,
+    rows: 2,
+    image,
+    created: '2024-02-01T00:00:00.000Z',
+    updated: '2024-02-02T00:00:00.000Z'
+  }];
+}
+
 function stubFetchWithPayload(payloadFactory) {
   let calls = 0;
-  global.fetch = async () => {
+  global.fetch = async (url) => {
     calls += 1;
     return {
       ok: true,
       async json() {
-        return payloadFactory();
+        return payloadFactory(url);
       }
     };
   };
@@ -86,7 +99,7 @@ test('returns entity-specific metadata for bot detail requests', async () => {
 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('x-patcher-seo-cache'), 'miss');
-  assert.equal(response.headers.get('x-patcher-seo-source'), 'module');
+  assert.match(response.headers.get('x-patcher-seo-source') || '', /^module-/);
   assert.equal(getCalls(), 1);
   assert.match(html, /Test Module by Acme/);
   assert.match(html, /og:title/);
@@ -148,4 +161,55 @@ test('uses request host for canonical and og:url metadata', async () => {
 
   assert.match(html, /rel="canonical" href="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
   assert.match(html, /property="og:url" content="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
+});
+
+test('resolves rack image filename from rack record', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload((url) => {
+    if (String(url).includes('/rest/v1/racks')) {
+      return rackPayload('rack-preview.jpeg');
+    }
+    return [];
+  });
+
+  const response = await middleware(makeRequest('/racks/details/91'));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'rack-image');
+  assert.match(html, /storage\/v1\/object\/public\/racks\/rack-preview\.jpeg/);
+});
+
+test('normalizes rack image path stored as storage object path', async () => {
+  const middleware = loadMiddleware('test-key');
+  stubFetchWithPayload((url) => {
+    if (String(url).includes('/rest/v1/racks')) {
+      return rackPayload('storage/v1/object/public/racks/rack-92.jpeg');
+    }
+    return [];
+  });
+
+  const response = await middleware(makeRequest('/racks/details/91'));
+  const html = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('x-patcher-seo-source'), 'rack-image');
+  assert.match(html, /storage\/v1\/object\/public\/racks\/rack-92\.jpeg/);
+  assert.doesNotMatch(html, /storage\/v1\/object\/public\/racks\/storage%2Fv1%2Fobject/);
+});
+
+test('detail fallback is noindex and not cached (private/nonexistent protection)', async () => {
+  const middleware = loadMiddleware('test-key');
+  const getCalls = stubFetchWithPayload(() => []);
+
+  const first = await middleware(makeRequest('/racks/details/999999'));
+  const second = await middleware(makeRequest('/racks/details/999999'));
+
+  assert.equal(first.status, 200);
+  assert.equal(first.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+  assert.equal(first.headers.get('cache-control'), 'private, no-store, max-age=0');
+  assert.equal(first.headers.get('x-patcher-seo-cache'), 'miss');
+  assert.equal(second.headers.get('x-patcher-seo-cache'), 'miss');
+  assert.equal(first.headers.get('x-patcher-seo-source'), 'rack-not-found');
+  assert.equal(getCalls(), 2);
 });
