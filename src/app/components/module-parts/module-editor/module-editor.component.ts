@@ -61,6 +61,15 @@ export interface CvSectionSummary {
 }
 
 type CvSectionKind = 'IN' | 'OUT';
+interface PendingSaveState {
+  ins: CV[];
+  outs: CV[];
+  shouldSaveInsOuts: boolean;
+  shouldSavePower: boolean;
+  shouldSavePhysical: boolean;
+  shouldSavePanel: boolean;
+  hasPendingChanges: boolean;
+}
 
 
 @Component({
@@ -98,6 +107,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   /** The human-readable name of the duplicate panel type, for display in the warning. */
   duplicatePanelTypeName$ = new BehaviorSubject<string>('');
   readonly hasPendingChanges$: Observable<boolean>;
+  private saveCompletedTimeoutId: ReturnType<typeof setTimeout> | null = null;
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -216,6 +226,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
+    if (this.saveCompletedTimeoutId) {
+      clearTimeout(this.saveCompletedTimeoutId);
+      this.saveCompletedTimeoutId = null;
+    }
     this.dataService.moduleEditorHasPendingChanges$.next(false);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
@@ -405,19 +419,21 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
 
   private persistAllChanges$(): Observable<unknown> {
-    const ins = this.formCVToCV(this.INs$.value);
-    const outs = this.formCVToCV(this.OUTs$.value);
+    const pendingState = this.getPendingSaveState();
+    const {
+      ins,
+      outs,
+      shouldSaveInsOuts,
+      shouldSavePower,
+      shouldSavePhysical,
+      shouldSavePanel
+    } = pendingState;
 
-    const shouldSaveInsOuts = this.hasInsOutsChanges(ins, outs);
-    const shouldSavePower = this.formGroupPower.dirty;
-    const shouldSavePhysical = this.formGroupPhysical.dirty;
-    const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
-
-    if (!this.validatePendingChanges(shouldSavePower, shouldSavePhysical, shouldSavePanel)) {
+    if (!this.validatePendingChanges(shouldSaveInsOuts, shouldSavePower, shouldSavePhysical, shouldSavePanel)) {
       return EMPTY;
     }
 
-    if (!shouldSaveInsOuts && !shouldSavePower && !shouldSavePhysical && !shouldSavePanel) {
+    if (!pendingState.hasPendingChanges) {
       SharedConstants.successCustom(this.snackBar, 'No pending changes to save.');
       return EMPTY;
     }
@@ -478,6 +494,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }),
         finalize(() => this.saveInProgress$.next(false)),
         tap((saved: string[]) => {
+          this.syncDataSnapshotAfterSave(ins, outs, shouldSaveInsOuts, shouldSavePower, shouldSavePhysical);
           this.markEditorFormsPristine();
           this.fileDragHostService.removeAllFiles$.emit();
           this.dataService.moduleEditorHasPendingChanges$.next(false);
@@ -489,13 +506,32 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
 
   get isSaveFabDisabled(): boolean {
-    return this.saveInProgress$.value
-      || !this.formGroupA.valid
-      || !this.formGroupB.valid
-      || !this.formGroupPower.valid
-      || !this.formGroupPhysical.valid
-      || this.isPanelSaveBlocked()
-      || !this.computeHasPendingChanges();
+    if (this.saveInProgress$.value) {
+      return true;
+    }
+
+    const pendingState = this.getPendingSaveState();
+    if (!pendingState.hasPendingChanges) {
+      return true;
+    }
+
+    if (pendingState.shouldSaveInsOuts && (!this.formGroupA.valid || !this.formGroupB.valid)) {
+      return true;
+    }
+
+    if (pendingState.shouldSavePower && !this.formGroupPower.valid) {
+      return true;
+    }
+
+    if (pendingState.shouldSavePhysical && !this.formGroupPhysical.valid) {
+      return true;
+    }
+
+    if (pendingState.shouldSavePanel && this.isPanelSaveBlocked()) {
+      return true;
+    }
+
+    return false;
   }
 
   get saveFabLabel(): string {
@@ -533,26 +569,42 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     if (this.saveInProgress$.value) {
       return 'Save in progress';
     }
-    if (!this.formGroupA.valid || !this.formGroupB.valid) {
+    const pendingState = this.getPendingSaveState();
+
+    if (pendingState.shouldSaveInsOuts && (!this.formGroupA.valid || !this.formGroupB.valid)) {
       return 'Fix invalid input/output rows';
     }
-    if (!this.formGroupPower.valid || !this.formGroupPhysical.valid) {
-      return 'Fix invalid setup fields';
+
+    if (pendingState.shouldSavePower && !this.formGroupPower.valid) {
+      return 'Fix invalid power fields';
     }
-    if (this.isPanelSaveBlocked()) {
+
+    if (pendingState.shouldSavePhysical && !this.formGroupPhysical.valid) {
+      return 'Fix invalid physical fields';
+    }
+
+    if (pendingState.shouldSavePanel && this.isPanelSaveBlocked()) {
       return 'Fix panel selection or duplicate panel type';
     }
-    if (!this.computeHasPendingChanges()) {
+
+    if (!pendingState.hasPendingChanges) {
       return 'No pending changes';
     }
+
     return '';
   }
 
   private validatePendingChanges(
+    shouldSaveInsOuts: boolean,
     shouldSavePower: boolean,
     shouldSavePhysical: boolean,
     shouldSavePanel: boolean
   ): boolean {
+    if (shouldSaveInsOuts && (this.formGroupA.invalid || this.formGroupB.invalid)) {
+      SharedConstants.errorCustom(this.snackBar, 'Input/output rows have invalid values — check CV names and voltage ranges.');
+      return false;
+    }
+
     if (shouldSavePower && this.formGroupPower.invalid) {
       SharedConstants.errorCustom(this.snackBar, 'Power form has invalid values — check the fields and try again.');
       return false;
@@ -586,7 +638,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return from(file.arrayBuffer()).pipe(
       withLatestFrom(of([file.name, file.type] as const)),
       switchMap(([fileBuffer, [filename, fileType]]) => {
-        const extension: string = filename.split('.').pop();
+        const extensionFromFilename = filename.includes('.') ? filename.split('.').pop() : '';
+        const extensionFromType = (fileType ?? '').split('/').pop();
+        const extension = (extensionFromFilename || extensionFromType || 'jpg').toLowerCase();
         const name: string = `${ this.safeString(this.data.name) }-${ this.safeString(this.data.manufacturer.name) }-${ this.panelType.control.value.name }-${ this.safeString(this.data.standard.name) }`;
         const filenameAndExtension: string = `${ name }.${ extension }`;
         return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
@@ -658,17 +712,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
 
   private computeHasPendingChanges(): boolean {
-    const ins = this.formCVToCV(this.INs$.value);
-    const outs = this.formCVToCV(this.OUTs$.value);
-    return this.hasInsOutsChanges(ins, outs)
-      || this.formGroupPower.dirty
-      || this.formGroupPhysical.dirty
-      || (this.fileDragHostService.files$.value?.length ?? 0) > 0;
+    return this.getPendingSaveState().hasPendingChanges;
   }
 
   private showSaveCompletedState(): void {
     this.saveJustCompleted$.next(true);
-    setTimeout(() => this.saveJustCompleted$.next(false), 1400);
+    if (this.saveCompletedTimeoutId) {
+      clearTimeout(this.saveCompletedTimeoutId);
+    }
+    this.saveCompletedTimeoutId = setTimeout(() => {
+      this.saveJustCompleted$.next(false);
+      this.saveCompletedTimeoutId = null;
+    }, 1400);
   }
   
   private updateFormGroupAndContainer(
@@ -765,5 +820,52 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       editable,
       locked: cvs.length - editable
     };
+  }
+
+  private getPendingSaveState(): PendingSaveState {
+    const ins = this.formCVToCV(this.INs$.value);
+    const outs = this.formCVToCV(this.OUTs$.value);
+    const shouldSaveInsOuts = this.hasInsOutsChanges(ins, outs);
+    const shouldSavePower = this.formGroupPower.dirty;
+    const shouldSavePhysical = this.formGroupPhysical.dirty;
+    const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
+
+    return {
+      ins,
+      outs,
+      shouldSaveInsOuts,
+      shouldSavePower,
+      shouldSavePhysical,
+      shouldSavePanel,
+      hasPendingChanges: shouldSaveInsOuts || shouldSavePower || shouldSavePhysical || shouldSavePanel
+    };
+  }
+
+  private syncDataSnapshotAfterSave(
+    ins: CV[],
+    outs: CV[],
+    shouldSaveInsOuts: boolean,
+    shouldSavePower: boolean,
+    shouldSavePhysical: boolean
+  ): void {
+    const nextData: DbModule = {
+      ...this.data,
+      ...(shouldSaveInsOuts ? {ins, outs} : {}),
+      ...(shouldSavePower
+        ? {
+          powerPos12: this.powerRailPositive.control.value,
+          powerNeg12: this.powerRailNegative.control.value,
+          powerPos5: this.powerRailFiveVolts.control.value
+        }
+        : {}),
+      ...(shouldSavePhysical
+        ? {
+          weight: this.weight.control.value !== '' ? this.weight.control.value : undefined,
+          depth: this.depth.control.value !== '' ? this.depth.control.value : undefined
+        }
+        : {})
+    };
+
+    this.data = nextData;
   }
 }
