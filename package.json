@@ -129,7 +129,6 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "simple-icons": "^16.9.0",
     "standard-version": "^9.5.0",
-    "supabase": "^2.76.9",
     "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   }
