@@ -91,6 +91,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
       // Assert: Error handler should be called (via SharedConstants)
       // We can't easily test SharedConstants.errorLogin without mocking it
       // but the subscription should complete via NEVER
+      expect(mockSupabaseService.login$).toHaveBeenCalledWith('test@example.com', 'wrong-password');
     }));
   });
   
@@ -141,10 +142,12 @@ describe('UserManagementService - Manual Login/Logout', () => {
       // Assert: Success message shown via SharedConstants
       // The implementation calls SharedConstants.successLogout(this.snackBar)
       // We can verify snackBar was opened (if we spy on SharedConstants)
+      expect(mockSupabaseService.logoff$).toHaveBeenCalled();
     }));
     
     it('should handle logout error gracefully', fakeAsync(() => {
       // Arrange
+      spyOn(console, 'error');
       const error = new Error('Logout failed');
       mockSupabaseService.logoff$.and.returnValue(throwError(() => error));
       
