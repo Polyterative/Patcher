@@ -11,16 +11,25 @@
     }
     <div class="col gap1"
     >
-      <app-user-manuals></app-user-manuals>
-      <div class="container gap1"
-      >
-        <app-user-modules class="block"
-                          [modulesViewConfig]="viewConfig"
-                          [encloseVertically]="true"
-        ></app-user-modules>
-        <app-user-racks class="block"></app-user-racks>
-        <app-user-patches class="block"></app-user-patches>
-        <app-user-comments class="block"></app-user-comments>
+      <div class="profile-layout">
+        <div class="container gap1 main-content"
+        >
+          <app-user-modules class="block"
+                            [modulesViewConfig]="viewConfig"
+                            [encloseVertically]="true"
+          ></app-user-modules>
+          <app-user-racks class="block"></app-user-racks>
+          <app-user-patches class="block"></app-user-patches>
+        </div>
+        <div class="sidebar col gap1">
+          <app-statistics
+            title="Profile stats"
+            cardClass="userBG"
+            [statistics]="miscStats$ | async"
+          ></app-statistics>
+          <app-user-manuals></app-user-manuals>
+          <app-user-comments></app-user-comments>
+        </div>
       </div>
     </div>
   </lib-screen-wrapper>

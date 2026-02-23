@@ -1,0 +1,56 @@
+:host {
+  display: block;
+}
+
+.account-shell {
+  position: relative;
+}
+
+.account-content {
+  position: relative;
+  z-index: 1;
+}
+
+.account-subtitle {
+  margin: 0;
+  padding: 0.1rem 0 0.2rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--mat-sys-on-surface-variant, #646b75);
+}
+
+.account-sections {
+  gap: 0.75rem;
+}
+
+.logout-button {
+  margin-bottom: 0.85rem;
+}
+
+.section-surface {
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(95, 114, 135, 0.2);
+  border-radius: 0.8rem;
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.94), rgba(252, 253, 255, 0.97));
+  box-shadow: 0 0.35rem 1rem rgba(15, 24, 36, 0.04);
+}
+
+.section-surface--id {
+  background: linear-gradient(130deg, rgba(249, 252, 255, 0.95), rgba(243, 249, 255, 0.98));
+}
+
+.primary-action {
+  min-width: 11.5rem;
+}
+
+.danger-zone {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(181, 91, 91, 0.35);
+}
+
+@media (max-width: 599px) {
+  .section-surface {
+    padding: 0.7rem 0.8rem;
+  }
+}
