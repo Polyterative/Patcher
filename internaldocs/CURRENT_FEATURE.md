@@ -240,3 +240,78 @@ Validation checklist for each iteration:
 - [x] Playwright unsaved-draft snapshot test passes without save action.
 - [x] Visual review confirms no white-on-white controls and no misleading destructive styling.
 - [ ] `git status` contains only intended source/doc changes (no required artifacts).
+
+---
+
+## 8) One-Off UI Fix: User Page Vertical Space Optimization (2026-02-23)
+
+Objective:
+
+- Reduce wasted vertical space in the User page cards (`Modules`, `Racks`, `Patches`) while preserving current actions
+  and readability.
+
+Scope:
+
+- In-scope: user-area route card layout density (header/title row, top content spacing, action/search spacing).
+- Out-of-scope: data flow, feature behavior, sidebar widgets, backend logic.
+
+Three-layer execution plan:
+
+1. **MVP (density pass)**
+   - Lower top-card vertical padding and heading block footprint for the three hero cards.
+   - Tighten spacing between action buttons, divider, and search section.
+   - Keep mobile breakpoints readable.
+
+2. **Structural (layout consistency)**
+   - Apply a consistent compact style across `Modules`, `Racks`, `Patches` cards only.
+   - Avoid global hero-card regressions by scoping styles to the user-area route.
+
+3. **Polish (readability + safety checks)**
+   - Verify header/title/description hierarchy remains clear after compaction.
+   - Run targeted checks (lint/build or focused tests as feasible) and confirm no layout breakage in user area.
+
+Implementation checklist:
+
+- [ ] Add compact hero-card inputs/classes in user-area templates.
+- [ ] Add scoped user-area SCSS overrides for vertical rhythm.
+- [ ] Validate desktop/mobile spacing in local run and adjust if needed.
+- [ ] Run at least one repo-approved verification command.
+
+---
+
+## 9) One-Off UI Iteration: Unified Floating Search for User Area (2026-02-23)
+
+Objective:
+
+- Remove per-section inline search boxes and introduce one shared floating search field that filters `Modules`, `Racks`,
+  and `Patches` simultaneously.
+
+Scope:
+
+- In-scope: user-area UI filtering behavior and search input placement.
+- Out-of-scope: backend/API filtering, data shape changes, non-user-area pages.
+
+Three-layer plan:
+
+1. **MVP**
+   - Add one root-level search control in `user-area-root`.
+   - Pass a shared query input down to modules/racks/patches lists.
+   - Disable inline list search rendering on this page.
+
+2. **Structural**
+   - Extend list components with reusable external-query input support while preserving existing internal `showSearch`
+     behavior for other routes.
+   - Keep filtering reactive and case-insensitive using existing normalization helpers.
+
+3. **Polish**
+   - Style the root search as a floating field (FAB-adjacent visual behavior).
+   - Ensure mobile safe-area spacing and no overlap with list content.
+   - Run a repo-approved verification command and fix any regressions.
+
+Implementation checklist:
+
+- [x] Add shared search control + floating field markup in user-area root.
+- [x] Wire `globalSearchQuery` input through user section wrapper components.
+- [x] Update `module-list`, `rack-list`, `patch-list` to support external query stream.
+- [x] Remove/disable section-local search boxes in user area usage.
+- [x] Verify with targeted tests/lint command.
