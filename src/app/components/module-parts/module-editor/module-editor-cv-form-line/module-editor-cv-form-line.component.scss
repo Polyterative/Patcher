@@ -17,6 +17,10 @@
 
 .cv-row-status {
   width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
   border-radius: 999px;
   border: 1px solid #8fa1b4;
   padding: 0.08rem 0.35rem;
@@ -30,6 +34,13 @@
   text-overflow: ellipsis;
   color: #50657c;
   background: #eef3f8;
+}
+
+.cv-row-status-icon {
+  font-size: 0.72rem;
+  width: 0.72rem;
+  height: 0.72rem;
+  line-height: 0.72rem;
 }
 
 .cv-row-status--draft {
@@ -49,11 +60,17 @@
   height: 1.85rem;
   padding: 0.2rem;
   color: #7d8d9f;
+  border-radius: 50%;
+  outline: none;
 
   .mat-icon,
   mat-icon {
     color: inherit;
   }
+}
+
+.cv-row-action:focus-visible {
+  box-shadow: 0 0 0 2px #f4f8fd, 0 0 0 4px #5d83ad;
 }
 
 .cv-row-action--removable:hover:not(:disabled),

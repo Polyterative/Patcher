@@ -41,8 +41,16 @@ export class ModuleEditorCvFormLineComponent implements OnInit {
     if (this.isRemovable) {
       return 'Draft';
     }
-
-    return this.item?.isApproved ? 'OK' : 'Saved';
+    
+    return this.item?.isApproved ? 'Approved' : 'Saved';
+  }
+  
+  get statusIcon(): string {
+    if (this.isRemovable) {
+      return 'edit';
+    }
+    
+    return this.item?.isApproved ? 'verified' : 'lock';
   }
 
   get actionIcon(): string {
