@@ -1,116 +1,249 @@
 <lib-screen-wrapper>
-  <div class="col gap1">
-    <div class="col gap2 homeBG" style="padding: 4rem 2rem 8rem;">
-      <h1 [@titleEnter]>PATCHER.XYZ</h1>
-      <h2 [@subtitleEnter]>The everything modular manager and database</h2>
-      <mat-divider inset="true"></mat-divider>
-      
-      <app-lib-showcase-grid
-        [data]="[
-            {
-              label: 'Discover the world of modular',
-              value: 'Explore a vast library of modules, discover new favorites, and build your dream rack with ease.',
-              icon: 'widgets',
-              size: 'auto',
-            },
-            {
-              label: 'Craft stunning patches, share them effortlessly',
-              value: 'Record and share complex patch notes with a click. Impress collaborators, document your creative journey, and never forget a sonic masterpiece.',
-              icon: 'music_note',
-              size: 'auto',
-            },
-            {
-              label: 'Effortless rack management at your fingertips',
-              value: 'Design, configure, and optimize your modular system with lightning speed. Visualize your dream setup, manage all your racks effortlessly, and unlock your next sonic adventure.',
-              icon: 'settings',
-              size: 'auto',
-            },
-          ]"
-      ></app-lib-showcase-grid>
-      
-      <div class="col gap1 center-content">
-        <p style="font-size: 1.8rem;">Create an account to get started.</p>
-        <div class="row gap3 center-content">
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
-          </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
+  <main class="home-page">
+    <section class="hero-section">
+      <div class="hero-copy">
+        <p class="eyebrow">PATCHER · DIGITAL TWIN WORKSPACE</p>
+        <h1>Run your full modular workflow like a live instrument.</h1>
+        <p class="subtitle">
+          Patcher is an open-source workspace for Eurorack musicians: browse modules, plan racks, document
+          patches, and keep your real setup in sync.
+        </p>
+
+        <div class="hero-tags" aria-label="Core commitments">
+          <span>Public browsing access</span>
+          <span>Open-source</span>
+          <span>Open data with boundaries</span>
+        </div>
+
+        <div class="hero-actions">
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Get started</app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
         </div>
       </div>
-      
-      <mat-divider inset="true"></mat-divider>
-    </div>
+
+      <div class="hero-visuals">
+        <mat-card class="visual-main">
+          <img
+            src="/assets/png/patcher_seo_hero.png"
+            alt="Patcher interface preview"
+            loading="eager"
+            decoding="async"
+          />
+          <p class="visual-caption">Built for real sessions, not disposable mock workflows.</p>
+        </mat-card>
+
+        <mat-card class="visual-float visual-a">
+          <img
+            src="/assets/png/patcher_promo_280122%20(1)%20(Small).png"
+            alt="Patcher module browser preview"
+            loading="lazy"
+            decoding="async"
+          />
+        </mat-card>
+
+        <mat-card class="visual-float visual-b">
+          <img
+            src="/assets/png/patcher_promo_280122%20(2)%20(Small).png"
+            alt="Patcher rack planner preview"
+            loading="lazy"
+            decoding="async"
+          />
+        </mat-card>
+        
+        <p class="pulse-badge">Auto-save + instance-aware patching = fewer lost ideas.</p>
+      </div>
+    </section>
     
-    <ng-container>
-      <div class="col gap2 belowContainer">
-        <div class="col gap1">
-          <!-- Patch Creation Section -->
-          <lib-hero-header
-            class="gradientCard"
-            title="Create, share, and explore patches"
-            description="Record and share complex patch notes with a click. Impress your friends, document your creative journey, and never forget a sonic masterpiece."
-          >
-            <lib-screen-wrapper maxSize="75rem">
-              <lib-device-frame-wrapper>
-                <app-patch-browser-patch-detail
-                  [ignoreSeo]="true"
-                  [viewConfig]="patchViewConfig"
-                  class="embedded"
-                ></app-patch-browser-patch-detail>
-              </lib-device-frame-wrapper>
-            </lib-screen-wrapper>
-          </lib-hero-header>
-          <mat-divider inset="true"></mat-divider>
-          
-          <!-- Module Discovery Section -->
-          <lib-hero-header
-            class="gradientCard"
-            title="Discover new modules"
-            description="Explore a vast library of modules, discover new favorites, and track your collection with ease."
-          >
-            <lib-screen-wrapper maxSize="75rem">
-              <lib-device-frame-wrapper>
-                <app-module-browser-detail
-                  [ignoreSeo]="true"
-                  [viewConfig]="moduleViewConfig"
-                  class="embedded"
-                ></app-module-browser-detail>
-              </lib-device-frame-wrapper>
-            </lib-screen-wrapper>
-          </lib-hero-header>
-          <mat-divider inset="true"></mat-divider>
-          
-          <!-- Rack Management Section -->
-          <lib-hero-header
-            class="gradientCard"
-            title="Manage racks with unprecedented ease"
-            description="Move modules freely, visualize your dream setup, and manage all your racks effortlessly."
-          >
-            <lib-screen-wrapper maxSize="75rem">
-              <lib-device-frame-wrapper>
-                <app-rack-browser-rack-detail
-                  [ignoreSeo]="true"
-                  [viewConfig]="rackViewConfig"
-                  class="embedded"
-                ></app-rack-browser-rack-detail>
-              </lib-device-frame-wrapper>
-            </lib-screen-wrapper>
-          </lib-hero-header>
-          
-          <!-- Call to Action Section -->
-          <lib-hero-header
-            class="gradientCard"
-            description="Create an account to get started."
-          >
-            <lib-screen-wrapper>
-              <div class="row gap3 center-content">
-                <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
-                </app-brand-primary-button>
-                <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
-              </div>
-            </lib-screen-wrapper>
-          </lib-hero-header>
-        </div>
+    <section class="signal-flow-section">
+      <h2>Signal flow, but for your whole workflow</h2>
+      <p class="section-intro">From discovery to performance, the workflow follows the same logic as a modular signal
+        path.</p>
+      
+      <div class="signal-chain">
+        <mat-card class="signal-node">
+          <p class="node-kicker">SOURCE</p>
+          <mat-icon>hub</mat-icon>
+          <h3>Discover modules</h3>
+          <p>Use accent-insensitive search and focused filters to find modules faster.</p>
+        </mat-card>
+        
+        <mat-card class="signal-node">
+          <p class="node-kicker">SHAPE</p>
+          <mat-icon>view_stream</mat-icon>
+          <h3>Plan racks</h3>
+          <p>Build and refine rack layouts before committing changes to physical hardware.</p>
+        </mat-card>
+        
+        <mat-card class="signal-node">
+          <p class="node-kicker">ROUTE</p>
+          <mat-icon>cable</mat-icon>
+          <h3>Patch with context</h3>
+          <p>Track repeated modules with instance-aware patching and connection-safe workflows.</p>
+        </mat-card>
+        
+        <mat-card class="signal-node">
+          <p class="node-kicker">PERFORM</p>
+          <mat-icon>bar_chart</mat-icon>
+          <h3>Read complexity live</h3>
+          <p>Monitor cables, modules, and multiples instantly while your patch evolves.</p>
+        </mat-card>
       </div>
-    </ng-container>
-  </div>
+      
+      <div class="tempo-bars" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </section>
+    
+    <section class="impact-section">
+      <h2>High-impact capabilities from recent releases</h2>
+      <p class="section-intro">These features materially changed day-to-day patching speed and reliability.</p>
+      
+      <div class="impact-grid">
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.1</p>
+          <h3>App-wide auto-save</h3>
+          <p>Patch state and notes persist automatically so work survives interruptions.</p>
+        </mat-card>
+        
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.1</p>
+          <h3>Instance-aware multi-module patching</h3>
+          <p>Repeated modules are tracked precisely to avoid ambiguous patch routes.</p>
+        </mat-card>
+        
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.1</p>
+          <h3>Connection-driven patch stats</h3>
+          <p>Cables, modules, and multiples update in real time for better complexity awareness.</p>
+        </mat-card>
+        
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.1</p>
+          <h3>Privacy controls</h3>
+          <p>Public/private toggles for patches and racks keep sharing under your control.</p>
+        </mat-card>
+        
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.0+</p>
+          <h3>Search that respects real language</h3>
+          <p>Accent-insensitive normalization helps users find modules regardless of typing variations.</p>
+        </mat-card>
+        
+        <mat-card class="impact-card">
+          <p class="impact-version">v5.1.1</p>
+          <h3>Performance and graph stability</h3>
+          <p>Reduced graph jitter and deterministic sizing improve confidence during dense patching.</p>
+        </mat-card>
+      </div>
+    </section>
+    
+    <section class="difference-section">
+      <h2>What makes this system different</h2>
+      <p class="section-intro">
+        Data depth matters across the modular ecosystem. Patcher focuses on pairing strong data with modern UX,
+        high-performance behavior, and an open development model.
+      </p>
+      
+      <div class="difference-grid">
+        <mat-card class="difference-card">
+          <div class="difference-head">
+            <mat-icon>speed</mat-icon>
+            <h3>Performance as a core feature</h3>
+          </div>
+          <p>Dense patch views stay responsive with graph-stability and deterministic layout improvements.</p>
+        </mat-card>
+        
+        <mat-card class="difference-card">
+          <div class="difference-head">
+            <mat-icon>auto_awesome</mat-icon>
+            <h3>Modern workflow language</h3>
+          </div>
+          <p>Cleaner interaction patterns, inline actions, and focused visual hierarchy reduce friction during
+            creation.</p>
+        </mat-card>
+        
+        <mat-card class="difference-card">
+          <div class="difference-head">
+            <mat-icon>task_alt</mat-icon>
+            <h3>Reliability while you create</h3>
+          </div>
+          <p>Auto-save and instance-aware patching protect ideas while maintaining clear connection context.</p>
+        </mat-card>
+        
+        <mat-card class="difference-card">
+          <div class="difference-head">
+            <mat-icon>hub</mat-icon>
+            <h3>Open and evolvable platform</h3>
+          </div>
+          <p>Public changelog, open-source codebase, and transparent roadmap make the system auditable and
+            adaptable.</p>
+        </mat-card>
+      </div>
+    </section>
+    
+    <section class="principles-section">
+      <mat-card class="principle-card open-data-card">
+        <div class="principle-head">
+          <span class="principle-icon-shell">
+            <mat-icon>public</mat-icon>
+          </span>
+          <h2>Open data principle</h2>
+        </div>
+        <div class="principle-flags">
+          <span><mat-icon>travel_explore</mat-icon> Open, discoverable public data</span>
+          <span><mat-icon>lock</mat-icon> Private data stays private</span>
+        </div>
+        <p>
+          Modular culture is built on shared ideas. Public content on Patcher is intentionally discoverable and
+          reusable,
+          so ideas can flow; private content stays private and out of scope for data reuse.
+        </p>
+        <a class="inline-resource" href="/llms.txt" target="_blank" rel="noopener">
+          <mat-icon>description</mat-icon>
+          Open-data boundaries in llms.txt
+        </a>
+      </mat-card>
+      
+      <mat-card class="principle-card open-source-card">
+        <div class="principle-head">
+          <span class="principle-icon-shell">
+            <mat-icon>code</mat-icon>
+          </span>
+          <h2>Open-source and transparent by default</h2>
+        </div>
+        <div class="principle-flags">
+          <span><mat-icon>visibility</mat-icon> Public development trail</span>
+          <span><mat-icon>group</mat-icon> Open flow of contributions</span>
+        </div>
+        <p>Like modular itself, the system stays open: every feature and fix is visible, and anyone can contribute.</p>
+        <div class="resource-links">
+          <a href="https://github.com/Polyterative/Patcher" target="_blank" rel="noopener">
+            <mat-icon>code</mat-icon>
+            GitHub repository
+          </a>
+          <a href="https://github.com/Polyterative/Patcher/blob/develop/CHANGELOG.md" target="_blank" rel="noopener">
+            <mat-icon>history</mat-icon>
+            Full changelog
+          </a>
+        </div>
+      </mat-card>
+    </section>
+    
+    <section class="final-cta-section">
+      <mat-card class="final-cta-card">
+        <img src="/assets/png/LOGO_1.png" alt="Patcher logo" loading="lazy" decoding="async"/>
+        <h2>Build, patch, and remember your best ideas.</h2>
+        <p>Browse now. Create an account when you want to save, organize, and share your setup.</p>
+        <div class="cta-actions">
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create account
+          </app-brand-primary-button>
+          <app-brand-primary-button routerLink="/modules/browser" icon="open_in_new">Browse modules
+          </app-brand-primary-button>
+          <a class="source-link" href="https://github.com/Polyterative/Patcher" target="_blank" rel="noopener">
+            View source
+          </a>
+        </div>
+      </mat-card>
+    </section>
+  </main>
 </lib-screen-wrapper>
