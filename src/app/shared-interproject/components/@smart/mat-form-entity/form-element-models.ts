@@ -2,9 +2,9 @@ import {
   AbstractControl,
   UntypedFormControl,
   Validators
-}                     from '@angular/forms';
+} from '@angular/forms';
 import { ErrorCodes } from './app-form-utils';
-import DOMPurify      from "dompurify";
+import DOMPurify from "dompurify";
 
 
 export interface FormLineSetup {
@@ -63,7 +63,7 @@ export namespace CustomValidators {
       return control.value.length > 0 ? null : {[ErrorCodes.form.errorCode.custom.empty]: true};
     }
     // if object check if empty
-    if (typeof control.value === 'object') {
+    if (control.value && typeof control.value === 'object') {
       return Object.keys(control.value).length > 0 ? null : {[ErrorCodes.form.errorCode.custom.empty]: true};
     }
     // else check if null or undefined

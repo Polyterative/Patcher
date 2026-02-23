@@ -50,4 +50,65 @@ describe('SeoAndUtilsService', () => {
     expect(meta.getTag(`name='twitter:url'`)?.content).toBe(canonicalUrl);
     expect(meta.getTag(`property='og:url'`)?.content).toBe(canonicalUrl);
   });
+  
+  it('setTitle("") removes title tags', () => {
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    const serviceDirect = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any,
+      metaSpy,
+      document
+    );
+    
+    (serviceDirect as any).setTitle('');
+    
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='twitter:title'`);
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='twitter:image:alt'`);
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`property='og:image:alt'`);
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`property='og:title'`);
+    expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='title'`);
+  });
+  
+  it('returns fallback URL when document location href is unavailable', () => {
+    const serviceDirect = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any,
+      jasmine.createSpyObj('Meta', ['updateTag', 'removeTag']) as any,
+      {location: {href: ''}} as any
+    );
+    
+    expect((serviceDirect as any).getCurrentUrl()).toBe('https://patcher.xyz/');
+  });
+  
+  it('updateCanonicalLink returns early for empty url', () => {
+    const doc = {
+      querySelector: jasmine.createSpy('querySelector'),
+      createElement: jasmine.createSpy('createElement'),
+      head: {appendChild: jasmine.createSpy('appendChild')}
+    };
+    const serviceDirect = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any,
+      jasmine.createSpyObj('Meta', ['updateTag', 'removeTag']) as any,
+      doc as any
+    );
+    
+    (serviceDirect as any).updateCanonicalLink('');
+    
+    expect(doc.querySelector).not.toHaveBeenCalled();
+    expect(doc.createElement).not.toHaveBeenCalled();
+  });
+  
+  it('updateSeo catches unexpected errors and logs them', () => {
+    const errorSpy = spyOn(console, 'error');
+    const metaSpy = jasmine.createSpyObj<Meta>('Meta', ['updateTag', 'removeTag']);
+    metaSpy.updateTag.and.throwError('meta update failed');
+    const serviceDirect = new SeoAndUtilsService(
+      jasmine.createSpyObj('Title', ['setTitle']) as any,
+      metaSpy,
+      document
+    );
+    
+    expect(() =>
+      serviceDirect.updateSeo({description: 'd', keywords: 'k', image: 'img'} as any, 'Area')
+    ).not.toThrow();
+    expect(errorSpy).toHaveBeenCalled();
+  });
 });
