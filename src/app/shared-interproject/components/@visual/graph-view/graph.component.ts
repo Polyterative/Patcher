@@ -78,9 +78,11 @@ export class GraphComponent implements OnInit {
   @Input() settings: FA2LayoutSupervisorParameters = {
     weighted: true,
     settings: {
-      slowDown:            5,
-      gravity:             1.3,
-      edgeWeightInfluence: 3
+      // Lower edge weight influence + slightly higher slowdown reduces
+      // oscillation in cyclic / self-referential graphs.
+      slowDown:            6,
+      gravity:             1.2,
+      edgeWeightInfluence: 1
       // barnesHutOptimize: true,
     }
   };
@@ -97,6 +99,7 @@ export class GraphComponent implements OnInit {
    */
   
   fa2LayoutSupervisor?: FA2LayoutSupervisor;
+  private fa2StopTimer?: ReturnType<typeof setTimeout>;
   loaded = false;
   
   constructor(
@@ -191,13 +194,14 @@ export class GraphComponent implements OnInit {
         // this.sigma.refresh();
   
         this.fa2LayoutSupervisor = new FA2LayoutSupervisor(this.graph, this.settings);
-  
         this.fa2LayoutSupervisor.start();
   
-        // turn off after 2 seconds
-        setTimeout(() => {
-          this.fa2LayoutSupervisor.stop();
-        }, 10000);
+        // Bound stabilization time by graph complexity to avoid long visible wobble.
+        const layoutRuntimeMs = this.computeLayoutRuntimeMs();
+        this.fa2StopTimer = setTimeout(() => {
+          this.fa2LayoutSupervisor?.stop();
+          this.fa2StopTimer = undefined;
+        }, layoutRuntimeMs);
   
       }
     });
@@ -208,9 +212,13 @@ export class GraphComponent implements OnInit {
   
     this.zone.runOutsideAngular(() => {
       if (this.renderer) {
-  
-        this.fa2LayoutSupervisor.stop();
-        this.fa2LayoutSupervisor.kill();
+        if (this.fa2StopTimer) {
+          clearTimeout(this.fa2StopTimer);
+          this.fa2StopTimer = undefined;
+        }
+
+        this.fa2LayoutSupervisor?.stop();
+        this.fa2LayoutSupervisor?.kill();
   
         this.graph.clear();
         // this.graph.();
@@ -222,5 +230,10 @@ export class GraphComponent implements OnInit {
       }
     });
   
+  }
+
+  private computeLayoutRuntimeMs(): number {
+    const complexity = this.graph.order + this.graph.size;
+    return Math.max(1200, Math.min(3200, 900 + complexity * 15));
   }
 }

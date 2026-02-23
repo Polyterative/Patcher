@@ -19,7 +19,7 @@ const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:5556';
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['**/module-browser.spec.ts', '**/module-details.spec.ts', '**/patch-browser.spec.ts', '**/rack-browser.spec.ts', '**/home.spec.ts', '**/navigation.spec.ts'],
+  testMatch: ['**/module-browser.spec.ts', '**/module-details.spec.ts', '**/patch-browser.spec.ts', '**/patch-graph-stability.spec.ts', '**/rack-browser.spec.ts', '**/home.spec.ts', '**/navigation.spec.ts'],
   /* Use Node-compatible tsconfig — root tsconfig uses "bundler" which breaks Playwright */
   tsconfig: './e2e/tsconfig.json',
   /* Each test gets its own timeout */
