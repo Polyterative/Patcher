@@ -25,15 +25,15 @@ import {
 import {
   catchError,
   distinctUntilChanged,
-  finalize,
   filter,
+  finalize,
   last,
   map,
   shareReplay,
   startWith,
   switchMap,
-  tap,
   takeUntil,
+  tap,
   withLatestFrom
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -510,6 +510,36 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       return 'check';
     }
     return 'save';
+  }
+  
+  get saveFabAriaLabel(): string {
+    if (this.saveInProgress$.value) {
+      return 'Saving module editor changes';
+    }
+    if (this.saveJustCompleted$.value) {
+      return 'Changes saved';
+    }
+    const reason = this.saveFabDisabledReason;
+    return reason ? `Save disabled: ${ reason }` : 'Save all pending module editor changes';
+  }
+  
+  get saveFabDisabledReason(): string {
+    if (this.saveInProgress$.value) {
+      return 'save in progress';
+    }
+    if (!this.formGroupA.valid || !this.formGroupB.valid) {
+      return 'fix invalid IN/OUT rows';
+    }
+    if (!this.formGroupPower.valid || !this.formGroupPhysical.valid) {
+      return 'fix invalid module specs';
+    }
+    if (this.isPanelSaveBlocked()) {
+      return 'fix panel selection or duplicate panel type';
+    }
+    if (!this.computeHasPendingChanges()) {
+      return 'no pending changes';
+    }
+    return '';
   }
 
   private validatePendingChanges(
