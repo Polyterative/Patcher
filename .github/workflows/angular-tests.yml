@@ -3,55 +3,62 @@ name: Angular Tests
 on:
   push:
     branches:
-      - '*'  # Trigger on all branches
+      - '**'
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - 'middleware.ts'
+      - 'scripts/tests/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'angular.json'
+      - 'tsconfig*.json'
+      - '.github/workflows/angular-tests.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - 'middleware.ts'
+      - 'scripts/tests/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'angular.json'
+      - 'tsconfig*.json'
+      - '.github/workflows/angular-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: angular-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  tests:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Unit tests
+            command: yarn ci
+          - name: Function tests
+            command: yarn test:functions
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2  # This step checks out your repository's code
-
-      - name: Fetch develop branch
-        run: git fetch origin develop
-
-      - name: Check for changes in ./src
-        id: check_changes
-        run: |
-          echo "Checking for changes in ./src"
-          if git diff --quiet origin/develop -- ./src; then
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
-          else
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          fi
-          echo "Changes detected: ${{ steps.check_changes.outputs.changes_detected }}"
-
-      - name: Skip if no changes in ./src
-        run: |
-          if [ "${{ steps.check_changes.outputs.changes_detected }}" != 'true' ]; then
-            echo "No changes detected in ./src, skipping further steps"
-            exit 0
-          fi
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'  # Updated Node.js version
-
-      - name: Install Angular CLI
-        run: yarn global add @angular/cli # Use Yarn to install Angular CLI
-
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          node-version: '20.x'
+          cache: yarn
 
       - name: Install dependencies
-        run: yarn install # Use Yarn to install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
 
       - name: Run tests
-        run: yarn test-headless # Use Yarn to run tests
+        run: ${{ matrix.command }}
