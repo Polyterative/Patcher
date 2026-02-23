@@ -15,13 +15,15 @@ import {
   Subject
 } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
   shareReplay,
   startWith,
   switchMap,
-  takeUntil
+  takeUntil,
+  timeoutWith
 } from 'rxjs/operators';
 import { RackMinimal } from 'src/app/models/rack';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -51,7 +53,7 @@ export class RackBrowserDataService implements OnDestroy {
     skip$:   new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$: new BehaviorSubject<[string, string]>(['', ''])
+    sort$: new BehaviorSubject<[string, string]>(['updated', 'desc'])
   };
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
@@ -150,7 +152,34 @@ export class RackBrowserDataService implements OnDestroy {
           const take = this.serversideTableRequestData.take$.value;
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
-          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir);
+          return this.backend.GET.racksMinimal(skip, (skip + take) - 1, filter, sortCol || null, sortDir).pipe(
+            timeoutWith(2_000, of({
+              count: 0,
+              data: [],
+              error: {message: 'Rack list request timed out after 2 seconds'}
+            }))
+          );
+        }),
+        map((response: any) => {
+          if (response?.error) {
+            console.error('[rack-browser] Failed to load racks list', response.error);
+            return {
+              count: 0,
+              data: []
+            };
+          }
+          
+          return {
+            count: response?.count ?? 0,
+            data: Array.isArray(response?.data) ? response.data : []
+          };
+        }),
+        catchError(error => {
+          console.error('[rack-browser] Racks list request crashed', error);
+          return of({
+            count: 0,
+            data: []
+          });
         }),
         takeUntil(this.destroyEvent$)
       )

@@ -1359,6 +1359,7 @@ export class SupabaseService extends SubManager {
     orderDirection?: string
   ) {
     const effectiveTo = to ?? this.defaultPag;
+    const normalizedName = normalizeForSearch((name ?? '').trim());
     
     const columns = [
       "id",
@@ -1373,14 +1374,17 @@ export class SupabaseService extends SubManager {
       "image"
     ].join(",");
     
-    return rxFrom(
-      this.supabase.from(DbPaths.racks)
-        .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
-        .filter("public", "eq", true)
-        .ilike(`name,hp,rows,${ QueryJoins.author }`, `%${ normalizeForSearch(name.trim()) }%`)
-        .range(from, effectiveTo)
-        .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"})
-    )
+    let query = this.supabase.from(DbPaths.racks)
+      .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
+      .filter("public", "eq", true)
+      .range(from, effectiveTo)
+      .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"});
+    
+    if (normalizedName.length > 0) {
+      query = query.ilike('name', `%${ normalizedName }%`);
+    }
+    
+    return rxFrom(query)
       .pipe(
         remapErrors(),
       );
