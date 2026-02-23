@@ -57,7 +57,7 @@ Current known pain points:
 - Row composition is still visually imbalanced under constrained width.
 - Form control sizing is not intentionally tuned by field type (name vs min/max voltage).
 - New affordances need stronger visual rhythm with the page’s existing card system.
-- Save behavior is fragmented across independent section-level actions, which can cause partial updates and user confusion.
+- The dedicated **“Review & save”** block is now redundant after introducing the floating save action, adding vertical noise without additional decision value.
 
 ---
 
@@ -116,12 +116,58 @@ Steps:
 
 - [ ] Refine status badge/iconography density and tooltip copy.
 - [ ] Harmonize new adder controls with brand button system (contrast, hover, focus).
+- [x] Reposition the unified save action into a FAB-style affordance consistent with existing edit FAB placement and motion language.
+- [x] Define FAB save states: idle (`Save`), dirty (`Save` emphasized), saving (`Saving...`/spinner), done (`Saved` short confirmation then idle).
+- [x] Ensure FAB save does not overlap row controls on desktop/mobile (safe-area + bottom spacing + scroll-aware offset).
+- [ ] Remove the standalone “Review & save” section and replace it with compact inline policy copy near the editor header.
 - [ ] Validate keyboard and screen-reader semantics for row actions.
+- [ ] Validate keyboard and screen-reader semantics for the save FAB (focus order, label updates, disabled explanation).
 - [ ] Gate: focused UX test pass + stakeholder signoff screenshots.
 
 ---
 
-## 5) Pause/Handoff Management and Validation
+## 5) Reanalysis and Next Best Stage (2026-02-23)
+
+Conclusion from latest iteration:
+
+- The save action model is now correct (manual, explicit, unified), but the layout still communicates a 3-step wizard.
+- Since save moved to FAB, step 3 does not carry unique interaction value and should be removed.
+- Best next improvement is a **layout compaction pass** rather than more micro-styling.
+
+Next-stage plan (layout reset, minimal-impact implementation):
+
+1. **Collapse the workflow framing from 3 blocks to 2 blocks**
+   - Keep: `Prepare` and `Edit ports`.
+   - Remove: dedicated `Review & save` card.
+   - Keep chips optional; if retained, update to 2 steps only.
+
+2. **Introduce a compact editor action rail**
+   - Place short helper copy near the top-right of editor body:
+     - `Done` closes editor (primary mode toggle).
+     - `Save` writes all pending changes (secondary FAB).
+   - Avoid repeating safety copy in a dedicated full-width section.
+
+3. **Move policy text to a low-footprint inline note**
+   - Replace multi-line review block with one concise subtitle-level sentence.
+   - Keep legal/safety meaning intact; reduce vertical height.
+
+4. **Rebalance visual hierarchy within remaining blocks**
+   - Give `Edit ports` more vertical priority and tighter top spacing.
+   - Keep metadata prep visually lighter so row editing remains dominant.
+
+5. **Validate with no-write flow and screenshot diff**
+   - Re-run unsaved-draft Playwright scenario.
+   - Confirm FAB pair spacing and non-overlap with row controls on desktop/mobile.
+
+Success criteria for this stage:
+
+- Editor feels shorter and denser without removing user confidence.
+- Save remains manual and explicit.
+- `Done` remains the primary close action, with `Save` clearly secondary and nearby.
+
+---
+
+## 6) Pause/Handoff Management and Validation
 
 How this feature is being run while SEO is paused:
 
