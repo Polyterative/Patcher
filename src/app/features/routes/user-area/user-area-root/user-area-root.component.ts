@@ -8,7 +8,12 @@ import {
   combineLatest,
   of
 } from 'rxjs';
-import { map } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  startWith
+} from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -17,6 +22,8 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
+import { UntypedFormControl } from '@angular/forms';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 
 @Component({
@@ -27,6 +34,16 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
   standalone: false
 })
 export class UserAreaRootComponent implements OnInit {
+  readonly formTypes = FormTypes;
+  readonly globalSearchControl = new UntypedFormControl('');
+  readonly globalSearchQuery$ = this.globalSearchControl.valueChanges.pipe(
+    startWith(''),
+    debounceTime(120),
+    map(value => value ?? ''),
+    map(value => `${ value }`),
+    distinctUntilChanged()
+  );
+
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideLabels:       false,

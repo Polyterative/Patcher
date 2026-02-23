@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component
+  Component,
+  Input
 } from '@angular/core';
 import { MatDialog } from "@angular/material/dialog";
 import {
@@ -20,6 +21,7 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 })
 export class UserRacksComponent {
   rackMinimalViewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
+  @Input() globalSearchQuery = '';
   
   constructor(
     public dialog: MatDialog,

@@ -28,6 +28,7 @@ import { UserManualsComponent } from "src/app/features/routes/user-area/user-man
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 
 
 @NgModule({
@@ -66,7 +67,8 @@ import { StatisticsModule } from "src/app/components/shared-atoms/statistics/sta
     StatisticsModule,
     UserManualsComponent,
     UserCommentsComponent,
-    AppFaqComponent
+    AppFaqComponent,
+    MatFormEntityComponent
   ],
   exports:      [
     UserAreaRootComponent
