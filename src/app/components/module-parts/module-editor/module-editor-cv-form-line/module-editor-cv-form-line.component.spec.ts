@@ -1,5 +1,5 @@
 import { UntypedFormControl } from '@angular/forms';
-import { FormCV } from '../module-editor.component';
+import { FormCV } from '../module-editor-data.service';
 import { ModuleEditorCvFormLineComponent } from './module-editor-cv-form-line.component';
 
 function makeFormCV(partial: Partial<FormCV> = {}): FormCV {
