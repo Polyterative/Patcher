@@ -2,7 +2,7 @@ import {
   Pipe,
   PipeTransform
 } from '@angular/core';
-import { FormCV } from './module-editor.component';
+import { FormCV } from './module-editor-data.service';
 
 
 @Pipe({
