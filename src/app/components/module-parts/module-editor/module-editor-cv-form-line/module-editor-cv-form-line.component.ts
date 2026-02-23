@@ -7,7 +7,7 @@ import {
   Output
 } from '@angular/core';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { FormCV } from '../module-editor.component';
+import { FormCV } from '../module-editor-data.service';
 
 
 @Component({
