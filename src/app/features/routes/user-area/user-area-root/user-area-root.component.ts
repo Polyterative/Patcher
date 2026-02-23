@@ -5,12 +5,18 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  combineLatest,
+  of
+} from 'rxjs';
+import { map } from 'rxjs/operators';
+import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 
 
 @Component({
@@ -34,11 +40,30 @@ export class UserAreaRootComponent implements OnInit {
   
   @Input() ignoreSeo = false;
   
+  miscStats$ = of([]);
+  
   constructor(
     public userService: UserManagementService,
     public backend: SupabaseService,
+    public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService
-  ) { }
+  ) {
+    this.miscStats$ = combineLatest([
+      this.dataService.modulesData$,
+      this.dataService.rackData$,
+      this.dataService.patchesData$,
+      this.dataService.commentsData$,
+      this.dataService.manualsData$
+    ]).pipe(
+      map(([modules, racks, patches, comments, manuals]) => [
+        {name: 'Modules', value: modules?.length ?? 0, icon: 'memory'},
+        {name: 'Racks', value: racks?.length ?? 0, icon: 'dashboard'},
+        {name: 'Patches', value: patches?.length ?? 0, icon: 'cable'},
+        {name: 'Comments', value: comments?.length ?? 0, icon: 'chat'},
+        {name: 'Manual links', value: manuals?.length ?? 0, icon: 'menu_book'}
+      ])
+    );
+  }
   
   ngOnInit(): void {
     //TODO: change this when user can see other profiles

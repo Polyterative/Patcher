@@ -12,20 +12,8 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
-import {
-  filter,
-  take
-} from 'rxjs/operators';
-import { RichUserModel } from 'src/app/features/backend/supabase.service';
-import {
-  InputDialogComponent,
-  InputDialogDataInModel,
-  InputDialogDataOutModel
-} from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.component';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 
 /** Cross-field validator: confirm password must match new password */
@@ -51,6 +39,14 @@ export function confirmMatchesNewValidator(): ValidatorFn {
 export class UserManagementComponent implements OnInit {
   @Input() ignoreSeo: boolean = false;
   
+  editingUsername = false;
+  usernameControl = new FormControl('', [
+    Validators.required,
+    Validators.minLength(3),
+    Validators.maxLength(30),
+    Validators.pattern(/^[a-zA-Z0-9_-]+$/)
+  ]);
+  
   passwordForm = new FormGroup(
     {
       newPassword: new FormControl('', [Validators.required, Validators.minLength(8)]),
@@ -65,8 +61,7 @@ export class UserManagementComponent implements OnInit {
   
   constructor(
     public userManagementService: UserManagementService,
-    readonly seoAndUtilsService: SeoAndUtilsService,
-    private dialog: MatDialog
+    readonly seoAndUtilsService: SeoAndUtilsService
   ) { }
   
   ngOnInit(): void {
@@ -87,42 +82,27 @@ export class UserManagementComponent implements OnInit {
     this.passwordForm.reset();
   }
   
-  changeUsername(): void {
-    this.userManagementService.loggedUserFullProfile$
-      .pipe(
-        filter((userProfile): userProfile is RichUserModel => userProfile !== undefined),
-        take(1)
-      )
-      .subscribe((userProfile) => {
-        const usernameControl = new FormControl(userProfile.username, [
-          Validators.required,
-          Validators.minLength(3),
-          Validators.maxLength(30),
-          Validators.pattern(/^[a-zA-Z0-9_-]+$/)
-        ]);
-        
-        const dialogData: InputDialogDataInModel = {
-          title: 'Change Display Name',
-          description: 'Enter your new display name (3-30 characters). Only letters, numbers, hyphens (-), and underscores (_) are allowed. No spaces.',
-          control: usernameControl,
-          type: FormTypes.TEXT,
-          label: 'New Display Name'
-        };
-        
-        const dialogRef = this.dialog.open<InputDialogComponent, InputDialogDataInModel, InputDialogDataOutModel>(
-          InputDialogComponent,
-          {
-            data: dialogData,
-            width: '400px'
-          }
-        );
-        
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result?.result && result.result !== userProfile.username) {
-            this.userManagementService.updateUsername$(result.result).subscribe();
-          }
-        });
-      });
+  beginUsernameEdit(currentUsername: string): void {
+    this.editingUsername = true;
+    this.usernameControl.setValue(currentUsername);
+    this.usernameControl.markAsPristine();
+    this.usernameControl.markAsUntouched();
+  }
+  
+  cancelUsernameEdit(): void {
+    this.editingUsername = false;
+    this.usernameControl.reset('');
+  }
+  
+  submitUsernameChange(currentUsername: string): void {
+    const nextUsername = this.usernameControl.value?.trim() || '';
+    if (this.usernameControl.invalid || nextUsername === currentUsername) {
+      return;
+    }
+    
+    this.userManagementService.updateUsername$(nextUsername).subscribe({
+      next: () => this.cancelUsernameEdit()
+    });
   }
   
 }
