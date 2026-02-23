@@ -12,6 +12,7 @@
   text-decoration: none;
   border-radius: 6px;
   animation: fade-in 220ms ease-out;
+  --mdc-text-button-label-text-color: rgba(255, 255, 255, 0.97);
 }
 
 .title:visited {
@@ -40,6 +41,8 @@
 
 .mobile-menu-trigger {
   color: rgba(255, 255, 255, 0.97);
+  --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.97);
+  --mat-icon-button-state-layer-color: rgba(255, 255, 255, 1);
   min-width: 40px;
   width: 40px;
   height: 40px;
@@ -50,6 +53,7 @@
 }
 
 .mobile-menu-trigger mat-icon {
+  color: inherit !important;
   width: 24px;
   height: 24px;
   display: inline-flex;
@@ -77,6 +81,14 @@ mat-divider {
 }
 
 .toolbar {
+  color: rgba(255, 255, 255, 0.97);
+  --mat-toolbar-container-text-color: rgba(255, 255, 255, 0.97);
+  --mat-icon-color: rgba(255, 255, 255, 0.97);
+  --mat-button-text-label-text-color: rgba(255, 255, 255, 0.95);
+  --mat-button-outlined-label-text-color: rgba(255, 255, 255, 0.95);
+  --mat-button-text-state-layer-color: rgba(255, 255, 255, 1);
+  --mat-icon-button-icon-color: rgba(255, 255, 255, 0.95);
+  --mat-icon-button-state-layer-color: rgba(255, 255, 255, 1);
   background: linear-gradient(135deg, rgba($brand-primary, 0.97) 0%, $brand-primary 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
