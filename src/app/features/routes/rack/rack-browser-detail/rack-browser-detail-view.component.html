@@ -26,6 +26,7 @@
     @if (dataService.isCurrentRackPropertyOfCurrentUser$|async) {
       @if ((dataService.isCurrentRackEditable$|async)) {
         <app-module-browser-root
+          [showSubmitFab]="false"
           [viewConfig]="viewConfig"
         ></app-module-browser-root>
       } @else {

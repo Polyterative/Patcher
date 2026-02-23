@@ -1,7 +1,6 @@
 :host {
   --module-editor-close-fab-width: 12.6rem;
   --module-editor-save-fab-width: 9.25rem;
-  --module-editor-secondary-fab-width: 8.35rem;
   --module-editor-fab-gap: 0.8rem;
   display: block;
   max-width: 100%;
@@ -89,7 +88,7 @@
   padding-right: 1rem;
   border: 1.5px solid #8aa0ba;
   border-radius: 1.425rem;
-  background: #edf3fb;
+  background: #ffffff;
   color: #355476;
   font-size: 0.84rem;
   line-height: 1;
@@ -99,7 +98,7 @@
   transition: background-color 125ms ease-in-out, border-color 125ms ease-in-out, color 125ms ease-in-out;
 
   &:hover {
-    background: #e4edf8;
+    background: #f2f7fc;
     border-color: #7291b3;
     color: #224568;
   }

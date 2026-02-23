@@ -21,7 +21,7 @@ import {
  */
 
 const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:5556';
-const AUTH_SPEC_GLOB = '**/auth-login.spec.ts';
+const AUTH_SPEC_GLOB = '**/auth-*.spec.ts';
 
 loadE2EEnvFromDotEnv();
 

@@ -27,6 +27,7 @@ import { ActivatedRoute } from "@angular/router";
 })
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @Input() showSubmitFab = true;
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     // hiding all buttons by default in classic module browser list view
