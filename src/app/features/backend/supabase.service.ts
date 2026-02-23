@@ -56,6 +56,7 @@ import {
 } from '../../models/module';
 import { Patch } from '../../models/patch';
 import {
+  Rack,
   RackingData,
   RackMinimal
 } from '../../models/rack';
@@ -261,32 +262,24 @@ export class SupabaseService extends SubManager {
     //   this.supabase.from(DatabasePaths.patches)
     //       .select(`${ columns }`)
     //       .range(from, to)
-    currentUserPatches: () => {
+    currentUserPatches: (): Observable<Patch[]> => this.getUserSession$().pipe(
+      switchMap((user: SimpleUserModel | null) => user?.id
+        ? this.getCurrentUserPatchesForAuthor(user.id)
+        : of([])
+      )
+    ),
+    // if authorid is not provided, we will run it for the current user
+    currentUserRacks: (authorid?: string): Observable<Rack[]> => {
+      if (authorid) {
+        return this.getCurrentUserRacksForAuthor(authorid);
+      }
       return this.getUserSession$().pipe(
-        switchMap(user => rxFrom(
-            this.supabase.from(DbPaths.patches)
-              .select(`*, ${ QueryJoins.author }`)
-              .filter('authorid', 'eq', user.id)
-              .order('updated', {ascending: false})
-          ).pipe(
-          remapErrors(),
-          map(x => x.data)
-          )
-        ),
+        switchMap((user: SimpleUserModel | null) => user?.id
+          ? this.getCurrentUserRacksForAuthor(user.id)
+          : of([])
+        )
       );
     },
-    // if authorid is not provided, we will run it for the current user
-    currentUserRacks: (authorid?: string) => this.getUserSession$().pipe(
-      switchMap((user: SimpleUserModel) => rxFrom(
-        this.supabase.from(DbPaths.racks)
-          .select(`*, ${ QueryJoins.author }`)
-          .filter('authorid', 'eq', authorid ? authorid : user.id)
-          .order('updated', {ascending: false})
-      ).pipe(
-        remapErrors(),
-        map(x => x.data)
-      )),
-    ),
     rackedModules: (rackid: number) => rxFrom(
       this.supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
@@ -534,6 +527,7 @@ export class SupabaseService extends SubManager {
         .select('id'),
     )
       .pipe(
+        cacheBust(['rackWithId']),
         remapErrors(),
       ),
     patch: (data: {
@@ -549,6 +543,7 @@ export class SupabaseService extends SubManager {
               public: true
             })
         )),
+        cacheBust(['patches']),
         remapErrors());
     },
     modules: (data: DbModule[]) => {
@@ -1321,6 +1316,40 @@ export class SupabaseService extends SubManager {
       .pipe(
         remapErrors()
       )
+  }
+  
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+  })
+  private getCurrentUserPatchesForAuthor(authorid: string): Observable<Patch[]> {
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(`*, ${ QueryJoins.author }`)
+        .filter('authorid', 'eq', authorid)
+        .order('updated', {ascending: false})
+    ).pipe(
+      remapErrors(),
+      map(x => (x.data as Patch[]) ?? [])
+    );
+  }
+  
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
+    maxCacheCount: 50,
+  })
+  private getCurrentUserRacksForAuthor(authorid: string): Observable<Rack[]> {
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`*, ${ QueryJoins.author }`)
+        .filter('authorid', 'eq', authorid)
+        .order('updated', {ascending: false})
+    ).pipe(
+      remapErrors(),
+      map(x => (x.data as Rack[]) ?? [])
+    );
   }
   
   @Cacheable({
