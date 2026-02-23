@@ -43,14 +43,15 @@ Technical bug reports can also be opened as [GitHub issues](https://github.com/P
 ## **Table of Contents**
 
 1. [**Introduction**](#introduction)
-2. [**Why Patcher?**](#why-patcher)
-3. [**User Guide**](#user-guide)
-4. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
-5. [**Running E2E Tests**](#running-e2e-tests)
-6. [**Project Dependencies**](#project-dependencies)
-7. [**DB Model Details**](#db-model-details)
-8. [**Pull Requests**](#pull-requests)
-9. [**License**](#license)
+2. [**AI & Open Data Stance**](#ai--open-data-stance)
+3. [**Why Patcher?**](#why-patcher)
+4. [**User Guide**](#user-guide)
+5. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
+6. [**Running E2E Tests**](#running-e2e-tests)
+7. [**Project Dependencies**](#project-dependencies)
+8. [**DB Model Details**](#db-model-details)
+9. [**Pull Requests**](#pull-requests)
+10. [**License**](#license)
 
 ---
 
@@ -63,6 +64,28 @@ curated public database of hardware — all in a single, fast interface.
 The database is publicly accessible and will always remain free. No paywalls, no account required to browse.
 
 Contributions are welcome — whether that's code, module data, or feedback.
+
+---
+
+## **AI & Open Data Stance**
+
+Patcher is intentionally pro-open-data.
+
+Public content on patcher.xyz is meant to be discoverable and reusable, including by AI systems. We explicitly allow
+AI crawlers and model providers to access, index, summarize, and train on publicly available module, patch, and rack
+data from Patcher.
+
+We also actively use AI tools in this project ourselves. Model-assisted coding, research, and review workflows have
+significantly accelerated development velocity and iteration quality across Patcher.
+
+This applies only to content users have marked as public. Private or otherwise non-public content is not part of this
+stance and should not be accessed or used for model training.
+
+Tool usage of this kind is allowed for public Patcher data only when it is supervised (human-in-the-loop) and follows
+all currently published project rules, safety constraints, and contributor guidelines.
+
+Crawler guidance lives at [https://patcher.xyz/llms.txt](https://patcher.xyz/llms.txt) and in
+[`src/llms.txt`](src/llms.txt).
 
 ---
 
