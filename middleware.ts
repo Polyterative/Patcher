@@ -476,7 +476,7 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
     modified: rackRow.updated,
     jsonLd: {
       '@context': 'https://schema.org',
-      '@type': 'CreativeWork',
+      '@type': 'ItemList',
       name: rackName,
       description,
       image: rackImageData.image,
@@ -499,7 +499,12 @@ function defaultMetadata(canonicalUrl: string, siteOrigin: string, source = 'def
       '@type': 'WebSite',
       name: SITE_NAME,
       url: siteOrigin,
-      description: DEFAULT_DESCRIPTION
+      description: DEFAULT_DESCRIPTION,
+      publisher: {
+        '@type': 'Organization',
+        name: SITE_NAME,
+        url: siteOrigin
+      }
     }
   };
 }

@@ -50,6 +50,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/robots.txt",
+              "src/llms.txt",
               "src/CNAME"
             ],
             "styles":          [
@@ -140,7 +141,8 @@
             ],
             "assets":      [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/llms.txt"
             ]
           }
         }

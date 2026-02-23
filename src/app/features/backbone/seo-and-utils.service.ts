@@ -1,4 +1,8 @@
-import { Injectable } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  Inject,
+  Injectable
+} from '@angular/core';
 import {
   Meta,
   Title
@@ -22,6 +26,7 @@ export class SeoAndUtilsService {
   constructor(
     private titleService: Title,
     private readonly metaService: Meta,
+    @Inject(DOCUMENT) private readonly document: Document,
   ) { }
   
   updateSeo(data: SeoSocialShareData, appArea: string) {
@@ -32,7 +37,9 @@ export class SeoAndUtilsService {
       };
       
       const newTitle: string = appArea + ' | ' + this.defaults.title;
+      const canonicalUrl = newSeoData.url || this.getCurrentUrl();
       this.setTitle(newTitle);
+      this.updateCanonicalLink(canonicalUrl);
       
       // Set basic meta tags
       this.metaService.updateTag({name: 'description', content: newSeoData.description});
@@ -43,22 +50,21 @@ export class SeoAndUtilsService {
       this.metaService.updateTag({property: 'og:title', content: newTitle});
       this.metaService.updateTag({property: 'og:description', content: newSeoData.description});
       this.metaService.updateTag({property: 'og:type', content: newSeoData.type || 'website'});
-      this.metaService.updateTag({property: 'og:url', content: newSeoData.url || window.location.href});
+      this.metaService.updateTag({property: 'og:url', content: canonicalUrl});
       this.metaService.updateTag({property: 'og:image', content: newSeoData.image});
       this.metaService.updateTag({property: 'og:image:secure_url', content: newSeoData.image});
+      this.metaService.updateTag({property: 'og:image:width', content: '1200'});
+      this.metaService.updateTag({property: 'og:image:height', content: '630'});
       this.metaService.updateTag({property: 'og:image:alt', content: newTitle});
       
       // Twitter Card meta tags
       this.metaService.updateTag({name: 'twitter:card', content: 'summary_large_image'});
       this.metaService.updateTag({name: 'twitter:title', content: newTitle});
       this.metaService.updateTag({name: 'twitter:description', content: newSeoData.description});
+      this.metaService.updateTag({name: 'twitter:url', content: canonicalUrl});
       this.metaService.updateTag({name: 'twitter:image', content: newSeoData.image});
       this.metaService.updateTag({name: 'twitter:image:src', content: newSeoData.image});
       this.metaService.updateTag({name: 'twitter:image:alt', content: newTitle});
-      this.metaService.updateTag({name: 'twitter:image:alt', content: newSeoData.title});
-      this.metaService.updateTag({property: 'og:image', content: newSeoData.image});
-      this.metaService.updateTag({property: 'og:image:secure_url', content: newSeoData.image});
-      this.metaService.updateTag({property: 'og:image:alt', content: newSeoData.title});
       
     } catch (error) {
       console.error('Error updating SEO tags:', error);
@@ -81,5 +87,22 @@ export class SeoAndUtilsService {
       this.metaService.removeTag(`property='og:title'`);
       this.metaService.removeTag(`name='title'`);
     }
+  }
+  
+  private getCurrentUrl(): string {
+    return this.document.location?.href || 'https://patcher.xyz/';
+  }
+  
+  private updateCanonicalLink(url: string): void {
+    if (!url) {
+      return;
+    }
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
   }
 }
