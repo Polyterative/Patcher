@@ -48,6 +48,14 @@ export interface FormCV {
   isApproved: boolean;
 }
 
+export interface CvSectionSummary {
+  total: number;
+  editable: number;
+  locked: number;
+}
+
+type CvSectionKind = 'IN' | 'OUT';
+
 
 @Component({
   selector: 'app-module-editor',
@@ -75,6 +83,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   INs$ = new BehaviorSubject<FormCV[]>([]);
   OUTs$ = new BehaviorSubject<FormCV[]>([]);
+  inSummary$ = this.INs$.pipe(map(cvs => this.buildCvSummary(cvs)));
+  outSummary$ = this.OUTs$.pipe(map(cvs => this.buildCvSummary(cvs)));
   
   /** Tracks panel color values already present on this module. */
   private _existingPanelColors$ = new BehaviorSubject<Set<number>>(new Set());
@@ -317,18 +327,14 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.removeIN$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(index => {
-        const formCVs = [...this.INs$.value];
-        formCVs.splice(index, 1);
-        this.updateFormGroupAndContainer(formCVs, this.formGroupA, this.INs$);
+        this.removeCvWithUndo(index, 'IN');
       });
     
     // Subscriptions for removing OUTs
     this.removeOUT$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(index => {
-        const formCVs = [...this.OUTs$.value];
-        formCVs.splice(index, 1);
-        this.updateFormGroupAndContainer(formCVs, this.formGroupB, this.OUTs$);
+        this.removeCvWithUndo(index, 'OUT');
       });
     
     // Subscription for saving INs and OUTs
@@ -601,5 +607,41 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   // Helper method to sanitize strings for use in filenames
   private safeString(str: string | undefined): string {
     return (str || '').replace(/[^a-z0-9]/gi, '_');
+  }
+
+  private removeCvWithUndo(index: number, section: CvSectionKind): void {
+    const source$ = section === 'IN' ? this.INs$ : this.OUTs$;
+    const group = section === 'IN' ? this.formGroupA : this.formGroupB;
+    const formCVs = [...source$.value];
+    const cv = formCVs[index];
+
+    if (!cv) {
+      return;
+    }
+
+    formCVs.splice(index, 1);
+    this.updateFormGroupAndContainer(formCVs, group, source$);
+
+    const cvLabel = (cv.name.value || '').trim() || 'Unnamed CV';
+    const snackRef = this.snackBar.open(`${ section } "${ cvLabel }" removed.`, 'Undo', {duration: 5000});
+
+    snackRef
+      .onAction()
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        const restored = [...source$.value];
+        const restoredIndex = Math.min(index, restored.length);
+        restored.splice(restoredIndex, 0, cv);
+        this.updateFormGroupAndContainer(restored, group, source$);
+      });
+  }
+
+  private buildCvSummary(cvs: FormCV[]): CvSectionSummary {
+    const editable = cvs.filter(cv => cv.id === 0).length;
+    return {
+      total: cvs.length,
+      editable,
+      locked: cvs.length - editable
+    };
   }
 }
