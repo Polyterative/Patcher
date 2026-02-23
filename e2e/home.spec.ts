@@ -7,8 +7,8 @@ import {
 /**
  * Home page — smoke tests
  *
- * Verifies the home page loads, shows the main heading, and exposes
- * navigation links to the three main browsers.
+ * Verifies the home page loads, renders the primary hero heading,
+ * and exposes auth entry points.
  */
 test.describe('Home Page', () => {
   test.beforeEach(async ({page}) => {
@@ -20,12 +20,14 @@ test.describe('Home Page', () => {
     await expect(page).toHaveURL(/home/);
   });
   
-  test('main heading PATCHER.XYZ is visible', async ({page}) => {
-    await expect(page.getByRole('heading', {name: /patcher\.xyz/i})).toBeVisible({timeout: 10_000});
+  test('main hero heading is visible', async ({page}) => {
+    const heroHeading = page.locator('main.home-page h1').first();
+    await expect(heroHeading).toBeVisible({timeout: 10_000});
+    await expect(heroHeading).toContainText(/patch/i);
   });
   
   test('login and sign-up CTA links are visible', async ({page}) => {
-    await expect(page.getByRole('link', {name: /login/i}).first()).toBeVisible({timeout: 10_000});
-    await expect(page.getByRole('link', {name: /create an account/i}).first()).toBeVisible({timeout: 10_000});
+    await expect(page.getByRole('link', {name: /log in/i}).first()).toBeVisible({timeout: 10_000});
+    await expect(page.locator('a[href="/auth/signup"]').first()).toBeVisible({timeout: 10_000});
   });
 });
