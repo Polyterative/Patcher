@@ -58,6 +58,9 @@ Current known pain points:
 - Form control sizing is not intentionally tuned by field type (name vs min/max voltage).
 - New affordances need stronger visual rhythm with the page’s existing card system.
 - The dedicated **“Review & save”** block is now redundant after introducing the floating save action, adding vertical noise without additional decision value.
+- The current `Prepare` area still feels visually disjointed: `Power`, `Physical properties`, and `Panel` read as separate islands instead of one cohesive setup zone.
+- Numbered wording (`1.`, `2.`) remains in parts of the UI despite no longer behaving like a strict wizard.
+- Some copy still references previous structure and can be simplified for consistency with the FAB-based action model.
 
 ---
 
@@ -168,7 +171,61 @@ Success criteria for this stage:
 
 ---
 
-## 6) Pause/Handoff Management and Validation
+## 6) Next Iteration Plan: Prepare + Panel Cohesion (2026-02-23)
+
+Objective:
+
+- Make the setup area feel like one coherent “module setup” zone, reduce leftover wizard language, and align copy with current behavior.
+
+UX findings driving this iteration:
+
+- The setup block currently has three independent mini-columns with weak shared hierarchy.
+- `Panel` has different visual weight/structure than `Power` and `Physical`, which amplifies fragmentation.
+- Step numbering is now unnecessary and increases cognitive overhead.
+- Action guidance exists in multiple places; we need one clear, compact message.
+
+Planned implementation (minimal-impact, structure-first):
+
+1. **Remove step numbering language across editor copy**
+   - Replace labels like `1. Prepare` / `2. Edit ports` with plain section titles (`Setup`, `Edit ports`).
+   - Remove numeric chips or convert them to non-numeric role chips only if they still add value.
+
+2. **Restructure Setup into a cohesive two-column composition**
+   - Left: `Power` + `Physical` stacked as “Specs”.
+   - Right: `Panel` as a dedicated upload/config card with matched heading rhythm.
+   - Keep same controls and validation logic; layout-only change first.
+
+3. **Unify helper copy and remove stale references**
+   - Consolidate top note to one concise action line (`Done closes, Save writes pending changes`).
+   - Remove references that imply the old step model.
+   - Keep one safety/policy sentence in a predictable location.
+
+4. **Improve visual linking between Setup and Edit ports**
+   - Slightly reduce visual dominance of Setup backgrounds/borders.
+   - Emphasize `Edit ports` as primary working area while preserving setup discoverability.
+
+5. **Validation gates**
+   - Run module editor unit tests.
+   - Run Playwright UX screenshot suite (desktop/mobile/unsaved draft).
+   - Verify no contradictory copy remains in `module-editor.component.*` and `module-browser-detail.component.html`.
+
+Acceptance criteria:
+
+- Setup reads as one connected section rather than three separate blocks.
+- No numbered step language remains unless tied to real sequential behavior.
+- Copy is consistent with current save model (manual FAB save + primary Done close).
+
+Execution status (current pass):
+
+- [x] Removed numbered step language from editor section titles and top flow framing.
+- [x] Restructured setup layout into cohesive Specs + Panel composition.
+- [x] Consolidated helper/policy copy and removed stale step references.
+- [x] Rebalanced setup/edit visual hierarchy to keep `Edit ports` primary.
+- [ ] Capture stakeholder screenshot signoff for this cohesion pass.
+
+---
+
+## 7) Pause/Handoff Management and Validation
 
 How this feature is being run while SEO is paused:
 
