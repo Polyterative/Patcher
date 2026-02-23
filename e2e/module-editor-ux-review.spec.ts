@@ -162,8 +162,8 @@ test.describe('Module editor UX review snapshots', () => {
     await addUnsavedDraftRows(page);
 
     // Guardrail: verify we did not save.
-    const saveInsOutsButton = page.locator('app-brand-primary-button', {hasText: 'Save INs and OUTs'});
-    await expect(saveInsOutsButton).toBeVisible({timeout: 10_000});
+    const saveAllChangesButton = page.locator('app-brand-primary-button', {hasText: 'Save all changes'});
+    await expect(saveAllChangesButton).toBeVisible({timeout: 10_000});
 
     const removableButtons = page.locator('app-module-editor-cv-form-line button.cv-row-action.cv-row-action--removable');
     await expect(removableButtons).toHaveCount(2);
