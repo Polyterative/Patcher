@@ -46,6 +46,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
 
   @Input() data: MinimalModule;
   @Input() showCounts = true;
+  @Input() readOnly = false;
   @Input() maxTags: number | null = null;
 
   proposerOpen$ = new BehaviorSubject<boolean>(false);
