@@ -2,13 +2,21 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  startWith
+} from 'rxjs';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ToolbarService } from './toolbar.service';
 
+
+interface ToolbarMobileSection {
+  label: string;
+  links: RouteClickableLink[];
+}
 
 @Component({
   selector: 'app-toolbar',
@@ -18,22 +26,22 @@ import { ToolbarService } from './toolbar.service';
   standalone: false
 })
 export class ToolbarComponent extends SubManager {
-  public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([
+  private readonly homeLinks: RouteClickableLink[] = [
     {
       label: 'Home',
-      route:    'home',
+      route: '/home',
       icon:     'home',
       disabled: false
     },
     {
-      label:      'Help',
+      label: 'Docs',
       href:       'https://docs.patcher.xyz/quick-start/',
       hrefNewTab: true,
       icon:       'help_outline',
       disabled:   false
     }
-  ]);
-  public readonly mainLinks$ = new BehaviorSubject<RouteClickableLink[]>([
+  ];
+  private readonly mainLinks: RouteClickableLink[] = [
     {
       label:    'Modules',
       route:    '/modules/browser',
@@ -42,75 +50,94 @@ export class ToolbarComponent extends SubManager {
     },
     {
       label:    'Racks',
-      route:    'racks/browser',
+      route: '/racks/browser',
       icon:     'view_stream',
       disabled: false
     },
     {
       label:    'Patches',
-      route:    'patches/browser',
+      route: '/patches/browser',
       icon:     'settings_input_composite',
       disabled: false
     }
-  ]);
+  ];
   
-  public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>([
-    {
-      label: 'My profile',
-      route:    'user/area',
-      icon:     'dashboard',
-      disabled: false
-    },
-    {
-      label:    '',
-      route:    'user/account',
-      icon:     'manage_accounts',
-      disabled: false
-    }
-  ]);
-  
-  
-  public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>([
-    {
-      label:    'Collection',
-      icon:     'dashboard',
-      disabled: true
-    },
-    {
-      label:    'Log in',
-      route:    'auth/login',
-      icon:     'login',
-      disabled: false
-    },
-    {
-      label:    'Sign up',
-      route:    'auth/signup',
-      icon:     'account_circle',
-      style:    {border: '1px solid rgba(210,210,210, 70%)'},
-      disabled: false
-    }
-  ]);
+  public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([...this.homeLinks]);
+  public readonly mainLinks$ = new BehaviorSubject<RouteClickableLink[]>([...this.mainLinks]);
+  public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>(this.buildUserLinks('Account'));
+  public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>(this.buildGuestLinks());
+  public readonly isLoggedIn$ = new BehaviorSubject(false);
+  public readonly mobileSections$ = new BehaviorSubject<ToolbarMobileSection[]>(
+    this.buildMobileSections(false, 'Account')
+  );
   
   constructor(
-    public userService: UserManagementService,
-    public service: ToolbarService,
-    public router: Router
+    public readonly userService: UserManagementService,
+    public readonly service: ToolbarService
   ) {
     super();
-
+    
     this.manageSub(
-      this.userService.loggedUserFullProfile$
-          .subscribe(x => {
-  
-            const element: RouteClickableLink = this.linksUser$.value[1];
-            element.label = x ? x.username : '';
-            const toNext = this.linksUser$.value;
-            toNext[1] = element;
-            this.linksUser$.next(toNext);
-  
-          })
+      combineLatest([
+        this.userService.loggedUser$.pipe(startWith(undefined)),
+        this.userService.loggedUserFullProfile$.pipe(startWith(undefined))
+      ]).subscribe(([loggedUser, profile]) => {
+        const isLoggedIn = !!loggedUser;
+        const username = profile?.username?.trim() || 'Account';
+        
+        this.isLoggedIn$.next(isLoggedIn);
+        this.linksUser$.next(this.buildUserLinks(username));
+        this.mobileSections$.next(this.buildMobileSections(isLoggedIn, username));
+      })
     );
-  
   }
   
+  public trackByLink(index: number, item: RouteClickableLink): string {
+    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
+  }
+  
+  private buildUserLinks(username: string): RouteClickableLink[] {
+    return [
+      {
+        label: 'My profile',
+        route: '/user/area',
+        icon: 'dashboard',
+        disabled: false
+      },
+      {
+        label: username,
+        route: '/user/account',
+        icon: 'manage_accounts',
+        disabled: false
+      }
+    ];
+  }
+  
+  private buildGuestLinks(): RouteClickableLink[] {
+    return [
+      {
+        label: 'Log in',
+        route: '/auth/login',
+        icon: 'login',
+        disabled: false
+      },
+      {
+        label: 'Sign up',
+        route: '/auth/signup',
+        icon: 'account_circle',
+        style: {border: '1px solid rgba(210, 210, 210, 0.7)'},
+        disabled: false
+      }
+    ];
+  }
+  
+  private buildMobileSections(isLoggedIn: boolean, username: string): ToolbarMobileSection[] {
+    const accountLinks = isLoggedIn ? this.buildUserLinks(username) : this.buildGuestLinks();
+    
+    return [
+      {label: 'Quick links', links: this.homeLinks},
+      {label: 'Browse', links: this.mainLinks},
+      {label: isLoggedIn ? 'Your account' : 'Account', links: accountLinks}
+    ];
+  }
 }

@@ -2,17 +2,35 @@
   flex: 1 1 26rem;
 }
 
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: 1rem;
+  align-items: start;
+}
+
+.sidebar {
+  min-width: 0;
+}
+
+.main-content {
+  min-width: 0;
+}
+
 .container {
   // responsive, flex
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-between;
+}
 
+@media (max-width: 960px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
 
-  //when below 768px in width switch to column layout
-  //@media (max-width: 768px) {
-  //  flex-direction: column;
-  //}
-
+  .block {
+    flex: 1 1 100%;
+  }
 }

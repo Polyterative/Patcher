@@ -1,45 +1,87 @@
 <lib-screen-wrapper maxSize="40rem">
-  <div class="col gap1"
+  <div class="account-shell col gap1"
   >
     <lib-hero-content-card titleBig="Account management"
                            icon="manage_accounts"
-                           class="userBG"
+                           class="userBG account-card"
     >
-      <div class="col gap2"
+      <div class="account-content col gap2"
       >
+        <p class="account-subtitle">Manage your profile details and security settings in one place.</p>
         
         @if ({
           userProfile:(userManagementService.loggedUserFullProfile$|async),
           user:(userManagementService.loggedUser$|async)
         }; as bag) {
           @if (bag.user && bag.userProfile) {
-            <div class="col gap1"
+            <div class="col gap1 account-sections"
             >
               <app-brand-primary-button fxFlex="100"
                                         innerFlex="fill"
                                         icon="logout"
-                                        style="padding-bottom:4rem"
+                                        class="logout-button"
                                         (click$)="userManagementService.logoff$()"
                                         theme="warning"
               >Logout
               </app-brand-primary-button>
-              <div class="row gap1" fxLayoutAlign="start center">
-                <app-label-value-showcase label="Display Name"
-                                          fxFlex="grow"
-                >{{ bag.userProfile.username }}
-                </app-label-value-showcase>
-                <app-brand-primary-button
-                  (click$)="changeUsername()"
-                  icon="edit"
-                  matTooltip="Change your display name"
-                  theme="primary"
-                >Change
-                </app-brand-primary-button>
+              @if (editingUsername) {
+                <form class="col gap1 section-surface"
+                      (ngSubmit)="submitUsernameChange(bag.userProfile.username)"
+                >
+                  <mat-form-field appearance="outline">
+                    <mat-label>Display name</mat-label>
+                    <input matInput
+                           [formControl]="usernameControl"
+                           autocomplete="nickname"
+                    >
+                    <mat-hint>3-30 chars. Letters, numbers, hyphens, underscores.</mat-hint>
+                    <mat-error *ngIf="usernameControl.hasError('required')">Display name is required</mat-error>
+                    <mat-error *ngIf="usernameControl.hasError('minlength')">At least 3 characters required</mat-error>
+                    <mat-error *ngIf="usernameControl.hasError('maxlength')">At most 30 characters allowed</mat-error>
+                    <mat-error *ngIf="usernameControl.hasError('pattern')">Only letters, numbers, hyphens (-), and
+                      underscores (_) are allowed
+                    </mat-error>
+                  </mat-form-field>
+                  <div class="row gap1">
+                    <button mat-raised-button
+                            class="primary-action"
+                            color="primary"
+                            type="submit"
+                            [disabled]="usernameControl.invalid || (usernameControl.value || '').trim() === bag.userProfile.username"
+                    >
+                      <mat-icon>check_circle</mat-icon>
+                      Save display name
+                    </button>
+                    <button mat-stroked-button
+                            type="button"
+                            (click)="cancelUsernameEdit()"
+                    >
+                      <mat-icon>close</mat-icon>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <div class="row gap1 section-surface" fxLayoutAlign="start center">
+                  <app-label-value-showcase label="Display Name"
+                                            fxFlex="grow"
+                  >{{ bag.userProfile.username }}
+                  </app-label-value-showcase>
+                  <app-brand-primary-button
+                    (click$)="beginUsernameEdit(bag.userProfile.username)"
+                    icon="edit"
+                    matTooltip="Change your display name"
+                    theme="primary"
+                  >Change
+                  </app-brand-primary-button>
+                </div>
+              }
+              <div class="section-surface">
+                <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
               </div>
-              <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
               <!-- Password section -->
               @if (userManagementService.showPasswordForm$ | async) {
-                <form class="col gap1"
+                <form class="col gap1 section-surface"
                       [formGroup]="passwordForm"
                       (ngSubmit)="submitPasswordChange()"
                 >
@@ -73,6 +115,7 @@
                   </mat-form-field>
                   <div class="row gap1">
                     <button mat-raised-button
+                            class="primary-action"
                             color="primary"
                             type="submit"
                             [disabled]="passwordForm.invalid"
@@ -90,7 +133,7 @@
                   </div>
                 </form>
               } @else {
-                <div class="row gap1" fxLayoutAlign="start center">
+                <div class="row gap1 section-surface" fxLayoutAlign="start center">
                   <app-label-value-showcase label="Password"
                                             fxFlex="grow"
                   >••••••••
@@ -104,26 +147,29 @@
                   </app-brand-primary-button>
                 </div>
               }
-              <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
-              </app-label-value-showcase>
-              <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}
-              </app-label-value-showcase>
+              <div class="section-surface">
+                <app-label-value-showcase label="Account Created On">{{ bag.user.created_at|timeago }}
+                </app-label-value-showcase>
+              </div>
+              <div class="section-surface section-surface--id">
+                <app-label-value-showcase label="Account ID (for support inquiries)">{{ bag.user.id }}
+                </app-label-value-showcase>
+              </div>
             </div>
           }
         }
         
-        <div class="row gap1">
-          <app-brand-primary-button style="padding-top:4rem"
+        <div class="row gap1 danger-zone">
+          <app-brand-primary-button
                                     (click$)="userManagementService.deleteAccountAction$.next()"
                                     matTooltip="Permanently delete all your patches, racks, collections and comments. Your login credentials will remain — contact support for full account removal."
-                                    theme="warning"
+                                    theme="negative"
           >Delete my data
           </app-brand-primary-button>
         </div>
-
+      
       </div>
     </lib-hero-content-card>
-    <app-empty-state></app-empty-state>
   
   </div>
   

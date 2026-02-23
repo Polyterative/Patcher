@@ -28,6 +28,7 @@ import { ActivatedRoute } from "@angular/router";
 export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @Input() showSubmitFab = true;
+  mobileFiltersExpanded = false;
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     // hiding all buttons by default in classic module browser list view
@@ -77,6 +78,10 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // this.dataService.fields.search.control.patchValue('');
     
+  }
+  
+  toggleMobileFilters(): void {
+    this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
   }
   
   ngOnDestroy(): void {

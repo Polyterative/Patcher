@@ -24,6 +24,7 @@ import {
 export class StatisticsComponent implements OnInit {
   
   @Input() title: string | null = null;
+  @Input() cardClass: string = '';
 
   @Input() statistics: {
     name: string;
