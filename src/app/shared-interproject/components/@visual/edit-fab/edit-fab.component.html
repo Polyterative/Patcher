@@ -7,8 +7,8 @@
             matTooltip="Discard unsaved changes and close"
             matTooltipPosition="above"
     >
-      <mat-icon>warning</mat-icon>
-      Discard changes
+      <mat-icon>{{ discardIcon }}</mat-icon>
+      {{ discardLabel }}
     </button>
   } @else {
     <button mat-fab
@@ -17,13 +17,13 @@
             [class.bouncing]="bouncing$ | async"
             class="edit-fab-editing"
     >
-      <mat-icon>close</mat-icon>
-      Close editor
+      <mat-icon>{{ closeIcon }}</mat-icon>
+      {{ closeLabel }}
     </button>
   }
 } @else {
   <button mat-fab extended (click)="toggle$.emit()" [class.bouncing]="bouncing$ | async">
-    <mat-icon>edit</mat-icon>
-    Edit
+    <mat-icon>{{ openIcon }}</mat-icon>
+    {{ openLabel }}
   </button>
 }

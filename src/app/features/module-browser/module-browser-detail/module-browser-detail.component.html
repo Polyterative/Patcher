@@ -111,40 +111,37 @@
                   </app-lib-showcase-grid>
                     </div>
                   </lib-clean-card>
-                  @if (bag.data) {
-                    <div class="row gap1 module-detail-actions-row">
-                      <div class="module-detail-action-slot">
-                        <app-brand-primary-button
-                          theme="light"
-                          class="module-detail-action-button"
-                          (click$)="submitSimilar(bag.data)"
-                          [disabled]="!bag.user"
-                          [matTooltip]="bag.user?'':'Please log in to submit a module'"
-                          icon="upload"
-                        >
-                          Submit similar module
-                        </app-brand-primary-button>
-                      </div>
-                      <div class="module-detail-action-slot">
-                        @if (bag.user) {
-                          <app-edit-fab
-                            [editMode$]="dataService.moduleEditingPanelOpenState$"
-                            [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
-                            (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
-                          ></app-edit-fab>
-                        }
-                        @if (bag.data.isComplete && bag.data.manualURL) {
-                          <app-brand-primary-button
-                            theme="light"
-                            class="module-detail-action-button"
-                            (click$)="openManual(bag.data)"
-                            icon="menu_book"
-                          >
-                            Open manual
-                          </app-brand-primary-button>
-                        }
-                      </div>
-                    </div>
+                  @if (bag.data && bag.data.isComplete && bag.data.manualURL) {
+                    <app-brand-primary-button
+                      theme="light"
+                      class="module-detail-action-button"
+                      (click$)="openManual(bag.data)"
+                      icon="menu_book"
+                    >
+                      Open manual
+                    </app-brand-primary-button>
+                  }
+
+                  @if (bag.data && bag.user) {
+                    <button
+                      mat-fab
+                      extended
+                      class="module-submit-similar-fab"
+                      (click)="submitSimilar(bag.data)"
+                      matTooltip="Open the prefilled module submission form in a new tab"
+                      matTooltipPosition="above"
+                    >
+                      <mat-icon>open_in_new</mat-icon>
+                      Submit similar
+                    </button>
+                  }
+
+                  @if (bag.data && bag.user && !bag.data.isComplete) {
+                    <app-edit-fab
+                      [editMode$]="dataService.moduleEditingPanelOpenState$"
+                      [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
+                      (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
+                    ></app-edit-fab>
                   }
                 </div>
               }
@@ -155,6 +152,7 @@
               <mat-chip-set class="rowwrap gap1">
                 @for (link of searchLinks; track link) {
                   <mat-chip
+                    class="module-search-chip"
                     [matTooltip]="link.tooltip"
                     (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
                   >
@@ -165,7 +163,7 @@
               </mat-chip-set>
             </lib-hero-content-card>
           }
-          @if (bag.data && bag.editing) {
+          @if (bag.data && bag.editing && !bag.data.isComplete) {
             <lib-clean-card class="editing-focus-note">
               <mat-card-subtitle>
                 Focus mode enabled: discovery links and related module lists are hidden while editing.
@@ -243,7 +241,7 @@
           }
         </div>
         <div class="col gap2 module-detail-column module-detail-column--right">
-          @if (bag.data && bag.editing) {
+          @if (bag.data && bag.editing && !bag.data.isComplete) {
             <lib-hero-content-card [sidesPadding]="false"
                                    titleNormal="Module Editor"
                                    description="Update setup and port data, then use Done and Save."

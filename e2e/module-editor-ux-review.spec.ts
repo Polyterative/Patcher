@@ -6,7 +6,8 @@ import {
   type Page
 } from '@playwright/test';
 
-const MODULE_DETAILS_PATH = '/modules/details/4791';
+const MODULE_DETAILS_PATH = '/modules/details/1423';
+const COMPLETE_MODULE_DETAILS_PATH = '/modules/details/4791';
 const UNSAVED_MODULE_DETAILS_PATH = '/modules/details/1423';
 const OUTPUT_DIR = path.resolve(process.cwd(), 'output/playwright/module-editor-ux');
 
@@ -109,6 +110,16 @@ async function addUnsavedDraftRows(page: Page): Promise<void> {
 }
 
 test.describe('Module editor UX review snapshots', () => {
+  test('complete module keeps editor controls unavailable', async ({page}) => {
+    ensureOutputDir();
+    await login(page);
+    await page.goto(COMPLETE_MODULE_DETAILS_PATH);
+    await page.waitForLoadState('domcontentloaded');
+
+    await expect(page.getByRole('button', {name: /^(Edit|Close editor|Discard changes)$/i})).toHaveCount(0);
+    await expect(page.getByRole('heading', {name: 'Module Editor'})).toHaveCount(0);
+  });
+
   test('desktop snapshot', async ({page}) => {
     ensureOutputDir();
     await login(page);
@@ -120,11 +131,11 @@ test.describe('Module editor UX review snapshots', () => {
     await collectDeleteButtonStats(page);
 
     await page.screenshot({
-      path: path.join(OUTPUT_DIR, 'module-4791-editor-desktop-full.png'),
+      path: path.join(OUTPUT_DIR, 'module-1423-editor-desktop-full.png'),
       fullPage: true
     });
     await editor.screenshot({
-      path: path.join(OUTPUT_DIR, 'module-4791-editor-desktop-editor.png')
+      path: path.join(OUTPUT_DIR, 'module-1423-editor-desktop-editor.png')
     });
   });
 
@@ -142,11 +153,11 @@ test.describe('Module editor UX review snapshots', () => {
       await collectDeleteButtonStats(page);
 
       await page.screenshot({
-        path: path.join(OUTPUT_DIR, 'module-4791-editor-mobile-full.png'),
+        path: path.join(OUTPUT_DIR, 'module-1423-editor-mobile-full.png'),
         fullPage: true
       });
       await editor.screenshot({
-        path: path.join(OUTPUT_DIR, 'module-4791-editor-mobile-editor.png')
+        path: path.join(OUTPUT_DIR, 'module-1423-editor-mobile-editor.png')
       });
     });
   });

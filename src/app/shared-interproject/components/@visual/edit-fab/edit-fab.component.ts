@@ -38,6 +38,12 @@ const BOUNCE_DURATION_MS = 650;
 export class EditFabComponent {
   @Input() editMode$: Observable<boolean>;
   @Input() hasPendingChanges$: Observable<boolean> = of(false);
+  @Input() openLabel = 'Edit';
+  @Input() closeLabel = 'Close editor';
+  @Input() discardLabel = 'Discard changes';
+  @Input() openIcon = 'edit';
+  @Input() closeIcon = 'close';
+  @Input() discardIcon = 'warning';
   @Output() readonly toggle$ = new EventEmitter<void>();
   
   /** Emits true for BOUNCE_DURATION_MS, then false, on every timer tick. */
