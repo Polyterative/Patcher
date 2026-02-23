@@ -11,10 +11,12 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
-  Observable
+  Observable,
+  of
 } from 'rxjs';
 import {
   filter,
+  startWith,
   take
 } from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
@@ -50,6 +52,12 @@ export class PatchListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<PatchList>;
   
   @Input() readonly showSearch = false;
+  private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
+  
+  @Input()
+  set externalSearchQuery(value: string) {
+    this.externalSearchQuery$.next(value ?? '');
+  }
   
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
@@ -72,29 +80,35 @@ export class PatchListComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
-    
+    const localSearchQuery$ = this.showSearch
+      ? this.filterService.filterEvent$.pipe(startWith(''))
+      : of('');
+
     this.manageSub(
       this.data$
           .pipe(take(1))
           .subscribe(x => this.filteredData$.next(x))
     );
     
-    if (this.showSearch) {
-      this.manageSub(
-        combineLatest([
-          this.data$.pipe(filter(data => !!data)),
-          this.filterService.filterEvent$
-        ])
-          .subscribe(([data, query]) => {
-            const normalizedQuery = normalizeForSearch(query);
-            const result = data.filter(item => normalizeForSearch(item.name)
-              .includes(normalizedQuery));
-            this.filteredData$.next(result);
-          })
-      );
-      
-    }
-    
+    this.manageSub(
+      combineLatest([
+        this.data$.pipe(filter(data => !!data)),
+        localSearchQuery$,
+        this.externalSearchQuery$
+      ])
+        .subscribe(([data, localQuery, externalQuery]) => {
+          const normalizedLocalQuery = normalizeForSearch(localQuery);
+          const normalizedExternalQuery = normalizeForSearch(externalQuery);
+          
+          const result = data.filter(item => {
+            const normalizedName = normalizeForSearch(item.name);
+            
+            return normalizedName.includes(normalizedLocalQuery)
+              && normalizedName.includes(normalizedExternalQuery);
+          });
+          this.filteredData$.next(result);
+        })
+    );
   }
   
 }

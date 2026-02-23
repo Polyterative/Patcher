@@ -21,7 +21,8 @@
         @if (data.length > 0) {
           <app-rack-list fxFlex="grow"
                          [data$]="dataService.rackData$"
-                         [showSearch]="true"
+                         [showSearch]="false"
+                         [externalSearchQuery]="globalSearchQuery"
                          [viewConfig]="rackMinimalViewConfig"
           ></app-rack-list>
         } @else {

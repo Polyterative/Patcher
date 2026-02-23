@@ -15,6 +15,7 @@
 
 .main-content {
   min-width: 0;
+  padding-bottom: 5rem;
 }
 
 .container {
@@ -25,6 +26,19 @@
   justify-content: space-between;
 }
 
+.user-area-floating-search {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 70;
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
+}
+
 @media (max-width: 960px) {
   .profile-layout {
     grid-template-columns: 1fr;
@@ -32,5 +46,15 @@
 
   .block {
     flex: 1 1 100%;
+  }
+
+  .main-content {
+    padding-bottom: 6rem;
+  }
+
+  .user-area-floating-search {
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: min(100%, calc(100vw - 1.5rem));
   }
 }
