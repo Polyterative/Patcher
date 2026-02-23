@@ -84,6 +84,7 @@ Steps:
   static shell (the middleware will override them for bots, but this ensures there's always _something_).
 - [ ] **Gate:** share a module link in Telegram/WhatsApp/Slack → verify entity-specific title, description, and image
   show up. Use Facebook Sharing Debugger, Twitter Card Validator.
+  - Local repeatable smoke tests added: `yarn test:middleware` (compiles `middleware.ts` + runs Node tests for bot/human passthrough, entity metadata, and cache hit/miss behavior).
 
 #### Structural Layer — Dynamic OG images & sitemap
 
