@@ -4,7 +4,7 @@
 > 1. **Naming, HTML conventions, SCSS layout, and project conventions** — that is the scope of this file.
 > 2. **Full code templates (data service, toggle, form, error, API calls) → [PATTERNS.md](./PATTERNS.md).** Do not
      duplicate them here.
-> 3. **Enforcement rules and checklists → [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md).**
+> 3. **Enforcement rules and checklists → [../AGENTS.md](../AGENTS.md).**
 
 > ⚠️ These conventions are MANDATORY. AI agents must follow these patterns strictly.
 

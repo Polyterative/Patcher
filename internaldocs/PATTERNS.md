@@ -6,7 +6,7 @@
 > 2. **Do not add patterns that duplicate what is here** — extend by adding a new section only when a genuinely new
      pattern is needed and confirmed by the user.
 > 3. **Naming conventions → [STYLE_GUIDE.md](./STYLE_GUIDE.md). Architecture
-     layers → [ARCHITECTURE.md](./ARCHITECTURE.md). Enforcement rules → [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md).**
+     layers → [ARCHITECTURE.md](./ARCHITECTURE.md). Enforcement rules → [../AGENTS.md](../AGENTS.md).**
 
 > ⚠️ Copy these patterns exactly when creating new components/services.
 
