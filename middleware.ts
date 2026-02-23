@@ -6,7 +6,8 @@ const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_FETCH_TIMEOUT_MS = 1800;
-const METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
+const DETAIL_METADATA_CACHE_TTL_MS = 60 * 1000;
+const NON_DETAIL_METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
 const METADATA_CACHE_MAX_ENTRIES = 2000;
 
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
@@ -77,6 +78,8 @@ interface RackRow {
 export default async function middleware(request: Request): Promise<Response | void> {
   const requestUrl = new URL(request.url);
   const pathname = normalizePathname(requestUrl.pathname);
+  const detailRoute = parseDetailRoute(pathname);
+  const isDetailRoute = !!detailRoute;
   const requestOrigin = normalizeOrigin(requestUrl.origin);
   const canonicalOrigin = CANONICAL_ORIGIN_OVERRIDE || requestOrigin || PRIMARY_SITE_URL;
 
@@ -99,22 +102,27 @@ export default async function middleware(request: Request): Promise<Response | v
 
   const canonicalUrl = `${ canonicalOrigin }${ pathname }`;
   const cachedMetadata = readMetadataCache(canonicalUrl);
-  const metadata = cachedMetadata || await buildMetadata(pathname, canonicalUrl, canonicalOrigin);
+  const metadata = cachedMetadata || await buildMetadata(detailRoute, canonicalUrl, canonicalOrigin);
   const cacheState = cachedMetadata ? 'hit' : 'miss';
+  const isDetailFallback = isDetailRoute && metadata.type === 'site';
 
-  if (!cachedMetadata) {
-    writeMetadataCache(canonicalUrl, metadata);
+  if (!cachedMetadata && shouldCacheMetadata(metadata, isDetailRoute)) {
+    writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
   const html = renderHtml(metadata);
+  const cacheControl = resolveCacheControl(metadata, isDetailRoute);
+  const robotsTag = isDetailFallback
+    ? 'noindex, nofollow, noarchive'
+    : 'index, follow, max-image-preview:large';
 
   return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, s-maxage=900, stale-while-revalidate=86400',
+      'cache-control': cacheControl,
       'x-content-type-options': 'nosniff',
-      'x-robots-tag': 'index, follow, max-image-preview:large',
+      'x-robots-tag': robotsTag,
       'x-patcher-seo-cache': cacheState,
       'x-patcher-seo-source': metadata.source
     }
@@ -149,8 +157,7 @@ function getDefaultImage(origin: string): string {
   return `${ origin }/assets/png/patcher_seo_hero.png`;
 }
 
-async function buildMetadata(pathname: string, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata> {
-  const routeMatch = parseDetailRoute(pathname);
+async function buildMetadata(routeMatch: RouteMatch | undefined, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata> {
   if (!routeMatch) {
     return defaultMetadata(canonicalUrl, siteOrigin, 'non-detail');
   }
@@ -229,11 +236,31 @@ function readMetadataCache(cacheKey: string): ShareMetadata | undefined {
   return entry.metadata;
 }
 
-function writeMetadataCache(cacheKey: string, metadata: ShareMetadata): void {
+function shouldCacheMetadata(metadata: ShareMetadata, isDetailRoute: boolean): boolean {
+  if (!isDetailRoute) {
+    return true;
+  }
+  return metadata.type !== 'site';
+}
+
+function resolveCacheControl(metadata: ShareMetadata, isDetailRoute: boolean): string {
+  if (!isDetailRoute) {
+    return 'public, s-maxage=900, stale-while-revalidate=86400';
+  }
+
+  if (metadata.type === 'site') {
+    return 'private, no-store, max-age=0';
+  }
+
+  return 'public, s-maxage=60, stale-while-revalidate=300';
+}
+
+function writeMetadataCache(cacheKey: string, metadata: ShareMetadata, isDetailRoute: boolean): void {
   pruneMetadataCache();
+  const ttl = isDetailRoute ? DETAIL_METADATA_CACHE_TTL_MS : NON_DETAIL_METADATA_CACHE_TTL_MS;
   metadataCache.set(cacheKey, {
     metadata,
-    expiresAt: Date.now() + METADATA_CACHE_TTL_MS
+    expiresAt: Date.now() + ttl
   });
 }
 
@@ -264,7 +291,7 @@ function pruneMetadataCache(): void {
 
 async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
-  params.set('select', 'id,name,description,hp,created,updated,manufacturer:manufacturerId(name),panels:module_panels(filename,color)');
+  params.set('select', 'id,name,description,hp,created,updated,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(filename,color)');
   params.set('id', `eq.${ moduleId }`);
   params.set('public', 'eq.true');
   params.set('limit', '1');
@@ -291,6 +318,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
   const image = panelFilename
     ? `${ SUPABASE_URL }/storage/v1/object/public/module-panels/${ encodeURIComponent(panelFilename) }`
     : getDefaultImage(siteOrigin);
+  const source = panelFilename ? 'module-panel' : 'module-default-image';
 
   return {
     type: 'module',
@@ -298,7 +326,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
     description,
     image,
     url: canonicalUrl,
-    source: 'module',
+    source,
     published: moduleRow.created,
     modified: moduleRow.updated,
     jsonLd: {
@@ -376,15 +404,15 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
     DEFAULT_DESCRIPTION
   );
 
-  const image = resolveRackImage(rackRow.image, siteOrigin);
+  const rackImageData = resolveRackImageData(rackRow.image, siteOrigin);
 
   return {
     type: 'rack',
     title,
     description,
-    image,
+    image: rackImageData.image,
     url: canonicalUrl,
-    source: 'rack',
+    source: rackImageData.source,
     published: rackRow.created,
     modified: rackRow.updated,
     jsonLd: {
@@ -392,7 +420,7 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
       '@type': 'CreativeWork',
       name: rackName,
       description,
-      image,
+      image: rackImageData.image,
       url: canonicalUrl
     }
   };
@@ -417,14 +445,51 @@ function defaultMetadata(canonicalUrl: string, siteOrigin: string, source = 'def
   };
 }
 
-function resolveRackImage(image: string | undefined, siteOrigin: string): string {
+function resolveRackImageData(image: string | undefined, siteOrigin: string): { image: string; source: string } {
   if (!image) {
-    return getDefaultImage(siteOrigin);
+    return {
+      image: getDefaultImage(siteOrigin),
+      source: 'rack-default-image'
+    };
   }
+
   if (image.startsWith('http://') || image.startsWith('https://')) {
-    return image;
+    return {
+      image,
+      source: 'rack-image'
+    };
   }
-  return `${ SUPABASE_URL }/storage/v1/object/public/racks/${ encodeURIComponent(image) }`;
+
+  const normalizedRackPath = normalizeRackStoragePath(image);
+  if (!normalizedRackPath) {
+    return {
+      image: getDefaultImage(siteOrigin),
+      source: 'rack-default-image'
+    };
+  }
+
+  return {
+    image: `${ SUPABASE_URL }/storage/v1/object/public/racks/${ normalizedRackPath }`,
+    source: 'rack-image'
+  };
+}
+
+function normalizeRackStoragePath(imagePath: string): string {
+  let normalized = imagePath.trim().replace(/^\/+/, '');
+  normalized = normalized.replace(/^racks\//, '');
+  normalized = normalized.replace(/^public\/racks\//, '');
+  normalized = normalized.replace(/^storage\/v1\/object\/public\/racks\//, '');
+  normalized = normalized.replace(/^object\/public\/racks\//, '');
+
+  if (!normalized) {
+    return '';
+  }
+
+  return normalized
+    .split('/')
+    .filter(Boolean)
+    .map(segment => encodeURIComponent(decodeURIComponent(segment)))
+    .join('/');
 }
 
 async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): Promise<T | undefined> {
