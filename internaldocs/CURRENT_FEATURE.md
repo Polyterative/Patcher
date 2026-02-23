@@ -57,6 +57,7 @@ Current known pain points:
 - Row composition is still visually imbalanced under constrained width.
 - Form control sizing is not intentionally tuned by field type (name vs min/max voltage).
 - New affordances need stronger visual rhythm with the page’s existing card system.
+- Save behavior is fragmented across independent section-level actions, which can cause partial updates and user confusion.
 
 ---
 
@@ -99,10 +100,13 @@ Steps:
 
 Steps:
 
-- [ ] Define explicit contribution sub-sections (“Prepare”, “Edit ports”, “Review & Save”).
-- [ ] Evaluate moving low-priority info (or collapsing it) while editor is open.
-- [ ] Introduce consistent content width strategy across right-side cards.
-- [ ] Gate: desktop and mobile screenshot diff shows improved visual hierarchy.
+- [x] Define explicit contribution sub-sections (“Prepare”, “Edit ports”, “Review & Save”).
+- [x] Evaluate moving low-priority info (or collapsing it) while editor is open.
+- [x] Introduce consistent content width strategy across right-side cards.
+- [x] Gate: desktop and mobile screenshot diff shows improved visual hierarchy.
+- [x] Redesign save model to avoid fragmented writes (from independent section saves to a clearer unified review/save flow).
+- [x] Define data-handling rules for partial edits (draft state, dirty tracking, section validation, error recovery).
+- [x] Add UX guardrails for save outcomes (single source-of-truth status, success/failure summary, retry behavior).
 
 ### Polish Layer — Interaction feedback and consistency
 
