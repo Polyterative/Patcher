@@ -6,6 +6,10 @@
   color: rgba(255, 255, 255, 0.95);
   border-radius: 4px !important;
   transition: background-color 125ms ease, transform 100ms ease, color 125ms ease;
+  --mdc-text-button-label-text-color: rgba(255, 255, 255, 0.95);
+  --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.95);
+  --mat-text-button-state-layer-color: rgba(255, 255, 255, 1);
+  --mat-icon-button-state-layer-color: rgba(255, 255, 255, 1);
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.18);
@@ -43,9 +47,12 @@ button[mat-icon-button].option {
 .selected {
   color: rgb(255, 255, 255);
   background-color: rgba(255, 255, 255, 0.12);
+  --mdc-text-button-label-text-color: rgb(255, 255, 255);
+  --mdc-icon-button-icon-color: rgb(255, 255, 255);
 }
 
 mat-icon {
+  color: inherit !important;
   margin: 0;
   width: 24px;
   height: 24px;
