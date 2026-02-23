@@ -13,9 +13,9 @@
             [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
             [@leave]="{ value: '', params: { delay: 5 }}"
             [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
-            [matTooltip]="showCounts ? (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags') : ''"
+            [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
             [selected]="showCounts && myVotes?.has(item.id)"
-            (click)="isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
+            (click)="!readOnly && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
           >{{ item.tag.name }}@if (showCounts) {
             · {{ tagVotes?.get(item.id) ?? 0 }}
           }
@@ -23,7 +23,7 @@
         }
       </mat-chip-listbox>
     }
-    @if (showCounts && isLoggedIn) {
+    @if (showCounts && isLoggedIn && !readOnly) {
       @if (!proposerOpen) {
         <button mat-button
                 class="add-perspective-btn"

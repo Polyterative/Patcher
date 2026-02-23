@@ -71,6 +71,7 @@ export interface ModuleMinimalViewConfig {
   hideRackedIn: boolean;
   hideBySameManufacturer: boolean;
   tagsShowCounts: boolean;
+  tagsReadOnly: boolean;
   tagsMaxCount: number | null;
 }
 
@@ -89,5 +90,6 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   hideRackedIn: false,
   hideBySameManufacturer: false,
   tagsShowCounts: true,
+  tagsReadOnly: false,
   tagsMaxCount: null
 };
