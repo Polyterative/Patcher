@@ -12,7 +12,6 @@ import {
   Subject
 } from 'rxjs';
 import {
-  filter,
   mapTo,
   skip,
   takeUntil
@@ -37,11 +36,10 @@ export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {
-    
     if (this.data$ && this.updateData$) {
       merge(
         this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
-        this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), filter(data => !!data), mapTo(false))
+        this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), mapTo(false))
       )
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.dataLoading$.next(x));
