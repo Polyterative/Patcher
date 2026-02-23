@@ -10,5 +10,59 @@
 }
 
 .cv-summary-chips {
-  margin-bottom: .35rem;
+  margin: 0;
+}
+
+.cv-edit-section {
+  padding: 0.4rem 0 0.25rem;
+}
+
+.cv-edit-section-header {
+  margin-bottom: 0.2rem;
+}
+
+.cv-controls-row {
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.cv-row-legend {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(9.5rem, 1fr) minmax(6.75rem, 8.25rem) minmax(6.75rem, 8.25rem);
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.35rem;
+  padding: 0 0.2rem;
+  color: #5f7287;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.cv-row-legend-meta {
+  text-align: center;
+}
+
+.cv-rows {
+  margin-top: 0.15rem !important;
+}
+
+@media (max-width: 1160px) {
+  .cv-row-legend {
+    grid-template-columns: 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem);
+  }
+}
+
+@media (max-width: 760px) {
+  .cv-controls-row {
+    margin-bottom: 0.25rem;
+  }
+
+  .cv-row-legend {
+    display: none;
+  }
+
+  .cv-edit-section {
+    padding-top: 0.2rem;
+  }
 }

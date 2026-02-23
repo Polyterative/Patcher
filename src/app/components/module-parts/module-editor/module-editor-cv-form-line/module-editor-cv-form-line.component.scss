@@ -1,8 +1,9 @@
 .cv-row {
   display: grid !important;
-  grid-template-columns: 3.2rem minmax(9.5rem, 1fr) minmax(8.25rem, 10.5rem) minmax(8.25rem, 10.5rem);
+  grid-template-columns: 3.2rem minmax(9.5rem, 1fr) minmax(6.75rem, 8.25rem) minmax(6.75rem, 8.25rem);
   gap: 0.45rem;
   align-items: start;
+  width: min(100%, 38rem);
 }
 
 .cv-row-meta {
@@ -66,7 +67,7 @@
 }
 
 .cv-field--voltage {
-  max-width: 10.5rem;
+  max-width: 8.25rem;
 }
 
 .cv-row-divider {
@@ -75,7 +76,8 @@
 
 @media (max-width: 1160px) {
   .cv-row {
-    grid-template-columns: 3rem minmax(8rem, 1fr) minmax(7rem, 9rem) minmax(7rem, 9rem);
+    grid-template-columns: 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem);
+    width: min(100%, 34rem);
   }
 }
 
