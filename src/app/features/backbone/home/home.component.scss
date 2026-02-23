@@ -17,8 +17,8 @@
 .home-page {
   position: relative;
   display: grid;
-  gap: 1.9rem;
-  padding: 1.2rem 0 3.6rem;
+  gap: 2.7rem;
+  padding: 1.5rem 0 4.4rem;
   color: var(--home-ink);
 
   &::before {
@@ -60,7 +60,7 @@ p {
 }
 
 section {
-  padding: 0 1rem;
+  padding: 0 1.15rem;
 }
 
 .hero-section {
@@ -232,6 +232,26 @@ h1 {
   }
 }
 
+.signal-flow-section,
+.impact-section,
+.difference-section {
+  padding: 1.45rem 1.2rem;
+  border-radius: 1.55rem;
+  border: 1px solid rgba(15, 28, 45, 0.12);
+}
+
+.signal-flow-section {
+  background: linear-gradient(145deg, rgba(229, 242, 255, 0.95), rgba(236, 253, 246, 0.9));
+}
+
+.impact-section {
+  background: linear-gradient(145deg, rgba(255, 245, 237, 0.93), rgba(255, 250, 242, 0.85));
+}
+
+.difference-section {
+  background: linear-gradient(145deg, rgba(235, 248, 255, 0.9), rgba(245, 240, 255, 0.84));
+}
+
 .section-intro {
   font-size: 0.95rem;
   color: rgba(15, 28, 45, 0.86);
@@ -247,8 +267,10 @@ h1 {
   position: relative;
   display: grid;
   gap: 0.52rem;
-  border: 1px solid var(--home-border);
-  background: var(--home-surface);
+  border: 0;
+  background: rgba(255, 255, 255, 0.63);
+  border-radius: 1.25rem 0.9rem 1.25rem 0.9rem;
+  box-shadow: 0 10px 16px rgba(16, 30, 46, 0.08);
   padding: 0.86rem;
   overflow: visible;
 
@@ -364,7 +386,19 @@ h1 {
 .impact-card {
   display: grid;
   gap: 0.5rem;
-  padding: 0.95rem;
+  padding: 0.6rem 0 0.6rem 0.9rem;
+  border: 0;
+  border-left: 4px solid rgba(26, 95, 168, 0.52);
+  border-radius: 0;
+  background: transparent;
+
+  &:nth-child(3n + 2) {
+    border-left-color: rgba(240, 122, 47, 0.58);
+  }
+
+  &:nth-child(3n + 3) {
+    border-left-color: rgba(31, 154, 120, 0.6);
+  }
 
   h3 {
     font-size: 1rem;
@@ -395,8 +429,11 @@ h1 {
 .difference-card {
   display: grid;
   gap: 0.52rem;
-  padding: 0.95rem;
-  background: linear-gradient(156deg, rgba(255, 255, 255, 0.9), rgba(233, 246, 255, 0.76));
+  padding: 1rem;
+  border: 1px dashed rgba(15, 28, 45, 0.2);
+  border-radius: 1rem 1.6rem 1rem 1.6rem;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: 0 8px 18px rgba(10, 20, 32, 0.06);
 
   p {
     font-size: 0.9rem;
@@ -420,7 +457,7 @@ h1 {
 
 .principles-section {
   display: grid;
-  gap: 0.8rem;
+  gap: 1rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -552,7 +589,7 @@ h1 {
 .final-cta-card {
   display: grid;
   gap: 0.95rem;
-  padding: 1.35rem;
+  padding: 1.5rem;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(226, 243, 255, 0.82));
 
   img {
@@ -609,8 +646,8 @@ h1 {
   }
 
   .home-page {
-    padding: 0.95rem 0 3.1rem;
-    gap: 1.6rem;
+    padding: 1rem 0 3.2rem;
+    gap: 1.85rem;
   }
 
   .hero-copy {
@@ -654,6 +691,12 @@ h1 {
   .difference-grid,
   .principles-section {
     grid-template-columns: 1fr;
+  }
+
+  .signal-flow-section,
+  .impact-section,
+  .difference-section {
+    padding: 1rem 0.9rem;
   }
 
   .signal-node::after {

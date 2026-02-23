@@ -178,3 +178,35 @@ Completed in this revision:
 - [x] Added a dedicated recent-improvements block aligned with v5.1 messaging.
 - [x] Updated homepage SEO copy to match the revised product emphasis.
 - [x] Compile smoke check passes (`npx ng serve --port 5560`).
+
+---
+
+## 7) Layer 1 Revision: Changelog Impact + Modular Creativity (2026-02-23)
+
+Objective:
+
+- Strengthen homepage with high-impact, user-facing features from `CHANGELOG.md`, explicit open-source/open-data calls,
+  and a more music-native creative identity.
+
+Completed in this revision:
+
+- [x] Added a modular-inspired “Signal flow” section (Source → Shape → Route → Perform) to align page storytelling with
+  Eurorack/music concepts.
+- [x] Added a dedicated “High-impact capabilities” section grounded in recent releases:
+  - app-wide auto-save,
+  - instance-aware patching,
+  - connection-driven patch stats,
+  - privacy controls,
+  - accent-insensitive search,
+  - graph stability/performance improvements.
+- [x] Strengthened open-data principle framing and private-data boundary messaging.
+- [x] Added explicit open-source pathways with direct links to GitHub repository and full changelog.
+- [x] Added persistent “View source” call-to-action in final CTA area.
+- [x] Enhanced principle cards with icon-led headers, visual badges, and richer resource link styling for better
+  scanability.
+- [x] Added a dedicated “What makes this system different” section to foreground differentiation beyond data depth (
+  performance, modern UX, workflow reliability, open development).
+- [x] Reduced “all-card” visual density with section-level visual bands, larger vertical rhythm, and less blocky
+  impact/difference presentation.
+- [x] Updated SEO metadata to include open-source/open-data + high-impact feature language.
+- [x] Compile smoke check passes (`npx ng serve --port 5560`).
