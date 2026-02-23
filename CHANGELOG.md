@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.1.1](https://github.com/Polyterative/Patcher/compare/v5.1.0...v5.1.1) (2026-02-23)
+
+
+### Features
+
+* **seo:** add bot middleware and fallback social meta tags ([88b5f3a](https://github.com/Polyterative/Patcher/commit/88b5f3abd13c625c7966466ef5eef975ebf53cea))
+* **seo:** add llms.txt for AI crawler guidance ([7756b2d](https://github.com/Polyterative/Patcher/commit/7756b2d82abf0d2bea06a1e22ae27250b8192695))
+
+
+### Bug Fixes
+
+* **build:** remove supabase cli package from install deps ([72e61e5](https://github.com/Polyterative/Patcher/commit/72e61e58ab7bf1c7ac89b4cff01ca48bf6813b59))
+* **ci:** pin karma minimatch for unit test stability ([b12c67d](https://github.com/Polyterative/Patcher/commit/b12c67d147f2c9b5dbdd407e4042420277d7f598))
+* **graph:** reduce patch graph jitter and deterministic sizing ([532b0f8](https://github.com/Polyterative/Patcher/commit/532b0f80062920c90b55db175fc4da2b0a1341d6))
+* **graph:** stabilize patch details layout and add regression e2e ([4de2e28](https://github.com/Polyterative/Patcher/commit/4de2e289de0d958ba4cc3c782b40727baedcb264))
+* **seo:** harden middleware caching and bot metadata responses ([d48d6fe](https://github.com/Polyterative/Patcher/commit/d48d6fec2968beef08b5c1d593c889205d0d4c31))
+* **seo:** harden middleware metadata privacy and rack image resolution ([05ea2d6](https://github.com/Polyterative/Patcher/commit/05ea2d6ef8deb6220747397b51ba907c1b3ea67d))
+* **seo:** replace next server middleware api for edge runtime ([2dd49a7](https://github.com/Polyterative/Patcher/commit/2dd49a75203d66cf2c48b1caa42d7496f92641c7))
+* **seo:** use request host canonical metadata and source diagnostics ([277bffd](https://github.com/Polyterative/Patcher/commit/277bffd152ae376c3bc0daebe4d3eda56502bd61))
+
 ## [5.1.0](https://github.com/Polyterative/Patcher/compare/v5.0.0...v5.1.0) (2026-02-22)
 
 
