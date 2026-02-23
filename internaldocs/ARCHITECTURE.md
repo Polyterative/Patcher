@@ -3,9 +3,9 @@
 > **Rules for AI agents using this file:**
 > 1. **Structural reference only** — layers, service types, file layout, and state strategy.
 > 2. **Code patterns belong in [PATTERNS.md](./PATTERNS.md)** — do not add code examples here.
-> 3. **Enforcement rules → [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md).**
+> 3. **Enforcement rules → [../AGENTS.md](../AGENTS.md).**
 
-> ⚠️ Architectural patterns are MANDATORY. See [FOR_AI_AGENTS.md](./FOR_AI_AGENTS.md) for enforcement rules.
+> ⚠️ Architectural patterns are MANDATORY. See [../AGENTS.md](../AGENTS.md) for enforcement rules.
 
 ## Stack
 
