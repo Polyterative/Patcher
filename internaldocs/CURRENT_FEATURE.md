@@ -9,309 +9,172 @@
 
 ---
 
-## Active: Module Details Page Redesign (Editor + Surrounding Context)
+## Active: Homepage Redesign (Striking + Effective)
 
-Goal: redesign the **whole Module Details page context** around the editor so contribution tasks are clearer, denser,
-and more trustworthy without accidental destructive actions.
+Goal: replace the current homepage with a clearer, more distinctive landing experience that sells Patcher’s core value
+quickly (digital twin workflow for modular musicians), while keeping implementation maintainable and mostly based on
+Angular Material + existing shared primitives.
 
-> **Pause note (2026-02-23):** previous feature **SEO Tagging & Rich Link Previews** has been moved to `TODO.md` under
-> ON HOLD with completed/incomplete checkpoints preserved.
-
----
-
-## 1) Broader Context Audit (Whole Page, not only CV rows)
-
-Primary host template: `src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html`
-
-Current page zones:
-
-- Left zone: module visual card + comments.
-- Middle zone: data cards, search chips, and optional dev utils.
-- Right zone: editor panel (when open), plus “Racked in” and “Patched in”.
-- Bottom zone: “Others by manufacturer”.
-
-Observed context-level UX pressure:
-
-- Editor competes with multiple high-density side panels for attention and width.
-- Contribution flow and read-only metadata are mixed in the same viewport without clear task mode framing.
-- CV row controls inherit generic form widths; row-level interaction hierarchy is not explicitly modeled per task state.
+Status: **Planning complete, awaiting explicit approval to execute Layer 1.**
 
 ---
 
-## 2) Problem Statement and Scope
+## 1) Context Snapshot
 
-In-scope:
+Project/product signals from `README.md` and internal docs:
 
-- Module editor section inside module details page.
-- Surrounding layout and hierarchy that influences editor usability.
-- Contribution-only interactions (add/edit/remove unsaved rows, save, undo, status comprehension).
+- Patcher’s core promise is the full modular workflow: modules + patches + racks in one workspace.
+- Home should act as high-impact orientation + conversion surface (sign up / login), not a deep feature playground.
+- Existing home currently embeds real detail components (patch/module/rack) and timed data loading; this adds complexity
+  and visual noise for first-touch visitors.
 
-Out-of-scope (for this redesign phase):
+User direction for this feature:
 
-- Database schema changes.
-- New moderation workflow.
-- Edit FAB behavior changes (kept as-is in current iteration).
-
-Current known pain points:
-
-- Row composition is still visually imbalanced under constrained width.
-- Form control sizing is not intentionally tuned by field type (name vs min/max voltage).
-- New affordances need stronger visual rhythm with the page’s existing card system.
-- The dedicated **“Review & save”** block is now redundant after introducing the floating save action, adding vertical noise without additional decision value.
-- The current `Prepare` area still feels visually disjointed: `Power`, `Physical properties`, and `Panel` read as separate islands instead of one cohesive setup zone.
-- Numbered wording (`1.`, `2.`) remains in parts of the UI despite no longer behaving like a strict wizard.
-- Some copy still references previous structure and can be simplified for consistency with the FAB-based action model.
+- “Plan a new, striking, effective homepage.”
+- “Work in layers… execute layer 1.”
+- “Use existing or Material components, reduce custom components.”
+- Existing homepage can be replaced entirely.
 
 ---
 
-## 3) Target UX Model (Design Direction)
+## 2) Design Direction
 
-Design intent for redesigned Module Details editing:
+Desired homepage posture:
 
-- **Mode clarity:** clear distinction between browsing module info and actively editing contribution data.
-- **Row hierarchy:** each CV row reads as `status/meta -> core fields -> action`, with consistent alignment.
-- **Density with readability:** compact numeric controls, stable row height, no wasted horizontal space.
-- **Safe affordances:** destructive language/color only for truly removable draft rows.
-- **No accidental writes:** unsaved preview/testing remains first-class via dedicated no-save test paths.
+- Bold first impression with strong typographic hero and clear value proposition.
+- Fast scan path: **what it is**, **what you can do**, **how to start**.
+- Conversion-focused CTAs near top and bottom.
+- Mobile and desktop friendly with deliberate spacing and hierarchy.
 
-Key components involved:
+Implementation posture:
 
-- `module-browser-detail.component.html` (page composition),
-- `module-editor.component.*` (editor sections, save behavior),
-- `module-editor-cv-form-line.component.*` (row ergonomics),
-- `module-editor-adder-line.component.*` (preset entry point),
-- supporting shared controls (`brand-primary-button`, chips, tooltips, snackbars).
+- Prefer Material structure (`mat-card`, `mat-icon`, `mat-divider`) plus existing button/wrapper primitives.
+- Remove dependency on embedded “real-life demo” detail components for layer 1.
+- Keep SCSS manageable and local to `home.component.scss`.
 
 ---
 
-## 4) Execution Plan (Three Layers)
+## 3) Three-Layer Plan
 
-### MVP Layer — Layout correction and task legibility
+### Layer 1 (MVP) — New homepage skeleton + visual direction
 
-**Deliverable:** editor rows and section framing feel intentionally structured in the existing page.
+Deliverable: a fully replaced homepage with striking hero, concise value architecture, and clear CTAs.
 
-Steps:
+Planned changes:
 
-- [x] Rebalance editor row grid so status/meta, name, and voltage fields align on a clear baseline.
-- [x] Normalize control widths by semantic type (name flexible; voltage compact).
-- [x] Tune spacing between section headers, chips, adder line, and first row.
-- [x] Gate: screenshot review on `/modules/details/1423` with unsaved draft rows.
-
-### Structural Layer — Section architecture inside Module Details
-
-**Deliverable:** editor sits in a clear contribution workflow that fits the broader page.
-
-Steps:
-
-- [x] Define explicit contribution sub-sections (“Prepare”, “Edit ports”, “Review & Save”).
-- [x] Evaluate moving low-priority info (or collapsing it) while editor is open.
-- [x] Introduce consistent content width strategy across right-side cards.
-- [x] Gate: desktop and mobile screenshot diff shows improved visual hierarchy.
-- [x] Redesign save model to avoid fragmented writes (from independent section saves to a clearer unified review/save flow).
-- [x] Define data-handling rules for partial edits (draft state, dirty tracking, section validation, error recovery).
-- [x] Add UX guardrails for save outcomes (single source-of-truth status, success/failure summary, retry behavior).
-
-### Polish Layer — Interaction feedback and consistency
-
-**Deliverable:** polished micro-interactions and consistent visual language.
-
-Steps:
-
-- [x] Refine status badge/iconography density and tooltip copy.
-- [x] Harmonize new adder controls with brand button system (contrast, hover, focus).
-- [x] Reposition the unified save action into a FAB-style affordance consistent with existing edit FAB placement and motion language.
-- [x] Define FAB save states: idle (`Save`), dirty (`Save` emphasized), saving (`Saving...`/spinner), done (`Saved` short confirmation then idle).
-- [x] Ensure FAB save does not overlap row controls on desktop/mobile (safe-area + bottom spacing + scroll-aware offset).
-- [x] Remove the standalone “Review & save” section and replace it with compact inline policy copy near the editor
-  header.
-- [x] Validate keyboard and screen-reader semantics for row actions.
-- [x] Validate keyboard and screen-reader semantics for the save FAB (focus order, label updates, disabled explanation).
-- [ ] Gate: focused UX test pass + stakeholder signoff screenshots.
-
----
-
-## 5) Reanalysis and Next Best Stage (2026-02-23)
-
-Conclusion from latest iteration:
-
-- The save action model is now correct (manual, explicit, unified), but the layout still communicates a 3-step wizard.
-- Since save moved to FAB, step 3 does not carry unique interaction value and should be removed.
-- Best next improvement is a **layout compaction pass** rather than more micro-styling.
-
-Next-stage plan (layout reset, minimal-impact implementation):
-
-1. **Collapse the workflow framing from 3 blocks to 2 blocks**
-   - Keep: `Prepare` and `Edit ports`.
-   - Remove: dedicated `Review & save` card.
-   - Keep chips optional; if retained, update to 2 steps only.
-
-2. **Introduce a compact editor action rail**
-   - Place short helper copy near the top-right of editor body:
-     - `Done` closes editor (primary mode toggle).
-     - `Save` writes all pending changes (secondary FAB).
-   - Avoid repeating safety copy in a dedicated full-width section.
-
-3. **Move policy text to a low-footprint inline note**
-   - Replace multi-line review block with one concise subtitle-level sentence.
-   - Keep legal/safety meaning intact; reduce vertical height.
-
-4. **Rebalance visual hierarchy within remaining blocks**
-   - Give `Edit ports` more vertical priority and tighter top spacing.
-   - Keep metadata prep visually lighter so row editing remains dominant.
-
-5. **Validate with no-write flow and screenshot diff**
-   - Re-run unsaved-draft Playwright scenario.
-   - Confirm FAB pair spacing and non-overlap with row controls on desktop/mobile.
-
-Success criteria for this stage:
-
-- Editor feels shorter and denser without removing user confidence.
-- Save remains manual and explicit.
-- `Done` remains the primary close action, with `Save` clearly secondary and nearby.
-
----
-
-## 6) Next Iteration Plan: Prepare + Panel Cohesion (2026-02-23)
-
-Objective:
-
-- Make the setup area feel like one coherent “module setup” zone, reduce leftover wizard language, and align copy with current behavior.
-
-UX findings driving this iteration:
-
-- The setup block currently has three independent mini-columns with weak shared hierarchy.
-- `Panel` has different visual weight/structure than `Power` and `Physical`, which amplifies fragmentation.
-- Step numbering is now unnecessary and increases cognitive overhead.
-- Action guidance exists in multiple places; we need one clear, compact message.
-
-Planned implementation (minimal-impact, structure-first):
-
-1. **Remove step numbering language across editor copy**
-   - Replace labels like `1. Prepare` / `2. Edit ports` with plain section titles (`Setup`, `Edit ports`).
-   - Remove numeric chips or convert them to non-numeric role chips only if they still add value.
-
-2. **Restructure Setup into a cohesive two-column composition**
-   - Left: `Power` + `Physical` stacked as “Specs”.
-   - Right: `Panel` as a dedicated upload/config card with matched heading rhythm.
-   - Keep same controls and validation logic; layout-only change first.
-
-3. **Unify helper copy and remove stale references**
-   - Consolidate top note to one concise action line (`Done closes, Save writes pending changes`).
-   - Remove references that imply the old step model.
-   - Keep one safety/policy sentence in a predictable location.
-
-4. **Improve visual linking between Setup and Edit ports**
-   - Slightly reduce visual dominance of Setup backgrounds/borders.
-   - Emphasize `Edit ports` as primary working area while preserving setup discoverability.
-
-5. **Validation gates**
-   - Run module editor unit tests.
-   - Run Playwright UX screenshot suite (desktop/mobile/unsaved draft).
-   - Verify no contradictory copy remains in `module-editor.component.*` and `module-browser-detail.component.html`.
+- [x] Replace current home template with a new sectioned structure:
+  - Hero (headline, subcopy, primary + secondary CTA)
+  - Value pillars (Modules, Patches, Racks)
+  - Workflow strip (“discover → design → document/share”)
+  - Final CTA panel
+- [x] Remove embedded patch/module/rack detail demo components from homepage.
+- [x] Simplify `home.component.ts` by removing delayed demo-data loads and unused demo view configs.
+- [x] Keep/update SEO text to match the new homepage message.
+- [x] Implement a distinct but manageable SCSS theme:
+  - Local CSS variables for palette
+  - Layered background/shape treatment
+  - Clear card hierarchy and responsive behavior
+- [x] Use mostly Material + existing shared components (no new custom component creation in layer 1).
 
 Acceptance criteria:
 
-- Setup reads as one connected section rather than three separate blocks.
-- No numbered step language remains unless tied to real sequential behavior.
-- Copy is consistent with current save model (manual FAB save + primary Done close).
-
-Execution status (current pass):
-
-- [x] Removed numbered step language from editor section titles and top flow framing.
-- [x] Restructured setup layout into cohesive Specs + Panel composition.
-- [x] Consolidated helper/policy copy and removed stale step references.
-- [x] Rebalanced setup/edit visual hierarchy to keep `Edit ports` primary.
-- [x] Completed title/label/copy cleanup sweep for practical, non-redundant wording.
-- [ ] Capture stakeholder screenshot signoff for this cohesion pass.
+- Homepage is visually and structurally replaced (old version no longer present).
+- First viewport communicates product + CTA within ~5 seconds of scanning.
+- No embedded live detail demos remain on homepage.
+- Layout works on desktop + mobile without overlap or collapsed hierarchy.
 
 ---
 
-## 7) Pause/Handoff Management and Validation
+### Layer 2 (Structural) — Trust + navigation depth
 
-How this feature is being run while SEO is paused:
+Deliverable: homepage improves decision confidence and cross-route discoverability.
 
-- Keep all redesign exploration in this file; keep backlog tracking in `TODO.md`.
-- Preserve no-write verification path using Playwright unsaved-draft scenario.
-- Commit in small checkpoints to allow easy rollback of individual layout experiments.
+Planned additions:
 
-Validation checklist for each iteration:
+- Add lightweight trust blocks (community/open data/privacy cues).
+- Add clearer route-driven entry points (browse modules, explore patches, view racks).
+- Tighten section order based on narrative flow and conversion intent.
 
-- [x] Unit tests for module editor pass.
-- [x] Playwright unsaved-draft snapshot test passes without save action.
-- [x] Visual review confirms no white-on-white controls and no misleading destructive styling.
-- [ ] `git status` contains only intended source/doc changes (no required artifacts).
+Gate:
+
+- Visual/content review confirms clearer “why use this now” story than layer 1.
 
 ---
 
-## 8) One-Off UI Fix: User Page Vertical Space Optimization (2026-02-23)
+### Layer 3 (Polish) — Motion, accessibility, and copy refinement
+
+Deliverable: premium finish without adding structural complexity.
+
+Planned additions:
+
+- Refine animations/transitions (subtle staged entrance, hover behavior).
+- Accessibility pass for contrast/focus/heading semantics.
+- Copy compression and final typography tuning.
+
+Gate:
+
+- UX pass and quick manual accessibility sanity check complete.
+
+---
+
+## 4) Layer 1 Execution Checklist
+
+Target files (expected):
+
+- `src/app/features/backbone/home/home.component.html`
+- `src/app/features/backbone/home/home.component.scss`
+- `src/app/features/backbone/home/home.component.ts`
+- `src/app/features/backbone/home/home.module.ts` (import cleanup if demo components/modules are removed)
+
+Verification plan for layer 1:
+
+- [x] Run at least one repo-approved verification command after implementation.
+- [x] Smoke-check homepage rendering at desktop and mobile widths.
+
+Risks/notes:
+
+- Removing demo embeds may require pruning module imports to avoid dead dependencies.
+- `HomeModule` still imports `UserDataHandlerModule` to preserve existing app compilation in this routing setup (
+  transitive dependency currently relied on outside home templates).
+- Keep route/toolbar expectations intact (`/home` remains unchanged).
+
+---
+
+## 5) Layer 1 Revision: Character + Visual Flair (2026-02-23)
 
 Objective:
 
-- Reduce wasted vertical space in the User page cards (`Modules`, `Racks`, `Patches`) while preserving current actions
-  and readability.
+- Keep the new structure from layer 1, but add stronger visual personality so the homepage feels aligned with Patcher's
+  brand character.
 
-Scope:
+Completed in this revision:
 
-- In-scope: user-area route card layout density (header/title row, top content spacing, action/search spacing).
-- Out-of-scope: data flow, feature behavior, sidebar widgets, backend logic.
-
-Three-layer execution plan:
-
-1. **MVP (density pass)**
-   - Lower top-card vertical padding and heading block footprint for the three hero cards.
-   - Tighten spacing between action buttons, divider, and search section.
-   - Keep mobile breakpoints readable.
-
-2. **Structural (layout consistency)**
-   - Apply a consistent compact style across `Modules`, `Racks`, `Patches` cards only.
-   - Avoid global hero-card regressions by scoping styles to the user-area route.
-
-3. **Polish (readability + safety checks)**
-   - Verify header/title/description hierarchy remains clear after compaction.
-   - Run targeted checks (lint/build or focused tests as feasible) and confirm no layout breakage in user area.
-
-Implementation checklist:
-
-- [ ] Add compact hero-card inputs/classes in user-area templates.
-- [ ] Add scoped user-area SCSS overrides for vertical rhythm.
-- [ ] Validate desktop/mobile spacing in local run and adjust if needed.
-- [ ] Run at least one repo-approved verification command.
+- [x] Added image-driven hero composition using existing local assets (`patcher_seo_hero` + promo screenshots).
+- [x] Introduced a bolder visual language (multi-accent gradients, grid texture, floating preview cards, expressive CTA
+  framing).
+- [x] Added a compact “energy strip” to communicate product momentum and make the page feel less static.
+- [x] Preserved implementation constraints: no new custom components, Material/shared primitives only.
+- [x] Build smoke check passes (`npx ng serve --port 5560`).
 
 ---
 
-## 9) One-Off UI Iteration: Unified Floating Search for User Area (2026-02-23)
+## 6) Layer 1 Revision: README Principle Alignment (2026-02-23)
 
 Objective:
 
-- Remove per-section inline search boxes and introduce one shared floating search field that filters `Modules`, `Racks`,
-  and `Patches` simultaneously.
+- Re-anchor homepage content in the exact product value statements and principles from `README.md`, while preserving
+  visual energy.
 
-Scope:
+Completed in this revision:
 
-- In-scope: user-area UI filtering behavior and search input placement.
-- Out-of-scope: backend/API filtering, data shape changes, non-user-area pages.
-
-Three-layer plan:
-
-1. **MVP**
-   - Add one root-level search control in `user-area-root`.
-   - Pass a shared query input down to modules/racks/patches lists.
-   - Disable inline list search rendering on this page.
-
-2. **Structural**
-   - Extend list components with reusable external-query input support while preserving existing internal `showSearch`
-     behavior for other routes.
-   - Keep filtering reactive and case-insensitive using existing normalization helpers.
-
-3. **Polish**
-   - Style the root search as a floating field (FAB-adjacent visual behavior).
-   - Ensure mobile safe-area spacing and no overlap with list content.
-   - Run a repo-approved verification command and fix any regressions.
-
-Implementation checklist:
-
-- [x] Add shared search control + floating field markup in user-area root.
-- [x] Wire `globalSearchQuery` input through user section wrapper components.
-- [x] Update `module-list`, `rack-list`, `patch-list` to support external query stream.
-- [x] Remove/disable section-local search boxes in user area usage.
-- [x] Verify with targeted tests/lint command.
+- [x] Rewrote homepage narrative to foreground core utility claims:
+  - digital twin of real rig,
+  - fast rack planning,
+  - app-wide auto-save,
+  - instance-aware patching,
+  - live connection-derived patch stats.
+- [x] Added explicit “Practical benefits” and “Open data with clear boundaries” sections to reflect project principles (
+  free public browsing + privacy boundary for non-public data).
+- [x] Added a dedicated recent-improvements block aligned with v5.1 messaging.
+- [x] Updated homepage SEO copy to match the revised product emphasis.
+- [x] Compile smoke check passes (`npx ng serve --port 5560`).
