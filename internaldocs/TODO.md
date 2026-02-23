@@ -53,6 +53,27 @@ owner-account coupling.
 - [ ] Rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD`
 - [ ] Re-run `yarn test:e2e:auth`
 
+### ON HOLD: SEO — Tagging & Rich Link Previews
+
+**Paused on 2026-02-23** to prioritize Module Details redesign.
+
+Completed before pause:
+
+- Dynamic sitemap endpoint (`api/sitemap.ts`)
+- `robots.txt` sitemap reference
+- Canonical URL injection
+- JSON-LD middleware coverage (module/patch/rack/home)
+- `llms.txt`
+- `og:image:width` + `og:image:height`
+- Bot HTML cache headers (partial; OG endpoint still pending)
+
+Remaining when resumed:
+
+- [ ] OG image generation endpoint (`@vercel/og`)
+- [ ] Middleware wiring to generated OG image URLs
+- [ ] Rich preview validation gates (Telegram/WhatsApp/Slack + debuggers)
+- [ ] OG image visual polish pass
+
 ### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
 
 **Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for
