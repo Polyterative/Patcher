@@ -21,9 +21,9 @@ export class HomeComponent extends SubManager {
     super();
 
     const seoData: SeoSocialShareData = {
-      title: 'Patcher | Open-source digital twin for Eurorack workflows',
-      description: 'Plan racks, patch with instance-aware context, auto-save sessions, and explore open Eurorack data.',
-      keywords: 'eurorack, modular, digital twin, auto-save, instance-aware patching, open data, open source, patch stats, rack planning',
+      title: 'Patcher | Fast modular workflow for real patch sessions',
+      description: 'Browse modules, shape racks, patch with context, and auto-save every idea in an open-source Eurorack workspace.',
+      keywords: 'eurorack, modular workflow, patch planning, rack builder, auto-save patches, open-source music software, patch graph',
       type: 'website',
     };
     
