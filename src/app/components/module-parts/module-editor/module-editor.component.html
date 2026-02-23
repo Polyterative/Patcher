@@ -1,116 +1,86 @@
 <lib-clean-card>
-  <div class="rowwrap gap1">
+  <div class="col gap1 module-editor-workflow">
+    <mat-chip-set class="workflow-strip"
+                  aria-label="Module editor workflow"
+    >
+      <mat-chip>1. Prepare</mat-chip>
+      <mat-chip>2. Edit ports</mat-chip>
+      <mat-chip>3. Review & save</mat-chip>
+    </mat-chip-set>
 
-    <!-- Power Section -->
-    <div class="col gap1">
-      <div class="row gap1 ">
-        <mat-card-title>Power</mat-card-title>
+    <section class="workflow-block">
+      <div class="workflow-block-header">
+        <mat-card-title>1. Prepare</mat-card-title>
+        <mat-card-subtitle>Confirm module metadata before editing ports.</mat-card-subtitle>
       </div>
 
-      <div class="col gap1">
-        <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
-        <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
-        <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
-      </div>
-
-      <lib-auto-update-loading-indicator
-        [data$]="dataService.singleModuleData$"
-        [updateData$]="savePower$"
-        loadingLabel="Saving data"
-      >
-        <div class="row end-align" style="margin-top: 1rem;">
-          <app-brand-primary-button
-            (click$)="savePower$.next()"
-            [disabled]="!(formGroupPower | formValid)"
-            icon="save"
-            theme="positive"
-          >
-            Save Power Data
-          </app-brand-primary-button>
-        </div>
-      </lib-auto-update-loading-indicator>
-    </div>
-    <!-- Physical properties Section -->
-    <div class="col gap1">
-      <div class="row gap1 ">
-        <mat-card-title>Physical properties</mat-card-title>
-      </div>
-
-      <div class="col gap1">
-        <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
-        <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
-      </div>
-
-      <lib-auto-update-loading-indicator
-        [data$]="dataService.singleModuleData$"
-        [updateData$]="savePhysical$"
-        loadingLabel="Saving data"
-      >
-        <div class="row end-align" style="margin-top: 1rem;">
-          <app-brand-primary-button
-            (click$)="savePhysical$.next()"
-            [disabled]="!(formGroupPhysical | formValid)"
-            icon="save"
-            theme="positive"
-          >
-            Save physical properties
-          </app-brand-primary-button>
-        </div>
-      </lib-auto-update-loading-indicator>
-    </div>
-
-    <mat-divider></mat-divider>
-
-    <!-- Panel Section -->
-    <div class="col gap1">
-      <div class="row gap1 ">
-        <mat-card-title>Panel</mat-card-title>
-      </div>
-
-      <div class="row gap1 ">
-        <lib-file-drag-host
-          [isImageOnlyMode]="true"
-          [multipleFilesMode]="false"
-          acceptedFileType="image/jpeg,image/jpg"
-        ></lib-file-drag-host>
-
+      <div class="rowwrap gap1 workflow-prepare-grid">
+        <!-- Power Section -->
         <div class="col gap1">
-          <lib-mat-form-entity
-            [dataPack]="panelType"
-            [disableVoidSelection]="true"
-          ></lib-mat-form-entity>
-          
-          <lib-mat-form-entity [dataPack]="panelDescription"></lib-mat-form-entity>
+          <div class="row gap1 ">
+            <mat-card-title>Power</mat-card-title>
+          </div>
+
+          <div class="col gap1">
+            <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
+            <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
+            <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
+          </div>
+        </div>
+        <!-- Physical properties Section -->
+        <div class="col gap1">
+          <div class="row gap1 ">
+            <mat-card-title>Physical properties</mat-card-title>
+          </div>
+
+          <div class="col gap1">
+            <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
+            <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
+          </div>
+        </div>
+
+        <!-- Panel Section -->
+        <div class="col gap1">
+          <div class="row gap1 ">
+            <mat-card-title>Panel</mat-card-title>
+          </div>
+
+          <div class="row gap1 ">
+            <lib-file-drag-host
+              [isImageOnlyMode]="true"
+              [multipleFilesMode]="false"
+              acceptedFileType="image/jpeg,image/jpg"
+            ></lib-file-drag-host>
+
+            <div class="col gap1">
+              <lib-mat-form-entity
+                [dataPack]="panelType"
+                [disableVoidSelection]="true"
+              ></lib-mat-form-entity>
+              
+              <lib-mat-form-entity [dataPack]="panelDescription"></lib-mat-form-entity>
+            </div>
+          </div>
+          @if (panelTypeAlreadyExists$ | async) {
+            <app-advice-tooltip>
+              This module already has a "{{ duplicatePanelTypeName$ | async }}" panel — choose a different type or remove
+              the existing one first
+            </app-advice-tooltip>
+          }
+          <mat-card-subtitle>
+            Power, physical properties, panel upload, and port edits are all saved together in step 3.
+          </mat-card-subtitle>
         </div>
       </div>
-      
-      <lib-auto-update-loading-indicator
-        [data$]="dataService.singleModuleData$"
-        [updateData$]="savePanels$"
-        loadingLabel="Saving data"
-      >
-        @if (panelTypeAlreadyExists$ | async) {
-          <app-advice-tooltip>
-            This module already has a "{{ duplicatePanelTypeName$ | async }}" panel — choose a different type or remove
-            the existing one first
-          </app-advice-tooltip>
-        }
-        <div class="row end-align" style="margin-top: 1rem;">
-          <app-brand-primary-button
-            (click$)="savePanels$.next()"
-            [disabled]="!(formGroupPanel | formValid) || !(fileDragHostService.files$ | async)?.length || (panelTypeAlreadyExists$ | async)"
-            icon="add"
-            theme="positive"
-          >
-            Add Panel
-          </app-brand-primary-button>
-        </div>
-      </lib-auto-update-loading-indicator>
-    </div>
-    
-    <mat-divider></mat-divider>
-    <!-- INs and OUTs Section -->
-    <div class="col gap1">
+    </section>
+
+    <section class="workflow-block">
+      <div class="workflow-block-header">
+        <mat-card-title>2. Edit ports</mat-card-title>
+        <mat-card-subtitle>Add draft rows for INs and OUTs and verify ranges.</mat-card-subtitle>
+      </div>
+
+      <div class="col gap1">
       <!-- INs Section -->
       <div class="col gap1 cv-edit-section">
         <div class="row gap1 cv-edit-section-header">
@@ -190,8 +160,17 @@
           }
         </div>
       </div>
-      
-      <div class="row gap1 " style="margin-top: 1rem;">
+
+      </div>
+    </section>
+
+    <section class="workflow-block workflow-block--review">
+      <div class="workflow-block-header">
+        <mat-card-title>3. Review & save</mat-card-title>
+        <mat-card-subtitle>Final check before writing edits for everyone.</mat-card-subtitle>
+      </div>
+
+      <div class="row gap1 workflow-review-text">
         <div class="col"
         >
           <mat-card-subtitle>
@@ -202,23 +181,23 @@
           </mat-card-subtitle>
         </div>
       </div>
-      
+
       <lib-auto-update-loading-indicator
         [data$]="dataService.singleModuleData$"
-        [updateData$]="saveInsOuts$"
+        [updateData$]="saveAll$"
         loadingLabel="Saving data"
       >
         <div class="row gap2" style="margin-top: 1rem;">
           <app-brand-primary-button
-            (click$)="saveInsOuts$.next()"
-            [disabled]="!(formGroupA | formValid) || !(formGroupB | formValid)"
+            (click$)="saveAll$.next()"
+            [disabled]="(saveInProgress$ | async) || !(formGroupA | formValid) || !(formGroupB | formValid) || !(formGroupPower | formValid) || !(formGroupPhysical | formValid) || (((fileDragHostService.files$ | async)?.length ?? 0) > 0 && (!(formGroupPanel | formValid) || (panelTypeAlreadyExists$ | async)))"
             icon="save"
             theme="positive"
           >
-            Save INs and OUTs
+            Save all changes
           </app-brand-primary-button>
         </div>
       </lib-auto-update-loading-indicator>
-    </div>
+    </section>
   </div>
 </lib-clean-card>

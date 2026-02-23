@@ -3,7 +3,8 @@
   racksWithThisModule: (dataService.racksWithThisModule$|async),
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
   modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
-  user: (userManagementService.loggedUser$|async)
+  user: (userManagementService.loggedUser$|async),
+  editing: (dataService.moduleEditingPanelOpenState$|async)
 }; as bag) {
   <div class="col gap1"
   >
@@ -149,7 +150,7 @@
               }
             </lib-hero-content-card>
           }
-          @if (bag.data) {
+          @if (bag.data && !bag.editing) {
             <lib-hero-content-card titleNormal="Search on" [sidesPadding]="false">
               <mat-chip-set class="rowwrap gap1">
                 @for (link of searchLinks; track link) {
@@ -164,7 +165,14 @@
               </mat-chip-set>
             </lib-hero-content-card>
           }
-          @if (appState.isDev && bag.data && bag.user) {
+          @if (bag.data && bag.editing) {
+            <lib-clean-card class="editing-focus-note">
+              <mat-card-subtitle>
+                Focus mode enabled: discovery links and related module lists are hidden while editing.
+              </mat-card-subtitle>
+            </lib-clean-card>
+          }
+          @if (appState.isDev && bag.data && bag.user && !bag.editing) {
             <lib-hero-content-card titleNormal="Dev utils"
                                    [sidesPadding]="false">
               <div class="rowwrap gap2">
@@ -235,70 +243,76 @@
           }
         </div>
         <div fxFlex class="col gap2">
-          @if (bag.data && dataService.moduleEditingPanelOpenState$|async) {
+          @if (bag.data && bag.editing) {
             <lib-hero-content-card [sidesPadding]="false"
                                    titleNormal="Module Editor"
-                                   description="Do you know about this module?
-                Please help the community by adding the module's ins and outs.
-                Contributors' patches DO sound better!"
+                                   description="Workflow: 1) Prepare metadata, 2) Edit IN/OUT ports, 3) Review and save."
             >
               <app-module-editor [data]="(bag.data)"
               ></app-module-editor>
             </lib-hero-content-card>
           }
-          <div class="rowwrap gap1"
-          >
-            @if (viewConfig.hideRackedIn === false) {
-              <lib-hero-content-card [sidesPadding]="false"
-                                     style="flex: 1 1 100%;"
-                                     titleNormal="Racked in"
-              >
-                <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
-                                                    [updateData$]="dataService.updateSingleModuleData$"
+          @if (!bag.editing) {
+            <div class="rowwrap gap1"
+            >
+              @if (viewConfig.hideRackedIn === false) {
+                <lib-hero-content-card [sidesPadding]="false"
+                                       style="flex: 1 1 100%;"
+                                       titleNormal="Racked in"
                 >
-                  @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
-                    <app-module-racks
-                      [data$]="dataService.racksWithThisModule$"
-                    ></app-module-racks>
-                  } @else {
-                    <div class="col gap1 animate-fadein-slowest"
-                    >
-                      <mat-card-subtitle style="padding: 1rem"
-                      >No racks using this module yet. Try adding it to yours!
-                      </mat-card-subtitle>
-                    </div>
-                  }
-                </lib-auto-content-loading-indicator>
-              </lib-hero-content-card>
-            }
-            @if (viewConfig.hidePatchedIn === false) {
-              <lib-hero-content-card [sidesPadding]="false"
-                                     style="flex: 1 1 100%;"
-                                     titleNormal="Patched in"
-              >
-                <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
-                                                    [updateData$]="dataService.updateSingleModuleData$"
+                  <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
+                                                      [updateData$]="dataService.updateSingleModuleData$"
+                  >
+                    @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
+                      <app-module-racks
+                        [data$]="dataService.racksWithThisModule$"
+                      ></app-module-racks>
+                    } @else {
+                      <div class="col gap1 animate-fadein-slowest"
+                      >
+                        <mat-card-subtitle style="padding: 1rem"
+                        >No racks using this module yet. Try adding it to yours!
+                        </mat-card-subtitle>
+                      </div>
+                    }
+                  </lib-auto-content-loading-indicator>
+                </lib-hero-content-card>
+              }
+              @if (viewConfig.hidePatchedIn === false) {
+                <lib-hero-content-card [sidesPadding]="false"
+                                       style="flex: 1 1 100%;"
+                                       titleNormal="Patched in"
                 >
-                  @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
-                    <app-module-patches
-                      [data$]="dataService.patchesWithThisModule$"
-                    ></app-module-patches>
-                  } @else {
-                    <div class="col gap1 animate-fadein-slowest"
-                    >
-                      <mat-card-subtitle style="padding: 1rem"
-                      >No patches using this module yet. Try adding it to yours!
-                      </mat-card-subtitle>
-                    </div>
-                  }
-                </lib-auto-content-loading-indicator>
-              </lib-hero-content-card>
-            }
-          </div>
+                  <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
+                                                      [updateData$]="dataService.updateSingleModuleData$"
+                  >
+                    @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
+                      <app-module-patches
+                        [data$]="dataService.patchesWithThisModule$"
+                      ></app-module-patches>
+                    } @else {
+                      <div class="col gap1 animate-fadein-slowest"
+                      >
+                        <mat-card-subtitle style="padding: 1rem"
+                        >No patches using this module yet. Try adding it to yours!
+                        </mat-card-subtitle>
+                      </div>
+                    }
+                  </lib-auto-content-loading-indicator>
+                </lib-hero-content-card>
+              }
+            </div>
+          } @else {
+            <lib-clean-card class="editing-focus-note">
+              <mat-card-subtitle>
+                Related usage panels are hidden while editing. Click "Done" to return to browse context.
+              </mat-card-subtitle>
+            </lib-clean-card>
+          }
         </div>
       </div>
     </lib-hero-content-card>
-    @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false) {
+    @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
       <lib-hero-content-card
         [titleNormal]="'Others by ' + (bag.data.manufacturer.name)"
     >
