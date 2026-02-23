@@ -15,8 +15,7 @@ Goal: replace the current homepage with a clearer, more distinctive landing expe
 quickly (digital twin workflow for modular musicians), while keeping implementation maintainable and mostly based on
 Angular Material + existing shared primitives.
 
-Status: **Planning refreshed (creator-first pass), awaiting explicit approval to execute the next implementation
-iteration.**
+Status: **Creator-first homepage iteration implemented (2026-02-23), awaiting review.**
 
 ---
 
@@ -248,12 +247,28 @@ Observed risk in current homepage:
 
 ---
 
-## 9) Proposed Iteration: Less Corporate, More Creator Character (Awaiting Approval)
+## 9) Executed Iteration: Less Corporate, More Creator Character (2026-02-23)
 
 Objective:
 
 - Keep order and clarity, but compress text and make tone feel closer to musicians/producers who reject "enterprise"
   language.
+
+Execution summary:
+
+- [x] Reduced section density by removing overlapping long sections and keeping a tighter flow:
+  - Hero
+  - Quick value strip
+  - Workflow strip
+  - Community/open strip
+  - Final CTA
+- [x] Rewrote homepage copy to be shorter and creator-first (less enterprise phrasing, fewer long paragraphs).
+- [x] Preserved and reused existing shared/Material components (`lib-screen-wrapper`, `mat-card`, `mat-icon`,
+  `app-brand-primary-button`).
+- [x] Updated homepage SCSS to keep visual character with clearer scan rhythm and reduced dense card treatments.
+- [x] Updated homepage SEO metadata to align with the concise narrative.
+- [x] Removed unused `MatDividerModule` import from `home.module.ts`.
+- [x] Verification: `yarn test-headless --watch=false` passed (`622 SUCCESS`).
 
 Implementation plan (three layers):
 
