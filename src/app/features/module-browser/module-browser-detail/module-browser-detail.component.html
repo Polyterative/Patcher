@@ -176,61 +176,102 @@
               <div class="rowwrap gap2">
                 @if (bag.data.isComplete === false) {
                   <app-brand-primary-button theme="negative"
+                                            matTooltip="Permanently delete this module from the database"
+                                            matTooltipPosition="above"
                                             (click$)="dataService.deleteModule$.next(bag.data.id)">Delete module
                   </app-brand-primary-button>
                 }
                 @if (bag.data.isComplete === false) {
                   <app-brand-primary-button theme="negative"
+                                            matTooltip="Remove the newest panel image from this module"
+                                            matTooltipPosition="above"
                                             (click$)="dataService.deleteLastPanel$.next(bag.data)">Delete last panel
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.standard.id !== 1) {
                   <app-brand-primary-button theme="primary"
-                                            (click$)="dataService.changeModule$.next({
-                standard:{
-                id:1,
-                name:''
-                }
-                })">
+                                            matTooltip="Set panel standard to Intellijel 1U"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevStandard(1)">
                     Convert to 1U Intellijel
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.standard.id !== 0) {
                   <app-brand-primary-button theme="primary"
-                                            (click$)="dataService.changeModule$.next({
-                standard:{
-                id:0,
-                name:''
+                                            matTooltip="Set panel standard to Doepfer 3U"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevStandard(0)">Convert to 3U Doepfer
+                  </app-brand-primary-button>
                 }
-                })">Convert to 3U Doepfer
+                @if (bag.data && bag.data.standard.id !== 2) {
+                  <app-brand-primary-button theme="primary"
+                                            matTooltip="Set panel standard to Pulp Logic 1U"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevStandard(2)">
+                    Convert to 1U Pulp Logic
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isComplete === false) {
                   <app-brand-primary-button theme="positive"
-                                            (click$)="dataService.changeModule$.next({
-                isComplete:true
-                })">Mark as complete
+                                            matTooltip="Mark this module as complete"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevComplete(true)">Mark as complete
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isComplete === true) {
                   <app-brand-primary-button theme="warning"
-                                            (click$)="dataService.changeModule$.next({
-                isComplete:false
-                })">Mark as incomplete
+                                            matTooltip="Mark this module as incomplete"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevComplete(false)">Mark as incomplete
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isApproved === false) {
                   <app-brand-primary-button theme="positive"
-                                            (click$)="dataService.changeModule$.next({
-                isApproved:true
-                })">Mark as approved
+                                            matTooltip="Approve this module for public quality standards"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevApproved(true)">Mark as approved
                   </app-brand-primary-button>
                 }
                 @if (bag.data && bag.data.isApproved === true) {
                   <app-brand-primary-button theme="warning"
-                                            (click$)="dataService.changeModule$.next({
-                isComplete:false
-                })">Mark as unapproved
+                                            matTooltip="Remove approved status from this module"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevApproved(false)">Mark as unapproved
+                  </app-brand-primary-button>
+                }
+                @if (bag.data && bag.data.isDIY === false) {
+                  <app-brand-primary-button theme="positive"
+                                            matTooltip="Flag this module as DIY"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevDIY(true)">Mark as DIY
+                  </app-brand-primary-button>
+                }
+                @if (bag.data && bag.data.isDIY === true) {
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Remove DIY flag from this module"
+                                            matTooltipPosition="above"
+                                            (click$)="setDevDIY(false)">Mark as non-DIY
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="primary"
+                                            matTooltip="Trim and normalize whitespace in name, description, and manual URL"
+                                            matTooltipPosition="above"
+                                            (click$)="trimDevTextFields(bag.data)">Trim text fields
+                  </app-brand-primary-button>
+                }
+                @if (bag.data && bag.data.manualURL) {
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Clear the manual URL field"
+                                            matTooltipPosition="above"
+                                            (click$)="clearDevManualUrl()">Clear manual URL
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Set negative numeric values to zero (HP, depth, weight, power)"
+                                            matTooltipPosition="above"
+                                            (click$)="clampDevNumericFields(bag.data)">Clamp negative numbers
                   </app-brand-primary-button>
                 }
                 <!--                <pre>-->

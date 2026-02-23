@@ -62,7 +62,10 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     hideDates: true,
     hideManufacturer: true,
     hideLabels: true,
-    hideDescription: true
+    hideDescription: true,
+    tagsShowCounts: false,
+    tagsReadOnly: true,
+    tagsMaxCount: 5
   };
   // hopefully these do not become too many
   searchLinks                                                    = [
@@ -298,6 +301,56 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     
+  }
+  
+  private patchDevModule(changes: Partial<DbModule>): void {
+    this.dataService.changeModule$.next(changes);
+  }
+  
+  setDevStandard(id: number): void {
+    this.patchDevModule({
+      standard: {
+        id,
+        name: ''
+      }
+    });
+  }
+  
+  setDevComplete(isComplete: boolean): void {
+    this.patchDevModule({isComplete});
+  }
+  
+  setDevApproved(isApproved: boolean): void {
+    this.patchDevModule({isApproved});
+  }
+  
+  setDevDIY(isDIY: boolean): void {
+    this.patchDevModule({isDIY});
+  }
+  
+  trimDevTextFields(module: DbModule): void {
+    const normalizeText = (value: string) => value.replace(/\s+/g, ' ').trim();
+    this.patchDevModule({
+      name: normalizeText(module.name || ''),
+      description: normalizeText(module.description || ''),
+      manualURL: (module.manualURL || '').trim()
+    });
+  }
+  
+  clearDevManualUrl(): void {
+    this.patchDevModule({manualURL: ''});
+  }
+  
+  clampDevNumericFields(module: DbModule): void {
+    const clamp = (value: number) => Number.isFinite(value) ? Math.max(0, value) : 0;
+    this.patchDevModule({
+      hp: clamp(module.hp),
+      depth: clamp(module.depth),
+      weight: clamp(module.weight),
+      powerPos12: clamp(module.powerPos12),
+      powerNeg12: clamp(module.powerNeg12),
+      powerPos5: clamp(module.powerPos5)
+    });
   }
   
   submitSimilar(
