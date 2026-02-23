@@ -17,7 +17,6 @@ import {
   combineLatest,
   concat,
   EMPTY,
-  from,
   Observable,
   of,
   Subject
@@ -36,7 +35,6 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { CV } from 'src/app/models/cv';
 import { DbModule } from 'src/app/models/module';
 import { FileDragHostService } from 'src/app/shared-interproject/components/@smart/file-drag-host/file-drag-host.service';
@@ -44,39 +42,20 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-
-
-export interface FormCV {
-  id: number;
-  name: UntypedFormControl;
-  a: UntypedFormControl;
-  b: UntypedFormControl;
-  isApproved: boolean;
-}
-
-export interface CvSectionSummary {
-  total: number;
-  editable: number;
-  locked: number;
-}
+import {
+  FormCV,
+  ModuleEditorDataService,
+  PendingSaveState
+} from './module-editor-data.service';
 
 type CvSectionKind = 'IN' | 'OUT';
-interface PendingSaveState {
-  ins: CV[];
-  outs: CV[];
-  shouldSaveInsOuts: boolean;
-  shouldSavePower: boolean;
-  shouldSavePhysical: boolean;
-  shouldSavePanel: boolean;
-  hasPendingChanges: boolean;
-}
 
 
 @Component({
   selector: 'app-module-editor',
   templateUrl: './module-editor.component.html',
   styleUrls: ['./module-editor.component.scss'],
-  providers: [FileDragHostService],
+  providers: [FileDragHostService, ModuleEditorDataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
@@ -97,8 +76,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   INs$ = new BehaviorSubject<FormCV[]>([]);
   OUTs$ = new BehaviorSubject<FormCV[]>([]);
-  inSummary$ = this.INs$.pipe(map(cvs => this.buildCvSummary(cvs)));
-  outSummary$ = this.OUTs$.pipe(map(cvs => this.buildCvSummary(cvs)));
+  inSummary$ = this.INs$.pipe(map(cvs => this.moduleEditorDataService.buildCvSummary(cvs)));
+  outSummary$ = this.OUTs$.pipe(map(cvs => this.moduleEditorDataService.buildCvSummary(cvs)));
   
   /** Tracks panel color values already present on this module. */
   private _existingPanelColors$ = new BehaviorSubject<Set<number>>(new Set());
@@ -150,11 +129,11 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   types = FormTypes;
   
   constructor(
-    public backend: SupabaseService,
     public formBuilder: UntypedFormBuilder,
     public dataService: ModuleDetailDataService,
     public snackBar: MatSnackBar,
-    public fileDragHostService: FileDragHostService
+    public fileDragHostService: FileDragHostService,
+    private readonly moduleEditorDataService: ModuleEditorDataService
   ) {
     this.initializeFormControls();
     this.initializeFormGroups();
@@ -347,16 +326,16 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.addIN$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(cv => {
-        const formCVs = [...this.INs$.value, this.createFormCV(cv)];
-        this.updateFormGroupAndContainer(formCVs, this.formGroupA, this.INs$);
+        const formCVs = [...this.INs$.value, this.moduleEditorDataService.createFormCV(cv, this.validatorsName, this.validatorsNum)];
+        this.moduleEditorDataService.updateFormGroupAndContainer(formCVs, this.formGroupA, this.INs$);
       });
     
     // Subscriptions for adding OUTs
     this.addOUT$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(cv => {
-        const formCVs = [...this.OUTs$.value, this.createFormCV(cv)];
-        this.updateFormGroupAndContainer(formCVs, this.formGroupB, this.OUTs$);
+        const formCVs = [...this.OUTs$.value, this.moduleEditorDataService.createFormCV(cv, this.validatorsName, this.validatorsNum)];
+        this.moduleEditorDataService.updateFormGroupAndContainer(formCVs, this.formGroupB, this.OUTs$);
       });
     
     // Subscriptions for removing INs
@@ -421,8 +400,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   private persistAllChanges$(): Observable<unknown> {
     const pendingState = this.getPendingSaveState();
     const {
-      ins,
-      outs,
       shouldSaveInsOuts,
       shouldSavePower,
       shouldSavePhysical,
@@ -438,48 +415,24 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       return EMPTY;
     }
 
-    const operations: Observable<unknown>[] = [];
-
-    if (shouldSavePower || shouldSavePhysical) {
-      operations.push(this.backend.update.module({
-        id: this.data.id,
-        ...(shouldSavePower
-          ? {
-            powerPos12: this.powerRailPositive.control.value,
-            powerNeg12: this.powerRailNegative.control.value,
-            powerPos5: this.powerRailFiveVolts.control.value
-          }
-          : {}),
-        ...(shouldSavePhysical
-          ? {
-            weight: this.weight.control.value !== '' ? this.weight.control.value : undefined,
-            depth: this.depth.control.value !== '' ? this.depth.control.value : undefined
-          }
-          : {})
-      }));
-    }
-
-    if (shouldSavePanel) {
-      operations.push(this.savePendingPanel$());
-    }
-
-    if (shouldSaveInsOuts) {
-      operations.push(this.backend.update.moduleINsOUTs(this.data.id, ins, outs));
-    }
-
-    const savedSections: string[] = [];
-    if (shouldSavePower || shouldSavePhysical) {
-      savedSections.push('module specs');
-    }
-    if (shouldSavePanel) {
-      savedSections.push('panel');
-    }
-    if (shouldSaveInsOuts) {
-      savedSections.push('IN/OUT ports');
-    }
+    const {
+      operations,
+      savedSections
+    } = this.moduleEditorDataService.buildPersistPlan({
+      module: this.data,
+      pendingState,
+      powerPos12: this.powerRailPositive.control.value,
+      powerNeg12: this.powerRailNegative.control.value,
+      powerPos5: this.powerRailFiveVolts.control.value,
+      weight: this.weight.control.value,
+      depth: this.depth.control.value,
+      panelFile: this.fileDragHostService.files$.value[0],
+      panelTypeValue: this.panelType.control.value,
+      panelDescription: this.panelDescription.control.value
+    });
 
     this.saveInProgress$.next(true);
-    return concat(...operations, this.backend.update.module({id: this.data.id}))
+    return concat(...operations, this.moduleEditorDataService.touchModule$(this.data.id))
       .pipe(
         last(),
         map((): string[] => savedSections),
@@ -494,7 +447,15 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         }),
         finalize(() => this.saveInProgress$.next(false)),
         tap((saved: string[]) => {
-          this.syncDataSnapshotAfterSave(ins, outs, shouldSaveInsOuts, shouldSavePower, shouldSavePhysical);
+          this.data = this.moduleEditorDataService.syncDataSnapshotAfterSave({
+            module: this.data,
+            pendingState,
+            powerPos12: this.powerRailPositive.control.value,
+            powerNeg12: this.powerRailNegative.control.value,
+            powerPos5: this.powerRailFiveVolts.control.value,
+            weight: this.weight.control.value,
+            depth: this.depth.control.value
+          });
           this.markEditorFormsPristine();
           this.fileDragHostService.removeAllFiles$.emit();
           this.dataService.moduleEditorHasPendingChanges$.next(false);
@@ -629,64 +590,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  private savePendingPanel$(): Observable<unknown> {
-    const file = this.fileDragHostService.files$.value[0];
-    if (!file) {
-      return EMPTY;
-    }
-
-    return from(file.arrayBuffer()).pipe(
-      withLatestFrom(of([file.name, file.type] as const)),
-      switchMap(([fileBuffer, [filename, fileType]]) => {
-        const extensionFromFilename = filename.includes('.') ? filename.split('.').pop() : '';
-        const extensionFromType = (fileType ?? '').split('/').pop();
-        const extension = (extensionFromFilename || extensionFromType || 'jpg').toLowerCase();
-        const name: string = `${ this.safeString(this.data.name) }-${ this.safeString(this.data.manufacturer.name) }-${ this.panelType.control.value.name }-${ this.safeString(this.data.standard.name) }`;
-        const filenameAndExtension: string = `${ name }.${ extension }`;
-        return this.backend.storage.uploadModulePanel(fileBuffer, filenameAndExtension, fileType);
-      }),
-      switchMap(dbFilename =>
-        this.backend.add.panel([{
-          filename: dbFilename,
-          color: +this.panelType.control.value.value,
-          description: this.panelDescription.control.value,
-          moduleid: this.data.id
-        }])
-      )
-    );
-  }
-
-  private hasInsOutsChanges(ins: CV[], outs: CV[]): boolean {
-    const existingIns = this.data?.ins ?? [];
-    const existingOuts = this.data?.outs ?? [];
-    return !this.areCvListsEqual(ins, existingIns) || !this.areCvListsEqual(outs, existingOuts);
-  }
-
-  private areCvListsEqual(a: CV[], b: CV[]): boolean {
-    if (a.length !== b.length) {
-      return false;
-    }
-    return a.every((cv, i) => {
-      const left = this.toComparableCv(cv);
-      const right = this.toComparableCv(b[i]);
-      return left.id === right.id
-        && left.name === right.name
-        && left.min === right.min
-        && left.max === right.max
-        && left.isApproved === right.isApproved;
-    });
-  }
-
-  private toComparableCv(cv: CV): Required<Pick<CV, 'id' | 'name' | 'min' | 'max' | 'isApproved'>> {
-    return {
-      id: cv?.id ?? 0,
-      name: (cv?.name ?? '').trim(),
-      min: cv?.min ?? 0,
-      max: cv?.max ?? 0,
-      isApproved: cv?.isApproved ?? false
-    };
-  }
-
   private markEditorFormsPristine(): void {
     this.formGroupPower.markAsPristine();
     this.formGroupPhysical.markAsPristine();
@@ -725,66 +628,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       this.saveCompletedTimeoutId = null;
     }, 1400);
   }
-  
-  private updateFormGroupAndContainer(
-    cvs: FormCV[],
-    group: UntypedFormGroup,
-    subject: BehaviorSubject<FormCV[]>
-  ): void {
-    const controlsToRemove = Object.keys(group.controls);
-    controlsToRemove.forEach(controlName => {
-      group.removeControl(controlName);
-    });
-    
-    cvs
-      .filter(cv => !cv.isApproved)
-      .forEach((cv, index) => {
-        group.addControl(`name${ index }`, cv.name);
-        group.addControl(`a${ index }`, cv.a);
-        group.addControl(`b${ index }`, cv.b);
-      });
-    
-    subject.next(cvs);
-  }
-  
-  private createFormCV(data: Partial<CV>): FormCV {
-    const formCV: FormCV = {
-      name: new UntypedFormControl(data.name || '', this.validatorsName),
-      a: new UntypedFormControl(
-        data.min != null ? data.min : 0,
-        this.validatorsNum
-      ),
-      b: new UntypedFormControl(
-        data.max != null ? data.max : 0,
-        this.validatorsNum
-      ),
-      id: data.id || 0,
-      isApproved: data.isApproved || false
-    };
-    
-    if (formCV.id > 0 && formCV.isApproved) {
-      formCV.name.disable();
-      formCV.a.disable();
-      formCV.b.disable();
-    }
-    
-    return formCV;
-  }
-  
-  private formCVToCV(formCVs: FormCV[]): CV[] {
-    return formCVs.map(formCV => ({
-      name: formCV.name.value,
-      id: formCV.id,
-      min: formCV.a.value,
-      max: formCV.b.value,
-      isApproved: formCV.isApproved || false
-    }));
-  }
-  
-  // Helper method to sanitize strings for use in filenames
-  private safeString(str: string | undefined): string {
-    return (str || '').replace(/[^a-z0-9]/gi, '_');
-  }
 
   private removeCvWithUndo(index: number, section: CvSectionKind): void {
     const source$ = section === 'IN' ? this.INs$ : this.OUTs$;
@@ -797,7 +640,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     }
 
     formCVs.splice(index, 1);
-    this.updateFormGroupAndContainer(formCVs, group, source$);
+    this.moduleEditorDataService.updateFormGroupAndContainer(formCVs, group, source$);
 
     const cvLabel = (cv.name.value || '').trim() || 'Unnamed CV';
     const snackRef = this.snackBar.open(`${ section } "${ cvLabel }" removed.`, 'Undo', {duration: 5000});
@@ -809,63 +652,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         const restored = [...source$.value];
         const restoredIndex = Math.min(index, restored.length);
         restored.splice(restoredIndex, 0, cv);
-        this.updateFormGroupAndContainer(restored, group, source$);
+        this.moduleEditorDataService.updateFormGroupAndContainer(restored, group, source$);
       });
   }
 
-  private buildCvSummary(cvs: FormCV[]): CvSectionSummary {
-    const editable = cvs.filter(cv => cv.id === 0).length;
-    return {
-      total: cvs.length,
-      editable,
-      locked: cvs.length - editable
-    };
-  }
-
   private getPendingSaveState(): PendingSaveState {
-    const ins = this.formCVToCV(this.INs$.value);
-    const outs = this.formCVToCV(this.OUTs$.value);
-    const shouldSaveInsOuts = this.hasInsOutsChanges(ins, outs);
-    const shouldSavePower = this.formGroupPower.dirty;
-    const shouldSavePhysical = this.formGroupPhysical.dirty;
-    const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
-
-    return {
-      ins,
-      outs,
-      shouldSaveInsOuts,
-      shouldSavePower,
-      shouldSavePhysical,
-      shouldSavePanel,
-      hasPendingChanges: shouldSaveInsOuts || shouldSavePower || shouldSavePhysical || shouldSavePanel
-    };
-  }
-
-  private syncDataSnapshotAfterSave(
-    ins: CV[],
-    outs: CV[],
-    shouldSaveInsOuts: boolean,
-    shouldSavePower: boolean,
-    shouldSavePhysical: boolean
-  ): void {
-    const nextData: DbModule = {
-      ...this.data,
-      ...(shouldSaveInsOuts ? {ins, outs} : {}),
-      ...(shouldSavePower
-        ? {
-          powerPos12: this.powerRailPositive.control.value,
-          powerNeg12: this.powerRailNegative.control.value,
-          powerPos5: this.powerRailFiveVolts.control.value
-        }
-        : {}),
-      ...(shouldSavePhysical
-        ? {
-          weight: this.weight.control.value !== '' ? this.weight.control.value : undefined,
-          depth: this.depth.control.value !== '' ? this.depth.control.value : undefined
-        }
-        : {})
-    };
-
-    this.data = nextData;
+    return this.moduleEditorDataService.getPendingSaveState({
+      module: this.data,
+      formIns: this.INs$.value,
+      formOuts: this.OUTs$.value,
+      powerDirty: this.formGroupPower.dirty,
+      physicalDirty: this.formGroupPhysical.dirty,
+      panelFileCount: this.fileDragHostService.files$.value?.length ?? 0
+    });
   }
 }
