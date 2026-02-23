@@ -15,7 +15,8 @@ Goal: replace the current homepage with a clearer, more distinctive landing expe
 quickly (digital twin workflow for modular musicians), while keeping implementation maintainable and mostly based on
 Angular Material + existing shared primitives.
 
-Status: **Planning complete, awaiting explicit approval to execute Layer 1.**
+Status: **Planning refreshed (creator-first pass), awaiting explicit approval to execute the next implementation
+iteration.**
 
 ---
 
@@ -214,3 +215,98 @@ Completed in this revision:
   cases as the primary differentiator block.
 - [x] Updated SEO metadata to include open-source/open-data + high-impact feature language.
 - [x] Compile smoke check passes (`npx ng serve --port 5560`).
+
+---
+
+## 8) Research Snapshot: Famous Music Software Landing Pages (2026-02-23)
+
+Sources reviewed:
+
+- Ableton Live: https://www.ableton.com/en/live/
+- Splice: https://splice.com/
+- FL Studio: https://www.image-line.com/
+- Bitwig Studio: https://www.bitwig.com/
+- Reason Studios: https://www.reasonstudios.com/reason
+- Native Instruments (Komplete): https://www.native-instruments.com/en/products/komplete/bundles/komplete-15-select/
+
+Common patterns to borrow:
+
+- Hero copy is short and identity-led (often 1 line + 1 support line), not feature-dump heavy.
+- Feature sections are clustered into 3-5 scannable cards/strips with bold headings and very short descriptions.
+- Action loops are repeated often (`Try`, `Buy`, `Download`) at hero, mid-page, and footer CTA.
+- Creator/community language is direct and human ("for producers", "for music makers", "community", "artists"), with low
+  corporate phrasing.
+- Visual hierarchy is image-first and rhythm-driven; text rides on top of strong screenshots, motion bars, and graphic
+  motifs.
+- Trust proof appears as social/artist/community references rather than enterprise claims.
+
+Observed risk in current homepage:
+
+- Current page has strong visual work but too many dense sections and long descriptive text blocks, which can read as
+  product
+  documentation instead of a fast emotional landing experience.
+
+---
+
+## 9) Proposed Iteration: Less Corporate, More Creator Character (Awaiting Approval)
+
+Objective:
+
+- Keep order and clarity, but compress text and make tone feel closer to musicians/producers who reject "enterprise"
+  language.
+
+Implementation plan (three layers):
+
+### Layer 1 (MVP): Copy compression + section simplification
+
+Planned changes:
+
+- Reduce homepage section count by merging overlapping narrative blocks.
+- Keep this structure:
+  - Hero
+  - Quick value strip (3 cards)
+  - Workflow section
+  - Social-proof/community strip
+  - Final CTA
+- Replace long body paragraphs with 1-2 sentence max blocks.
+- Rewrite copy in creator-first language (plain, direct, less formal/corporate).
+- Preserve existing reusable components (`lib-screen-wrapper`, `mat-card`, `mat-icon`, `app-brand-primary-button`).
+
+Acceptance criteria:
+
+- Homepage reads in under ~45 seconds from top to final CTA.
+- No section contains long-form paragraph blocks.
+- Visual hierarchy remains clear on mobile and desktop.
+
+### Layer 2 (Structural): Personality and trust without bloat
+
+Planned changes:
+
+- Add compact "who this is for" cues (producers/live performers/patch nerds) as short chips.
+- Add one lightweight community/social proof band (contributors/open-source activity/community language).
+- Tighten CTA rhythm so primary action appears at least 3 times on page.
+
+Acceptance criteria:
+
+- Page feels community/creator-forward while preserving navigation clarity.
+- No new custom components introduced.
+
+### Layer 3 (Polish): Tone and visual energy refinement
+
+Planned changes:
+
+- Increase expressive visual character in hero and transitions (without adding heavy custom animation complexity).
+- Tune typography rhythm to reduce "corporate brochure" feel (larger headings, shorter scan lines, punchier labels).
+- Final SEO copy update to align with revised concise narrative.
+
+Acceptance criteria:
+
+- Homepage feels distinctly "music tool for makers" rather than generic SaaS.
+- Accessibility baseline preserved (contrast, semantic headings, reduced-motion fallback).
+
+Execution target files:
+
+- `src/app/features/backbone/home/home.component.html`
+- `src/app/features/backbone/home/home.component.scss`
+- `src/app/features/backbone/home/home.component.ts` (SEO copy only, if needed)
+- `src/app/features/backbone/home/home.module.ts` (only if import cleanup needed)
