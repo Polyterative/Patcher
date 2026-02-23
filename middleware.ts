@@ -1,10 +1,15 @@
-const PRIMARY_SITE_URL = 'https://patcher.xyz';
+const DEFAULT_PRIMARY_SITE_URL = 'https://patcher.xyz';
 const SITE_NAME = 'Patcher.xyz';
 const DEFAULT_DESCRIPTION = 'Manager and database for musicians using modular gear, with a focus on saving and visualizing patch-notes.';
-const CANONICAL_ORIGIN_OVERRIDE = (process.env.SEO_CANONICAL_ORIGIN || '').replace(/\/+$/, '');
+const CANONICAL_ORIGIN_OVERRIDE = normalizeConfiguredOrigin(process.env.SEO_CANONICAL_ORIGIN || '');
+const PRIMARY_SITE_URL = CANONICAL_ORIGIN_OVERRIDE
+  || normalizeConfiguredOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL || '')
+  || DEFAULT_PRIMARY_SITE_URL;
+const PRIMARY_SITE_HOST = extractHost(PRIMARY_SITE_URL);
 const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
 const SUPABASE_FETCH_TIMEOUT_MS = 1800;
 const DETAIL_METADATA_CACHE_TTL_MS = 60 * 1000;
 const NON_DETAIL_METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -81,7 +86,8 @@ export default async function middleware(request: Request): Promise<Response | v
   const detailRoute = parseDetailRoute(pathname);
   const isDetailRoute = !!detailRoute;
   const requestOrigin = normalizeOrigin(requestUrl.origin);
-  const canonicalOrigin = CANONICAL_ORIGIN_OVERRIDE || requestOrigin || PRIMARY_SITE_URL;
+  const isPreviewDeployment = isPreviewRequest(requestUrl);
+  const canonicalOrigin = resolveCanonicalOrigin(requestOrigin, isPreviewDeployment);
 
   if (requestUrl.searchParams.has('__spa')) {
     return;
@@ -110,11 +116,13 @@ export default async function middleware(request: Request): Promise<Response | v
     writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
-  const html = renderHtml(metadata);
-  const cacheControl = resolveCacheControl(metadata, isDetailRoute);
-  const robotsTag = isDetailFallback
+  const robotsTag = isPreviewDeployment
     ? 'noindex, nofollow, noarchive'
-    : 'index, follow, max-image-preview:large';
+    : (isDetailFallback
+      ? 'noindex, nofollow, noarchive'
+      : 'index, follow, max-image-preview:large');
+  const html = renderHtml(metadata, robotsTag);
+  const cacheControl = resolveCacheControl(metadata, isDetailRoute);
 
   return new Response(html, {
     status: 200,
@@ -151,6 +159,57 @@ function normalizePathname(pathname: string): string {
 
 function normalizeOrigin(origin: string): string {
   return origin.replace(/\/+$/, '');
+}
+
+function normalizeConfiguredOrigin(origin: string): string {
+  const cleanedOrigin = origin.trim();
+  if (!cleanedOrigin) {
+    return '';
+  }
+
+  const prefixedOrigin = /^https?:\/\//i.test(cleanedOrigin) ? cleanedOrigin : `https://${ cleanedOrigin }`;
+  try {
+    return normalizeOrigin(new URL(prefixedOrigin).origin);
+  } catch {
+    return '';
+  }
+}
+
+function extractHost(origin: string): string {
+  try {
+    return new URL(origin).host.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function resolveCanonicalOrigin(requestOrigin: string, isPreviewDeployment: boolean): string {
+  if (CANONICAL_ORIGIN_OVERRIDE) {
+    return CANONICAL_ORIGIN_OVERRIDE;
+  }
+  if (isPreviewDeployment) {
+    return PRIMARY_SITE_URL;
+  }
+  return requestOrigin || PRIMARY_SITE_URL;
+}
+
+function isPreviewRequest(requestUrl: URL): boolean {
+  if (VERCEL_ENV) {
+    return VERCEL_ENV !== 'production';
+  }
+
+  if (!PRIMARY_SITE_HOST) {
+    return false;
+  }
+
+  const requestHost = requestUrl.host.toLowerCase();
+  if (!requestHost) {
+    return false;
+  }
+
+  const requestBareHost = requestHost.replace(/^www\./, '');
+  const primaryBareHost = PRIMARY_SITE_HOST.replace(/^www\./, '');
+  return requestBareHost !== primaryBareHost;
 }
 
 function getDefaultImage(origin: string): string {
@@ -525,11 +584,12 @@ async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): 
   return payload as T;
 }
 
-function renderHtml(metadata: ShareMetadata): string {
+function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const canonical = escapeHtml(metadata.url);
   const title = escapeHtml(metadata.title);
   const description = escapeHtml(metadata.description);
   const image = escapeHtml(metadata.image);
+  const escapedRobotsTag = escapeHtml(robotsTag);
   const redirectTarget = addSpaBypass(metadata.url);
   const redirectUrl = escapeHtml(redirectTarget);
   const redirectScriptTarget = JSON.stringify(redirectTarget);
@@ -542,7 +602,7 @@ function renderHtml(metadata: ShareMetadata): string {
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${ title }</title>
   <meta name="description" content="${ description }">
-  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="robots" content="${ escapedRobotsTag }">
   <link rel="canonical" href="${ canonical }">
 
   <meta property="og:site_name" content="${ SITE_NAME }">

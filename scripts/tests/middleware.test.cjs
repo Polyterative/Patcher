@@ -6,6 +6,8 @@ const test = require('node:test');
 const compiledMiddlewarePath = path.resolve(process.cwd(), 'tmp/middleware-test/middleware.js');
 const originalFetch = global.fetch;
 const originalAnonKey = process.env.SUPABASE_ANON_KEY;
+const originalVercelEnv = process.env.VERCEL_ENV;
+const originalVercelProjectProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
 function loadMiddleware(anonKey = 'test-key') {
   if (anonKey === undefined) {
@@ -78,6 +80,16 @@ test.after(() => {
   } else {
     process.env.SUPABASE_ANON_KEY = originalAnonKey;
   }
+  if (originalVercelEnv === undefined) {
+    delete process.env.VERCEL_ENV;
+  } else {
+    process.env.VERCEL_ENV = originalVercelEnv;
+  }
+  if (originalVercelProjectProductionUrl === undefined) {
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  } else {
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = originalVercelProjectProductionUrl;
+  }
 });
 
 test('passes through non-bot requests without hitting Supabase', async () => {
@@ -147,20 +159,29 @@ test('fails open to default metadata when SUPABASE_ANON_KEY is empty', async () 
   assert.match(html, /Patcher\.xyz/);
 });
 
-test('uses request host for canonical and og:url metadata', async () => {
-  const middleware = loadMiddleware('test-key');
-  stubFetchWithPayload(modulePayload);
+test('uses production canonical URL and noindex in preview deployments', async () => {
+  process.env.VERCEL_ENV = 'preview';
+  process.env.VERCEL_PROJECT_PRODUCTION_URL = 'patcher.xyz';
+  try {
+    const middleware = loadMiddleware('test-key');
+    stubFetchWithPayload(modulePayload);
 
-  const response = await middleware(new Request('https://dev.patcher.xyz/modules/details/72', {
-    method: 'GET',
-    headers: {
-      'user-agent': 'Slackbot-LinkExpanding 1.0'
-    }
-  }));
-  const html = await response.text();
+    const response = await middleware(new Request('https://dev.patcher.xyz/modules/details/72', {
+      method: 'GET',
+      headers: {
+        'user-agent': 'Slackbot-LinkExpanding 1.0'
+      }
+    }));
+    const html = await response.text();
 
-  assert.match(html, /rel="canonical" href="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
-  assert.match(html, /property="og:url" content="https:\/\/dev\.patcher\.xyz\/modules\/details\/72"/);
+    assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
+    assert.match(html, /<meta name="robots" content="noindex, nofollow, noarchive">/);
+    assert.match(html, /rel="canonical" href="https:\/\/patcher\.xyz\/modules\/details\/72"/);
+    assert.match(html, /property="og:url" content="https:\/\/patcher\.xyz\/modules\/details\/72"/);
+  } finally {
+    delete process.env.VERCEL_ENV;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  }
 });
 
 test('resolves rack image filename from rack record', async () => {
