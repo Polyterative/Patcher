@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 } from '@angular/core';
 import {
@@ -43,7 +44,7 @@ import { Animations } from "src/app/shared-interproject/SharedConstants";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleBrowserDetailComponent implements OnInit {
+export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$                      = new Subject<void>();
   @Input() ignoreSeo                           = false;
@@ -214,6 +215,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
   ) {
     
   }
+
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Module Details'); }
@@ -290,7 +292,7 @@ export class ModuleBrowserDetailComponent implements OnInit {
         });
     }
   }
-  
+
   ngOnDestroy(): void {
     this.dataService.singleModuleData$.next(undefined);
     this.destroyEvent$.next();
@@ -318,6 +320,16 @@ export class ModuleBrowserDetailComponent implements OnInit {
   
   openManual(data: DbModule) {
     window.open(data.manualURL, '_blank');
+  }
+
+  onEditorToggleRequest(editing: boolean, hasPendingEditorChanges: boolean): void {
+    if (editing && hasPendingEditorChanges) {
+      const confirmed = window.confirm('Discard unsaved changes and close the editor?');
+      if (!confirmed) {
+        return;
+      }
+    }
+    this.dataService.requestModuleEditingToggle$.next();
   }
   
   openExternalLink(url: string) {

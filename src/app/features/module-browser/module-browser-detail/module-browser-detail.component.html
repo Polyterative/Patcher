@@ -4,7 +4,8 @@
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
   modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
   user: (userManagementService.loggedUser$|async),
-  editing: (dataService.moduleEditingPanelOpenState$|async)
+  editing: (dataService.moduleEditingPanelOpenState$|async),
+  hasPendingEditorChanges: (dataService.moduleEditorHasPendingChanges$|async)
 }; as bag) {
   <div class="col gap1"
   >
@@ -130,7 +131,8 @@
                         @if (bag.user) {
                           <app-edit-fab
                             [editMode$]="dataService.moduleEditingPanelOpenState$"
-                            (toggle$)="dataService.requestModuleEditingToggle$.next()"
+                            [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
+                            (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
                           ></app-edit-fab>
                         }
                         @if (bag.data.isComplete && bag.data.manualURL) {
@@ -246,7 +248,7 @@
           @if (bag.data && bag.editing) {
             <lib-hero-content-card [sidesPadding]="false"
                                    titleNormal="Module Editor"
-                                   description="Update setup details and IN/OUT ports, then use Done and Save FAB actions."
+                                   description="Update setup and port data, then use Done and Save."
             >
               <app-module-editor [data]="(bag.data)"
               ></app-module-editor>
@@ -305,7 +307,7 @@
           } @else {
             <lib-clean-card class="editing-focus-note">
               <mat-card-subtitle>
-                Related usage panels are hidden while editing. Click "Done" to return to browse context.
+                Related usage panels are hidden while editing. Click "Close editor" to return to browse context.
               </mat-card-subtitle>
             </lib-clean-card>
           }
