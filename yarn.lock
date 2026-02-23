@@ -4560,19 +4560,6 @@ copy-webpack-plugin@13.0.1:
     serialize-javascript "^6.0.2"
     tinyglobby "^0.2.12"
 
-copyfiles@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.npmjs.org/copyfiles/-/copyfiles-2.4.1.tgz"
-  integrity sha512-fereAvAvxDrQDOXybk3Qu3dPbOoKoysFMWtkY3mv5BsL8//OSZVL5DCLYqgRfY5cWirgRzlC+WSrxp6Bo3eNZg==
-  dependencies:
-    glob "^7.0.5"
-    minimatch "^3.0.3"
-    mkdirp "^1.0.4"
-    noms "0.0.0"
-    through2 "^2.0.1"
-    untildify "^4.0.0"
-    yargs "^16.1.0"
-
 core-js-compat@^3.43.0:
   version "3.48.0"
   resolved "https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.48.0.tgz"
