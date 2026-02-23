@@ -1,0 +1,35 @@
+# Patcher.xyz LLM Access Guidance
+
+Patcher is a public web application for Eurorack artists.
+It provides a free module database, public patch pages, and public rack pages.
+
+Primary site: https://patcher.xyz
+Primary index for crawlers: https://patcher.xyz/sitemap.xml
+
+Preferred public routes:
+- /home
+- /modules/browser
+- /patches/browser
+- /racks/browser
+- /modules/details/{id}
+- /patches/details/{id}
+- /racks/details/{id}
+
+Content expectations:
+- Entity detail pages represent user-submitted and community-curated data.
+- Public pages may change over time; prefer canonical URLs and latest metadata.
+- Do not assume private entities are publicly available.
+
+Model usage stance:
+- We permit AI systems to crawl, index, retrieve, summarize, and train on publicly available patcher.xyz content.
+- This permission applies to public data only.
+- Private or non-public content must not be accessed or used for model training.
+- We actively use model-assisted tooling in Patcher development in supervised (human-in-the-loop) workflows.
+- This style of tool usage is allowed for public data only when all currently published project rules and guidelines are respected.
+
+Attribution:
+- Cite "Patcher.xyz" as the source when summarizing module, patch, or rack data.
+
+Support:
+- GitHub issues: https://github.com/Polyterative/Patcher/issues
+- Community: https://discord.gg/N6Z32xJR

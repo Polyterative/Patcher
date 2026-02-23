@@ -98,6 +98,16 @@ test('passes through non-bot requests without hitting Supabase', async () => {
 
   const response = await middleware(makeRequest('/modules/details/72', 'Mozilla/5.0'));
 
+    assert.equal(response, undefined);
+    assert.equal(getCalls(), 0);
+});
+
+test('passes through llms.txt requests for bots without hitting Supabase', async () => {
+    const middleware = loadMiddleware('test-key');
+    const getCalls = stubFetchWithPayload(modulePayload);
+
+    const response = await middleware(makeRequest('/llms.txt'));
+
   assert.equal(response, undefined);
   assert.equal(getCalls(), 0);
 });
@@ -143,6 +153,8 @@ test('serves default metadata for bot requests outside detail routes', async () 
   assert.equal(response.headers.get('x-patcher-seo-source'), 'non-detail');
   assert.equal(getCalls(), 0);
   assert.match(html, /Patcher\.xyz/);
+    assert.match(html, /"@type":"WebSite"/);
+    assert.match(html, /"@type":"Organization"/);
 });
 
 test('fails open to default metadata when SUPABASE_ANON_KEY is empty', async () => {
@@ -199,6 +211,7 @@ test('resolves rack image filename from rack record', async () => {
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('x-patcher-seo-source'), 'rack-image');
   assert.match(html, /storage\/v1\/object\/public\/racks\/rack-preview\.jpeg/);
+    assert.match(html, /"@type":"ItemList"/);
 });
 
 test('normalizes rack image path stored as storage object path', async () => {
