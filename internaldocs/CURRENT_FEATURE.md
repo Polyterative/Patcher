@@ -19,6 +19,54 @@ Status: **Creator-first homepage iteration implemented (2026-02-23), awaiting re
 
 ---
 
+## 10) Ad-hoc Quality Task: Unit Coverage Uplift to 75% (2026-02-23)
+
+Objective:
+
+- Increase overall unit-test coverage to at least 75% by adding meaningful tests for high-impact low-coverage files.
+
+Current baseline (from `yarn test:ci` on 2026-02-23):
+
+- Statements: 56.79% (1521/2678)
+- Branches: 55.22% (486/880)
+- Functions: 51.36% (547/1065)
+- Lines: 56.88% (1442/2535)
+
+Three-layer execution plan:
+
+### Layer 1 (MVP): Cover largest low-coverage services first
+
+- Add unit tests for:
+  - `src/app/components/rack-parts/rack-detail-data.service.ts`
+  - `src/app/components/module-parts/module-detail-data.service.ts`
+  - `src/app/features/routes/user-area/user-area-data.service.ts`
+- Focus on reactive pipelines, action subjects, and deterministic helper methods.
+
+Acceptance:
+
+- Coverage moves materially upward and tests pass in `yarn test:ci`.
+
+### Layer 2 (Structural): Fill remaining high-yield gaps
+
+- Add tests for next low-coverage but smaller files (for example:
+  `rack-module-adder-dialog.component.ts`, `rack-creator.component.ts`, and/or equivalent top uncovered targets).
+- Prioritize behavior-level tests that validate user-visible outcomes and backend interaction wiring.
+
+Acceptance:
+
+- Coverage reaches or exceeds 75% (statements/lines) with green suite.
+
+### Layer 3 (Polish): Stabilize and document
+
+- Remove brittle assertions, tighten test names, and ensure mocks are minimal/maintainable.
+- Re-run full repo-approved unit command and record final numbers.
+
+Acceptance:
+
+- Final run is stable and repeatable at or above target.
+
+---
+
 ## 1) Context Snapshot
 
 Project/product signals from `README.md` and internal docs:

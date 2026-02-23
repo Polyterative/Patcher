@@ -268,13 +268,7 @@ export class RackDetailDataService extends SubManager {
       tap(() => this.snackBar.open('⏲️ Generating image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
       switchMap(([_, references]) => {
-        const el = references.screen.nativeElement;
-        return from(domToJpeg(el, {
-          quality: 0.9,
-          backgroundColor: '#ffffff',
-          width: el.scrollWidth,
-          height: el.scrollHeight,
-        }));
+        return this.generateRackJpeg$(references.screen.nativeElement);
       }),
       withLatestFrom(this.singleRackData$),
       takeUntil(this.destroyEvent$)
@@ -303,13 +297,7 @@ export class RackDetailDataService extends SubManager {
       withLatestFrom(this.currentDownloadElementRef$),
       // generate the image, and convert it to a Blob
       switchMap(([_, references]) => {
-        const el = references.screen.nativeElement;
-        return from(domToJpeg(el, {
-          quality: 0.9,
-          backgroundColor: '#ffffff',
-          width: el.scrollWidth,
-          height: el.scrollHeight,
-        })).pipe(
+        return this.generateRackJpeg$(references.screen.nativeElement).pipe(
           tap(() => this.showModuleCounters$.next(true)),
           // Convert the image data to a Blob
           map(imageData => {
@@ -831,6 +819,15 @@ export class RackDetailDataService extends SubManager {
     }
     
     return rowedRackedModules;
+  }
+  
+  private generateRackJpeg$(el: HTMLElement) {
+    return from(domToJpeg(el, {
+      quality: 0.9,
+      backgroundColor: '#ffffff',
+      width: el.scrollWidth,
+      height: el.scrollHeight,
+    }));
   }
   
   private transferInRow(rackedModules: RackedModule[][], row: number, event: CdkDragDrop<ElementRef>): void {
