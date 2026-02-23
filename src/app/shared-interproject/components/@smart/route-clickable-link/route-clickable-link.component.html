@@ -1,49 +1,50 @@
 @if ({
-  data: (data$|async),
+  data: (data$|async) ?? [],
   layoutFlexWidth: (appState.layoutFlexWidth$|async)
 }; as bag) {
   @if (bag.layoutFlexWidth) {
-    <div class="row "
-    >
-      @for (item of bag.data; track item) {
-        @if (bag.layoutFlexWidth.xs) {
+    <div class="row link-list">
+      @for (item of bag.data; track trackByLink($index, item)) {
+        @if (item.icon && !bag.layoutFlexWidth.gtsm) {
           <a
             mat-icon-button
-            class="option stock"
-            [routerLink]="item.route"
+            class="option icon-only"
+            [routerLink]="item.href ? null : item.route"
             routerLinkActive="selected"
-            (click)="onClick(item)"
+            (click)="onLinkInteraction($event, item)"
             [disabled]="item.disabled"
-            [ngClass]="{'disabled':item.disabled}"
-            [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+            [ngClass]="{ disabled: item.disabled }"
+            [matTooltip]="bag.layoutFlexWidth.ltmd ? item.label : undefined"
+            [attr.href]="item.disabled ? null : item.href"
+            [attr.target]="item.href && item.hrefNewTab ? '_blank' : null"
+            [attr.rel]="item.href && item.hrefNewTab ? 'noopener noreferrer' : null"
+            [attr.aria-label]="getAriaLabel(item)"
             [ngStyle]="item.style"
           >
             @if (item.icon) {
               <mat-icon>{{ item.icon }}</mat-icon>
-            }
-            @if (item.icon ? bag.layoutFlexWidth.gtsm : true) {
-              {{ item.label }}
             }
           </a>
-        }
-        @if (bag.layoutFlexWidth.gtxs) {
+        } @else {
           <a
             mat-button
-            class="option stock"
-            [routerLink]="item.route"
+            class="option"
+            [routerLink]="item.href ? null : item.route"
             routerLinkActive="selected"
-            (click)="onClick(item)"
+            (click)="onLinkInteraction($event, item)"
             [disabled]="item.disabled"
-            [ngClass]="{'disabled':item.disabled}"
-            [matTooltip]="bag.layoutFlexWidth.ltmd?item.label:undefined"
+            [ngClass]="{ disabled: item.disabled }"
+            [matTooltip]="bag.layoutFlexWidth.ltmd ? item.label : undefined"
+            [attr.href]="item.disabled ? null : item.href"
+            [attr.target]="item.href && item.hrefNewTab ? '_blank' : null"
+            [attr.rel]="item.href && item.hrefNewTab ? 'noopener noreferrer' : null"
+            [attr.aria-label]="getAriaLabel(item)"
             [ngStyle]="item.style"
           >
             @if (item.icon) {
               <mat-icon>{{ item.icon }}</mat-icon>
             }
-            @if (item.icon ? bag.layoutFlexWidth.gtsm : true) {
-              {{ item.label }}
-            }
+            {{ item.label }}
           </a>
         }
       }

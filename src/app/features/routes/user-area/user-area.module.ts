@@ -27,6 +27,7 @@ import { AuthGuard } from "src/app/features/backbone/login/user-auth-guard.servi
 import { UserManualsComponent } from "src/app/features/routes/user-area/user-manuals/user-manuals.component";
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
+import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
 
 
 @NgModule({
@@ -62,6 +63,7 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
     AutoUpdateLoadingIndicatorModule,
     RackListModule,
     PatchListModule,
+    StatisticsModule,
     UserManualsComponent,
     UserCommentsComponent,
     AppFaqComponent
