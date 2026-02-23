@@ -24,6 +24,48 @@ export class ModuleEditorCvFormLineComponent implements OnInit {
   @Output() removeRequest$ = new EventEmitter<void>();
   
   types = FormTypes;
+
+  get isRemovable(): boolean {
+    return this.item?.id === 0;
+  }
+
+  get statusLabel(): string {
+    if (this.isRemovable) {
+      return 'Draft';
+    }
+
+    return this.item?.isApproved ? 'Approved' : 'Saved';
+  }
+
+  get statusCompactLabel(): string {
+    if (this.isRemovable) {
+      return 'Draft';
+    }
+
+    return this.item?.isApproved ? 'OK' : 'Saved';
+  }
+
+  get actionIcon(): string {
+    if (this.isRemovable) {
+      return 'delete_outline';
+    }
+
+    return this.item?.isApproved ? 'check_circle' : 'lock';
+  }
+
+  get actionTooltip(): string {
+    if (this.isRemovable) {
+      return 'Remove this unsaved CV row';
+    }
+
+    return this.item?.isApproved
+      ? 'Approved CVs are locked and cannot be removed here'
+      : 'Saved CVs are locked and cannot be removed here';
+  }
+
+  get actionAriaLabel(): string {
+    return this.isRemovable ? 'Remove unsaved CV row' : 'CV row is locked';
+  }
   
   ngOnInit(): void {
     // perform checks on this.item and console errors if needed
@@ -31,6 +73,14 @@ export class ModuleEditorCvFormLineComponent implements OnInit {
       console.error('ModuleEditorCvFormLineComponent: item is undefined');
     }
   
+  }
+
+  requestRemove(): void {
+    if (!this.isRemovable) {
+      return;
+    }
+
+    this.removeRequest$.next();
   }
   
 }

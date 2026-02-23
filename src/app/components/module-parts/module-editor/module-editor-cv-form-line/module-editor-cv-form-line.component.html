@@ -1,36 +1,49 @@
 @if (!!item) {
-  <div class="rowwrap gap1"
-  >
-    <div>
-      <button mat-icon-button
-              [disabled]="!(item.id==0)"
-              (click)="removeRequest$.next()"
-              class="danger-action"
+  <div class="rowwrap gap1 cv-row">
+    <div class="cv-row-meta">
+      <div class="cv-row-status"
+           [class.cv-row-status--draft]="isRemovable"
+           [class.cv-row-status--locked]="!isRemovable"
+           [matTooltip]="statusLabel"
       >
-        @if (item.isApproved !== undefined && item.isApproved) {
-          <mat-icon>check</mat-icon>
-        } @else {
-          <mat-icon class="danger-action">
-            delete
-          </mat-icon>
-        }
+        {{ statusCompactLabel }}
+      </div>
+      <button mat-icon-button
+              class="cv-row-action"
+              [class.cv-row-action--removable]="isRemovable"
+              [disabled]="!isRemovable"
+              [attr.aria-label]="actionAriaLabel"
+              [attr.data-cv-removable]="isRemovable"
+              [matTooltip]="actionTooltip"
+              matTooltipPosition="above"
+              (click)="requestRemove()"
+      >
+        <mat-icon>{{ actionIcon }}</mat-icon>
       </button>
     </div>
-    <lib-mat-form-entity [type]="types.TEXT"
-                         [control]="item.name"
-                         label="name"
-                         iconL1="label"
-    ></lib-mat-form-entity>
-    <lib-mat-form-entity [type]="types.NUMBER"
-                         [control]="item.a"
-                         label="Minimum Voltage (V)"
-                         iconL1="remove"
-    ></lib-mat-form-entity>
-    <lib-mat-form-entity [type]="types.NUMBER"
-                         [control]="item.b"
-                         label="Maximum Voltage (V)"
-                         iconL1="add"
-    ></lib-mat-form-entity>
-    <mat-divider inset="true"></mat-divider>
+    <div class="cv-field cv-field--name">
+      <lib-mat-form-entity [type]="types.TEXT"
+                           [control]="item.name"
+                           label="name"
+                           iconL1="label"
+      ></lib-mat-form-entity>
+    </div>
+    <div class="cv-field cv-field--voltage cv-field--voltage-a">
+      <lib-mat-form-entity [type]="types.NUMBER"
+                           [control]="item.a"
+                           label="Minimum Voltage (V)"
+                           iconL1="remove"
+      ></lib-mat-form-entity>
+    </div>
+    <div class="cv-field cv-field--voltage cv-field--voltage-b">
+      <lib-mat-form-entity [type]="types.NUMBER"
+                           [control]="item.b"
+                           label="Maximum Voltage (V)"
+                           iconL1="add"
+      ></lib-mat-form-entity>
+    </div>
+    <mat-divider class="cv-row-divider"
+                 inset="true"
+    ></mat-divider>
   </div>
 }

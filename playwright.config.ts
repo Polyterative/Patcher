@@ -36,6 +36,7 @@ export default defineConfig({
   testMatch: [
     '**/module-browser.spec.ts',
     '**/module-details.spec.ts',
+    '**/module-editor-ux-review.spec.ts',
     '**/patch-browser.spec.ts',
     '**/patch-graph-stability.spec.ts',
     '**/rack-browser.spec.ts',

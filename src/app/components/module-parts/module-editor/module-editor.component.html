@@ -117,6 +117,15 @@
           <mat-card-title>INs</mat-card-title>
           <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
         </div>
+        @if (inSummary$ | async; as summary) {
+          <mat-chip-set class="cv-summary-chips"
+                        aria-label="Input CV summary"
+          >
+            <mat-chip>{{ summary.total }} total</mat-chip>
+            <mat-chip>{{ summary.editable }} editable</mat-chip>
+            <mat-chip>{{ summary.locked }} locked</mat-chip>
+          </mat-chip-set>
+        }
         
         <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
         
@@ -136,6 +145,15 @@
           <mat-card-title>OUTs</mat-card-title>
           <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
         </div>
+        @if (outSummary$ | async; as summary) {
+          <mat-chip-set class="cv-summary-chips"
+                        aria-label="Output CV summary"
+          >
+            <mat-chip>{{ summary.total }} total</mat-chip>
+            <mat-chip>{{ summary.editable }} editable</mat-chip>
+            <mat-chip>{{ summary.locked }} locked</mat-chip>
+          </mat-chip-set>
+        }
         
         <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
         
