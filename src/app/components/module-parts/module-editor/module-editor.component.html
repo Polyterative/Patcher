@@ -5,8 +5,11 @@
     >
       <mat-chip>1. Prepare</mat-chip>
       <mat-chip>2. Edit ports</mat-chip>
-      <mat-chip>3. Review & save</mat-chip>
     </mat-chip-set>
+
+    <mat-card-subtitle class="workflow-inline-note">
+      Done closes editing. Save writes all pending changes for this module.
+    </mat-card-subtitle>
 
     <section class="workflow-block">
       <div class="workflow-block-header">
@@ -68,7 +71,7 @@
             </app-advice-tooltip>
           }
           <mat-card-subtitle>
-            Power, physical properties, panel upload, and port edits are all saved together in step 3.
+            Power, physical properties, panel upload, and port edits are all saved together with the Save FAB.
           </mat-card-subtitle>
         </div>
       </div>
@@ -164,40 +167,16 @@
       </div>
     </section>
 
-    <section class="workflow-block workflow-block--review">
-      <div class="workflow-block-header">
-        <mat-card-title>3. Review & save</mat-card-title>
-        <mat-card-subtitle>Final check before writing edits for everyone.</mat-card-subtitle>
-      </div>
-
-      <div class="row gap1 workflow-review-text">
-        <div class="col"
-        >
-          <mat-card-subtitle>
-            Any changes you make will affect what all other users see.
-          </mat-card-subtitle>
-          <mat-card-subtitle>
-            Please update data only if it is incorrect or missing. If you are unsure, leave it as is.
-          </mat-card-subtitle>
-        </div>
-      </div>
-
-      <lib-auto-update-loading-indicator
-        [data$]="dataService.singleModuleData$"
-        [updateData$]="saveAll$"
-        loadingLabel="Saving data"
-      >
-        <div class="row gap2" style="margin-top: 1rem;">
-          <app-brand-primary-button
-            (click$)="saveAll$.next()"
-            [disabled]="(saveInProgress$ | async) || !(formGroupA | formValid) || !(formGroupB | formValid) || !(formGroupPower | formValid) || !(formGroupPhysical | formValid) || (((fileDragHostService.files$ | async)?.length ?? 0) > 0 && (!(formGroupPanel | formValid) || (panelTypeAlreadyExists$ | async)))"
-            icon="save"
-            theme="positive"
-          >
-            Save all changes
-          </app-brand-primary-button>
-        </div>
-      </lib-auto-update-loading-indicator>
-    </section>
+    <button class="save-fab"
+            mat-fab
+            extended
+            [disabled]="isSaveFabDisabled"
+            (click)="saveAll$.next()"
+            [class.save-fab--saving]="saveInProgress$ | async"
+            aria-label="Save all module editor changes"
+    >
+      <mat-icon>{{ saveFabIcon }}</mat-icon>
+      {{ saveFabLabel }}
+    </button>
   </div>
 </lib-clean-card>
