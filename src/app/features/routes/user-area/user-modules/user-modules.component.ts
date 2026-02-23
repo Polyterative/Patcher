@@ -28,6 +28,7 @@ export class UserModulesComponent extends SubManager {
   @Input() modulesViewConfig: ModuleMinimalViewConfig;
   @Input() userModulesComponentViewConfig: UserModulesComponentViewConfig = userModulesDefaultViewConfig;
   @Input() readonly encloseVertically = true;
+  @Input() globalSearchQuery = '';
   constructor(
     public backend: SupabaseService,
     public dataService: UserAreaDataService

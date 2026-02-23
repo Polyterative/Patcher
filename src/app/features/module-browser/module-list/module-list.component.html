@@ -19,7 +19,7 @@
       <flexbox-row-fast
         [ngClass]="{'limit-height':encloseVertically}"
       >
-        @for (item of (showSearch ? bag.filteredData : bag.data); track item; let i = $index) {
+        @for (item of bag.filteredData; track item; let i = $index) {
           <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
           >

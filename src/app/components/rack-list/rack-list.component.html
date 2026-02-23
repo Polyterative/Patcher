@@ -18,7 +18,7 @@
       }
       <flexbox-row-fast class="limit-height "
       >
-        @for (item of (showSearch ? bag.filteredData : bag.data); track item; let i = $index) {
+        @for (item of bag.filteredData; track item; let i = $index) {
           <lib-clean-card [@enter]="{ value: '', params: { delay: (i * 25)+50}}"
                           [@leave]="{ value: '', params: { delay:  0 }}"
                           class="item"

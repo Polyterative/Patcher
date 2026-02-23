@@ -41,7 +41,8 @@
           <app-module-list fxFlex="grow"
                            [data$]="dataService.modulesData$"
                            [viewConfig]="modulesViewConfig"
-                           [showSearch]="true"
+                           [showSearch]="false"
+                           [externalSearchQuery]="globalSearchQuery"
                            [encloseVertically]="encloseVertically"
           ></app-module-list>
         } @else {

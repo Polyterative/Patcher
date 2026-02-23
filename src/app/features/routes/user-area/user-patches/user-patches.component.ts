@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
-  Component
+  Component,
+  Input
 } from '@angular/core';
 import { MatDialog } from "@angular/material/dialog";
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -15,6 +16,7 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
   standalone: false
 })
 export class UserPatchesComponent {
+  @Input() globalSearchQuery = '';
   
   constructor(
     public dialog: MatDialog,
