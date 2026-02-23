@@ -1,0 +1,21 @@
+.cv-adder-line {
+  align-items: center;
+}
+
+.cv-adder-button {
+  min-width: 9rem;
+  border-radius: 999px;
+  border: 1px solid #4d6f96 !important;
+  background-color: #edf3fa !important;
+  color: #25517e !important;
+  box-shadow: none !important;
+
+  &:hover {
+    background-color: #dfebf8 !important;
+  }
+}
+
+.cv-adder-hint {
+  margin: 0;
+  color: #617489;
+}

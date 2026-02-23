@@ -1,54 +1,33 @@
-<div class="rowwrap gap2">
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          isApproved: false
-        })"
-  >Add Blank
-  </app-brand-primary-button>
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 5,
-          isApproved: false
-        })"
-  >Add 0→5V
-  </app-brand-primary-button>
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          min: 0,
-          max: 8,
-          isApproved: false
-        })"
-  >Add 0→8V
-  </app-brand-primary-button>
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          min: -5,
-          max: 5,
-          isApproved: false
-        })"
-  >Add -5→5V
-  </app-brand-primary-button>
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          min: -10,
-          max: 10,
-          isApproved: false
-        })"
-  >Add -10→10V
-  </app-brand-primary-button>
-  <app-brand-primary-button (click$)="add$.next({
-          name: '',
-          id: 0,
-          min: -12,
-          max: 12,
-          isApproved: false
-        })"
-  >Add -12→12V
-  </app-brand-primary-button>
+<div class="rowwrap gap1 cv-adder-line">
+  <button mat-raised-button
+          color="primary"
+          type="button"
+          class="cv-adder-button"
+          [matMenuTriggerFor]="presetMenu"
+          aria-label="Add CV from preset"
+  >
+    <mat-icon>playlist_add</mat-icon>
+    Add CV
+  </button>
+
+  <mat-menu #presetMenu="matMenu">
+    @for (preset of presets; track preset.label) {
+      <button mat-menu-item
+              type="button"
+              (click)="addPreset(preset)"
+      >
+        @if (preset.min !== undefined && preset.max !== undefined) {
+          <mat-icon>tune</mat-icon>
+          <span>{{ preset.label }}</span>
+        } @else {
+          <mat-icon>add</mat-icon>
+          <span>{{ preset.label }}</span>
+        }
+      </button>
+    }
+  </mat-menu>
+
+  <mat-card-subtitle class="cv-adder-hint">
+    Pick a preset, then adjust name and voltage values.
+  </mat-card-subtitle>
 </div>
