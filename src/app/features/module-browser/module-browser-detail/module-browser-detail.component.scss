@@ -1,5 +1,7 @@
 :host {
   --module-editor-close-fab-width: 12.6rem;
+  --module-editor-save-fab-width: 9.25rem;
+  --module-editor-secondary-fab-width: 8.35rem;
   --module-editor-fab-gap: 0.8rem;
   display: block;
   max-width: 100%;
@@ -61,16 +63,6 @@
   }
 }
 
-.module-detail-actions-row {
-  width: 100%;
-}
-
-.module-detail-action-slot {
-  flex: 1 1 0;
-  display: flex;
-  min-width: 0;
-}
-
 .module-detail-action-button {
   width: 100%;
 }
@@ -81,6 +73,51 @@
 
 .module-detail-empty-state-copy {
   padding: 1rem;
+}
+
+.module-submit-similar-fab {
+  position: fixed;
+  left: calc(1rem + env(safe-area-inset-left));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  right: auto;
+  z-index: 98;
+  width: auto;
+  min-width: 9.6rem;
+  height: 2.85rem;
+  min-height: 2.85rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border: 1.5px solid #8aa0ba;
+  border-radius: 1.425rem;
+  background: #edf3fb;
+  color: #355476;
+  font-size: 0.84rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(39, 74, 112, 0.18);
+  transition: background-color 125ms ease-in-out, border-color 125ms ease-in-out, color 125ms ease-in-out;
+
+  &:hover {
+    background: #e4edf8;
+    border-color: #7291b3;
+    color: #224568;
+  }
+
+  .mat-icon {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.module-search-chip {
+  cursor: pointer;
+}
+
+:host ::ng-deep .module-search-chip .mdc-evolution-chip__action,
+:host ::ng-deep .module-search-chip .mdc-evolution-chip__cell {
+  cursor: pointer;
 }
 
 .editing-focus-note {
