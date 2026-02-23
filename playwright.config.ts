@@ -16,16 +16,25 @@ import {
  *   yarn test:e2e          — local, list reporter
  *   yarn test:e2e:ci       — CI, single worker
  *
- * The dev server must be running at BASE_URL before tests are invoked.
- * Set BASE_URL env var to override (e.g. staging URL).
+ * For local runs against localhost:5556, Playwright starts the Angular dev server automatically.
+ * Set BASE_URL env var to point tests at another host (e.g. staging URL).
  */
 
 const BASE_URL = process.env['BASE_URL'] ?? 'http://localhost:5556';
+const LOCAL_DEV_SERVER_URL = 'http://localhost:5556';
 const AUTH_SPEC_GLOB = '**/auth-*.spec.ts';
 
 loadE2EEnvFromDotEnv();
 
 const hasAuthCredentials = hasE2EAuthCredentials();
+const usesLocalDevServer = (() => {
+  try {
+    const parsedBaseURL = new URL(BASE_URL);
+    return ['localhost', '127.0.0.1'].includes(parsedBaseURL.hostname) && parsedBaseURL.port === '5556';
+  } catch {
+    return false;
+  }
+})();
 
 if (!hasAuthCredentials) {
   console.warn('[e2e-auth] Authenticated tests are disabled until E2E_TEST_EMAIL and E2E_TEST_PASSWORD are set.');
@@ -56,6 +65,14 @@ export default defineConfig({
   retries: process.env['CI'] ? 2 : 0,
   workers: process.env['CI'] ? 1 : undefined,
   reporter: 'list',
+  webServer: usesLocalDevServer
+    ? {
+      command: 'yarn start',
+      url: LOCAL_DEV_SERVER_URL,
+      reuseExistingServer: !process.env['CI'],
+      timeout: 180_000
+    }
+    : undefined,
   
   use: {
     baseURL: BASE_URL,
