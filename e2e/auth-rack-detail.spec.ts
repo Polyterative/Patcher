@@ -8,25 +8,34 @@ test.describe('Authenticated Rack Detail UX', () => {
   test('rack details never shows module submit FAB', async ({page}) => {
     await page.goto('/user/area');
     
-    const rackLinks = page.locator('a[href*="/racks/details/"]');
-    const createRackButton = page.getByRole('button', {name: /create rack/i});
+    const rackDetailCards = page.locator('app-user-racks app-hero-clickable-title .title');
+    const createRackButton = page.locator('app-user-racks app-brand-primary-button', {hasText: /create rack/i}).first();
     
-    if ((await rackLinks.count()) === 0) {
+    if ((await rackDetailCards.count()) === 0) {
+      await expect(createRackButton).toBeVisible({timeout: 15_000});
       await createRackButton.click();
-      await expect(rackLinks.first()).toBeVisible({timeout: 15_000});
+      
+      await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
+      const confirmCreateButton = page.getByRole('button', {name: /create/i}).last();
+      if (await confirmCreateButton.isVisible().catch(() => false)) {
+        await confirmCreateButton.click();
+      } else {
+        const fallbackConfirmCreateButton = page.locator('mat-dialog-actions app-brand-primary-button', {hasText: /create/i}).first();
+        await expect(fallbackConfirmCreateButton).toBeVisible({timeout: 10_000});
+        await fallbackConfirmCreateButton.click();
+      }
+      
+      await expect(rackDetailCards.first()).toBeVisible({timeout: 15_000});
     }
     
-    await rackLinks.first().click();
+    await rackDetailCards.first().click();
     await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 15_000});
     
-    const rackEditFab = page.getByRole('button', {name: /^(Edit rack|Lock rack)$/i}).first();
-    await expect(rackEditFab).toBeVisible({timeout: 15_000});
-    
-    const rackEditFabLabel = (await rackEditFab.innerText()).trim();
-    if (/^Edit rack$/i.test(rackEditFabLabel)) {
-      await rackEditFab.click();
-      await expect(page.getByRole('button', {name: /^Lock rack$/i})).toBeVisible({timeout: 10_000});
+    const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
+    if (await editRackButton.isVisible().catch(() => false)) {
+      await editRackButton.click();
     }
+    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
     
     await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
     await expect(page.locator('.module-browser-submit-fab')).toHaveCount(0);
