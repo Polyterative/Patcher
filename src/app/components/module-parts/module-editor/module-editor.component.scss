@@ -17,20 +17,26 @@
   }
 }
 
-.workflow-strip {
-  margin-bottom: 0;
-}
-
 .workflow-block {
   border: 1px solid #d8e2ee;
   border-radius: 0.65rem;
-  background: #f8fbff;
+  background: #fbfdff;
   padding: 0.75rem;
+}
+
+.workflow-block--setup {
+  border-color: #dfe8f2;
+  background: #fbfdff;
+}
+
+.workflow-block--ports {
+  border-color: #d2e2f2;
+  background: #f7fbff;
 }
 
 .workflow-inline-note {
   margin: 0;
-  color: #60778f;
+  color: #58708a;
   font-size: 0.8rem;
   padding: 0 0.1rem;
 }
@@ -51,8 +57,23 @@
   }
 }
 
-.workflow-prepare-grid {
-  align-items: flex-start;
+.setup-grid {
+  display: grid;
+  grid-template-columns: minmax(19rem, 1.15fr) minmax(17rem, 1fr);
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.setup-subblock {
+  border: 1px solid #dfe8f2;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  padding: 0.5rem;
+
+  .mat-card-title {
+    font-size: 1rem;
+    margin: 0;
+  }
 }
 
 .workflow-block + .workflow-block {
@@ -98,6 +119,11 @@
   margin-top: 0.15rem !important;
 }
 
+.workflow-policy-note {
+  margin-top: 0.35rem;
+  color: #5d748c;
+}
+
 .save-fab {
   position: fixed;
   right: 10rem;
@@ -137,6 +163,10 @@
 }
 
 @media (max-width: 1160px) {
+  .setup-grid {
+    grid-template-columns: 1fr;
+  }
+
   .cv-row-legend {
     grid-template-columns: 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem);
   }
