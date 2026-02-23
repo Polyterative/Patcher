@@ -26,7 +26,7 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    border-radius: 1.25rem;
+    border-radius: 0.35rem;
     background: radial-gradient(circle at 18% 8%, rgba(26, 95, 168, 0.28), transparent 30%),
     radial-gradient(circle at 88% 0%, rgba(240, 122, 47, 0.18), transparent 32%),
     radial-gradient(circle at 80% 74%, rgba(31, 154, 120, 0.2), transparent 35%),
@@ -38,7 +38,7 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    border-radius: 1.25rem;
+    border-radius: 0.35rem;
     background-image: linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.24) 1px, transparent 1px);
     background-size: 28px 28px;
@@ -146,7 +146,7 @@ h1 {
 .visual-main {
   overflow: hidden;
   border: 1px solid var(--home-border);
-  border-radius: 1.05rem;
+  border-radius: 0.35rem;
   box-shadow: 0 24px 34px rgba(12, 22, 37, 0.18);
   background: rgba(255, 255, 255, 0.95);
 
@@ -169,7 +169,7 @@ h1 {
   position: absolute;
   width: clamp(9.5rem, 32%, 13rem);
   border: 1px solid rgba(15, 28, 45, 0.22);
-  border-radius: 0.95rem;
+  border-radius: 0.3rem;
   overflow: hidden;
   box-shadow: 0 16px 26px rgba(8, 15, 28, 0.2);
   background: #fff;
@@ -222,21 +222,84 @@ h1 {
   }
 }
 
-.difference-section {
+.use-cases-section {
   display: grid;
-  gap: 0.95rem;
+  gap: 1rem;
+  padding: 1.55rem 1.25rem;
+  border: 1px solid rgba(15, 28, 45, 0.15);
+  border-radius: 0.35rem;
+  background: linear-gradient(160deg, rgba(235, 246, 255, 0.92), rgba(255, 241, 232, 0.88));
 
   h2 {
     @include brand-resources.heading-font;
-    font-size: clamp(1.32rem, 3vw, 1.78rem);
+    font-size: clamp(1.35rem, 3.2vw, 1.86rem);
   }
+}
+
+.use-cases-head {
+  display: grid;
+  gap: 0.4rem;
+  max-width: 64ch;
+}
+
+.use-cases-grid {
+  display: grid;
+  gap: 0.82rem;
+  grid-template-columns: 1fr 1.25fr 1fr;
+}
+
+.use-case-panel {
+  display: grid;
+  gap: 0.56rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(15, 28, 45, 0.18);
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.68);
+
+  p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+}
+
+.case-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  mat-icon {
+    color: var(--home-accent);
+  }
+
+  h3 {
+    font-size: 1.02rem;
+  }
+}
+
+.rack-case {
+  border-left: 4px solid rgba(31, 154, 120, 0.7);
+}
+
+.patch-case {
+  border-left: 4px solid rgba(26, 95, 168, 0.78);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.7), rgba(231, 243, 255, 0.72));
+}
+
+.data-case {
+  border-left: 4px solid rgba(240, 122, 47, 0.72);
+}
+
+.case-note {
+  font-size: 0.82rem;
+  color: rgba(15, 28, 45, 0.7);
+  padding-top: 0.18rem;
 }
 
 .signal-flow-section,
 .impact-section,
-.difference-section {
+.use-cases-section {
   padding: 1.45rem 1.2rem;
-  border-radius: 1.55rem;
+  border-radius: 0.4rem;
   border: 1px solid rgba(15, 28, 45, 0.12);
 }
 
@@ -246,10 +309,6 @@ h1 {
 
 .impact-section {
   background: linear-gradient(145deg, rgba(255, 245, 237, 0.93), rgba(255, 250, 242, 0.85));
-}
-
-.difference-section {
-  background: linear-gradient(145deg, rgba(235, 248, 255, 0.9), rgba(245, 240, 255, 0.84));
 }
 
 .section-intro {
@@ -269,7 +328,7 @@ h1 {
   gap: 0.52rem;
   border: 0;
   background: rgba(255, 255, 255, 0.63);
-  border-radius: 1.25rem 0.9rem 1.25rem 0.9rem;
+  border-radius: 0.28rem;
   box-shadow: 0 10px 16px rgba(16, 30, 46, 0.08);
   padding: 0.86rem;
   overflow: visible;
@@ -375,7 +434,6 @@ h1 {
 }
 
 .impact-card,
-.difference-card,
 .principle-card,
 .final-cta-card {
   border: 1px solid var(--home-border);
@@ -420,41 +478,6 @@ h1 {
   background: rgba(26, 95, 168, 0.1);
 }
 
-.difference-grid {
-  display: grid;
-  gap: 0.82rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.difference-card {
-  display: grid;
-  gap: 0.52rem;
-  padding: 1rem;
-  border: 1px dashed rgba(15, 28, 45, 0.2);
-  border-radius: 1rem 1.6rem 1rem 1.6rem;
-  background: rgba(255, 255, 255, 0.56);
-  box-shadow: 0 8px 18px rgba(10, 20, 32, 0.06);
-
-  p {
-    font-size: 0.9rem;
-    line-height: 1.45;
-  }
-}
-
-.difference-head {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  mat-icon {
-    color: var(--home-accent);
-  }
-
-  h3 {
-    font-size: 1.01rem;
-  }
-}
-
 .principles-section {
   display: grid;
   gap: 1rem;
@@ -493,7 +516,7 @@ h1 {
 .principle-icon-shell {
   width: 2rem;
   height: 2rem;
-  border-radius: 0.65rem;
+  border-radius: 0.3rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -627,9 +650,16 @@ h1 {
 }
 
 @media (max-width: 980px) {
+  .use-cases-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .patch-case {
+    grid-column: 1 / -1;
+  }
+
   .signal-chain,
   .impact-grid,
-  .difference-grid,
   .principles-section {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -688,14 +718,25 @@ h1 {
 
   .signal-chain,
   .impact-grid,
-  .difference-grid,
   .principles-section {
     grid-template-columns: 1fr;
   }
 
+  .use-cases-section {
+    padding: 1rem 0.9rem;
+  }
+
+  .use-cases-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patch-case {
+    grid-column: auto;
+  }
+
   .signal-flow-section,
   .impact-section,
-  .difference-section {
+  .use-cases-section {
     padding: 1rem 0.9rem;
   }
 
