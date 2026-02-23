@@ -112,24 +112,36 @@
     <!-- INs and OUTs Section -->
     <div class="col gap1">
       <!-- INs Section -->
-      <div class="col gap1">
-        <div class="row gap1 ">
+      <div class="col gap1 cv-edit-section">
+        <div class="row gap1 cv-edit-section-header">
           <mat-card-title>INs</mat-card-title>
           <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
         </div>
-        @if (inSummary$ | async; as summary) {
-          <mat-chip-set class="cv-summary-chips"
-                        aria-label="Input CV summary"
-          >
-            <mat-chip>{{ summary.total }} total</mat-chip>
-            <mat-chip>{{ summary.editable }} editable</mat-chip>
-            <mat-chip>{{ summary.locked }} locked</mat-chip>
-          </mat-chip-set>
-        }
-        
-        <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
-        
-        <div class="col gap1 leftBorderS" style="margin-top: 1rem;">
+
+        <div class="rowwrap gap1 cv-controls-row">
+          @if (inSummary$ | async; as summary) {
+            <mat-chip-set class="cv-summary-chips"
+                          aria-label="Input CV summary"
+            >
+              <mat-chip>{{ summary.total }} total</mat-chip>
+              <mat-chip>{{ summary.editable }} editable</mat-chip>
+              <mat-chip>{{ summary.locked }} locked</mat-chip>
+            </mat-chip-set>
+          }
+
+          <app-module-editor-adder-line (add$)="addIN$.next($event)"></app-module-editor-adder-line>
+        </div>
+
+        <div class="cv-row-legend"
+             aria-hidden="true"
+        >
+          <span class="cv-row-legend-meta">State</span>
+          <span>Name</span>
+          <span>Min V</span>
+          <span>Max V</span>
+        </div>
+
+        <div class="col gap1 leftBorderS cv-rows">
           @for (item of INs$ | async; track item; let i = $index) {
             <app-module-editor-cv-form-line
               [item]="item"
@@ -140,24 +152,36 @@
       </div>
       
       <!-- OUTs Section -->
-      <div class="col gap1">
-        <div class="row gap1 ">
+      <div class="col gap1 cv-edit-section">
+        <div class="row gap1 cv-edit-section-header">
           <mat-card-title>OUTs</mat-card-title>
           <mat-card-subtitle>Leave fields blank if unknown</mat-card-subtitle>
         </div>
-        @if (outSummary$ | async; as summary) {
-          <mat-chip-set class="cv-summary-chips"
-                        aria-label="Output CV summary"
-          >
-            <mat-chip>{{ summary.total }} total</mat-chip>
-            <mat-chip>{{ summary.editable }} editable</mat-chip>
-            <mat-chip>{{ summary.locked }} locked</mat-chip>
-          </mat-chip-set>
-        }
-        
-        <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
-        
-        <div class="col gap1 leftBorderS" style="margin-top: 1rem;">
+
+        <div class="rowwrap gap1 cv-controls-row">
+          @if (outSummary$ | async; as summary) {
+            <mat-chip-set class="cv-summary-chips"
+                          aria-label="Output CV summary"
+            >
+              <mat-chip>{{ summary.total }} total</mat-chip>
+              <mat-chip>{{ summary.editable }} editable</mat-chip>
+              <mat-chip>{{ summary.locked }} locked</mat-chip>
+            </mat-chip-set>
+          }
+
+          <app-module-editor-adder-line (add$)="addOUT$.next($event)"></app-module-editor-adder-line>
+        </div>
+
+        <div class="cv-row-legend"
+             aria-hidden="true"
+        >
+          <span class="cv-row-legend-meta">State</span>
+          <span>Name</span>
+          <span>Min V</span>
+          <span>Max V</span>
+        </div>
+
+        <div class="col gap1 leftBorderS cv-rows">
           @for (item of OUTs$ | async; track item; let i = $index) {
             <app-module-editor-cv-form-line
               [item]="item"
