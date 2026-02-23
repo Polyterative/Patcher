@@ -23,19 +23,13 @@
   right: calc(1rem + env(safe-area-inset-right));
   z-index: 100;
   display: block;
-  opacity: 0.8;
-  transition: opacity 125ms ease-in-out;
-
-  &:hover {
-    opacity: 1;
-  }
 
   button {
     padding-left: 2rem;
     padding-right: 2rem;
     border: 2px solid #3e638a;
     box-shadow: 0 4px 14px rgba(38, 76, 116, 0.28);
-    background: #deebf8;
+    background: #ffffff;
     color: #224b75;
   }
 

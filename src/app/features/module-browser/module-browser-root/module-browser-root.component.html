@@ -63,9 +63,6 @@
         ></lib-mat-form-entity>
         
         <div class="col gap1">
-          <app-brand-primary-button routerLink="/modules/add">
-            Submit a new module
-          </app-brand-primary-button>
           <button mat-stroked-button
                   (click)="dataService.resetForm$.next()"
                   [disabled]="!(dataService.canReset$ | async)"
@@ -97,4 +94,18 @@
     
     </div>
   </lib-hero-content-card>
+  
+  @if (showSubmitFab) {
+    <a
+      mat-fab
+      extended
+      class="module-browser-submit-fab"
+      routerLink="/modules/add"
+      matTooltip="Open the module submission form to add a new module to the database"
+      matTooltipPosition="above"
+    >
+      <mat-icon>add</mat-icon>
+      Submit a new module
+    </a>
+  }
 </div>
