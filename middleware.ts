@@ -6,6 +6,8 @@ const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
 const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_FETCH_TIMEOUT_MS = 1800;
+const METADATA_CACHE_TTL_MS = 5 * 60 * 1000;
+const METADATA_CACHE_MAX_ENTRIES = 2000;
 
 const BOT_UA_REGEX = /(facebookexternalhit|facebot|twitterbot|slackbot|whatsapp|telegrambot|linkedinbot|discordbot|googlebot|bingbot|applebot|chatgpt-user|gptbot|perplexitybot|duckassistbot|bytespider|yandexbot|embedly)/i;
 const STATIC_ASSET_REGEX = /\.(?:css|js|map|json|txt|xml|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i;
@@ -18,6 +20,11 @@ interface RouteMatch {
   id: number;
 }
 
+interface MetadataCacheEntry {
+  metadata: ShareMetadata;
+  expiresAt: number;
+}
+
 interface ShareMetadata {
   type: EntityType;
   title: string;
@@ -28,6 +35,8 @@ interface ShareMetadata {
   modified?: string;
   jsonLd: Record<string, unknown>;
 }
+
+const metadataCache = new Map<string, MetadataCacheEntry>();
 
 interface ModuleRow {
   id: number;
@@ -72,7 +81,7 @@ export default async function middleware(request: Request): Promise<Response | v
     return;
   }
 
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
+  if (request.method !== 'GET') {
     return;
   }
 
@@ -86,16 +95,24 @@ export default async function middleware(request: Request): Promise<Response | v
   }
 
   const canonicalUrl = `${ SITE_URL }${ pathname }`;
-  const metadata = await buildMetadata(pathname, canonicalUrl);
-  const html = request.method === 'HEAD' ? '' : renderHtml(metadata);
+  const cachedMetadata = readMetadataCache(canonicalUrl);
+  const metadata = cachedMetadata || await buildMetadata(pathname, canonicalUrl);
+  const cacheState = cachedMetadata ? 'hit' : 'miss';
+
+  if (!cachedMetadata) {
+    writeMetadataCache(canonicalUrl, metadata);
+  }
+
+  const html = renderHtml(metadata);
 
   return new Response(html, {
     status: 200,
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, s-maxage=300, stale-while-revalidate=86400',
+      'cache-control': 'public, s-maxage=900, stale-while-revalidate=86400',
       'x-content-type-options': 'nosniff',
-      'x-robots-tag': 'index, follow, max-image-preview:large'
+      'x-robots-tag': 'index, follow, max-image-preview:large',
+      'x-patcher-seo-cache': cacheState
     }
   });
 }
@@ -176,6 +193,57 @@ function parseDetailRoute(pathname: string): RouteMatch | undefined {
   }
 
   return undefined;
+}
+
+function readMetadataCache(cacheKey: string): ShareMetadata | undefined {
+  const entry = metadataCache.get(cacheKey);
+  if (!entry) {
+    return undefined;
+  }
+
+  if (Date.now() > entry.expiresAt) {
+    metadataCache.delete(cacheKey);
+    return undefined;
+  }
+
+  // Refresh insertion order for lightweight LRU behavior.
+  metadataCache.delete(cacheKey);
+  metadataCache.set(cacheKey, entry);
+
+  return entry.metadata;
+}
+
+function writeMetadataCache(cacheKey: string, metadata: ShareMetadata): void {
+  pruneMetadataCache();
+  metadataCache.set(cacheKey, {
+    metadata,
+    expiresAt: Date.now() + METADATA_CACHE_TTL_MS
+  });
+}
+
+function pruneMetadataCache(): void {
+  if (metadataCache.size < METADATA_CACHE_MAX_ENTRIES) {
+    return;
+  }
+
+  const now = Date.now();
+  for (const [key, entry] of metadataCache.entries()) {
+    if (entry.expiresAt <= now) {
+      metadataCache.delete(key);
+    }
+    if (metadataCache.size < METADATA_CACHE_MAX_ENTRIES) {
+      return;
+    }
+  }
+
+  // Drop oldest keys if all remaining entries are still valid.
+  while (metadataCache.size >= METADATA_CACHE_MAX_ENTRIES) {
+    const firstKey = metadataCache.keys().next().value as string | undefined;
+    if (!firstKey) {
+      return;
+    }
+    metadataCache.delete(firstKey);
+  }
 }
 
 async function getModuleMetadata(moduleId: number, canonicalUrl: string): Promise<ShareMetadata | undefined> {
