@@ -2,6 +2,7 @@
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
 module.exports = function (config) {
+    const coverageIstanbulPlugin = require('karma-coverage-istanbul-reporter');
     const configuration = {
         basePath: '',
         frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -9,7 +10,12 @@ module.exports = function (config) {
             require('karma-jasmine'),
             require('karma-chrome-launcher'),
             require('karma-jasmine-html-reporter'),
-            require('karma-coverage-istanbul-reporter'),
+            coverageIstanbulPlugin,
+            {
+                // Angular CLI (with --code-coverage) expects a reporter named "coverage".
+                // Alias it to the installed Istanbul reporter to keep CI working offline.
+                'reporter:coverage': coverageIstanbulPlugin['reporter:coverage-istanbul']
+            },
             require('@angular-devkit/build-angular/plugins/karma')
         ],
         client: {
