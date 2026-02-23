@@ -2,5 +2,11 @@
   "version": 2,
   "framework": "angular",
   "buildCommand": "yarn build",
-  "outputDirectory": "dist/Patcher/browser"
+  "outputDirectory": "dist/Patcher/browser",
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    }
+  ]
 }
