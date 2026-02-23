@@ -37,7 +37,7 @@ async function openModuleEditor(page: Page): Promise<void> {
 
   const editorTitle = page.getByRole('heading', {name: 'Module Editor'});
   if (!(await editorTitle.isVisible().catch(() => false))) {
-    const toggleButton = page.getByRole('button', {name: /^(Edit|Done)$/i}).first();
+    const toggleButton = page.getByRole('button', {name: /^(Edit|Close editor|Discard changes)$/i}).first();
     await expect(toggleButton).toBeVisible({timeout: 15_000});
 
     const buttonLabel = (await toggleButton.innerText()).trim();
@@ -58,7 +58,7 @@ async function openModuleEditorAtPath(page: Page, modulePath: string): Promise<v
 
   const editorTitle = page.getByRole('heading', {name: 'Module Editor'});
   if (!(await editorTitle.isVisible().catch(() => false))) {
-    const toggleButton = page.getByRole('button', {name: /^(Edit|Done)$/i}).first();
+    const toggleButton = page.getByRole('button', {name: /^(Edit|Close editor|Discard changes)$/i}).first();
     await expect(toggleButton).toBeVisible({timeout: 15_000});
 
     const buttonLabel = (await toggleButton.innerText()).trim();
