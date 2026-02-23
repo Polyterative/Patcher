@@ -29,6 +29,15 @@
 
 ---
 
+## E2E Auth Setup
+
+- Copy `.env.example` to `.env` and set `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD` for a dedicated test account.
+- Authenticated Playwright setup is generated via `e2e/global-setup.ts` and saved to `/playwright/.auth/user.json`.
+- CI must provide `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` as repository secrets before running authenticated E2E.
+- Run authenticated smoke with `yarn test:e2e:auth` (requires env vars set).
+
+---
+
 ## File Ownership
 
 | What                                          | Where                |

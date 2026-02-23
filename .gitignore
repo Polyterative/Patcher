@@ -64,6 +64,7 @@ src/environments/environment.prod.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/playwright/.auth/
 e2e/flow-0*.spec.ts
 
 # Local IDE run artifacts

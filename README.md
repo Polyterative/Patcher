@@ -46,10 +46,11 @@ Technical bug reports can also be opened as [GitHub issues](https://github.com/P
 2. [**Why Patcher?**](#why-patcher)
 3. [**User Guide**](#user-guide)
 4. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
-5. [**Project Dependencies**](#project-dependencies)
-6. [**DB Model Details**](#db-model-details)
-7. [**Pull Requests**](#pull-requests)
-8. [**License**](#license)
+5. [**Running E2E Tests**](#running-e2e-tests)
+6. [**Project Dependencies**](#project-dependencies)
+7. [**DB Model Details**](#db-model-details)
+8. [**Pull Requests**](#pull-requests)
+9. [**License**](#license)
 
 ---
 
@@ -171,6 +172,15 @@ To set up the project locally, follow the steps below:
 
 ---
 
+## **Running E2E Tests**
+
+- Public smoke suite: `yarn test:e2e`
+- Authenticated suite: `yarn test:e2e:auth`
+
+For contributor setup (required `.env` keys, dedicated test account, and why `playwright/.auth/` is ignored), see
+[`e2e/README.md`](e2e/README.md).
+
+---
 
 ## **Project Dependencies**
 

@@ -41,6 +41,18 @@ _None._
 
 ## Backlog
 
+### HIGH: E2E — Dedicated Test Account Cleanup
+
+**Why:** Authenticated E2E wiring is complete, but credentials should use a non-personal Supabase account to avoid
+owner-account coupling.
+
+**Steps when picked:**
+
+- [ ] Create dedicated Supabase test account (email/password) for E2E
+- [ ] Update local `.env` with dedicated account credentials
+- [ ] Rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD`
+- [ ] Re-run `yarn test:e2e:auth`
+
 ### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
 
 **Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for
@@ -54,7 +66,7 @@ Connection, Module Submission, Sign Up, Delete Account.
 
 **Why:** The auto-instance feature (collection-first editor, "Add Copy", instance delete, connection scrub,
 self-connections) was verified with 30 unit tests but lacks E2E coverage through the real UI.  
-**Depends on:** E2E Authenticated Test Login (below) — patch editing requires a logged-in user.
+**Depends on:** E2E Authenticated Test Login bootstrap (completed 02-23) — patch editing requires a logged-in user.
 
 **Flows to cover:**
 
@@ -69,30 +81,6 @@ self-connections) was verified with 30 unit tests but lacks E2E coverage through
 - [ ] Save patch and reload → verify connections and instances survive roundtrip
 - [ ] Legacy patch (pre-instance) → verify it loads and connections display correctly
 
----
-
-### HIGH: E2E — Authenticated Test Login + Secrets Management
-
-**Why:** Many E2E flows (patch editing, rack creation, module instances, account management) require a logged-in user.
-Currently no auth helper exists (`e2e/helpers/` is empty). Test credentials must not leak — the project is open source.
-
-**Context:** The project already gitignores `environment.ts` and uses `generate-env.js` + env vars for CI secrets.
-The same pattern should extend to E2E test credentials.
-
-**Steps when picked:**
-
-- [ ] Create a dedicated Supabase test account (email/password) for E2E — not a real user account
-- [ ] Create `.env` file at project root for local dev (holds `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`)
-- [ ] Add `.env` to `.gitignore` (keep secrets out of repo)
-- [ ] Add `.env.example` to repo with placeholder values so contributors know what to set
-- [ ] Install `dotenv` (or use Playwright's built-in `dotenv` support via `playwright.config.ts`)
-- [ ] Create `e2e/helpers/auth.ts` — helper that logs in via Supabase Auth (email/password), stores session
-- [ ] Configure Playwright `globalSetup` or `storageState` to reuse auth across tests (avoid login per test)
-- [ ] Add `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` to CI environment (GitHub Actions secrets / Vercel env)
-- [ ] Write a smoke test that logs in and verifies the user menu appears
-- [ ] Document the setup in `FOR_AI_AGENTS.md` (how to set up `.env` for local E2E runs)
-
----
 
 ### MEDIUM: Module Review Flagging
 
