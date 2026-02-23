@@ -40,7 +40,6 @@ const AUTH_CHECK_DELAY_MS = 1000;
     BrandPrimaryButtonModule,
     HeroContentCardModule,
     ScreenWrapperModule,
-    CountdownProgressModule,
     CountdownProgressModule
   ],
   providers: [SeoAndUtilsService, UserResetPasswordDataService],
@@ -80,21 +79,16 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
       const tokenHash = params['token_hash'];
       const type = params['type'];
       
-      console.log('Query params:', {tokenHash, type});
-      
       // Also check hash fragment for access_token (Supabase's standard flow)
       const hash = window.location.hash;
       const hashHasToken = hash.includes('access_token=') || hash.includes('access_token%3D');
       const hashHasRecovery = hash.includes('type=recovery') || hash.includes('type%3Drecovery');
       
-      console.log('Hash fragment:', {hash, hashHasToken, hashHasRecovery});
-      
       if (tokenHash && type === 'recovery') {
         // Token found in query params - verify it
-        console.log('Found token_hash in query params, verifying...');
         try {
           const supabaseClient = (this.supabaseService as any).supabase;
-          const {data, error} = await supabaseClient.auth.verifyOtp({
+          const {error} = await supabaseClient.auth.verifyOtp({
             token_hash: tokenHash,
             type: 'recovery'
           });
@@ -104,7 +98,6 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
             this.dataService.errorMessage$.next('Invalid or expired password reset link.');
             this.dataService.setRecoverySession(false);
           } else {
-            console.log('Token verified successfully:', data);
             this.dataService.setRecoverySession(true);
           }
         } catch (error) {
@@ -114,11 +107,7 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
         }
       } else if (hashHasToken && hashHasRecovery) {
         // Token in hash fragment - let Supabase handle it automatically
-        console.log('Found token in hash fragment, letting Supabase handle it...');
         // Don't set session state yet, wait for PASSWORD_RECOVERY event
-      } else {
-        // No token found
-        console.log('No recovery token found in URL');
       }
     });
   }

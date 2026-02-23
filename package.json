@@ -5,8 +5,8 @@
     "start": "ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
     "build": "yarn prebuild && angular-build-info && ng build --configuration production && yarn sentry:sourcemaps",
-    "copyChangelog": "copyfiles changelog.md assets/md/",
-    "updateMinors": "npm update --save/--save-dev",
+    "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
+    "updateMinors": "npm update --save --save-dev",
     "updateAll": "ncu -u",
     "ci": "",
     "updateBackendTypes": "npx supabase gen types typescript --project-id sozmatmywjpstwidzlss --schema public > src/backend/database.types.ts",
@@ -34,7 +34,7 @@
   },
   "standard-version": {
     "scripts": {
-      "postchangelog": "copyfiles changelog.md src/assets/md/",
+      "postchangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
       "precommit": "git add src/assets/md/changelog.md"
     }
   },
