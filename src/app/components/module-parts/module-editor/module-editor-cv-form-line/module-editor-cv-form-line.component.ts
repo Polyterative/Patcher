@@ -45,14 +45,6 @@ export class ModuleEditorCvFormLineComponent implements OnInit {
     return this.item?.isApproved ? 'Approved' : 'Saved';
   }
   
-  get statusIcon(): string {
-    if (this.isRemovable) {
-      return 'edit';
-    }
-    
-    return this.item?.isApproved ? 'verified' : 'lock';
-  }
-
   get actionIcon(): string {
     if (this.isRemovable) {
       return 'delete_outline';
@@ -63,12 +55,12 @@ export class ModuleEditorCvFormLineComponent implements OnInit {
 
   get actionTooltip(): string {
     if (this.isRemovable) {
-      return 'Remove this unsaved CV row';
+      return 'Remove unsaved CV row';
     }
 
     return this.item?.isApproved
-      ? 'Approved CVs are locked and cannot be removed here'
-      : 'Saved CVs are locked and cannot be removed here';
+      ? 'Approved rows are locked and cannot be removed here'
+      : 'Saved rows are locked and cannot be removed here';
   }
 
   get actionAriaLabel(): string {

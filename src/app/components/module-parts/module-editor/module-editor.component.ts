@@ -216,6 +216,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
+    this.dataService.moduleEditorHasPendingChanges$.next(false);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
   }
@@ -365,6 +366,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe();
+
+    this.hasPendingChanges$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(hasPending => this.dataService.moduleEditorHasPendingChanges$.next(hasPending));
     
     // Subscription for panelType control value changes
     this.panelType.control.valueChanges
@@ -475,6 +480,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         tap((saved: string[]) => {
           this.markEditorFormsPristine();
           this.fileDragHostService.removeAllFiles$.emit();
+          this.dataService.moduleEditorHasPendingChanges$.next(false);
           this.dataService.updateSingleModuleData$.next(this.data.id);
           this.showSaveCompletedState();
           SharedConstants.successCustom(this.snackBar, `Saved ${ saved.join(', ') }.`);
@@ -525,19 +531,19 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   
   get saveFabDisabledReason(): string {
     if (this.saveInProgress$.value) {
-      return 'save in progress';
+      return 'Save in progress';
     }
     if (!this.formGroupA.valid || !this.formGroupB.valid) {
-      return 'fix invalid IN/OUT rows';
+      return 'Fix invalid input/output rows';
     }
     if (!this.formGroupPower.valid || !this.formGroupPhysical.valid) {
-      return 'fix invalid module specs';
+      return 'Fix invalid setup fields';
     }
     if (this.isPanelSaveBlocked()) {
-      return 'fix panel selection or duplicate panel type';
+      return 'Fix panel selection or duplicate panel type';
     }
     if (!this.computeHasPendingChanges()) {
-      return 'no pending changes';
+      return 'No pending changes';
     }
     return '';
   }

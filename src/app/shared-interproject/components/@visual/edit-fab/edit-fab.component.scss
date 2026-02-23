@@ -20,7 +20,7 @@
 :host {
   position: fixed;
   bottom: 1rem;
-  right: 1rem;
+  right: calc(1rem + env(safe-area-inset-right));
   z-index: 100;
   display: block;
   opacity: 0.8;
@@ -33,6 +33,20 @@
   button {
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  button.edit-fab-editing {
+    width: var(--module-editor-close-fab-width, 12.6rem);
+    justify-content: center;
+  }
+
+  button.edit-fab-discard {
+    background: #a44626;
+    color: #ffffff;
+  }
+
+  button.edit-fab-discard:hover {
+    background: #8c3b20;
   }
 
   button.bouncing {

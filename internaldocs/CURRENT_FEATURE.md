@@ -221,6 +221,7 @@ Execution status (current pass):
 - [x] Restructured setup layout into cohesive Specs + Panel composition.
 - [x] Consolidated helper/policy copy and removed stale step references.
 - [x] Rebalanced setup/edit visual hierarchy to keep `Edit ports` primary.
+- [x] Completed title/label/copy cleanup sweep for practical, non-redundant wording.
 - [ ] Capture stakeholder screenshot signoff for this cohesion pass.
 
 ---
