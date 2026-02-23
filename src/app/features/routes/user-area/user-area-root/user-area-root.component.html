@@ -1,5 +1,6 @@
 @if ({
-  userProfile:(userService.loggedUserFullProfile$|async)
+  userProfile: (userService.loggedUserFullProfile$|async),
+  globalSearchQuery: (globalSearchQuery$|async)
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
     @if (bag.userProfile) {
@@ -17,9 +18,14 @@
           <app-user-modules class="block"
                             [modulesViewConfig]="viewConfig"
                             [encloseVertically]="true"
+                            [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-modules>
-          <app-user-racks class="block"></app-user-racks>
-          <app-user-patches class="block"></app-user-patches>
+          <app-user-racks class="block"
+                          [globalSearchQuery]="bag.globalSearchQuery ?? ''"
+          ></app-user-racks>
+          <app-user-patches class="block"
+                            [globalSearchQuery]="bag.globalSearchQuery ?? ''"
+          ></app-user-patches>
         </div>
         <div class="sidebar col gap1">
           <app-statistics
@@ -31,6 +37,14 @@
           <app-user-comments></app-user-comments>
         </div>
       </div>
+    </div>
+    
+    <div class="user-area-floating-search">
+      <lib-mat-form-entity [control]="globalSearchControl"
+                           [type]="formTypes.TEXT"
+                           label="Search modules, racks, patches"
+                           [formFieldAppearanceType]="'outline'"
+      ></lib-mat-form-entity>
     </div>
   </lib-screen-wrapper>
 }

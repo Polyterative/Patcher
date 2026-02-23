@@ -22,7 +22,8 @@
         @if (data.length > 0) {
           <app-patch-list fxFlex="grow"
                           [data$]="dataService.patchesData$"
-                          [showSearch]="true"
+                          [showSearch]="false"
+                          [externalSearchQuery]="globalSearchQuery"
           ></app-patch-list>
         } @else {
           <div fxFlex="100">

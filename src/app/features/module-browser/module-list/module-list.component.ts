@@ -11,11 +11,13 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
-  Observable
+  Observable,
+  of
 } from 'rxjs';
 import {
   filter,
   map,
+  startWith,
   take
 } from 'rxjs/operators';
 import {
@@ -55,6 +57,12 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showSearch = false;
   @Input() showOrder = false;
   @Input() encloseVertically = true;
+  private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
+  
+  @Input()
+  set externalSearchQuery(value: string) {
+    this.externalSearchQuery$.next(value ?? '');
+  }
   
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
@@ -78,7 +86,10 @@ export class ModuleListComponent extends SubManager implements OnInit {
   }
   
   ngOnInit(): void {
-    
+    const localSearchQuery$ = this.showSearch
+      ? this.filterService.filterEvent$.pipe(startWith(''))
+      : of('');
+
     this.manageSub(
       this.data$
         .pipe(
@@ -88,28 +99,29 @@ export class ModuleListComponent extends SubManager implements OnInit {
         .subscribe(x => this.filteredData$.next(x))
     );
     
-    if (this.showSearch) {
-      this.manageSub(
-        combineLatest([
-          this.data$.pipe(
-            filter(data => !!data),
-            map(data => this.orderData(data))
-          ),
-          this.filterService.filterEvent$
-        ])
-          .subscribe(([data, query]) => {
-            const result = data.filter(item => normalizeForSearch(item.name)
-              .includes(normalizeForSearch(query)));
+    this.manageSub(
+      combineLatest([
+        this.data$.pipe(
+          filter(data => !!data),
+          map(data => this.orderData(data))
+        ),
+        localSearchQuery$,
+        this.externalSearchQuery$
+      ])
+        .subscribe(([data, localQuery, externalQuery]) => {
+          const normalizedLocalQuery = normalizeForSearch(localQuery);
+          const normalizedExternalQuery = normalizeForSearch(externalQuery);
+          
+          const result = data.filter(item => {
+            const normalizedName = normalizeForSearch(item.name);
             
-            this.filteredData$.next(result);
-          })
-      );
-      
-      // if (this.showOrder) {
-      
-      // }
-    }
-    
+            return normalizedName.includes(normalizedLocalQuery)
+              && normalizedName.includes(normalizedExternalQuery);
+          });
+          
+          this.filteredData$.next(result);
+        })
+    );
   }
   
   // sort happening on the server side now
