@@ -185,6 +185,93 @@ describe('SupabaseService - CRUD Operations', () => {
         }
       });
     }, TEST_TIMEOUT);
+    
+    it('should bust patches cache after creating a patch', (done) => {
+      const mockUser = {
+        id: 'patch-cache-user',
+        email: 'cache@example.com',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      
+      spyOn(supabaseClient, 'from').and.returnValue({
+        insert: jasmine.createSpy('insert').and.returnValue(
+          Promise.resolve({data: {id: 777}, error: null})
+        )
+      });
+      
+      let emittedKeys: any[] | undefined;
+      const sub = service.cacheResetter$.subscribe((keys) => {
+        if (Array.isArray(keys) && keys.includes('patches')) {
+          emittedKeys = keys as any[];
+        }
+      });
+      
+      service.add.patch({name: 'Cache Bust Patch'}).subscribe({
+        next: () => {
+          expect(emittedKeys).withContext(
+            'add.patch should trigger cache bust for patches'
+          ).toEqual(jasmine.arrayContaining(['patches']));
+          sub.unsubscribe();
+          done();
+        },
+        error: (err) => {
+          sub.unsubscribe();
+          fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+  
+  describe('add.rack', () => {
+    it('should bust rackWithId cache after creating a rack', (done) => {
+      const rackInput = {
+        name: 'My Rack',
+        description: 'New rack',
+        hp: 84,
+        rows: 3,
+        locked: false,
+        public: true,
+        image: null,
+        authorid: 'rack-author-1'
+      };
+      
+      const insertSpy = jasmine.createSpy('insert').and.returnValue({
+        select: jasmine.createSpy('select').and.returnValue(
+          Promise.resolve({data: [{id: 12}], error: null})
+        )
+      });
+      
+      spyOn(supabaseClient, 'from').and.returnValue({
+        insert: insertSpy
+      });
+      
+      let emittedKeys: any[] | undefined;
+      const sub = service.cacheResetter$.subscribe((keys) => {
+        if (Array.isArray(keys) && keys.includes('rackWithId')) {
+          emittedKeys = keys as any[];
+        }
+      });
+      
+      service.add.rack(rackInput as any).subscribe({
+        next: () => {
+          expect(insertSpy).toHaveBeenCalledWith(rackInput);
+          expect(emittedKeys).withContext(
+            'add.rack should trigger cache bust for rackWithId'
+          ).toEqual(jasmine.arrayContaining(['rackWithId']));
+          sub.unsubscribe();
+          done();
+        },
+        error: (err) => {
+          sub.unsubscribe();
+          fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('add.rackModule', () => {
