@@ -33,14 +33,19 @@
   button {
     padding-left: 2rem;
     padding-right: 2rem;
+    border: 2px solid #3e638a;
+    box-shadow: 0 4px 14px rgba(38, 76, 116, 0.28);
+    background: #deebf8;
+    color: #224b75;
   }
 
   button.edit-fab-editing {
-    width: var(--module-editor-close-fab-width, 12.6rem);
+    width: var(--module-editor-close-fab-width, auto);
     justify-content: center;
   }
 
   button.edit-fab-discard {
+    border-color: #7e3a21;
     background: #a44626;
     color: #ffffff;
   }
