@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "scripts": {
     "start": "ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
@@ -9,7 +9,6 @@
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher",
     "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
-
     "lint": "ng lint",
     "ci": "yarn test:unit:headless",
     "test": "yarn test:unit",
