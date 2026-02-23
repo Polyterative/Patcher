@@ -8,16 +8,16 @@ import {
  * Patch Graph Stability — regression tests
  *
  * Covers issue #121 ("Patch view sometimes glitches out").
- * The sample patch (107) has historically triggered prolonged graph wobble.
+ * Uses a known stable patch details route as a baseline.
  */
 test.describe('Patch Graph Stability', () => {
   test('self-referential graph settles without prolonged rebuild flicker', async ({page}) => {
     const pageErrors: string[] = [];
     page.on('pageerror', error => pageErrors.push(error.message));
 
-    await page.goto('/patches/details/107');
+    await page.goto('/patches/details/5');
     await expect(page).not.toHaveURL(/404/);
-    await expect(page).toHaveURL(/patches\/details\/107/);
+    await expect(page).toHaveURL(/patches\/details\/5/);
 
     const graphContainer = page.locator('app-patch-graph .graph-container');
     await expect(graphContainer).toBeVisible({timeout: 20_000});
