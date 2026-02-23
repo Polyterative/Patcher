@@ -204,9 +204,13 @@ Completed in this revision:
 - [x] Added persistent “View source” call-to-action in final CTA area.
 - [x] Enhanced principle cards with icon-led headers, visual badges, and richer resource link styling for better
   scanability.
-- [x] Added a dedicated “What makes this system different” section to foreground differentiation beyond data depth (
-  performance, modern UX, workflow reliability, open development).
 - [x] Reduced “all-card” visual density with section-level visual bands, larger vertical rhythm, and less blocky
   impact/difference presentation.
+- [x] Reduced large outer rounding to better match modular panel aesthetics (squarer section shells and container
+  edges).
+- [x] Added a top-level real-world use-cases section focused on key differentiators (drag-and-drop rack editing,
+  visual signal-route graphing, precision-first data handling).
+- [x] Removed the standalone “What makes this system different” section after overlap review, keeping real-world use
+  cases as the primary differentiator block.
 - [x] Updated SEO metadata to include open-source/open-data + high-impact feature language.
 - [x] Compile smoke check passes (`npx ng serve --port 5560`).
