@@ -34,7 +34,7 @@ export class AdminPanelRootComponent {
     if (longerLength === 0) {
       return 1.0;
     }
-    return (longerLength - this.editDistance(longer, shorter)) / parseFloat(longerLength);
+    return (longerLength - this.editDistance(longer, shorter)) / longerLength;
   }
   
   editDistance(s1: string, s2: string): number {
