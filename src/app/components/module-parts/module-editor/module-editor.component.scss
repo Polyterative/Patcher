@@ -173,17 +173,16 @@
   bottom: 1rem;
   z-index: 99;
   width: var(--module-editor-save-fab-width, 9.25rem);
-  opacity: 0.92;
-  background: #dfe8f4;
+  opacity: 1;
+  background: #ffffff;
   color: #365777;
   border: 2px solid #3e638a;
   box-shadow: 0 4px 14px rgba(38, 76, 116, 0.26);
   transition: opacity 140ms ease-in-out, transform 140ms ease-in-out, background-color 140ms ease-in-out;
 
   &:hover:not(:disabled) {
-    opacity: 1;
     transform: translateY(-1px);
-    background: #d3e1f3;
+    background: #f2f7fc;
   }
 
   &:disabled {
