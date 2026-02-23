@@ -8,7 +8,7 @@
               <mat-card-title>Power</mat-card-title>
             </div>
 
-            <div class="col gap1">
+            <div class="col gap1 setup-field-stack">
               <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
               <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
               <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
@@ -20,7 +20,7 @@
               <mat-card-title>Physical</mat-card-title>
             </div>
 
-            <div class="col gap1">
+            <div class="col gap1 setup-field-stack">
               <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
               <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
             </div>
@@ -32,14 +32,15 @@
             <mat-card-title>Panel</mat-card-title>
           </div>
 
-          <div class="row gap1">
+          <div class="setup-panel-content">
             <lib-file-drag-host
+              class="setup-panel-upload"
               [isImageOnlyMode]="true"
               [multipleFilesMode]="false"
               acceptedFileType="image/jpeg,image/jpg"
             ></lib-file-drag-host>
 
-            <div class="col gap1">
+            <div class="col gap1 setup-field-stack setup-panel-fields">
               <lib-mat-form-entity
                 [dataPack]="panelType"
                 [disableVoidSelection]="true"

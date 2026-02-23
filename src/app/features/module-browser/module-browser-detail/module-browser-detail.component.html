@@ -12,9 +12,9 @@
     <lib-hero-content-card class="modulesBG"
                            titleBig="Module details"
     >
-      <div class="rowwrap gap1"
+      <div class="rowwrap gap1 module-detail-layout"
       >
-        <lib-screen-wrapper maxSize="36rem" class="fixed-width32"
+        <lib-screen-wrapper maxSize="36rem" class="module-detail-column module-detail-column--left"
         >
           <div class="col gap2 ">
             <lib-clean-card>
@@ -33,7 +33,7 @@
           </div>
           <app-comments-root></app-comments-root>
         </lib-screen-wrapper>
-        <div class="col gap2 fixed-width32">
+        <div class="col gap2 module-detail-column module-detail-column--middle">
           @if (bag.data) {
             <lib-hero-content-card
               titleNormal="Data"
@@ -112,12 +112,11 @@
                     </div>
                   </lib-clean-card>
                   @if (bag.data) {
-                    <div class="row gap1" style="width: 100%">
-                      <!-- Left slot: always visible -->
-                      <div style="flex: 1; display: flex">
+                    <div class="row gap1 module-detail-actions-row">
+                      <div class="module-detail-action-slot">
                         <app-brand-primary-button
                           theme="light"
-                          style="width: 100%"
+                          class="module-detail-action-button"
                           (click$)="submitSimilar(bag.data)"
                           [disabled]="!bag.user"
                           [matTooltip]="bag.user?'':'Please log in to submit a module'"
@@ -126,8 +125,7 @@
                           Submit similar module
                         </app-brand-primary-button>
                       </div>
-                      <!-- Right slot: editor toggle or manual -->
-                      <div style="flex: 1; display: flex">
+                      <div class="module-detail-action-slot">
                         @if (bag.user) {
                           <app-edit-fab
                             [editMode$]="dataService.moduleEditingPanelOpenState$"
@@ -138,7 +136,7 @@
                         @if (bag.data.isComplete && bag.data.manualURL) {
                           <app-brand-primary-button
                             theme="light"
-                            style="width: 100%"
+                            class="module-detail-action-button"
                             (click$)="openManual(bag.data)"
                             icon="menu_book"
                           >
@@ -244,7 +242,7 @@
             </lib-hero-content-card>
           }
         </div>
-        <div fxFlex class="col gap2">
+        <div class="col gap2 module-detail-column module-detail-column--right">
           @if (bag.data && bag.editing) {
             <lib-hero-content-card [sidesPadding]="false"
                                    titleNormal="Module Editor"
@@ -259,7 +257,7 @@
             >
               @if (viewConfig.hideRackedIn === false) {
                 <lib-hero-content-card [sidesPadding]="false"
-                                       style="flex: 1 1 100%;"
+                                       class="module-detail-usage-card"
                                        titleNormal="Racked in"
                 >
                   <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
@@ -272,7 +270,7 @@
                     } @else {
                       <div class="col gap1 animate-fadein-slowest"
                       >
-                        <mat-card-subtitle style="padding: 1rem"
+                        <mat-card-subtitle class="module-detail-empty-state-copy"
                         >No racks using this module yet. Try adding it to yours!
                         </mat-card-subtitle>
                       </div>
@@ -282,7 +280,7 @@
               }
               @if (viewConfig.hidePatchedIn === false) {
                 <lib-hero-content-card [sidesPadding]="false"
-                                       style="flex: 1 1 100%;"
+                                       class="module-detail-usage-card"
                                        titleNormal="Patched in"
                 >
                   <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
@@ -295,7 +293,7 @@
                     } @else {
                       <div class="col gap1 animate-fadein-slowest"
                       >
-                        <mat-card-subtitle style="padding: 1rem"
+                        <mat-card-subtitle class="module-detail-empty-state-copy"
                         >No patches using this module yet. Try adding it to yours!
                         </mat-card-subtitle>
                       </div>
@@ -329,7 +327,7 @@
           } @else {
             <div class="col gap1 animate-fadein-slowest"
             >
-              <mat-card-subtitle style="padding: 1rem"
+              <mat-card-subtitle class="module-detail-empty-state-copy"
               >No more modules by this manufacturer yet.
               </mat-card-subtitle>
             </div>
