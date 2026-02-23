@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import {
+  Observable,
+  of
+} from 'rxjs';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
@@ -15,46 +17,33 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RouteClickableLinkComponent implements OnInit {
+export class RouteClickableLinkComponent {
   @Input()
-  public readonly data$ = new BehaviorSubject<RouteClickableLink[]>([]);
+  public data$: Observable<RouteClickableLink[]> = of([]);
   
-  
-  constructor(
-    public appState: AppStateService
-  ) {
-  
+  constructor(public readonly appState: AppStateService) {
   }
   
-  ngOnInit(): void {
+  public trackByLink(index: number, item: RouteClickableLink): string {
+    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
   }
   
-  doNothing(): any {
-  
+  public getAriaLabel(item: RouteClickableLink): string {
+    return item.label || item.icon || 'Navigation link';
   }
   
-  onClick(item: RouteClickableLink): void {
-    if (item.href) {
-      window.open(item.href, item.hrefNewTab ? '_blank' : '_self');
+  public onLinkInteraction(event: Event, item: RouteClickableLink): void {
+    if (item.disabled) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
-  
-}
-
-interface RouteClickableLinkMenuItem {
-  label: string,
-}
-
-interface RouteClickableLinkMenu {
-  label: string,
-  items: RouteClickableLinkMenuItem[]
 }
 
 export interface RouteClickableLink {
-  label: string,
+  label: string;
   disabled: boolean;
-  // menu?: RouteClickableLinkMenu;
-  route?: string,
+  route?: string;
   icon?: string;
   href?: string;
   hrefNewTab?: boolean;

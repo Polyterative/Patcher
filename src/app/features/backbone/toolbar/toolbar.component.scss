@@ -1,75 +1,85 @@
-﻿@use "../../../app.component";
 @use "src/app/style/brand-resources.scss" as *;
 
-mat-toolbar-row {
-  height: 3em;
-  //min-width:  fit-content;
-}
-
 .title {
-
-  font: 500 20px / 32px Roboto, Helvetica Neue, sans-serif;
-  letter-spacing: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.35rem;
   margin: 0;
+  font: 600 1rem/1.2 Roboto, "Helvetica Neue", sans-serif;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.97);
+  text-decoration: none;
+  border-radius: 6px;
+  animation: fade-in 220ms ease-out;
+}
 
-  //opacity:           0;
-  $appearTime:       250ms;
-  $color:            rgb(255, 255, 255);
-  color:             $color;
-  //text-decoration: underline;
+.title:visited {
+  color: rgba(255, 255, 255, 0.97);
+}
 
-  &:visited {
-    color: $color;
-    //text-decoration: underline dotted;
+.title:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 2px;
+}
 
+@media (hover: hover) and (pointer: fine) {
+  .title:hover {
+    background-color: rgba(255, 255, 255, 0.12);
   }
-
-  @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  -webkit-animation: fadein $appearTime; /* Safari, Chrome and Opera > 12.1 */
-  -moz-animation:    fadein $appearTime; /* Firefox < 16 */
-  -o-animation:      fadein $appearTime; /* Opera < 12.1 */
-  animation:         fadein $appearTime;
-
-  //padding-x: 0.5em;
-
-  font-size:         1rem;
 }
 
-.titleTextBig {
-  font-size: 1.5em;
+.toolbar-row {
+  width: 100%;
+  min-height: 3.25rem;
 }
 
-.titleTextSmall {
-  font-size: 1.5em;
+.buttons {
+  align-items: center;
 }
 
-mat-toolbar-row > .subtitle {
-  color: white;
+.mobile-menu-trigger {
+  color: rgba(255, 255, 255, 0.97);
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
-mat-toolbar-row > button {
-  //background-color: rgba(255, 255, 255, 0.15);
-  margin: 0.4em;
+.mobile-menu-trigger mat-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
-//mat-icon {
-//  margin: 0
-//}
+.mobile-section-label {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+a[mat-menu-item],
+button[mat-menu-item] {
+  min-width: 14rem;
+}
+
 mat-divider {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-.selectedLink {
-  color:            rgba(255, 255, 255, 0.7);
-  background-color: rgba(255, 255, 255, 0.1)
-}
-
 .toolbar {
-  background-color: $brand-primary;
+  background: linear-gradient(135deg, rgba($brand-primary, 0.97) 0%, $brand-primary 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
 
   // Restore the hover/focus/active overlay that Material's color="primary"
   // context used to inject automatically on child buttons.
@@ -96,9 +106,33 @@ mat-divider {
 }
 
 .sticky {
-  //background-color: mat.get-color-from-palette($nga-background, card);
   position: sticky;
-  position: -webkit-sticky; /* For macOS/iOS Safari */
-  top:      0; /* Sets the sticky toolbar to be on top */
-  z-index:  1000; /* Ensure that your app's content doesn't overlap the toolbar */
+  position: -webkit-sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: saturate(120%) blur(6px);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 599px) {
+  .toolbar-row {
+    min-height: 3rem;
+  }
+
+  .title-text {
+    max-width: 9.5rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }

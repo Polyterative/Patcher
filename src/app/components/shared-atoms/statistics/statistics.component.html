@@ -1,5 +1,7 @@
 @if (visibleStatistics && visibleStatistics.length > 0) {
-  <lib-hero-content-card [titleNormal]="title ?? ''">
+  <lib-hero-content-card [titleNormal]="title ?? ''"
+                         [class]="cardClass"
+  >
     <div style="width: 100%">
       <div class="rowwrap gap2">
         @for (statistic of visibleStatistics; track statistic; let i = $index) {

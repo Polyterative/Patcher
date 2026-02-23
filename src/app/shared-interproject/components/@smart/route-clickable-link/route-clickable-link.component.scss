@@ -1,46 +1,56 @@
-@use "sass:color";
-@use "src/app/style/brand-resources.scss" as *;
-
-
-.depadding {
-  padding: 0
+.link-list {
+  align-items: center;
 }
 
 .option {
-  color:         rgba(255, 255, 255, 0.95);
-
-  //background-color: $brand-tertiary;
-  //color: white;
-  //margin-bottom: 0.2em;
+  color: rgba(255, 255, 255, 0.95);
   border-radius: 4px !important;
-
-  &.disabled {
-    //background-color: $brand-secondary !important;
-    opacity: .6;
-    color:   rgb(255, 255, 255) !important;
-
-    &:hover {
-      background-color: rgba(92, 92, 92, 0);
-      cursor:           not-allowed;
-    }
-  }
+  transition: background-color 125ms ease, transform 100ms ease, color 125ms ease;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.18);
   }
 
   &:active {
+    transform: translateY(1px);
     background-color: rgba(255, 255, 255, 0.28);
   }
 
-  transition:    125ms;
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.65);
+    outline-offset: 2px;
+  }
+
+  &.disabled {
+    opacity: 0.55;
+    color: rgb(255, 255, 255) !important;
+    pointer-events: none;
+  }
+}
+
+a[mat-icon-button].option,
+button[mat-icon-button].option {
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .selected {
-  color:            rgb(255, 255, 255);
-  background-color: rgba(255, 255, 255, 0.1)
+  color: rgb(255, 255, 255);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 mat-icon {
   margin: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }

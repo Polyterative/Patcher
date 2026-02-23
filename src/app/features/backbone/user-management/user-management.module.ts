@@ -12,6 +12,7 @@ import { LabelValueShowcaseModule } from 'src/app/shared-interproject/components
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { InputDialogModule } from 'src/app/shared-interproject/dialogs/input-dialog/input-dialog.module';
 import { ConfirmDialogModule } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.module';
+import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialogModule } from "@angular/material/dialog";
@@ -59,6 +60,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     MatIconModule,
     InputDialogModule,
     ConfirmDialogModule,
+    StatisticsModule,
     TimeagoModule
   
   ],
