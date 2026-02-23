@@ -48,4 +48,5 @@ export function setupSupabaseServiceTest() {
  */
 export function cleanupSupabaseServiceTest() {
   localStorage.clear();
+  TestBed.resetTestingModule();
 }
