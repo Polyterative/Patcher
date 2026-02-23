@@ -68,6 +68,19 @@ test.describe('Rack Browser', () => {
     await expect(listSkeleton).toBeHidden({timeout: 3_000});
   });
   
+  test('next-page loader settles within 2s after paginator navigation', async ({page}) => {
+    await page.goto('/racks/browser');
+    await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 15_000});
+    
+    const nextPageButton = page.getByRole('button', {name: /next page/i});
+    await expect(nextPageButton).toBeEnabled({timeout: 15_000});
+    
+    await nextPageButton.click();
+    
+    const pageLoader = page.locator('lib-auto-update-loading-indicator app-lottie-container');
+    await expect(pageLoader).toBeHidden({timeout: 3_000});
+  });
+  
   test('page heading is visible', async ({page}) => {
     await page.goto('/racks/browser');
     await expect(page.getByRole('heading', {name: /racks/i})).toBeVisible({timeout: 10_000});
