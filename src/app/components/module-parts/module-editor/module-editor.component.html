@@ -1,54 +1,47 @@
 <lib-clean-card>
   <div class="col gap1 module-editor-workflow">
-    <mat-chip-set class="workflow-strip"
-                  aria-label="Module editor workflow"
-    >
-      <mat-chip>1. Prepare</mat-chip>
-      <mat-chip>2. Edit ports</mat-chip>
-    </mat-chip-set>
-
     <mat-card-subtitle class="workflow-inline-note">
-      Done closes editing. Save writes all pending changes for this module.
+      Done closes editing. Save writes all pending setup and port changes for this module.
     </mat-card-subtitle>
 
-    <section class="workflow-block">
+    <section class="workflow-block workflow-block--setup">
       <div class="workflow-block-header">
-        <mat-card-title>1. Prepare</mat-card-title>
-        <mat-card-subtitle>Confirm module metadata before editing ports.</mat-card-subtitle>
+        <mat-card-title>Setup</mat-card-title>
+        <mat-card-subtitle>Adjust specs and panel details before sharing edits.</mat-card-subtitle>
       </div>
 
-      <div class="rowwrap gap1 workflow-prepare-grid">
-        <!-- Power Section -->
-        <div class="col gap1">
-          <div class="row gap1 ">
-            <mat-card-title>Power</mat-card-title>
-          </div>
+      <div class="setup-grid">
+        <div class="col gap1 setup-specs">
+          <section class="setup-subblock col gap1">
+            <div class="row gap1">
+              <mat-card-title>Power</mat-card-title>
+            </div>
 
-          <div class="col gap1">
-            <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
-            <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
-            <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
-          </div>
+            <div class="col gap1">
+              <lib-mat-form-entity [dataPack]="powerRailPositive"></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="powerRailNegative"></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="powerRailFiveVolts"></lib-mat-form-entity>
+            </div>
+          </section>
+
+          <section class="setup-subblock col gap1">
+            <div class="row gap1">
+              <mat-card-title>Physical</mat-card-title>
+            </div>
+
+            <div class="col gap1">
+              <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
+              <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
+            </div>
+          </section>
         </div>
-        <!-- Physical properties Section -->
-        <div class="col gap1">
-          <div class="row gap1 ">
-            <mat-card-title>Physical properties</mat-card-title>
-          </div>
 
-          <div class="col gap1">
-            <lib-mat-form-entity [dataPack]="depth"></lib-mat-form-entity>
-            <lib-mat-form-entity [dataPack]="weight"></lib-mat-form-entity>
-          </div>
-        </div>
-
-        <!-- Panel Section -->
-        <div class="col gap1">
-          <div class="row gap1 ">
+        <section class="setup-subblock col gap1 setup-panel">
+          <div class="row gap1">
             <mat-card-title>Panel</mat-card-title>
           </div>
 
-          <div class="row gap1 ">
+          <div class="row gap1">
             <lib-file-drag-host
               [isImageOnlyMode]="true"
               [multipleFilesMode]="false"
@@ -60,27 +53,25 @@
                 [dataPack]="panelType"
                 [disableVoidSelection]="true"
               ></lib-mat-form-entity>
-              
+
               <lib-mat-form-entity [dataPack]="panelDescription"></lib-mat-form-entity>
             </div>
           </div>
+
           @if (panelTypeAlreadyExists$ | async) {
             <app-advice-tooltip>
               This module already has a "{{ duplicatePanelTypeName$ | async }}" panel — choose a different type or remove
               the existing one first
             </app-advice-tooltip>
           }
-          <mat-card-subtitle>
-            Power, physical properties, panel upload, and port edits are all saved together with the Save FAB.
-          </mat-card-subtitle>
-        </div>
+        </section>
       </div>
     </section>
 
-    <section class="workflow-block">
+    <section class="workflow-block workflow-block--ports">
       <div class="workflow-block-header">
-        <mat-card-title>2. Edit ports</mat-card-title>
-        <mat-card-subtitle>Add draft rows for INs and OUTs and verify ranges.</mat-card-subtitle>
+        <mat-card-title>Edit ports</mat-card-title>
+        <mat-card-subtitle>Add IN/OUT rows and verify voltage ranges.</mat-card-subtitle>
       </div>
 
       <div class="col gap1">
@@ -165,6 +156,10 @@
       </div>
 
       </div>
+
+      <mat-card-subtitle class="workflow-policy-note">
+        Any saved changes affect all users. Update values only when data is missing or clearly incorrect.
+      </mat-card-subtitle>
     </section>
 
     <button class="save-fab"
