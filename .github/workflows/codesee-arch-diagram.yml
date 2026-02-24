@@ -2,8 +2,18 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'internaldocs/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '.github/**'
   pull_request_target:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'internaldocs/**'
+      - '**/*.md'
+      - '**/*.txt'
+      - '.github/**'
 
 name: CodeSee Map
 
