@@ -30,11 +30,17 @@ Core principles (code examples in [PATTERNS.md](./PATTERNS.md)):
 ```typescript
 // ✅ Component emits to Subject
 onClick()
-{ this.dataService.deleteItem$.next(itemId); }
+:
+void {
+     this.dataService.deleteItem$.next(itemId);
+}
 
 // ❌ Component calls method
 onClick()
-{ this.dataService.deleteItem(itemId); }  // WRONG
+:
+void {
+     this.dataService.deleteItem(itemId); // WRONG
+}
 ```
 
 ## Component Pattern
