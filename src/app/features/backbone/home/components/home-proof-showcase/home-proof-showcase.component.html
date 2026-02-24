@@ -1,0 +1,20 @@
+<section class="proof-shell" [class.reverse]="reverse" [class.tone-patch]="tone === 'patch'"
+         [class.tone-module]="tone === 'module'" [class.tone-rack]="tone === 'rack'">
+  <div class="proof-copy">
+    <p class="proof-kicker">{{ kicker }}</p>
+    <h2>{{ title }}</h2>
+    <p class="proof-description">
+      @for (segment of getDescriptionSegments(); track $index) {
+        @if (segment.highlighted) {
+          <strong>{{ segment.text }}</strong>
+        } @else {
+          {{ segment.text }}
+        }
+      }
+    </p>
+  </div>
+  
+  <div class="proof-preview" role="presentation">
+    <ng-content></ng-content>
+  </div>
+</section>

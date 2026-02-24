@@ -1,0 +1,99 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.principles-shell {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.18rem 1.08rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  background: linear-gradient(160deg, rgba(235, 247, 255, 0.92), rgba(241, 255, 246, 0.86));
+}
+
+.section-head {
+  display: grid;
+  gap: 0.3rem;
+
+  h2 {
+    @include brand-resources.heading-font;
+    margin: 0;
+    color: var(--home-ink-strong);
+    font-size: clamp(1.28rem, 3vw, 1.78rem);
+  }
+}
+
+.section-intro {
+  margin: 0;
+  font-size: 0.94rem;
+  color: rgba(15, 30, 52, 0.86);
+}
+
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.principle-card {
+  display: grid;
+  gap: 0.48rem;
+  padding: 0.9rem;
+  border: 0;
+  border-left: 4px solid rgba(23, 102, 178, 0.62);
+  border-radius: 0.28rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+
+  &:nth-child(2) {
+    border-left-color: rgba(245, 123, 42, 0.68);
+  }
+
+  &:nth-child(3) {
+    border-left-color: rgba(23, 145, 111, 0.68);
+  }
+
+  mat-icon {
+    color: var(--home-accent);
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--home-ink-strong);
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--home-ink);
+    font-size: 0.89rem;
+    line-height: 1.42;
+
+    strong {
+      display: inline;
+      color: #163f70;
+      font-weight: 760;
+      background: linear-gradient(180deg, transparent 58%, rgba(22, 63, 112, 0.16) 58%);
+      padding: 0 0.06rem;
+      border-radius: 0.08rem;
+    }
+  }
+}
+
+@media (max-width: 920px) {
+  .principles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .principles-shell {
+    padding: 0.96rem;
+  }
+
+  .principles-grid {
+    grid-template-columns: 1fr;
+  }
+}

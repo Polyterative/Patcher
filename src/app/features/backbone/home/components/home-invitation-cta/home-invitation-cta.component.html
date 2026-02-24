@@ -1,0 +1,12 @@
+<section class="final-cta-card" aria-labelledby="home-cta-title">
+  @if (imageSrc && imageAlt) {
+    <img [src]="imageSrc" [alt]="imageAlt">
+  }
+  
+  <h2 id="home-cta-title">{{ title }}</h2>
+  <p>{{ description }}</p>
+  
+  <div class="cta-actions">
+    <ng-content></ng-content>
+  </div>
+</section>

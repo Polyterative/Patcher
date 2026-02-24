@@ -1,0 +1,24 @@
+<section class="principles-shell" aria-labelledby="home-principles-title">
+  <header class="section-head">
+    <h2 id="home-principles-title">{{ sectionTitle }}</h2>
+    <p class="section-intro">{{ sectionIntro }}</p>
+  </header>
+  
+  <div class="principles-grid">
+    @for (card of cards; track card.title) {
+      <article class="principle-card">
+        <mat-icon>{{ card.icon }}</mat-icon>
+        <h3>{{ card.title }}</h3>
+        <p>
+          @for (segment of getCardDescriptionSegments(card); track $index) {
+            @if (segment.highlighted) {
+              <strong>{{ segment.text }}</strong>
+            } @else {
+              {{ segment.text }}
+            }
+          }
+        </p>
+      </article>
+    }
+  </div>
+</section>
