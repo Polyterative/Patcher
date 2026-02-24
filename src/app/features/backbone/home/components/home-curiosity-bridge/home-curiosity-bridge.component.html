@@ -1,0 +1,13 @@
+<section class="community-card" aria-labelledby="home-community-title">
+  <h2 id="home-community-title">{{ title }}</h2>
+  <p>{{ description }}</p>
+  
+  <div class="community-links">
+    @for (link of links; track link.label) {
+      <a [routerLink]="link.href">
+        <mat-icon>{{ link.icon }}</mat-icon>
+        {{ link.label }}
+      </a>
+    }
+  </div>
+</section>

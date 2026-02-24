@@ -1,0 +1,14 @@
+<aside class="note-shell" aria-label="user story">
+  <p class="note-kicker">User Stories</p>
+  <div class="stories">
+    @for (story of resolvedStories; track story.quote) {
+      <article class="story-item">
+        <blockquote>
+          "{{ story.quote }}"
+        </blockquote>
+        <p class="note-author">{{ story.author }}</p>
+        <p class="note-role">{{ story.role }}</p>
+      </article>
+    }
+  </div>
+</aside>
