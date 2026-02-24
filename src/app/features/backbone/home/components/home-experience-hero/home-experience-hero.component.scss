@@ -1,0 +1,220 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.hero-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.2rem;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 0.95rem;
+  align-content: center;
+  padding: 0.45rem;
+}
+
+.eyebrow {
+  @include brand-resources.heading-font;
+  letter-spacing: 0.11rem;
+  font-size: 0.77rem;
+  text-transform: uppercase;
+  color: rgba(15, 30, 52, 0.68);
+  margin: 0;
+}
+
+h1 {
+  @include brand-resources.title-font;
+  margin: 0;
+  color: var(--home-ink-strong);
+  font-size: clamp(2.1rem, 5vw, 3.45rem);
+  line-height: 1.02;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+.subtitle {
+  @include brand-resources.content-font;
+  margin: 0;
+  max-width: 54ch;
+  color: var(--home-ink);
+  font-size: clamp(0.98rem, 2vw, 1.14rem);
+  line-height: 1.5;
+
+  strong {
+    display: inline;
+    color: #163f70;
+    font-weight: 760;
+    background: linear-gradient(180deg, transparent 58%, rgba(22, 63, 112, 0.16) 58%);
+    padding: 0 0.06rem;
+    border-radius: 0.08rem;
+  }
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.72rem;
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  border-radius: 999rem;
+  padding: 0.42rem 0.9rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(13, 30, 52, 0.2);
+  background: linear-gradient(110deg, #1766b2, #214f87);
+}
+
+.hero-visuals {
+  position: relative;
+  min-height: 19.5rem;
+  padding: 0.45rem 0;
+  display: grid;
+  align-content: start;
+}
+
+.patch-graph-shell {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--home-border);
+  border-radius: 0.42rem;
+  overflow: hidden;
+  background: transparent;
+}
+
+.patch-graph-shell app-patch-graph {
+  display: block;
+  width: 100%;
+  min-height: 19rem;
+}
+
+.visual-main {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--home-border);
+  border-radius: 0.42rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 34px rgba(8, 20, 38, 0.18);
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+}
+
+.visual-caption {
+  padding: 0.7rem 0.84rem;
+  font-size: 0.83rem;
+  font-weight: 650;
+  color: rgba(15, 30, 52, 0.72);
+
+  strong {
+    display: inline;
+    color: #163f70;
+    font-weight: 760;
+    background: linear-gradient(180deg, transparent 58%, rgba(22, 63, 112, 0.16) 58%);
+    padding: 0 0.06rem;
+    border-radius: 0.08rem;
+  }
+}
+
+.visual-float {
+  position: absolute;
+  width: clamp(9rem, 32%, 12.6rem);
+  border: 1px solid rgba(15, 30, 52, 0.2);
+  border-radius: 0.35rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 14px 26px rgba(8, 20, 38, 0.22);
+  animation: drift 4.2s ease-in-out infinite;
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+}
+
+.visual-a {
+  left: -0.5rem;
+  bottom: -0.95rem;
+  transform: rotate(-6deg);
+}
+
+.visual-b {
+  right: -0.42rem;
+  top: -0.9rem;
+  transform: rotate(5deg);
+  animation-delay: -1.4s;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual-float {
+    animation: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  .hero-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visuals {
+    max-width: 46rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-copy {
+    padding: 0.2rem;
+  }
+
+  .hero-actions {
+    gap: 0.5rem;
+  }
+
+  .hero-visuals {
+    min-height: 14rem;
+  }
+
+  .visual-float {
+    width: 8.3rem;
+  }
+
+  .visual-a {
+    transform: rotate(-4deg);
+    bottom: -0.55rem;
+  }
+
+  .visual-b {
+    transform: rotate(3deg);
+    top: -0.5rem;
+  }
+
+}

@@ -1,0 +1,89 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.proof-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+  contain: layout inline-size;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.reverse {
+  display: flex;
+  flex-direction: column;
+}
+
+.proof-copy {
+  display: grid;
+  gap: 0.6rem;
+  align-content: center;
+  min-width: 0;
+}
+
+.proof-kicker {
+  margin: 0;
+  font-size: 0.73rem;
+  letter-spacing: 0.07rem;
+  text-transform: uppercase;
+  color: rgba(15, 30, 52, 0.62);
+  font-weight: 700;
+}
+
+h2 {
+  @include brand-resources.heading-font;
+  margin: 0;
+  color: var(--home-ink-strong);
+  font-size: clamp(1.2rem, 2.5vw, 1.72rem);
+}
+
+.proof-description {
+  margin: 0;
+  color: var(--home-ink);
+  line-height: 1.44;
+
+  strong {
+    display: inline;
+    color: #163f70;
+    font-weight: 780;
+    background: linear-gradient(180deg, transparent 58%, rgba(22, 63, 112, 0.16) 58%);
+    padding: 0 0.06rem;
+    border-radius: 0.08rem;
+  }
+}
+
+.proof-preview {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  contain: layout inline-size;
+}
+
+.tone-patch {
+  background: linear-gradient(150deg, rgba(237, 246, 255, 0.92), rgba(255, 247, 240, 0.84));
+}
+
+.tone-module {
+  background: linear-gradient(150deg, rgba(238, 251, 245, 0.92), rgba(233, 246, 255, 0.84));
+}
+
+.tone-rack {
+  background: linear-gradient(150deg, rgba(255, 246, 236, 0.92), rgba(236, 248, 255, 0.84));
+}
+
+@media (max-width: 640px) {
+  .proof-shell {
+    padding: 0.88rem;
+  }
+}
