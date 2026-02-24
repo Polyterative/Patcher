@@ -3,6 +3,7 @@
   "framework": "angular",
   "buildCommand": "yarn build",
   "outputDirectory": "dist/Patcher/browser",
+  "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)'",
   "rewrites": [
     {
       "source": "/sitemap.xml",
