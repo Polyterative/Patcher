@@ -1,168 +1,92 @@
-<lib-screen-wrapper>
+<lib-screen-wrapper maxSize="86rem">
   <main class="home-page">
-    <section class="hero-section">
-      <div class="hero-copy">
-        <p class="eyebrow">PATCHER · OPEN MODULAR WORKSPACE</p>
-        <h1>Patch fast. Keep track. Pick up where you left off.</h1>
-        <p class="subtitle">
-          Plan racks, track signal routes, and auto-save sessions. Built for modular work that keeps evolving.
-        </p>
-
-        <div class="hero-tags" aria-label="Core commitments">
-          <span>Browse free</span>
-          <span>Open-source</span>
-          <span>Private when you want</span>
-        </div>
-
-        <div class="hero-actions">
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Get started</app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
-          <a class="source-link" href="https://github.com/Polyterative/Patcher" target="_blank" rel="noopener">
-            View source
-          </a>
-        </div>
-      </div>
-
-      <div class="hero-visuals">
-        <mat-card class="visual-main">
-          <img
-            src="/assets/png/patcher_seo_hero.png"
-            alt="Patcher interface preview"
-            loading="eager"
-            decoding="async"
-          />
-          <p class="visual-caption">Use it while patching, not just while planning.</p>
-        </mat-card>
-
-        <mat-card class="visual-float visual-a">
-          <img
-            src="/assets/png/patcher_promo_280122%20(1)%20(Small).png"
-            alt="Patcher module browser preview"
-            loading="lazy"
-            decoding="async"
-          />
-        </mat-card>
-
-        <mat-card class="visual-float visual-b">
-          <img
-            src="/assets/png/patcher_promo_280122%20(2)%20(Small).png"
-            alt="Patcher rack planner preview"
-            loading="lazy"
-            decoding="async"
-          />
-        </mat-card>
-        
-        <p class="pulse-badge">Auto-save and instance-aware patching keep ideas from getting lost.</p>
-      </div>
-    </section>
-    
-    <section class="quick-value-section">
-      <div class="section-head">
-        <h2>What you can do in minutes</h2>
-        <p class="section-intro">Go from idea to playable setup quickly.</p>
-      </div>
-      
-      <div class="quick-value-grid">
-        <mat-card class="value-card">
-          <mat-icon>view_stream</mat-icon>
-          <h3>Shape racks visually</h3>
-          <p>Move modules around like you do in the case.</p>
-        </mat-card>
-        
-        <mat-card class="value-card">
-          <mat-icon>device_hub</mat-icon>
-          <h3>See patch routes clearly</h3>
-          <p>See connections as a graph instead of hunting through notes.</p>
-        </mat-card>
-        
-        <mat-card class="value-card">
-          <mat-icon>save</mat-icon>
-          <h3>Keep every idea</h3>
-          <p>Auto-save keeps experiments from disappearing.</p>
-        </mat-card>
-      </div>
-    </section>
-    
-    <section class="workflow-section">
-      <div class="section-head">
-        <h2>Your patch loop</h2>
-        <p class="section-intro">Discover, plan, patch, then reopen with everything intact.</p>
-      </div>
-      
-      <div class="workflow-grid">
-        <mat-card class="workflow-step">
-          <p class="step-kicker">DISCOVER</p>
-          <h3>Find modules fast</h3>
-          <p>Accent-insensitive search helps when module names get messy.</p>
-        </mat-card>
-        
-        <mat-card class="workflow-step">
-          <p class="step-kicker">PLAN</p>
-          <h3>Map the rack visually</h3>
-          <p>Test layout choices before touching hardware.</p>
-        </mat-card>
-        
-        <mat-card class="workflow-step">
-          <p class="step-kicker">PATCH</p>
-          <h3>Route with confidence</h3>
-          <p>Instance-aware patching keeps repeated modules unambiguous.</p>
-        </mat-card>
-        
-        <mat-card class="workflow-step">
-          <p class="step-kicker">RECALL</p>
-          <h3>Open and keep going</h3>
-          <p>Come back later with auto-saved state and live patch stats.</p>
-        </mat-card>
-      </div>
-    </section>
-    
-    <section class="community-section">
-      <mat-card class="community-card">
-        <div class="section-head">
-          <h2>Built in public, with the modular community.</h2>
-          <p class="section-intro">
-            Public modules, racks, and patches are easy to explore. Private content stays private.
-          </p>
-        </div>
-        
-        <div class="community-points" aria-label="Community proof points">
-          <span><mat-icon>history</mat-icon> Full changelog is public</span>
-          <span><mat-icon>code</mat-icon> Source code is open on GitHub</span>
-          <span><mat-icon>lock</mat-icon> Privacy controls are built in</span>
-        </div>
-        
-        <div class="community-links">
-          <a href="https://github.com/Polyterative/Patcher" target="_blank" rel="noopener">
-            <mat-icon>code</mat-icon>
-            GitHub repository
-          </a>
-          <a href="https://github.com/Polyterative/Patcher/blob/develop/CHANGELOG.md" target="_blank" rel="noopener">
-            <mat-icon>history</mat-icon>
-            Full changelog
-          </a>
-          <a href="/llms.txt" target="_blank" rel="noopener">
-            <mat-icon>description</mat-icon>
-            Open-data boundaries
-          </a>
-        </div>
-      </mat-card>
-    </section>
-
-    <section class="final-cta-section">
-      <mat-card class="final-cta-card">
-        <img src="/assets/png/LOGO_1.png" alt="Patcher logo" loading="lazy" decoding="async"/>
-        <h2>Spend more time patching, less time rebuilding setups.</h2>
-        <p>Start browsing now. Sign up when you want to save and share your workflow.</p>
-        <div class="cta-actions">
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create account
+    <section class="section-enter">
+      <app-home-experience-hero [content]="heroContent">
+        <div hero-actions class="hero-action-stack">
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
           </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/modules/browser" icon="open_in_new">Browse modules
-          </app-brand-primary-button>
-          <a class="source-link" href="https://github.com/Polyterative/Patcher" target="_blank" rel="noopener">
-            View source
-          </a>
+          <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
         </div>
-      </mat-card>
+      </app-home-experience-hero>
+    </section>
+    
+    <section class="proof-list section-enter" aria-label="product walkthrough">
+      @for (section of proofSections; track section.title; let index = $index) {
+        <app-home-proof-showcase
+          [kicker]="section.kicker"
+          [title]="section.title"
+          [description]="section.description"
+          [keywords]="section.keywords ?? []"
+          [tone]="section.tone"
+          [reverse]="index % 2 === 1"
+        >
+          <div class="frame-host">
+            <lib-device-frame-wrapper>
+              @switch (section.kind) {
+                @case ('patch') {
+                  <app-patch-browser-patch-detail
+                    [ignoreSeo]="true"
+                    [viewConfig]="patchViewConfig"
+                  ></app-patch-browser-patch-detail>
+                }
+                @case ('module') {
+                  <app-module-browser-detail
+                    [ignoreSeo]="true"
+                    [viewConfig]="moduleViewConfig"
+                  ></app-module-browser-detail>
+                }
+                @case ('rack') {
+                  <app-rack-browser-rack-detail
+                    [ignoreSeo]="true"
+                    [viewConfig]="rackViewConfig"
+                  ></app-rack-browser-rack-detail>
+                }
+              }
+            </lib-device-frame-wrapper>
+          </div>
+        </app-home-proof-showcase>
+      }
+    </section>
+    
+    <section class="bridge-row section-enter">
+      <app-home-curiosity-bridge
+        title="Open, free, and built for daily use"
+        description="Use the same straightforward experience on desktop and mobile, with free access to public content."
+        [links]="communityLinks"
+      ></app-home-curiosity-bridge>
+      
+      <app-home-founder-note
+        [stories]="userStories"
+      ></app-home-founder-note>
+    </section>
+    
+    <section class="section-enter">
+      <app-home-open-principles
+        sectionTitle="Why it feels easy to use"
+        sectionIntro="Everything is designed to help you stay creative, stay organized, and get back to great sounds faster."
+        [cards]="principleCards"
+      ></app-home-open-principles>
+    </section>
+    
+    <section class="section-enter">
+      <app-home-workflow-rail
+        sectionTitle="How people actually use it"
+        sectionIntro="A simple loop: explore, build, organize, and return."
+        [steps]="workflowSteps"
+      ></app-home-workflow-rail>
+    </section>
+    
+    <section class="section-enter">
+      <app-home-invitation-cta
+        title="Start building your sound library"
+        description="Create an account, map your setup, and turn today's experiments into tomorrow's starting point."
+        imageSrc="/assets/png/LOGO_1.png"
+        imageAlt="Patcher logo"
+      >
+        <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
+        </app-brand-primary-button>
+        <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
+      </app-home-invitation-cta>
     </section>
   </main>
 </lib-screen-wrapper>

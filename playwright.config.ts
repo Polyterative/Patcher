@@ -92,6 +92,14 @@ export default defineConfig({
       ? [{
         name: 'chromium-auth',
         testMatch: [AUTH_SPEC_GLOB],
+        testIgnore: ['**/screenshots/**/*.spec.ts'],
+        use: {
+          ...devices['Desktop Chrome'],
+          storageState: AUTH_STORAGE_STATE_PATH
+        }
+      }, {
+        name: 'chromium-screenshots',
+        testMatch: ['**/screenshots/**/*.spec.ts'],
         use: {
           ...devices['Desktop Chrome'],
           storageState: AUTH_STORAGE_STATE_PATH

@@ -1,0 +1,116 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.workflow-shell {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.18rem 1.08rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  background: linear-gradient(160deg, rgba(255, 247, 238, 0.88), rgba(236, 247, 255, 0.9));
+}
+
+.section-head {
+  display: grid;
+  gap: 0.3rem;
+
+  h2 {
+    @include brand-resources.heading-font;
+    margin: 0;
+    color: var(--home-ink-strong);
+    font-size: clamp(1.28rem, 3vw, 1.78rem);
+  }
+}
+
+.section-intro {
+  margin: 0;
+  font-size: 0.94rem;
+  color: rgba(15, 30, 52, 0.86);
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.workflow-step {
+  position: relative;
+  display: grid;
+  gap: 0.42rem;
+  padding: 0.86rem;
+  border: 1px solid rgba(13, 30, 52, 0.13);
+  border-radius: 0.3rem;
+  background: rgba(255, 255, 255, 0.73);
+  box-shadow: none;
+
+  &:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: -0.58rem;
+    top: 50%;
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 50%;
+    background: var(--home-accent);
+    box-shadow: 0 0 0 4px rgba(23, 102, 178, 0.16);
+    transform: translateY(-50%);
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--home-ink-strong);
+    font-size: 0.98rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--home-ink);
+    font-size: 0.86rem;
+    line-height: 1.4;
+
+    strong {
+      display: inline;
+      color: #163f70;
+      font-weight: 760;
+      background: linear-gradient(180deg, transparent 58%, rgba(22, 63, 112, 0.16) 58%);
+      padding: 0 0.06rem;
+      border-radius: 0.08rem;
+    }
+  }
+}
+
+.step-kicker {
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.06rem;
+  color: rgba(15, 30, 52, 0.62);
+}
+
+@media (max-width: 920px) {
+  .workflow-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-step:nth-child(2)::after,
+  .workflow-step:nth-child(4)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .workflow-shell {
+    padding: 0.96rem;
+  }
+
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-step::after {
+    display: none;
+  }
+}

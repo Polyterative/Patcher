@@ -1,0 +1,59 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.community-card {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.18rem 1.08rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  background: linear-gradient(160deg, rgba(241, 245, 255, 0.92), rgba(255, 244, 235, 0.86));
+}
+
+h2 {
+  @include brand-resources.heading-font;
+  margin: 0;
+  color: var(--home-ink-strong);
+  font-size: clamp(1.15rem, 2.6vw, 1.56rem);
+}
+
+p {
+  margin: 0;
+  color: var(--home-ink);
+  line-height: 1.45;
+}
+
+.community-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.52rem;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.34rem;
+    border-radius: 999rem;
+    border: 1px solid rgba(23, 102, 178, 0.24);
+    background: rgba(23, 102, 178, 0.12);
+    padding: 0.32rem 0.68rem;
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #155faa;
+
+    mat-icon {
+      font-size: 0.95rem;
+      width: 0.95rem;
+      height: 0.95rem;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .community-card {
+    padding: 0.96rem;
+  }
+}

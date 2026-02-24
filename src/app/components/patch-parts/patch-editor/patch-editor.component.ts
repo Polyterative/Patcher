@@ -71,6 +71,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     hideButtons:       true,
     hideHP:            true,
     hideDates:         true,
+    hideTags: true,
     hidePanelsOptions: true
   };
   
