@@ -136,3 +136,6 @@ flag submission only.
 - **Store Integration** — Buy links to retailers; needs business partnerships.
 - **Dark Mode** — CSS variable-based theme system; large design scope.
 - **Better SQL RLS Policies** — Security/performance audit of row-level security; supports future roles.
+- **Media Attachment on Patches** — Audio upload/embed (SoundCloud, etc.) and YouTube link per patch. Transforms a wiring diagram into a shareable piece of music. See PRODUCT_NEEDS.md for open questions.
+- **Collection-Aware Patch Discovery** — Filter public patch browser to patches whose modules are a subset of the viewer's collection. "Patches I can play right now." Requires patch tags feature for full value. See PRODUCT_NEEDS.md.
+- **Patch Tags / Genre / Technique Labels** — User-applied structured labels (e.g. ambient, percussive, FM, generative). Prerequisite for meaningful patch discovery. Needs new DB table + tag UI on patch create/edit.
