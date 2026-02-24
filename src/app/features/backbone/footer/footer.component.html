@@ -19,16 +19,15 @@
         <div fxFlex="auto"
              fxFlex.lt-sm="auto"
         >
-          <app-label-value-showcase label="New in v4.0"
+          <app-label-value-showcase label="New in v5.1.0"
                                     [bigText]="false"
           >
             <div class="col gap1">
-              <div>• Panel images for modules in details and search</div>
-              <div>• Panel images in rack view</div>
-              <div>• Add modules to rack from below the rack</div>
-              <div>• Submit multiple panels for a module</div>
-              <div>• Multiple UX improvements</div>
-              
+              <div>• Instance-aware patching for repeated modules</div>
+              <div>• Auto-save for patch state and edits</div>
+              <div>• Redesigned connection flow</div>
+              <div>• Clearer patch statistics</div>
+              <div>• Deepest UX overhaul yet</div>
             </div>
           </app-label-value-showcase>
         </div>
@@ -60,7 +59,10 @@
                 • Check out the <a href="https://docs.patcher.xyz/what-is-this/readme" target="_blank">documentation</a>
               </div>
               <div>
-                • Join the <a href="https://discord.com/invite/JNy2HTb5ru" target="_blank">Discord</a> server
+                • Join the <a href="https://discord.gg/N6Z32xJR" target="_blank">Discord</a> server
+              </div>
+              <div>
+                • Open a <a href="https://github.com/Polyterative/Patcher/issues" target="_blank">GitHub issue</a>
               </div>
               <div>
                 • <a href="https://patcher.statuspage.io/" target="_blank">Status page</a>
@@ -76,6 +78,9 @@
           >
 
             <div class="col gap1">
+              <div>
+                • <a href="https://discord.gg/N6Z32xJR" target="_blank">Discord</a>
+              </div>
               <div>
                 • <a href="https://www.facebook.com/patcher.xyz" target="_blank">Facebook</a>
               </div>
@@ -146,8 +151,7 @@
       >
         <app-lottie-container fxLayoutAlign="start end"
                               fxFlex="100"
-                              class="transparentize-half"
-                              style="max-width: 20rem; margin:-.75rem;"
+                              class="transparentize-half lottie-icon"
                               [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
         ></app-lottie-container>
         <h3 fxLayoutAlign="end center"
@@ -157,7 +161,7 @@
           THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
       </div>
       
-      <div style="text-align: end; padding-top: 2rem; color: rgba(0,0,0,0.87);">
+      <div class="legal">
         Patcher's code is public and open-source
         <br>
         © 2026 Vladyslav Yakovenko
@@ -166,11 +170,9 @@
         <br>
         <div class="row gap1">
           <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">View License</a>
-        <a href="https://github.com/Polyterative/Patcher" target="_blank">Contribute on GitHub</a>
+          <a href="https://github.com/Polyterative/Patcher" target="_blank">Contribute on GitHub</a>
           <a href="https://polyterative.notion.site/7139ace262ad48a59e560bff76722a63?v=756abbb3f1494894a2a0f6f53bc7e8e1"
              target="_blank">Roadmap</a>
-        
-        
         </div>
       </div>
     </div>
