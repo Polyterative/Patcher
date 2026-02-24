@@ -25,10 +25,11 @@
 
 ## Completed
 
-> Archived in [COMPLETED.md](./COMPLETED.md). 22 features done Feb 18–20.
+> Archived in [COMPLETED.md](./COMPLETED.md). Keep one-line summaries there.
 
-> **ABANDONED Feb 21:** Integration test for first-click CV highlight bug (
-`patch-editor-cv-highlight.integration.spec.ts`). Test created and confirmed failing; fix deemed not worth the effort.
+> **ABANDONED Feb 21:** Integration test for first-click CV highlight bug
+> (`patch-editor-cv-highlight.integration.spec.ts`). Test created and confirmed failing; fix deemed not worth the
+> effort.
 > Test file left in place as documentation of the race condition.
 
 ---
@@ -81,6 +82,17 @@ now.
 **Remaining flows (deferred):** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch
 Connection, Module Submission, Sign Up, Delete Account.
 
+### ON HOLD: Homepage Redesign — Review + Sign-off
+
+**Why:** Layer-1 creator-first homepage iteration was implemented on 2026-02-23 and needs product review before
+further work.
+
+**Steps when resumed:**
+
+- [ ] Review `/home` on desktop and mobile against product goals
+- [ ] Decide whether to ship as-is or continue Layers 2/3
+- [ ] If additional work is approved, move task to Active and detail execution in `CURRENT_FEATURE.md`
+
 ---
 
 ### HIGH: E2E — Multi-Instance Patching (Auto-Instance Feature)
@@ -102,6 +114,17 @@ self-connections) was verified with 30 unit tests but lacks E2E coverage through
 - [ ] Save patch and reload → verify connections and instances survive roundtrip
 - [ ] Legacy patch (pre-instance) → verify it loads and connections display correctly
 
+### MEDIUM: Unit Coverage Uplift to 75%
+
+**Why:** Baseline from 2026-02-23 is still far below target (Statements 56.79%, Lines 56.88%).
+
+**Steps when picked:**
+
+- [ ] Add targeted tests for `rack-detail-data.service.ts`, `module-detail-data.service.ts`, and
+  `user-area-data.service.ts`
+- [ ] Add tests for the next highest-yield uncovered files
+- [ ] Re-run `yarn test:ci` and record updated coverage
+- [ ] Iterate until statements and lines reach at least 75%
 
 ### MEDIUM: Module Review Flagging
 
@@ -139,8 +162,6 @@ flag submission only.
 - [ ] Add inline HP edit affordance in rack editor (click-to-edit, validated number input)
 - [ ] Module rendering must prefer `hp_override` over module's default HP when set
 - [ ] Write tests for override logic and rack layout reflow
-
----
 
 ---
 

@@ -136,8 +136,6 @@ collection card entirely when instances exist? Trade-off between flexibility and
 
 ---
 
----
-
 ### Media Attachment on Patches
 
 The platform documents *what* is connected but nothing about *what it sounds like*. Attaching audio (upload or embed) and video (YouTube/SoundCloud link) to a patch would transform it from a wiring diagram into an inspiration and learning resource — the natural way a modular musician shares their work.
