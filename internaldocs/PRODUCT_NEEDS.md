@@ -130,6 +130,35 @@ collection card entirely when instances exist? Trade-off between flexibility and
 | Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                              |
 | Dark mode                            | 💡 Nice-to-have     | Large design scope                                                              |
 | Better SQL RLS policies              | 💡 Long-term        | Operational / security                                                          |
+| Media attachment on patches          | 💡 Long-term        | Audio upload/embed + video link; transforms patches into shareable media        |
+| Collection-aware patch discovery     | 💡 Long-term        | Filter public patches to only those playable with user's owned modules          |
+| Patch tags / genre / technique       | 💡 Long-term        | Structured labels for discovery; prerequisite for collection-aware filtering    |
+
+---
+
+---
+
+### Media Attachment on Patches
+
+The platform documents *what* is connected but nothing about *what it sounds like*. Attaching audio (upload or embed) and video (YouTube/SoundCloud link) to a patch would transform it from a wiring diagram into an inspiration and learning resource — the natural way a modular musician shares their work.
+
+**Open questions:** Hosted upload vs embed-only? Moderation of uploaded audio? Does media attach to a patch version or the patch as a whole?
+
+---
+
+### Collection-Aware Patch Discovery
+
+Users have collections (modules they own) and there are public patches. The missing bridge: "show me public patches I could play right now with what I own." The query is a subset match — patches whose module set is contained in the viewer's collection. No other tool does this well and Patcher has all the data to make it work.
+
+**Open questions:** How to handle near-matches ("you're missing 1 module")? Should this be a filter on the patch browser or a dedicated discovery page?
+
+---
+
+### Patch Tags / Genre / Technique Labels
+
+Patches have a name and description but no structured metadata for discovery. Users can't find "slow evolving ambient," "euclidean rhythms," or "West Coast FM" patches. Tags (user-applied) or a controlled vocabulary of technique/genre labels would make public content actually browseable.
+
+**Open questions:** Free-form tags vs curated taxonomy? Who can add tags — author only, or community? Does this feed into collection-aware discovery (e.g. "ambient patches I can play")?
 
 ---
 
