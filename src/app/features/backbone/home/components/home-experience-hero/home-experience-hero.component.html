@@ -1,0 +1,30 @@
+<section class="hero-shell" aria-labelledby="home-hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow">{{ content.eyebrow }}</p>
+    <h1 id="home-hero-title">{{ content.title }}</h1>
+    <p class="subtitle">
+      @for (segment of getSubtitleSegments(); track $index) {
+        @if (segment.highlighted) {
+          <strong>{{ segment.text }}</strong>
+        } @else {
+          {{ segment.text }}
+        }
+      }
+    </p>
+    
+    <div class="hero-actions">
+      <ng-content select="[hero-actions]"></ng-content>
+      @if (content.sourceLinkHref && content.sourceLinkLabel) {
+        <a class="source-link" [href]="content.sourceLinkHref" target="_blank" rel="noopener noreferrer">
+          {{ content.sourceLinkLabel }}
+        </a>
+      }
+    </div>
+  </div>
+  
+  <div class="hero-visuals">
+    <div class="patch-graph-shell">
+      <app-patch-graph></app-patch-graph>
+    </div>
+  </div>
+</section>

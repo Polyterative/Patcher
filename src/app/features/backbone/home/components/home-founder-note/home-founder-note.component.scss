@@ -1,0 +1,64 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.note-shell {
+  display: grid;
+  gap: 0.72rem;
+  align-content: start;
+  padding: 1.18rem 1.08rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(232, 246, 255, 0.86));
+}
+
+.note-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(15, 30, 52, 0.64);
+}
+
+blockquote {
+  margin: 0;
+  color: var(--home-ink-strong);
+  font-size: 0.94rem;
+  line-height: 1.38;
+}
+
+.note-author {
+  @include brand-resources.heading-font;
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--home-ink-strong);
+}
+
+.note-role {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(15, 30, 52, 0.7);
+}
+
+.stories {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.story-item {
+  display: grid;
+  gap: 0.32rem;
+  border: 1px solid rgba(15, 30, 52, 0.12);
+  border-radius: 0.28rem;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 0.62rem 0.66rem;
+}
+
+@media (max-width: 640px) {
+  .note-shell {
+    padding: 0.96rem;
+  }
+}

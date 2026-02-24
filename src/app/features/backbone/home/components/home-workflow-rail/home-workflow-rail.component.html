@@ -1,0 +1,24 @@
+<section class="workflow-shell" aria-labelledby="home-workflow-title">
+  <header class="section-head">
+    <h2 id="home-workflow-title">{{ sectionTitle }}</h2>
+    <p class="section-intro">{{ sectionIntro }}</p>
+  </header>
+  
+  <div class="workflow-grid">
+    @for (step of steps; track step.title) {
+      <article class="workflow-step">
+        <p class="step-kicker">{{ step.kicker }}</p>
+        <h3>{{ step.title }}</h3>
+        <p>
+          @for (segment of getStepDescriptionSegments(step); track $index) {
+            @if (segment.highlighted) {
+              <strong>{{ segment.text }}</strong>
+            } @else {
+              {{ segment.text }}
+            }
+          }
+        </p>
+      </article>
+    }
+  </div>
+</section>

@@ -1,0 +1,49 @@
+@use "src/app/style/brand-resources.scss";
+
+:host {
+  display: block;
+}
+
+.final-cta-card {
+  display: grid;
+  gap: 0.86rem;
+  padding: 1.3rem;
+  border: 1px solid var(--home-border);
+  border-radius: 0.45rem;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(224, 243, 255, 0.84));
+
+  img {
+    width: 4rem;
+    height: auto;
+  }
+
+  h2 {
+    @include brand-resources.heading-font;
+    margin: 0;
+    color: var(--home-ink-strong);
+    font-size: clamp(1.22rem, 2.8vw, 1.68rem);
+  }
+
+  p {
+    margin: 0;
+    color: var(--home-ink);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.72rem;
+}
+
+@media (max-width: 640px) {
+  .final-cta-card {
+    padding: 0.96rem;
+  }
+
+  .cta-actions {
+    gap: 0.5rem;
+  }
+}
