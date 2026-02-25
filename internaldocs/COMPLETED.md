@@ -8,6 +8,7 @@
 
 | Feature                                                                     | Date  | Notes                                                                                                   |
 |-----------------------------------------------------------------------------|-------|---------------------------------------------------------------------------------------------------------|
+| Patch editor module sort + manufacturer grouping                            | 02-25 | Added backend-first sort modes, strategy-based local fallback/grouping, and inline sort/group controls  |
 | Patch editor floating module search                                         | 02-25 | Added fixed floating module search beside close-edit FAB with normalized filtering for collection cards |
 | Homepage narrative component system                                         | 02-25 | Rebuilt `/home` with reusable story components, creative narrative sections, and embedded live previews |
 | E2E screenshot coverage — user area                                         | 02-24 | Added `/user/area` capture as `08-user-area.jpg`; screenshot suite now captures 8 deterministic areas   |

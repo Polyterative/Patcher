@@ -9,6 +9,8 @@ import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
+  Observable,
+  of,
   Subject
 } from 'rxjs';
 import {
@@ -16,13 +18,17 @@ import {
   distinctUntilChanged,
   map,
   startWith,
+  switchMap,
   takeUntil
 } from 'rxjs/operators';
 import {
   MAX_INSTANCES_PER_MODULE,
   PatchDetailDataService
 } from 'src/app/components/patch-parts/patch-detail-data.service';
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import {
+  CurrentUserModulesOrderConfig,
+  SupabaseService
+} from 'src/app/features/backend/supabase.service';
 import { Patch } from 'src/app/models/patch';
 import {
   PatchConnection,
@@ -33,7 +39,10 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  FormTypes,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
@@ -58,6 +67,191 @@ export interface EditorModuleCard {
   trackingId: number;
 }
 
+type DbModuleWithCollectionUpdated =
+  DbModule
+  & {
+  collectionUpdated?: string | null;
+};
+
+type EditorCardComparator = (a: EditorModuleCard, b: EditorModuleCard) => number;
+type GroupingKeyGenerator = (card: EditorModuleCard) => string;
+
+export type PatchEditorSortModeId =
+  'nameAsc'
+  | 'nameDesc'
+  | 'addedLatest'
+  | 'addedEarliest';
+
+export type PatchEditorGroupModeId =
+  'none'
+  | 'manufacturer';
+
+export interface PatchEditorSortStrategy {
+  id: PatchEditorSortModeId;
+  label: string;
+  backendOrder: CurrentUserModulesOrderConfig;
+  localComparator: EditorCardComparator;
+  groupingKeyGenerator?: GroupingKeyGenerator;
+}
+
+const unknownManufacturerGroupKey = '\uffff';
+
+const defaultSortModeId: PatchEditorSortModeId = 'nameAsc';
+const defaultGroupModeId: PatchEditorGroupModeId = 'none';
+
+export const PATCH_EDITOR_SORT_MODE_OPTIONS: ISelectable[] = [
+  {
+    id: 'nameAsc',
+    name: 'Name (A→Z)'
+  },
+  {
+    id: 'nameDesc',
+    name: 'Name (Z→A)'
+  },
+  {
+    id: 'addedLatest',
+    name: 'Added latest'
+  },
+  {
+    id: 'addedEarliest',
+    name: 'Added earliest'
+  }
+];
+
+export const PATCH_EDITOR_GROUP_MODE_OPTIONS: ISelectable[] = [
+  {
+    id: 'none',
+    name: 'Grouping off'
+  },
+  {
+    id: 'manufacturer',
+    name: 'Group by manufacturer'
+  }
+];
+
+function getNormalizedModuleName(card: EditorModuleCard): string {
+  return normalizeForSearch(card.module?.name || '');
+}
+
+function getNormalizedManufacturerName(card: EditorModuleCard): string {
+  return normalizeForSearch(card.module?.manufacturer?.name || '');
+}
+
+function getCollectionUpdatedValue(card: EditorModuleCard): string {
+  return `${ (card.module as DbModuleWithCollectionUpdated)?.collectionUpdated ?? '' }`;
+}
+
+function getCollectionUpdatedTimestamp(card: EditorModuleCard): number {
+  const value = getCollectionUpdatedValue(card);
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function compareByTrackingId(a: EditorModuleCard, b: EditorModuleCard): number {
+  return a.trackingId - b.trackingId;
+}
+
+function compareByNameAscending(a: EditorModuleCard, b: EditorModuleCard): number {
+  const nameComparison = getNormalizedModuleName(a).localeCompare(getNormalizedModuleName(b));
+  if (nameComparison !== 0) {
+    return nameComparison;
+  }
+  
+  const manufacturerComparison = getNormalizedManufacturerName(a).localeCompare(getNormalizedManufacturerName(b));
+  if (manufacturerComparison !== 0) {
+    return manufacturerComparison;
+  }
+  
+  return compareByTrackingId(a, b);
+}
+
+function compareByNameDescending(a: EditorModuleCard, b: EditorModuleCard): number {
+  return compareByNameAscending(b, a);
+}
+
+function compareByAddedLatest(a: EditorModuleCard, b: EditorModuleCard): number {
+  const timestampComparison = getCollectionUpdatedTimestamp(b) - getCollectionUpdatedTimestamp(a);
+  if (timestampComparison !== 0) {
+    return timestampComparison;
+  }
+  
+  const nameComparison = compareByNameAscending(a, b);
+  if (nameComparison !== 0) {
+    return nameComparison;
+  }
+  
+  return compareByTrackingId(a, b);
+}
+
+function compareByAddedEarliest(a: EditorModuleCard, b: EditorModuleCard): number {
+  return compareByAddedLatest(b, a);
+}
+
+function manufacturerGroupingKeyGenerator(card: EditorModuleCard): string {
+  const normalizedManufacturer = getNormalizedManufacturerName(card);
+  return normalizedManufacturer || unknownManufacturerGroupKey;
+}
+
+export const PATCH_EDITOR_SORT_STRATEGIES: Record<PatchEditorSortModeId, PatchEditorSortStrategy> = {
+  nameAsc: {
+    id: 'nameAsc',
+    label: 'Name (A→Z)',
+    backendOrder: {
+      key: 'moduleName',
+      direction: 'asc'
+    },
+    localComparator: compareByNameAscending,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  nameDesc: {
+    id: 'nameDesc',
+    label: 'Name (Z→A)',
+    backendOrder: {
+      key: 'moduleName',
+      direction: 'desc'
+    },
+    localComparator: compareByNameDescending,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  addedLatest: {
+    id: 'addedLatest',
+    label: 'Added latest',
+    backendOrder: {
+      key: 'collectionUpdated',
+      direction: 'desc'
+    },
+    localComparator: compareByAddedLatest,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  addedEarliest: {
+    id: 'addedEarliest',
+    label: 'Added earliest',
+    backendOrder: {
+      key: 'collectionUpdated',
+      direction: 'asc'
+    },
+    localComparator: compareByAddedEarliest,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  }
+};
+
+function asSortModeId(value: unknown): PatchEditorSortModeId {
+  const modeId = (value as ISelectable)?.id;
+  return (modeId === 'nameAsc'
+    || modeId === 'nameDesc'
+    || modeId === 'addedLatest'
+    || modeId === 'addedEarliest')
+    ? modeId
+    : defaultSortModeId;
+}
+
+function asGroupModeId(value: unknown): PatchEditorGroupModeId {
+  const modeId = (value as ISelectable)?.id;
+  return (modeId === 'none' || modeId === 'manufacturer')
+    ? modeId
+    : defaultGroupModeId;
+}
+
 export function filterEditorCardsByQuery(cards: EditorModuleCard[], searchQuery: string): EditorModuleCard[] {
   const normalizedQuery = normalizeForSearch(searchQuery);
   
@@ -74,6 +268,33 @@ export function filterEditorCardsByQuery(cards: EditorModuleCard[], searchQuery:
   });
 }
 
+export function resolvePatchEditorSortStrategy(sortModeId: PatchEditorSortModeId): PatchEditorSortStrategy {
+  return PATCH_EDITOR_SORT_STRATEGIES[sortModeId] ?? PATCH_EDITOR_SORT_STRATEGIES[defaultSortModeId];
+}
+
+export function sortAndGroupEditorCards(
+  cards: EditorModuleCard[],
+  strategy: PatchEditorSortStrategy,
+  groupModeId: PatchEditorGroupModeId
+): EditorModuleCard[] {
+  const sortedCards = [...cards].sort(strategy.localComparator);
+  
+  if (groupModeId !== 'manufacturer' || !strategy.groupingKeyGenerator) {
+    return sortedCards;
+  }
+  
+  const groupedCards = new Map<string, EditorModuleCard[]>();
+  for (const card of sortedCards) {
+    const groupKey = strategy.groupingKeyGenerator(card);
+    const existingGroup = groupedCards.get(groupKey) || [];
+    existingGroup.push(card);
+    groupedCards.set(groupKey, existingGroup);
+  }
+  
+  const orderedGroupKeys = [...groupedCards.keys()].sort((a, b) => a.localeCompare(b));
+  return orderedGroupKeys.flatMap(groupKey => groupedCards.get(groupKey) || []);
+}
+
 @Component({
   selector: 'app-patch-editor',
   templateUrl: './patch-editor.component.html',
@@ -86,6 +307,24 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   //
   readonly formTypes = FormTypes;
   readonly maxInstances = MAX_INSTANCES_PER_MODULE;
+  readonly sortModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_SORT_MODE_OPTIONS);
+  readonly groupModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_GROUP_MODE_OPTIONS);
+  readonly moduleSortControl = new UntypedFormControl(PATCH_EDITOR_SORT_MODE_OPTIONS[0]);
+  readonly moduleGroupControl = new UntypedFormControl(PATCH_EDITOR_GROUP_MODE_OPTIONS[0]);
+  readonly moduleSortModeId$ = this.moduleSortControl.valueChanges.pipe(
+    startWith(PATCH_EDITOR_SORT_MODE_OPTIONS[0]),
+    map(value => asSortModeId(value)),
+    distinctUntilChanged()
+  );
+  readonly moduleGroupModeId$ = this.moduleGroupControl.valueChanges.pipe(
+    startWith(PATCH_EDITOR_GROUP_MODE_OPTIONS[0]),
+    map(value => asGroupModeId(value)),
+    distinctUntilChanged()
+  );
+  readonly moduleSortStrategy$ = this.moduleSortModeId$.pipe(
+    map(sortModeId => resolvePatchEditorSortStrategy(sortModeId)),
+    distinctUntilChanged((a, b) => a.id === b.id)
+  );
   readonly moduleSearchControl = new UntypedFormControl('');
   readonly moduleSearchQuery$ = this.moduleSearchControl.valueChanges.pipe(
     startWith(''),
@@ -133,9 +372,16 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
-    // Fetch user's collection modules once
-    this.backend.GET.currentUserModules()
-      .pipe(takeUntil(this.destroyEvent$))
+    // Fetch user's collection modules with backend-first ordering for selected sort mode
+    this.moduleSortStrategy$
+      .pipe(
+        switchMap(strategy => this.backend.GET.currentUserModules(
+          true,
+          false,
+          strategy.backendOrder
+        )),
+        takeUntil(this.destroyEvent$)
+      )
       .subscribe((modules: DbModule[]) => {
         this.dataService.collectionModules$.next(modules);
         this.collectionLoaded$.next(true);
@@ -147,24 +393,28 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       this.dataService.patchModuleInstances$,
       this.dataService.editorConnections$
     ])
-      .pipe(
-        map(([modules, instances, connections]) =>
-          this.buildEditorCards(modules, instances, connections || [])),
-        takeUntil(this.destroyEvent$)
-      )
+      .pipe(takeUntil(this.destroyEvent$))
       .subscribe(cards => {
+        const [modules, instances, connections] = cards;
+        const editorCards = this.buildEditorCards(modules, instances, connections || []);
+        
         // Clear in-flight copy flags for modules whose cards have updated
         this.addingCopy.clear();
-        this.sourceEditorCards$.next(cards);
+        this.sourceEditorCards$.next(editorCards);
       });
     
-    // Apply floating search query to module cards
+    // Apply search first, then strategy sorting, then optional grouping
     combineLatest([
       this.sourceEditorCards$,
-      this.moduleSearchQuery$
+      this.moduleSearchQuery$,
+      this.moduleSortStrategy$,
+      this.moduleGroupModeId$
     ])
       .pipe(
-        map(([cards, searchQuery]) => filterEditorCardsByQuery(cards, searchQuery)),
+        map(([cards, searchQuery, strategy, groupModeId]) => {
+          const filteredCards = filterEditorCardsByQuery(cards, searchQuery);
+          return sortAndGroupEditorCards(filteredCards, strategy, groupModeId);
+        }),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(cards => this.editorCards$.next(cards));
