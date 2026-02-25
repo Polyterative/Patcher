@@ -43,6 +43,7 @@ import {
   interpolateHexColor,
   PatchGraphFlowPalette
 } from './patch-graph-flow.utils';
+import { PatchGraphRevealController } from './patch-graph-reveal.controller';
 import { PatchDetailDataService } from '../patch-detail-data.service';
 
 
@@ -76,10 +77,9 @@ export class PatchGraphComponent extends SubManager implements OnInit {
 
   private _manualRefresh$ = new Subject<void>();
   private _graphBuiltOnce = false;
-  private revealTimers: ReturnType<typeof setTimeout>[] = [];
-  private revealRunId = 0;
   private flowInterval?: ReturnType<typeof setInterval>;
   private flowState?: FlowAnimationState;
+  private readonly revealController: PatchGraphRevealController;
 
   private readonly flowStartColor = '#FFD447';
   private readonly flowEndColor = '#FFF2A3';
@@ -114,6 +114,14 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     public graphViewService: GraphViewService
   ) {
     super();
+    this.revealController = new PatchGraphRevealController(
+      {
+        emitNodes: nodes => this.nodes$.next(nodes),
+        emitEdges: edges => this.edges$.next(edges),
+        startFlow: (visibleEdges, flowEdges) => this.startPersistentFlowAnimation(visibleEdges, flowEdges)
+      },
+      {stageBridgeColor: this.stageBridgeColor}
+    );
   }
 
   ngOnInit(): void {
@@ -222,181 +230,12 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   }
 
   private revealGraphProgressively(nodes: GraphNode[], edges: GraphEdge[]): void {
-    this.cancelProgressiveReveal();
-    this.revealRunId++;
-    const runId = this.revealRunId;
-
-    if (nodes.length === 0) {
-      this.nodes$.next([]);
-      this.edges$.next([]);
-      return;
-    }
-    
-    const modules = nodes.filter(node => node.data?.type === 'module');
-    const cvOutNodes = nodes.filter(node => node.data?.type === 'cv-out');
-    const cvInNodes = nodes.filter(node => node.data?.type === 'cv-in');
-    const remainingNodes = nodes.filter(node =>
-      node.data?.type !== 'module'
-      && node.data?.type !== 'cv-out'
-      && node.data?.type !== 'cv-in'
-    );
-    const visibleNodes: GraphNode[] = [...modules];
-    const visibleNodeIds = new Set<string>();
-    modules.forEach(node => visibleNodeIds.add(node.id));
-    
-    const nodeIds = new Set(nodes.map(node => node.id));
-    const revealableEdges = edges.filter(edge => nodeIds.has(edge.from) && nodeIds.has(edge.to));
-    const moduleBridgeEdges = revealableEdges.filter(edge => edge.data?.stage === 'module-bridge');
-    const moduleToCvOutEdges = revealableEdges.filter(edge => edge.data?.stage === 'module-to-cv-out');
-    const cvInToModuleEdges = revealableEdges.filter(edge => edge.data?.stage === 'cv-in-to-module');
-    const patchConnectionEdges = revealableEdges.filter(edge => edge.data?.stage === 'cv-out-to-cv-in');
-    const remainingEdges = revealableEdges.filter(edge =>
-      edge.data?.stage !== 'module-bridge'
-      && edge.data?.stage !== 'module-to-cv-out'
-      && edge.data?.stage !== 'cv-in-to-module'
-      && edge.data?.stage !== 'cv-out-to-cv-in'
-    );
-    
-    const edgeStageDelayMs = 420;
-    const stageDelayMs = 480;
-    const visibleEdges: GraphEdge[] = [];
-    const visibleEdgeIds = new Set<string>();
-    
-    moduleBridgeEdges
-      .filter(edge => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to))
-      .forEach(edge => {
-        visibleEdges.push({
-          ...edge,
-          color: this.stageBridgeColor,
-          data: {
-            ...(edge.data ?? {}),
-            hidden: false
-          }
-        });
-        visibleEdgeIds.add(edge.id);
-      });
-    
-    this.nodes$.next([...visibleNodes]);
-    this.edges$.next([...visibleEdges]);
-    
-    let layerStartDelay = 0;
-    const revealLayer = (layerNodes: GraphNode[], layerEdges: GraphEdge[], delayMs: number) => {
-      layerStartDelay += delayMs;
-      const timer = setTimeout(() => {
-        if (runId !== this.revealRunId) {
-          return;
-        }
-
-        let changed = false;
-        layerNodes.forEach(node => {
-          if (visibleNodeIds.has(node.id)) {
-            return;
-          }
-
-          visibleNodes.push(node);
-          visibleNodeIds.add(node.id);
-          changed = true;
-        });
-        
-        layerEdges.forEach(edge => {
-          if (visibleEdgeIds.has(edge.id)) {
-            return;
-          }
-          if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
-            return;
-          }
-
-          visibleEdges.push(edge);
-          visibleEdgeIds.add(edge.id);
-          changed = true;
-        });
-        
-        if (changed) {
-          this.nodes$.next([...visibleNodes]);
-          this.edges$.next([...visibleEdges]);
-        }
-      }, layerStartDelay);
-      this.revealTimers.push(timer);
-    };
-    
-    const hideModuleBridgeEdges = (): boolean => {
-      let changed = false;
-      for (let index = 0; index < visibleEdges.length; index++) {
-        const edge = visibleEdges[index];
-        if (edge.data?.stage !== 'module-bridge') {
-          continue;
-        }
-        if (edge.data?.hidden) {
-          continue;
-        }
-
-        visibleEdges[index] = {
-          ...edge,
-          color: 'rgba(0, 0, 0, 0)',
-          data: {
-            ...(edge.data ?? {}),
-            hidden: true
-          }
-        };
-        changed = true;
-      }
-      
-      return changed;
-    };
-    
-    revealLayer(cvOutNodes, moduleToCvOutEdges, stageDelayMs);
-    revealLayer([...cvInNodes, ...remainingNodes], [...cvInToModuleEdges, ...remainingEdges], stageDelayMs);
-    
-    layerStartDelay += edgeStageDelayMs;
-    const patchRoutingTimer = setTimeout(() => {
-      if (runId !== this.revealRunId) {
-        return;
-      }
-
-      let changed = false;
-      patchConnectionEdges.forEach(edge => {
-        if (visibleEdgeIds.has(edge.id)) {
-          return;
-        }
-        if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
-          return;
-        }
-
-        visibleEdges.push(edge);
-        visibleEdgeIds.add(edge.id);
-        changed = true;
-      });
-      
-      if (hideModuleBridgeEdges()) {
-        changed = true;
-      }
-      
-      if (changed) {
-        this.edges$.next([...visibleEdges]);
-      }
-    }, layerStartDelay);
-    this.revealTimers.push(patchRoutingTimer);
-    
-    const flowStartDelay = layerStartDelay + 260;
-    const flowTimer = setTimeout(() => {
-      if (runId !== this.revealRunId) {
-        return;
-      }
-
-      const ioFlowEdges = [...moduleToCvOutEdges, ...patchConnectionEdges, ...cvInToModuleEdges];
-      const flowEdges = ioFlowEdges.length > 0
-        ? ioFlowEdges
-        : revealableEdges.filter(edge => !edge.data?.hidden);
-      
-      this.startPersistentFlowAnimation([...visibleEdges], flowEdges);
-    }, flowStartDelay);
-    this.revealTimers.push(flowTimer);
+    this.stopPersistentFlowAnimation();
+    this.revealController.reveal(nodes, edges);
   }
   
   private cancelProgressiveReveal(): void {
-    this.revealRunId++;
-    this.revealTimers.forEach(timer => clearTimeout(timer));
-    this.revealTimers = [];
+    this.revealController.cancel();
     this.stopPersistentFlowAnimation();
   }
   

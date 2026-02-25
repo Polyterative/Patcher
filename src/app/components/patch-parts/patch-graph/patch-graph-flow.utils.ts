@@ -1,4 +1,8 @@
 import { GraphEdge } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import {
+  PATCH_GRAPH_EDGE_STAGE,
+  PATCH_GRAPH_HIDDEN_COLOR
+} from './patch-graph.constants';
 
 
 export interface FlowAnimationState {
@@ -81,7 +85,7 @@ export function buildFlowStyledEdges(
     if (edge.data?.hidden) {
       return {
         ...edge,
-        color: 'rgba(0, 0, 0, 0)',
+        color: PATCH_GRAPH_HIDDEN_COLOR,
         data: {
           ...(edge.data ?? {}),
           flowHeat: 0
@@ -115,10 +119,13 @@ export function baseColorForPatchGraphEdge(
   palette: Pick<PatchGraphFlowPalette, 'flowBaseColor' | 'moduleJackEdgeColor'>
 ): string {
   if (edge.data?.hidden) {
-    return 'rgba(0, 0, 0, 0)';
+    return PATCH_GRAPH_HIDDEN_COLOR;
   }
   
-  if (edge.data?.stage === 'module-to-cv-out' || edge.data?.stage === 'cv-in-to-module') {
+  if (
+    edge.data?.stage === PATCH_GRAPH_EDGE_STAGE.MODULE_TO_CV_OUT
+    || edge.data?.stage === PATCH_GRAPH_EDGE_STAGE.CV_IN_TO_MODULE
+  ) {
     return palette.moduleJackEdgeColor;
   }
   
