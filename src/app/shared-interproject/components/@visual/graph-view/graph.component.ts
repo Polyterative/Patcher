@@ -130,12 +130,14 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.renderer = new Sigma(this.graph, this.container.nativeElement, {
         renderLabels: true,
         labelFont: 'Roboto',
+        labelSize: 14,
         renderEdgeLabels: true,
         stagePadding: 20,
         hideLabelsOnMove: false,
         hideEdgesOnMove: false,
         labelGridCellSize: 10,
-        labelRenderedSizeThreshold: 10
+        labelRenderedSizeThreshold: 10,
+        labelRenderer: this.renderNodeLabel
       });
       
       this.viewReady = true;
@@ -565,6 +567,56 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
     
     return {r: 128, g: 128, b: 128};
+  }
+  
+  private renderNodeLabel(
+    context: CanvasRenderingContext2D,
+    data: {
+      x: number,
+      y: number,
+      size: number,
+      label?: string,
+      color?: string
+    },
+    settings: {
+      labelSize: number,
+      labelFont: string,
+      labelWeight: string,
+      labelColor: {
+        attribute?: string,
+        color?: string
+      }
+    }
+  ): void {
+    if (!data?.label) {
+      return;
+    }
+    
+    const size = settings.labelSize;
+    const font = settings.labelFont;
+    const weight = settings.labelWeight;
+    const labelColorAttribute = settings.labelColor?.attribute;
+    const color = labelColorAttribute
+      ? ((data as Record<string, unknown>)[labelColorAttribute] as string)
+      || settings.labelColor?.color
+      || '#111111'
+      : settings.labelColor?.color ?? '#111111';
+    const xOffset = Math.max(10, data.size * 0.85);
+    const x = data.x + data.size + xOffset;
+    const y = data.y + size / 3;
+    
+    context.save();
+    context.font = `${ weight } ${ size }px ${ font }`;
+    context.textAlign = 'left';
+    context.textBaseline = 'alphabetic';
+    // Subtle halo keeps labels readable when arrows run close to nodes.
+    context.lineWidth = Math.max(2, size * 0.32);
+    context.strokeStyle = 'rgba(255, 255, 255, 0.82)';
+    context.lineJoin = 'round';
+    context.strokeText(data.label, x, y);
+    context.fillStyle = color;
+    context.fillText(data.label, x, y);
+    context.restore();
   }
 
   private computeLayoutRuntimeMs(): number {
