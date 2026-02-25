@@ -1,12 +1,12 @@
 .sso-buttons-container {
   width: 100%;
-  margin: 24px 0;
+  margin: 1.5rem 0;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  margin: 24px 0;
+  margin: 1.5rem 0;
 
   &::before,
   &::after {
@@ -16,9 +16,9 @@
   }
 
   span {
-    padding: 0 16px;
+    padding: 0 1rem;
     color: rgba(0, 0, 0, 0.6);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -28,18 +28,18 @@
 .buttons-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .sso-button {
-  height: 48px;
+  height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-size: 15px;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   border: 1.5px solid;
   background: #fff;
   transition: all 0.2s ease;
@@ -60,7 +60,7 @@
   }
 
   .provider-logo {
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 700;
   }
 

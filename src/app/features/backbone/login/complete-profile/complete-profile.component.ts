@@ -94,38 +94,38 @@ import { UserManagementService } from '../user-management.service';
           justify-content: center;
           align-items: center;
           min-height: 100vh;
-          padding: 20px;
+          padding: 1.25rem;
           background-color: #f5f5f5;
       }
 
       .profile-card {
-          max-width: 500px;
+          max-width: 31.25rem;
           width: 100%;
       }
 
       .welcome-text {
-          margin: 16px 0;
+          margin: 1rem 0;
           color: #666;
       }
 
       .full-width {
           width: 100%;
-          margin-top: 8px;
+          margin-top: 0.5rem;
       }
 
       .hint-text {
-          font-size: 12px;
+          font-size: 0.75rem;
           color: #999;
-          margin-top: -8px;
+          margin-top: -0.5rem;
       }
 
       .button-spinner {
           display: inline-block;
-          margin-right: 8px;
+          margin-right: 0.5rem;
       }
 
       mat-card-actions {
-          padding: 16px;
+          padding: 1rem;
       }
   `],
   standalone: false
