@@ -34,7 +34,7 @@
     @if (edges$|async; as edges) {
       @if (patchDetailDataService.patchConnections$|async; as patchConnections) {
         @if (patchConnections) {
-          @if (nodes.length > 0 && edges.length > 0) {
+          @if (nodes.length > 0) {
             <lib-graph [nodes]="nodes"
                        [edges]="edges"
                        class="animate-fadein-slowest"
