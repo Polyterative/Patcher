@@ -5,13 +5,17 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
   Subject
 } from 'rxjs';
 import {
+  debounceTime,
+  distinctUntilChanged,
   map,
+  startWith,
   takeUntil
 } from 'rxjs/operators';
 import {
@@ -29,6 +33,8 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../../module-parts/module-minimal/module-minimal.component';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
 /** One card in the editor module list */
@@ -52,6 +58,22 @@ export interface EditorModuleCard {
   trackingId: number;
 }
 
+export function filterEditorCardsByQuery(cards: EditorModuleCard[], searchQuery: string): EditorModuleCard[] {
+  const normalizedQuery = normalizeForSearch(searchQuery);
+  
+  if (!normalizedQuery) {
+    return cards;
+  }
+  
+  return cards.filter(card => {
+    const normalizedName = normalizeForSearch(card.module?.name || '');
+    const normalizedManufacturer = normalizeForSearch(card.module?.manufacturer?.name || '');
+    
+    return normalizedName.includes(normalizedQuery)
+      || normalizedManufacturer.includes(normalizedQuery);
+  });
+}
+
 @Component({
   selector: 'app-patch-editor',
   templateUrl: './patch-editor.component.html',
@@ -62,7 +84,17 @@ export interface EditorModuleCard {
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
   //
+  readonly formTypes = FormTypes;
   readonly maxInstances = MAX_INSTANCES_PER_MODULE;
+  readonly moduleSearchControl = new UntypedFormControl('');
+  readonly moduleSearchQuery$ = this.moduleSearchControl.valueChanges.pipe(
+    startWith(''),
+    debounceTime(120),
+    map(value => value ?? ''),
+    map(value => `${ value }`),
+    distinctUntilChanged()
+  );
+
   modulesViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideLabels:        true,
@@ -75,6 +107,9 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     hidePanelsOptions: true
   };
   
+  /** Unfiltered collection modules + instances merged into a flat card list */
+  sourceEditorCards$ = new BehaviorSubject<EditorModuleCard[]>([]);
+
   /** Collection modules + instances merged into a flat card list */
   editorCards$ = new BehaviorSubject<EditorModuleCard[]>([]);
   
@@ -120,8 +155,19 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       .subscribe(cards => {
         // Clear in-flight copy flags for modules whose cards have updated
         this.addingCopy.clear();
-        this.editorCards$.next(cards);
+        this.sourceEditorCards$.next(cards);
       });
+    
+    // Apply floating search query to module cards
+    combineLatest([
+      this.sourceEditorCards$,
+      this.moduleSearchQuery$
+    ])
+      .pipe(
+        map(([cards, searchQuery]) => filterEditorCardsByQuery(cards, searchQuery)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(cards => this.editorCards$.next(cards));
   }
   
   /** Trigger adding another copy of the same module */

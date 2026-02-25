@@ -8,6 +8,7 @@
 
 | Feature                                                                     | Date  | Notes                                                                                                   |
 |-----------------------------------------------------------------------------|-------|---------------------------------------------------------------------------------------------------------|
+| Patch editor floating module search                                         | 02-25 | Added fixed floating module search beside close-edit FAB with normalized filtering for collection cards |
 | Homepage narrative component system                                         | 02-25 | Rebuilt `/home` with reusable story components, creative narrative sections, and embedded live previews |
 | E2E screenshot coverage — user area                                         | 02-24 | Added `/user/area` capture as `08-user-area.jpg`; screenshot suite now captures 8 deterministic areas   |
 | E2E major-area screenshot automation                                        | 02-24 | Added authenticated deterministic screenshot flow and dedicated script for 7 major-area captures        |
