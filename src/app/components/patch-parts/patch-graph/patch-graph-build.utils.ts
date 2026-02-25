@@ -5,6 +5,11 @@ import {
   GraphEdge,
   GraphNode
 } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import {
+  PATCH_GRAPH_EDGE_STAGE,
+  PATCH_GRAPH_HIDDEN_COLOR,
+  PATCH_GRAPH_NODE_TYPE
+} from './patch-graph.constants';
 import { orderPatchGraphNodesForReveal } from './patch-graph-layout.utils';
 
 
@@ -139,7 +144,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       x: 1,
       y: 1,
       data: {
-        type: 'module',
+        type: PATCH_GRAPH_NODE_TYPE.MODULE,
         module,
         moduleNodeId
       }
@@ -155,7 +160,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       y: 1,
       label: `${ jack.name }`,
       data: {
-        type: 'cv-out',
+        type: PATCH_GRAPH_NODE_TYPE.CV_OUT,
         module,
         parentModuleNodeId: moduleNodeId
       }
@@ -169,7 +174,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       y: 1,
       label: `${ jack.name }`,
       data: {
-        type: 'cv-in',
+        type: PATCH_GRAPH_NODE_TYPE.CV_IN,
         module,
         parentModuleNodeId: moduleNodeId
       }
@@ -188,7 +193,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       weight: 8,
       type: 'arrow',
       data: {
-        stage: 'cv-in-to-module'
+        stage: PATCH_GRAPH_EDGE_STAGE.CV_IN_TO_MODULE
       }
     }));
     
@@ -202,7 +207,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       weight: 8,
       type: 'arrow',
       data: {
-        stage: 'module-to-cv-out'
+        stage: PATCH_GRAPH_EDGE_STAGE.MODULE_TO_CV_OUT
       }
     }));
     
@@ -217,13 +222,27 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     const cvNodeIdA = buildCvNodeId(connection.a.module.id, connection.instance_id_a, connection.a.id);
     if (!nodesDictionary[cvNodeIdA]) {
       nodesDictionary[cvNodeIdA] = allModuleJackNodes[cvNodeIdA]
-        ?? buildCvNode(cvNodeIdA, connection.a, palette.cvOutColor, sizeConstant, moduleNodeIdA, 'cv-out');
+        ?? buildCvNode(
+          cvNodeIdA,
+          connection.a,
+          palette.cvOutColor,
+          sizeConstant,
+          moduleNodeIdA,
+          PATCH_GRAPH_NODE_TYPE.CV_OUT
+        );
     }
     
     const cvNodeIdB = buildCvNodeId(connection.b.module.id, connection.instance_id_b, connection.b.id);
     if (!nodesDictionary[cvNodeIdB]) {
       nodesDictionary[cvNodeIdB] = allModuleJackNodes[cvNodeIdB]
-        ?? buildCvNode(cvNodeIdB, connection.b, palette.cvInColor, sizeConstant, moduleNodeIdB, 'cv-in');
+        ?? buildCvNode(
+          cvNodeIdB,
+          connection.b,
+          palette.cvInColor,
+          sizeConstant,
+          moduleNodeIdB,
+          PATCH_GRAPH_NODE_TYPE.CV_IN
+        );
     }
   });
   
@@ -247,7 +266,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       y: 1,
       label: `${ connection.notes ?? '' }`,
       data: {
-        stage: 'cv-out-to-cv-in'
+        stage: PATCH_GRAPH_EDGE_STAGE.CV_OUT_TO_CV_IN
       }
     };
   });
@@ -271,12 +290,12 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       from: moduleFrom,
       to: moduleTo,
       label: '',
-      color: 'rgba(0, 0, 0, 0)',
+      color: PATCH_GRAPH_HIDDEN_COLOR,
       size: sizeConstant * 1.45,
       weight: 0.15,
       type: 'arrow',
       data: {
-        stage: 'module-bridge',
+        stage: PATCH_GRAPH_EDGE_STAGE.MODULE_BRIDGE,
         hidden: true
       }
     });
@@ -308,7 +327,7 @@ function buildCvNode(
   color: string,
   sizeConstant: number,
   parentModuleNodeId: string,
-  type: 'cv-out' | 'cv-in'
+  type: typeof PATCH_GRAPH_NODE_TYPE.CV_OUT | typeof PATCH_GRAPH_NODE_TYPE.CV_IN
 ): GraphNode {
   return {
     id: nodeId,

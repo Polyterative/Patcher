@@ -1,8 +1,9 @@
 import { GraphNode } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
+import { PATCH_GRAPH_NODE_TYPE } from './patch-graph.constants';
 
 
 export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
-  const modules = nodes.filter(node => node.data?.type === 'module');
+  const modules = nodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.MODULE);
   if (modules.length === 0) {
     const total = Math.max(1, nodes.length);
     const radius = Math.max(2.2, Math.min(7.5, 2 + total / 8));
@@ -22,7 +23,7 @@ export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
   const ungroupedNodes: GraphNode[] = [];
   
   nodes.forEach(node => {
-    if (node.data?.type === 'module') {
+    if (node.data?.type === PATCH_GRAPH_NODE_TYPE.MODULE) {
       return;
     }
     
@@ -65,8 +66,8 @@ export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
     }
     
     const childNodes = [...(childNodesByModule.get(moduleNode.id) ?? [])].sort((a, b) => {
-      const typeOrderA = a.data?.type === 'cv-out' ? 0 : 1;
-      const typeOrderB = b.data?.type === 'cv-out' ? 0 : 1;
+      const typeOrderA = a.data?.type === PATCH_GRAPH_NODE_TYPE.CV_OUT ? 0 : 1;
+      const typeOrderB = b.data?.type === PATCH_GRAPH_NODE_TYPE.CV_OUT ? 0 : 1;
       if (typeOrderA !== typeOrderB) {
         return typeOrderA - typeOrderB;
       }
@@ -79,8 +80,8 @@ export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
     }
     
     const orbitRadius = Math.max(1, Math.min(2.1, 0.9 + childNodes.length * 0.09));
-    const outNodes = childNodes.filter(node => node.data?.type === 'cv-out');
-    const inNodes = childNodes.filter(node => node.data?.type === 'cv-in');
+    const outNodes = childNodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.CV_OUT);
+    const inNodes = childNodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.CV_IN);
     
     const placeOnArc = (arcNodes: GraphNode[], centerAngle: number) => {
       if (arcNodes.length === 0) {
