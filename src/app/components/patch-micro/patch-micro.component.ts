@@ -5,7 +5,10 @@ import {
   OnInit
 } from '@angular/core';
 import { PatchMinimal } from '../../models/patch';
-import { PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minimal.component';
+import {
+  defaultPatchMinimalViewConfig,
+  PatchMinimalViewConfig
+} from '../patch-parts/patch-minimal/patch-minimal.component';
 
 
 @Component({
@@ -17,10 +20,10 @@ import { PatchMinimalViewConfig } from '../patch-parts/patch-minimal/patch-minim
 })
 export class PatchMicroComponent implements OnInit {
   
-  @Input() data: PatchMinimal;
+  @Input() data: PatchMinimal | null = null;
   
-  @Input() viewConfig: PatchMinimalViewConfig;
-  
+  @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+
   constructor() { }
   
   ngOnInit(): void {

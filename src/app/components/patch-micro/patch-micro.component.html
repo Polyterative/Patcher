@@ -1,21 +1,23 @@
-<div class="col gap0">
-  <app-hero-clickable-title [link]="['/patches/details',data.id]"
-                            infoBox
-                            infoText="Patch name"
-  >{{ data.name }}
-  </app-hero-clickable-title>
-  <app-entity-author [data]="data.author"></app-entity-author>
+@if (data) {
+  <div class="col gap0">
+    <app-hero-clickable-title [link]="['/patches/details',data.id]"
+                              infoBox
+                              infoText="Patch name"
+    >{{ data.name }}
+    </app-hero-clickable-title>
+    <app-entity-author [data]="data.author"></app-entity-author>
+    
+    @if (!viewConfig.hideDates) {
+      <app-timestamps-relative [data]="data"
+      ></app-timestamps-relative>
+    }
+    @if (!viewConfig.hideDescription) {
+      <div class="row gap1 space-between description"
+      >
+        <mat-card-subtitle>{{ data.description }}</mat-card-subtitle>
+      </div>
+    }
   
-  @if (!viewConfig.hideDates) {
-    <app-timestamps-relative [data]="data"
-    ></app-timestamps-relative>
-  }
-  @if (!viewConfig.hideDescription) {
-    <div class="row gap1 space-between description"
-    >
-      <mat-card-subtitle>{{ data.description }}</mat-card-subtitle>
-    </div>
-  }
-
-</div>
+  </div>
+}
 <!--{{viewConfig|json}}-->
