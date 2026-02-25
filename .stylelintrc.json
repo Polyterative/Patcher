@@ -1,0 +1,66 @@
+{
+  "customSyntax": "postcss-scss",
+  "rules": {
+    "declaration-property-unit-disallowed-list": [
+      {
+        "font-size": [
+          "px"
+        ],
+        "margin": [
+          "px"
+        ],
+        "margin-top": [
+          "px"
+        ],
+        "margin-right": [
+          "px"
+        ],
+        "margin-bottom": [
+          "px"
+        ],
+        "margin-left": [
+          "px"
+        ],
+        "padding": [
+          "px"
+        ],
+        "padding-top": [
+          "px"
+        ],
+        "padding-right": [
+          "px"
+        ],
+        "padding-bottom": [
+          "px"
+        ],
+        "padding-left": [
+          "px"
+        ],
+        "gap": [
+          "px"
+        ],
+        "row-gap": [
+          "px"
+        ],
+        "column-gap": [
+          "px"
+        ],
+        "max-width": [
+          "px"
+        ],
+        "max-height": [
+          "px"
+        ],
+        "min-width": [
+          "px"
+        ],
+        "min-height": [
+          "px"
+        ]
+      },
+      {
+        "severity": "warning"
+      }
+    ]
+  }
+}

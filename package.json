@@ -10,6 +10,10 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher",
     "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
     "lint": "ng lint",
+    "lint:styles": "stylelint \"src/**/*.scss\"",
+    "lint:px": "bash scripts/check-px-ts.sh $(find src -name '*.ts' -not -path '*/node_modules/*')",
+    "px-to-rem": "node scripts/px-to-rem.mjs",
+    "px-to-rem:write": "node scripts/px-to-rem.mjs --write",
     "ci": "yarn test:unit:headless",
     "test": "yarn test:unit",
     "test:unit": "ng test --browsers=ChromeHeadlessCI",
@@ -41,7 +45,16 @@
     "git:untrack-e2e-artifacts": "git rm -r --cached test-results/ playwright-report/ e2e/flow-0*.spec.ts 2>/dev/null || true",
     "switch:develop": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout develop && git update-index --skip-worktree src/build.ts",
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
-    "merge:prod-to-dev": "yarn switch:develop && git merge production"
+    "merge:prod-to-dev": "yarn switch:develop && git merge production",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.scss": [
+      "stylelint --allow-empty-input"
+    ],
+    "src/**/*.ts": [
+      "bash scripts/check-px-ts.sh"
+    ]
   },
   "standard-version": {
     "scripts": {
@@ -131,6 +144,7 @@
     "@typescript-eslint/eslint-plugin": "^8.55.0",
     "@typescript-eslint/parser": "^8.55.0",
     "angular-build-info": "^2.0.1",
+    "husky": "^9.1.7",
     "jasmine-core": "^4.0.1",
     "jasmine-spec-reporter": "^7.0.0",
     "karma": "^6.4.3",
@@ -138,8 +152,11 @@
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
+    "lint-staged": "^16.2.7",
+    "postcss-scss": "^4.0.9",
     "simple-icons": "^16.9.0",
     "standard-version": "^9.5.0",
+    "stylelint": "^17.4.0",
     "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   }

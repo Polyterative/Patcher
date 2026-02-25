@@ -135,11 +135,11 @@ export class AppModule {
       `%c ❯ Build Version: ${ build.version }\n` +
       ` ❯ Build Timestamp: ${ build.timestamp }\n` +
       ` ❯ Build Message: %c${ build.message || '<no message>' }\n`,
-      'font-size: 14px; color: #7c7c7b;',
-      'font-size: 12px; color: #7c7c7b',
-      environment.production ? 'font-size: 12px; color: #95c230;' : 'font-size: 12px; color: #e26565;',
-      'font-size: 12px; color: #7c7c7b',
-      'font-size: 12px; color: #bdc6cf'
+      'font-size: 14px; color: #7c7c7b;', // px-ok: console.log CSS requires px, rem not supported
+      'font-size: 12px; color: #7c7c7b', // px-ok
+      environment.production ? 'font-size: 12px; color: #95c230;' : 'font-size: 12px; color: #e26565;', // px-ok
+      'font-size: 12px; color: #7c7c7b', // px-ok
+      'font-size: 12px; color: #bdc6cf' // px-ok
     );
   }
   
