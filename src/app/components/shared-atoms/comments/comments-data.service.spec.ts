@@ -22,7 +22,7 @@ describe('CommentsDataService', () => {
       open: jasmine.createSpy('open')
     };
     
-    const service = new CommentsDataService(backend as any, snackBar as any, {} as any);
+    const service = new CommentsDataService(backend as any, snackBar as any);
     return {service, backend, snackBar};
   }
   
@@ -74,6 +74,20 @@ describe('CommentsDataService', () => {
     expect(backend.GET.comments).toHaveBeenCalledWith(99, CommentableEntityTypes.RACK);
   });
   
+  it('rejects comment below minLength via form validator', () => {
+    const {service} = build();
+    service.fields.submit.control.setValue('ab');
+    expect(service.fields.submit.control.valid).toBeFalse();
+    expect(service.fields.submit.control.hasError('minlength')).toBeTrue();
+  });
+  
+  it('rejects comment above maxLength via form validator', () => {
+    const {service} = build();
+    service.fields.submit.control.setValue('x'.repeat(service.maxLength + 1));
+    expect(service.fields.submit.control.valid).toBeFalse();
+    expect(service.fields.submit.control.hasError('maxlength')).toBeTrue();
+  });
+
   it('resets state when requestReset is emitted', () => {
     const {service} = build();
     service.comments$.next([{id: 9} as any]);

@@ -19,8 +19,8 @@
       }
     </div>
     <!--    <p class="comment-text">{{ data.content }}</p>-->
-
-    <div class="comment-text" [innerHTML]="makeURLsClickable(data.content)"></div>
+    
+    <div class="comment-text" [innerHTML]="data.content | commentText"></div>
     
     @if (viewConfig.showContext) {
       <app-comment-context
