@@ -2,6 +2,8 @@
   editorConnections:(dataService.editorConnections$|async),
   selectedForConnection: (dataService.selectedForConnection$|async),
   cards: (editorCards$|async),
+  sourceCards: (sourceEditorCards$|async),
+  searchQuery: (moduleSearchQuery$|async),
   loaded: (collectionLoaded$|async)
 }; as bag) {
   @if (bag.editorConnections == null) {
@@ -27,7 +29,7 @@
         </lib-hero-content-card>
       }
       <lib-hero-content-card
-          [titleNormal]="'Modules (' + (bag.cards?.length || 0) + ')'"
+        [titleNormal]="'Modules (' + (bag.sourceCards?.length || 0) + ')'"
           class="modulesBG"
           description="Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module."
           [showHelpButton]="true"
@@ -36,9 +38,13 @@
             <mat-card-subtitle fxLayoutAlign="center center">
               Loading modules…
             </mat-card-subtitle>
-          } @else if (bag.cards.length === 0) {
+          } @else if (bag.sourceCards.length === 0) {
             <mat-card-subtitle fxLayoutAlign="center center">
               Add modules to your collection to start patching
+            </mat-card-subtitle>
+          } @else if (bag.cards.length === 0) {
+            <mat-card-subtitle fxLayoutAlign="center center">
+              No modules match "{{ bag.searchQuery }}". Try another search.
             </mat-card-subtitle>
           } @else {
             <flexbox-row-fast>
@@ -83,5 +89,16 @@
           }
         </lib-hero-content-card>
     </div>
+    
+    @if (bag.sourceCards.length > 0) {
+      <div class="patch-editor-floating-search">
+        <lib-mat-form-entity [control]="moduleSearchControl"
+                             [type]="formTypes.TEXT"
+                             iconL1="search"
+                             label="Find module in collection"
+                             [formFieldAppearanceType]="'outline'"
+        ></lib-mat-form-entity>
+      </div>
+    }
   }
 }
