@@ -211,15 +211,51 @@ describe('SupabaseService - GET cached delegates', () => {
   });
   
   describe('GET.currentUserModules', () => {
-    it('should return current user modules', (done) => {
+    it('should return current user modules with collectionUpdated metadata', (done) => {
       const mockUser = {id: 'u1'};
       spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
       
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{module: {id: 1, name: 'VCO'}}], error: null}));
+      spyOn(supabaseClient, 'from').and.returnValue(
+        chainable({
+          data: [
+            {
+              collectionUpdated: '2026-02-25T12:00:00.000Z',
+              module: {id: 1, name: 'VCO'}
+            }
+          ],
+          error: null
+        })
+      );
       
       service.GET.currentUserModules().subscribe({
         next: (result: any) => {
           expect(result).toBeDefined();
+          expect(result[0].collectionUpdated).toBe('2026-02-25T12:00:00.000Z');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should apply whitelisted backend module name ordering when requested', (done) => {
+      const mockUser = {id: 'u1'};
+      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      
+      const query = chainable({data: [{collectionUpdated: null, module: {id: 1, name: 'VCO'}}], error: null});
+      const orderSpy = spyOn(query, 'order').and.returnValue(query);
+      spyOn(supabaseClient, 'from').and.returnValue(query);
+      
+      service.GET.currentUserModules(true, false, {key: 'moduleName', direction: 'desc'}).subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('name', jasmine.objectContaining({
+            foreignTable: 'module',
+            ascending: false
+          }));
+          const hasUserModulesUpdatedOrdering = orderSpy.calls.allArgs().some(args => args[0] === 'updated');
+          expect(hasUserModulesUpdatedOrdering).toBeFalse();
           done();
         },
         error: (err) => {
