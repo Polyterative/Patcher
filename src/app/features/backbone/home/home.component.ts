@@ -168,22 +168,22 @@ export class HomeComponent extends SubManager {
   
   readonly userStories: HomeFounderNote[] = [
     {
-      quote: 'I rebuilt my live set from six weeks ago in one rehearsal because every patch step was still there.',
+      quote: 'opened a patch from 6 weeks ago before a set, followed my saved steps, and got back to the sound fast.',
       author: 'Lena R.',
       role: 'live performer'
     },
     {
-      quote: 'Drag-and-drop rack planning helped me test layouts in minutes before touching a single cable.',
+      quote: 'rack planner saved me hours of moving modules around, then finding out the layout was not worth it.',
       author: 'Marco T.',
       role: 'studio producer'
     },
     {
-      quote: 'The module pages answered spec questions I could not find anywhere else, so I bought with confidence.',
+      quote: 'module pages show the exact specs i need, so i am not digging through forums or asking around to find them.',
       author: 'Ari N.',
       role: 'modular collector'
     },
     {
-      quote: 'I can leave a patch for weeks, come back, and get the same sound fast instead of guessing from memory.',
+      quote: 'when i forget why i patched something a certain way, the notes inside the patch bring it back instantly.',
       author: 'Noah K.',
       role: 'sound designer'
     }
