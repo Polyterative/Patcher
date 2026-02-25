@@ -11,26 +11,26 @@ h1 {
   @extend .std-rounding;
 
   // Explicitly include heading font styles to ensure proper rendering after Angular update
-  font-size: 4rem;
+  font-size: 3.5rem;
 
   @media (max-width: 79.375rem) {
-    font-size: 3.5rem;
-  }
-
-  @media (max-width: 64rem) {
     font-size: 3rem;
   }
 
+  @media (max-width: 64rem) {
+    font-size: 2.75rem;
+  }
+
   @media (max-width: 36rem) {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
   }
 
   @media (max-width: 30rem) {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   @media (max-width: 22.5rem) {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   @include heading-font;
@@ -43,14 +43,14 @@ h1 {
 }
 
 h2 {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
 
   @media (max-width: 36rem) {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   @media (max-width: 30rem) {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   @include heading-font;
@@ -58,14 +58,14 @@ h2 {
 }
 
 h3 {
-  font-size: 2rem;
+  font-size: 1.75rem;
 
   @media (max-width: 36rem) {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   @media (max-width: 30rem) {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   @include heading-font;
@@ -162,7 +162,7 @@ h3 {
 
 .description {
   //@include unselectable;
-  font-size: small;
+  font-size: 0.875rem;
   // align y axis center
   display: flex;
   flex-direction: column;
