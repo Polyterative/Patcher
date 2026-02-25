@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  Input,
   OnInit,
   ViewChild
 } from '@angular/core';
@@ -59,6 +60,7 @@ interface ModuleInstance {
   standalone: false
 })
 export class PatchGraphComponent extends SubManager implements OnInit {
+  @Input() progressiveRender = false;
 
   nodes$: BehaviorSubject<GraphNode[]> = new BehaviorSubject([]);
   edges$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
@@ -70,6 +72,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   
   private _manualRefresh$ = new Subject<void>();
   private _graphBuiltOnce = false;
+  private revealTimers: ReturnType<typeof setTimeout>[] = [];
+  private revealRunId = 0;
 
   legend = [
     {label: 'Module', color: '#8974E4'},
@@ -120,6 +124,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           const el = this.graphContainer?.nativeElement;
           if (el) { el.style.height = el.offsetHeight + 'px'; }
         }),
+        tap(() => this.cancelProgressiveReveal()),
         tap(() => this.nodes$.next([])),
         tap(() => this.edges$.next([])),
         tap(() => this._isStale$.next(false)),
@@ -239,12 +244,25 @@ export class PatchGraphComponent extends SubManager implements OnInit {
               || e.from === link.to || e.to === link.from
           ));
         
-        this.nodes$.next(Object.values(nodesDictionary).filter(x => x !== undefined));
-        this.edges$.next([...onlyUsedModuleJacksEdges, ...patchEdges]);
+        const orderedNodes = this.orderNodesForReveal(Object.values(nodesDictionary).filter(Boolean));
+        const orderedEdges = [...onlyUsedModuleJacksEdges, ...patchEdges];
+        
+        if (this.progressiveRender) {
+          this.revealGraphProgressively(orderedNodes, orderedEdges);
+        } else {
+          this.nodes$.next(orderedNodes);
+          this.edges$.next(orderedEdges);
+        }
+
         this._graphBuiltOnce = true;
         const el = this.graphContainer?.nativeElement;
         if (el) { el.style.height = ''; }
       });
+  }
+  
+  override ngOnDestroy(): void {
+    this.cancelProgressiveReveal();
+    super.ngOnDestroy();
   }
   
   refreshNow(): void {
@@ -283,5 +301,79 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       add(c.b.module.id, c.instance_id_b);
     });
     return Array.from(seen.values());
+  }
+  
+  private revealGraphProgressively(nodes: GraphNode[], edges: GraphEdge[]): void {
+    this.cancelProgressiveReveal();
+    this.revealRunId++;
+    const runId = this.revealRunId;
+    
+    if (nodes.length === 0) {
+      this.nodes$.next([]);
+      this.edges$.next([]);
+      return;
+    }
+    
+    const visibleNodes: GraphNode[] = [];
+    const visibleNodeIds = new Set<string>();
+    const nodeIds = new Set(nodes.map(node => node.id));
+    const revealableEdges = edges.filter(edge => nodeIds.has(edge.from) && nodeIds.has(edge.to));
+    const nodeStepMs = Math.max(20, Math.min(90, Math.floor(1800 / Math.max(1, nodes.length))));
+    const edgeStepMs = Math.max(14, Math.min(55, Math.floor(1600 / Math.max(1, revealableEdges.length))));
+    const edgeStartDelayMs = 180;
+    
+    nodes.forEach((node, index) => {
+      const timer = setTimeout(() => {
+        if (runId !== this.revealRunId) { return; }
+        
+        visibleNodes.push(node);
+        visibleNodeIds.add(node.id);
+        
+        const visibleEdges = revealableEdges.filter(edge =>
+          visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)
+        );
+        
+        this.nodes$.next([...visibleNodes]);
+        this.edges$.next(visibleEdges);
+      }, index * nodeStepMs);
+      this.revealTimers.push(timer);
+    });
+    
+    const edgesDelay = nodes.length * nodeStepMs + edgeStartDelayMs;
+    revealableEdges.forEach((edge, index) => {
+      const timer = setTimeout(() => {
+        if (runId !== this.revealRunId) { return; }
+        if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) { return; }
+        
+        const currentEdges = this.edges$.getValue();
+        if (!currentEdges.some(current => current.id === edge.id)) {
+          this.edges$.next([...currentEdges, edge]);
+        }
+      }, edgesDelay + index * edgeStepMs);
+      this.revealTimers.push(timer);
+    });
+  }
+  
+  private cancelProgressiveReveal(): void {
+    this.revealRunId++;
+    this.revealTimers.forEach(timer => clearTimeout(timer));
+    this.revealTimers = [];
+  }
+  
+  private orderNodesForReveal(nodes: GraphNode[]): GraphNode[] {
+    const modules = nodes.filter(node => node.data?.type === 'module');
+    const others = nodes.filter(node => node.data?.type !== 'module');
+    const ordered = [...modules, ...others];
+    const total = Math.max(1, ordered.length);
+    const radius = Math.max(2.2, Math.min(7.5, 2 + total / 8));
+    
+    return ordered.map((node, index) => {
+      const angle = (index / total) * Math.PI * 2;
+      return {
+        ...node,
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius
+      };
+    });
   }
 }
