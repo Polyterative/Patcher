@@ -43,9 +43,9 @@
   color: rgba(255, 255, 255, 0.97);
   --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.97);
   --mat-icon-button-state-layer-color: rgba(255, 255, 255, 1);
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
+  min-width: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -54,8 +54,9 @@
 
 .mobile-menu-trigger mat-icon {
   color: inherit !important;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;

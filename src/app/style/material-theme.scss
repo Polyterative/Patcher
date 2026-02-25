@@ -20,6 +20,9 @@ $patcher-theme: mat.define-theme((
                 brand-family: 'Roboto',
                 plain-family: 'Roboto',
         ),
+        density: (
+                scale: -4,
+        ),
 ));
 
 // Emit all component styles for the theme exactly once at the root level.
