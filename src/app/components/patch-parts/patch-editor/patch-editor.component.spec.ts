@@ -11,7 +11,9 @@ const createCard = (
   moduleName: string,
   manufacturerName: string,
   id: number,
-  collectionUpdated?: string
+  collectionUpdated?: string,
+  connectionCount = 0,
+  instanceCount = 1
 ): EditorModuleCard => ({
   module: {
     id,
@@ -23,8 +25,8 @@ const createCard = (
   } as any,
   instance: undefined,
   label: undefined,
-  instanceCount: 1,
-  connectionCount: 0,
+  instanceCount,
+  connectionCount,
   connectionNames: [],
   trackingId: id
 });
@@ -115,5 +117,56 @@ describe('PatchEditorComponent', () => {
     const grouped = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('addedLatest'), 'manufacturer');
     
     expect(grouped.map(card => card.module.id)).toEqual([2, 4, 3, 1]);
+  });
+  
+  it('sorts by manufacturer in both directions', () => {
+    const cards = [
+      createCard('Maths', 'Make Noise', 1),
+      createCard('A-140', 'Doepfer', 2),
+      createCard('Pamela', 'ALM', 3)
+    ];
+    
+    const asc = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('manufacturerAsc'), 'none');
+    const desc = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('manufacturerDesc'), 'none');
+    
+    expect(asc.map(card => card.module.id)).toEqual([3, 2, 1]);
+    expect(desc.map(card => card.module.id)).toEqual([1, 2, 3]);
+  });
+  
+  it('sorts by connections with most-connected cards first', () => {
+    const cards = [
+      createCard('Maths', 'Make Noise', 1, undefined, 3),
+      createCard('Plaits', 'Mutable Instruments', 2, undefined, 0),
+      createCard('Batumi', 'Xaoc', 3, undefined, 1)
+    ];
+    
+    const sorted = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('connectionsMost'), 'none');
+    
+    expect(sorted.map(card => card.module.id)).toEqual([1, 3, 2]);
+  });
+  
+  it('groups by connection state with connected modules first', () => {
+    const cards = [
+      createCard('Alpha', 'Make Noise', 1, undefined, 0),
+      createCard('Bravo', 'Make Noise', 2, undefined, 2),
+      createCard('Charlie', 'Make Noise', 3, undefined, 1),
+      createCard('Delta', 'Make Noise', 4, undefined, 0)
+    ];
+    
+    const grouped = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('nameAsc'), 'connectionState');
+    
+    expect(grouped.map(card => card.module.id)).toEqual([2, 3, 1, 4]);
+  });
+  
+  it('groups by patch presence with in-patch modules first', () => {
+    const cards = [
+      createCard('Alpha', 'Make Noise', 1, undefined, 0, 0),
+      createCard('Bravo', 'Make Noise', 2, undefined, 0, 2),
+      createCard('Charlie', 'Make Noise', 3, undefined, 0, 1)
+    ];
+    
+    const grouped = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('nameAsc'), 'patchPresence');
+    
+    expect(grouped.map(card => card.module.id)).toEqual([2, 3, 1]);
   });
 });

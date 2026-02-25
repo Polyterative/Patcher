@@ -80,11 +80,16 @@ export type PatchEditorSortModeId =
   'nameAsc'
   | 'nameDesc'
   | 'addedLatest'
-  | 'addedEarliest';
+  | 'addedEarliest'
+  | 'manufacturerAsc'
+  | 'manufacturerDesc'
+  | 'connectionsMost';
 
 export type PatchEditorGroupModeId =
   'none'
-  | 'manufacturer';
+  | 'manufacturer'
+  | 'connectionState'
+  | 'patchPresence';
 
 export interface PatchEditorSortStrategy {
   id: PatchEditorSortModeId;
@@ -115,6 +120,18 @@ export const PATCH_EDITOR_SORT_MODE_OPTIONS: ISelectable[] = [
   {
     id: 'addedEarliest',
     name: 'Added earliest'
+  },
+  {
+    id: 'manufacturerAsc',
+    name: 'Manufacturer (A→Z)'
+  },
+  {
+    id: 'manufacturerDesc',
+    name: 'Manufacturer (Z→A)'
+  },
+  {
+    id: 'connectionsMost',
+    name: 'Connections (most first)'
   }
 ];
 
@@ -126,6 +143,14 @@ export const PATCH_EDITOR_GROUP_MODE_OPTIONS: ISelectable[] = [
   {
     id: 'manufacturer',
     name: 'Group by manufacturer'
+  },
+  {
+    id: 'connectionState',
+    name: 'Group by connection'
+  },
+  {
+    id: 'patchPresence',
+    name: 'Group by patch presence'
   }
 ];
 
@@ -187,6 +212,33 @@ function compareByAddedEarliest(a: EditorModuleCard, b: EditorModuleCard): numbe
   return compareByAddedLatest(b, a);
 }
 
+function compareByManufacturerAscending(a: EditorModuleCard, b: EditorModuleCard): number {
+  const manufacturerComparison = getNormalizedManufacturerName(a).localeCompare(getNormalizedManufacturerName(b));
+  if (manufacturerComparison !== 0) {
+    return manufacturerComparison;
+  }
+  
+  return compareByNameAscending(a, b);
+}
+
+function compareByManufacturerDescending(a: EditorModuleCard, b: EditorModuleCard): number {
+  return compareByManufacturerAscending(b, a);
+}
+
+function compareByConnectionsMost(a: EditorModuleCard, b: EditorModuleCard): number {
+  const connectionComparison = b.connectionCount - a.connectionCount;
+  if (connectionComparison !== 0) {
+    return connectionComparison;
+  }
+  
+  const instanceComparison = b.instanceCount - a.instanceCount;
+  if (instanceComparison !== 0) {
+    return instanceComparison;
+  }
+  
+  return compareByNameAscending(a, b);
+}
+
 function manufacturerGroupingKeyGenerator(card: EditorModuleCard): string {
   const normalizedManufacturer = getNormalizedManufacturerName(card);
   return normalizedManufacturer || unknownManufacturerGroupKey;
@@ -232,6 +284,36 @@ export const PATCH_EDITOR_SORT_STRATEGIES: Record<PatchEditorSortModeId, PatchEd
     },
     localComparator: compareByAddedEarliest,
     groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  manufacturerAsc: {
+    id: 'manufacturerAsc',
+    label: 'Manufacturer (A→Z)',
+    backendOrder: {
+      key: 'moduleName',
+      direction: 'asc'
+    },
+    localComparator: compareByManufacturerAscending,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  manufacturerDesc: {
+    id: 'manufacturerDesc',
+    label: 'Manufacturer (Z→A)',
+    backendOrder: {
+      key: 'moduleName',
+      direction: 'asc'
+    },
+    localComparator: compareByManufacturerDescending,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
+  },
+  connectionsMost: {
+    id: 'connectionsMost',
+    label: 'Connections (most first)',
+    backendOrder: {
+      key: 'moduleName',
+      direction: 'asc'
+    },
+    localComparator: compareByConnectionsMost,
+    groupingKeyGenerator: manufacturerGroupingKeyGenerator
   }
 };
 
@@ -240,14 +322,20 @@ function asSortModeId(value: unknown): PatchEditorSortModeId {
   return (modeId === 'nameAsc'
     || modeId === 'nameDesc'
     || modeId === 'addedLatest'
-    || modeId === 'addedEarliest')
+    || modeId === 'addedEarliest'
+    || modeId === 'manufacturerAsc'
+    || modeId === 'manufacturerDesc'
+    || modeId === 'connectionsMost')
     ? modeId
     : defaultSortModeId;
 }
 
 function asGroupModeId(value: unknown): PatchEditorGroupModeId {
   const modeId = (value as ISelectable)?.id;
-  return (modeId === 'none' || modeId === 'manufacturer')
+  return (modeId === 'none'
+    || modeId === 'manufacturer'
+    || modeId === 'connectionState'
+    || modeId === 'patchPresence')
     ? modeId
     : defaultGroupModeId;
 }
@@ -279,13 +367,13 @@ export function sortAndGroupEditorCards(
 ): EditorModuleCard[] {
   const sortedCards = [...cards].sort(strategy.localComparator);
   
-  if (groupModeId !== 'manufacturer' || !strategy.groupingKeyGenerator) {
+  if (groupModeId === 'none') {
     return sortedCards;
   }
   
   const groupedCards = new Map<string, EditorModuleCard[]>();
   for (const card of sortedCards) {
-    const groupKey = strategy.groupingKeyGenerator(card);
+    const groupKey = getGroupKeyForMode(card, strategy, groupModeId);
     const existingGroup = groupedCards.get(groupKey) || [];
     existingGroup.push(card);
     groupedCards.set(groupKey, existingGroup);
@@ -293,6 +381,28 @@ export function sortAndGroupEditorCards(
   
   const orderedGroupKeys = [...groupedCards.keys()].sort((a, b) => a.localeCompare(b));
   return orderedGroupKeys.flatMap(groupKey => groupedCards.get(groupKey) || []);
+}
+
+function getGroupKeyForMode(
+  card: EditorModuleCard,
+  strategy: PatchEditorSortStrategy,
+  groupModeId: PatchEditorGroupModeId
+): string {
+  if (groupModeId === 'manufacturer') {
+    return strategy.groupingKeyGenerator
+      ? strategy.groupingKeyGenerator(card)
+      : manufacturerGroupingKeyGenerator(card);
+  }
+  
+  if (groupModeId === 'connectionState') {
+    return card.connectionCount > 0 ? '0_connected' : '1_not_connected';
+  }
+  
+  if (groupModeId === 'patchPresence') {
+    return card.instanceCount > 0 ? '0_in_patch' : '1_not_in_patch';
+  }
+  
+  return '0_default';
 }
 
 @Component({

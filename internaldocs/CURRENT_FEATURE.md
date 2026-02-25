@@ -12,13 +12,13 @@
 
 ## Active
 
-### Active: Patch Editor Compact Sort/Group Controls + Extra Modes (2026-02-25)
+### Active: Patch Editor Control Height Consistency (2026-02-25)
 
 Goal:
 
-- Make Patch Editor sort/group controls visually compact, matching existing compact controls used elsewhere in the app.
-- Add a few low-risk, easy-to-implement sorting and grouping options using the existing strategy pipeline.
-- Preserve current behavior for search, copy/remove actions, and backend-first ordering where already supported.
+- Keep inline sort/group controls compact in width.
+- Restore control height/typography to match existing standard controls in the app.
+- Preserve current sort/group logic and options.
 
 Status: **Planned**
 
@@ -26,111 +26,42 @@ Three-layer execution plan:
 
 ### Layer 1 (MVP)
 
-- [ ] Reduce visual footprint of inline sort/group controls (height, padding, label/icon spacing, overall width
-  behavior).
-- [ ] Keep controls stable on desktop/mobile without overlapping existing floating search/FAB.
-- [ ] Preserve existing modes and behavior while applying compact styling.
+- [ ] Remove custom compact height overrides from patch editor inline controls (`font-size`, reduced infix min-height,
+  reduced vertical paddings).
+- [ ] Keep only width constraints so controls do not span full row width.
 
 Acceptance:
 
-- Sort/group controls are clearly smaller and no longer visually dominant.
-- Controls remain readable and tappable on mobile.
-- Existing sort/group behavior stays unchanged.
+- Inline controls no longer look vertically compressed.
+- Controls remain side-by-side (where space allows) and do not take full width on desktop.
 
 ### Layer 2 (Structural)
 
-- [ ] Add easy sort modes in strategy registry:
-    - `Manufacturer (A→Z)`
-    - `Manufacturer (Z→A)`
-    - `Connections (most first)`
-- [ ] Add easy grouping modes in strategy registry:
-    - `Group by connection state` (connected vs no connections)
-    - `Group by patch presence` (in patch vs not in patch)
-- [ ] Keep integration via existing filter -> sort -> group pipeline.
+- [ ] Keep responsive width behavior stable (desktop fixed-ish width, tablet half width, mobile full width).
+- [ ] Ensure no impact to floating search control style.
 
 Acceptance:
 
-- New modes appear in controls and reorder cards immediately.
-- No regressions in card actions/connection indicators.
-- Strategy model remains single-source and extensible.
+- Layout behavior is unchanged except for restored height.
+- Floating search remains as-is.
 
 ### Layer 3 (Polish)
 
-- [ ] Add/adjust unit tests for new sort/group modes and compact-control behavior assumptions (logic-level tests).
-- [ ] Fine-tune compact spacing tokens for visual consistency with current app controls.
-- [ ] Validate target specs pass.
+- [ ] Tune spacing (`gap`, margin) for visual consistency with nearby content.
+- [ ] Run target spec to confirm no regressions.
 
 Acceptance:
 
-- Tests cover added sort/group logic.
-- UI remains compact and consistent across breakpoints.
-- Verification commands pass.
+- Visual rhythm is balanced around controls.
+- Spec passes.
 
 Execution target files:
 
-- `src/app/components/patch-parts/patch-editor/patch-editor.component.ts`
-- `src/app/components/patch-parts/patch-editor/patch-editor.component.html`
 - `src/app/components/patch-parts/patch-editor/patch-editor.component.scss`
-- `src/app/components/patch-parts/patch-editor/patch-editor.component.spec.ts`
 
 Verification target:
 
 - `yarn test-headless --include="**/patch-editor.component.spec.ts"`
-
-Verification result:
-
-- Pending.
-
----
-
-## Empty Template
-
-### Active: <Feature Name> (<YYYY-MM-DD>)
-
-Goal:
-
-- <What outcome this feature should create>
-- <Any constraints/requirements>
-
-Status: **Planned**
-
-Three-layer execution plan:
-
-### Layer 1 (MVP)
-
-- [ ] <Step 1>
-- [ ] <Step 2>
-
-Acceptance:
-
-- <How to tell Layer 1 is done>
-
-### Layer 2 (Structural)
-
-- [ ] <Step 1>
-- [ ] <Step 2>
-
-Acceptance:
-
-- <How to tell Layer 2 is done>
-
-### Layer 3 (Polish)
-
-- [ ] <Step 1>
-- [ ] <Step 2>
-
-Acceptance:
-
-- <How to tell Layer 3 is done>
-
-Execution target files:
-
-- `<path/to/file>`
-- `<path/to/file>`
-
-Verification target:
-
-- `<repo-approved command>`
 
 Verification result:
 
