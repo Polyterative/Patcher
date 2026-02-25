@@ -4,7 +4,7 @@
 
 .option {
   color: rgba(255, 255, 255, 0.95);
-  border-radius: 4px !important;
+  border-radius: 0.25rem !important;
   transition: background-color 125ms ease, transform 100ms ease, color 125ms ease;
   --mdc-text-button-label-text-color: rgba(255, 255, 255, 0.95);
   --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.95);
@@ -21,8 +21,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.65);
-    outline-offset: 2px;
+    outline: 0.125rem solid rgba(255, 255, 255, 0.65);
+    outline-offset: 0.125rem;
   }
 
   &.disabled {

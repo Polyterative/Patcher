@@ -35,11 +35,11 @@
   padding: 0.35rem 0.55rem;
   border-radius: 0.8rem;
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(0.375rem);
   box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 60rem) {
   .profile-layout {
     grid-template-columns: 1fr;
   }

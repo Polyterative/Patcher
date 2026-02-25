@@ -316,7 +316,7 @@ $snack-toolbar-offset: 5em;
 .mat-mdc-snack-bar-container {
   margin-top: $snack-toolbar-offset !important;
 
-  @media (max-width: 599px) {
+  @media (max-width: 37.4375rem) {
     max-width: calc(100vw - 1rem) !important;
     min-width: 0 !important;
   }

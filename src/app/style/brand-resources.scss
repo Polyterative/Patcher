@@ -120,26 +120,26 @@ $secondary-font:            'Noto Sans';
 
   //letter-spacing: $letterSpacing*1;
 
-  //@media (max-width: 1920px) {
+  //@media (max-width: 120rem) {
   //  letter-spacing: $letterSpacing*.5;
   //}
-  //@media (max-width: 1270px) {
+  //@media (max-width: 79.375rem) {
   //  letter-spacing: $letterSpacing*.4;
   //}
   //
-  //@media (max-width: 1024px) {
+  //@media (max-width: 64rem) {
   //  letter-spacing: $letterSpacing*0.3;
   //}
   //
-  //@media (max-width: 576px) {
+  //@media (max-width: 36rem) {
   //  letter-spacing: $letterSpacing*0;
   //}
   //
-  //@media (max-width: 480px) {
+  //@media (max-width: 30rem) {
   //  letter-spacing: $letterSpacing*0;
   //}
   //
-  //@media (max-width: 360px) {
+  //@media (max-width: 22.5rem) {
   //  letter-spacing: $letterSpacing*0;
   //}
 
@@ -278,23 +278,23 @@ p {
   $size:     1.5rem;
   font-size: $size;
 
-  @media (max-width: 1270px) {
+  @media (max-width: 79.375rem) {
     font-size: $size*0.95;
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     font-size: $size*0.9;
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 36rem) {
     font-size: $size*0.85;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 30rem) {
     font-size: $size*0.82;
   }
 
-  @media (max-width: 360px) {
+  @media (max-width: 22.5rem) {
     font-size: $size*0.75;
   }
 }
@@ -302,23 +302,23 @@ p {
 h1 {
   font-size:   4rem;
 
-  @media (max-width: 1270px) {
+  @media (max-width: 79.375rem) {
     font-size: 3.5rem;
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     font-size: 3rem;
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 36rem) {
     font-size: 2.5rem;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 30rem) {
     font-size: 2rem;
   }
 
-  @media (max-width: 360px) {
+  @media (max-width: 22.5rem) {
     font-size: 1.5rem;
   }
 
@@ -336,11 +336,11 @@ h1 {
 h2 {
   font-size: 2.5rem;
 
-  @media (max-width: 576px) {
+  @media (max-width: 36rem) {
     font-size: 2rem;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 30rem) {
     font-size: 1.5rem;
   }
 }
@@ -349,11 +349,11 @@ h3 {
   font-size: 2rem;
 
 
-  @media (max-width: 576px) {
+  @media (max-width: 36rem) {
     font-size: 1.5rem;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 30rem) {
     font-size: 1.2rem;
   }
 }
