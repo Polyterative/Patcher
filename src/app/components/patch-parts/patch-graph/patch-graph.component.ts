@@ -245,7 +245,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             color: this.legend[1].color,
             size: sizeConstant * 5,
             x: 1, y: 1,
-            label: `${ module.name } ${ jack.name }`,
+            label: `${ jack.name }`,
             data: {type: 'cv-out', module, parentModuleNodeId: moduleNodeId}
           }));
           
@@ -254,7 +254,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             color: this.legend[2].color,
             size: sizeConstant * 5,
             x: 1, y: 1,
-            label: `${ module.name } ${ jack.name }`,
+            label: `${ jack.name }`,
             data: {type: 'cv-in', module, parentModuleNodeId: moduleNodeId}
           }));
           outNodes.forEach(node => allModuleJackNodes[node.id] = node);
