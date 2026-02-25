@@ -134,6 +134,19 @@ type CachedEntity =
   | void;
 const cacheBuster$ = new Subject<CachedEntity[]>();
 
+export type CurrentUserModulesOrderKey =
+  'moduleName'
+  | 'collectionUpdated';
+
+export type CurrentUserModulesOrderDirection =
+  'asc'
+  | 'desc';
+
+export interface CurrentUserModulesOrderConfig {
+  key: CurrentUserModulesOrderKey;
+  direction: CurrentUserModulesOrderDirection;
+}
+
 function cacheBust<T>(cacheKeys: CachedEntity[]): MonoTypeOperatorFunction<T> {
   return (source: Observable<T>) => source.pipe(
     tap(() => cacheBuster$.next(cacheKeys))
@@ -1617,6 +1630,7 @@ export class SupabaseService extends SubManager {
   private getCurrentUserModules(
     includeInsOuts = true,
     includeManuals = false,
+    orderConfig?: Partial<CurrentUserModulesOrderConfig>,
   ): Observable<any> {
     let prefix = `module`;
     let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
@@ -1638,30 +1652,76 @@ export class SupabaseService extends SubManager {
       columns.push('manualURL');
     }
     
+    const safeOrderConfig = this.getSafeCurrentUserModulesOrderConfig(orderConfig);
+    
     return this.getUserSession$().pipe(
-      switchMap(user =>
-        rxFrom(
-          this.supabase.from(DbPaths.user_modules)
-            .select(
-              `${ prefix }:modules!user_modules_moduleid_fkey(
+      switchMap(user => {
+        let queryBuilder = this.supabase.from(DbPaths.user_modules)
+          .select(
+            `collectionUpdated:updated,
+              ${ prefix }:modules!user_modules_moduleid_fkey(
                 ${ columns.join(',') })`
-            )
-            // only approved panels
-            // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
-            // order panel by color
-            .order(`color`, {
-              foreignTable: panelsTable,
+          )
+          // only approved panels
+          // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
+          // order panel by color
+          .order(`color`, {
+            foreignTable: panelsTable,
+            ascending: true
+          })
+          .limit(1, {foreignTable: panelsTable})
+          .filter('profileid', 'eq', user.id);
+        
+        if (safeOrderConfig.key === 'moduleName') {
+          queryBuilder = queryBuilder
+            .order('name', {
+              foreignTable: prefix,
+              ascending: safeOrderConfig.direction === 'asc'
+            })
+            .order('id', {
+              foreignTable: prefix,
+              ascending: true
+            });
+        } else {
+          queryBuilder = queryBuilder
+            .order('updated', {ascending: safeOrderConfig.direction === 'asc'})
+            .order('name', {
+              foreignTable: prefix,
               ascending: true
             })
-            .order('updated', {ascending: false})
-            .limit(1, {foreignTable: panelsTable})
-            .filter('profileid', 'eq', user.id)
-        ).pipe(
+            .order('id', {
+              foreignTable: prefix,
+              ascending: true
+            });
+        }
+        
+        return rxFrom(queryBuilder).pipe(
           remapErrors(),
-          map((x: any) => x.data.map((y: any) => y.module))
-        )
-      ),
+          map((x: any) => (x.data ?? []).map((y: any) => ({
+            ...y.module,
+            collectionUpdated: y.collectionUpdated
+          })))
+        );
+      }),
     );
+  }
+  
+  private getSafeCurrentUserModulesOrderConfig(
+    orderConfig?: Partial<CurrentUserModulesOrderConfig>
+  ): CurrentUserModulesOrderConfig {
+    const key: CurrentUserModulesOrderKey = orderConfig?.key === 'moduleName'
+      ? 'moduleName'
+      : 'collectionUpdated';
+    
+    const direction: CurrentUserModulesOrderDirection = orderConfig?.direction === 'asc'
+      ? 'asc'
+      : orderConfig?.direction === 'desc'
+        ? 'desc'
+        : key === 'moduleName'
+          ? 'asc'
+          : 'desc';
+    
+    return {key, direction};
   }
   
   @Cacheable({
