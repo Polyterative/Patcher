@@ -32,6 +32,19 @@
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
   font-style: normal;
+
+  a {
+    color: #3D73BC;
+    text-decoration: none;
+
+    &:visited {
+      color: #3D73BC;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 
