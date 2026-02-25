@@ -79,14 +79,20 @@ $palette: (
   width: 100%;
   min-width: 0;
   --patch-editor-search-width: 21rem;
-  --patch-editor-inline-control-min: 12.5rem;
+  --patch-editor-inline-control-width: 14.5rem;
 }
 
 .patch-editor-inline-controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--patch-editor-inline-control-min), 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.65rem;
   margin-bottom: 0.55rem;
+}
+
+:host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
+  flex: 0 0 var(--patch-editor-inline-control-width);
+  max-width: var(--patch-editor-inline-control-width);
 }
 
 :host ::ng-deep .patch-editor-inline-controls .mat-mdc-form-field-subscript-wrapper {
@@ -112,7 +118,18 @@ $palette: (
 
 @media (max-width: 980px) {
   :host {
-    --patch-editor-inline-control-min: 100%;
+    --patch-editor-inline-control-width: calc(50% - 0.3rem);
+  }
+
+  :host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
+    flex-basis: var(--patch-editor-inline-control-width);
+    max-width: var(--patch-editor-inline-control-width);
+  }
+}
+
+@media (max-width: 560px) {
+  :host {
+    --patch-editor-inline-control-width: 100%;
   }
 
   .patch-editor-floating-search {
