@@ -362,11 +362,12 @@ export class SupabaseService extends SubManager {
                 rxFrom(this.supabase.from(DbPaths.patches)
                   .select(`id,name,description,${ QueryJoins.author },updated,created `)
                   .filter('id', 'eq', resultFromView.patchid)
-                  .single())
+                  .filter('public', 'eq', true)
+                  .maybeSingle())
                   .pipe(map(x => x.data))
               )
-            );
-            
+            ).pipe(map(results => results.filter(Boolean)));
+
             return x.data.length > 0 ? getPatchData$ : of([]);
           }
         )
