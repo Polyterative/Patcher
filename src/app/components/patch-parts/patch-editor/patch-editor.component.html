@@ -36,21 +36,23 @@
         >
         @if (bag.sourceCards.length > 0) {
           <div class="patch-editor-inline-controls">
-            <lib-mat-form-entity [control]="moduleSortControl"
+            <lib-mat-form-entity class="patch-editor-control"
+                                 [control]="moduleSortControl"
                                  [type]="formTypes.SELECT"
                                  [options$]="sortModeOptions$"
                                  [disableVoidSelection]="true"
                                  [formFieldAppearanceType]="'outline'"
                                  iconL1="sort"
-                                 label="Sort modules"
+                                 label="Sort"
             ></lib-mat-form-entity>
-            <lib-mat-form-entity [control]="moduleGroupControl"
+            <lib-mat-form-entity class="patch-editor-control"
+                                 [control]="moduleGroupControl"
                                  [type]="formTypes.SELECT"
                                  [options$]="groupModeOptions$"
                                  [disableVoidSelection]="true"
                                  [formFieldAppearanceType]="'outline'"
                                  iconL1="view_stream"
-                                 label="Grouping"
+                                 label="Group"
             ></lib-mat-form-entity>
           </div>
         }
