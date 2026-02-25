@@ -105,7 +105,7 @@ h1 {
   border: 1px solid var(--home-border);
   border-radius: 0.42rem;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 20px 34px rgba(8, 20, 38, 0.18);
+  box-shadow: 0 1.25rem 2.125rem rgba(8, 20, 38, 0.18);
 
   img {
     display: block;
@@ -138,7 +138,7 @@ h1 {
   border-radius: 0.35rem;
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 14px 26px rgba(8, 20, 38, 0.22);
+  box-shadow: 0 0.875rem 1.625rem rgba(8, 20, 38, 0.22);
   animation: drift 4.2s ease-in-out infinite;
 
   img {
@@ -168,7 +168,7 @@ h1 {
     translate: 0 0;
   }
   50% {
-    translate: 0 -4px;
+    translate: 0 -0.25rem;
   }
 }
 
@@ -178,7 +178,7 @@ h1 {
   }
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 70rem) {
   .hero-shell {
     grid-template-columns: 1fr;
   }
@@ -190,7 +190,7 @@ h1 {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .hero-copy {
     padding: 0.2rem;
   }
