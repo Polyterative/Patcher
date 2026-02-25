@@ -34,7 +34,9 @@
           <lib-hero-content-card [titleNormal]="'Connections graph'"
           >
             <lib-clean-card>
-              <app-patch-graph></app-patch-graph>
+              <app-patch-graph [progressiveRender]="!isEditing"
+                               [animateGraphBuild]="isEditing"
+              ></app-patch-graph>
             </lib-clean-card>
           </lib-hero-content-card>
         } @else {
