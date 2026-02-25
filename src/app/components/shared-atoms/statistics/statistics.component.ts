@@ -1,30 +1,22 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
-import {
-  fadeInOnEnterAnimation,
-  fadeOutOnLeaveAnimation
-} from 'angular-animations';
 
 
 @Component({
   selector: 'app-statistics',
   templateUrl: './statistics.component.html',
   styleUrls: ['./statistics.component.scss'],
-  animations: [
-    fadeInOnEnterAnimation({anchor: 'enter', duration: 200}),
-    fadeOutOnLeaveAnimation({anchor: 'exit', duration: 150})
-  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class StatisticsComponent implements OnInit {
-  
+export class StatisticsComponent {
+
   @Input() title: string | null = null;
   @Input() cardClass: string = '';
+  @Input() icon: string | undefined;
 
   @Input() statistics: {
     name: string;
@@ -34,12 +26,6 @@ export class StatisticsComponent implements OnInit {
   
   get visibleStatistics() {
     return this.statistics?.filter(s => s.value > 0) ?? [];
-  }
-  
-  constructor() {
-  }
-  
-  ngOnInit(): void {
   }
   
 }
