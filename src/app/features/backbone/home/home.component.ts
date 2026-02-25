@@ -126,7 +126,7 @@ export class HomeComponent extends SubManager {
       kind: 'patch',
       kicker: 'auto-save patch details',
       title: 'Turn sessions into repeatable results',
-      description: 'Save settings, cable routes, and notes while you patch, then reopen everything before rehearsal and rebuild it fast.',
+      description: 'Save settings, cable routes, and notes while you patch, then reopen your ideas and rebuild them fast.',
       keywords: ['exact setup'],
       tone: 'patch'
     },
