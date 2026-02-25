@@ -9,12 +9,13 @@ import {
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import {
   BehaviorSubject,
+  ReplaySubject,
   Subject
 } from "rxjs";
 import { SupabaseService } from "src/app/features/backend/supabase.service";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import {
-  filter,
+  map,
   switchMap,
   takeUntil,
   tap,
@@ -23,7 +24,6 @@ import {
 import { DbComment } from "src/app/models/comment";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { DomSanitizer } from "@angular/platform-browser";
 import { sanitizeItemInPipe } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
 
 
@@ -44,10 +44,12 @@ export class CommentsDataService extends SubManager {
     }
   };
   
-  readonly maxLength = 1440*2;
-  
+  readonly minLength = 3;
+  readonly maxLength = 1000;
+
   readonly comments$              = new BehaviorSubject<DbComment[] | undefined>(undefined);
-  readonly requestCommentsUpdate$ = new Subject<CommentEntityReference>();
+  // ReplaySubject(1): late subscribers (withLatestFrom) always get the last entity reference.
+  readonly requestCommentsUpdate$ = new ReplaySubject<CommentEntityReference>(1);
   readonly requestReset$ = new Subject<void>();
   
   readonly submitComment$ = new Subject<string>();
@@ -55,10 +57,7 @@ export class CommentsDataService extends SubManager {
   
   constructor(
     private backend: SupabaseService,
-    // private userService: UserManagementService,
     private snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer
-    
   ) {
     super();
     
@@ -68,7 +67,7 @@ export class CommentsDataService extends SubManager {
         code:    'submit',
         flex:    '6rem',
         control: new FormControl<string>('', [
-          // validators as functions
+          Validators.minLength(this.minLength),
           Validators.maxLength(this.maxLength),
           CustomValidators.onlyCleanHtml,
           CustomValidators.notEmpty,
@@ -110,20 +109,17 @@ export class CommentsDataService extends SubManager {
     // when a new comment add has been requested, add the comment by performing the backend call
     this.submitComment$.pipe(
       sanitizeItemInPipe(),
-      // last check before sending the comment
-      filter(x => !!x),
-      filter(x => x.length > 0),
       withLatestFrom(this.requestCommentsUpdate$),
-      switchMap(([comment, entity]) => this.backend.add.comment({
-        content:    comment,
-        entityId:   entity.entityId,
-        entityType: entity.entityType
-      })),
-      withLatestFrom(this.requestCommentsUpdate$),
+      switchMap(([comment, entity]) =>
+        this.backend.add.comment({
+          content: comment,
+          entityId: entity.entityId,
+          entityType: entity.entityType
+        }).pipe(map(() => entity))
+      ),
       takeUntil(this.destroy$)
-    ).subscribe(([_, entity]) => {
+    ).subscribe(entity => {
       this.resetField();
-      
       SharedConstants.successCustom(this.snackBar, 'Comment posted.');
       this.requestCommentsUpdate$.next(entity);
     });
