@@ -13,11 +13,11 @@
 .brand-button {
   @extend .slight-rounding;
 
-  line-height: 36px;
+  line-height: 2.25rem;
   white-space: nowrap;
 
   font-family: Roboto, Helvetica Neue, sans-serif;
-  padding: 0 16px;
+  padding: 0 1rem;
 
   //font-weight: bolder;
   text-transform: uppercase;

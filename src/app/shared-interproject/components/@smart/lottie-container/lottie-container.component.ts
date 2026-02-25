@@ -26,7 +26,7 @@ import { AnimationOptions } from 'ngx-lottie';
 export class LottieContainerComponent implements OnInit {
   @Input() options: AnimationOptions;
   @Input() styles: Partial<CSSStyleDeclaration> = {
-    maxWidth: '500px',
+    maxWidth: '31.25rem',
     margin:   '0 auto'
   };
   
