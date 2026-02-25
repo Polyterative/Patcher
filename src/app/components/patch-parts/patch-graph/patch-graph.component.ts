@@ -44,6 +44,14 @@ interface ModuleInstance {
   instanceId: number | undefined;
 }
 
+interface FlowAnimationState {
+  baseEdges: GraphEdge[];
+  outgoingByNode: Map<string, GraphEdge[]>;
+  currentNodeId?: string;
+  edgeHeatById: Map<string, number>;
+  tickCount: number;
+}
+
 @Component({
   selector: 'app-patch-graph',
   templateUrl: './patch-graph.component.html',
@@ -74,6 +82,11 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   private _graphBuiltOnce = false;
   private revealTimers: ReturnType<typeof setTimeout>[] = [];
   private revealRunId = 0;
+  private flowInterval?: ReturnType<typeof setInterval>;
+  private flowState?: FlowAnimationState;
+  private readonly flowStartColor = '#B9FFF2';
+  private readonly flowEndColor = '#1FCBA2';
+  private readonly flowBaseColor = '#93A0B1';
 
   legend = [
     {label: 'Module', color: '#8974E4'},
@@ -188,7 +201,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             color: this.legend[1].color,
             size: sizeConstant * 5,
             x: 1, y: 1,
-            label: `${ module.name } ${ jack.name }`
+            label: `${ module.name } ${ jack.name }`,
+            data: {type: 'cv-out', module}
           }));
           
           const inNodes: GraphNode[] = module.ins.map(jack => ({
@@ -196,7 +210,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
             color: this.legend[2].color,
             size: sizeConstant * 5,
             x: 1, y: 1,
-            label: `${ module.name } ${ jack.name }`
+            label: `${ module.name } ${ jack.name }`,
+            data: {type: 'cv-in', module}
           }));
           
           const insEdges: GraphEdge[] = inNodes.map(n => ({
@@ -270,12 +285,14 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   }
 
   private buildNode(nodeId: string, CV: CVwithModule, color: string, sizeConstant: number): GraphNode {
+    const type = color === this.legend[1].color ? 'cv-out' : 'cv-in';
     return {
       id: nodeId,
       label: `${ CV.name }`,
       color,
       size: sizeConstant * 4,
-      x: 1, y: 1
+      x: 1, y: 1,
+      data: {type, module: CV.module}
     };
   }
 
@@ -314,50 +331,67 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       return;
     }
     
-    const visibleNodes: GraphNode[] = [];
+    const modules = nodes.filter(node => node.data?.type === 'module');
+    const cvOutNodes = nodes.filter(node => node.data?.type === 'cv-out');
+    const cvInNodes = nodes.filter(node => node.data?.type === 'cv-in');
+    const remainingNodes = nodes.filter(node =>
+      node.data?.type !== 'module'
+      && node.data?.type !== 'cv-out'
+      && node.data?.type !== 'cv-in'
+    );
+    const visibleNodes: GraphNode[] = [...modules];
     const visibleNodeIds = new Set<string>();
+    modules.forEach(node => visibleNodeIds.add(node.id));
     const nodeIds = new Set(nodes.map(node => node.id));
     const revealableEdges = edges.filter(edge => nodeIds.has(edge.from) && nodeIds.has(edge.to));
-    const nodeStepMs = Math.max(20, Math.min(90, Math.floor(1800 / Math.max(1, nodes.length))));
-    const edgeStepMs = Math.max(14, Math.min(55, Math.floor(1600 / Math.max(1, revealableEdges.length))));
-    const edgeStartDelayMs = 180;
+    const edgeStageDelayMs = 420;
+    const stageDelayMs = 480;
     
-    nodes.forEach((node, index) => {
+    this.nodes$.next([...visibleNodes]);
+    this.edges$.next([]);
+    
+    let layerStartDelay = 0;
+    const revealLayer = (layerNodes: GraphNode[]) => {
+      layerStartDelay += stageDelayMs;
+      if (layerNodes.length === 0) { return; }
       const timer = setTimeout(() => {
         if (runId !== this.revealRunId) { return; }
-        
-        visibleNodes.push(node);
-        visibleNodeIds.add(node.id);
-        
-        const visibleEdges = revealableEdges.filter(edge =>
-          visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)
-        );
-        
+        layerNodes.forEach(node => {
+          if (visibleNodeIds.has(node.id)) { return; }
+          visibleNodes.push(node);
+          visibleNodeIds.add(node.id);
+        });
         this.nodes$.next([...visibleNodes]);
-        this.edges$.next(visibleEdges);
-      }, index * nodeStepMs);
+      }, layerStartDelay);
       this.revealTimers.push(timer);
-    });
+    };
     
-    const edgesDelay = nodes.length * nodeStepMs + edgeStartDelayMs;
-    revealableEdges.forEach((edge, index) => {
-      const timer = setTimeout(() => {
-        if (runId !== this.revealRunId) { return; }
-        if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) { return; }
-        
-        const currentEdges = this.edges$.getValue();
-        if (!currentEdges.some(current => current.id === edge.id)) {
-          this.edges$.next([...currentEdges, edge]);
-        }
-      }, edgesDelay + index * edgeStepMs);
-      this.revealTimers.push(timer);
-    });
+    revealLayer(cvOutNodes);
+    revealLayer([...cvInNodes, ...remainingNodes]);
+    
+    const edgesDelay = layerStartDelay + edgeStageDelayMs;
+    const edgesStageTimer = setTimeout(() => {
+      if (runId !== this.revealRunId) { return; }
+      const visibleEdges = revealableEdges.filter(edge =>
+        visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)
+      );
+      this.edges$.next(visibleEdges);
+    }, edgesDelay);
+    this.revealTimers.push(edgesStageTimer);
+    
+    const flowStartDelay = edgesDelay + 260;
+    const flowTimer = setTimeout(() => {
+      if (runId !== this.revealRunId) { return; }
+      this.startPersistentFlowAnimation(revealableEdges);
+    }, flowStartDelay);
+    this.revealTimers.push(flowTimer);
   }
   
   private cancelProgressiveReveal(): void {
     this.revealRunId++;
     this.revealTimers.forEach(timer => clearTimeout(timer));
     this.revealTimers = [];
+    this.stopPersistentFlowAnimation();
   }
   
   private orderNodesForReveal(nodes: GraphNode[]): GraphNode[] {
@@ -375,5 +409,125 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         y: Math.sin(angle) * radius
       };
     });
+  }
+  
+  private startPersistentFlowAnimation(edges: GraphEdge[]): void {
+    this.stopPersistentFlowAnimation();
+    if (edges.length === 0) { return; }
+    
+    const baseEdges = edges.map(edge => ({...edge, color: this.flowBaseColor}));
+    const outgoingByNode = new Map<string, GraphEdge[]>();
+    baseEdges.forEach(edge => {
+      const list = outgoingByNode.get(edge.from) ?? [];
+      list.push(edge);
+      outgoingByNode.set(edge.from, list);
+    });
+    
+    this.flowState = {
+      baseEdges,
+      outgoingByNode,
+      currentNodeId: baseEdges[0]?.to,
+      edgeHeatById: new Map<string, number>(),
+      tickCount: 0
+    };
+    
+    this.injectFlowPulse();
+    this.emitFlowStyledEdges();
+    this.flowInterval = setInterval(() => {
+      this.advanceFlowStep();
+    }, 55);
+  }
+  
+  private stopPersistentFlowAnimation(): void {
+    if (this.flowInterval) {
+      clearInterval(this.flowInterval);
+      this.flowInterval = undefined;
+    }
+    this.flowState = undefined;
+  }
+  
+  private advanceFlowStep(): void {
+    if (!this.flowState) { return; }
+    this.flowState.tickCount += 1;
+    this.decayFlowHeat();
+    if (this.flowState.tickCount % 2 === 0) {
+      this.injectFlowPulse();
+    }
+    
+    this.emitFlowStyledEdges();
+  }
+  
+  private emitFlowStyledEdges(): void {
+    if (!this.flowState) { return; }
+    
+    const styledEdges = this.flowState.baseEdges.map(edge => {
+      const heat = this.flowState?.edgeHeatById.get(edge.id) ?? 0;
+      // High heat = leading edge of the directed pulse, low heat = older tail.
+      const flowColor = this.interpolateHexColor(this.flowEndColor, this.flowStartColor, Math.min(1, heat));
+      return {
+        ...edge,
+        color: heat > 0.01
+          ? flowColor
+          : this.flowBaseColor,
+        size: edge.size * (0.95 + heat * 0.78)
+      };
+    });
+    
+    this.edges$.next(styledEdges);
+  }
+  
+  private injectFlowPulse(): void {
+    if (!this.flowState) { return; }
+    const {baseEdges, outgoingByNode, edgeHeatById} = this.flowState;
+    if (baseEdges.length === 0) { return; }
+    
+    const sourceNodeId = this.flowState.currentNodeId;
+    const outgoing = sourceNodeId ? outgoingByNode.get(sourceNodeId) ?? [] : [];
+    const pool = outgoing.length > 0 ? outgoing : baseEdges;
+    const nextEdge = pool[Math.floor(Math.random() * pool.length)];
+    if (!nextEdge) { return; }
+    
+    this.flowState.currentNodeId = nextEdge.to;
+    const current = edgeHeatById.get(nextEdge.id) ?? 0;
+    edgeHeatById.set(nextEdge.id, Math.min(1, current + 0.72));
+  }
+  
+  private decayFlowHeat(): void {
+    if (!this.flowState) { return; }
+    const nextHeatById = new Map<string, number>();
+    this.flowState.edgeHeatById.forEach((heat, edgeId) => {
+      const decayed = heat * 0.87;
+      if (decayed > 0.03) {
+        nextHeatById.set(edgeId, decayed);
+      }
+    });
+    this.flowState.edgeHeatById = nextHeatById;
+  }
+  
+  private interpolateHexColor(fromHex: string, toHex: string, t: number): string {
+    const from = this.hexToRgb(fromHex);
+    const to = this.hexToRgb(toHex);
+    const clamped = Math.max(0, Math.min(1, t));
+    const r = Math.round(from.r + (to.r - from.r) * clamped);
+    const g = Math.round(from.g + (to.g - from.g) * clamped);
+    const b = Math.round(from.b + (to.b - from.b) * clamped);
+    return `rgb(${ r }, ${ g }, ${ b })`;
+  }
+  
+  private hexToRgb(hex: string): {
+    r: number,
+    g: number,
+    b: number
+  } {
+    const value = hex.replace('#', '');
+    const normalized = value.length === 3
+      ? value.split('').map(char => char + char).join('')
+      : value;
+    const parsed = Number.parseInt(normalized, 16);
+    return {
+      r: (parsed >> 16) & 255,
+      g: (parsed >> 8) & 255,
+      b: parsed & 255
+    };
   }
 }
