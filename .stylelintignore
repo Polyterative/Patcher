@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# Empty/BOM-only files that confuse the parser
+src/app/shared-interproject/dialogs/read-only-dialog/read-only-dialog.component.scss
