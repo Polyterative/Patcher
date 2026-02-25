@@ -106,8 +106,10 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     [id: string]: GraphEdge
   } = {};
   
+  // Fast module lookup lets connection passes avoid repeated linear scans.
   const moduleLookup = new Map<number, DbModule>(modules.map(module => [module.id, module]));
   
+  // Instance grouping guarantees duplicate modules get stable "(n)" labels and distinct IDs.
   const instances = extractPatchGraphModuleInstances(connections);
   const instancesByModule = new Map<number, ModuleInstance[]>();
   instances.forEach(instance => {
@@ -123,6 +125,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     });
   });
   
+  // First pass materializes module nodes and their jack fan-in/fan-out edges.
   instances.forEach(instance => {
     const module = moduleLookup.get(instance.moduleId);
     if (!module) {
@@ -215,6 +218,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     outsEdges.forEach(edge => allModuleJackEdges[edge.id] = edge);
   });
   
+  // Second pass ensures connection endpoint CV nodes exist even when module data is partial.
   connections.forEach(connection => {
     const moduleNodeIdA = buildModuleNodeId(connection.a.module.id, connection.instance_id_a);
     const moduleNodeIdB = buildModuleNodeId(connection.b.module.id, connection.instance_id_b);
@@ -246,6 +250,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     }
   });
   
+  // Patch cables keep duplicate routes distinct via per-route occurrence suffixes.
   const routeOccurrenceByKey = new Map<string, number>();
   const patchEdges: GraphEdge[] = connections.map(connection => {
     const from = buildCvNodeId(connection.a.module.id, connection.instance_id_a, connection.a.id);
@@ -271,6 +276,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     };
   });
   
+  // Hidden module-bridge edges provide structure for staged reveal without cluttering final view.
   const moduleBridgeEdgeMap = new Map<string, GraphEdge>();
   connections.forEach(connection => {
     const moduleFrom = buildModuleNodeId(connection.a.module.id, connection.instance_id_a);
@@ -309,6 +315,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     usedCvNodeIds.add(edge.to);
   });
   
+  // Keep only jack edges that are actually part of current patch connectivity.
   const onlyUsedModuleJacksEdges = Object.values(allModuleJackEdges)
     .filter(edge => usedCvNodeIds.has(edge.from) || usedCvNodeIds.has(edge.to));
   
