@@ -6,7 +6,7 @@
   padding: 0.875rem 1rem;
   border-radius: 0.25rem;
   background-color: color.adjust(brand.$brand-primary, $alpha: -0.85); // Very light brand-primary background
-  border-left: 4px solid color.adjust(brand.$brand-primary, $alpha: -0.5); // Brand-primary border
+  border-left: 0.25rem solid color.adjust(brand.$brand-primary, $alpha: -0.5); // Brand-primary border
 
   .info-header {
     display: flex;

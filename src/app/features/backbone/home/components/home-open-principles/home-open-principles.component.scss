@@ -42,7 +42,7 @@
   gap: 0.48rem;
   padding: 0.9rem;
   border: 0;
-  border-left: 4px solid rgba(23, 102, 178, 0.62);
+  border-left: 0.25rem solid rgba(23, 102, 178, 0.62);
   border-radius: 0.28rem;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: none;
@@ -82,13 +82,13 @@
   }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 57.5rem) {
   .principles-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .principles-shell {
     padding: 0.96rem;
   }

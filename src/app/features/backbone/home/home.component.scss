@@ -41,7 +41,7 @@
     border-radius: 0.4rem;
     background-image: linear-gradient(rgba(255, 255, 255, 0.24) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.24) 1px, transparent 1px);
-    background-size: 30px 30px;
+    background-size: 1.875rem 1.875rem;
     opacity: 0.44;
     pointer-events: none;
   }
@@ -118,7 +118,7 @@ section {
 
 .section-enter {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(0.75rem);
   animation: homeEnter 560ms ease forwards;
 }
 
@@ -145,7 +145,7 @@ section {
 @keyframes homeEnter {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(0.75rem);
   }
   to {
     opacity: 1;
@@ -161,7 +161,7 @@ section {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .home-page {
     padding: 0.95rem 0 3rem;
     gap: 1.22rem;
