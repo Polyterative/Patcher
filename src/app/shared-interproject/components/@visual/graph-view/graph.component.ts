@@ -136,7 +136,7 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
         hideLabelsOnMove: false,
         hideEdgesOnMove: false,
         labelGridCellSize: 10,
-        labelRenderedSizeThreshold: 10,
+        labelRenderedSizeThreshold: 9,
         labelRenderer: this.renderNodeLabel
       });
       
