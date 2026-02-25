@@ -242,7 +242,8 @@ $bgGradientBG: rgb(223, 223, 223);
 
 html {
   @include content-font;
-  font-size:             100%;
+  // Slight global downscale so default 100% browser zoom feels less oversized.
+  font-size: 80%;
   font-feature-settings: "liga" 0;
 }
 
