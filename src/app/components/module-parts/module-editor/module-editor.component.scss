@@ -176,8 +176,8 @@
   opacity: 1;
   background: #ffffff;
   color: #365777;
-  border: 2px solid #3e638a;
-  box-shadow: 0 4px 14px rgba(38, 76, 116, 0.26);
+  border: 0.125rem solid #3e638a;
+  box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.26);
   transition: opacity 140ms ease-in-out, transform 140ms ease-in-out, background-color 140ms ease-in-out;
 
   &:hover:not(:disabled) {
@@ -207,7 +207,7 @@
   }
 }
 
-@media (max-width: 1160px) {
+@media (max-width: 72.5rem) {
   .setup-grid {
     grid-template-columns: 1fr;
   }
@@ -218,7 +218,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 47.5rem) {
   .cv-controls-row {
     margin-bottom: 0.25rem;
   }

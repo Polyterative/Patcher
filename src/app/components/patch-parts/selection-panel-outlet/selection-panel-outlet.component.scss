@@ -7,7 +7,7 @@
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(0.5rem);
   }
   to {
     opacity: 1;
@@ -32,14 +32,14 @@
   width: 26rem;
   max-width: calc(100vw - 3rem);
   background-color: color.adjust(#5ED0B4, $alpha: -0.82);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(0.375rem);
   border: 1px solid rgba(94, 208, 180, 0.35);
   border-radius: 0.5rem;
   padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.25);
   // Fade + slide-up animation on panel appearance
   animation: fadeSlideUp 150ms ease-out both;
 }
@@ -100,13 +100,13 @@
   letter-spacing: 0.06em;
   opacity: 0.5;
   border: 1px solid currentColor;
-  border-radius: 3px;
+  border-radius: 0.1875rem;
   padding: 0 0.25rem;
 }
 
 // ── Narrow viewport: hide the floating panel ──────────────────────────────────
 // (patch-editor will show an inline fallback at this breakpoint)
-@media (max-width: 799px) {
+@media (max-width: 49.9375rem) {
   :host {
     display: none;
   }

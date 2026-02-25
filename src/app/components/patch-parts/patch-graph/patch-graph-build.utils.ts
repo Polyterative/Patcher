@@ -143,7 +143,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
       id: moduleNodeId,
       label: moduleLabel,
       color: palette.moduleColor,
-      size: sizeConstant * 7.5,
+      size: sizeConstant * 3.75,
       x: 1,
       y: 1,
       data: {
@@ -158,7 +158,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     const outNodes: GraphNode[] = module.outs.map(jack => ({
       id: moduleNodeId + jack.id,
       color: palette.cvOutColor,
-      size: sizeConstant * 5,
+      size: sizeConstant * 2.5,
       x: 1,
       y: 1,
       label: `${ jack.name }`,
@@ -172,7 +172,7 @@ export function buildPatchGraphData(params: PatchGraphBuildParams): PatchGraphBu
     const inNodes: GraphNode[] = module.ins.map(jack => ({
       id: moduleNodeId + jack.id,
       color: palette.cvInColor,
-      size: sizeConstant * 5,
+      size: sizeConstant * 2.5,
       x: 1,
       y: 1,
       label: `${ jack.name }`,
@@ -340,7 +340,7 @@ function buildCvNode(
     id: nodeId,
     label: `${ cv.name }`,
     color,
-    size: sizeConstant * 4,
+    size: sizeConstant * 2.0,
     x: 1,
     y: 1,
     data: {

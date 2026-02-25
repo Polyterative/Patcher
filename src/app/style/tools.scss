@@ -56,23 +56,23 @@ $standardUnit: .5rem;
 }
 
 //breakpoint	mediaQuery
-//xs	'screen and (max-width: 599px)'
-//sm	'screen and (min-width: 600px) and (max-width: 959px)'
-//md	'screen and (min-width: 960px) and (max-width: 1279px)'
-//lg	'screen and (min-width: 1280px) and (max-width: 1919px)'
-//xl	'screen and (min-width: 1920px) and (max-width: 5000px)'
-//lt-sm	'screen and (max-width: 599px)'
-//lt-md	'screen and (max-width: 959px)'
-//lt-lg	'screen and (max-width: 1279px)'
-//lt-xl	'screen and (max-width: 1919px)'
-//gt-xs	'screen and (min-width: 600px)'
-//gt-sm	'screen and (min-width: 960px)'
-//gt-md	'screen and (min-width: 1280px)'
-//gt-lg	'screen and (min-width: 1920px)'
+//xs	'screen and (max-width: 37.4375rem)'
+//sm	'screen and (min-width: 37.5rem) and (max-width: 59.9375rem)'
+//md	'screen and (min-width: 60rem) and (max-width: 79.9375rem)'
+//lg	'screen and (min-width: 80rem) and (max-width: 119.9375rem)'
+//xl	'screen and (min-width: 120rem) and (max-width: 312.5rem)'
+//lt-sm	'screen and (max-width: 37.4375rem)'
+//lt-md	'screen and (max-width: 59.9375rem)'
+//lt-lg	'screen and (max-width: 79.9375rem)'
+//lt-xl	'screen and (max-width: 119.9375rem)'
+//gt-xs	'screen and (min-width: 37.5rem)'
+//gt-sm	'screen and (min-width: 60rem)'
+//gt-md	'screen and (min-width: 80rem)'
+//gt-lg	'screen and (min-width: 120rem)'
 
 .col-lt-SM {
-  /* Below 600px all flex rows should be cols*/
-  @media (max-width: 600px) {
+  /* Below 37.5rem all flex rows should be cols*/
+  @media (max-width: 37.5rem) {
     flex-direction: column !important;
     -webkit-box-orient: vertical !important;
     height: auto !important /*  important for sizing of row heights */
@@ -80,8 +80,8 @@ $standardUnit: .5rem;
 }
 
 .col-lt-MD {
-  /* Below 960px all flex rows should be cols*/
-  @media (max-width: 960px) {
+  /* Below 60rem all flex rows should be cols*/
+  @media (max-width: 60rem) {
     flex-direction: column !important;
     -webkit-box-orient: vertical !important;
     height: auto !important; /*  important for sizing of row heights */
@@ -89,8 +89,8 @@ $standardUnit: .5rem;
 }
 
 .col-lt-LG {
-  /* Below 1280px all flex rows should be cols*/
-  @media (max-width: 1280px) {
+  /* Below 80rem all flex rows should be cols*/
+  @media (max-width: 80rem) {
     flex-direction: column;
     -webkit-box-orient: vertical;
     height: auto; /*  important for sizing of row heights */
@@ -98,8 +98,8 @@ $standardUnit: .5rem;
 }
 
 .col-lt-XL {
-  /* Below 1920px all flex rows should be cols*/
-  @media (max-width: 1920px) {
+  /* Below 120rem all flex rows should be cols*/
+  @media (max-width: 120rem) {
     flex-direction: column;
     -webkit-box-orient: vertical;
     height: auto; /*  important for sizing of row heights */
@@ -107,8 +107,8 @@ $standardUnit: .5rem;
 }
 
 .row-lt-SM {
-  /* Below 600px all flex cols should be rows*/
-  @media (max-width: 600px) {
+  /* Below 37.5rem all flex cols should be rows*/
+  @media (max-width: 37.5rem) {
     flex-direction: row;
     -webkit-box-orient: horizontal;
     height: auto; /*  important for sizing of row heights */
@@ -116,8 +116,8 @@ $standardUnit: .5rem;
 }
 
 .row-lt-MD {
-  /* Below 960px all flex cols should be rows*/
-  @media (max-width: 960px) {
+  /* Below 60rem all flex cols should be rows*/
+  @media (max-width: 60rem) {
     flex-direction: row;
     -webkit-box-orient: horizontal;
     height: auto; /*  important for sizing of row heights */
@@ -125,8 +125,8 @@ $standardUnit: .5rem;
 }
 
 .row-lt-LG {
-  /* Below 1280px all flex cols should be rows*/
-  @media (max-width: 1280px) {
+  /* Below 80rem all flex cols should be rows*/
+  @media (max-width: 80rem) {
     flex-direction: row;
     -webkit-box-orient: horizontal;
     height: auto; /*  important for sizing of row heights */
@@ -134,8 +134,8 @@ $standardUnit: .5rem;
 }
 
 .row-lt-XL {
-  /* Below 1920px all flex cols should be rows*/
-  @media (max-width: 1920px) {
+  /* Below 120rem all flex cols should be rows*/
+  @media (max-width: 120rem) {
     flex-direction: row;
     -webkit-box-orient: horizontal;
     height: auto; /*  important for sizing of row heights */
@@ -168,7 +168,7 @@ $standardUnit: .5rem;
   //flex-flow:          column;
   -webkit-box-orient: vertical;
   height:             auto; /*  important for sizing of row heights */
-  //margin-bottom:      20px;
+  //margin-bottom:      1.25rem;
 }
 
 //align flex to end
@@ -216,7 +216,7 @@ $standardUnit: .5rem;
   //flex-flow:          column;
   -webkit-box-orient: vertical;
   height:             auto; /*  important for sizing of row heights */
-  //margin-bottom:      20px;
+  //margin-bottom:      1.25rem;
 }
 
 .auto {
@@ -326,7 +326,7 @@ $standardUnit: .5rem;
   min-width: 0; // prevent flex blowout
 }
 
-@media (max-width: 959px) {
+@media (max-width: 59.9375rem) {
   .sidebar-layout {
     flex-direction: column;
   }
