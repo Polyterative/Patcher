@@ -34,9 +34,9 @@
 
 a[mat-icon-button].option,
 button[mat-icon-button].option {
-  min-width: 40px;
-  width: 40px;
-  height: 40px;
+  min-width: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -54,8 +54,9 @@ button[mat-icon-button].option {
 mat-icon {
   color: inherit !important;
   margin: 0;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;

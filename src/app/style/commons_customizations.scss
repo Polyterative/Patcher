@@ -18,26 +18,26 @@ body {
 
 .mat-button, .mat-raised-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button, .mat-fab, .mat-mini-fab {
   //font-family: "Roboto Condensed", Helvetica Neue, sans-serif!important;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
 .mat-button, .mat-raised-button, .mat-icon-button, .mat-stroked-button, .mat-flat-button, .mat-fab, .mat-mini-fab {
-  line-height: 36px;
+  line-height: 2.25rem;
   white-space: nowrap;
   text-align: center;
-  min-width: 64px;
-  padding: 0 16px;
+  min-width: 4rem;
+  padding: 0 1rem;
 }
 
 
 .mat-card-title {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 500;
 }
 
 .mat-card-subtitle, .mat-card-content {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 mat-paginator {
@@ -46,7 +46,7 @@ mat-paginator {
 }
 
 .mat-paginator-container {
-  min-height: 56px;
+  min-height: 3.5rem;
 }
 
 .mat-mdc-dialog-actions {
@@ -82,11 +82,11 @@ mat-paginator {
 }
 
 .mat-slider {
-  height: 24px !important; //was 48
+  height: 1.5rem !important; //was 48
 }
 
 .mat-slider-horizontal .mat-slider-wrapper {
-  top: 11px !important; // was 23 = 48/2-1
+  top: 0.6875rem !important; // was 23 = 48/2-1
 }
 
 .mat-form-field-appearance-standard .mat-form-field-flex {
@@ -385,10 +385,10 @@ $snack-toolbar-offset: 5em;
   position: absolute;
   background-color: rgba(0, 128, 0, 0.8);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.9em;
-  top: -30px;
+  top: -1.875rem;
   left: 0;
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s;
@@ -399,6 +399,28 @@ $snack-toolbar-offset: 5em;
 .copy-feedback.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+// ─── Icon-button breathing room ─────────────────────────────────────────────
+// Angular Material 21 sets button size on .mat-mdc-icon-button.mat-mdc-button-base
+// (two classes) and writes width/height/padding as hard values, not just CSS vars.
+// We must match that specificity and use rem so the 80 % html font-size scales
+// everything proportionally.
+//   button: 2.5rem = 32 px @ 80%   icon: 1.5rem = 19.2 px @ 80%
+//   padding each side: 0.5rem = 6.4 px — comfortable breathing room.
+.mat-mdc-icon-button.mat-mdc-button-base {
+  --mdc-icon-button-state-layer-size: 2.5rem;
+  --mat-icon-button-state-layer-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+
+  .mat-icon {
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }
 }
 
 // ─── Danger / destructive action colouring ───────────────────────────────────
