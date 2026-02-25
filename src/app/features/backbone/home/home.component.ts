@@ -101,23 +101,23 @@ export class HomeComponent extends SubManager {
   readonly workflowSteps: HomeWorkflowStep[] = [
     {
       kicker: 'step 01',
-      title: 'Explore what fits your sound',
-      description: 'Browse modules and narrow quickly to what actually fits your goals.'
+      title: 'Save your modules to your library',
+      description: 'Browse modules and add them to your collection.'
     },
     {
       kicker: 'step 02',
-      title: 'Capture the patch while you build',
-      description: 'Record choices as you go so strong ideas do not disappear after the session.'
+      title: 'Shape you rack layout with the drag-and-drop planner',
+      description: 'Test layout ideas on screen before moving real hardware.'
     },
     {
       kicker: 'step 03',
-      title: 'Shape the rack before rewiring',
-      description: 'Test layout ideas on screen before moving real hardware.'
+      title: 'Capture that cool patch idea before it slips away',
+      description: 'Save your patch with all the details while it is fresh, so you can come back to it later and get back to the sound fast.'
     },
     {
       kicker: 'step 04',
       title: 'Come back and recreate fast',
-      description: 'Open a past session and rebuild with confidence in minutes.'
+      description: 'Open a past session and rebuild with perfect accuracy for your next rehearsal gig, or share your work with the community when you are ready.'
     }
   ];
   
