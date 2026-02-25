@@ -101,6 +101,7 @@ export class PatchListComponent extends SubManager implements OnInit {
           const normalizedExternalQuery = normalizeForSearch(externalQuery);
           
           const result = data.filter(item => {
+            if (!item) return false;
             const normalizedName = normalizeForSearch(item.name);
             
             return normalizedName.includes(normalizedLocalQuery)
