@@ -16,7 +16,8 @@ import {
 import { BehaviorSubject } from "rxjs";
 import { QueryJoins } from "src/app/features/backend/DatabaseStrings";
 import { Router } from "@angular/router";
-import { BrandPrimaryButtonModule } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module";
+import { MatButton } from "@angular/material/button";
+import { MatIcon } from "@angular/material/icon";
 
 
 interface CommentContext {
@@ -28,7 +29,8 @@ interface CommentContext {
   selector: 'app-comment-context',
   imports: [
     AsyncPipe,
-    BrandPrimaryButtonModule
+    MatButton,
+    MatIcon,
   ],
   templateUrl: './comment-context.component.html',
   styleUrl: './comment-context.component.scss',
