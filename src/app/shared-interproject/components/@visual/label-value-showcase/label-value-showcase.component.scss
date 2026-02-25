@@ -10,23 +10,23 @@
   $size:     1.5rem;
   font-size: $size;
 
-  @media (max-width: 1270px) {
+  @media (max-width: 79.375rem) {
     font-size: $size*0.95;
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 64rem) {
     font-size: $size*0.9;
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 36rem) {
     font-size: $size*0.85;
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 30rem) {
     font-size: $size*0.82;
   }
 
-  @media (max-width: 360px) {
+  @media (max-width: 22.5rem) {
     font-size: $size*0.75;
   }
   //color:     rgb(250, 250, 250);

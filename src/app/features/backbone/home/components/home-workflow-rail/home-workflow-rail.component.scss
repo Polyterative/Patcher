@@ -56,7 +56,7 @@
     height: 0.48rem;
     border-radius: 50%;
     background: var(--home-accent);
-    box-shadow: 0 0 0 4px rgba(23, 102, 178, 0.16);
+    box-shadow: 0 0 0 0.25rem rgba(23, 102, 178, 0.16);
     transform: translateY(-50%);
   }
 
@@ -90,7 +90,7 @@
   color: rgba(15, 30, 52, 0.62);
 }
 
-@media (max-width: 920px) {
+@media (max-width: 57.5rem) {
   .workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -101,7 +101,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .workflow-shell {
     padding: 0.96rem;
   }
