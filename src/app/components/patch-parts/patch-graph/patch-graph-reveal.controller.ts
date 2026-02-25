@@ -21,6 +21,7 @@ export interface PatchGraphRevealConfig {
   stageBridgeColor: string;
 }
 
+// Owns staged node/edge visibility timing so component logic stays thin.
 export class PatchGraphRevealController {
   private revealTimers: ReturnType<typeof setTimeout>[] = [];
   private revealRunId = 0;
@@ -42,6 +43,7 @@ export class PatchGraphRevealController {
       return;
     }
     
+    // Partition nodes/edges by semantic stage to drive deterministic reveal order.
     const modules = nodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.MODULE);
     const cvOutNodes = nodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.CV_OUT);
     const cvInNodes = nodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.CV_IN);
@@ -90,6 +92,7 @@ export class PatchGraphRevealController {
     this.callbacks.emitEdges([...visibleEdges]);
     
     let layerStartDelay = 0;
+    // Reusable delayed stage runner used for both node layers.
     const revealLayer = (layerNodes: GraphNode[], layerEdges: GraphEdge[], delayMs: number) => {
       layerStartDelay += delayMs;
       const timer = setTimeout(() => {
@@ -188,6 +191,7 @@ export class PatchGraphRevealController {
     }, layerStartDelay);
     this.revealTimers.push(patchRoutingTimer);
     
+    // Flow starts only after routing edges are present, so pulses follow visible paths.
     const flowStartDelay = layerStartDelay + 260;
     const flowTimer = setTimeout(() => {
       if (runId !== this.revealRunId) {
