@@ -43,11 +43,11 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 20px;
+          gap: 1.25rem;
       }
 
       .spinner-container p {
-          font-size: 16px;
+          font-size: 1rem;
           color: #666;
       }
   `],
