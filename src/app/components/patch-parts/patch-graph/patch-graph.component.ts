@@ -123,7 +123,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
       {stageBridgeColor: this.stageBridgeColor}
     );
   }
-
+  
+  // Main orchestration: build triggers, backend hydration, and graph publish happen here.
   ngOnInit(): void {
     if (!this.progressiveRender) {
       // Mark graph stale on any editorConnections$ change, but only after the
@@ -163,6 +164,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
 
     buildTriggers$
       .pipe(
+        // Freeze container height during rebuild to avoid visual jump while nodes reset.
         tap(() => {
           const el = this.graphContainer?.nativeElement;
           if (el) {
@@ -228,7 +230,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   refreshNow(): void {
     this._manualRefresh$.next();
   }
-
+  
+  // Progressive reveal sequencing lives in the dedicated controller; component delegates.
   private revealGraphProgressively(nodes: GraphNode[], edges: GraphEdge[]): void {
     this.stopPersistentFlowAnimation();
     this.revealController.reveal(nodes, edges);
@@ -239,6 +242,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     this.stopPersistentFlowAnimation();
   }
   
+  // Flow animator is stateful so edge heat can decay and pulse across ticks.
   private startPersistentFlowAnimation(edges: GraphEdge[], preferredFlowEdges: GraphEdge[]): void {
     this.stopPersistentFlowAnimation();
     

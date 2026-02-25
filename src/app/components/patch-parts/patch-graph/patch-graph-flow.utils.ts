@@ -37,6 +37,7 @@ export function createFlowAnimationState(
   }));
   
   const preferredFlowEdgeIds = new Set(preferredFlowEdges.map(edge => edge.id));
+  // Prefer IO path edges when available; otherwise fall back to any visible edge.
   const flowPoolEdges = baseEdges.filter(edge =>
     !edge.data?.hidden && preferredFlowEdgeIds.has(edge.id)
   );
@@ -69,6 +70,7 @@ export function advanceFlowAnimationState(
   flowState: FlowAnimationState,
   randomFn: () => number = Math.random
 ): void {
+  // Every tick decays prior heat; every second tick injects a new leading pulse.
   flowState.tickCount += 1;
   decayFlowHeat(flowState);
   
@@ -81,6 +83,7 @@ export function buildFlowStyledEdges(
   flowState: FlowAnimationState,
   palette: PatchGraphFlowPalette
 ): GraphEdge[] {
+  // Styled edge output is pure projection of heat map + static edge metadata.
   return flowState.baseEdges.map(edge => {
     if (edge.data?.hidden) {
       return {
@@ -173,6 +176,7 @@ function injectFlowPulse(flowState: FlowAnimationState, randomFn: () => number):
   }
   
   const sourceNodeId = flowState.currentNodeId;
+  // Walk forward if possible; otherwise reseed from the global flow pool.
   const outgoing = sourceNodeId ? outgoingByNode.get(sourceNodeId) ?? [] : [];
   const pool = outgoing.length > 0 ? outgoing : flowPoolEdges;
   
