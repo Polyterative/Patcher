@@ -268,7 +268,7 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
       select: () => ({filter: filterSpy})
     });
     
-    (service as any).getPatches(0, 19).subscribe({
+    (service as any).queries.getPatches(0, 19).subscribe({
       next: () => {
         expect(filterSpy).withContext(
           'GET.patches must filter by public=true to exclude private patches from the browser'
@@ -317,7 +317,7 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
       })
     });
     
-    (service as any).getPatches(0, 19).subscribe({
+    (service as any).queries.getPatches(0, 19).subscribe({
       next: (result: any) => {
         const patches: any[] = result.data ?? [];
         const hasPrivate = patches.some((p: any) => p.public === false);
