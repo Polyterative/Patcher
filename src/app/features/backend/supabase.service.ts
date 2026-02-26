@@ -2,7 +2,7 @@ import {
   EventEmitter,
   Injectable
 } from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import {
   AuthError,
@@ -15,14 +15,10 @@ import {
   forkJoin,
   from,
   from as rxFrom,
-  MonoTypeOperatorFunction,
-  NEVER,
   Observable,
-  ObservedValueOf,
   of,
   ReplaySubject,
   shareReplay,
-  Subject,
   throwError,
   zip
 } from 'rxjs';
@@ -65,114 +61,42 @@ import {
   DbStoragePaths,
   QueryJoins
 } from './DatabaseStrings';
+import { Cacheable } from 'ts-cacheable';
+import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import {
-  Cacheable,
-  GlobalCacheConfig,
-  LocalStorageStrategy
-} from "ts-cacheable";
-import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
+  cacheBust,
+  cacheBuster$,
+  catchErrors,
+  defaultCacheTime,
+  longCacheTime,
+  remapErrors,
+  showSuccessMessage,
+  smallCacheTime
+} from './supabase.cache';
+import {
+  CurrentUserModulesOrderConfig,
+  CurrentUserModulesOrderDirection,
+  CurrentUserModulesOrderKey,
+  OAuthProvider,
+  RichUserModel,
+  SimpleUserModel,
+  SupabaseLoginResponse,
+  SupabaseSignupResponse,
+  SupabaseStorageFile
+} from './supabase.types';
 
 
-GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
-
-export type SupabaseStorageFile =
-  ArrayBuffer
-  | ArrayBufferView
-  | Blob
-  | Buffer
-  | File
-  | FormData
-  | ReadableStream
-  | URLSearchParams
-  | string;
-
-export type OAuthProvider =
-  'google'
-  | 'apple'
-  | 'github'
-  | 'facebook'
-  | 'azure'
-  | 'twitter';
-
-export type SimpleUserModel = Pick<User, 'id' | 'email' | 'created_at' | 'updated_at'>;
-
-export type RichUserModel =
-  SimpleUserModel
-  & {
-  username: string;
-  auth_provider?: string; // Track which provider was used (email, google, apple, etc.)
+export type {
+  CurrentUserModulesOrderConfig,
+  CurrentUserModulesOrderDirection,
+  CurrentUserModulesOrderKey,
+  OAuthProvider,
+  RichUserModel,
+  SimpleUserModel,
+  SupabaseLoginResponse,
+  SupabaseSignupResponse,
+  SupabaseStorageFile
 };
-
-export interface SupabaseLoginResponse {
-  returnUrl: any;
-  user: RichUserModel;
-  // error: AuthError;
-}
-
-export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | ObservedValueOf<Promise<{
-  user: SimpleUserModel | null;
-  // error: AuthError | null
-}>>>;
-
-
-const defaultCacheTime = 5 * 60 * 1000;
-const longCacheTime = defaultCacheTime * 10;
-const smallCacheTime = defaultCacheTime / 5;
-type CachedEntity =
-  'comments'
-  | 'modules'
-  | 'manufacturers'
-  | 'currentUserModules'
-  | 'moduleWithId'
-  | 'patchConnections'
-  | 'patchModuleInstances'
-  | 'patches'
-  | 'currentUserComments'
-  | 'rackWithId'
-  | 'racksMinimal'
-  | 'userModuleTags'
-  | void;
-const cacheBuster$ = new Subject<CachedEntity[]>();
-
-export type CurrentUserModulesOrderKey =
-  'moduleName'
-  | 'collectionUpdated';
-
-export type CurrentUserModulesOrderDirection =
-  'asc'
-  | 'desc';
-
-export interface CurrentUserModulesOrderConfig {
-  key: CurrentUserModulesOrderKey;
-  direction: CurrentUserModulesOrderDirection;
-}
-
-function cacheBust<T>(cacheKeys: CachedEntity[]): MonoTypeOperatorFunction<T> {
-  return (source: Observable<T>) => source.pipe(
-    tap(() => cacheBuster$.next(cacheKeys))
-  );
-}
-
-function showSuccessMessage<T>(snackBar: MatSnackBar): MonoTypeOperatorFunction<T> {
-  return (source: Observable<T>) => source.pipe(
-    tap(() => SharedConstants.showSuccessUpdate(snackBar))
-  );
-}
-
-function catchErrors<T>(snackBar: MatSnackBar): (source: Observable<T>) => Observable<T> {
-  return (source: Observable<T>) => source.pipe(
-    catchError((e) => {
-      console.error(e);
-      SharedConstants.errorHandlerOperation(snackBar);
-      return NEVER;
-    })
-  );
-}
-
-function remapErrors<T>() {
-  // In Supabase v2, errors are handled differently - just pass through
-  return (source: Observable<any>) => source;
-}
 
 @Injectable()
 export class SupabaseService extends SubManager {
