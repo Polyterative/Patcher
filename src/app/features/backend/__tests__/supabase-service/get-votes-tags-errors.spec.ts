@@ -34,7 +34,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
   
   describe('get.myVotes', () => {
     it('should return an array of moduletagid numbers', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'voter-1'}));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'voter-1'}));
       spyOn(supabaseClient, 'from').and.returnValue(
         chainable({data: [{moduletagid: 1}, {moduletagid: 3}, {moduletagid: 7}], error: null})
       );
@@ -52,7 +52,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
     }, TEST_TIMEOUT);
     
     it('should return empty array when user has no votes', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'voter-2'}));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'voter-2'}));
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       
       service.get.myVotes().subscribe({
@@ -68,7 +68,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
     }, TEST_TIMEOUT);
     
     it('should return empty array when data is null', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'voter-3'}));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'voter-3'}));
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       service.get.myVotes().subscribe({
@@ -126,7 +126,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
         Promise.resolve({data: null, error: {error_code: 'same_password', message: 'Password unchanged'}})
       );
       
-      service.resetPassword$('token', 'SamePass!').subscribe({
+      service.auth.resetPassword$('token', 'SamePass!').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -143,7 +143,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
         Promise.resolve({data: null, error: {error_code: 'weak_password', message: 'Weak'}})
       );
       
-      service.resetPassword$('token', 'weak').subscribe({
+      service.auth.resetPassword$('token', 'weak').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -160,7 +160,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
         Promise.resolve({data: null, error: {error_code: 'invalid_grant', message: 'Token expired'}})
       );
       
-      service.resetPassword$('token', 'NewPass!').subscribe({
+      service.auth.resetPassword$('token', 'NewPass!').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -177,7 +177,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
         Promise.resolve({data: null, error: {error_code: 'network_error', message: 'Network issue'}})
       );
       
-      service.resetPassword$('token', 'NewPass!').subscribe({
+      service.auth.resetPassword$('token', 'NewPass!').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -194,7 +194,7 @@ describe('SupabaseService - get.myVotes, get.allTags and password reset errors',
         Promise.resolve({data: null, error: {error_code: 'unknown_error', message: 'Something went wrong'}})
       );
       
-      service.resetPassword$('token', 'NewPass!').subscribe({
+      service.auth.resetPassword$('token', 'NewPass!').subscribe({
         next: () => {
           fail('Should have errored');
           done();

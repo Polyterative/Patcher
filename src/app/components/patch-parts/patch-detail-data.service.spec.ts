@@ -28,7 +28,7 @@ describe('PatchDetailDataService selection behavior', () => {
     // Lightweight stubs for the constructor dependencies
     bridge = new SelectionPanelBridgeService();
     const backendStub: any = {
-      getUserSession$: () => of(null),
+      auth: {getUserSession$: () => of(null)},
       GET: {patchConnections: (_: any) => of([])},
       delete: {patchModuleInstance: (_: any) => of({})}
     };

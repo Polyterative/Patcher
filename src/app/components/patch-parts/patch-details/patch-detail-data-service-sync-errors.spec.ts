@@ -40,7 +40,9 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     const bridge = new SelectionPanelBridgeService();
     const backend = {
       cacheResetter$: new Subject<any>(),
-      getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'})),
+      auth: {
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
+      },
       get: {
         patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})}))
       },

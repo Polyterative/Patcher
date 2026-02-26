@@ -98,7 +98,7 @@ describe('SupabaseService - Remaining Branches', () => {
   }, TEST_TIMEOUT);
   
   it('GET.currentUserModules includes manualURL when includeManuals=true', (done) => {
-    spyOn(service, 'getUserSession$').and.returnValue(of({id: 'u1'} as any));
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'} as any));
     const query = chainable({data: [{module: {id: 1}}], error: null});
     const selectSpy = spyOn(query, 'select').and.returnValue(query);
     spyOn(supabaseClient, 'from').and.returnValue(query);
@@ -120,12 +120,12 @@ describe('SupabaseService - Remaining Branches', () => {
         error: null
       })
     );
-    spyOn(service, 'getRichUserSession$').and.returnValue(of(null));
-    
+    spyOn(service.auth as any, 'getRichUserSession$').and.returnValue(of(null));
+
     const profileQuery = chainable({data: {}, error: null});
     spyOn(supabaseClient, 'from').and.returnValue(profileQuery);
     
-    service.handleOAuthCallback$().subscribe({
+    service.auth.handleOAuthCallback$().subscribe({
       next: (result) => {
         expect(result).toBeNull();
         expect(supabaseClient.from).toHaveBeenCalledWith('profiles');
@@ -134,7 +134,7 @@ describe('SupabaseService - Remaining Branches', () => {
       error: done.fail
     });
   }, TEST_TIMEOUT);
-  
+
   it('handleOAuthCallback returns rich user directly when username exists', (done) => {
     const rich = {
       id: 'oauth-u2',
@@ -149,9 +149,9 @@ describe('SupabaseService - Remaining Branches', () => {
         error: null
       })
     );
-    spyOn(service, 'getRichUserSession$').and.returnValue(of(rich));
+    spyOn(service.auth as any, 'getRichUserSession$').and.returnValue(of(rich));
     
-    service.handleOAuthCallback$().subscribe({
+    service.auth.handleOAuthCallback$().subscribe({
       next: (result) => {
         expect(result).toEqual(rich);
         done();
@@ -167,9 +167,9 @@ describe('SupabaseService - Remaining Branches', () => {
         error: {message: 'signup blocked'}
       })
     );
-    const updateSpy = spyOn(service as any, 'updateUserProfile').and.returnValue(of({} as any));
+    const updateSpy = spyOn(service.auth as any, '_updateUserProfile').and.returnValue(of({} as any));
     
-    service.signup$('userx', 'u@example.com', 'password').subscribe({
+    service.auth.signup$('userx', 'u@example.com', 'password').subscribe({
       next: (result: any) => {
         expect(result).toEqual({user: null, session: null});
         expect(updateSpy).not.toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('SupabaseService - Remaining Branches', () => {
       error: done.fail
     });
   }, TEST_TIMEOUT);
-  
+
   it('signup$ delegates to updateUserProfile when signUp has no error', (done) => {
     spyOn(supabaseClient.auth, 'signUp').and.returnValue(
       Promise.resolve({
@@ -186,11 +186,11 @@ describe('SupabaseService - Remaining Branches', () => {
         error: null
       })
     );
-    spyOn(service as any, 'updateUserProfile').and.returnValue(of({returnUrl: null, user: {id: 'new-user'}} as any));
+    spyOn(service.auth as any, '_updateUserProfile').and.returnValue(of({returnUrl: null, user: {id: 'new-user'}} as any));
     
-    service.signup$('newname', 'new@example.com', 'password').subscribe({
+    service.auth.signup$('newname', 'new@example.com', 'password').subscribe({
       next: () => {
-        expect((service as any).updateUserProfile).toHaveBeenCalledWith('new@example.com', 'password', 'newname');
+        expect((service.auth as any)._updateUserProfile).toHaveBeenCalledWith('new@example.com', 'password', 'newname');
         done();
       },
       error: done.fail
@@ -207,12 +207,12 @@ describe('SupabaseService - Remaining Branches', () => {
   });
   
   it('signup and updateUserProfile path logs in, updates profile, and signs out', (done) => {
-    spyOn(service, 'login$').and.returnValue(of({user: {id: 'u-1'}} as any));
+    spyOn(service.auth as any, 'login$').and.returnValue(of({user: {id: 'u-1'}} as any));
     const profileQuery = chainable({data: {}, error: null});
     spyOn(supabaseClient, 'from').and.returnValue(profileQuery);
     spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
     
-    (service as any).updateUserProfile('x@example.com', 'pass', 'newname').subscribe({
+    (service.auth as any)._updateUserProfile('x@example.com', 'pass', 'newname').subscribe({
       next: () => {
         expect(supabaseClient.from).toHaveBeenCalledWith('profiles');
         expect(supabaseClient.auth.signOut).toHaveBeenCalled();
@@ -280,21 +280,21 @@ describe('SupabaseService - Remaining Branches', () => {
       Promise.resolve({data: null, error: {message: 'smtp down'}})
     );
     
-    service.resetPassword$('user@example.com').subscribe({
+    service.auth.resetPassword$('user@example.com').subscribe({
       next: () => done.fail('expected error'),
       error: (resetErr) => {
         expect(resetErr.message).toContain('Failed to send password reset email');
-        
+
         const uniqueQuery = chainable({data: null, error: {code: '23505', message: 'unique violation'}});
         spyOn(supabaseClient, 'from').and.returnValue(uniqueQuery);
-        service.updateUsername$('uid-1', 'valid_name').subscribe({
+        service.auth.updateUsername$('uid-1', 'valid_name').subscribe({
           next: () => done.fail('expected error'),
           error: (err1: Error) => {
             expect(err1.message).toContain('already taken');
             
             const genericQuery = chainable({data: null, error: {code: '500', message: 'db failure'}});
             (supabaseClient.from as jasmine.Spy).and.returnValue(genericQuery);
-            service.updateUsername$('uid-1', 'valid_name').subscribe({
+            service.auth.updateUsername$('uid-1', 'valid_name').subscribe({
               next: () => done.fail('expected error'),
               error: (err2: Error) => {
                 expect(err2.message).toContain('db failure');
@@ -308,9 +308,9 @@ describe('SupabaseService - Remaining Branches', () => {
   }, TEST_TIMEOUT);
   
   it('exposes errorMsg and isValidPassword helpers', () => {
-    const handler = (service as any).errorMsg();
+    const handler = (service.auth as any)._errorMsg();
     expect(typeof handler).toBe('function');
-    expect((service as any).isValidPassword('1234567')).toBeFalse();
-    expect((service as any).isValidPassword('12345678')).toBeTrue();
+    expect((service.auth as any)._isValidPassword('1234567')).toBeFalse();
+    expect((service.auth as any)._isValidPassword('12345678')).toBeTrue();
   });
 });
