@@ -5,6 +5,12 @@ import {
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
+import {
+  buildCVInserter,
+  buildCVUpdater,
+  buildPatchConnectionInserter,
+  getCvMapper
+} from '../../supabase-update';
 
 
 function chainable(resolveValue: any = {data: null, error: null}) {
@@ -236,20 +242,22 @@ describe('SupabaseService - Remaining Branches', () => {
       instance_id_b: 2
     } as any;
     
-    (service as any).buildPatchConnectionInserter([connection]).subscribe({
+    buildPatchConnectionInserter(supabaseClient, [connection], (id) => service.delete.patchConnectionsForPatch(id)).subscribe({
       next: () => {
-        (service as any).buildPatchConnectionInserter([]).subscribe({
+        buildPatchConnectionInserter(supabaseClient, [], (id) => service.delete.patchConnectionsForPatch(id)).subscribe({
           next: () => {
-            const mapper = (service as any).getCvMapper(77);
+            const mapper = getCvMapper(77);
             expect(mapper({id: 1} as any).moduleid).toBe(77);
             
-            const inserters = (service as any).buildCVInserter(
+            const inserters = buildCVInserter(
+              supabaseClient,
               [{id: 0, name: 'A'}, {id: 2, name: 'B'}] as any,
               'module_outs',
               77,
               'author-1'
             );
-            const updaters = (service as any).buildCVUpdater(
+            const updaters = buildCVUpdater(
+              supabaseClient,
               [{id: 0, name: 'A'}, {id: 2, name: 'B'}] as any,
               'module_ins',
               77
