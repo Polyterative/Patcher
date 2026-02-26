@@ -58,7 +58,7 @@ export class SupabaseQueriesService {
     withHP?: number,
     withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
     standard: number | undefined = undefined,
-    description: string = undefined,
+    description?: string,
     onlyPublic = true) {
     let query = this.supabase.from(DbPaths.modules)
       .select(`
@@ -106,14 +106,8 @@ export class SupabaseQueriesService {
     
     return rxFrom(
       query
-        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
-        .limit(1, {                                // take only one panel
-          foreignTable: DbPaths.module_panels
-        })
+        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
+        .limit(1, {foreignTable: DbPaths.module_panels})
         .ilike('name', `%${ normalizeForSearch(name) }%`)
         .range(from, to)
         .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
@@ -165,14 +159,8 @@ export class SupabaseQueriesService {
   getRackWithId(id: number, columns = '*') {
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
         .select(`${ columns }, ${ QueryJoins.author }`)
-        // .range(from, to)
         .filter('id', 'eq', id)
-        // .filter('public', 'eq', true)
-        
-        // .order('id', {foreignTable: DatabasePaths.moduleINs})
-        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
         .single()
     )
       .pipe(
@@ -269,18 +257,13 @@ export class SupabaseQueriesService {
       .select(columns + connections, {count: 'exact'})
       .filter("public", "eq", true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
-    
-    if (columns.includes('name')) {
-      queryBuilder = queryBuilder.order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
-    }
-    
+
     if (name) {
       queryBuilder = queryBuilder.ilike('name', `%${ normalizeForSearch(name) }%`);
     }
-    
+
     return rxFrom(queryBuilder.range(from, to))
       .pipe(
-        map((x) => x),
         remapErrors(),
       );
   }
@@ -294,9 +277,6 @@ export class SupabaseQueriesService {
   getPatchConnections(patchid: number) {
     return rxFrom(
       this.supabase.from(DbPaths.patch_connections)
-        // .select(`module:moduleid(*, ${ QueryJoins.manufacturer }, ${ QueryJoins.insOuts })`)
-        //   .select(`*,a(*,${ QueryJoins.module })`)
-        //   .select(`*,a(*,module:moduleid(*,manufacturer:manufacturerId(name,id,logo)))`)
         .select(`
           *,
           ${ QueryJoins.patch },
@@ -343,13 +323,10 @@ export class SupabaseQueriesService {
             ${ QueryJoins.module_panels }
             `) {
     let queryBuilder$ = this.supabase.from(DbPaths.modules)
-      .select(
-        columns
-      )
+      .select(columns)
       .filter('id', 'eq', id);
     
     if (columns.includes(QueryJoins.module_panels)) {
-      // order panel by color
       queryBuilder$ = queryBuilder$.order(`color`, {
         referencedTable: DbPaths.module_panels,
         ascending: true
@@ -357,21 +334,13 @@ export class SupabaseQueriesService {
     }
     
     if (columns.includes(QueryJoins.insOuts)) {
-      // order inputs and outputs
       queryBuilder$ = queryBuilder$
         .order('id', {referencedTable: DbPaths.moduleINs})
         .order('id', {referencedTable: DbPaths.moduleOUTs})
     }
     
     
-    return rxFrom(
-      queryBuilder$
-        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        // .limit(1, {                                // take only one panel
-        //   foreignTable: DatabasePaths.module_panels
-        // })
-        .single()
-    )
+    return rxFrom(queryBuilder$.single())
       .pipe(
         remapErrors()
       );
@@ -454,9 +423,6 @@ export class SupabaseQueriesService {
               ${ prefix }:modules!user_modules_moduleid_fkey(
                 ${ columns.join(',') })`
           )
-          // only approved panels
-          // .filter(`${ prefix }.${ DbPaths.module_panels }.isApproved`, 'eq', true)
-          // order panel by color
           .order(`color`, {
             foreignTable: panelsTable,
             ascending: true
