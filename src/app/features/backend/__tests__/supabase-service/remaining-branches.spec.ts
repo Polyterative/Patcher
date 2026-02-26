@@ -9,7 +9,7 @@ import {
 
 function chainable(resolveValue: any = {data: null, error: null}) {
   const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'insert', 'update', 'delete', 'upsert', 'ilike']
+  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'maybeSingle', 'insert', 'update', 'delete', 'upsert', 'ilike']
     .forEach(method => {
       m[method] = () => m;
     });
