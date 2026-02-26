@@ -13,8 +13,9 @@
       </div>
       <p>{{ item.answer }}</p>
       @if (item.link) {
-        <a [href]="item.link" target="_blank" style=" text-decoration: none;">
-          <app-brand-primary-button theme="primary">Open link</app-brand-primary-button>
+        <a [href]="item.link" target="_blank" mat-stroked-button style="text-decoration: none;">
+          <mat-icon>open_in_new</mat-icon>
+          Open link
         </a>
       }
     </div>
