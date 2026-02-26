@@ -62,7 +62,7 @@ export class HomeComponent extends SubManager {
   };
   
   readonly heroContent: HomeHeroContent = {
-    eyebrow: 'made for musicians',
+    eyebrow: '',
     title: 'Never forget a great patch again.',
     subtitle: 'Track every setup in clear detail so you can rebuild the exact sound for the next gig without losing time.',
     mainVisual: {
