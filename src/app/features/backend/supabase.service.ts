@@ -27,7 +27,6 @@ import {
   filter,
   map,
   switchMap,
-  tap,
   withLatestFrom
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -35,39 +34,20 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
-import {
-  PatchConnection,
-  PatchModuleInstance
-} from '../../models/connection';
+import { PatchModuleInstance } from '../../models/connection';
 import { DbComment } from '../../models/comment';
-import {
-  CV,
-  CVwithModuleId
-} from '../../models/cv';
-import {
-  DbModule,
-  RackedModule
-} from '../../models/module';
 import { Patch } from '../../models/patch';
-import {
-  Rack,
-  RackingData,
-  RackMinimal
-} from '../../models/rack';
+import { Rack } from '../../models/rack';
 import {
   DbPaths,
-  DbStoragePaths,
   QueryJoins
 } from './DatabaseStrings';
 import { Cacheable } from 'ts-cacheable';
 import {
-  cacheBust,
   cacheBuster$,
-  catchErrors,
   defaultCacheTime,
   longCacheTime,
   remapErrors,
-  showSuccessMessage,
   smallCacheTime
 } from './supabase.cache';
 import {
@@ -83,6 +63,8 @@ import {
 } from './supabase.types';
 import { createAddNamespace } from './supabase-add';
 import { createDeleteNamespace } from './supabase-delete';
+import { createUpdateNamespace } from './supabase-update';
+import { createStorageNamespace } from './supabase-storage';
 
 
 export type {
@@ -130,12 +112,25 @@ export class SupabaseService extends SubManager {
       () => this.getUserSession$()
     );
     
+    this.storage = createStorageNamespace(
+      this.supabase,
+      this.snackBar,
+      () => this.getUserSession$()
+    );
+
     this.delete = createDeleteNamespace(
       this.supabase,
       this.snackBar,
       () => this.getUserSession$(),
       (filename: string) => this.storage.deletePanelFile(filename),
       this.defaultPag
+    );
+    
+    this.update = createUpdateNamespace(
+      this.supabase,
+      this.snackBar,
+      () => this.getUserSession$(),
+      (id: number) => this.delete.patchConnectionsForPatch(id)
     );
   }
   
@@ -399,311 +394,10 @@ export class SupabaseService extends SubManager {
   
   readonly add!: ReturnType<typeof createAddNamespace>;
   readonly delete!: ReturnType<typeof createDeleteNamespace>;
-  
-  readonly update = {
-    module: (data: Partial<DbModule>) => {
-      data.manufacturer = undefined;
-      data.ins = undefined;
-      data.outs = undefined;
-      data.tags = undefined; // todo handle tags
-      data.panels = undefined;
-      
-      // Transform data for database compatibility
-      const dbData: any = {...data};
-      if (dbData.standard && typeof dbData.standard === 'object') {
-        dbData.standard = dbData.standard.id;
-      }
-      if (!dbData.standard) {
-        dbData.standard = undefined;
-      }
-      
-      
-      // iso 8601 date
-      dbData.updated = new Date().toISOString();
-      
-      //strip out undefined or null values
-      for (const key in dbData) {
-        if (dbData[key] === undefined || dbData[key] === null) {
-          delete dbData[key];
-        }
-      }
-      
-      return rxFrom(
-        this.supabase.from(DbPaths.modules)
-          .update(dbData)
-          .eq('id', data.id)
-          .select('id,updated,created')
-      )
-        .pipe(
-          showSuccessMessage(this.snackBar),
-          // bust the cache for modules
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-        );
-    },
-    rackedModules: (data: RackedModule[]) => {
-      // upload all modules that already have an id
-      const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
-        .map(rackedModule => rackedModule.rackingData);
-      
-      return rxFrom(
-        // keep this an upsert, because otherwise you need to put an update parameter and send requests one by one
-        this.supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
-      )
-        .pipe(
-          // insert where id is undefined, meaning they are new and have not been inserted yet
-          switchMap(x => {
-            
-            // we need to avoid passing an id in the object to the insert, otherwise it will fail
-            const newRackedModules: Omit<RackingData, 'id'>[] = data
-              .filter(x => x.rackingData.id === undefined)
-              .map(rackedModule => ({
-                moduleid: rackedModule.rackingData.moduleid,
-                rackid: rackedModule.rackingData.rackid,
-                row: rackedModule.rackingData.row,
-                column: rackedModule.rackingData.column
-              }));
-            
-            const insertNew$ = rxFrom(
-              this.supabase.from(DbPaths.rack_modules)
-                .insert(newRackedModules)
-            );
-            
-            // call database for insert if there is any to insert
-            return newRackedModules.length > 0 ? insertNew$ : of(x);
-          })
-          // this updated rack after its modules are updated
-          // switchMap(x => this.supabase.from(DatabasePaths.racks)
-          //                    .upsert({
-          //                      id: rackId
-          //                    })
-          //                    .filter('id', 'eq', rackId) // forces updated refresh
-          // );
-        )
-        .pipe(
-          // if data.error is true, then we have an error, throw it down the pipe
-          remapErrors(),
-        );
-    },
-    rack: (data: RackMinimal) => {
-      return rxFrom(
-        this.supabase.from(DbPaths.racks)
-          // do not use spread operator, because it will include unintended properties
-          .upsert({
-            id: data.id,
-            authorid: data.author.id,
-            name: data.name,
-            description: data.description,
-            rows: data.rows,
-            hp: data.hp,
-            locked: data.locked,
-            public: data.public,
-            image: data.image
-          }).select('id')
-      )
-        .pipe(
-          cacheBust(['rackWithId']),
-        )
-      // .pipe(tap(x => SharedConstants.showSuccessUpdate(this.snackBar)));
-    },
-    patch: (data: Patch) => {
-      data.author = undefined;
-      return rxFrom(
-        this.supabase.from(DbPaths.patches)
-          .update(data)
-          .eq('id', data.id)
-          .single()
-      )
-        .pipe(
-          showSuccessMessage(this.snackBar),
-          cacheBust(['patches', 'patchConnections'])
-        );
-    },
-    /** Silent variant — same as patch but without success toast. For auto-save. */
-    patchSilent: (data: Patch) => {
-      data.author = undefined;
-      return rxFrom(
-        this.supabase.from(DbPaths.patches)
-          .update(data)
-          .eq('id', data.id)
-          .single()
-      )
-        .pipe(
-          cacheBust(['patches', 'patchConnections'])
-        );
-    },
-    modules: (data: DbModule[]) => {
-      const transformedData = data.map(datum => {
-        const dbData: any = {...datum};
-        // Remove nested objects/arrays
-        dbData.manufacturer = undefined;
-        dbData.ins = undefined;
-        dbData.outs = undefined;
-        dbData.created = undefined;
-        dbData.updated = undefined;
-        dbData.manualURL = undefined;
-        
-        // Transform standard object to ID
-        if (dbData.standard && typeof dbData.standard === 'object') {
-          dbData.standard = dbData.standard.id;
-        }
-        
-        return dbData;
-      });
-      
-      return rxFrom(
-        this.supabase.from(DbPaths.modules)
-          .upsert(transformedData)
-      )
-        .pipe(
-          // bust the cache for modules
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          showSuccessMessage(this.snackBar)
-        );
-    },
-    moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
-      return this.getUserSession$()
-        .pipe(
-          switchMap(user => {
-            const controlVoltageUpdates$ = [
-              this.buildCVInserter(ins, DbPaths.moduleINs, moduleId, authorid || user.id),
-              this.buildCVUpdater(ins, DbPaths.moduleINs, moduleId),
-              this.buildCVInserter(outs, DbPaths.moduleOUTs, moduleId, authorid || user.id),
-              this.buildCVUpdater(outs, DbPaths.moduleOUTs, moduleId)
-            ].flatMap(x => x);
-            return forkJoin(controlVoltageUpdates$);
-          }),
-          // bust the cache for modules
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          catchErrors(this.snackBar),
-          showSuccessMessage(this.snackBar)
-        );
-    },
-    patchConnections: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
-      .pipe(
-        tap(x => SharedConstants.showSuccessUpdate(this.snackBar)),
-        cacheBust(['patchConnections', 'patches'])
-      ),
-    /** Silent variant — same as patchConnections but without success toast. For auto-save. */
-    patchConnectionsSilent: (data: PatchConnection[]) => this.buildPatchConnectionInserter(data)
-      .pipe(
-        cacheBust(['patchConnections', 'patches'])
-      ),
-    /** Targeted single-row note update. Uses composite natural key. Silent (no toast). */
-    patchConnectionNoteSilent: (conn: PatchConnection) => {
-      let query = this.supabase
-        .from(DbPaths.patch_connections)
-        .update({notes: conn.notes ?? null})
-        .eq('patchid', conn.patch.id)
-        .eq('a', conn.a.id)
-        .eq('b', conn.b.id);
-      // nullable FK columns must use .is() when null, .eq() when non-null
-      query = conn.instance_id_a == null
-        ? query.is('instance_id_a', null)
-        : query.eq('instance_id_a', conn.instance_id_a);
-      query = conn.instance_id_b == null
-        ? query.is('instance_id_b', null)
-        : query.eq('instance_id_b', conn.instance_id_b);
-      return rxFrom(query).pipe(
-        remapErrors(),
-        cacheBust(['patchConnections'])
-      );
-    },
-    patchModuleInstanceLabel: (id: number, instance_label: string | null) => rxFrom(
-      this.supabase.from(DbPaths.patch_module_instances)
-        .update({instance_label})
-        .eq('id', id)
-        .select('id,patch_id,module_id,instance_label')
-        .single()
-    ).pipe(
-      remapErrors(),
-      map(x => x.data as PatchModuleInstance),
-      cacheBust(['patchConnections', 'patchModuleInstances'])
-    )
-  };
-  
-  storage = {
-    uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
-      
-      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
-      
-      let uploadNewPanel$ = rxFrom(
-        this.supabase
-          .storage
-          .from(DbStoragePaths.module_panels)
-          .upload(filenameAndExtension, file, {
-            cacheControl: '360000', // 100 hours
-            upsert: true,
-            contentType: contentType
-          })
-      );
-      
-      let deleteThePossibleOldPanel$ = this.storage.deletePanelFile(filenameAndExtension);
-      
-      return forkJoin([deleteThePossibleOldPanel$, uploadNewPanel$])
-        .pipe(
-          // bust the cache for modules
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-          catchErrors(this.snackBar),
-          map(x => filenameAndExtension)
-        );
-    },
-    uploadRackImage: (file: SupabaseStorageFile, filenameAndExtension: string) => {
-      
-      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
-      
-      // prefix precise date and time to the filename,just before the extension,which can change
-      // use best practices regarding special symbols and stuff
-      filenameAndExtension = filenameAndExtension.split('.').join(`_${ new Date().toISOString().replace(/:/g, '-').replace(/[^0-9-]/g, '') }.`);
-      return this.getUserSession$()
-        .pipe(
-          switchMap(() => {
-            return rxFrom(
-              this.supabase
-                .storage
-                .from(DbStoragePaths.racks)
-                .upload(filenameAndExtension, file, {
-                  cacheControl: '360',
-                  contentType: 'image/jpeg'
-                })
-            )
-              .pipe(
-                // bust the cache
-                cacheBust(['rackWithId']),
-                map(_ => filenameAndExtension));
-          })
-        );
-    },
-    deleteRackImage: (filenameAndExtension: string) => {
-      filenameAndExtension = this.cleanUpFileName(filenameAndExtension);
-      return rxFrom(
-        this.supabase
-          .storage
-          .from(DbStoragePaths.racks)
-          .remove([filenameAndExtension])
-      )
-        .pipe(
-          // bust the cache for modules
-          cacheBust(['rackWithId']),
-          catchErrors(this.snackBar)
-        );
-      
-    },
-    deletePanelFile: (path: string) => {
-      return rxFrom(
-        this.supabase
-          .storage
-          .from(DbStoragePaths.module_panels)
-          .remove([path])
-      )
-        .pipe(
-          // bust the cache for modules
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId', "rackWithId"]),
-          catchErrors(this.snackBar)
-        );
-    }
-    
-  };
-  
+  readonly update!: ReturnType<typeof createUpdateNamespace>;
+  storage!: ReturnType<typeof createStorageNamespace>;
+
+
   @Cacheable({
     maxAge: smallCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
@@ -1220,13 +914,7 @@ export class SupabaseService extends SubManager {
     );
   }
   
-  private errorMsg() {
-    return SharedConstants.errorHandlerOperation(this.snackBar);
-  }
   
-  private cleanUpFileName(filenameAndExtension: string) {
-    return filenameAndExtension.toLowerCase().trim()
-  }
   
   login$(email: string, password: string): Observable<SupabaseLoginResponse> {
     const params$ = of('')
@@ -1483,73 +1171,6 @@ export class SupabaseService extends SubManager {
       );
   }
   
-  private buildPatchConnectionInserter(connections: PatchConnection[]) {
-    
-    const toInsert = connections.map((conn, i) => ({
-      patchid: conn.patch.id,
-      a: conn.a.id,
-      b: conn.b.id,
-      notes: conn.notes,
-      ordinal: i,
-      instance_id_a: conn.instance_id_a ?? null,
-      instance_id_b: conn.instance_id_b ?? null
-    }));
-    
-    const inserter$ = rxFrom(
-      this.supabase.from(DbPaths.patch_connections)
-        .insert(toInsert)
-        .select('patchid')
-    )
-      .pipe(tap(x => /*errorHandling*/ x));
-    
-    if (connections.length > 0) {
-      return this.delete.patchConnectionsForPatch(connections[0].patch.id)
-        .pipe(
-          tap(x => /*errorHandling*/ x),
-          switchMap(() => inserter$)
-        );
-    }
-    
-    return inserter$;
-  }
-  
-  private getCvMapper(moduleid: number) {
-    const mapper: (cv) => CVwithModuleId = (cv: CV) => ({
-      ...cv,
-      moduleid
-    });
-    
-    return mapper;
-  }
-  
-  private buildCVInserter(cvs: CV[], path: 'module_ins' | 'module_outs', moduleId: number, authorid: string) {
-    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
-      .filter(x => x.id === 0)
-      .map(x => {
-        x.id = undefined;
-        return x;
-      })
-      .map(x => ({
-        ...x,
-        authorid
-      }));
-    
-    // create an array of  requests to insert each cv one by one
-    // doing it this way because of a limitation of supabase
-    return mappedCVs.map(x => rxFrom(this.supabase.from(path)
-      .insert(x)));
-  }
-  
-  private buildCVUpdater(cvs: CV[], path: 'module_ins' | 'module_outs', moduleId: number) {
-    const mappedCVs = cvs.map(this.getCvMapper(moduleId))
-      .filter(x => x.id > 0);
-    
-    // create an array of  requests to insert each cv one by one
-    // doing it this way because of a limitation of supabase
-    return mappedCVs.map(x => rxFrom(this.supabase.from(path)
-      .update(x)
-      .eq('id', x.id)));
-  }
   
   /**
    * Handles both sending a password reset email and resetting the password with a token.
