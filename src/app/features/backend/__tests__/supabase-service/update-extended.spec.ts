@@ -259,13 +259,13 @@ describe('SupabaseService - update extended', () => {
   
   describe('update.patchConnections', () => {
     it('should call buildPatchConnectionInserter and bust cache', (done) => {
-      spyOn(service as any, 'buildPatchConnectionInserter').and.returnValue(of(null));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
-      
+
       service.update.patchConnections([]).subscribe({
         next: () => {
-          expect((service as any).buildPatchConnectionInserter).toHaveBeenCalled();
+          expect(supabaseClient.from).toHaveBeenCalled();
           expect(bustedKeys).toContain('patchConnections');
           done();
         },
@@ -276,38 +276,39 @@ describe('SupabaseService - update extended', () => {
       });
     }, TEST_TIMEOUT);
   });
-  
+
   describe('update.patchConnectionsSilent', () => {
     it('should call buildPatchConnectionInserter silently and bust cache', (done) => {
-      spyOn(service as any, 'buildPatchConnectionInserter').and.returnValue(of(null));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
+      const bustedKeys: any[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+
+      service.update.patchConnectionsSilent([]).subscribe({
+        next: () => {
+          expect(supabaseClient.from).toHaveBeenCalled();
+          expect(bustedKeys).toContain('patchConnections');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('update.moduleINsOUTs', () => {
+    it('should complete and bust modules cache', (done) => {
+      const mockUser = {id: 'editor-1'};
+      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
       
-      service.update.patchConnectionsSilent([]).subscribe({
+      // CV with id=0 triggers the insert path in buildCVInserter, giving forkJoin a non-empty observable array
+      service.update.moduleINsOUTs(1, [{id: 0, name: 'A'} as any], []).subscribe({
         next: () => {
-          expect((service as any).buildPatchConnectionInserter).toHaveBeenCalled();
-          expect(bustedKeys).toContain('patchConnections');
-          done();
-        },
-        error: (err) => {
-          fail(err);
-          done();
-        }
-      });
-    }, TEST_TIMEOUT);
-  });
-  
-  describe('update.moduleINsOUTs', () => {
-    it('should orchestrate CV insert and update operations via forkJoin', (done) => {
-      const mockUser = {id: 'editor-1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
-      spyOn(service as any, 'buildCVInserter').and.returnValue([of(null)]);
-      spyOn(service as any, 'buildCVUpdater').and.returnValue([of(null)]);
-      
-      service.update.moduleINsOUTs(1, [], []).subscribe({
-        next: () => {
-          expect((service as any).buildCVInserter).toHaveBeenCalledTimes(2);
-          expect((service as any).buildCVUpdater).toHaveBeenCalledTimes(2);
+          expect(bustedKeys).toContain('modules');
           done();
         },
         error: (err) => {
@@ -321,18 +322,15 @@ describe('SupabaseService - update extended', () => {
       const mockUser = {id: 'session-user'};
       spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
       
-      let capturedAuthorId: string | undefined;
-      spyOn(service as any, 'buildCVInserter').and.callFake(
-        (_cvs: any, _path: any, _moduleId: any, authorid: string) => {
-          capturedAuthorId = authorid;
-          return [of(null)];
-        }
-      );
-      spyOn(service as any, 'buildCVUpdater').and.returnValue([of(null)]);
+      const insertMock = chainable({data: null, error: null});
+      const insertSpy = spyOn(insertMock, 'insert').and.returnValue(insertMock);
+      spyOn(supabaseClient, 'from').and.returnValue(insertMock);
       
-      service.update.moduleINsOUTs(1, [], [], 'explicit-author').subscribe({
+      // CV with id=0 triggers insert path in buildCVInserter
+      service.update.moduleINsOUTs(1, [{id: 0, name: 'A'} as any], [], 'explicit-author').subscribe({
         next: () => {
-          expect(capturedAuthorId).toBe('explicit-author');
+          const insertedData = insertSpy.calls.first().args[0] as any;
+          expect(insertedData.authorid).toBe('explicit-author');
           done();
         },
         error: (err) => {

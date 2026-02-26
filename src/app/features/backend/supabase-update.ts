@@ -40,11 +40,11 @@ import { SimpleUserModel } from './supabase.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
-function getCvMapper(moduleid: number): (cv: CV) => CVwithModuleId {
+export function getCvMapper(moduleid: number): (cv: CV) => CVwithModuleId {
   return (cv: CV) => ({...cv, moduleid});
 }
 
-function buildCVInserter(
+export function buildCVInserter(
   supabase: SupabaseClient<Database>,
   cvs: CV[],
   path: 'module_ins' | 'module_outs',
@@ -62,7 +62,7 @@ function buildCVInserter(
   return mappedCVs.map(x => rxFrom(supabase.from(path).insert(x)));
 }
 
-function buildCVUpdater(
+export function buildCVUpdater(
   supabase: SupabaseClient<Database>,
   cvs: CV[],
   path: 'module_ins' | 'module_outs',
@@ -72,7 +72,7 @@ function buildCVUpdater(
   return mappedCVs.map(x => rxFrom(supabase.from(path).update(x).eq('id', x.id)));
 }
 
-function buildPatchConnectionInserter(
+export function buildPatchConnectionInserter(
   supabase: SupabaseClient<Database>,
   connections: PatchConnection[],
   patchConnectionsForPatch: (id: number) => Observable<any>
