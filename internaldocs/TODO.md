@@ -82,19 +82,6 @@ now.
 **Remaining flows (deferred):** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch
 Connection, Module Submission, Sign Up, Delete Account.
 
-### ON HOLD: Homepage Redesign — Review + Sign-off
-
-**Why:** Layer-1 creator-first homepage iteration was implemented on 2026-02-23 and needs product review before
-further work.
-
-**Steps when resumed:**
-
-- [ ] Review `/home` on desktop and mobile against product goals
-- [ ] Decide whether to ship as-is or continue Layers 2/3
-- [ ] If additional work is approved, move task to Active and detail execution in `CURRENT_FEATURE.md`
-
----
-
 ### HIGH: E2E — Multi-Instance Patching (Auto-Instance Feature)
 
 **Why:** The auto-instance feature (collection-first editor, "Add Copy", instance delete, connection scrub,
