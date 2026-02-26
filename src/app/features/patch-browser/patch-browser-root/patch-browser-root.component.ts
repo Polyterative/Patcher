@@ -49,9 +49,10 @@ export class PatchBrowserRootComponent implements OnInit, OnDestroy {
     this.dataService.fields.order.control.patchValue({
       id: 'updated',
       name: 'Updated ↓'
-    });
+    }, {emitEvent: false});
     this.dataService.serversideTableRequestData.skip$.next(0);
     this.dataService.serversideTableRequestData.take$.next(10);
+    this.dataService.updatePatchesList$.next();
   }
   
   ngOnInit(): void {

@@ -4,38 +4,55 @@ import {
 } from '@playwright/test';
 
 
-const PREDICTABLE_RACK_ID = Number(process.env['E2E_PREDICTABLE_RACK_ID'] ?? '644');
-
-test.describe('Authenticated predictable rack detail', () => {
-  test('opens predictable rack and can enter edit mode', async ({page}) => {
-    await page.goto(`/racks/details/${ PREDICTABLE_RACK_ID }`);
-    await expect(page).toHaveURL(new RegExp(`/racks/details/${ PREDICTABLE_RACK_ID }`), {timeout: 20_000});
-    await expect(page.getByRole('heading', {name: /Rack (Details|Editing)/i}).first()).toBeVisible({timeout: 20_000});
-    await page.waitForTimeout(5_000);
+test.describe('Authenticated rack edit flow', () => {
+  test('can open a user-owned rack and enter edit mode', async ({page}) => {
+    await page.goto('/user/area');
+    await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
+    await expect(page.locator('app-user-racks')).toBeVisible({timeout: 20_000});
     
-    const rackComposite = page.locator('app-rack-composite').first();
-    const hasRenderableRack = await rackComposite.isVisible().catch(() => false);
-    if (!hasRenderableRack) {
-      throw new Error(
-        `Predictable rack #${ PREDICTABLE_RACK_ID } is not renderable for this account. ` +
-        `Prepare that rack manually and ensure /racks/details/${ PREDICTABLE_RACK_ID } shows full rack content.`
-      );
+    const rackTitle = page.locator('app-user-racks app-hero-clickable-title .title').first();
+    const hasRack = await rackTitle.isVisible({timeout: 20_000}).catch(() => false);
+    
+    if (!hasRack) {
+      // Create a rack so the test can proceed
+      const createRackButton = page.locator('app-user-racks app-brand-primary-button', {hasText: /create rack/i}).first();
+      await expect(createRackButton).toBeVisible({timeout: 10_000});
+      await createRackButton.click();
+      
+      await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
+      
+      // Try multiple selectors for the confirm button
+      const dialog = page.locator('mat-dialog-container').last();
+      const confirmByRole = dialog.getByRole('button', {name: /^Create$/i}).first();
+      if (await confirmByRole.isVisible({timeout: 5_000}).catch(() => false)) {
+        await confirmByRole.click();
+      } else {
+        await dialog.locator('app-brand-primary-button', {hasText: /create/i}).first().click();
+      }
+      
+      await expect(dialog).toBeHidden({timeout: 20_000});
+      await expect(rackTitle).toBeVisible({timeout: 20_000});
     }
     
-    const alreadyEditing = await page.getByText(/Rack Editing/i).first().isVisible().catch(() => false);
+    await rackTitle.click();
+    
+    await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 20_000});
+    await expect(page.getByRole('heading', {name: /Rack (Details|Editing)/i}).first()).toBeVisible({timeout: 20_000});
+    
+    // Wait for rack data and ownership state to settle
+    await page.waitForTimeout(3_000);
+
+    const rackComposite = page.locator('app-rack-composite').first();
+    await expect(rackComposite).toBeVisible({timeout: 20_000});
+    
+    const alreadyEditing = await page.getByRole('heading', {name: /Rack Editing/i}).first().isVisible().catch(() => false);
     if (!alreadyEditing) {
       const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
-      const canEdit = await editRackButton.isVisible().catch(() => false);
-      if (!canEdit) {
-        throw new Error(
-          `Predictable rack #${ PREDICTABLE_RACK_ID } is not editable for this account. ` +
-          `Prepare that rack manually and ensure /racks/details/${ PREDICTABLE_RACK_ID } supports edit mode.`
-        );
-      }
+      await expect(editRackButton).toBeVisible({timeout: 10_000});
       await editRackButton.click();
     }
     
-    await expect(page.getByText(/Rack Editing/i).first()).toBeVisible({timeout: 20_000});
+    await expect(page.getByRole('heading', {name: /Rack Editing/i}).first()).toBeVisible({timeout: 20_000});
     await expect(page.locator('app-rack-composite').first()).toBeVisible({timeout: 20_000});
   });
 });
