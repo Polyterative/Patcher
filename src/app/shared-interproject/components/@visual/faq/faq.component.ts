@@ -3,17 +3,17 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { MatButton } from "@angular/material/button";
 import { MatCardTitle } from "@angular/material/card";
 import { MatIcon } from "@angular/material/icon";
-import { BrandPrimaryButtonModule } from "src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module";
 
 
 @Component({
   selector: 'lib-faq',
   imports: [
+    MatButton,
     MatCardTitle,
     MatIcon,
-    BrandPrimaryButtonModule
   ],
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',
