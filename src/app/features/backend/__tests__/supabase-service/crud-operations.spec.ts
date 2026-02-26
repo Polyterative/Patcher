@@ -46,7 +46,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: {id: 1}, error: null})
@@ -87,7 +87,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       let capturedAuthorId: string | undefined;
       const insertSpy = jasmine.createSpy('insert').and.callFake((data: any) => {
@@ -125,7 +125,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: null, error: null})
@@ -160,7 +160,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: {id: 99}, error: null})
@@ -194,7 +194,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       spyOn(supabaseClient, 'from').and.returnValue({
         insert: jasmine.createSpy('insert').and.returnValue(
@@ -518,7 +518,7 @@ describe('SupabaseService - CRUD Operations', () => {
         updated_at: new Date().toISOString()
       };
       
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       let userModulesDeleteCalled = false;
       let commentsDeleteCalled = false;

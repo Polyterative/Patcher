@@ -73,7 +73,7 @@ describe('SupabaseService - delete simple operations', () => {
   describe('delete.userModuleTag', () => {
     it('should delete tag vote for the current user', (done) => {
       const mockUser = {id: 'voter-1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: null, error: null});
       const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);

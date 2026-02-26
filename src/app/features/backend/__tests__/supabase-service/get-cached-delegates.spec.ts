@@ -213,7 +213,7 @@ describe('SupabaseService - GET cached delegates', () => {
   describe('GET.currentUserModules', () => {
     it('should return current user modules with collectionUpdated metadata', (done) => {
       const mockUser = {id: 'u1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       spyOn(supabaseClient, 'from').and.returnValue(
         chainable({
@@ -242,7 +242,7 @@ describe('SupabaseService - GET cached delegates', () => {
     
     it('should apply whitelisted backend module name ordering when requested', (done) => {
       const mockUser = {id: 'u1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const query = chainable({data: [{collectionUpdated: null, module: {id: 1, name: 'VCO'}}], error: null});
       const orderSpy = spyOn(query, 'order').and.returnValue(query);
@@ -269,7 +269,7 @@ describe('SupabaseService - GET cached delegates', () => {
   describe('GET.currentUserComments', () => {
     it('should return current user comments', (done) => {
       const mockUser = {id: 'u2'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [{id: 1, content: 'Hello'}], error: null}));
       

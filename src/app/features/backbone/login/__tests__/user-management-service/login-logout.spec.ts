@@ -44,7 +44,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
       const password = 'password123';
       const loginResponse = {user: MOCK_SIMPLE_USER, returnUrl: '/'};
       
-      mockSupabaseService.login$.and.returnValue(of(loginResponse));
+      mockSupabaseService.auth.login$.and.returnValue(of(loginResponse));
       
       // Act
       service.login$(email, password).subscribe();
@@ -52,13 +52,13 @@ describe('UserManagementService - Manual Login/Logout', () => {
       tick();
       
       // Assert
-      expect(mockSupabaseService.login$).toHaveBeenCalledWith(email, password);
+      expect(mockSupabaseService.auth.login$).toHaveBeenCalledWith(email, password);
     }));
     
     it('should update loggedUser$ on successful login', fakeAsync(() => {
       // Arrange
       const loginResponse = {user: MOCK_SIMPLE_USER, returnUrl: '/'};
-      mockSupabaseService.login$.and.returnValue(of(loginResponse));
+      mockSupabaseService.auth.login$.and.returnValue(of(loginResponse));
       
       let loggedUser: any;
       service.loggedUser$.subscribe(user => loggedUser = user);
@@ -76,7 +76,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
     
     it('should show error message on login failure', fakeAsync(() => {
       // Arrange
-      mockSupabaseService.login$.and.returnValue(throwError(() => new Error('Login failed')));
+      mockSupabaseService.auth.login$.and.returnValue(throwError(() => new Error('Login failed')));
       
       // Act
       service.login$('test@example.com', 'wrong-password').subscribe({
@@ -91,14 +91,14 @@ describe('UserManagementService - Manual Login/Logout', () => {
       // Assert: Error handler should be called (via SharedConstants)
       // We can't easily test SharedConstants.errorLogin without mocking it
       // but the subscription should complete via NEVER
-      expect(mockSupabaseService.login$).toHaveBeenCalledWith('test@example.com', 'wrong-password');
+      expect(mockSupabaseService.auth.login$).toHaveBeenCalledWith('test@example.com', 'wrong-password');
     }));
   });
   
   describe('logoff$', () => {
     it('should call backend logoff$', fakeAsync(() => {
       // Arrange
-      mockSupabaseService.logoff$.and.returnValue(of({error: null}));
+      mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
       
       // Act
       service.logoff$();
@@ -106,16 +106,16 @@ describe('UserManagementService - Manual Login/Logout', () => {
       tick();
       
       // Assert
-      expect(mockSupabaseService.logoff$).toHaveBeenCalled();
+      expect(mockSupabaseService.auth.logoff$).toHaveBeenCalled();
     }));
     
     it('should navigate to login page on successful logout', fakeAsync(() => {
       // Arrange
-      mockSupabaseService.logoff$.and.returnValue(of({error: null}));
+      mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
       
       // Log the user in first
       const loginResponse = {user: MOCK_SIMPLE_USER, returnUrl: '/'};
-      mockSupabaseService.login$.and.returnValue(of(loginResponse));
+      mockSupabaseService.auth.login$.and.returnValue(of(loginResponse));
       service.login$('test@example.com', 'password').subscribe();
       tick();
       
@@ -132,7 +132,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
     
     it('should show success message on successful logout', fakeAsync(() => {
       // Arrange
-      mockSupabaseService.logoff$.and.returnValue(of({error: null}));
+      mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
       
       // Act
       service.logoff$();
@@ -142,14 +142,14 @@ describe('UserManagementService - Manual Login/Logout', () => {
       // Assert: Success message shown via SharedConstants
       // The implementation calls SharedConstants.successLogout(this.snackBar)
       // We can verify snackBar was opened (if we spy on SharedConstants)
-      expect(mockSupabaseService.logoff$).toHaveBeenCalled();
+      expect(mockSupabaseService.auth.logoff$).toHaveBeenCalled();
     }));
     
     it('should handle logout error gracefully', fakeAsync(() => {
       // Arrange
       spyOn(console, 'error');
       const error = new Error('Logout failed');
-      mockSupabaseService.logoff$.and.returnValue(throwError(() => error));
+      mockSupabaseService.auth.logoff$.and.returnValue(throwError(() => error));
       
       mockRouter.navigate.calls.reset();
       
@@ -166,7 +166,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
       // Arrange
       spyOn(console, 'error');
       const error = new Error('Logout failed');
-      mockSupabaseService.logoff$.and.returnValue(throwError(() => error));
+      mockSupabaseService.auth.logoff$.and.returnValue(throwError(() => error));
       
       // Act
       service.logoff$();
@@ -181,7 +181,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
   describe('logoffButtonClick$ integration', () => {
     it('should trigger logout when logoffButtonClick$ is emitted', fakeAsync(() => {
       // Arrange
-      mockSupabaseService.logoff$.and.returnValue(of({error: null}));
+      mockSupabaseService.auth.logoff$.and.returnValue(of({error: null}));
       
       const mockUserDataHandlerService = (service as any).userBoxService;
       
@@ -193,7 +193,7 @@ describe('UserManagementService - Manual Login/Logout', () => {
       tick();
       
       // Assert: backend logoff$ should have been called as a result
-      expect(mockSupabaseService.logoff$).toHaveBeenCalled();
+      expect(mockSupabaseService.auth.logoff$).toHaveBeenCalled();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
     }));
   });

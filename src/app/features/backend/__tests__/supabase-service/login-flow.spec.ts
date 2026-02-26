@@ -56,7 +56,7 @@ describe('SupabaseService - login flow', () => {
     it('should call signInWithPassword with email and password', (done) => {
       setupLoginMocks();
       
-      service.login$('u@test.com', 'pass123').subscribe({
+      service.auth.login$('u@test.com', 'pass123').subscribe({
         next: () => {
           expect(supabaseClient.auth.signInWithPassword).toHaveBeenCalledWith({
             email: 'u@test.com',
@@ -74,7 +74,7 @@ describe('SupabaseService - login flow', () => {
     it('should return user with username from profiles table', (done) => {
       setupLoginMocks('u-fetch', 'myusername');
       
-      service.login$('u@test.com', 'pass').subscribe({
+      service.auth.login$('u@test.com', 'pass').subscribe({
         next: (result: any) => {
           expect(result.user.username).toBe('myusername');
           done();
@@ -93,7 +93,7 @@ describe('SupabaseService - login flow', () => {
         Promise.resolve({data: {provider: 'google', url: 'https://google.com/auth'}, error: null})
       );
       
-      service.loginWithOAuth$('google').subscribe({
+      service.auth.loginWithOAuth$('google').subscribe({
         next: () => {
           expect(supabaseClient.auth.signInWithOAuth).toHaveBeenCalledWith(
             jasmine.objectContaining({provider: 'google'})
@@ -112,7 +112,7 @@ describe('SupabaseService - login flow', () => {
         Promise.resolve({data: {provider: 'github', url: 'https://github.com/auth'}, error: null})
       );
       
-      service.loginWithOAuth$('github').subscribe({
+      service.auth.loginWithOAuth$('github').subscribe({
         next: () => {
           const callArgs = (supabaseClient.auth.signInWithOAuth as jasmine.Spy).calls.first().args[0];
           expect(callArgs.options?.redirectTo).toBeDefined();
@@ -130,7 +130,7 @@ describe('SupabaseService - login flow', () => {
         Promise.resolve({data: null, error: {message: 'OAuth provider unavailable'}})
       );
       
-      service.loginWithOAuth$('google').subscribe({
+      service.auth.loginWithOAuth$('google').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -149,7 +149,7 @@ describe('SupabaseService - login flow', () => {
         Promise.resolve({data: {session: null}, error: null})
       );
       
-      service.handleOAuthCallback$().subscribe({
+      service.auth.handleOAuthCallback$().subscribe({
         next: (result) => {
           expect(result).toBeNull();
           done();
@@ -166,7 +166,7 @@ describe('SupabaseService - login flow', () => {
         Promise.resolve({data: {session: null}, error: {message: 'session error'}})
       );
       
-      service.handleOAuthCallback$().subscribe({
+      service.auth.handleOAuthCallback$().subscribe({
         next: (result) => {
           expect(result).toBeNull();
           done();
