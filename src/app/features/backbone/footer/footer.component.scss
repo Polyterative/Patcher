@@ -45,4 +45,13 @@ a {
   text-align: end;
   padding-top: 2rem;
   color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.legal-copy {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.8rem;
 }
