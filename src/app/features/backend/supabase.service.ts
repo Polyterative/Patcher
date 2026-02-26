@@ -136,7 +136,7 @@ export class SupabaseService extends SubManager {
   }
   
   user = {
-    user$: new ReplaySubject(),
+    user$: new ReplaySubject<void>(),
     login$: new EventEmitter<void>(),
     logout$: new EventEmitter<void>()
   };
@@ -176,5 +176,5 @@ export class SupabaseService extends SubManager {
   readonly add!: ReturnType<typeof createAddNamespace>;
   readonly delete!: ReturnType<typeof createDeleteNamespace>;
   readonly update!: ReturnType<typeof createUpdateNamespace>;
-  storage!: ReturnType<typeof createStorageNamespace>;
+  readonly storage!: ReturnType<typeof createStorageNamespace>;
 }

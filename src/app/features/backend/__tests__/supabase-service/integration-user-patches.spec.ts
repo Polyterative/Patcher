@@ -258,9 +258,7 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
     const supabaseClient = (service as any).supabase;
     const filterSpy = jasmine.createSpy('filter').and.returnValue({
       order: () => ({
-        order: () => ({
-          range: () => Promise.resolve({data: [], count: 0, error: null})
-        })
+        range: () => Promise.resolve({data: [], count: 0, error: null})
       })
     });
     
@@ -294,23 +292,19 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
           if (col !== 'public' || op !== 'eq' || val !== true) {
             return {
               order: () => ({
-                order: () => ({
-                  range: () => Promise.resolve({
-                    data: [
-                      {id: 1, name: 'Public Patch', public: true},
-                      {id: 2, name: 'Private Patch', public: false}
-                    ],
-                    count: 2, error: null
-                  })
+                range: () => Promise.resolve({
+                  data: [
+                    {id: 1, name: 'Public Patch', public: true},
+                    {id: 2, name: 'Private Patch', public: false}
+                  ],
+                  count: 2, error: null
                 })
               })
             };
           }
           return {
             order: () => ({
-              order: () => ({
-                range: () => Promise.resolve({data: mockPublicOnly, count: 1, error: null})
-              })
+              range: () => Promise.resolve({data: mockPublicOnly, count: 1, error: null})
             })
           };
         }

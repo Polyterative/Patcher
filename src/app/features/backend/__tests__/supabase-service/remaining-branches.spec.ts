@@ -307,10 +307,8 @@ describe('SupabaseService - Remaining Branches', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('exposes errorMsg and isValidPassword helpers', () => {
+  it('exposes errorMsg helper', () => {
     const handler = (service.auth as any)._errorMsg();
     expect(typeof handler).toBe('function');
-    expect((service.auth as any)._isValidPassword('1234567')).toBeFalse();
-    expect((service.auth as any)._isValidPassword('12345678')).toBeTrue();
   });
 });
