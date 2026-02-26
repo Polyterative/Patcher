@@ -4,16 +4,25 @@ import {
   Input
 } from '@angular/core';
 import { MatButton } from "@angular/material/button";
-import { MatCardTitle } from "@angular/material/card";
+import {
+  MatAccordion,
+  MatExpansionPanel,
+  MatExpansionPanelActionRow,
+  MatExpansionPanelHeader
+} from "@angular/material/expansion";
 import { MatIcon } from "@angular/material/icon";
 
 
 @Component({
   selector: 'lib-faq',
   imports: [
+    MatAccordion,
     MatButton,
-    MatCardTitle,
+    MatExpansionPanel,
+    MatExpansionPanelActionRow,
+    MatExpansionPanelHeader,
     MatIcon,
+  
   ],
   templateUrl: './faq.component.html',
   styleUrl: './faq.component.scss',
