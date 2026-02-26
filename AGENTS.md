@@ -161,7 +161,21 @@ Before commit:
 - Never push unless explicitly requested.
 - Before staging, always inspect: `git status` and `git diff HEAD --stat`.
 
-## 10) Internal Docs Ownership
+## 10) Agent Output and Context Preferences
+
+### Test output
+
+- Run tests with output trimmed to summary + failing file only — not full verbose logs.
+- Example: `yarn test-headless 2>&1 | tail -60` or similar tight output.
+- Use targeted `--include` flag when running a single spec to avoid reading unrelated results.
+
+### Context compaction
+
+- When compacting conversation context, keep **file references + short keywords** about future relevance — not code
+  blocks.
+- Prune context irrelevant to the current task (e.g., ignore CSS style rules when doing backend refactoring).
+
+## 11) Internal Docs Ownership
 
 - `internaldocs/CURRENT_FEATURE.md` - current in-flight implementation details
 - `internaldocs/TODO.md` - backlog and active tasks
