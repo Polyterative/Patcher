@@ -64,7 +64,7 @@ describe('UserManagementService - User State Management', () => {
   
   it('should fetch rich user profile when loggedUser$ is set', fakeAsync(() => {
     // Arrange
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
     
     let richProfile: any;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
@@ -77,13 +77,13 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Assert
-    expect(mockSupabaseService.getRichUserSession$).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getRichUserSession$).toHaveBeenCalled();
     expect(richProfile).toEqual(MOCK_RICH_USER);
   }));
   
   it('should update userBoxService when rich profile is loaded', fakeAsync(() => {
     // Arrange
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
     
     let userBoxUser: any;
     mockUserDataHandlerService.store.user$.subscribe((user: any) => userBoxUser = user);
@@ -101,7 +101,7 @@ describe('UserManagementService - User State Management', () => {
   
   it('should clear userBoxService username when profile is undefined', fakeAsync(() => {
     // Arrange
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
     (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     
     tick();
@@ -127,7 +127,7 @@ describe('UserManagementService - User State Management', () => {
     
     tick();
     
-    mockSupabaseService.getRichUserSession$.calls.reset();
+    mockSupabaseService.auth.getRichUserSession$.calls.reset();
     
     // Act - Set loggedUser$ to the same user (MOCK_SIMPLE_USER has same ID as MOCK_RICH_USER)
     (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
@@ -137,7 +137,7 @@ describe('UserManagementService - User State Management', () => {
     // Assert: Profile should remain unchanged and no refetch should occur
     // This prevents flashing during login when we already have the profile
     expect(richProfile).toEqual(MOCK_RICH_USER);
-    expect(mockSupabaseService.getRichUserSession$).not.toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getRichUserSession$).not.toHaveBeenCalled();
   }));
   
   it('should fetch new profile when loggedUser$ changes to different user', fakeAsync(() => {
@@ -149,8 +149,8 @@ describe('UserManagementService - User State Management', () => {
     
     tick();
     
-    mockSupabaseService.getRichUserSession$.calls.reset();
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER_2));
+    mockSupabaseService.auth.getRichUserSession$.calls.reset();
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER_2));
     
     // Act - Switch to a different user (different ID)
     (service as any)._loggedUser$.next(MOCK_SIMPLE_USER_2);
@@ -158,13 +158,13 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Assert: Should fetch the new user's profile
-    expect(mockSupabaseService.getRichUserSession$).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getRichUserSession$).toHaveBeenCalled();
     expect(richProfile).toEqual(MOCK_RICH_USER_2);
   }));
   
   it('should NOT fetch rich profile when user is undefined', fakeAsync(() => {
     // Arrange
-    mockSupabaseService.getRichUserSession$.calls.reset();
+    mockSupabaseService.auth.getRichUserSession$.calls.reset();
     
     // Act
     (service as any)._loggedUser$.next(undefined);
@@ -172,13 +172,13 @@ describe('UserManagementService - User State Management', () => {
     tick();
     
     // Assert
-    expect(mockSupabaseService.getRichUserSession$).not.toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getRichUserSession$).not.toHaveBeenCalled();
   }));
   
   it('should filter out rich profiles without username', fakeAsync(() => {
     // Arrange
     const invalidProfile = {...MOCK_RICH_USER, username: ''};
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(invalidProfile));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(invalidProfile));
     
     let richProfile: any;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);
@@ -197,7 +197,7 @@ describe('UserManagementService - User State Management', () => {
   it('should filter out rich profiles without email', fakeAsync(() => {
     // Arrange
     const invalidProfile = {...MOCK_RICH_USER, email: ''};
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(invalidProfile));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(invalidProfile));
     
     let richProfile: any;
     service.loggedUserFullProfile$.subscribe(profile => richProfile = profile);

@@ -150,11 +150,12 @@ describe('SupabaseService - API Surface', () => {
   });
   
   describe('Authentication Methods', () => {
-    it('should expose all authentication methods', () => {
+    it('should expose auth namespace with all authentication methods', () => {
+      expect(service.auth).toBeDefined();
       const authMethods = ['login$', 'signup$', 'logoff$', 'resetPassword$', 'getUserSession$'];
-      
+
       authMethods.forEach(method => {
-        expect(typeof (service as any)[method]).toBe('function', `${ method } should be a function`);
+        expect(typeof (service.auth as any)[method]).toBe('function', `auth.${ method } should be a function`);
       });
     });
     

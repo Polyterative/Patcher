@@ -68,7 +68,7 @@ describe('UserManagementService - Initialization', () => {
     // If getUserSession$ was called, checkUserInCookies was executed
     // We need to wait a tick for the async operation
     setTimeout(() => {
-      expect(mockSupabaseService.getUserSession$).toHaveBeenCalled();
+      expect(mockSupabaseService.auth.getUserSession$).toHaveBeenCalled();
       done();
     }, 100);
   });

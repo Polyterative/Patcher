@@ -85,7 +85,7 @@ describe('SupabaseService - delete advanced', () => {
   describe('delete.allUserData', () => {
     it('should complete the full sequential delete chain', (done) => {
       const mockUser = {id: 'delete-me-user'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
@@ -102,7 +102,7 @@ describe('SupabaseService - delete advanced', () => {
     
     it('should access all required tables', (done) => {
       const mockUser = {id: 'delete-user-42'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const tablesAccessed: string[] = [];
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
@@ -130,7 +130,7 @@ describe('SupabaseService - delete advanced', () => {
     
     it('should bust all major caches', (done) => {
       const mockUser = {id: 'cache-bust-user'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       const bustedKeys: any[] = [];

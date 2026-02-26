@@ -6,7 +6,9 @@ import { STANDARDS } from '../module-collection-analysis.service';
 describe('RackCreatorComponent', () => {
   function build(user: any = {id: 'user-1'}, userModules: any[] = []) {
     const backend = {
-      getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(user)),
+      auth: {
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(user))
+      },
       add: {
         rack: jasmine.createSpy('rack').and.returnValue(of({id: 1}))
       }

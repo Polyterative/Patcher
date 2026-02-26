@@ -160,7 +160,7 @@ describe('SupabaseService - storage', () => {
   
   describe('storage.uploadRackImage', () => {
     it('should upload to racks bucket and return a timestamped filename', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
       
       service.storage.uploadRackImage(new Blob(), 'rack.jpg').subscribe({
@@ -178,7 +178,7 @@ describe('SupabaseService - storage', () => {
     }, TEST_TIMEOUT);
     
     it('should bust rackWithId cache', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
