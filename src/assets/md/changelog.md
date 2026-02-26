@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.2.0](https://github.com/Polyterative/Patcher/compare/v5.1.1...v5.2.0) (2026-02-26)
+
+
+### Features
+
+* **app:** enhance UX ([8ffc4af](https://github.com/Polyterative/Patcher/commit/8ffc4af97bfc0714f12427091863038bd7500a87))
+* **comments:** add commentText pipe for safe HTML rendering ([4349e3c](https://github.com/Polyterative/Patcher/commit/4349e3c3adffd9bb46b1dd40cbb3453ace8c916a))
+* **footer:** update changelog to v5.1.0, add Discord/GitHub links, move inline styles to SCSS ([#124](https://github.com/Polyterative/Patcher/issues/124)) ([ebeefaa](https://github.com/Polyterative/Patcher/commit/ebeefaa675089bbf34ffd74015ca3dc050bc52ec))
+* **graph:** enhance node data structure ([e91075f](https://github.com/Polyterative/Patcher/commit/e91075f6c1ce187139c0978f298683fe0401ef5d))
+* **graph:** enhance node label rendering ([21a9989](https://github.com/Polyterative/Patcher/commit/21a99895aeaa216e9c87828f726d11b71d752f27))
+* **graph:** implement progressive rendering for nodes ([0110488](https://github.com/Polyterative/Patcher/commit/0110488041d2d469ee3d43b0d05a76938ed62bcc))
+* **home:** add real-world use cases section ([5f78b45](https://github.com/Polyterative/Patcher/commit/5f78b45947c2e6a8509467b2099b6c99f1ab63a2))
+* **home:** enhance homepage with new components ([6cb05fa](https://github.com/Polyterative/Patcher/commit/6cb05faf0c7e6c9ad18c0d9845eda7765971d581))
+* **home:** enhance layout with modular sections ([6d94075](https://github.com/Polyterative/Patcher/commit/6d9407538ae32cfff6728bfbf525c798d799841d))
+* **home:** redesign homepage layout and visuals ([2ff9f8b](https://github.com/Polyterative/Patcher/commit/2ff9f8b5f596eb24e959306bc5764ec8b6b8eeb4))
+* **home:** update patch description for clarity ([55a3e00](https://github.com/Polyterative/Patcher/commit/55a3e00d887922c11f13e1fcb2f63e84f6d4500c))
+* **home:** update section titles and descriptions ([8afdbae](https://github.com/Polyterative/Patcher/commit/8afdbae517fa42687414401f02282fea2c73a60c))
+* **module-browser:** UX improvements ([1f01cd4](https://github.com/Polyterative/Patcher/commit/1f01cd41629c03de45c769ce8a43acd4030332aa))
+* **module-editor:** compact workflow layout and secondary save FAB ([e1065ff](https://github.com/Polyterative/Patcher/commit/e1065ffbb8e35da08273fa8dcb61d0411120254e))
+* **module-editor:** enhance save FAB accessibility and UX ([38b4381](https://github.com/Polyterative/Patcher/commit/38b438148f8d70d0e7cc0f0df6a25a8aa03d2a4a))
+* **module-editor:** harden close/discard flow and CSS fab spacing ([d17536e](https://github.com/Polyterative/Patcher/commit/d17536e3e713fe1e9b84a3facf18fcd63079ddfd))
+* **module-editor:** improve draft CV editing UX and safeguards ([4a9870b](https://github.com/Polyterative/Patcher/commit/4a9870b243bffabc3b3446cab944eeb69020be6e))
+* **module-editor:** ship MVP layout framing for CV editing ([49c5d95](https://github.com/Polyterative/Patcher/commit/49c5d956b40d951bcfc163da7009917e52befe5b))
+* **module-editor:** unify save flow and ship workflow layout scaffold ([f10ea25](https://github.com/Polyterative/Patcher/commit/f10ea25ec7c6d0ce41b3c0220837cd6b26d1012d))
+* **module-editor:** unify setup-panel composition and remove step framing ([a9b4d92](https://github.com/Polyterative/Patcher/commit/a9b4d92d53ec2a458767469dc81cf529cc5a72df))
+* **patch-editor:** add compact sort/group controls ([999f576](https://github.com/Polyterative/Patcher/commit/999f576ae1a9b22d82d91c5c7700235188f6caf4))
+* **patch-editor:** add floating search for modules ([c193969](https://github.com/Polyterative/Patcher/commit/c193969a00e2201ed3e350c4cc5967398b62ee0f))
+* **patch-editor:** enhance sort/group controls with new options ([355c13b](https://github.com/Polyterative/Patcher/commit/355c13b203dab96db08ad376d9bd4091a315b3da))
+* **patch-graph:** add flow animation for edges ([52c1421](https://github.com/Polyterative/Patcher/commit/52c1421ff8f0f1613fe0b1a8524a18216f58f4b8))
+* **patch-graph:** implement progressive reveal controller ([20ec8c2](https://github.com/Polyterative/Patcher/commit/20ec8c2622563cc2eeafa47de2cb41d90ca00f04))
+* **patch-graph:** simplify node labels ([5ffbf79](https://github.com/Polyterative/Patcher/commit/5ffbf79d556cfd71a1094f0881a046cb2b39cd99))
+* **playwright:** enhance local dev server setup ([0be00ad](https://github.com/Polyterative/Patcher/commit/0be00ad3cf73f1a9151f94e7e74d1b8a50400cb0))
+* **user-area:** implement unified floating search ([aa31ac8](https://github.com/Polyterative/Patcher/commit/aa31ac8297b9c04ea2fe4c4139f231153ba37825))
+
+
+### Bug Fixes
+
+* **faq:** update roadmap links in FAQ and user guide ([225871f](https://github.com/Polyterative/Patcher/commit/225871f191de0e29722150fc646c97762fe8b9c4))
+* **module-editor:** harden responsive layout and remove detail-page flex-layout coupling ([0dafb1a](https://github.com/Polyterative/Patcher/commit/0dafb1adab73fcdb1599a070976cb58d06dcd32e))
+* **module-editor:** harden save-state validation and baseline sync ([9414b75](https://github.com/Polyterative/Patcher/commit/9414b75d51a93b1d7ac47d70769e73f6bf5c8dea))
+* **patch-micro:** handle null data in template ([4fe2512](https://github.com/Polyterative/Patcher/commit/4fe251232fc5b8e1b65757889f65e5868fb50f5a))
+* **rack-browser:** improve db request handling ([d7f8117](https://github.com/Polyterative/Patcher/commit/d7f81177051c64e8a97e95f31ed65b7bfad0dfe1))
+* **supabase.service:** filter public patches and handle null results ([521a472](https://github.com/Polyterative/Patcher/commit/521a47228d657adb0130f66a9b170be47f591c77))
+* **vercel:** sitemap fix ([9d08651](https://github.com/Polyterative/Patcher/commit/9d0865115db786434ef3d415385762fd5b2dc7b8))
+* **vercel:** update ignoreCommand logic ([dcff90e](https://github.com/Polyterative/Patcher/commit/dcff90e2ef2b80cd0361f7af350377b79c18a7b2))
+
 ### [5.1.1](https://github.com/Polyterative/Patcher/compare/v5.1.0...v5.1.1) (2026-02-23)
 
 
