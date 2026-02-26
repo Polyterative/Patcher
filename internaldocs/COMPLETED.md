@@ -8,6 +8,13 @@
 
 | Feature                                                                     | Date  | Notes                                                                                                    |
 |-----------------------------------------------------------------------------|-------|----------------------------------------------------------------------------------------------------------|
+| Stylelint px-to-rem tooling                                                 | 02-26 | Added stylelint config and conversion scripts for consistent rem units across SCSS                       |
+| CI — skip builds on docs-only changes                                       | 02-26 | Vercel `ignoreCommand` updated; sitemap fix; docs-only commits no longer trigger full builds             |
+| Supabase service restructure                                                | 02-26 | Reorganized into typed namespaces (get/add/delete/update); storage support added; query structure simplified |
+| FAQ — accordion layout                                                      | 02-26 | Accordion layout, updated link button style and icon, roadmap links corrected                            |
+| Comments — safe HTML rendering                                              | 02-26 | `commentText` pipe for sanitized HTML in comment display; link styles added to comment items             |
+| Unified floating search — user area                                         | 02-26 | Global floating search implemented in user area alongside existing patch editor search                   |
+| Patch graph — progressive reveal + flow animations                          | 02-26 | Progressive reveal controller, edge flow animation, progressive node rendering, enhanced node labels     |
 | Patch editor compact sort/group controls + extra modes                      | 02-25 | Compacted inline controls and added manufacturer/connections sorts plus connection/patch-presence groups |
 | Patch editor module sort + manufacturer grouping                            | 02-25 | Added backend-first sort modes, strategy-based local fallback/grouping, and inline sort/group controls   |
 | Patch editor floating module search                                         | 02-25 | Added fixed floating module search beside close-edit FAB with normalized filtering for collection cards  |
