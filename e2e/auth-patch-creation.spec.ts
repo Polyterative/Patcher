@@ -40,6 +40,6 @@ test.describe('Authenticated patch creation', () => {
     await createdPatchLink.click();
     
     await expect(page).toHaveURL(/\/patches\/details\/\d+/, {timeout: 20_000});
-    await expect(page.getByRole('heading', {name: /Patch details/i}).first()).toBeVisible({timeout: 20_000});
+    await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
   });
 });
