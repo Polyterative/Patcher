@@ -18,6 +18,12 @@ lib-hero-content-card {
   flex-direction: column;
   gap: 0; // Controlled by individual sections
   width: 100%;
+
+  // Restore density-1 sizing for fill form fields — signup has space for proper labels.
+  --mat-form-field-container-height: 52px;
+  --mat-form-field-container-vertical-padding: 14px;
+  --mat-form-field-filled-with-label-container-padding-top: 22px;
+  --mat-form-field-filled-with-label-container-padding-bottom: 6px;
 }
 
 // ============================================

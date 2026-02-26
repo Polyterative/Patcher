@@ -21,6 +21,10 @@
 
 .account-sections {
   gap: 0.75rem;
+
+  // Use density-1 sizing — this page has space for properly-sized form fields.
+  --mat-form-field-container-height: 52px;
+  --mat-form-field-container-vertical-padding: 14px;
 }
 
 .logout-button {
