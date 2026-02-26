@@ -64,28 +64,33 @@ export function setupUserManagementServiceTest() {
     params: of({})
   });
   
-  // Mock SupabaseService with proper event emitters
-  const mockSupabaseService = jasmine.createSpyObj('SupabaseService', [
+  // Mock auth namespace
+  const mockAuthNamespace = jasmine.createSpyObj('auth', [
     'login$',
     'logoff$',
     'getUserSession$',
     'getRichUserSession$',
     'signup$',
     'resetPassword$',
-    'updatePassword$'
+    'updatePassword$',
+    'loginWithOAuth$',
+    'handleOAuthCallback$',
+    'updateUsername$'
   ]);
+  mockAuthNamespace.getUserSession$.and.returnValue(of(null));
+  mockAuthNamespace.getRichUserSession$.and.returnValue(of(null));
+  mockAuthNamespace.logoff$.and.returnValue(of({error: null}));
   
-  // Add user object with event emitters
-  mockSupabaseService.user = {
-    user$: new ReplaySubject(),
-    login$: new EventEmitter<void>(),
-    logout$: new EventEmitter<void>()
+  // Mock SupabaseService as a plain object so individual tests can override properties
+  const mockSupabaseService: any = {
+    auth: mockAuthNamespace,
+    user: {
+      user$: new ReplaySubject(),
+      login$: new EventEmitter<void>(),
+      logout$: new EventEmitter<void>()
+    },
+    delete: jasmine.createSpyObj('delete', ['allUserData'])
   };
-  
-  // Default return values
-  mockSupabaseService.getUserSession$.and.returnValue(of(null));
-  mockSupabaseService.getRichUserSession$.and.returnValue(of(null));
-  mockSupabaseService.logoff$.and.returnValue(of({error: null}));
   
   // Mock UserDataHandlerService
   const mockUserDataHandlerService = {

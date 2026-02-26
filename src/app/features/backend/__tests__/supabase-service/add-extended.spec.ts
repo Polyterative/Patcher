@@ -54,7 +54,7 @@ describe('SupabaseService - add extended', () => {
   describe('add.userModuleTag', () => {
     it('should insert tag vote with user id and module tag id', (done) => {
       const mockUser = {id: 'voter-1', email: 'voter@test.com'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: null, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -76,7 +76,7 @@ describe('SupabaseService - add extended', () => {
   describe('add.moduleTagLink', () => {
     it('should insert a module-tag link and return the new id', (done) => {
       const mockUser = {id: 'user-x'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: {id: 77}, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -197,7 +197,7 @@ describe('SupabaseService - add extended', () => {
   describe('add.modules', () => {
     it('should insert new modules (id=0) and update existing ones (id>0)', (done) => {
       const mockUser = {id: 'submitter-1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: null, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);

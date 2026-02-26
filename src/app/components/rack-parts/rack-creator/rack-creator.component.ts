@@ -179,7 +179,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
     
     this.save$
       .pipe(
-        withLatestFrom(this.backend.getUserSession$()),
+        withLatestFrom(this.backend.auth.getUserSession$()),
         // check if user is logged in
         filter(([_, user]) => !!user),
         map(([_, user]) => user),

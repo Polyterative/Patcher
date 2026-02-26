@@ -33,7 +33,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
   
   it('should create new patches with public: true by default', (done) => {
     // Mock user session
-    spyOn(service as any, 'getUserSession$').and.returnValue(of({
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
       id: 'test-user-id',
       email: 'test@example.com',
       created_at: new Date().toISOString(),
@@ -172,7 +172,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
   
   it('should return array of patches with public field (not response object)', (done) => {
     // Mock user session
-    spyOn(service as any, 'getUserSession$').and.returnValue(of({
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
       id: 'test-user-id',
       email: 'test@example.com',
       created_at: new Date().toISOString(),

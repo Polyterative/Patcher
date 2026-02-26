@@ -145,7 +145,7 @@ export class UserManagementService extends SubManager {
         // Only fetch if we don't have a profile or it's for a different user
         filter(([user, profile]) => !profile || profile.id !== user.id),
         switchMap(([_user]) =>
-          this.backend.getRichUserSession$().pipe(
+          this.backend.auth.getRichUserSession$().pipe(
             filter(x => !!x && !!x.username && !!x.email)
           )
         ),
@@ -185,7 +185,7 @@ export class UserManagementService extends SubManager {
     // Note: Navigation is NOT handled here - it's the responsibility of the component
     // that initiated the login (e.g., login page navigates to /user/area)
     this.backend.user.login$.pipe(
-      switchMap(() => this.backend.getUserSession$()),
+      switchMap(() => this.backend.auth.getUserSession$()),
       filter(user => !!user),
       // Only update if we're currently logged out or it's a different user
       // This prevents unnecessary updates when already logged in as the same user
@@ -199,7 +199,7 @@ export class UserManagementService extends SubManager {
   
   private initializeLoginHandler(): void {
     this.loginAction$.pipe(
-      switchMap(({email, password}) => this.backend.login$(email, password).pipe(
+      switchMap(({email, password}) => this.backend.auth.login$(email, password).pipe(
         catchError(() => {
           SharedConstants.errorLogin(this.snackBar);
           return NEVER;
@@ -217,7 +217,7 @@ export class UserManagementService extends SubManager {
   
   private initializeLogoffHandler(): void {
     this.logoffAction$.pipe(
-      switchMap(() => from(this.backend.logoff$()).pipe(
+      switchMap(() => from(this.backend.auth.logoff$()).pipe(
         catchError((error) => {
           console.error('Logout failed:', error);
           SharedConstants.errorCustom(this.snackBar, SharedConstants.messages.operationFailed);
@@ -236,7 +236,7 @@ export class UserManagementService extends SubManager {
   
   private initializeResetPasswordHandler(): void {
     this.resetPasswordAction$.pipe(
-      switchMap(email => this.backend.resetPassword$(email).pipe(
+      switchMap(email => this.backend.auth.resetPassword$(email).pipe(
         catchError((error) => {
           if (error?.error_code === 'over_email_send_rate_limit') {
             SharedConstants.errorCustom(
@@ -259,7 +259,7 @@ export class UserManagementService extends SubManager {
   
   private initializeSSOLoginHandler(): void {
     this.ssoLoginAction$.pipe(
-      switchMap(({provider, redirectUrl}) => this.backend.loginWithOAuth$(provider, redirectUrl).pipe(
+      switchMap(({provider, redirectUrl}) => this.backend.auth.loginWithOAuth$(provider, redirectUrl).pipe(
         catchError((error) => {
           console.error('SSO login failed:', error);
           SharedConstants.errorCustom(
@@ -276,7 +276,7 @@ export class UserManagementService extends SubManager {
   
   private initializeOAuthCallbackHandler(): void {
     this.handleOAuthCallbackAction$.pipe(
-      switchMap(() => this.backend.handleOAuthCallback$().pipe(
+      switchMap(() => this.backend.auth.handleOAuthCallback$().pipe(
         catchError((error) => {
           console.error('OAuth callback handling failed:', error);
           SharedConstants.errorCustom(
@@ -299,7 +299,7 @@ export class UserManagementService extends SubManager {
    * @deprecated This should be refactored to use a signup$ action subject
    */
   signup(username: string, email: string, password: string): SupabaseSignupResponse {
-    return this.backend.signup$(username, email, password);
+    return this.backend.auth.signup$(username, email, password);
   }
   
   /**
@@ -309,7 +309,7 @@ export class UserManagementService extends SubManager {
   login$(email: string, password: string) {
     // For backward compatibility, return the backend observable directly
     // This will be handled by the component's subscription
-    return this.backend.login$(email, password).pipe(
+    return this.backend.auth.login$(email, password).pipe(
       catchError(() => {
         SharedConstants.errorLogin(this.snackBar);
         return NEVER;
@@ -334,7 +334,7 @@ export class UserManagementService extends SubManager {
    * @deprecated Components should eventually use the resetPasswordAction$ subject directly
    */
   resetPassword$(email: string) {
-    return this.backend.resetPassword$(email).pipe(
+    return this.backend.auth.resetPassword$(email).pipe(
       catchError((error) => {
         if (error?.error_code === 'over_email_send_rate_limit') {
           SharedConstants.errorCustom(
@@ -377,7 +377,7 @@ export class UserManagementService extends SubManager {
    * This triggers the initial session check on service initialization
    */
   private checkUserInCookies(): void {
-    this.backend.getUserSession$().pipe(
+    this.backend.auth.getUserSession$().pipe(
       take(1)
     ).subscribe(x => {
       if (x) {
@@ -394,7 +394,7 @@ export class UserManagementService extends SubManager {
     this.updateUsernameAction$.pipe(      withLatestFrom(this.loggedUserFullProfile$),
       filter(([_, profile]) => !!profile),
       switchMap(([newUsername, profile]) =>
-        this.backend.updateUsername$(profile!.id, newUsername).pipe(
+        this.backend.auth.updateUsername$(profile!.id, newUsername).pipe(
           map(() => newUsername),
           catchError((error) => {
             const errorMessage = error?.message || SharedConstants.messages.operationFailed;
@@ -404,7 +404,7 @@ export class UserManagementService extends SubManager {
         )
       ),
       // Refresh the user profile after successful update
-      switchMap((newUsername) => this.backend.getRichUserSession$().pipe(map(profile => ({profile, newUsername})))),
+      switchMap((newUsername) => this.backend.auth.getRichUserSession$().pipe(map(profile => ({profile, newUsername})))),
       filter(({profile}) => !!profile),
       tap(({profile, newUsername}) => {
         this._loggedUserFullProfile$.next(profile);
@@ -426,7 +426,7 @@ export class UserManagementService extends SubManager {
       take(1),
       filter((profile): profile is RichUserModel => !!profile),
       switchMap(profile =>
-        this.backend.updateUsername$(profile.id, newUsername).pipe(
+        this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
           catchError((error) => {
             const errorMessage = error?.message || SharedConstants.messages.operationFailed;
             SharedConstants.errorCustom(this.snackBar, errorMessage);
@@ -435,7 +435,7 @@ export class UserManagementService extends SubManager {
         )
       ),
       // Refresh the user profile after successful update
-      switchMap(() => this.backend.getRichUserSession$()),
+      switchMap(() => this.backend.auth.getRichUserSession$()),
       filter(x => !!x),
       tap(updatedProfile => {
         this._loggedUserFullProfile$.next(updatedProfile);
@@ -471,7 +471,7 @@ export class UserManagementService extends SubManager {
         this._loggedUser$.next(undefined);
         this._loggedUserFullProfile$.next(undefined);
       }),
-      switchMap(() => from(this.backend.logoff$()).pipe(
+      switchMap(() => from(this.backend.auth.logoff$()).pipe(
         catchError(() => NEVER)
       )),
       tap(() => {
@@ -492,7 +492,7 @@ export class UserManagementService extends SubManager {
   private initializeChangePasswordHandler(): void {
     this.changePassword$.pipe(
       switchMap(({newPassword}) =>
-        this.backend.updatePassword$(newPassword).pipe(
+        this.backend.auth.updatePassword$(newPassword).pipe(
           catchError((error) => {
             const msg = error?.message || SharedConstants.messages.operationFailed;
             SharedConstants.errorCustom(this.snackBar, msg);

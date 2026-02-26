@@ -48,9 +48,11 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
       add: {
         patchConnection: jasmine.createSpy('patchConnection').and.returnValue(of({data: null, error: null}))
       },
-      getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(
-        of({id: 'test-user', email: 'test@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
-      )
+      auth: {
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(
+          of({id: 'test-user', email: 'test@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
+        )
+      }
     };
     
     mockUserService = {

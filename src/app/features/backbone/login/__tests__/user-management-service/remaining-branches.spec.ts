@@ -42,13 +42,13 @@ describe('UserManagementService - Remaining Branches', () => {
   it('initializeLoginHandler handles backend login failure and success action flow', fakeAsync(() => {
     spyOn(SharedConstants, 'errorLogin').and.callFake(() => {
     });
-    mockSupabaseService.login$.and.returnValue(throwError(() => new Error('bad login')));
+    mockSupabaseService.auth.login$.and.returnValue(throwError(() => new Error('bad login')));
     
     service.loginAction$.next({email: 'a@b.com', password: 'x'});
     tick();
     expect(SharedConstants.errorLogin).toHaveBeenCalled();
     
-    mockSupabaseService.login$.and.returnValue(of({user: MOCK_RICH_USER}));
+    mockSupabaseService.auth.login$.and.returnValue(of({user: MOCK_RICH_USER}));
     let user: any;
     let profile: any;
     service.loggedUser$.subscribe(v => user = v);
@@ -62,11 +62,11 @@ describe('UserManagementService - Remaining Branches', () => {
   
   it('signup delegates to backend signup$', () => {
     const response = {user: {id: 'x'}} as any;
-    mockSupabaseService.signup$.and.returnValue(of(response));
+    mockSupabaseService.auth.signup$.and.returnValue(of(response));
     
     const out = service.signup('name', 'mail@example.com', 'pass');
     out.subscribe((res: any) => expect(res).toEqual(response));
-    expect(mockSupabaseService.signup$).toHaveBeenCalledWith('name', 'mail@example.com', 'pass');
+    expect(mockSupabaseService.auth.signup$).toHaveBeenCalledWith('name', 'mail@example.com', 'pass');
   });
   
   it('public resetPassword$ handles over-limit, generic errors, and success', fakeAsync(() => {
@@ -75,15 +75,15 @@ describe('UserManagementService - Remaining Branches', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     
-    mockSupabaseService.resetPassword$.and.returnValue(throwError(() => ({error_code: 'over_email_send_rate_limit'})));
+    mockSupabaseService.auth.resetPassword$.and.returnValue(throwError(() => ({error_code: 'over_email_send_rate_limit'})));
     service.resetPassword$('user@example.com').subscribe();
     tick();
     
-    mockSupabaseService.resetPassword$.and.returnValue(throwError(() => new Error('generic')));
+    mockSupabaseService.auth.resetPassword$.and.returnValue(throwError(() => new Error('generic')));
     service.resetPassword$('user@example.com').subscribe();
     tick();
     
-    mockSupabaseService.resetPassword$.and.returnValue(of(void 0));
+    mockSupabaseService.auth.resetPassword$.and.returnValue(of(void 0));
     service.resetPassword$('user@example.com').subscribe();
     tick();
     
@@ -92,7 +92,7 @@ describe('UserManagementService - Remaining Branches', () => {
   }));
   
   it('checkUserInCookies sets logged user when session exists', fakeAsync(() => {
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     let value: any;
     service.loggedUser$.subscribe(v => value = v);
     
@@ -103,7 +103,7 @@ describe('UserManagementService - Remaining Branches', () => {
   }));
   
   it('deleteAccount flow catches logoff failure branch', fakeAsync(() => {
-    mockSupabaseService.logoff$.and.returnValue(Promise.reject(new Error('logout fail')));
+    mockSupabaseService.auth.logoff$.and.returnValue(Promise.reject(new Error('logout fail')));
     
     service.deleteAccountAction$.next();
     tick();

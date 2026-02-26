@@ -121,9 +121,11 @@ describe('PatchDetailDataService - Instance Management', () => {
             of(rows.map(r => ({id: Math.floor(Math.random() * 10000), ...r} as PatchModuleInstance)))
         )
       },
-      getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(
-        of({id: 'user-1', email: 'test@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
-      )
+      auth: {
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(
+          of({id: 'user-1', email: 'test@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
+        )
+      }
     };
     
     mockUserService = {
@@ -1055,7 +1057,7 @@ describe('PatchDetailDataService - Instance Management', () => {
     
     it('should populate instanceLabelMap$ when backend returns instances for a non-owner patch', (done) => {
       // Simulate a non-owner scenario: getUserSession$ returns a different user
-      mockSupabaseService.getUserSession$.and.returnValue(
+      mockSupabaseService.auth.getUserSession$.and.returnValue(
         of({id: 'other-user', email: 'other@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString()})
       );
       
@@ -1089,7 +1091,7 @@ describe('PatchDetailDataService - Instance Management', () => {
     
     it('should populate instanceLabelMap$ when user is not authenticated (null session)', (done) => {
       // Simulate unauthenticated user
-      mockSupabaseService.getUserSession$.and.returnValue(of(null));
+      mockSupabaseService.auth.getUserSession$.and.returnValue(of(null));
       
       const instances: PatchModuleInstance[] = [
         {id: 7010, patch_id: 100, module_id: 20, instance_label: '(1)'},

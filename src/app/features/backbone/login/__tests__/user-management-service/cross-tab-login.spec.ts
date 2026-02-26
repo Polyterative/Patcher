@@ -35,7 +35,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should update user state when login$ event is emitted with valid session', fakeAsync(() => {
     // Arrange: User is logged out
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     let loggedUser: any;
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -52,13 +52,13 @@ describe('UserManagementService - Cross-Tab Login', () => {
     
     // Assert: User state should be updated
     expect(loggedUser).toEqual(MOCK_SIMPLE_USER);
-    expect(mockSupabaseService.getUserSession$).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getUserSession$).toHaveBeenCalled();
   }));
   
   it('should update user state but NOT navigate when login$ event is emitted', fakeAsync(() => {
     // Arrange: User is on login page and logged out
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     let loggedUser: any;
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -79,7 +79,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
   it('should update user state but NOT navigate when login$ event is emitted on any page', fakeAsync(() => {
     // Arrange: User is on another page
     Object.defineProperty(mockRouter, 'url', {value: '/modules', writable: true});
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     let loggedUser: any;
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -100,7 +100,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should NOT update state when login$ emitted but session is null', fakeAsync(() => {
     // Arrange: No valid session available
-    mockSupabaseService.getUserSession$.and.returnValue(of(null));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(null));
     
     let loggedUser: any = 'initial';
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -121,7 +121,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     (service as any).currentUserId = MOCK_SIMPLE_USER.id;
     
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER_2));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER_2));
     
     let loggedUser: any;
     service.loggedUser$.subscribe(user => loggedUser = user);
@@ -144,7 +144,7 @@ describe('UserManagementService - Cross-Tab Login', () => {
     (service as any)._loggedUser$.next(MOCK_SIMPLE_USER);
     (service as any).currentUserId = MOCK_SIMPLE_USER.id;
     
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     let emitCount = 0;
     service.loggedUser$.subscribe(() => emitCount++);
@@ -164,11 +164,11 @@ describe('UserManagementService - Cross-Tab Login', () => {
   
   it('should fetch user session when login$ event is emitted', fakeAsync(() => {
     // Arrange
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     tick();
     
-    mockSupabaseService.getUserSession$.calls.reset();
+    mockSupabaseService.auth.getUserSession$.calls.reset();
     
     // Act
     mockSupabaseService.user.login$.emit();
@@ -176,13 +176,13 @@ describe('UserManagementService - Cross-Tab Login', () => {
     tick();
     
     // Assert
-    expect(mockSupabaseService.getUserSession$).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.getUserSession$).toHaveBeenCalled();
   }));
   
   it('should handle rapid login events without errors', fakeAsync(() => {
     // Arrange
     Object.defineProperty(mockRouter, 'url', {value: '/auth/login', writable: true});
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
     
     tick();
     

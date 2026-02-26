@@ -41,7 +41,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
   
   it('should return array of racks (not response object)', (done) => {
     // Mock user session to simulate authenticated user
-    spyOn(service as any, 'getUserSession$').and.returnValue(of({
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
       id: 'test-user-id',
       email: 'test@example.com',
       created_at: new Date().toISOString(),
@@ -139,7 +139,7 @@ describe('SupabaseService - currentUserRacks Integration', () => {
   it('should handle optional authorid parameter', (done) => {
     const testAuthorId = 'different-user-id';
     
-    spyOn(service as any, 'getUserSession$').and.returnValue(of({
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
       id: 'current-user-id',
       email: 'current@example.com',
       created_at: new Date().toISOString(),

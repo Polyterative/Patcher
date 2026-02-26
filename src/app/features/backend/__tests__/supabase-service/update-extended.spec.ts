@@ -300,7 +300,7 @@ describe('SupabaseService - update extended', () => {
   describe('update.moduleINsOUTs', () => {
     it('should complete and bust modules cache', (done) => {
       const mockUser = {id: 'editor-1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
@@ -320,7 +320,7 @@ describe('SupabaseService - update extended', () => {
     
     it('should prefer explicit authorid over user session id', (done) => {
       const mockUser = {id: 'session-user'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const insertMock = chainable({data: null, error: null});
       const insertSpy = spyOn(insertMock, 'insert').and.returnValue(insertMock);

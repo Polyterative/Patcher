@@ -29,8 +29,8 @@ describe('UserManagementService - Cross-Tab Logout', () => {
     mockSupabaseService = setup.mockSupabaseService;
     
     // Setup getUserSession to return logged in user
-    mockSupabaseService.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
-    mockSupabaseService.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
+    mockSupabaseService.auth.getUserSession$.and.returnValue(of(MOCK_SIMPLE_USER));
+    mockSupabaseService.auth.getRichUserSession$.and.returnValue(of(MOCK_RICH_USER));
   });
   
   afterEach(() => {
