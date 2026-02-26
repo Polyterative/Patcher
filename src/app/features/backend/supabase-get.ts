@@ -29,10 +29,6 @@ export function createGetNamespace(
   getUserSession$: () => Observable<SimpleUserModel | null>
 ) {
   return {
-    // patches:            (from = 0, to: number = defaultPag, columns = '*') => fromPromise(
-    //   supabase.from(DatabasePaths.patches)
-    //       .select(`${ columns }`)
-    //       .range(from, to)
     currentUserPatches: (): Observable<Patch[]> => getUserSession$().pipe(
       switchMap((user: SimpleUserModel | null) => user?.id
         ? queries.getCurrentUserPatchesForAuthor(user.id)
@@ -54,8 +50,6 @@ export function createGetNamespace(
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
-        // .order('module.id')
-        // .select(`*`)
         .filter('rackid', 'eq', rackid)
         .order('row', {ascending: true})
         .order('column', {ascending: true})
@@ -87,12 +81,8 @@ export function createGetNamespace(
       ),
     patchWithId: (id: number, columns = '*') => rxFrom(
       supabase.from(DbPaths.patches)
-        // .select(`${ columns }, manufacturer:manufacturerId(name), ${ QueryJoins.insOuts }`)
         .select(`${ columns }, ${ QueryJoins.author }`)
-        // .range(from, to)
         .filter('id', 'eq', id)
-        // .order('id', {foreignTable: DatabasePaths.moduleINs})
-        // .order('id', {foreignTable: DatabasePaths.moduleOUTs})
         .single()
     )
       .pipe(
@@ -102,16 +92,10 @@ export function createGetNamespace(
       const patchIdList$ = rxFrom(
         supabase.from(DbPaths.patches_for_modules)
           .select('moduleid,patchid', {count: 'exact'})
-          // .order('updated', {
-          //   ascending:    false,
-          //   foreignTable: DatabasePaths.patch_connections
-          // })
           .filter('moduleid', 'eq', moduleid)
           .range(from, to)
-      )
-      // .pipe(remapErrors());
-      
-      // for each patchid, get the patch in a single query, combine them in a single array at the end
+      );
+
       return patchIdList$.pipe(
         switchMap(x => {
             const getPatchData$ = forkJoin(
@@ -139,14 +123,8 @@ export function createGetNamespace(
           ${ QueryJoins.module_tags }
           `)
         .filter('manufacturerId', 'eq', manufacturerId)
-        // .filter(`${ DbPaths.module_panels }.isApproved`, 'eq', true) // only approved panels
-        .limit(1, {                                                         // take only one panel
-          foreignTable: DbPaths.module_panels
-        })
-        .order(`color`, {                                // order panel by color
-          foreignTable: DbPaths.module_panels,
-          ascending: true
-        })
+        .limit(1, {foreignTable: DbPaths.module_panels})
+        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
         .order('updated', {ascending: false})
         .range(from, to)
     )
