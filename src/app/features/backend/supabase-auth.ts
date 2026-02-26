@@ -6,7 +6,6 @@ import {
   User
 } from '@supabase/supabase-js';
 import {
-  from,
   from as rxFrom,
   Observable,
   of,
@@ -91,7 +90,7 @@ export function createAuthNamespace(
     loginWithOAuth$(provider: OAuthProvider, redirectTo?: string): Observable<void> {
       const redirectUrl = redirectTo || `${ window.location.origin }/auth/callback`;
       
-      return from(
+      return rxFrom(
         supabase.auth.signInWithOAuth({
           provider,
           options: {
@@ -108,7 +107,7 @@ export function createAuthNamespace(
     },
     
     handleOAuthCallback$(): Observable<RichUserModel | null> {
-      return from(supabase.auth.getSession()).pipe(
+      return rxFrom(supabase.auth.getSession()).pipe(
         switchMap(sessionResponse => {
           if (sessionResponse.error || !sessionResponse.data.session) {
             return of(null);
@@ -145,13 +144,13 @@ export function createAuthNamespace(
     },
     
     signup$(username: string, email: string, password: string): SupabaseSignupResponse {
-      return from(supabase.auth.signUp({email, password})).pipe(
+      return rxFrom(supabase.auth.signUp({email, password})).pipe(
         switchMap(x => x.error ? of(x.data) : ns._updateUserProfile(email, password, username))
       );
     },
     
     getUserSession$(): Observable<SimpleUserModel | null> {
-      return from(rxFrom(supabase.auth.getSession())).pipe(
+      return rxFrom(supabase.auth.getSession()).pipe(
         switchMap(sessionOutput => {
           if (sessionOutput.data.session == null) return of(null);
           
@@ -196,12 +195,12 @@ export function createAuthNamespace(
       error: AuthError | null
     }> {
       ns._burstAllCaches();
-      return from(supabase.auth.signOut());
+      return rxFrom(supabase.auth.signOut());
     },
     
     resetPassword$(emailOrToken: string, newPassword?: string): Observable<void> {
       if (newPassword) {
-        return from(supabase.auth.updateUser({password: newPassword})).pipe(
+        return rxFrom(supabase.auth.updateUser({password: newPassword})).pipe(
           map(response => {
             if (response.error) throw ns._createPasswordResetError(response.error);
             console.log(SharedConstants.messages.resetPassword?.resetPasswordTitle);
@@ -216,7 +215,7 @@ export function createAuthNamespace(
           return throwError(() => new Error('Invalid email address.'));
         }
         const redirectTo = `${ window.location.origin }/auth/reset-password`;
-        return from(supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
+        return rxFrom(supabase.auth.resetPasswordForEmail(emailOrToken, {redirectTo})).pipe(
           map(response => {
             if (response.error) {
               throw new PasswordResetError('Failed to send password reset email.', response.error.message);
@@ -267,7 +266,7 @@ export function createAuthNamespace(
     },
     
     updatePassword$(newPassword: string): Observable<void> {
-      return from(supabase.auth.updateUser({password: newPassword})).pipe(
+      return rxFrom(supabase.auth.updateUser({password: newPassword})).pipe(
         map(response => {
           if (response.error) throw new Error(response.error.message || 'Password update failed.');
           return void 0;
@@ -290,7 +289,6 @@ export function createAuthNamespace(
         'currentUserModules',
         'moduleWithId',
         'manufacturers',
-        'currentUserModules',
         'patchConnections',
         'patchModuleInstances',
         'rackWithId',
@@ -342,10 +340,6 @@ export function createAuthNamespace(
     
     _isValidEmail(email: string): boolean {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    },
-    
-    _isValidPassword(password: string): boolean {
-      return password.length >= 8;
     }
   };
   
