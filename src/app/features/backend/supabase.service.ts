@@ -44,10 +44,8 @@ import {
   CV,
   CVwithModuleId
 } from '../../models/cv';
-import { DBManufacturer } from '../../models/manufacturer';
 import {
   DbModule,
-  ModulePanel,
   RackedModule
 } from '../../models/module';
 import { Patch } from '../../models/patch';
@@ -62,7 +60,6 @@ import {
   QueryJoins
 } from './DatabaseStrings';
 import { Cacheable } from 'ts-cacheable';
-import { CommentableEntityTypes } from 'src/app/components/shared-atoms/comments/comments-data.service';
 import {
   cacheBust,
   cacheBuster$,
@@ -84,6 +81,8 @@ import {
   SupabaseSignupResponse,
   SupabaseStorageFile
 } from './supabase.types';
+import { createAddNamespace } from './supabase-add';
+import { createDeleteNamespace } from './supabase-delete';
 
 
 export type {
@@ -124,6 +123,20 @@ export class SupabaseService extends SubManager {
     if (authListener?.subscription) {
       this.authStateSubscription = authListener.subscription;
     }
+    
+    this.add = createAddNamespace(
+      this.supabase,
+      this.snackBar,
+      () => this.getUserSession$()
+    );
+    
+    this.delete = createDeleteNamespace(
+      this.supabase,
+      this.snackBar,
+      () => this.getUserSession$(),
+      (filename: string) => this.storage.deletePanelFile(filename),
+      this.defaultPag
+    );
   }
   
   override ngOnDestroy(): void {
@@ -384,492 +397,8 @@ export class SupabaseService extends SubManager {
     
   };
   
-  readonly add = {
-    comment: (data: {
-      entityId: number,
-      entityType: number,
-      content: string,
-      //  authorid is not provided, we will run it for the current user
-    }) => this.getUserSession$()
-      .pipe(
-        switchMap(user => rxFrom(
-          this.supabase
-            .from(DbPaths.comments)
-            .insert({
-              entityId: data.entityId,
-              entityType: data.entityType,
-              content: data.content,
-              authorId: user.id
-            })
-        )),
-        cacheBust(['comments', 'currentUserComments']),
-        remapErrors()
-      ),
-    module_tags: (data: Database['public']['Tables']['module_tags']['Insert'][]) => rxFrom(
-      this.supabase
-        .from(DbPaths.module_tags)
-        .upsert(data)
-    )
-      .pipe(remapErrors()),
-    userModule: (moduleId: number) => this.getUserSession$()
-      .pipe(
-        switchMap(user => rxFrom(
-          this.supabase
-            .from(DbPaths.user_modules)
-            .insert({
-              moduleid: moduleId,
-              profileid: user.id
-            })
-        )),
-        cacheBust(['currentUserModules']),
-        remapErrors()
-      ),
-    userModuleTag: (moduleTagId: number) => this.getUserSession$().pipe(
-      switchMap(user => rxFrom(
-        this.supabase
-          .from(DbPaths.user_module_tags)
-          .insert({moduletagid: moduleTagId, authorid: user.id})
-      )),
-      cacheBust(['userModuleTags']),
-      remapErrors()
-    ),
-    moduleTagLink: (moduleId: number, tagId: number) => this.getUserSession$().pipe(
-      switchMap(() => rxFrom(
-        this.supabase
-          .from(DbPaths.module_tags)
-          .insert({moduleid: moduleId, tagid: tagId})
-          .select('id')
-          .single()
-      )),
-      cacheBust(['modules', 'moduleWithId']),
-      remapErrors(),
-      map((x: any) => ({id: x.data?.id as number}))
-    ),
-    rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
-      this.supabase
-        .from(DbPaths.rack_modules)
-        .insert({
-          moduleid: moduleId,
-          rackid,
-          row,
-          column
-        })
-    )
-      .pipe(remapErrors()),
-    rack: (data: Omit<RackMinimal, 'author' | 'created' | 'updated' | 'id'> & {
-      authorid: string
-    }) => rxFrom(
-      this.supabase
-        .from(DbPaths.racks)
-        .insert(data)
-        .select('id'),
-    )
-      .pipe(
-        cacheBust(['rackWithId']),
-        remapErrors(),
-      ),
-    patch: (data: {
-      name: string
-    }) => {
-      return this.getUserSession$().pipe(
-        switchMap(user => rxFrom(
-          this.supabase
-            .from(DbPaths.patches)
-            .insert({
-              ...data,
-              authorid: user.id,
-              public: true
-            })
-        )),
-        cacheBust(['patches']),
-        remapErrors());
-    },
-    modules: (data: DbModule[]) => {
-      return this.getUserSession$().pipe(
-        map(user =>
-          data
-            .map(x => ({
-              ...x,
-              submitter: user.id
-            }))
-            .map(x => {
-              // Transform for database - extract IDs from nested objects
-              const dbData: any = {...x};
-              if (dbData.standard && typeof dbData.standard === 'object') {
-                dbData.standard = dbData.standard.id;
-              }
-              if (dbData.manufacturer && typeof dbData.manufacturer === 'object') {
-                dbData.manufacturerId = dbData.manufacturer.id;
-                delete dbData.manufacturer;
-              }
-              // Remove nested arrays/objects that don't belong in the modules table
-              delete dbData.ins;
-              delete dbData.outs;
-              delete dbData.switches;
-              delete dbData.panels;
-              delete dbData.tags;
-                
-                // if it has no id, then it is a new module, so we need to insert it
-                
-                if (!x.id) {
-                  return rxFrom(
-                    this.supabase
-                      .from(DbPaths.modules)
-                      .insert(dbData)
-                  );
-                } else {
-                  return rxFrom(
-                    this.supabase
-                      .from(DbPaths.modules)
-                      .update(dbData)
-                      .eq('id', x.id)
-                  );
-                }
-                
-              }
-            )),
-        // for each module, build a call to insert the module
-        switchMap((x) => forkJoin(x)),
-        // bust the cache for modules
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-        catchErrors(this.snackBar)
-      );
-    },
-    moduleINs: (data: CV[], moduleid: number) => rxFrom(
-      this.supabase
-        .from(DbPaths.moduleINs)
-        .insert(data.map(x => ({
-          ...x,
-          moduleid
-        })))
-    )
-      .pipe(remapErrors()),
-    moduleOUTs: (data: CV[], moduleid: number) => rxFrom(
-      this.supabase
-        .from(DbPaths.moduleOUTs)
-        .insert(data.map(x => ({
-          ...x,
-          moduleid
-        })))
-    )
-      .pipe(remapErrors()),
-    manufacturers: (data: Partial<DBManufacturer>[]) => rxFrom(
-      this.supabase
-        .from(DbPaths.manufacturers)
-        .insert(data)
-        .select('id,name')
-    )
-      .pipe(
-        remapErrors(),
-        cacheBust(['manufacturers'])
-      ),
-    panel: (data: Database['public']['Tables']['module_panels']['Insert'][]) => rxFrom(
-      this.supabase
-        .from(DbPaths.module_panels)
-        .insert(data)
-    )
-      .pipe(remapErrors()),
-    patchModuleInstance: (patch_id: number, module_id: number, instance_label?: string) => rxFrom(
-      this.supabase
-        .from(DbPaths.patch_module_instances)
-        .insert({patch_id, module_id, instance_label: instance_label ?? null})
-        .select('id,patch_id,module_id,instance_label')
-        .single()
-    ).pipe(
-      remapErrors(),
-      map(x => x.data as PatchModuleInstance),
-      cacheBust(['patchConnections', 'patchModuleInstances'])
-    ),
-    /** Batch insert multiple patch module instances in a single DB call */
-    patchModuleInstances: (rows: {
-      patch_id: number;
-      module_id: number;
-      instance_label: string | null
-    }[]) => rxFrom(
-      this.supabase
-        .from(DbPaths.patch_module_instances)
-        .insert(rows)
-        .select('id,patch_id,module_id,instance_label')
-    ).pipe(
-      remapErrors(),
-      map(x => x.data as PatchModuleInstance[]),
-      cacheBust(['patchConnections', 'patchModuleInstances'])
-    )
-  };
-  
-  readonly delete = {
-    comment: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.comments)
-        .delete()
-        .filter('id', 'eq', id)
-    )
-      .pipe(
-        // bust the cache for comments
-        cacheBust(['comments', 'currentUserComments']),
-        remapErrors()),
-    commentsForRack: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.comments)
-        .delete()
-        .filter('entityId', 'eq', id)
-        .filter('entityType', 'eq', CommentableEntityTypes.RACK)
-    )
-      .pipe(
-        // bust the cache for comments
-        cacheBust(['comments', 'currentUserComments']),
-        remapErrors()),
-    module: (id: number) => {
-      const deleteAllComments$ = rxFrom(
-        this.supabase.from(DbPaths.comments)
-          .delete()
-          .filter('entityId', 'eq', id)
-          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
-      );
-      const deleteModule$ = rxFrom(
-        this.supabase.from(DbPaths.modules)
-          .delete()
-          .filter('id', 'eq', id)
-          .select('id')
-      );
-      return deleteAllComments$
-        .pipe(
-          switchMap(() => deleteModule$),
-          remapErrors(),
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
-          catchErrors(this.snackBar)
-        );
-    },
-    userModule: (id: number) => this.getUserSession$().pipe(
-      switchMap(user => rxFrom(
-        this.supabase.from(DbPaths.user_modules)
-          .delete()
-          .filter('profileid', 'eq', user.id)
-          .filter('moduleid', 'eq', id)
-      )),
-      // delete all comments for this module
-      switchMap(() => rxFrom(
-        this.supabase.from(DbPaths.comments)
-          .delete()
-          .filter('entityId', 'eq', id)
-          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
-      )),
-      cacheBust(['currentUserModules', 'currentUserComments']),
-      remapErrors()
-    ),
-    userModuleTag: (moduleTagId: number) => this.getUserSession$().pipe(
-      switchMap(user => rxFrom(
-        this.supabase.from(DbPaths.user_module_tags)
-          .delete()
-          .filter('authorid', 'eq', user.id)
-          .filter('moduletagid', 'eq', moduleTagId)
-      )),
-      cacheBust(['userModuleTags']),
-      remapErrors()
-    ),
-    rackedModule: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.rack_modules)
-        .delete()
-        .filter('id', 'eq', id)
-    )
-      .pipe(remapErrors())
-    ,
-    modulesOfRack: (rackId: number) => rxFrom(
-      this.supabase.from(DbPaths.rack_modules)
-        .delete()
-        .filter('rackid', 'eq', rackId)
-    )
-      .pipe(remapErrors())
-    ,
-    patch: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('patch_id', 'eq', id)
-    )
-      .pipe(
-        switchMap(() => rxFrom(
-          this.supabase.from(DbPaths.patches)
-            .delete()
-            // .filter('profileid', 'eq', this.getUser().id)
-            .filter('id', 'eq', id)
-        )),
-        // delete all comments for this patch
-        switchMap(() => rxFrom(
-          this.supabase.from(DbPaths.comments)
-            .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
-        )),
-        remapErrors(),
-        cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
-      )
-    ,
-    patchConnectionsForPatch: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.patch_connections)
-        .delete()
-        .filter('patchid', 'eq', id)
-      // .filter('moduleid', 'eq', id)
-    )
-      .pipe(
-        remapErrors(),
-        cacheBust(['patchConnections', 'patches'])
-      )
-    ,
-    patchModuleInstance: (id: number) => rxFrom(
-      this.supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('id', 'eq', id)
-    ).pipe(
-      remapErrors(),
-      cacheBust(['patchConnections', 'patchModuleInstances'])
-    ),
-    patchModuleInstancesForPatch: (patch_id: number) => rxFrom(
-      this.supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('patch_id', 'eq', patch_id)
-    ).pipe(
-      remapErrors(),
-      cacheBust(['patchConnections', 'patchModuleInstances'])
-    ),
-    userPatch: (id: number) => this.getUserSession$()
-      .pipe(
-        // delete module instances for this patch (FK to patches)
-        switchMap(user => rxFrom(
-          this.supabase.from(DbPaths.patch_module_instances)
-            .delete()
-            .filter('patch_id', 'eq', id)
-        ).pipe(map(() => user))),
-        switchMap(user => rxFrom(
-          this.supabase.from(DbPaths.patches)
-            .delete()
-            .filter('authorid', 'eq', user.id)
-            .filter('id', 'eq', id)
-        )),
-        // delete all comments for this patch
-        switchMap(() => rxFrom(
-          this.supabase.from(DbPaths.comments)
-            .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
-        )),
-        remapErrors(),
-        cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
-      )
-    ,
-    userRack: (id: number) => this.getUserSession$()
-      .pipe(
-        switchMap(user => rxFrom(
-          this.supabase.from(DbPaths.racks)
-            .delete()
-            .filter('authorid', 'eq', user.id)
-            .filter('id', 'eq', id)
-        )),
-        remapErrors(),
-        cacheBust(['rackWithId'])
-      )
-    ,
-    modules: (from = 0, to: number = this.defaultPag) => rxFrom(
-      this.supabase.from(DbPaths.modules)
-        .delete()
-        .range(from, to)
-    )
-      .pipe(
-        remapErrors(),
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
-      ),
-    manufacturers: (from = 0, to = this.defaultPag) => rxFrom(
-      this.supabase.from(DbPaths.manufacturers)
-        .delete()
-        .range(from, to)
-    )
-      .pipe(
-        cacheBust(['manufacturers']),
-        catchErrors(this.snackBar),
-        remapErrors(),
-      ),
-    modulePanel: (data: ModulePanel) => {
-      // delete the panel file from storage first
-      const deletePanelFile$ = this.storage.deletePanelFile(data.filename)
-      
-      const deleteDatabaseEntry$ = rxFrom(
-        this.supabase.from(DbPaths.module_panels)
-          .delete()
-          .filter('id', 'eq', data.id)
-      );
-      return deletePanelFile$
-        .pipe(
-          switchMap(() => deleteDatabaseEntry$),
-          catchErrors(this.snackBar),
-          remapErrors()
-        );
-    },
-    /**
-     * Deletes all user-generated data for the current user in the correct dependency order:
-     * patch_connections → patches → rack_modules → racks → user_modules → comments
-     *
-     * Note: This does NOT delete the auth user record (requires a server-side Edge Function
-     * with service_role key). After calling this, the caller should sign the user out.
-     */
-    allUserData: () => this.getUserSession$().pipe(
-      switchMap(user => {
-        const uid = user.id;
-        // Step 1 — delete patch connections for all patches authored by this user
-        const deletePatchConnections$ = rxFrom(
-          this.supabase.from(DbPaths.patch_connections)
-            .delete()
-            .in('patchid',
-              this.supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-        
-        // Step 1.5 — delete module instances for all patches authored by this user
-        const deletePatchModuleInstances$ = rxFrom(
-          this.supabase.from(DbPaths.patch_module_instances)
-            .delete()
-            .in('patch_id',
-              this.supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-
-        // Step 2 — delete patches
-        const deletePatches$ = rxFrom(
-          this.supabase.from(DbPaths.patches).delete().eq('authorid', uid)
-        ).pipe(remapErrors());
-
-        // Step 3 — delete rack modules for all racks authored by this user
-        const deleteRackModules$ = rxFrom(
-          this.supabase.from(DbPaths.rack_modules)
-            .delete()
-            .in('rackid',
-              this.supabase.from(DbPaths.racks).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-
-        // Step 4 — delete racks
-        const deleteRacks$ = rxFrom(
-          this.supabase.from(DbPaths.racks).delete().eq('authorid', uid)
-        ).pipe(remapErrors());
-
-        // Step 5 — delete user module collection entries
-        const deleteUserModules$ = rxFrom(
-          this.supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)
-        ).pipe(remapErrors());
-
-        // Step 6 — delete all comments authored by this user
-        const deleteComments$ = rxFrom(
-          this.supabase.from(DbPaths.comments).delete().eq('authorId', uid)
-        ).pipe(remapErrors());
-
-        return deletePatchConnections$.pipe(
-          switchMap(() => deletePatchModuleInstances$),
-          switchMap(() => deletePatches$),
-          switchMap(() => deleteRackModules$),
-          switchMap(() => deleteRacks$),
-          switchMap(() => deleteUserModules$),
-          switchMap(() => deleteComments$),
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'patches', 'patchConnections', 'rackWithId', 'racksMinimal', 'comments', 'currentUserComments'])
-        );
-      })
-    )
-  };
+  readonly add!: ReturnType<typeof createAddNamespace>;
+  readonly delete!: ReturnType<typeof createDeleteNamespace>;
   
   readonly update = {
     module: (data: Partial<DbModule>) => {
