@@ -36,6 +36,19 @@ a {
   }
 }
 
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+
+  .github-icon {
+    fill: currentColor;
+    flex-shrink: 0;
+    display: block;
+  }
+}
+
 .lottie-icon {
   max-width: 20rem;
   margin: -.75rem;
