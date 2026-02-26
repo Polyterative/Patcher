@@ -1,3 +1,9 @@
+:host {
+  // Angular Material M3 hides the fill-variant floating label at density <= -2.
+  // This component always provides a label, so restore it unconditionally.
+  --mat-form-field-filled-label-display: block;
+}
+
 .mat-form-field-infix {
   //width: auto !important;
 }
