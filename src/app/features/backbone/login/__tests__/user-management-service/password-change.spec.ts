@@ -71,16 +71,16 @@ describe('UserManagementService - Password Change', () => {
   
   describe('changePassword$', () => {
     it('should call backend updatePassword$ with the supplied password', fakeAsync(() => {
-      mockSupabaseService.updatePassword$.and.returnValue(of(void 0));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(of(void 0));
       
       service.changePassword$.next({newPassword: 'NewPass123!'});
       tick();
       
-      expect(mockSupabaseService.updatePassword$).toHaveBeenCalledWith('NewPass123!');
+      expect(mockSupabaseService.auth.updatePassword$).toHaveBeenCalledWith('NewPass123!');
     }));
     
     it('should show success snackbar on successful password change', fakeAsync(() => {
-      mockSupabaseService.updatePassword$.and.returnValue(of(void 0));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(of(void 0));
       
       service.changePassword$.next({newPassword: 'NewPass123!'});
       tick();
@@ -93,7 +93,7 @@ describe('UserManagementService - Password Change', () => {
     }));
     
     it('should hide the password form after successful change', fakeAsync(() => {
-      mockSupabaseService.updatePassword$.and.returnValue(of(void 0));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(of(void 0));
       
       // First open the form
       service.togglePasswordForm$.next(true);
@@ -111,7 +111,7 @@ describe('UserManagementService - Password Change', () => {
     
     it('should show error snackbar when backend returns an error', fakeAsync(() => {
       const err = new Error('Auth session expired');
-      mockSupabaseService.updatePassword$.and.returnValue(throwError(() => err));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(throwError(() => err));
       
       service.changePassword$.next({newPassword: 'NewPass123!'});
       tick();
@@ -124,7 +124,7 @@ describe('UserManagementService - Password Change', () => {
     }));
     
     it('should keep form open when backend returns an error', fakeAsync(() => {
-      mockSupabaseService.updatePassword$.and.returnValue(throwError(() => new Error('fail')));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(throwError(() => new Error('fail')));
       
       service.togglePasswordForm$.next(true);
       tick();
@@ -140,14 +140,14 @@ describe('UserManagementService - Password Change', () => {
     }));
     
     it('should handle multiple sequential change requests', fakeAsync(() => {
-      mockSupabaseService.updatePassword$.and.returnValue(of(void 0));
+      mockSupabaseService.auth.updatePassword$.and.returnValue(of(void 0));
       
       service.changePassword$.next({newPassword: 'First1234!'});
       tick();
       service.changePassword$.next({newPassword: 'Second5678!'});
       tick();
       
-      expect(mockSupabaseService.updatePassword$).toHaveBeenCalledTimes(2);
+      expect(mockSupabaseService.auth.updatePassword$).toHaveBeenCalledTimes(2);
     }));
   });
 });

@@ -27,7 +27,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: {session: null}, error: null})
       );
       
-      service.getUserSession$().subscribe({
+      service.auth.getUserSession$().subscribe({
         next: (user) => {
           expect(user).toBeNull();
           done();
@@ -52,7 +52,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: {session: mockSession}, error: null})
       );
       
-      service.getUserSession$().subscribe({
+      service.auth.getUserSession$().subscribe({
         next: (user: any) => {
           expect(user).not.toBeNull();
           expect(user.id).toBe('session-user-id');
@@ -69,9 +69,9 @@ describe('SupabaseService - auth methods', () => {
   
   describe('getRichUserSession$', () => {
     it('should return null when getUserSession$ returns null', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
       
-      service.getRichUserSession$().subscribe({
+      service.auth.getRichUserSession$().subscribe({
         next: (user) => {
           expect(user).toBeNull();
           done();
@@ -90,7 +90,7 @@ describe('SupabaseService - auth methods', () => {
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
       };
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(simpleUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(simpleUser));
       
       const profileMock: any = {};
       ['select', 'filter'].forEach(m => {
@@ -101,7 +101,7 @@ describe('SupabaseService - auth methods', () => {
       
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
       
-      service.getRichUserSession$().subscribe({
+      service.auth.getRichUserSession$().subscribe({
         next: (user: any) => {
           expect(user).not.toBeNull();
           expect(user.username).toBe('richuser');
@@ -120,7 +120,7 @@ describe('SupabaseService - auth methods', () => {
     it('should call supabase signOut', (done) => {
       spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
       
-      service.logoff$().subscribe({
+      service.auth.logoff$().subscribe({
         next: () => {
           expect(supabaseClient.auth.signOut).toHaveBeenCalled();
           done();
@@ -137,7 +137,7 @@ describe('SupabaseService - auth methods', () => {
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
       
-      service.logoff$().subscribe({
+      service.auth.logoff$().subscribe({
         next: () => {
           expect(bustedKeys).toContain('modules');
           expect(bustedKeys).toContain('patches');
@@ -158,7 +158,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: {}, error: null})
       );
       
-      service.resetPassword$('user@example.com').subscribe({
+      service.auth.resetPassword$('user@example.com').subscribe({
         next: () => {
           expect(supabaseClient.auth.resetPasswordForEmail).toHaveBeenCalledWith(
             'user@example.com',
@@ -174,7 +174,7 @@ describe('SupabaseService - auth methods', () => {
     }, TEST_TIMEOUT);
     
     it('should return an error observable for invalid email', (done) => {
-      service.resetPassword$('not-an-email').subscribe({
+      service.auth.resetPassword$('not-an-email').subscribe({
         next: () => {
           fail('Should have errored for invalid email');
           done();
@@ -191,7 +191,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: {user: {}}, error: null})
       );
       
-      service.resetPassword$('ignored-token', 'NewPassword123').subscribe({
+      service.auth.resetPassword$('ignored-token', 'NewPassword123').subscribe({
         next: () => {
           expect(supabaseClient.auth.updateUser).toHaveBeenCalledWith({password: 'NewPassword123'});
           done();
@@ -208,7 +208,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: null, error: {message: 'Token expired', error_code: 'invalid_grant'}})
       );
       
-      service.resetPassword$('token', 'NewPass123').subscribe({
+      service.auth.resetPassword$('token', 'NewPass123').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -223,7 +223,7 @@ describe('SupabaseService - auth methods', () => {
   
   describe('updateUsername$', () => {
     it('should error when username is too short (< 3 chars)', (done) => {
-      service.updateUsername$('user1', 'ab').subscribe({
+      service.auth.updateUsername$('user1', 'ab').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -236,7 +236,7 @@ describe('SupabaseService - auth methods', () => {
     }, TEST_TIMEOUT);
     
     it('should error when username is too long (> 30 chars)', (done) => {
-      service.updateUsername$('user1', 'a'.repeat(31)).subscribe({
+      service.auth.updateUsername$('user1', 'a'.repeat(31)).subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -249,7 +249,7 @@ describe('SupabaseService - auth methods', () => {
     }, TEST_TIMEOUT);
     
     it('should error when username contains invalid characters', (done) => {
-      service.updateUsername$('user1', 'invalid name!').subscribe({
+      service.auth.updateUsername$('user1', 'invalid name!').subscribe({
         next: () => {
           fail('Should have errored');
           done();
@@ -272,7 +272,7 @@ describe('SupabaseService - auth methods', () => {
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
       const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);
       
-      service.updateUsername$('user-id-1', 'validname').subscribe({
+      service.auth.updateUsername$('user-id-1', 'validname').subscribe({
         next: () => {
           expect(updateSpy).toHaveBeenCalledWith(
             jasmine.objectContaining({username: 'validname'})
@@ -293,7 +293,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: {user: {}}, error: null})
       );
       
-      service.updatePassword$('mynewpassword').subscribe({
+      service.auth.updatePassword$('mynewpassword').subscribe({
         next: () => {
           expect(supabaseClient.auth.updateUser).toHaveBeenCalledWith({password: 'mynewpassword'});
           done();
@@ -310,7 +310,7 @@ describe('SupabaseService - auth methods', () => {
         Promise.resolve({data: null, error: {message: 'Weak password'}})
       );
       
-      service.updatePassword$('weak').subscribe({
+      service.auth.updatePassword$('weak').subscribe({
         next: () => {
           fail('Should have errored');
           done();

@@ -278,7 +278,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         filter(x => !!x),
         // check if patch is owned by logged-in user
-        withLatestFrom(this.backend.getUserSession$()),
+        withLatestFrom(this.backend.auth.getUserSession$()),
         filter(([patch, user]) => !!patch && !!user && patch.author.id == user.id),
         // check data integrity and if ids exist
         filter(([patch, user]) => !!patch && !!patch.id && user && !!user.id),

@@ -181,7 +181,7 @@ describe('SupabaseService - add misc and update bulk', () => {
   
   describe('get.currentUserPatches', () => {
     it('should return empty array when user is not logged in', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
       
       service.get.currentUserPatches().subscribe({
         next: (result: any) => {
@@ -199,7 +199,7 @@ describe('SupabaseService - add misc and update bulk', () => {
   
   describe('get.currentUserRacks', () => {
     it('should use explicit authorid when provided, bypassing session', (done) => {
-      const getUserSessionSpy = spyOn(service as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
+      const getUserSessionSpy = spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
       
       spyOn(supabaseClient, 'from').and.returnValue(
         chainable({data: [{id: 1, name: 'My Rack', authorid: 'explicit-author'}], error: null})
@@ -219,7 +219,7 @@ describe('SupabaseService - add misc and update bulk', () => {
     }, TEST_TIMEOUT);
     
     it('should fall back to getUserSession$ when no authorid provided', (done) => {
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(null));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
       
       service.get.currentUserRacks().subscribe({
         next: (result: any) => {

@@ -116,7 +116,7 @@ export class UserResetPasswordDataService implements OnDestroy {
           this.isSubmitting$.next(true);
           
           // Call reset password API
-          return this.supabaseService.resetPassword$('', password).pipe(
+          return this.supabaseService.auth.resetPassword$('', password).pipe(
             map(() => {
               // Success
               this.successMessage$.next(ERROR_MESSAGES.successTitle);

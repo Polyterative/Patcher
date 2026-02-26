@@ -117,7 +117,7 @@ describe('SupabaseService - delete complex operations', () => {
   describe('delete.userPatch', () => {
     it('should delete instances, patch (scoped to user), and comments', (done) => {
       const mockUser = {id: 'owner-1'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const tablesAccessed: string[] = [];
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
@@ -141,7 +141,7 @@ describe('SupabaseService - delete complex operations', () => {
     
     it('should scope the patch delete to the current user', (done) => {
       const mockUser = {id: 'owner-2'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const patchMock = chainable({data: null, error: null});
       const filterSpy = spyOn(patchMock, 'filter').and.returnValue(patchMock);
@@ -167,7 +167,7 @@ describe('SupabaseService - delete complex operations', () => {
   describe('delete.userRack', () => {
     it('should delete the rack scoped to the current user', (done) => {
       const mockUser = {id: 'rack-owner'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const mock = chainable({data: null, error: null});
       const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
@@ -188,7 +188,7 @@ describe('SupabaseService - delete complex operations', () => {
     
     it('should bust rackWithId cache', (done) => {
       const mockUser = {id: 'rack-owner'};
-      spyOn(service as any, 'getUserSession$').and.returnValue(of(mockUser));
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       const bustedKeys: any[] = [];
