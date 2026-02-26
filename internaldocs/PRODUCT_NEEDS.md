@@ -120,11 +120,12 @@ collection card entirely when instances exist? Trade-off between flexibility and
 | Instance UX: stats accuracy          | ✅ Done              | Stats show Cables/Modules/Multiples only; Module Copies card connection-derived |
 | Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                                     |
 | Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                                     |
-| Safari image export                  | ⚠️ Partial          | Download works; rendering differs from Chrome — needs investigation             |
+| Safari image export                  | ✅ Done              | Replaced `html-to-image` with `modern-screenshot`; download and rendering fixed |
 | Manufacturer pages                   | 💡 Long-term        | Backend method exists                                                           |
 | Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                                     |
 | User profile pages                   | 💡 Long-term        | Needs privacy design                                                            |
-| Patch graph enhancements             | 💡 Long-term        | Occupied inputs, user-colored nodes                                             |
+| Patch graph — animation + progressive reveal | ✅ Done       | Progressive reveal controller, edge flow animation, progressive node rendering, enhanced node labels |
+| Patch graph — occupied inputs / user-colored nodes | 💡 Long-term | Color indicator on connected inputs; user-defined node color-coding             |
 | User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                                   |
 | PWA support                          | 💡 Nice-to-have     |                                                                                 |
 | Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                              |
