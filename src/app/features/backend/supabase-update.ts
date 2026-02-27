@@ -3,7 +3,8 @@ import {
   forkJoin,
   from as rxFrom,
   Observable,
-  of
+  of,
+  throwError
 } from 'rxjs';
 import {
   map,
@@ -165,21 +166,25 @@ export function createUpdateNamespace(
       );
     },
     
-    rack: (data: RackMinimal) => rxFrom(
-      supabase.from(DbPaths.racks)
-        .upsert({
-          id: data.id,
-          authorid: data.author.id,
-          name: data.name,
-          description: data.description,
-          rows: data.rows,
-          hp: data.hp,
-          locked: data.locked,
-          public: data.public,
-          image: data.image
-        }).select('id')
-    ).pipe(
-      cacheBust(['rackWithId']),
+    rack: (data: RackMinimal) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.racks)
+            .upsert({
+              id: data.id,
+              authorid: user.id,
+              name: data.name,
+              description: data.description,
+              rows: data.rows,
+              hp: data.hp,
+              locked: data.locked,
+              public: data.public,
+              image: data.image
+            }).select('id')
+        );
+      }),
+      cacheBust(['rackWithId'])
     ),
     
     patch: (data: Patch) => {
@@ -254,34 +259,40 @@ export function createUpdateNamespace(
       ),
     
     /** Targeted single-row note update. Uses composite natural key. Silent (no toast). */
-    patchConnectionNoteSilent: (conn: PatchConnection) => {
-      let query = supabase
-        .from(DbPaths.patch_connections)
-        .update({notes: conn.notes ?? null})
-        .eq('patchid', conn.patch.id)
-        .eq('a', conn.a.id)
-        .eq('b', conn.b.id);
-      query = conn.instance_id_a == null
-        ? query.is('instance_id_a', null)
-        : query.eq('instance_id_a', conn.instance_id_a);
-      query = conn.instance_id_b == null
-        ? query.is('instance_id_b', null)
-        : query.eq('instance_id_b', conn.instance_id_b);
-      return rxFrom(query).pipe(
-        remapErrors(),
-        cacheBust(['patchConnections'])
-      );
-    },
-    
-    patchModuleInstanceLabel: (id: number, instance_label: string | null) => rxFrom(
-      supabase.from(DbPaths.patch_module_instances)
-        .update({instance_label})
-        .eq('id', id)
-        .select('id,patch_id,module_id,instance_label')
-        .single()
-    ).pipe(
+    patchConnectionNoteSilent: (conn: PatchConnection) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        let query = supabase
+          .from(DbPaths.patch_connections)
+          .update({notes: conn.notes ?? null})
+          .eq('patchid', conn.patch.id)
+          .eq('a', conn.a.id)
+          .eq('b', conn.b.id);
+        query = conn.instance_id_a == null
+          ? query.is('instance_id_a', null)
+          : query.eq('instance_id_a', conn.instance_id_a);
+        query = conn.instance_id_b == null
+          ? query.is('instance_id_b', null)
+          : query.eq('instance_id_b', conn.instance_id_b);
+        return rxFrom(query);
+      }),
       remapErrors(),
-      map(x => x.data as PatchModuleInstance),
+      cacheBust(['patchConnections'])
+    ),
+
+    patchModuleInstanceLabel: (id: number, instance_label: string | null) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.patch_module_instances)
+            .update({instance_label})
+            .eq('id', id)
+            .select('id,patch_id,module_id,instance_label')
+            .single()
+        );
+      }),
+      remapErrors(),
+      map(x => (x as any).data as PatchModuleInstance),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     )
   };
