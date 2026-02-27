@@ -26,7 +26,7 @@
     "test:ci:full": "yarn test:functions && yarn test:unit:ci",
     "e2e": "yarn test:e2e",
     "pretest:e2e": "playwright install chromium",
-    "test:e2e": "playwright test --reporter=list",
+    "test:e2e": "playwright test --reporter=list --project=chromium --project=chromium-auth",
     "pretest:e2e:auth": "playwright install chromium",
     "test:e2e:auth": "playwright test --reporter=list --project=chromium-auth",
     "pretest:e2e:screenshots": "rm -rf src/assets/screenshots/major-area-screenshots && mkdir -p src/assets/screenshots/major-area-screenshots && playwright install chromium",
