@@ -68,8 +68,11 @@ export function createAuthNamespace(
           return authResponse.error ? of(authResponse) : updateConfirmed$.pipe(map(() => authResponse));
         }),
         withLatestFrom(params$),
-        switchMap(([authResponse, params]) =>
-          rxFrom(
+        switchMap(([authResponse, params]) => {
+          if (authResponse.error || !authResponse.data?.user) {
+            return throwError(() => authResponse.error || new Error('Authentication failed'));
+          }
+          return rxFrom(
             supabase
               .from(DbPaths.profiles)
               .select('username')
@@ -82,8 +85,8 @@ export function createAuthNamespace(
                 username: usernameGetterResponse.data[0].username
               }
             }))
-          )
-        )
+          );
+        })
       );
     },
     
@@ -203,10 +206,8 @@ export function createAuthNamespace(
         return rxFrom(supabase.auth.updateUser({password: newPassword})).pipe(
           map(response => {
             if (response.error) throw ns._createPasswordResetError(response.error);
-            console.log(SharedConstants.messages.resetPassword?.resetPasswordTitle);
           }),
           catchError(error => {
-            console.error(SharedConstants.messages.resetPassword?.resetFailed, error);
             return throwError(() => ns._createPasswordResetError(error));
           })
         );
@@ -221,10 +222,7 @@ export function createAuthNamespace(
               throw new PasswordResetError('Failed to send password reset email.', response.error.message);
             }
           }),
-          catchError(error => {
-            console.error('Password reset request failed:', error);
-            return throwError(() => error);
-          })
+          catchError(error => throwError(() => error))
         );
       }
     },

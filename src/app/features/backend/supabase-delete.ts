@@ -1,7 +1,8 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   from as rxFrom,
-  Observable
+  Observable,
+  throwError
 } from 'rxjs';
 import {
   map,
@@ -28,46 +29,54 @@ export function createDeleteNamespace(
   defaultPag: number
 ) {
   return {
-    comment: (id: number) => rxFrom(
-      supabase.from(DbPaths.comments)
-        .delete()
-        .filter('id', 'eq', id)
-    )
-      .pipe(
-        cacheBust(['comments', 'currentUserComments']),
-        remapErrors()),
-    
-    commentsForRack: (id: number) => rxFrom(
-      supabase.from(DbPaths.comments)
-        .delete()
-        .filter('entityId', 'eq', id)
-        .filter('entityType', 'eq', CommentableEntityTypes.RACK)
-    )
-      .pipe(
-        cacheBust(['comments', 'currentUserComments']),
-        remapErrors()),
-    
-    module: (id: number) => {
-      const deleteAllComments$ = rxFrom(
-        supabase.from(DbPaths.comments)
-          .delete()
-          .filter('entityId', 'eq', id)
-          .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
-      );
-      const deleteModule$ = rxFrom(
-        supabase.from(DbPaths.modules)
-          .delete()
-          .filter('id', 'eq', id)
-          .select('id')
-      );
-      return deleteAllComments$
-        .pipe(
-          switchMap(() => deleteModule$),
-          remapErrors(),
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
-          catchErrors(snackBar)
+    comment: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.comments)
+            .delete()
+            .filter('id', 'eq', id)
         );
-    },
+      }),
+      cacheBust(['comments', 'currentUserComments']),
+      remapErrors()
+    ),
+
+    commentsForRack: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.RACK)
+        );
+      }),
+      cacheBust(['comments', 'currentUserComments']),
+      remapErrors()
+    ),
+    
+    module: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        const deleteAllComments$ = rxFrom(
+          supabase.from(DbPaths.comments)
+            .delete()
+            .filter('entityId', 'eq', id)
+            .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+        );
+        const deleteModule$ = rxFrom(
+          supabase.from(DbPaths.modules)
+            .delete()
+            .filter('id', 'eq', id)
+            .select('id')
+        );
+        return deleteAllComments$.pipe(switchMap(() => deleteModule$));
+      }),
+      remapErrors(),
+      cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),
+      catchErrors(snackBar)
+    ),
     
     userModule: (id: number) => getUserSession$().pipe(
       switchMap(user => rxFrom(
@@ -97,65 +106,90 @@ export function createDeleteNamespace(
       remapErrors()
     ),
     
-    rackedModule: (id: number) => rxFrom(
-      supabase.from(DbPaths.rack_modules)
-        .delete()
-        .filter('id', 'eq', id)
-    )
-      .pipe(remapErrors()),
-    
-    modulesOfRack: (rackId: number) => rxFrom(
-      supabase.from(DbPaths.rack_modules)
-        .delete()
-        .filter('rackid', 'eq', rackId)
-    )
-      .pipe(remapErrors()),
-    
-    patch: (id: number) => rxFrom(
-      supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('patch_id', 'eq', id)
-    )
-      .pipe(
-        switchMap(() => rxFrom(
-          supabase.from(DbPaths.patches)
+    rackedModule: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.rack_modules)
             .delete()
             .filter('id', 'eq', id)
-        )),
-        switchMap(() => rxFrom(
-          supabase.from(DbPaths.comments)
+        );
+      }),
+      remapErrors()
+    ),
+
+    modulesOfRack: (rackId: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.rack_modules)
             .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
-        )),
-        remapErrors(),
-        cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
-      ),
+            .filter('rackid', 'eq', rackId)
+        );
+      }),
+      remapErrors()
+    ),
     
-    patchConnectionsForPatch: (id: number) => rxFrom(
-      supabase.from(DbPaths.patch_connections)
-        .delete()
-        .filter('patchid', 'eq', id)
-    )
-      .pipe(
-        remapErrors(),
-        cacheBust(['patchConnections', 'patches'])
-      ),
-    
-    patchModuleInstance: (id: number) => rxFrom(
-      supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('id', 'eq', id)
-    ).pipe(
+    patch: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.patch_module_instances)
+            .delete()
+            .filter('patch_id', 'eq', id)
+        ).pipe(
+          switchMap(() => rxFrom(
+            supabase.from(DbPaths.patches)
+              .delete()
+              .filter('id', 'eq', id)
+          )),
+          switchMap(() => rxFrom(
+            supabase.from(DbPaths.comments)
+              .delete()
+              .filter('entityId', 'eq', id)
+              .filter('entityType', 'eq', CommentableEntityTypes.PATCH)
+          ))
+        );
+      }),
+      remapErrors(),
+      cacheBust(['patches', 'patchConnections', 'patchModuleInstances'])
+    ),
+
+    patchConnectionsForPatch: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.patch_connections)
+            .delete()
+            .filter('patchid', 'eq', id)
+        );
+      }),
+      remapErrors(),
+      cacheBust(['patchConnections', 'patches'])
+    ),
+
+    patchModuleInstance: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.patch_module_instances)
+            .delete()
+            .filter('id', 'eq', id)
+        );
+      }),
       remapErrors(),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
-    
-    patchModuleInstancesForPatch: (patch_id: number) => rxFrom(
-      supabase.from(DbPaths.patch_module_instances)
-        .delete()
-        .filter('patch_id', 'eq', patch_id)
-    ).pipe(
+
+    patchModuleInstancesForPatch: (patch_id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.patch_module_instances)
+            .delete()
+            .filter('patch_id', 'eq', patch_id)
+        );
+      }),
       remapErrors(),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
@@ -195,41 +229,45 @@ export function createDeleteNamespace(
         cacheBust(['rackWithId'])
       ),
     
-    modules: (from = 0, to: number = defaultPag) => rxFrom(
-      supabase.from(DbPaths.modules)
-        .delete()
-        .range(from, to)
-    )
-      .pipe(
-        remapErrors(),
-        cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
-      ),
-    
-    manufacturers: (from = 0, to = defaultPag) => rxFrom(
-      supabase.from(DbPaths.manufacturers)
-        .delete()
-        .range(from, to)
-    )
-      .pipe(
-        cacheBust(['manufacturers']),
-        catchErrors(snackBar),
-        remapErrors(),
-      ),
-    
-    modulePanel: (data: ModulePanel) => {
-      const deletePanelFile$ = deletePanelFileFn(data.filename);
-      const deleteDatabaseEntry$ = rxFrom(
-        supabase.from(DbPaths.module_panels)
-          .delete()
-          .filter('id', 'eq', data.id)
-      );
-      return deletePanelFile$
-        .pipe(
-          switchMap(() => deleteDatabaseEntry$),
-          catchErrors(snackBar),
-          remapErrors()
+    modules: (from = 0, to: number = defaultPag) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.modules)
+            .delete()
+            .range(from, to)
         );
-    },
+      }),
+      remapErrors(),
+      cacheBust(['modules', 'currentUserModules', 'moduleWithId'])
+    ),
+
+    manufacturers: (from = 0, to = defaultPag) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.manufacturers)
+            .delete()
+            .range(from, to)
+        );
+      }),
+      cacheBust(['manufacturers']),
+      remapErrors()
+    ),
+
+    modulePanel: (data: ModulePanel) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        const deletePanelFile$ = deletePanelFileFn(data.filename);
+        const deleteDatabaseEntry$ = rxFrom(
+          supabase.from(DbPaths.module_panels)
+            .delete()
+            .filter('id', 'eq', data.id)
+        );
+        return deletePanelFile$.pipe(switchMap(() => deleteDatabaseEntry$));
+      }),
+      remapErrors()
+    ),
     
     /**
      * Deletes all user-generated data for the current user in the correct dependency order:

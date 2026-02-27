@@ -34,15 +34,16 @@ describe('SupabaseService - delete advanced', () => {
   
   describe('delete.modulePanel', () => {
     it('should call storage.deletePanelFile then delete the DB row', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const mockBucket = {
         remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve({data: [], error: null}))
       };
       spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
-      
+
       const mock = chainable({data: null, error: null});
       const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
       spyOn(supabaseClient, 'from').and.returnValue(mock);
-      
+
       const panelData = {id: 10, filename: 'mypanel.jpg', moduleid: 1, color: 0, description: ''} as any;
       service.delete.modulePanel(panelData).subscribe({
         next: () => {
@@ -56,19 +57,20 @@ describe('SupabaseService - delete advanced', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should access module_panels table in the DB step', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const mockBucket = {
         remove: jasmine.createSpy('remove').and.returnValue(Promise.resolve({data: [], error: null}))
       };
       spyOn(supabaseClient.storage, 'from').and.returnValue(mockBucket);
-      
+
       const tablesAccessed: string[] = [];
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
         return chainable({data: null, error: null});
       });
-      
+
       service.delete.modulePanel({id: 5, filename: 'panel.jpg'} as any).subscribe({
         next: () => {
           expect(tablesAccessed).toContain('module_panels');
@@ -76,6 +78,21 @@ describe('SupabaseService - delete advanced', () => {
         },
         error: (err) => {
           fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.delete.modulePanel({id: 5, filename: 'panel.jpg'} as any).subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });

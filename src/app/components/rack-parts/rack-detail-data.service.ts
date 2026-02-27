@@ -731,10 +731,9 @@ export class RackDetailDataService extends SubManager {
     return rackModules;
   }
   
-  private createNewRackOnBackendForCurrentUser(userId: string) {
+  private createNewRackOnBackendForCurrentUser(_userId: string) {
     return this.backend.add.rack(
       {
-        authorid: userId,
         name: this.bumpUpVersionInNameOfOfRack(),
         hp: this.singleRackData$.value.hp,
         rows: this.singleRackData$.value.rows,
