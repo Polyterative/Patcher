@@ -73,7 +73,7 @@ describe('SupabaseService - login flow', () => {
     
     it('should return user with username from profiles table', (done) => {
       setupLoginMocks('u-fetch', 'myusername');
-      
+
       service.auth.login$('u@test.com', 'pass').subscribe({
         next: (result: any) => {
           expect(result.user.username).toBe('myusername');
@@ -81,6 +81,28 @@ describe('SupabaseService - login flow', () => {
         },
         error: (err) => {
           fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should emit an error (not crash) when signInWithPassword returns an auth error', (done) => {
+      const mockErrorResponse = {
+        data: {user: null, session: null},
+        error: {message: 'Invalid login credentials', status: 400}
+      };
+      spyOn(supabaseClient.auth, 'signInWithPassword').and.returnValue(
+        Promise.resolve(mockErrorResponse)
+      );
+      spyOn(supabaseClient, 'from').and.returnValue({} as any);
+
+      service.auth.login$('bad@test.com', 'wrongpass').subscribe({
+        next: () => {
+          fail('Expected an error, got a value');
+          done();
+        },
+        error: (err) => {
+          expect(err).toBeDefined();
           done();
         }
       });
