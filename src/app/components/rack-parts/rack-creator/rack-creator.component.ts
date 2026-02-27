@@ -182,11 +182,9 @@ export class RackCreatorComponent extends SubManager implements OnInit {
         withLatestFrom(this.backend.auth.getUserSession$()),
         // check if user is logged in
         filter(([_, user]) => !!user),
-        map(([_, user]) => user),
         // create rack in database
-        switchMap(user => this.backend.add.rack(
+        switchMap(() => this.backend.add.rack(
           {
-            authorid: user.id,
             name: this.fields.name.control.value,
             hp: this.fields.hp.control.value,
             rows: this.fields.rows.control.value,

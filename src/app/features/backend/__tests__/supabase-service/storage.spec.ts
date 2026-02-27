@@ -35,8 +35,9 @@ describe('SupabaseService - storage', () => {
   
   describe('storage.deletePanelFile', () => {
     it('should call remove on the module_panels bucket', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      
+
       service.storage.deletePanelFile('panel.jpg').subscribe({
         next: () => {
           expect(supabaseClient.storage.from).toHaveBeenCalledWith('module-panels');
@@ -49,12 +50,13 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should bust modules, moduleWithId and rackWithId caches', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
-      
+
       service.storage.deletePanelFile('test.jpg').subscribe({
         next: () => {
           expect(bustedKeys).toContain('modules');
@@ -68,16 +70,31 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.storage.deletePanelFile('panel.jpg').subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
-  
+
   describe('storage.deleteRackImage', () => {
     it('should normalise filename and call remove on the racks bucket', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      
+
       service.storage.deleteRackImage('RACK.JPG').subscribe({
         next: () => {
           expect(supabaseClient.storage.from).toHaveBeenCalledWith('racks');
-          // cleanUpFileName lowercases
           expect(mockBucket.remove).toHaveBeenCalledWith(['rack.jpg']);
           done();
         },
@@ -87,12 +104,13 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should bust rackWithId cache', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
-      
+
       service.storage.deleteRackImage('rack.jpg').subscribe({
         next: () => {
           expect(bustedKeys).toContain('rackWithId');
@@ -104,12 +122,28 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.storage.deleteRackImage('rack.jpg').subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
-  
+
   describe('storage.uploadModulePanel', () => {
     it('should return the lowercased filename', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      
+
       service.storage.uploadModulePanel(new Blob(), 'Panel.JPG').subscribe({
         next: (filename) => {
           expect(filename).toBe('panel.jpg');
@@ -121,10 +155,11 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should call both upload and remove on module_panels bucket', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
-      
+
       service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
         next: () => {
           expect(supabaseClient.storage.from).toHaveBeenCalledWith('module-panels');
@@ -138,12 +173,13 @@ describe('SupabaseService - storage', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should bust module caches after successful upload', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();
       const bustedKeys: any[] = [];
       service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
-      
+
       service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
         next: () => {
           expect(bustedKeys).toContain('modules');
@@ -152,6 +188,21 @@ describe('SupabaseService - storage', () => {
         },
         error: (err) => {
           fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.storage.uploadModulePanel(new Blob(), 'panel.jpg').subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });

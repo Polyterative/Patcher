@@ -8,6 +8,7 @@
 
 | Feature                                                                     | Date  | Notes                                                                                                    |
 |-----------------------------------------------------------------------------|-------|----------------------------------------------------------------------------------------------------------|
+| Security hardening — auth guards, session checks, credential sanitisation   | 02-27 | F2–F8: null-safety login fix, auth guards on all write/delete/storage ops, admin guard async, console leaks removed; 74 specs green |
 | Stylelint px-to-rem tooling                                                 | 02-26 | Added stylelint config and conversion scripts for consistent rem units across SCSS                       |
 | CI — skip builds on docs-only changes                                       | 02-26 | Vercel `ignoreCommand` updated; sitemap fix; docs-only commits no longer trigger full builds             |
 | Supabase service restructure                                                | 02-26 | Reorganized into typed namespaces (get/add/delete/update); storage support added; query structure simplified |

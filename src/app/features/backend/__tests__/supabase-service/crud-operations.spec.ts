@@ -1,10 +1,10 @@
+import { of } from 'rxjs';
 import {
   cleanupSupabaseServiceTest,
   setupSupabaseServiceTest,
   TEST_TIMEOUT
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
-import { of } from 'rxjs';
 
 
 /**
@@ -227,7 +227,8 @@ describe('SupabaseService - CRUD Operations', () => {
   });
   
   describe('add.rack', () => {
-    it('should bust rackWithId cache after creating a rack', (done) => {
+    it('should derive authorid from session and bust rackWithId cache', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-author'}));
       const rackInput = {
         name: 'My Rack',
         description: 'New rack',
@@ -235,30 +236,31 @@ describe('SupabaseService - CRUD Operations', () => {
         rows: 3,
         locked: false,
         public: true,
-        image: null,
-        authorid: 'rack-author-1'
+        image: null
       };
-      
+
       const insertSpy = jasmine.createSpy('insert').and.returnValue({
         select: jasmine.createSpy('select').and.returnValue(
           Promise.resolve({data: [{id: 12}], error: null})
         )
       });
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         insert: insertSpy
       });
-      
+
       let emittedKeys: any[] | undefined;
       const sub = service.cacheResetter$.subscribe((keys) => {
         if (Array.isArray(keys) && keys.includes('rackWithId')) {
           emittedKeys = keys as any[];
         }
       });
-      
+
       service.add.rack(rackInput as any).subscribe({
         next: () => {
-          expect(insertSpy).toHaveBeenCalledWith(rackInput);
+          expect(insertSpy).toHaveBeenCalledWith(
+            jasmine.objectContaining({...rackInput, authorid: 'session-author'})
+          );
           expect(emittedKeys).withContext(
             'add.rack should trigger cache bust for rackWithId'
           ).toEqual(jasmine.arrayContaining(['rackWithId']));
@@ -272,18 +274,34 @@ describe('SupabaseService - CRUD Operations', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.add.rack({name: 'Rack', hp: 84, rows: 3, locked: false, public: true} as any).subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('add.rackModule', () => {
-    it('should add module to rack with position', (done) => {
+    it('should add module to rack with position when authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: {id: 1}, error: null})
       );
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         insert: insertSpy
       });
-      
+
       service.add.rackModule(10, 5, 2, 3).subscribe({
         next: () => {
           expect(insertSpy).toHaveBeenCalledWith({
@@ -300,16 +318,17 @@ describe('SupabaseService - CRUD Operations', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should allow optional row and column', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const insertSpy = jasmine.createSpy('insert').and.returnValue(
         Promise.resolve({data: {id: 1}, error: null})
       );
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         insert: insertSpy
       });
-      
+
       service.add.rackModule(10, 5).subscribe({
         next: () => {
           expect(insertSpy).toHaveBeenCalledWith({
@@ -322,6 +341,21 @@ describe('SupabaseService - CRUD Operations', () => {
         },
         error: (err) => {
           fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.add.rackModule(10, 5).subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });
@@ -436,17 +470,18 @@ describe('SupabaseService - CRUD Operations', () => {
   });
   
   describe('update.rack', () => {
-    it('should update rack with explicit fields only', (done) => {
+    it('should use session user id as authorid and exclude author object', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
       const upsertSpy = jasmine.createSpy('upsert').and.returnValue({
         select: jasmine.createSpy('select').and.returnValue(
           Promise.resolve({data: [{id: 1}], error: null})
         )
       });
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         upsert: upsertSpy
       });
-      
+
       const rackData = {
         id: 1,
         name: 'My Rack',
@@ -456,23 +491,37 @@ describe('SupabaseService - CRUD Operations', () => {
         locked: false,
         public: true,
         image: null,
-        author: {id: 'user-1', username: 'test'}
+        author: {id: 'original-owner', username: 'test'}
       };
-      
+
       service.update.rack(rackData as any).subscribe({
         next: () => {
           const callArgs = upsertSpy.calls.first().args[0];
           expect(callArgs.id).toBe(1);
-          expect(callArgs.authorid).toBe('user-1');
+          expect(callArgs.authorid).toBe('session-user');
           expect(callArgs.name).toBe('My Rack');
           expect(callArgs.rows).toBe(2);
           expect(callArgs.hp).toBe(104);
-          // Should not include unintended properties
           expect(callArgs.author).toBeUndefined();
           done();
         },
         error: (err) => {
           fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.update.rack({id: 1, name: 'Rack', author: {id: 'x'}} as any).subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });
@@ -484,18 +533,19 @@ describe('SupabaseService - CRUD Operations', () => {
   // ============================================================================
   
   describe('delete.comment', () => {
-    it('should delete comment by id', (done) => {
+    it('should delete comment by id when authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const filterSpy = jasmine.createSpy('filter').and.returnValue(
         Promise.resolve({data: null, error: null})
       );
       const deleteSpy = jasmine.createSpy('delete').and.returnValue({
         filter: filterSpy
       });
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         delete: deleteSpy
       });
-      
+
       service.delete.comment(42).subscribe({
         next: () => {
           expect(filterSpy).toHaveBeenCalledWith('id', 'eq', 42);
@@ -503,6 +553,21 @@ describe('SupabaseService - CRUD Operations', () => {
         },
         error: (err) => {
           fail(`Error: ${ err }`);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error when user is not authenticated', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+
+      service.delete.comment(42).subscribe({
+        next: () => {
+          fail('Expected error for unauthenticated call');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Authentication required');
           done();
         }
       });
@@ -571,13 +636,14 @@ describe('SupabaseService - CRUD Operations', () => {
   
   describe('delete.rackedModule', () => {
     it('should delete racked module by id', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       const filterSpy = jasmine.createSpy('filter').and.returnValue(
         Promise.resolve({data: null, error: null})
       );
       const deleteSpy = jasmine.createSpy('delete').and.returnValue({
         filter: filterSpy
       });
-      
+
       spyOn(supabaseClient, 'from').and.returnValue({
         delete: deleteSpy
       });
