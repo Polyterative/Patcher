@@ -2,7 +2,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   forkJoin,
   from as rxFrom,
-  Observable
+  Observable,
+  throwError
 } from 'rxjs';
 import {
   map,
@@ -94,30 +95,36 @@ export function createAddNamespace(
       map((x: any) => ({id: x.data?.id as number}))
     ),
     
-    rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => rxFrom(
-      supabase
-        .from(DbPaths.rack_modules)
-        .insert({
-          moduleid: moduleId,
-          rackid,
-          row,
-          column
-        })
-    )
-      .pipe(remapErrors()),
-    
-    rack: (data: Omit<RackMinimal, 'author' | 'created' | 'updated' | 'id'> & {
-      authorid: string
-    }) => rxFrom(
-      supabase
-        .from(DbPaths.racks)
-        .insert(data)
-        .select('id'),
-    )
-      .pipe(
-        cacheBust(['rackWithId']),
-        remapErrors(),
-      ),
+    rackModule: (moduleId: number, rackid: number, row?: number, column?: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.rack_modules)
+            .insert({
+              moduleid: moduleId,
+              rackid,
+              row,
+              column
+            })
+        );
+      }),
+      remapErrors()
+    ),
+
+    rack: (data: Omit<RackMinimal, 'author' | 'created' | 'updated' | 'id'>) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.racks)
+            .insert({...data, authorid: user.id})
+            .select('id')
+        );
+      }),
+      cacheBust(['rackWithId']),
+      remapErrors()
+    ),
     
     patch: (data: {
       name: string
@@ -219,31 +226,39 @@ export function createAddNamespace(
     )
       .pipe(remapErrors()),
     
-    patchModuleInstance: (patch_id: number, module_id: number, instance_label?: string) => rxFrom(
-      supabase
-        .from(DbPaths.patch_module_instances)
-        .insert({patch_id, module_id, instance_label: instance_label ?? null})
-        .select('id,patch_id,module_id,instance_label')
-        .single()
-    ).pipe(
+    patchModuleInstance: (patch_id: number, module_id: number, instance_label?: string) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.patch_module_instances)
+            .insert({patch_id, module_id, instance_label: instance_label ?? null})
+            .select('id,patch_id,module_id,instance_label')
+            .single()
+        );
+      }),
       remapErrors(),
-      map(x => x.data as PatchModuleInstance),
+      map(x => (x as any).data as PatchModuleInstance),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     ),
-    
+
     /** Batch insert multiple patch module instances in a single DB call */
     patchModuleInstances: (rows: {
       patch_id: number;
       module_id: number;
       instance_label: string | null
-    }[]) => rxFrom(
-      supabase
-        .from(DbPaths.patch_module_instances)
-        .insert(rows)
-        .select('id,patch_id,module_id,instance_label')
-    ).pipe(
+    }[]) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.patch_module_instances)
+            .insert(rows)
+            .select('id,patch_id,module_id,instance_label')
+        );
+      }),
       remapErrors(),
-      map(x => x.data as PatchModuleInstance[]),
+      map(x => (x as any).data as PatchModuleInstance[]),
       cacheBust(['patchConnections', 'patchModuleInstances'])
     )
   };

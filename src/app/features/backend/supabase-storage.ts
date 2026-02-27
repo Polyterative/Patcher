@@ -2,7 +2,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   forkJoin,
   from as rxFrom,
-  Observable
+  Observable,
+  throwError
 } from 'rxjs';
 import {
   map,
@@ -11,10 +12,7 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
 import { DbStoragePaths } from './DatabaseStrings';
-import {
-  cacheBust,
-  catchErrors
-} from './supabase.cache';
+import { cacheBust } from './supabase.cache';
 import {
   SimpleUserModel,
   SupabaseStorageFile
@@ -33,22 +31,22 @@ export function createStorageNamespace(
   const ns = {
     uploadModulePanel: (file: SupabaseStorageFile, filenameAndExtension: string, contentType: string = 'image/jpeg') => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
-      
-      const uploadNewPanel$ = rxFrom(
-        supabase.storage
-          .from(DbStoragePaths.module_panels)
-          .upload(filenameAndExtension, file, {
-            cacheControl: '360000',
-            upsert: true,
-            contentType
-          })
-      );
-      
-      const deleteThePossibleOldPanel$ = ns.deletePanelFile(filenameAndExtension);
-      
-      return forkJoin([deleteThePossibleOldPanel$, uploadNewPanel$]).pipe(
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          const uploadNewPanel$ = rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.module_panels)
+              .upload(filenameAndExtension, file, {
+                cacheControl: '360000',
+                upsert: true,
+                contentType
+              })
+          );
+          const deleteThePossibleOldPanel$ = ns.deletePanelFile(filenameAndExtension);
+          return forkJoin([deleteThePossibleOldPanel$, uploadNewPanel$]);
+        }),
         cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
-        catchErrors(snackBar),
         map(() => filenameAndExtension)
       );
     },
@@ -76,23 +74,29 @@ export function createStorageNamespace(
     
     deleteRackImage: (filenameAndExtension: string) => {
       filenameAndExtension = cleanUpFileName(filenameAndExtension);
-      return rxFrom(
-        supabase.storage
-          .from(DbStoragePaths.racks)
-          .remove([filenameAndExtension])
-      ).pipe(
-        cacheBust(['rackWithId']),
-        catchErrors(snackBar)
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.storage
+              .from(DbStoragePaths.racks)
+              .remove([filenameAndExtension])
+          );
+        }),
+        cacheBust(['rackWithId'])
       );
     },
-    
-    deletePanelFile: (path: string) => rxFrom(
-      supabase.storage
-        .from(DbStoragePaths.module_panels)
-        .remove([path])
-    ).pipe(
-      cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'rackWithId']),
-      catchErrors(snackBar)
+
+    deletePanelFile: (path: string) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.storage
+            .from(DbStoragePaths.module_panels)
+            .remove([path])
+        );
+      }),
+      cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'rackWithId'])
     )
   };
   

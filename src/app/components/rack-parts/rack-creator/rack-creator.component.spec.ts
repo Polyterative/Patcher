@@ -69,7 +69,6 @@ describe('RackCreatorComponent', () => {
     component.save$.next();
     
     expect(backend.add.rack).toHaveBeenCalledWith({
-      authorid: 'u1',
       name: 'My Rack',
       hp: 84,
       rows: 3,
