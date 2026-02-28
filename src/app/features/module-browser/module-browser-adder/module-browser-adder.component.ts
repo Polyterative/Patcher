@@ -2,14 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import {
   combineLatest,
-  delay,
-  Subject
+  delay
 } from 'rxjs';
 import {
   defaultModuleMinimalViewConfig,
@@ -23,6 +23,7 @@ import {
   filter,
   takeUntil
 } from "rxjs/operators";
+import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 
 
 @Component({
@@ -36,9 +37,8 @@ import {
   ],
   standalone: false
 })
-export class ModuleBrowserAdderComponent implements OnInit {
-  
-  protected destroyEvent$ = new Subject<void>();
+export class ModuleBrowserAdderComponent extends SubManager implements OnInit, OnDestroy {
+
   @Input() ignoreSeo = false;
   readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -86,7 +86,7 @@ export class ModuleBrowserAdderComponent implements OnInit {
     readonly seoAndUtilsService: SeoAndUtilsService,
     public userService: UserManagementService,
   ) {
-  
+    super();
   }
   
   ngOnInit(): void {
@@ -95,16 +95,16 @@ export class ModuleBrowserAdderComponent implements OnInit {
       this.route.queryParams,
       this.dataService.formData.manufacturer.options$.pipe(
         filter(x => x.length > 0),
-        takeUntil(this.destroyEvent$)
+        takeUntil(this.destroy$)
       ),
       this.dataService.formData.standard.options$.pipe(
         filter(x => x.length > 0),
-        takeUntil(this.destroyEvent$)
+        takeUntil(this.destroy$)
       ),
     ])
       .pipe(
         delay(200),
-        takeUntil(this.destroyEvent$),
+        takeUntil(this.destroy$),
       )
       .subscribe(([params, manufacturersList, standardsList]) => {
           if (parseInt(params.manufacturer)) {
@@ -119,7 +119,7 @@ export class ModuleBrowserAdderComponent implements OnInit {
           
           if (parseInt(params.standard)) {
             this.dataService.formData.standard.control.patchValue(
-              standardsList.find(x => x.id === parseInt(params.standard))
+              standardsList.find(x => x.id === params.standard)
             );
           }
         }
@@ -128,12 +128,6 @@ export class ModuleBrowserAdderComponent implements OnInit {
       
     
     this.updateSeo();
-    
-  }
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
     
   }
   

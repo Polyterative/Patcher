@@ -37,7 +37,6 @@ describe('ModuleAdderDataService', () => {
       backend as any,
       dialog as any,
       snackBar,
-      {} as any,
       router
     );
     
@@ -118,10 +117,26 @@ describe('ModuleAdderDataService', () => {
     });
     backend.add.manufacturers.and.returnValue(throwError(() => new Error('network')));
     service.newManufacturerNameControl.setValue('Broken');
-    
+
     service.createManufacturer$.next();
-    
+
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
     expect(service.isCreatingManufacturer$.value).toBeFalse();
+  });
+
+  it('formGroup is valid when all fields are filled', () => {
+    const {service, standards$} = build();
+
+    // standard control is auto-applied by the options$ subscription
+    standards$.next([{id: 0, name: '3U'}] as any);
+
+    service.formData.name.control.setValue('Maths');
+    service.formData.description.control.setValue('Analog computer designed for musical purposes');
+    service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
+    service.formData.hp.control.setValue('20');
+    service.formData.manual.control.setValue('https://make-noise.com/manual.pdf');
+    service.formData.diy.control.setValue({id: '0', name: 'Commercial'});
+
+    expect(service.formGroup.valid).toBeTrue();
   });
 });

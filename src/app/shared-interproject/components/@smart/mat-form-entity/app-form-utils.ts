@@ -103,7 +103,7 @@ export function sanitizeItemInPipe<T>() {
   );
 }
 
-export function plainSanitize(sanitizer: DomSanitizer, x: any) {
+export function plainSanitize(x: any) {
   // purify only strings
   if (typeof x === 'string') {
     return DOMPurify.sanitize(x);
