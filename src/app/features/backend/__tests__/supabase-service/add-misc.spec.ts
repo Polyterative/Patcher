@@ -33,6 +33,10 @@ describe('SupabaseService - add misc and update bulk', () => {
   });
   
   describe('add.patchModuleInstances (batch)', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should insert multiple instances in a single call', (done) => {
       const mockRows = [
         {id: 1, patch_id: 10, module_id: 1, instance_label: 'VCO #1'},
