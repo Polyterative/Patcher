@@ -6,6 +6,7 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  asapScheduler,
   BehaviorSubject,
   merge,
   Observable,
@@ -13,6 +14,7 @@ import {
 } from 'rxjs';
 import {
   mapTo,
+  observeOn,
   skip,
   takeUntil
 } from 'rxjs/operators';
@@ -39,7 +41,7 @@ export class AutoUpdateLoadingIndicatorComponent implements OnInit, OnDestroy {
     if (this.data$ && this.updateData$) {
       merge(
         this.updateData$.pipe(takeUntil(this.destroyEvent$), mapTo(true)),
-        this.data$.pipe(takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), mapTo(false))
+        this.data$.pipe(observeOn(asapScheduler), takeUntil(this.destroyEvent$), skip(this.skipFirstData ? 1 : 0), mapTo(false))
       )
         .pipe(takeUntil(this.destroyEvent$))
         .subscribe(x => this.dataLoading$.next(x));
