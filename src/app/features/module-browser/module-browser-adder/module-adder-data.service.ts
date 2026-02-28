@@ -20,7 +20,7 @@ import {
   catchError,
   filter,
   map,
-  share,
+  shareReplay,
   startWith,
   switchMap,
   takeUntil,
@@ -40,10 +40,10 @@ import {
 } from 'src/app/shared-interproject/dialogs/confirm-dialog/confirm-dialog.component';
 import { SupabaseService } from '../../backend/supabase.service';
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
-import { DomSanitizer } from "@angular/platform-browser";
 
 
 import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
+import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
@@ -59,13 +59,14 @@ export class ModuleAdderDataService extends SubManager {
   // Inline manufacturer creation
   showNewManufacturerForm$ = new BehaviorSubject<boolean>(false);
   isCreatingManufacturer$ = new BehaviorSubject<boolean>(false);
+  duplicateManufacturer$ = new BehaviorSubject<{ id: string; name: string } | null>(null);
   newManufacturerNameControl = new UntypedFormControl('', Validators.compose([
     Validators.required,
     Validators.minLength(2),
     Validators.maxLength(100)
   ]));
   createManufacturer$ = new Subject<void>();
-  
+
   private _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
   
   formData: {
@@ -141,7 +142,6 @@ export class ModuleAdderDataService extends SubManager {
     public backend: SupabaseService,
     public dialog: MatDialog,
     public snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer,
     private router: Router
   ) {
     super();
@@ -219,7 +219,7 @@ export class ModuleAdderDataService extends SubManager {
             name: y.name
           }))),
           startWith([]),
-          share() // protects against multiple network requests
+          shareReplay(1) // late subscribers (template async pipe) must see the last emission
         ),
         type:     FormTypes.SELECT
       },
@@ -282,10 +282,21 @@ export class ModuleAdderDataService extends SubManager {
         
       });
     
+    // detect duplicate manufacturer name as user types (accent-insensitive)
+    this.newManufacturerNameControl.valueChanges.pipe(
+      map((value: string) => {
+        if (!value || value.trim().length < 2) return null;
+        const normalized = normalizeForSearch(value.trim());
+        return this._manufacturerOptions$.value.find(opt => normalizeForSearch(opt.name) === normalized) ?? null;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(match => this.duplicateManufacturer$.next(match));
+
     // enable manufacturer control once options are loaded
     this._manufacturerOptions$.pipe(
-      tap(() => this.formData.manufacturer.control.disable()),
-      filter(x => x !== undefined),
+      tap(x => {
+        if (x.length === 0) this.formData.manufacturer.control.disable();
+      }),
       filter(x => x.length > 0),
       takeUntil(this.destroy$)
     )
@@ -309,7 +320,7 @@ export class ModuleAdderDataService extends SubManager {
     this.updateModulesList$
       .pipe(
         tap(() => this.similarModulesData$.next(undefined)),
-        filter(() => this.formData.name.control.value.length !== '' || this.formData.manufacturer.control.value.length !== ''),
+        filter(() => this.formData.name.control.value.length > 0 || !!this.formData.manufacturer.control.value),
         switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)),
         takeUntil(this.destroy$)
       )
@@ -352,12 +363,12 @@ export class ModuleAdderDataService extends SubManager {
           const manualURL: any = manualValue && manualValue.length > 'https://'.length ? manualValue : undefined;
           
           return {
-            name: plainSanitize(this.sanitizer, this.formData.name.control.value),
-            description: plainSanitize(this.sanitizer, this.formData.description.control.value),
+            name: plainSanitize(this.formData.name.control.value),
+            description: plainSanitize(this.formData.description.control.value),
             manufacturerId: parseInt(getCleanedValueId(this.formData.manufacturer.control)),
             hp: parseInt(this.formData.hp.control.value),
             standard: parseInt(this.formData.standard.control.value.id),
-            manualURL: plainSanitize(this.sanitizer, manualURL),
+            manualURL: plainSanitize(manualURL),
             isApproved: false,
             isDIY: this.formData.diy.control.value.id === '1',
             public: true
@@ -365,7 +376,13 @@ export class ModuleAdderDataService extends SubManager {
           
         }),
         filter(x => !!x),
-        switchMap((x: any) => this.backend.add.modules([x]).pipe(map(() => x))),
+        switchMap((x: any) => this.backend.add.modules([x]).pipe(
+          map(() => x),
+          catchError(() => {
+            SharedConstants.errorCustom(this.snackBar, 'Failed to submit module. Please try again.');
+            return EMPTY;
+          })
+        )),
         takeUntil(this.destroy$)
       )
       .subscribe((module) => {
@@ -396,9 +413,9 @@ export class ModuleAdderDataService extends SubManager {
 
     // when user requests to create a new manufacturer inline
     this.createManufacturer$.pipe(
-      filter(() => this.newManufacturerNameControl.valid),
+      filter(() => this.newManufacturerNameControl.valid && this.duplicateManufacturer$.value === null),
       tap(() => this.isCreatingManufacturer$.next(true)),
-      map(() => plainSanitize(this.sanitizer, this.newManufacturerNameControl.value.trim())),
+      map(() => plainSanitize(this.newManufacturerNameControl.value.trim())),
       switchMap(name => this.backend.add.manufacturers([{ name }]).pipe(
         map(result => ({ name, data: result?.data })),
         catchError(err => {
@@ -425,7 +442,14 @@ export class ModuleAdderDataService extends SubManager {
       this.newManufacturerNameControl.setValue('');
       this.showNewManufacturerForm$.next(false);
     });
-    
+
   }
-  
+
+  selectExistingManufacturer(manufacturer: { id: string; name: string }): void {
+    this.formData.manufacturer.control.setValue(manufacturer);
+    this.newManufacturerNameControl.setValue('');
+    this.showNewManufacturerForm$.next(false);
+    this.duplicateManufacturer$.next(null);
+  }
+
 }
