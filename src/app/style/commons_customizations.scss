@@ -43,6 +43,16 @@ body {
 mat-paginator {
   background-color: transparent !important;
   margin-bottom: .25rem;
+
+  // Paginator nav buttons use SVG icons (width:28px from Angular Material),
+  // which can be wider than our customised icon-button content area
+  // (2.5rem button − 2×0.5rem padding = 1.5rem), causing the SVG to sit
+  // off-centre relative to the circular hover state layer.
+  // Explicitly size the SVG to match the content area.
+  .mat-mdc-paginator-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
 }
 
 .mat-paginator-container {
@@ -402,15 +412,18 @@ $snack-toolbar-offset: 5em;
 }
 
 // ─── Icon-button breathing room ─────────────────────────────────────────────
-// Angular Material 21 sets button size on .mat-mdc-icon-button.mat-mdc-button-base
-// (two classes) and writes width/height/padding as hard values, not just CSS vars.
-// We must match that specificity and use rem so the 80 % html font-size scales
-// everything proportionally.
+// Angular Material 21 renders icon buttons as display:inline-block (not flex),
+// centering via text-align + equal padding. Baseline alignment of inline-block
+// SVG children causes vertical drift. We override to inline-flex so both axes
+// are governed by flexbox, which is immune to baseline/line-height quirks.
 //   button: 2.5rem = 32 px @ 80%   icon: 1.5rem = 19.2 px @ 80%
 //   padding each side: 0.5rem = 6.4 px — comfortable breathing room.
 .mat-mdc-icon-button.mat-mdc-button-base {
   --mdc-icon-button-state-layer-size: 2.5rem;
   --mat-icon-button-state-layer-size: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
   padding: 0.5rem;
