@@ -211,7 +211,6 @@ describe('RackDetailDataService helpers', () => {
     create('user-2').subscribe();
     
     expect(backend.add.rack).toHaveBeenCalledWith({
-      authorid: 'user-2',
       name: 'Demo Rack V2',
       hp: 104,
       rows: 3,

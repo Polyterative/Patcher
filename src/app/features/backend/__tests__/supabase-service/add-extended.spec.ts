@@ -157,6 +157,10 @@ describe('SupabaseService - add extended', () => {
   });
   
   describe('add.patchModuleInstance', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should insert an instance and return PatchModuleInstance', (done) => {
       const mockInstance = {id: 10, patch_id: 1, module_id: 2, instance_label: 'VCO #1'};
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockInstance, error: null}));

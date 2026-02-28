@@ -33,6 +33,10 @@ describe('SupabaseService - delete complex operations', () => {
   });
   
   describe('delete.module', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should delete comments then the module itself', (done) => {
       const tablesAccessed: string[] = [];
       
@@ -74,6 +78,10 @@ describe('SupabaseService - delete complex operations', () => {
   });
   
   describe('delete.patch', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should delete module instances, patch, and comments in sequence', (done) => {
       const tablesAccessed: string[] = [];
       
