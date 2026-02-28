@@ -110,6 +110,10 @@ describe('SupabaseService - update extended', () => {
   });
   
   describe('update.patchConnectionNoteSilent', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     const mockConn = () => ({
       patch: {id: 1},
       a: {id: 10, name: 'out', module: {id: 100} as any},
@@ -177,6 +181,10 @@ describe('SupabaseService - update extended', () => {
   });
   
   describe('update.patchModuleInstanceLabel', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should update instance label and return a PatchModuleInstance', (done) => {
       const mockInstance = {id: 3, patch_id: 1, module_id: 2, instance_label: 'VCO #2'};
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockInstance, error: null}));
