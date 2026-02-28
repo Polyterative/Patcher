@@ -60,7 +60,7 @@ describe('sanitizers', () => {
   });
   
   it('plainSanitize removes dangerous attributes from html', () => {
-    const sanitized = plainSanitize({} as any, '<img src=x onerror=alert(1)>text') as string;
+    const sanitized = plainSanitize('<img src=x onerror=alert(1)>text') as string;
     expect(sanitized).toContain('text');
     expect(sanitized).not.toContain('onerror');
   });

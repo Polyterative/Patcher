@@ -1,156 +1,175 @@
-<div class="col gap1">
-  <lib-hero-content-card titleBig="Submit a module" class="modulesBG">
-    <div class="col gap1">
-      <div class="rowwrap  gap2">
-        <lib-hero-content-card style="max-width: 25rem;"
-                               titleNormal="Guidelines">
-          <lib-clean-card>
-            <app-lib-showcase-grid [data]="guidelinesData">
-            </app-lib-showcase-grid>
-          </lib-clean-card>
-        </lib-hero-content-card>
+<lib-screen-wrapper maxSize="86rem">
+  <div class="col gap1">
+    <lib-hero-content-card titleBig="Submit a module" class="modulesBG">
+      <div class="submit-layout">
 
-        <lib-hero-content-card
-          class="grow"
-          titleNormal="Data"
-          >
-          <div class="col gap2">
-            
+        <!-- main column: guidelines + form -->
+        <div class="col gap2 submit-main">
+
+          <lib-hero-content-card titleNormal="Guidelines">
             <lib-clean-card>
-              <div class="col gap1">
-                <lib-mat-form-entity
-                  [dataPack]="dataService.formData.manufacturer"
-                  [disableVoidSelection]="true"
-                ></lib-mat-form-entity>
+              <app-lib-showcase-grid [data]="guidelinesData">
+              </app-lib-showcase-grid>
+            </lib-clean-card>
+          </lib-hero-content-card>
 
-                <!-- Inline manufacturer creation -->
-                @if ((dataService.showNewManufacturerForm$ | async) !== true) {
-                  <div class="row" style="margin-top: -0.5rem; margin-bottom: 0.25rem;">
-                    <button mat-button color="primary" type="button"
-                            (click)="dataService.showNewManufacturerForm$.next(true)"
-                            matTooltip="Manufacturer not in list? Create it here">
-                      <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle;">add
-                      </mat-icon>
-                      Create new manufacturer
-                    </button>
-                  </div>
-                }
-                @if ((dataService.showNewManufacturerForm$ | async) === true) {
-                  <div class="col gap1"
-                       style="padding: 0.75rem; border: 1px solid rgba(63,81,181, 0.3); border-radius: 4px; margin-bottom: 0.5rem;">
-                    <mat-card-subtitle style="margin: 0; font-weight: 500;">
-                      <mat-icon
-                        style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;">
-                        factory
-                      </mat-icon>
-                      Create new manufacturer
-                    </mat-card-subtitle>
-                    <mat-form-field appearance="outline" style="width: 100%;">
-                      <mat-label>Manufacturer name</mat-label>
-                      <input matInput
-                             [formControl]="dataService.newManufacturerNameControl"
-                             placeholder="e.g. My Modular Co."
-                             (keydown.enter)="dataService.createManufacturer$.next()">
-                      <mat-hint>Enter the exact manufacturer name</mat-hint>
-                    </mat-form-field>
-                    <div class="row gap1">
-                      <button mat-flat-button color="primary" type="button"
-                              [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async)"
-                              (click)="dataService.createManufacturer$.next()">
-                        <mat-icon>save</mat-icon>
-                        Create
-                      </button>
-                      <button mat-button type="button"
-                              (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
-                        Cancel
+          <lib-hero-content-card titleNormal="Data">
+            <div class="col gap2">
+
+              <lib-clean-card>
+                <div class="col gap1">
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.manufacturer"
+                    [disableVoidSelection]="true"
+                  ></lib-mat-form-entity>
+
+                  <!-- Inline manufacturer creation -->
+                  @if ((dataService.showNewManufacturerForm$ | async) !== true) {
+                    <div class="row" style="margin-top: -0.5rem; margin-bottom: 0.25rem;">
+                      <button mat-button color="primary" type="button"
+                              (click)="dataService.showNewManufacturerForm$.next(true)"
+                              matTooltip="Manufacturer not in list? Create it here">
+                        <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle;">add
+                        </mat-icon>
+                        Create new manufacturer
                       </button>
                     </div>
+                  }
+                  @if ((dataService.showNewManufacturerForm$ | async) === true) {
+                    <div class="col gap1"
+                         style="padding: 0.75rem; border: 1px solid rgba(63,81,181, 0.3); border-radius: 4px; margin-bottom: 0.5rem;">
+                      <mat-card-subtitle style="margin: 0; font-weight: 500;">
+                        <mat-icon
+                          style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;">
+                          factory
+                        </mat-icon>
+                        Create new manufacturer
+                      </mat-card-subtitle>
+                      <mat-form-field appearance="outline" style="width: 100%;">
+                        <mat-label>Manufacturer name</mat-label>
+                        <input matInput
+                               [formControl]="dataService.newManufacturerNameControl"
+                               placeholder="e.g. My Modular Co."
+                               (keydown.enter)="dataService.createManufacturer$.next()">
+                        <mat-hint>Enter the exact manufacturer name</mat-hint>
+                      </mat-form-field>
+                      @if (dataService.duplicateManufacturer$ | async; as dup) {
+                        <div class="row gap1"
+                             style="padding: 0.75rem; border-radius: 4px; background-color: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.5); align-items: center;">
+                          <mat-icon style="color: #FF9800; flex-shrink: 0; font-size: 1.2rem; width: 1.2rem; height: 1.2rem;">warning</mat-icon>
+                          <div class="col gap0" style="flex: 1; min-width: 0;">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: #FF9800;">Already exists</span>
+                            <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">"{{ dup.name }}" is already in the database.</span>
+                          </div>
+                          <button mat-stroked-button type="button"
+                                  style="flex-shrink: 0;"
+                                  (click)="dataService.selectExistingManufacturer(dup)">
+                            Use existing
+                          </button>
+                        </div>
+                      }
+                      <div class="row gap1">
+                        <button mat-flat-button color="primary" type="button"
+                                [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async) || !!(dataService.duplicateManufacturer$ | async)"
+                                (click)="dataService.createManufacturer$.next()">
+                          <mat-icon>save</mat-icon>
+                          Create
+                        </button>
+                        <button mat-button type="button"
+                                (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.name"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.description"
+                  ></lib-mat-form-entity>
+                  <lib-mat-form-entity
+                    [dataPack]="dataService.formData.manual"
+                  ></lib-mat-form-entity>
+                  <div class="rowwrap gap1">
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.hp"
+                    ></lib-mat-form-entity>
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.standard"
+                      [disableVoidSelection]="true"
+                    ></lib-mat-form-entity>
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.diy"
+                      [disableVoidSelection]="true"
+                    ></lib-mat-form-entity>
+                  </div>
+                </div>
+              </lib-clean-card>
+
+              <div class="col center">
+                @if ((!!((userService.loggedUser$ | async)?.id))) {
+                  <app-brand-primary-button
+                    [disabled]="!dataService.formGroup.valid"
+                    (click$)="dataService.submitModuleForm$.next()"
+                    icon="upload"
+                    class="align-end"
+                    style="margin-top: 1rem; margin-bottom: 1rem"
+                  >
+                    Submit a new module
+                  </app-brand-primary-button>
+                } @else {
+                  <div
+                    class="col gap0"
+                    style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
+                  >
+                    <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
+                      You need to be logged in to submit a module
+                    </mat-card-subtitle>
+                    <app-brand-primary-button routerLink="/auth/login" icon="login" class="align-end">
+                      Login
+                    </app-brand-primary-button>
                   </div>
                 }
-
-                <lib-mat-form-entity
-                  [dataPack]="dataService.formData.name"
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity
-                  [dataPack]="dataService.formData.description"
-                ></lib-mat-form-entity>
-                <lib-mat-form-entity
-                  [dataPack]="dataService.formData.manual"
-                ></lib-mat-form-entity>
-                <div class="col-md-row gap1">
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.hp"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.standard"
-                    [disableVoidSelection]="true"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.diy"
-                    [disableVoidSelection]="true"
-                  ></lib-mat-form-entity>
-                </div>
               </div>
-            </lib-clean-card>
-            <div class="col center">
-              @if ((!!((userService.loggedUser$ | async)?.id))) {
-                <app-brand-primary-button
-                  [disabled]="!dataService.formGroup.valid"
-                  (click$)="dataService.submitModuleForm$.next()"
-                  icon="upload"
-                  class="align-end"
-                  style="margin-top: 1rem; margin-bottom: 1rem"
-                >
-                  Submit a new module
-                </app-brand-primary-button>
-              } @else {
-                <div
-                  class="col gap0"
-                  style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
-                >
-                  <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
-                    You need to be logged in to submit a module
-                  </mat-card-subtitle>
-                  <app-brand-primary-button routerLink="/auth/login" icon="login" class="align-end">
-                    Login
-                  </app-brand-primary-button>
-                </div>
-              }
-            </div>
-          </div>
-        </lib-hero-content-card>
-        
-        <lib-hero-content-card
-          titleNormal="Similar modules (name/manufacturer)"
-          description="This list will update with similar to the one you are adding. If you see a duplicate, please don't submit it."
-          class="flex-grow"
-          >
-          <lib-auto-update-loading-indicator
-            [data$]="dataService.similarModulesData$"
-            [updateData$]="dataService.updateModulesList$"
-            >
-            @if ((dataService.similarModulesData$ | async); as data) {
-              @if (data.length > 0 &&
-              dataService.formData.name.control.value.length > 0) {
-                <app-module-list
-                  class="flex-grow"
-                  [data$]="dataService.similarModulesData$"
-                  [showSearch]="false"
-                  [viewConfig]="viewConfig"
-                ></app-module-list>
-              } @else {
-                <div class="pad">
-                  <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
-                    Nothing similar found in the database! You can submit it maybe?
-                  </mat-card-subtitle>
-                </div>
-              }
-            }
-          </lib-auto-update-loading-indicator>
-        </lib-hero-content-card>
-      </div>
-    </div>
-  </lib-hero-content-card>
-</div>
 
-<!-- Templates -->
+            </div>
+          </lib-hero-content-card>
+
+        </div>
+
+        <!-- sidebar: similar modules -->
+        <div class="submit-sidebar">
+          <lib-hero-content-card
+            titleNormal="Similar modules"
+            description="Updates as you type. If you see a match, don't submit it."
+          >
+            <lib-auto-update-loading-indicator
+              [data$]="dataService.similarModulesData$"
+              [updateData$]="dataService.updateModulesList$"
+            >
+              @if ((dataService.similarModulesData$ | async); as data) {
+                @if (data.length > 0 &&
+                dataService.formData.name.control.value.length > 0) {
+                  <app-module-list
+                    [data$]="dataService.similarModulesData$"
+                    [showSearch]="false"
+                    [viewConfig]="viewConfig"
+                  ></app-module-list>
+                } @else {
+                  <div class="pad">
+                    <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
+                      Nothing similar found in the database! You can submit it maybe?
+                    </mat-card-subtitle>
+                  </div>
+                }
+              }
+            </lib-auto-update-loading-indicator>
+          </lib-hero-content-card>
+        </div>
+
+      </div>
+    </lib-hero-content-card>
+  </div>
+</lib-screen-wrapper>
