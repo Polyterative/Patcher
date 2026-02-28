@@ -1,0 +1,26 @@
+.submit-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.submit-main {
+  min-width: 0;
+}
+
+.submit-sidebar {
+  min-width: 0;
+  position: sticky;
+  top: 1rem;
+}
+
+@media (max-width: 60rem) {
+  .submit-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .submit-sidebar {
+    position: static;
+  }
+}
