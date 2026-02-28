@@ -1,18 +1,16 @@
 @if ({
   dataLoading: (dataLoading$|async)
 }; as bag) {
-  @if (bag.dataLoading) {
-    <div
-      class="col gap0"
-      [fxHide]="!bag.dataLoading"
-    >
-      <app-lottie-container
-        style="opacity: 0.25; align-self: center"
-        [styles]="{maxWidth: '10rem'}"
-        [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
-      ></app-lottie-container>
-    </div>
-  }
+  <div
+    class="col gap0"
+    [style.display]="bag.dataLoading ? null : 'none'"
+  >
+    <app-lottie-container
+      style="opacity: 0.25; align-self: center"
+      [styles]="{maxWidth: '10rem'}"
+      [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
+    ></app-lottie-container>
+  </div>
   @if (!bag.dataLoading) {
     <ng-content></ng-content>
   }
