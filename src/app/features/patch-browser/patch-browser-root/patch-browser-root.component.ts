@@ -50,6 +50,7 @@ export class PatchBrowserRootComponent implements OnInit, OnDestroy {
       id: 'updated',
       name: 'Updated ↓'
     }, {emitEvent: false});
+    this.dataService.serversideTableRequestData.sort$.next(['updated', 'desc']);
     this.dataService.serversideTableRequestData.skip$.next(0);
     this.dataService.serversideTableRequestData.take$.next(10);
     this.dataService.updatePatchesList$.next();
