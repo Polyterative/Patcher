@@ -436,6 +436,27 @@ $snack-toolbar-offset: 5em;
   }
 }
 
+// ─── Menu-item icon + label vertical alignment ───────────────────────────────
+// Angular Material MDC wraps all menu-item content inside
+// .mat-mdc-menu-item-text (a <span>), which is inline by default.
+// This causes icon and label text to align on the text baseline rather than
+// their vertical centres — same drift issue fixed on icon-buttons above.
+// Switching the wrapper to flex with align-items:center cures every
+// mat-menu-item in the app at once, for any icon/label combination.
+.mat-mdc-menu-item {
+  .mat-mdc-menu-item-text {
+    display: flex;
+    align-items: center;
+  }
+
+  .mat-icon {
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }
+}
+
 // ─── Danger / destructive action colouring ───────────────────────────────────
 // Apply to any button or icon that performs a destructive action (delete, remove, etc.)
 // Derived from $brand-negative (#700D0D) but brightened via SCSS color transformations.
