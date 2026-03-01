@@ -79,7 +79,7 @@ moderation overhead.
 ### Monetization (Future)
 
 Currently free. Potential paths: store affiliate links, manufacturer partnerships/verified listings, premium features (
-private patches, exports, advanced org), API access.
+exports, advanced org), API access.
 
 **Impact:** Directly affects priority of store integration, manufacturer accounts, PWA, and data export features.
 
