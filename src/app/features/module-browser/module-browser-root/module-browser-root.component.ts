@@ -55,9 +55,11 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => this.paginator.firstPage());
     
-    this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue);
+    this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
+    this.dataService.serversideTableRequestData.sort$.next([this.dataService.orderStartingValue.id, 'desc']);
     this.dataService.serversideTableRequestData.skip$.next(0);
     this.dataService.serversideTableRequestData.take$.next(20);
+    this.dataService.updateModulesList$.next();
     
     this.seoAndUtilsService.updateSeo({
       description: 'Eurorack and Intellijel 1U modules database and finder. Filter by function or flavor. Discover new interesting modules.'

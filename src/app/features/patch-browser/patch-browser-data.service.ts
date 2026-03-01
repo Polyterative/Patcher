@@ -51,7 +51,7 @@ export class PatchBrowserDataService implements OnDestroy {
     skip$:   new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$: new BehaviorSubject<[string, string]>(['', ''])
+    sort$: new BehaviorSubject<[string, string]>(['updated', 'desc'])
   };
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
