@@ -28,7 +28,7 @@ export interface ManufacturerDetail {
 @Injectable()
 export class ManufacturerDetailDataService extends SubManager {
   // ACTIONS
-  updateManufacturer$ = new ReplaySubject<number>(1);
+  readonly updateManufacturer$ = new ReplaySubject<number>(1);
   
   // STATE
   private _manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
@@ -41,8 +41,8 @@ export class ManufacturerDetailDataService extends SubManager {
   readonly isLoading$ = this._isLoading$.asObservable();
   
   constructor(
-    private backend: SupabaseService,
-    private snackBar: MatSnackBar
+    private readonly backend: SupabaseService,
+    private readonly snackBar: MatSnackBar
   ) {
     super();
     this.initializeLoadHandler();

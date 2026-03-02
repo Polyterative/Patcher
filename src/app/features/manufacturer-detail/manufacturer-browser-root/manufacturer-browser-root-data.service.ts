@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  OnDestroy
-} from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   FormControl,
   UntypedFormControl
@@ -27,26 +24,27 @@ import {
   timeoutWith
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { ManufacturerDetail } from '../manufacturer-detail-data.service';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 const MANUFACTURER_ORDER_OPTIONS = [
   {id: 'name', name: 'Name A→Z'},
-  {id: 'name', name: 'Name Z→A'},
+  {id: 'name_desc', name: 'Name Z→A'},
 ];
-const DEFAULT_ORDER = {id: 'name', name: 'Name A→Z'};
-const MAX_LOADING_MS = 2_000;
+const DEFAULT_ORDER = MANUFACTURER_ORDER_OPTIONS[0];
 
 @Injectable()
-export class ManufacturerBrowserRootDataService implements OnDestroy {
+export class ManufacturerBrowserRootDataService extends SubManager {
+  private static readonly MAX_LOADING_MS = 2_000;
+
   // ── Actions ───────────────────────────────────────────────────────────────
-  updateList$ = new Subject<void>();
-  resetForm$ = new Subject<void>();
-  paginatorToFistPage$ = new Subject<void>();
+  readonly updateList$ = new Subject<void>();
+  readonly resetForm$ = new Subject<void>();
+  readonly paginatorToFistPage$ = new Subject<void>();
   
-  // ── Server-side pagination state (mirrors rack-browser) ───────────────────
+  // ── Server-side pagination state ──────────────────────────────────────────
   serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
@@ -56,51 +54,42 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0),
   };
-  
+
   // ── Fields ────────────────────────────────────────────────────────────────
   fields: {
     search: {
       control: FormControl<any>;
-      label: string;
-      type: FormTypes
+      label: string
     };
     order: {
       control: FormControl<any>;
       label: string;
-      type: FormTypes;
       options$: Observable<{
         name: string;
         id: string
       }[]>
     };
   };
-  
-  // ── Public state ──────────────────────────────────────────────────────────
-  manufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
-  canReset$: Observable<boolean>;
 
-  private readonly destroy$ = new Subject<void>();
-  
-  onPageEvent(event: PageEvent): void {
-    this.serversideTableRequestData.take$.next(event.pageSize);
-    this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-    this.updateList$.next();
-  }
+  // ── Public state ──────────────────────────────────────────────────────────
+  private readonly _manufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
+  readonly manufacturers$ = this._manufacturers$.asObservable();
+  readonly canReset$: Observable<boolean>;
 
   constructor(
-    private backend: SupabaseService,
-    private snackBar: MatSnackBar
+    private readonly backend: SupabaseService,
+    private readonly snackBar: MatSnackBar
   ) {
+    super();
+
     this.fields = {
       search: {
         label: 'Search manufacturer…',
         control: new UntypedFormControl(''),
-        type: FormTypes.TEXT,
       },
       order: {
         label: 'Order by',
         control: new UntypedFormControl(DEFAULT_ORDER),
-        type: FormTypes.SELECT,
         options$: of(MANUFACTURER_ORDER_OPTIONS),
       },
     };
@@ -121,7 +110,18 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
       shareReplay(1)
     );
     
-    // Debounced form → reset page → trigger fetch
+    this.initializeFormChangeHandler();
+    this.initializeFetchHandler();
+    this.initializeResetHandler();
+  }
+  
+  onPageEvent(event: PageEvent): void {
+    this.serversideTableRequestData.take$.next(event.pageSize);
+    this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
+    this.updateList$.next();
+  }
+  
+  private initializeFormChangeHandler(): void {
     merge(
       this.fields.search.control.valueChanges,
       this.fields.order.control.valueChanges,
@@ -133,24 +133,25 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
       const searchVal = this.fields.search.control.value ?? '';
       this.serversideTableRequestData.filter$.next(searchVal);
       this.serversideTableRequestData.sort$.next([
-        orderVal?.id ?? 'name',
+        'name',
         orderVal?.name?.includes('Z→A') ? 'desc' : 'asc',
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
       this.updateList$.next();
     });
-    
-    // Main fetch pipeline
+  }
+  
+  private initializeFetchHandler(): void {
     this.updateList$.pipe(
       switchMap(() => {
         const skip = this.serversideTableRequestData.skip$.value;
         const take = this.serversideTableRequestData.take$.value;
         const filter = this.serversideTableRequestData.filter$.value;
         const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
-        const prevData = this.manufacturers$.value ?? [];
+        const prevData = this._manufacturers$.value ?? [];
         const prevCount = this.serversideAdditionalData.itemsCount$.value ?? prevData.length;
-        
+
         return this.backend.GET.manufacturersPaginated(
           skip, (skip + take) - 1, filter, sortCol, sortDir
         ).pipe(
@@ -161,10 +162,14 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
             return {
               kind: 'success' as const,
               count: response?.count ?? 0,
-              data: Array.isArray(response?.data) ? response.data : [],
+              data: Array.isArray(response?.data) ? response.data : [] as ManufacturerDetail[],
             };
           }),
-          timeoutWith(MAX_LOADING_MS, of({kind: 'timeout' as const, count: prevCount, data: prevData})),
+          timeoutWith(ManufacturerBrowserRootDataService.MAX_LOADING_MS, of({
+            kind: 'timeout' as const,
+            count: prevCount,
+            data: prevData,
+          })),
           catchError(err => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to load manufacturers');
             return of({kind: 'error' as const, error: err, count: prevCount, data: prevData});
@@ -180,10 +185,11 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(x => {
       this.serversideAdditionalData.itemsCount$.next(x.count);
-      this.manufacturers$.next(x.data as ManufacturerDetail[]);
+      this._manufacturers$.next(x.data as ManufacturerDetail[]);
     });
-
-    // Reset handler
+  }
+  
+  private initializeResetHandler(): void {
     this.resetForm$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.fields.search.control.setValue('');
       this.fields.order.control.setValue(DEFAULT_ORDER);
@@ -193,10 +199,5 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
       this.paginatorToFistPage$.next();
       this.updateList$.next();
     });
-  }
-  
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

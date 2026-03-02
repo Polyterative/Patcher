@@ -43,6 +43,7 @@ if (!hasAuthCredentials) {
 export default defineConfig({
   testDir: './e2e',
   testMatch: [
+    '**/manufacturer-browser.spec.ts',
     '**/module-browser.spec.ts',
     '**/module-browser-pagination.spec.ts',
     '**/module-details.spec.ts',
