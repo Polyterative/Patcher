@@ -4,12 +4,15 @@ import {
   Input,
   ViewChild
 } from '@angular/core';
+import { Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { RecentActivityItem } from 'src/app/components/shared-atoms/recent-activity/recent-activity.model';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
+import { ModuleBrowserRecentActivityService } from 'src/app/features/module-browser/module-browser-recent-activity.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
@@ -21,12 +24,14 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   templateUrl: './module-browser-root.component.html',
   styleUrls: ['./module-browser-root.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ModuleBrowserRecentActivityService],
   standalone: false
 })
 export class ModuleBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @Input() showSubmitFab = true;
   mobileFiltersExpanded = false;
+  readonly recentActivityItems$: Observable<RecentActivityItem[]>;
 
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -43,10 +48,13 @@ export class ModuleBrowserRootComponent extends SubManager {
 
   constructor(
     public dataService: ModuleBrowserDataService,
+    private recentActivityService: ModuleBrowserRecentActivityService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     private route: ActivatedRoute
   ) {
     super();
+    
+    this.recentActivityItems$ = this.recentActivityService.getRecentActivityItems$(this.dataService.modulesList$);
 
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))

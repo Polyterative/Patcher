@@ -22,7 +22,6 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
-import { RecentActivityItem } from '../../components/shared-atoms/recent-activity/recent-activity.model';
 import {
   FormTypes,
   getCleanedValueId,
@@ -100,7 +99,6 @@ interface ModuleBrowserFields {
 
 const DEFAULT_HP_CONDITION: HpConditionOption = {id: '=', name: 'exactly'};
 const DEFAULT_STANDARD: IdNumberOption = {id: undefined, name: 'All'};
-const MODULE_RECENT_ACTIVITY_LIMIT = 5;
 
 const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
   {id: 'name', name: 'Name ↑'},
@@ -116,59 +114,21 @@ const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
   {id: 'isComplete', name: 'Data Complete ↓'},
 ];
 
-function toTimestampMs(value: string): number {
-  const timestamp = Date.parse(value);
-  if (Number.isNaN(timestamp)) {
-    return 0;
-  }
-  return timestamp;
-}
-
-export function mapModulesToRecentActivityItems(
-  modules: ModuleList,
-  maxItems = MODULE_RECENT_ACTIVITY_LIMIT
-): RecentActivityItem[] {
-  if (!modules?.length || maxItems <= 0) {
-    return [];
-  }
-  
-  return [...modules]
-    .sort((left, right) => toTimestampMs(right.updated) - toTimestampMs(left.updated))
-    .slice(0, maxItems)
-    .map(module => {
-      const createdMs = toTimestampMs(module.created);
-      const updatedMs = toTimestampMs(module.updated);
-      const isCreationEvent = createdMs > 0 && Math.abs(updatedMs - createdMs) < 1000;
-      
-      return {
-        id: `module-${ module.id }-${ isCreationEvent ? 'created' : 'updated' }`,
-        type: isCreationEvent ? 'create' : 'update',
-        actionLabel: isCreationEvent ? 'created' : 'updated',
-        targetLabel: module.name,
-        timestamp: isCreationEvent ? module.created : module.updated,
-        actorLabel: module.manufacturer?.name ?? 'Unknown author',
-        contextLabel: 'Module',
-        route: ['/modules', 'details', module.id]
-      } as RecentActivityItem;
-    });
-}
-
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
-  readonly recentActivityItems$: Observable<RecentActivityItem[]>;
   readonly updateModulesList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
   readonly pageEvent$ = new Subject<PageEvent>();
   readonly paginatorToFistPage$ = new Subject<void>();
-  
+
   readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
     sort$: new BehaviorSubject<[string, string]>(['updated', 'desc'])
   };
-  
+
   readonly serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0)
   };
@@ -179,12 +139,6 @@ export class ModuleBrowserDataService extends SubManager {
   
   constructor(private backend: SupabaseService) {
     super();
-    
-    this.recentActivityItems$ = this.modulesList$
-      .pipe(
-        map(modules => mapModulesToRecentActivityItems(modules)),
-        shareReplay(1)
-      );
 
     this.fields = {
       name: {
@@ -295,7 +249,7 @@ export class ModuleBrowserDataService extends SubManager {
       shareReplay(1)
     );
     
-    // Page navigation — update skip/take then re-fetch
+    // Page navigation - update skip/take then re-fetch
     this.pageEvent$
       .pipe(takeUntil(this.destroy$))
       .subscribe(event => {
@@ -304,7 +258,7 @@ export class ModuleBrowserDataService extends SubManager {
         this.updateModulesList$.next();
       });
     
-    // Single merged pipeline — debounce collapses reset burst into one fetch.
+    // Single merged pipeline - debounce collapses reset burst into one fetch.
     merge(
       this.fields.name.control.valueChanges,
       this.fields.description.control.valueChanges,

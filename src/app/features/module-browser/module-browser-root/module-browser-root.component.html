@@ -103,7 +103,7 @@
         </div>
         
         <app-recent-activity class="module-recent-activity"
-                             [items]="dataService.recentActivityItems$ | async"
+                             [items]="recentActivityItems$ | async"
                              title="Recent activity"
                              emptyText="No recent module activity in this filtered set."
         ></app-recent-activity>
