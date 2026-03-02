@@ -130,15 +130,18 @@ export function createAddNamespace(
       name: string
     }) => {
       return getUserSession$().pipe(
-        switchMap(user => rxFrom(
-          supabase
-            .from(DbPaths.patches)
-            .insert({
-              ...data,
-              authorid: user.id,
-              public: true
-            })
-        )),
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase
+              .from(DbPaths.patches)
+              .insert({
+                ...data,
+                authorid: user.id,
+                public: true
+              })
+          );
+        }),
         cacheBust(['patches']),
         remapErrors());
     },
