@@ -2,11 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnDestroy,
-  OnInit,
   ViewChild
 } from '@angular/core';
-import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
@@ -14,8 +11,9 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { ModuleBrowserDataService } from 'src/app/features/module-browser/module-browser-data.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
-import { MatPaginator } from "@angular/material/paginator";
-import { ActivatedRoute } from "@angular/router";
+import { MatPaginator } from '@angular/material/paginator';
+import { ActivatedRoute } from '@angular/router';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 @Component({
@@ -25,13 +23,13 @@ import { ActivatedRoute } from "@angular/router";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
+export class ModuleBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @Input() showSubmitFab = true;
   mobileFiltersExpanded = false;
+
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
-    // hiding all buttons by default in classic module browser list view
     hideButtons:      true,
     hideDates:        false,
     hideDescription:  false,
@@ -42,17 +40,16 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     tagsShowCounts: false,
     tagsMaxCount: 5
   };
-  
-  protected destroyEvent$ = new Subject<void>();
-  
+
   constructor(
     public dataService: ModuleBrowserDataService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     private route: ActivatedRoute
   ) {
-    
+    super();
+
     this.dataService.paginatorToFistPage$
-      .pipe(takeUntil(this.destroyEvent$))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.paginator.firstPage());
     
     this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
@@ -66,9 +63,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
     }, 'Modules');
     
     this.route.queryParams
-      .pipe(
-        takeUntil(this.destroyEvent$),
-      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
         if (params['refresh']) {
           this.dataService.serversideTableRequestData.skip$.next(0);
@@ -77,18 +72,7 @@ export class ModuleBrowserRootComponent implements OnInit, OnDestroy {
       });
   }
   
-  ngOnInit(): void {
-    // this.dataService.fields.search.control.patchValue('');
-    
-  }
-  
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
-  }
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
   }
 }
