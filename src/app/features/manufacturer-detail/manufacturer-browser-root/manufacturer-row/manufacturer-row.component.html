@@ -36,8 +36,11 @@
   } @else {
     <div class="manufacturer-row-modules">
       <div class="module-strip">
-        @for (module of modules; track module.id) {
-          <lib-clean-card class="module-strip-card">
+        @for (module of modules; track module.id; let i = $index) {
+          <lib-clean-card
+            class="module-strip-card module-card-appear"
+            [style.--module-index]="i"
+          >
             <app-module-minimal
               [data]="module"
               [viewConfig]="moduleViewConfig"
