@@ -87,7 +87,7 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   }));
 
   const [moduleRows, patchRows, rackRows] = await Promise.all([
-    fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels(filename)'),
+    fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels!module_panels_moduleid_fkey(filename)'),
     fetchPublicEntityRows<PatchRow>('patches', 'id,created,updated,name,description'),
     fetchPublicEntityRows<RackRow>('racks', 'id,created,updated,name,description,hp,rows,image')
   ]);
@@ -114,8 +114,11 @@ function makeModuleEntry(row: ModuleRow): SitemapEntry | undefined {
   const imageTitle = titleParts.join(' — ');
   
   const captionParts: string[] = [];
-  if (row.description) captionParts.push(row.description.trim());
-  if (manufacturerName) captionParts.push(`Made by ${ manufacturerName }.`);
+  if (row.description) {
+    captionParts.push(row.description.trim());
+  } else if (manufacturerName) {
+    captionParts.push(`Made by ${ manufacturerName }.`);
+  }
   const imageCaption = captionParts.join(' ');
   
   return {

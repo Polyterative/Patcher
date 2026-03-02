@@ -498,12 +498,13 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
   if (rackRow.description) {
     descParts.push(rackRow.description.trim());
   } else {
-    const sizePart = [
-      rackRow.rows ? `${ rackRow.rows } row${ rackRow.rows !== 1 ? 's' : '' }` : '',
-      rackRow.hp ? `${ rackRow.hp } HP` : ''
-    ].filter(Boolean).join(', ');
-    descParts.push(`Eurorack rack${ authorName ? ` by ${ authorName }` : '' }${ sizePart ? ` — ${ sizePart }` : '' }. Browse modules and layout on ${ SITE_NAME }.`);
+    descParts.push(`Eurorack rack${ authorName ? ` by ${ authorName }` : '' }. Browse modules and layout on ${ SITE_NAME }.`);
   }
+  const sizePart = [
+    rackRow.rows ? `${ rackRow.rows } row${ rackRow.rows !== 1 ? 's' : '' }` : '',
+    rackRow.hp ? `${ rackRow.hp } HP` : ''
+  ].filter(Boolean).join(', ');
+  if (sizePart) descParts.push(`${ sizePart }.`);
   const description = clampDescription(descParts.join(' '), DEFAULT_DESCRIPTION);
 
   const rackImageData = resolveRackImageData(rackRow.image, siteOrigin);
@@ -648,7 +649,8 @@ async function fetchSupabaseRow<T>(tableName: string, params: URLSearchParams): 
 function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const canonical = escapeHtml(metadata.url);
   const title = escapeHtml(metadata.title);
-  const description = escapeHtml(metadata.description);
+  const metaDescription = escapeHtml(clampDescription(metadata.description));
+  const ogDescription = escapeHtml(clampOgDescription(metadata.description));
   const image = escapeHtml(metadata.image);
   const escapedRobotsTag = escapeHtml(robotsTag);
   const redirectTarget = addSpaBypass(metadata.url);
@@ -657,6 +659,9 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const jsonLd = JSON.stringify(metadata.jsonLd).replace(/</g, '\\u003c');
   const ogType = escapeHtml(metadata.ogType || 'website');
   
+  const authorName = extractAuthorFromJsonLd(metadata.jsonLd);
+  const authorTag = authorName ? `\n  <meta name="author" content="${ escapeHtml(authorName) }">` : '';
+
   const articleTimeTags = metadata.ogType === 'article' ? `
   <meta property="article:published_time" content="${ escapeHtml(metadata.published || '') }">
   <meta property="article:modified_time" content="${ escapeHtml(metadata.modified || '') }">` : '';
@@ -667,14 +672,14 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${ title }</title>
-  <meta name="description" content="${ description }">
+  <meta name="description" content="${ metaDescription }">${ authorTag }
   <meta name="robots" content="${ escapedRobotsTag }">
   <link rel="canonical" href="${ canonical }">
 
   <meta property="og:site_name" content="${ SITE_NAME }">
   <meta property="og:type" content="${ ogType }">
   <meta property="og:title" content="${ title }">
-  <meta property="og:description" content="${ description }">
+  <meta property="og:description" content="${ ogDescription }">
   <meta property="og:url" content="${ canonical }">
   <meta property="og:image" content="${ image }">
   <meta property="og:image:width" content="1200">
@@ -683,7 +688,7 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${ title }">
-  <meta name="twitter:description" content="${ description }">
+  <meta name="twitter:description" content="${ ogDescription }">
   <meta name="twitter:image" content="${ image }">
   <meta name="twitter:image:alt" content="${ title }">
 
@@ -693,14 +698,23 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
 </head>
 <body>
   <noscript><meta http-equiv="refresh" content="0;url=${ redirectUrl }"></noscript>
-  <p>Continue to <a href="${ redirectUrl }">${ canonical }</a></p>
+  <p>Continue to <a href="${ canonical }">${ canonical }</a></p>
 </body>
 </html>`;
 }
 
-function clampDescription(value?: string, fallback?: string): string {
+function extractAuthorFromJsonLd(jsonLd: Record<string, unknown>): string {
+  const author = jsonLd['author'] as Record<string, unknown> | undefined;
+  return typeof author?.name === 'string' ? author.name : '';
+}
+
+function clampDescription(value?: string, fallback?: string, maxLen = 155): string {
   const cleaned = (value || fallback || DEFAULT_DESCRIPTION).replace(/\s+/g, ' ').trim();
-  return cleaned.length <= 220 ? cleaned : `${ cleaned.slice(0, 217) }...`;
+  return cleaned.length <= maxLen ? cleaned : `${ cleaned.slice(0, maxLen - 3) }...`;
+}
+
+function clampOgDescription(value: string): string {
+  return clampDescription(value, undefined, 220);
 }
 
 function addSpaBypass(url: string): string {
