@@ -353,27 +353,7 @@
       </div>
     </lib-hero-content-card>
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
-      <lib-hero-content-card
-        [titleNormal]="'Others by ' + (bag.data.manufacturer.name)"
-    >
-        <lib-auto-content-loading-indicator [data$]="dataService.modulesBySameManufacturer$"
-                                            [updateData$]="dataService.updateSingleModuleData$"
-      >
-          @if ((bag.modulesBySameManufacturer) && (bag.modulesBySameManufacturer).length > 0) {
-        <app-module-list
-          [data$]="dataService.modulesBySameManufacturer$"
-          [viewConfig]="bySameManufacturerViewConfig"
-        ></app-module-list>
-          } @else {
-            <div class="col gap1 animate-fadein-slowest"
-            >
-              <mat-card-subtitle class="module-detail-empty-state-copy"
-              >No more modules by this manufacturer yet.
-              </mat-card-subtitle>
-            </div>
-          }
-        </lib-auto-content-loading-indicator>
-      </lib-hero-content-card>
+      <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)"></app-manufacturer-row>
     }
   </div>
 }
