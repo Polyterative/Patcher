@@ -8,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MatIconModule } from '@angular/material/icon';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
@@ -32,7 +31,6 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/
   imports: [
     CommonModule,
     RouterModule,
-    MatIconModule,
     AutoContentLoadingIndicatorModule,
     CleanCardModule,
     ModulePartsModule,
@@ -41,6 +39,7 @@ import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/
 })
 export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
+  @Input() hideRowLink = false;
 
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();
