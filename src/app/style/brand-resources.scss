@@ -220,6 +220,11 @@ $bgGradientBG: rgb(223, 223, 223);
   background: linear-gradient(135deg, color.adjust(rgb(104, 126, 191), $alpha: -$bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
+.manufacturersBG {
+  background: $bgGradientBG;
+  background: linear-gradient(135deg, color.adjust(rgb(220, 160, 86), $alpha: -$bgTransarency) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
 .limit-height {
   @include scrollbars;
 
