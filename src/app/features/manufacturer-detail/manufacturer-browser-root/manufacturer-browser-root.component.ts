@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   ViewChild
 } from '@angular/core';
 import { takeUntil } from 'rxjs/operators';
@@ -20,7 +19,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ManufacturerBrowserRootComponent extends SubManager implements OnInit {
+export class ManufacturerBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   readonly formTypes = FormTypes;
 
@@ -29,9 +28,7 @@ export class ManufacturerBrowserRootComponent extends SubManager implements OnIn
     private readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
-  }
 
-  ngOnInit(): void {
     this.seoAndUtilsService.updateSeo(
       {
         title: 'Manufacturers — Eurorack Module Makers',

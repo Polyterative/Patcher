@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
-  Component,
-  OnInit
+  Component
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -32,7 +31,7 @@ const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ManufacturerDetailComponent extends SubManager implements OnInit {
+export class ManufacturerDetailComponent extends SubManager {
 
   readonly moduleViewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -56,9 +55,7 @@ export class ManufacturerDetailComponent extends SubManager implements OnInit {
     private readonly seoAndUtilsService: SeoAndUtilsService
   ) {
     super();
-  }
 
-  ngOnInit(): void {
     this.seoAndUtilsService.updateSeo({}, 'Manufacturer');
 
     this.route.params.pipe(
