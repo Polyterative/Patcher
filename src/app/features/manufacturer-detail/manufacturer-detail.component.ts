@@ -72,7 +72,7 @@ export class ManufacturerDetailComponent extends SubManager implements OnInit {
           title: `${ manufacturer.name } - Manufacturer`,
           description: `Browse all Eurorack modules by ${ manufacturer.name } on patcher.xyz.`,
           keywords: `eurorack, modular, ${ manufacturer.name }, modules`,
-          url: `https://patcher.xyz/manufacturers/${ manufacturer.id }`
+          url: `https://patcher.xyz/manufacturers/details/${ manufacturer.id }`
         },
         `${ manufacturer.name } — Manufacturer`
       );

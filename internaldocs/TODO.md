@@ -35,19 +35,7 @@
 
 ## Active
 
-### Manufacturer Page — Phase 1 Polish Pass
-
-**Why:** Backend query exists — this is UI-only. High SEO return immediately. Polish pass after user feedback.
-**Scope:** Read-only, anonymous-visible. All implementation done; final verification pass in progress.
-
-- [x] Confirm `get.manufacturerWithId` data shape and module join keys
-- [x] Add route `/manufacturers/:id` to the router
-- [x] Create `manufacturer-detail` feature: component + data service (`ReplaySubject<id>` trigger pattern)
-- [x] Template: logo/name/website header, module grid with `lib-screen-wrapper`, separate loading states
-- [x] Link manufacturer name from module detail page and module browser cards → `/manufacturers/:id`
-- [x] JSON-LD for manufacturer entity; add to sitemap (`api/sitemap.ts`)
-- [x] Write data service unit tests (12 passing)
-- [ ] Verify final compile errors clear and tests still green
+_Nothing active. Pick the next task from the Backlog._
 
 ---
 
