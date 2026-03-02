@@ -76,10 +76,17 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
           const rowedFlatted = rowedRackedModules.flatMap(x => x);
           const uniqueRowedFlatted = [...new Set(rowedFlatted)].map(x => x.module.name);
           const joined = uniqueRowedFlatted.join(', ');
+          
+          const descParts: string[] = [];
+          if (rackData.description) { descParts.push(rackData.description.trim()); }
+          descParts.push(`Eurorack rack by ${ rackData.author?.username || 'unknown' } — ${ rackData.rows } row${ rackData.rows !== 1 ? 's' : '' }, ${ rackData.hp } HP.`);
+          if (uniqueRowedFlatted.length) {
+            descParts.push(`Contains ${ uniqueRowedFlatted.length } module${ uniqueRowedFlatted.length !== 1 ? 's' : '' }: ${ joined }.`);
+          }
 
           const seoData: SeoSocialShareData = {
             title: `${ rackData.name } - details. `,
-            description: `${ rackData.name } - rack details. Used modules: ${ joined }, for a total of ${ joined.length }.`,
+            description: descParts.join(' '),
             keywords: `${ joined }, rack, eurorack`,
             published: rackData.created,
             modified: rackData.updated

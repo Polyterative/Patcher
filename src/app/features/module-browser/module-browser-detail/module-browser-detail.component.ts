@@ -282,10 +282,26 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
             .map(x => x.trim())
             .join(', ');
           
-          let tagsClean                     = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
+          let tagsClean = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
+          
+          const descParts: string[] = [];
+          if (data.description) { descParts.push(data.description.trim()); }
+          descParts.push(`${ data.hp } HP wide eurorack module by ${ data.manufacturer.name }.`);
+          if (data.ins.length || data.outs.length) {
+            descParts.push(`${ data.ins.length } input${ data.ins.length !== 1 ? 's' : '' } and ${ data.outs.length } output${ data.outs.length !== 1 ? 's' : '' }.`);
+          }
+          const powerParts: string[] = [];
+          if (data.powerPos12) { powerParts.push(`+12V: ${ data.powerPos12 }mA`); }
+          if (data.powerNeg12) { powerParts.push(`-12V: ${ data.powerNeg12 }mA`); }
+          if (data.powerPos5) { powerParts.push(`+5V: ${ data.powerPos5 }mA`); }
+          if (powerParts.length) { descParts.push(`Power draw — ${ powerParts.join(', ') }.`); }
+          if (data.depth) { descParts.push(`Depth: ${ data.depth }mm.`); }
+          if (data.isDIY) { descParts.push(`DIY module.`); }
+          if (tagsClean) { descParts.push(`Tags: ${ tagsClean }.`); }
+
           const seoData: SeoSocialShareData = {
             title: `${ data.name } - details.`,
-            description: `${ data.name } - module details. Has ${ data.ins.length } recorded inputs and ${ data.outs.length } recorded outputs. Made by ${ data.manufacturer.name }. Module is ${ data.hp } HP wide. Tagged: ${ tagsClean }.`,
+            description: descParts.join(' '),
             keywords: keywords,
             published: data.created,
             modified: data.updated,
