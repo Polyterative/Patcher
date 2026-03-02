@@ -63,12 +63,8 @@ export class RackDetailDataService extends SubManager {
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
-  // @ViewChild('screen') screen: ElementRef;
-  // @ViewChild('canvas') canvas: ElementRef;
   downloadRackImageToUserComputer$ = new Subject<void>();
   updateRackImagePreview$ = new Subject<void>();
-  
-  //
   currentDownloadElementRef$: BehaviorSubject<{
     screen: ElementRef,
   } | undefined> = new BehaviorSubject<{
@@ -233,7 +229,7 @@ export class RackDetailDataService extends SubManager {
     this.requestRackedModuleRowClearing$
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
-        switchMap(([rackedModule, allRackModule, rack]) => {
+        switchMap(([rackedModule, allRackModule, _rack]) => {
           const rackModules: RackedModule[][] = _.cloneDeep(allRackModule);
           const modulesInRow: RackedModule[] = _.cloneDeep(rackModules[rackedModule.rackingData.row]);
           
@@ -401,28 +397,15 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe(x => this.singleRackData$.next(x.data))
     
-    // when updated rack data is received, update locked status observable
+    // sync editable, privacy and form state whenever rack data changes
     this.singleRackData$
       .pipe(
         filter(x => !!x),
         takeUntil(this.destroy$),
-      )
-      .subscribe(x => this.isCurrentRackEditable$.next(!x.locked))
-    
-    // when updated rack data is received, update privacy status observable
-    this.singleRackData$
-      .pipe(
-        filter(x => !!x),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(x => this.isCurrentRackPrivate$.next(!x.public))
-    
-    this.singleRackData$
-      .pipe(
-        filter(x => !!x),
-        takeUntil(this.destroy$)
       )
       .subscribe(rack => {
+        this.isCurrentRackEditable$.next(!rack.locked);
+        this.isCurrentRackPrivate$.next(!rack.public);
         this.formData.name.control.reset(rack.name, {emitEvent: false});
       });
     
@@ -511,7 +494,7 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.singleRackData$),
         takeUntil(this.destroy$)
       )
-      .subscribe(([x, rackData]) => {
+      .subscribe(([_, rackData]) => {
         this.singleRackData$.next(rackData);
       })
     
@@ -642,67 +625,32 @@ export class RackDetailDataService extends SubManager {
     
     // when rack data changes update statistics
     this.singleRackData$.pipe(
-      // clear statistics when rack data is undefined
       tap(x => {
-        if (!x) {
-          this.rackStatistics$.next(null);
-        }
+        if (!x) { this.rackStatistics$.next(null); }
       }),
       filter(x => !!x),
-      switchMap(() => this.rowedRackedModules$.pipe(
-        filter(y => !!y),
-        take(1),
-      )),
+      switchMap(() => this.rowedRackedModules$.pipe(filter(y => !!y), take(1))),
       withLatestFrom(this.singleRackData$),
       takeUntil(this.destroy$)
     )
-      .subscribe(([rows, rack]) => {
-        // let patchPoints = {
-        //   name: 'Total Patch Points',
-        //   value: rows
-        //     .flatMap(row => row).map(module => module.module.ins.length + module.module.outs.length)
-        //     .reduce((a, b) => a + b, 0)
-        //     .toString()
-        // };
-        
-        const byHPCount: {
-          name: string;
-          value: string
-        }[] = [];
-        
-        // count how many different kinds of HP have
-        rows
-          .flatMap(row => row)
-          // exclude 3u modules
-          .filter(module => module.module.standard.id === 0)
-          .map(module => module.module.hp)
-          .forEach(hp => {
-            const existingEntry = byHPCount.find(x => x.name === hp.toString() + "HP count");
-            if (existingEntry) {
-              existingEntry.value = (parseInt(existingEntry.value, 10) + 1).toString();
-            } else {
-              byHPCount.push({
-                name: hp.toString() + "HP count",
-                value: '1'
-              });
-            }
-          });
-        
-        // sort by hp
-        byHPCount.sort((a, b) => {
-          const aHP = parseInt(a.name.split('HP')[0], 10);
-          const bHP = parseInt(b.name.split('HP')[0], 10);
-          return aHP - bHP;
-        });
-        
-        this.rackStatistics$.next([
-          // patchPoints,
-          ...byHPCount
-        ]);
-      });
+      .subscribe(([rows]) => this.rackStatistics$.next(this.buildRackStatistics(rows)));
     
   }
   
+  private buildRackStatistics(rows: RackedModule[][]): {
+    name: string;
+    value: string
+  }[] {
+    const byHP = new Map<number, number>();
+    rows.flatMap(row => row)
+      .filter(m => m.module.standard.id === 0)
+      .forEach(m => byHP.set(m.module.hp, (byHP.get(m.module.hp) ?? 0) + 1));
+    
+    return Array.from(byHP.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([hp, count]) => ({name: `${ hp }HP count`, value: String(count)}));
+  }
+
   private removeInformationFromModulesOfCurrentRack(newlyCreatedRackId: number) {
     const rackModules: RackedModule[][] = this.rowedRackedModules$.value;
     
@@ -751,9 +699,8 @@ export class RackDetailDataService extends SubManager {
       .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
       );
   }
-
-// bump up version number in name of rack, if it has one, otherwise add version "V2", used when duplicating rack
   
+  // bump up version number in name of rack if it has one, otherwise add "V2" — used when duplicating
   private bumpUpVersionInNameOfOfRack() {
     let originalName = this.singleRackData$.value.name;
     
@@ -897,111 +844,25 @@ export class RackDetailDataService extends SubManager {
   }
   
   // the following identifications come from database
-  private calculateBlankIdForSizeAndStandard(
-    hp: number,
-    standard: number = 0
-  ) {
-    if (standard === 0) {
-      switch (hp) {
-        case 1:
-          return 4666;
-        case 2:
-          return 4647;
-        case 3:
-          return 4665;
-        case 4:
-          return 4648;
-        case 5:
-          return 4664;
-        case 6:
-          return 4649;
-        case 7:
-          return 4650;
-        case 8:
-          return 4651;
-        case 9:
-          return 4652;
-        case 10:
-          return 4653;
-        case 11:
-          return 4654;
-        case 12:
-          return 4655;
-        case 13:
-          return 4656;
-        case 14:
-          return 4657;
-        case 15:
-          return 4658;
-        case 16:
-          return 4659;
-        case 17:
-          return 4660;
-        case 18:
-          return 4661;
-        case 19:
-          return 4662;
-        case 20:
-          return 4663;
-        default:
-          return -1;
-      }
-    } else if (standard === 1) {
-      switch (hp) {
-        case 1:
-          return 4711;
-        case 2:
-          return 4712;
-        case 3:
-          return 4713;
-        case 4:
-          return 4714;
-        case 5:
-          return 4715;
-        case 6:
-          return 4716;
-        case 7:
-          return 4717;
-        case 8:
-          return 4718;
-        case 9:
-          return 4719;
-        case 10:
-          return 4720;
-        case 11:
-          return 4721;
-        case 12:
-          return 4722;
-        case 13:
-          return 4723;
-        case 14:
-          return 4724;
-        case 15:
-          return 4725;
-        case 16:
-          return 4726;
-        case 17:
-          return 4727;
-        case 18:
-          return 4728;
-        case 19:
-          return 4729;
-        case 20:
-          return 4730;
-        case 21:
-          return 4731;
-        case 22:
-          return 4732;
-        case 23:
-          return 4733;
-        case 24:
-          return 4734;
-        case 25:
-          return 4735;
-        default:
-          return -1;
-      }
-    } else return -1;
-  }
+  private readonly BLANK_IDS_STANDARD_0: Record<number, number> = {
+    1: 4666, 2: 4647, 3: 4665, 4: 4648, 5: 4664,
+    6: 4649, 7: 4650, 8: 4651, 9: 4652, 10: 4653,
+    11: 4654, 12: 4655, 13: 4656, 14: 4657, 15: 4658,
+    16: 4659, 17: 4660, 18: 4661, 19: 4662, 20: 4663
+  };
   
+  private readonly BLANK_IDS_STANDARD_1: Record<number, number> = {
+    1: 4711, 2: 4712, 3: 4713, 4: 4714, 5: 4715,
+    6: 4716, 7: 4717, 8: 4718, 9: 4719, 10: 4720,
+    11: 4721, 12: 4722, 13: 4723, 14: 4724, 15: 4725,
+    16: 4726, 17: 4727, 18: 4728, 19: 4729, 20: 4730,
+    21: 4731, 22: 4732, 23: 4733, 24: 4734, 25: 4735
+  };
+  
+  private calculateBlankIdForSizeAndStandard(hp: number, standard: number = 0): number {
+    const map = standard === 0 ? this.BLANK_IDS_STANDARD_0
+      : standard === 1 ? this.BLANK_IDS_STANDARD_1
+        : null;
+    return map?.[hp] ?? -1;
+  }
 }
