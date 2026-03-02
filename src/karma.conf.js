@@ -19,19 +19,23 @@ module.exports = function (config) {
             require('@angular-devkit/build-angular/plugins/karma')
         ],
         client: {
-            clearContext: false // leave Jasmine Spec Runner output visible in browser
+            clearContext: true
         },
         coverageIstanbulReporter: {
             dir: require('path').join(__dirname, '../coverage'),
             reports: ['html', 'lcovonly', 'text-summary'],
             fixWebpackSourcePaths: true
         },
-        reporters: ['progress', 'kjhtml'],
+        // kjhtml (Jasmine HTML reporter) intentionally omitted: it is only useful
+        // when running in a headed browser session and adds overhead in headless CI.
+        reporters: ['progress'],
         port: 9876,
         colors: true,
-        logLevel: config.LOG_INFO,
-        autoWatch: true,
-        browsers: ['Chrome'],
+        logLevel: config.LOG_WARN,
+        // Safe defaults: CI-friendly out of the box.
+        // Pass --watch to opt in to watch mode instead of the other way around.
+        autoWatch: false,
+        browsers: ['ChromeHeadlessCI'],
         customLaunchers: {
             ChromeHeadlessCI: {
                 base: 'ChromeHeadless',
@@ -42,8 +46,7 @@ module.exports = function (config) {
                 ]
             }
         },
-        singleRun: false,
-        restartOnFileChange: true
+        singleRun: true
     };
 
     config.set(configuration);
