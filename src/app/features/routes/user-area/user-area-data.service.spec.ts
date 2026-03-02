@@ -8,16 +8,14 @@ describe('UserAreaDataService', () => {
   function build() {
     const backend = {
       GET: {
-        currentUserComments: jasmine.createSpy('currentUserComments').and.returnValue(of([{id: 1}])),
+        currentUserComments: jasmine.createSpy('currentUserComments').and.returnValue(of({data: [{id: 1}], count: 1})),
         currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([
           {id: 2, name: 'B module', manualURL: 'https://b'},
           {id: 1, name: 'A module', manualURL: 'https://a'},
           {id: 3, name: 'No Manual', manualURL: ''}
-        ]))
-      },
-      get: {
-        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([{id: 10}])),
-        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([{id: 20}]))
+        ])),
+        userPatchesPaginated: jasmine.createSpy('userPatchesPaginated').and.returnValue(of({data: [{id: 10}], count: 1})),
+        userRacksPaginated: jasmine.createSpy('userRacksPaginated').and.returnValue(of({data: [{id: 20}], count: 1})),
       }
     };
     
@@ -39,10 +37,10 @@ describe('UserAreaDataService', () => {
     service.updatePatchesData$.next();
     service.updateRackData$.next(undefined);
     
-    expect(backend.GET.currentUserComments).toHaveBeenCalledWith(0, 10);
+    expect(backend.GET.currentUserComments).toHaveBeenCalledWith(0, 9);
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith();
-    expect(backend.get.currentUserPatches).toHaveBeenCalled();
-    expect(backend.get.currentUserRacks).toHaveBeenCalled();
+    expect(backend.GET.userPatchesPaginated).toHaveBeenCalledWith(0, 9);
+    expect(backend.GET.userRacksPaginated).toHaveBeenCalledWith(0, 9);
     
     expect(service.commentsData$.value as any).toEqual([{id: 1}]);
     expect(service.modulesData$.value?.length).toBe(3);
