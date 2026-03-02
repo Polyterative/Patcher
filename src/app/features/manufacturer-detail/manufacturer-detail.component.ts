@@ -4,6 +4,10 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
+  combineLatest,
+  Observable
+} from 'rxjs';
+import {
   filter,
   map,
   takeUntil
@@ -18,6 +22,8 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
+import { TimeagoPipe } from 'ngx-timeago';
 
 
 const LOGO_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/';
@@ -48,13 +54,46 @@ export class ManufacturerDetailComponent extends SubManager {
     hideRackedIn: true,
     hideBySameManufacturer: true,
   };
+  
+  stats$: Observable<LabelValueData[]>;
 
   constructor(
     public readonly dataService: ManufacturerDetailDataService,
     private readonly route: ActivatedRoute,
-    private readonly seoAndUtilsService: SeoAndUtilsService
+    private readonly seoAndUtilsService: SeoAndUtilsService,
+    private readonly timeago: TimeagoPipe
   ) {
     super();
+    
+    this.stats$ = combineLatest([
+      this.dataService.manufacturerData$,
+      this.dataService.modulesData$
+    ]).pipe(
+      map(([manufacturer, modules]): LabelValueData[] => {
+        if (!manufacturer) return [];
+        const count = modules?.length ?? 0;
+        const oneU = modules ? modules.filter(m => m.standard.id === 1 || m.standard.id === 2).length : 0;
+        const threeU = modules ? modules.filter(m => m.standard.id === 0).length : 0;
+        const totalHp = modules ? modules.reduce((s, m) => s + m.hp, 0) : 0;
+        const avgHp = count > 0 ? (totalHp / count).toFixed(1) : '—';
+        
+        const lastUpdated = manufacturer.latestModuleUpdatedAt
+          ? this.timeago.transform(manufacturer.latestModuleUpdatedAt) as string
+          : null;
+        
+        const changed = manufacturer.changedModulesLast30Days ?? 0;
+        
+        return [
+          {label: 'In catalogue', value: count.toString(), icon: 'format_list_numbered'},
+          {label: 'Active this month', value: changed.toString(), icon: 'trending_up', hidden: changed === 0},
+          {label: 'Last updated', value: lastUpdated ?? '—', icon: 'schedule', hidden: !lastUpdated},
+          {label: 'Average HP', value: avgHp, icon: 'straighten', hidden: count === 0},
+          {label: '3U', value: threeU.toString(), icon: 'crop_din', hidden: threeU === 0},
+          {label: '1U', value: oneU.toString(), icon: 'crop_landscape', hidden: oneU === 0},
+        ];
+      })
+    );
+
 
     this.seoAndUtilsService.updateSeo({}, 'Manufacturer');
 
@@ -82,15 +121,15 @@ export class ManufacturerDetailComponent extends SubManager {
       this.injectManufacturerJsonLd(manufacturer);
     });
   }
-  
+
   override ngOnDestroy(): void {
     document.getElementById(JSONLD_SCRIPT_ID)?.remove();
     super.ngOnDestroy();
   }
   
+  
   private injectManufacturerJsonLd(manufacturer: ManufacturerDetail): void {
     document.getElementById(JSONLD_SCRIPT_ID)?.remove();
-
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
@@ -98,10 +137,7 @@ export class ManufacturerDetailComponent extends SubManager {
       'url': manufacturer.websiteURL ?? undefined,
       'logo': manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : undefined,
     };
-    
-    // Remove undefined values before serialising
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    
     const script = document.createElement('script');
     script.id = JSONLD_SCRIPT_ID;
     script.type = 'application/ld+json';
