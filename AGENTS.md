@@ -98,6 +98,13 @@ Key paths:
 - Use `ReplaySubject<T>(1)` for entity-ID triggers with late subscribers.
 - Use `Subject<void>` for refresh/submit/toggle events.
 
+### Modular reusable UI logic
+
+- For reusable UI blocks (example: Recent Activity), keep mapping/aggregation logic in a dedicated middle-layer service.
+- Do not place reusable-block logic directly inside unrelated feature data services or container components.
+- Host components should wire input/output streams only; reusable behavior stays self-contained in its own service +
+  tests.
+
 ### Backend calls and caching
 
 - Route all backend access through `SupabaseService`.

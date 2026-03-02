@@ -3,10 +3,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { of } from 'rxjs';
-import {
-  mapModulesToRecentActivityItems,
-  ModuleBrowserDataService
-} from './module-browser-data.service';
+import { ModuleBrowserDataService } from './module-browser-data.service';
 
 
 describe('ModuleBrowserDataService', () => {
@@ -70,97 +67,5 @@ describe('ModuleBrowserDataService', () => {
     service.updateModulesList$.next();
 
     expect(sortArgs(backend)).toEqual(['updated', 'desc']);
-  });
-  
-  it('maps module list into recent activity sorted by updated timestamp', () => {
-    const modules = [
-      {
-        id: 2,
-        name: 'Older Module',
-        description: '',
-        hp: 8,
-        public: true,
-        manufacturerId: 10,
-        manufacturer: {name: 'Maker A'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-01-01T00:00:00.000Z',
-        updated: '2025-01-02T00:00:00.000Z'
-      },
-      {
-        id: 1,
-        name: 'Newest Module',
-        description: '',
-        hp: 10,
-        public: true,
-        manufacturerId: 11,
-        manufacturer: {name: 'Maker B'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-01-03T00:00:00.000Z',
-        updated: '2025-01-04T00:00:00.000Z'
-      }
-    ] as any;
-    
-    const result = mapModulesToRecentActivityItems(modules, 5);
-    
-    expect(result.map(item => item.targetLabel)).toEqual(['Newest Module', 'Older Module']);
-    expect(result[0].actionLabel).toBe('updated');
-    expect(result[0].actorLabel).toBe('Maker B');
-    expect(result[0].contextLabel).toBe('Module');
-    expect(result[0].route).toEqual(['/modules', 'details', 1]);
-  });
-  
-  it('uses create activity when module created and updated timestamps match', () => {
-    const modules = [
-      {
-        id: 7,
-        name: 'Fresh Module',
-        description: '',
-        hp: 6,
-        public: true,
-        manufacturerId: 22,
-        manufacturer: {name: 'Maker C'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-03-01T10:00:00.000Z',
-        updated: '2025-03-01T10:00:00.000Z'
-      }
-    ] as any;
-    
-    const result = mapModulesToRecentActivityItems(modules, 5);
-    
-    expect(result[0].type).toBe('create');
-    expect(result[0].actionLabel).toBe('created');
-    expect(result[0].timestamp).toBe('2025-03-01T10:00:00.000Z');
-  });
-  
-  it('exposes recentActivityItems$ based on current modulesList$', () => {
-    const {service} = build();
-    service.modulesList$.next([
-      {
-        id: 9,
-        name: 'Activity Source',
-        description: '',
-        hp: 6,
-        public: true,
-        manufacturerId: 1,
-        manufacturer: {name: 'Maker'},
-        standard: 0,
-        tags: [],
-        panels: [],
-        created: '2025-02-01T00:00:00.000Z',
-        updated: '2025-02-02T00:00:00.000Z'
-      }
-    ] as any);
-    
-    let output: any[] = [];
-    service.recentActivityItems$.subscribe(items => output = items);
-    
-    expect(output.length).toBe(1);
-    expect(output[0].targetLabel).toBe('Activity Source');
   });
 });
