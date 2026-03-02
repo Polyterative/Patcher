@@ -1,5 +1,10 @@
 <div infoBox
      infoText="Manufacturer name"
      class="technical-item"
->{{ data.manufacturer.name }}
+>
+  <a
+    [routerLink]="['/manufacturers', data.manufacturer.id]"
+    class="manufacturer-link"
+    (click)="$event.stopPropagation()"
+  >{{ data.manufacturer.name }}</a>
 </div>

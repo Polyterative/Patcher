@@ -35,7 +35,19 @@
 
 ## Active
 
-_None._
+### Manufacturer Page — Phase 1 Polish Pass
+
+**Why:** Backend query exists — this is UI-only. High SEO return immediately. Polish pass after user feedback.
+**Scope:** Read-only, anonymous-visible. All implementation done; final verification pass in progress.
+
+- [x] Confirm `get.manufacturerWithId` data shape and module join keys
+- [x] Add route `/manufacturers/:id` to the router
+- [x] Create `manufacturer-detail` feature: component + data service (`ReplaySubject<id>` trigger pattern)
+- [x] Template: logo/name/website header, module grid with `lib-screen-wrapper`, separate loading states
+- [x] Link manufacturer name from module detail page and module browser cards → `/manufacturers/:id`
+- [x] JSON-LD for manufacturer entity; add to sitemap (`api/sitemap.ts`)
+- [x] Write data service unit tests (12 passing)
+- [ ] Verify final compile errors clear and tests still green
 
 ---
 
@@ -48,21 +60,6 @@ _None._
 ---
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
-
----
-
-#### HIGH: Manufacturer Page — Phase 1 (Read-Only)
-
-**Why:** Backend query exists — this is UI-only. High SEO return immediately. First navigable manufacturer space.
-**Scope:** Read-only, anonymous-visible, statically renderable for SEO.
-
-- [ ] Confirm `get.manufacturerWithId` data shape and module join keys in `supabase.service.ts` + `DatabaseStrings.ts`
-- [ ] Add route `/manufacturers/:id` to the router
-- [ ] Create `manufacturer-detail` feature: component + data service (`ReplaySubject<id>` trigger pattern)
-- [ ] Template: name, description/website if present, module grid (reuse existing module card)
-- [ ] Link manufacturer name from module detail page and module browser cards → `/manufacturers/:id`
-- [ ] JSON-LD for manufacturer entity; add to sitemap (`api/sitemap.ts`)
-- [ ] Write data service unit tests
 
 ---
 

@@ -1,0 +1,81 @@
+@if ({
+  manufacturer: (dataService.manufacturerData$ | async),
+  modules: (dataService.modulesData$ | async),
+  isLoading: (dataService.isLoading$ | async)
+}; as bag) {
+  <lib-hero-content-card
+    titleBig="Manufacturer"
+    [titleNormal]="bag.manufacturer?.name || ''"
+  >
+    <lib-screen-wrapper>
+      <div class="col gap2">
+        
+        <!-- Manufacturer header -->
+        <lib-clean-card>
+          @if (!bag.manufacturer) {
+            <lib-auto-content-loading-indicator
+              [loadingLines]="3"
+              [skipFirstData]="true"
+            ></lib-auto-content-loading-indicator>
+          } @else {
+            <div class="row gap2 center manufacturer-header">
+              @if (bag.manufacturer.logo) {
+                <img
+                  [alt]="bag.manufacturer.name + ' logo'"
+                  [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + bag.manufacturer.logo"
+                  class="manufacturer-logo"
+                  loading="eager"
+                />
+              } @else {
+                <div class="manufacturer-logo-placeholder col center" style="align-items:center">
+                  <mat-icon style="font-size:3rem;width:3rem;height:3rem;opacity:0.3">business</mat-icon>
+                </div>
+              }
+              <div class="col gap1">
+                <h1 class="manufacturer-name">{{ bag.manufacturer.name }}</h1>
+                @if (bag.manufacturer.websiteURL) {
+                  <a
+                    [href]="bag.manufacturer.websiteURL"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    mat-button
+                    color="primary"
+                    style="width:fit-content"
+                  >
+                    <mat-icon>open_in_new</mat-icon>
+                    Visit website
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </lib-clean-card>
+        
+        <!-- Module grid -->
+        <lib-hero-content-card
+          [titleNormal]="bag.modules ? 'Modules (' + bag.modules.length + ')' : 'Modules'"
+          [sidesPadding]="false"
+        >
+          <lib-auto-content-loading-indicator
+            [data$]="dataService.modulesData$"
+            [updateData$]="dataService.updateManufacturer$"
+          >
+            @if (bag.modules && bag.modules.length > 0) {
+              <app-module-list
+                [data$]="dataService.modulesData$"
+                [viewConfig]="moduleViewConfig"
+              ></app-module-list>
+            } @else if (bag.modules !== null) {
+              <div class="col gap1">
+                <mat-card-subtitle class="manufacturer-empty-state">
+                  No modules found for this manufacturer yet.
+                </mat-card-subtitle>
+              </div>
+            }
+          </lib-auto-content-loading-indicator>
+        </lib-hero-content-card>
+      
+      </div>
+    </lib-screen-wrapper>
+  </lib-hero-content-card>
+}
