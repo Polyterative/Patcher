@@ -6,6 +6,7 @@
   <lib-hero-content-card
     titleBig="Manufacturer"
     [titleNormal]="bag.manufacturer?.name || ''"
+    class="manufacturersBG"
   >
     <lib-screen-wrapper>
       <div class="col gap2">
@@ -32,7 +33,7 @@
                 </div>
               }
               <div class="col gap1">
-                <h1 class="manufacturer-name">{{ bag.manufacturer.name }}</h1>
+                <p class="manufacturer-name">{{ bag.manufacturer.name }}</p>
                 @if (bag.manufacturer.websiteURL) {
                   <a
                     [href]="bag.manufacturer.websiteURL"

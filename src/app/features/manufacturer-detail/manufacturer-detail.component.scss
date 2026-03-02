@@ -1,3 +1,5 @@
+@use "src/app/style/brand-resources" as *;
+
 .manufacturer-header {
   padding: 0.5rem 0;
 }
@@ -14,9 +16,11 @@
   height: 5rem;
 }
 
+// Name shown inside the info card (not a page heading — uses content font)
 .manufacturer-name {
-  font-size: 1.75rem;
-  font-weight: 600;
+  @include heading-font;
+  font-size: 1.5rem;
+  font-weight: 500;
   margin: 0;
   line-height: 1.2;
 }

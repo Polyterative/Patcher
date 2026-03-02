@@ -61,7 +61,7 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   const moduleEntries = moduleRows.map(row => makeEntityEntry('/modules/details/', row));
   const patchEntries = patchRows.map(row => makeEntityEntry('/patches/details/', row));
   const rackEntries = rackRows.map(row => makeEntityEntry('/racks/details/', row));
-  const manufacturerEntries = manufacturerRows.map(row => makeEntityEntry('/manufacturers/', row));
+  const manufacturerEntries = manufacturerRows.map(row => makeEntityEntry('/manufacturers/details/', row));
   
   return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries, ...manufacturerEntries]
     .filter((entry): entry is SitemapEntry => !!entry)

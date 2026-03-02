@@ -6,6 +6,7 @@ import { PatchBrowserModule } from 'src/app/features/patch-browser/patch-browser
 import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
 import { UserAreaModule } from 'src/app/features/routes/user-area/user-area.module';
 import { InfoPagesModule } from './info-pages/info-pages.module';
+import { ManufacturerModule } from './manufacturer-detail/manufacturer.module';
 import { MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
 
 
@@ -28,7 +29,8 @@ import { MAT_DIALOG_DEFAULT_OPTIONS } from "@angular/material/dialog";
     RackBrowserModule,
     ModuleBrowserModule,
     UserAreaModule,
-    InfoPagesModule
+    InfoPagesModule,
+    ManufacturerModule
   ]
 })
 export class AppFeaturesModule {}

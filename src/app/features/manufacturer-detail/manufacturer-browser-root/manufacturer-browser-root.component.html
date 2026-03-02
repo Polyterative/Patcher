@@ -1,0 +1,43 @@
+<lib-hero-content-card
+  titleBig="Manufacturers"
+  class="manufacturersBG"
+  description="Browse all Eurorack module manufacturers"
+>
+  <lib-screen-wrapper>
+    <lib-auto-content-loading-indicator
+      [data$]="dataService.manufacturers$"
+      [updateData$]="dataService.updateList$"
+    >
+      @if (dataService.manufacturers$ | async; as manufacturers) {
+        @if (manufacturers.length > 0) {
+          <div class="manufacturer-grid">
+            @for (manufacturer of manufacturers; track manufacturer.id) {
+              <lib-clean-card
+                class="manufacturer-card"
+                (click)="navigateToDetail(manufacturer.id)"
+              >
+                <div class="manufacturer-card-inner col gap1">
+                  @if (manufacturer.logo) {
+                    <img
+                      [alt]="manufacturer.name + ' logo'"
+                      [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + manufacturer.logo"
+                      class="manufacturer-card-logo"
+                      loading="lazy"
+                    />
+                  } @else {
+                    <div class="manufacturer-card-logo-placeholder col center">
+                      <mat-icon>business</mat-icon>
+                    </div>
+                  }
+                  <p class="manufacturer-card-name">{{ manufacturer.name }}</p>
+                </div>
+              </lib-clean-card>
+            }
+          </div>
+        } @else {
+          <p class="manufacturer-empty-state">No manufacturers found.</p>
+        }
+      }
+    </lib-auto-content-loading-indicator>
+  </lib-screen-wrapper>
+</lib-hero-content-card>
