@@ -1,0 +1,33 @@
+<a class="manufacturer-row-header"
+   [routerLink]="['/manufacturers/details', manufacturer.id]"
+>
+  @if (manufacturer.logo) {
+    <img
+      class="manufacturer-row-logo"
+      [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + manufacturer.logo"
+      [alt]="manufacturer.name + ' logo'"
+      loading="lazy"
+    />
+  } @else {
+    <div class="manufacturer-row-logo-placeholder">
+      <mat-icon>business</mat-icon>
+    </div>
+  }
+  <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
+  <mat-icon class="manufacturer-row-chevron">chevron_right</mat-icon>
+</a>
+
+<div class="manufacturer-row-modules">
+  @if ((modules$ | async) === null) {
+    <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
+    </lib-auto-content-loading-indicator>
+  } @else if ((modules$ | async)!.length === 0) {
+    <span class="manufacturer-row-empty">No modules yet</span>
+  } @else {
+    <app-module-list
+      [data$]="modules$"
+      [viewConfig]="moduleViewConfig"
+      [encloseVertically]="false"
+    ></app-module-list>
+  }
+</div>

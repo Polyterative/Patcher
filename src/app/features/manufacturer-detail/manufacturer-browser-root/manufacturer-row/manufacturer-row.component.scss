@@ -1,0 +1,89 @@
+@use "src/app/style/brand-resources" as *;
+
+:host {
+  display: block;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 0.75rem 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// ── Header row: logo + name + arrow ───────────────────────────────────────
+.manufacturer-row-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  width: fit-content;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  border-radius: 0.375rem;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+
+    .manufacturer-row-chevron {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+}
+
+.manufacturer-row-logo {
+  height: 2rem;
+  max-width: 6rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 0.2rem;
+}
+
+.manufacturer-row-logo-placeholder {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.3;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+.manufacturer-row-name {
+  @include heading-font;
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.82);
+}
+
+.manufacturer-row-chevron {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  opacity: 0.35;
+  transition: opacity 120ms ease, transform 120ms ease;
+  flex-shrink: 0;
+}
+
+// ── Module strip ──────────────────────────────────────────────────────────
+.manufacturer-row-modules {
+  margin-top: 0.5rem;
+  overflow-x: auto;
+  // subtle scrollbar
+  @include scrollbars(0.3rem);
+}
+
+.manufacturer-row-empty {
+  font-size: 0.8rem;
+  opacity: 0.45;
+  padding: 0.25rem 0;
+}
