@@ -383,6 +383,28 @@ export class SupabaseQueriesService {
       );
   }
   
+  getManufacturersPaginated(
+    from: number = 0,
+    to?: number,
+    name?: string,
+    orderBy: string = 'name',
+    orderDirection: string = 'asc'
+  ) {
+    const effectiveTo = to ?? this.defaultPag;
+    const normalizedName = normalizeForSearch((name ?? '').trim());
+    
+    let query = this.supabase.from(DbPaths.manufacturers)
+      .select('id,name,logo,websiteURL,adminUser', {count: 'exact'})
+      .range(from, effectiveTo)
+      .order(orderBy, {ascending: orderDirection === 'asc'});
+    
+    if (normalizedName.length > 0) {
+      query = query.ilike('name', `%${ normalizedName }%`);
+    }
+    
+    return rxFrom(query).pipe(remapErrors());
+  }
+  
   @Cacheable({
     maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('currentUserModules'))),
