@@ -86,16 +86,6 @@
   line-height: 1.2;
 }
 
-.manufacturer-row-updated-text {
-  @include content-font;
-  font-size: 0.74rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: rgba(36, 49, 63, 0.84);
-  white-space: nowrap;
-}
-
 .manufacturer-row-fresh-pill {
   border-radius: 62.4375rem;
   border: 1px solid rgba(24, 98, 43, 0.58);

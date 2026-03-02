@@ -22,6 +22,7 @@ import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layout
 import { ManufacturerDetailComponent } from './manufacturer-detail.component';
 import { ManufacturerBrowserRootComponent } from './manufacturer-browser-root/manufacturer-browser-root.component';
 import { ManufacturerRowComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-row.component';
+import { ManufacturerUpdatedBadgeComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-updated-badge/manufacturer-updated-badge.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 
@@ -32,7 +33,8 @@ const parentPrefix = 'manufacturers';
   declarations: [
     ManufacturerDetailComponent,
     ManufacturerBrowserRootComponent,
-    ManufacturerRowComponent
+    ManufacturerRowComponent,
+    ManufacturerUpdatedBadgeComponent
   ],
   imports: [
     CommonModule,
