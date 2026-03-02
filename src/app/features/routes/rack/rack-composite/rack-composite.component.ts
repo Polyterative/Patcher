@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
 import { Rack } from 'src/app/models/rack';
 
@@ -14,12 +13,8 @@ import { Rack } from 'src/app/models/rack';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RackCompositeComponent implements OnInit {
+export class RackCompositeComponent {
   @Input() data: Rack;
   
   constructor() {}
-  
-  ngOnInit(): void {
-  }
-  
 }

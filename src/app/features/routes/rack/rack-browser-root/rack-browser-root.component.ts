@@ -1,11 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnDestroy,
-  OnInit,
   ViewChild
 } from '@angular/core';
-import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   defaultRackMinimalViewConfig,
@@ -14,7 +11,8 @@ import {
 import { RackBrowserDataService } from 'src/app/features/routes/rack/rack-browser-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { MatPaginator } from "@angular/material/paginator";
+import { MatPaginator } from '@angular/material/paginator';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 @Component({
@@ -24,40 +22,34 @@ import { MatPaginator } from "@angular/material/paginator";
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RackBrowserRootComponent implements OnInit, OnDestroy {
+export class RackBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  
   readonly formTypes = FormTypes;
-  protected destroyEvent$ = new Subject<void>();
-  
-  viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
-  
+  readonly viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
+
   constructor(
     public dataService: RackBrowserDataService,
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
+    super();
     
-    this.seoAndUtilsService.updateSeo({description: 'Racks created by patcher.xyz community. Get inspired and explore new possibilities!'}, 'Racks');
-    
+    this.seoAndUtilsService.updateSeo(
+      {description: 'Racks created by patcher.xyz community. Get inspired and explore new possibilities!'},
+      'Racks'
+    );
+
     this.dataService.paginatorToFistPage$
-        .pipe(takeUntil(this.destroyEvent$))
-        .subscribe(value => this.paginator.firstPage());
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.paginator.firstPage());
     
-    this.dataService.fields.order.control.patchValue({
-      id: 'updated',
-      name: 'Updated ↓'
-    }, {emitEvent: false});
+    this.dataService.fields.order.control.patchValue(
+      {id: 'updated', name: 'Updated ↓'},
+      {emitEvent: false}
+    );
     this.dataService.serversideTableRequestData.sort$.next(['updated', 'desc']);
     this.dataService.serversideTableRequestData.skip$.next(0);
     this.dataService.serversideTableRequestData.take$.next(10);
     this.dataService.updateRacksList$.next();
-  }
-  
-  ngOnInit(): void {
-  }
-  
-  ngOnDestroy(): void {
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
   }
 }
