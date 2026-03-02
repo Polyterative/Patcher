@@ -7,6 +7,7 @@ import {
   UntypedFormControl
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent } from '@angular/material/paginator';
 import {
   BehaviorSubject,
   merge,
@@ -16,13 +17,14 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  debounceTime,
   distinctUntilChanged,
   map,
   shareReplay,
   startWith,
   switchMap,
   takeUntil,
-  tap
+  timeoutWith
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -35,18 +37,27 @@ const MANUFACTURER_ORDER_OPTIONS = [
   {id: 'name', name: 'Name Z→A'},
 ];
 const DEFAULT_ORDER = {id: 'name', name: 'Name A→Z'};
+const MAX_LOADING_MS = 2_000;
 
 @Injectable()
 export class ManufacturerBrowserRootDataService implements OnDestroy {
-  // ── Actions ──────────────────────────────────────────────────────────────
+  // ── Actions ───────────────────────────────────────────────────────────────
   updateList$ = new Subject<void>();
   resetForm$ = new Subject<void>();
+  paginatorToFistPage$ = new Subject<void>();
   
-  // ── Server-side state ─────────────────────────────────────────────────────
-  private _allManufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
-  private _isLoading$ = new BehaviorSubject<boolean>(false);
+  // ── Server-side pagination state (mirrors rack-browser) ───────────────────
+  serversideTableRequestData = {
+    skip$: new BehaviorSubject<number>(0),
+    take$: new BehaviorSubject<number>(20),
+    filter$: new BehaviorSubject<string>(''),
+    sort$: new BehaviorSubject<[string, string]>(['name', 'asc']),
+  };
+  serversideAdditionalData = {
+    itemsCount$: new BehaviorSubject<number>(0),
+  };
   
-  // ── Fields (mirrors rack/module pattern) ─────────────────────────────────
+  // ── Fields ────────────────────────────────────────────────────────────────
   fields: {
     search: {
       control: FormControl<any>;
@@ -64,13 +75,17 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
     };
   };
   
-  // ── Derived public streams ─────────────────────────────────────────────────
-  /** Filtered + sorted manufacturer list; null while first load is in flight. */
-  readonly manufacturers$: Observable<ManufacturerDetail[] | null>;
-  readonly isLoading$ = this._isLoading$.asObservable();
-  readonly canReset$: Observable<boolean>;
-  
+  // ── Public state ──────────────────────────────────────────────────────────
+  manufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
+  canReset$: Observable<boolean>;
+
   private readonly destroy$ = new Subject<void>();
+  
+  onPageEvent(event: PageEvent): void {
+    this.serversideTableRequestData.take$.next(event.pageSize);
+    this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
+    this.updateList$.next();
+  }
 
   constructor(
     private backend: SupabaseService,
@@ -89,72 +104,94 @@ export class ManufacturerBrowserRootDataService implements OnDestroy {
         options$: of(MANUFACTURER_ORDER_OPTIONS),
       },
     };
-    
-    // canReset$ — true when any control differs from default
+
     this.canReset$ = merge(
       this.fields.search.control.valueChanges,
       this.fields.order.control.valueChanges,
     ).pipe(
       startWith(null),
-      map(() =>
-        this.fields.search.control.value !== '' ||
-        this.fields.order.control.value?.name !== DEFAULT_ORDER.name
-      ),
+      map(() => {
+        const order = this.fields.order.control.value;
+        return (
+          this.fields.search.control.value !== '' ||
+          (order && order.name !== DEFAULT_ORDER.name)
+        );
+      }),
       distinctUntilChanged(),
       shareReplay(1)
     );
     
-    // Derived filtered list reacts to _allManufacturers$ + form changes
-    this.manufacturers$ = merge(
-      this._allManufacturers$,
-      this.fields.search.control.valueChanges.pipe(map(() => this._allManufacturers$.value)),
-      this.fields.order.control.valueChanges.pipe(map(() => this._allManufacturers$.value)),
+    // Debounced form → reset page → trigger fetch
+    merge(
+      this.fields.search.control.valueChanges,
+      this.fields.order.control.valueChanges,
     ).pipe(
-      map(list => {
-        if (list === null) return null;
-        const search = (this.fields.search.control.value ?? '').toLowerCase().trim();
-        const order = this.fields.order.control.value;
-        let filtered = search
-          ? list.filter(m => m.name?.toLowerCase().includes(search))
-          : [...list];
-        const asc = order?.name?.includes('A→Z') ?? true;
-        filtered.sort((a, b) => {
-          const cmp = (a.name ?? '').localeCompare(b.name ?? '');
-          return asc ? cmp : -cmp;
-        });
-        return filtered;
-      }),
-      shareReplay(1)
-    );
-    
-    // Load pipeline
-    this.updateList$.pipe(
-      tap(() => {
-        this._isLoading$.next(true);
-        this._allManufacturers$.next(null);
-      }),
-      switchMap(() =>
-        this.backend.GET.manufacturers(0, 999, 'id,name,logo,websiteURL,adminUser').pipe(
-          map(result => (result.data ?? []) as ManufacturerDetail[]),
-          tap(list => {
-            this._allManufacturers$.next(list);
-            this._isLoading$.next(false);
-          }),
-          catchError(err => {
-            console.error('ManufacturerBrowserRootDataService error:', err);
-            SharedConstants.errorCustom(this.snackBar, 'Failed to load manufacturers');
-            this._isLoading$.next(false);
-            return of([] as ManufacturerDetail[]);
-          })
-        )
-      ),
+      debounceTime(400),
       takeUntil(this.destroy$)
-    ).subscribe();
+    ).subscribe(() => {
+      const orderVal = this.fields.order.control.value;
+      const searchVal = this.fields.search.control.value ?? '';
+      this.serversideTableRequestData.filter$.next(searchVal);
+      this.serversideTableRequestData.sort$.next([
+        orderVal?.id ?? 'name',
+        orderVal?.name?.includes('Z→A') ? 'desc' : 'asc',
+      ]);
+      this.serversideTableRequestData.skip$.next(0);
+      this.paginatorToFistPage$.next();
+      this.updateList$.next();
+    });
     
+    // Main fetch pipeline
+    this.updateList$.pipe(
+      switchMap(() => {
+        const skip = this.serversideTableRequestData.skip$.value;
+        const take = this.serversideTableRequestData.take$.value;
+        const filter = this.serversideTableRequestData.filter$.value;
+        const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
+        const prevData = this.manufacturers$.value ?? [];
+        const prevCount = this.serversideAdditionalData.itemsCount$.value ?? prevData.length;
+        
+        return this.backend.GET.manufacturersPaginated(
+          skip, (skip + take) - 1, filter, sortCol, sortDir
+        ).pipe(
+          map((response: any) => {
+            if (response?.error) {
+              return {kind: 'error' as const, error: response.error, count: prevCount, data: prevData};
+            }
+            return {
+              kind: 'success' as const,
+              count: response?.count ?? 0,
+              data: Array.isArray(response?.data) ? response.data : [],
+            };
+          }),
+          timeoutWith(MAX_LOADING_MS, of({kind: 'timeout' as const, count: prevCount, data: prevData})),
+          catchError(err => {
+            SharedConstants.errorCustom(this.snackBar, 'Failed to load manufacturers');
+            return of({kind: 'error' as const, error: err, count: prevCount, data: prevData});
+          })
+        );
+      }),
+      map(result => {
+        if (result.kind !== 'success') {
+          console.error('[manufacturer-browser] load failed', (result as any).error);
+        }
+        return {count: result.count, data: result.data};
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(x => {
+      this.serversideAdditionalData.itemsCount$.next(x.count);
+      this.manufacturers$.next(x.data as ManufacturerDetail[]);
+    });
+
     // Reset handler
     this.resetForm$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.fields.search.control.setValue('');
       this.fields.order.control.setValue(DEFAULT_ORDER);
+      this.serversideTableRequestData.filter$.next('');
+      this.serversideTableRequestData.sort$.next(['name', 'asc']);
+      this.serversideTableRequestData.skip$.next(0);
+      this.paginatorToFistPage$.next();
+      this.updateList$.next();
     });
   }
   
