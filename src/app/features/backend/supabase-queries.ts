@@ -173,6 +173,42 @@ export class SupabaseQueriesService {
   }
   
   @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+  })
+  getUserPatchesPaginated(from = 0, to: number = this.defaultPag) {
+    return this.getUserSession$().pipe(
+      switchMap(user => rxFrom(
+        this.supabase.from(DbPaths.patches)
+          .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+          .filter('authorid', 'eq', user.id)
+          .order('updated', {ascending: false})
+          .range(from, to)
+      )),
+      remapErrors(),
+    );
+  }
+
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
+    maxCacheCount: 50,
+  })
+  getUserRacksPaginated(from = 0, to: number = this.defaultPag) {
+    return this.getUserSession$().pipe(
+      switchMap(user => rxFrom(
+        this.supabase.from(DbPaths.racks)
+          .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+          .filter('authorid', 'eq', user.id)
+          .order('updated', {ascending: false})
+          .range(from, to)
+      )),
+      remapErrors(),
+    );
+  }
+
+  @Cacheable({
     maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,
@@ -246,14 +282,12 @@ export class SupabaseQueriesService {
       .pipe(
         switchMap(user => rxFrom(
           this.supabase.from(DbPaths.comments)
-            .select(`*,profile:profiles(id,username,email)`)
+            .select(`*,profile:profiles(id,username,email)`, {count: 'exact'})
             .filter('authorId', 'eq', user.id)
-            .limit(20)
             .order('created', {ascending: false})
             .range(from, to)
         )),
         remapErrors(),
-        map((x => x.data))
       );
   }
   
