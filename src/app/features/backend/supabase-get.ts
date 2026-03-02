@@ -126,6 +126,7 @@ export function createGetNamespace(
         .limit(1, {foreignTable: DbPaths.module_panels})
         .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
         .order('updated', {ascending: false})
+        .order('id', {ascending: false})
         .range(from, to)
     )
       .pipe(
