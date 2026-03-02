@@ -14,6 +14,9 @@ import { MinimalModule } from '../../models/module';
 
 /** Sort IDs that are valid for a plain MinimalModule list. */
 export type ModuleSortId =
+  | 'backend'
+  | 'updatedDesc'
+  | 'updatedAsc'
   | 'nameAsc'
   | 'nameDesc'
   | 'hpAsc'
@@ -28,6 +31,8 @@ export type ModuleGroupId =
   | 'hpRange';
 
 export const MODULE_SORT_OPTIONS: ISelectable[] = [
+  {id: 'updatedDesc', name: 'Updated (newest first)'},
+  {id: 'updatedAsc', name: 'Updated (oldest first)'},
   {id: 'nameAsc', name: 'Name (A→Z)'},
   {id: 'nameDesc', name: 'Name (Z→A)'},
   {id: 'hpAsc', name: 'HP (low→high)'},
@@ -92,9 +97,27 @@ export function compareModulesByManufacturerDesc(a: MinimalModule, b: MinimalMod
   return compareModulesByManufacturerAsc(b, a);
 }
 
+function getModuleUpdatedTimestamp(m: MinimalModule): number {
+  const parsed = Date.parse(m?.updated || '');
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function compareModulesByUpdatedAsc(a: MinimalModule, b: MinimalModule): number {
+  const t = getModuleUpdatedTimestamp(a) - getModuleUpdatedTimestamp(b);
+  return t !== 0 ? t : compareModulesByNameAsc(a, b);
+}
+
+export function compareModulesByUpdatedDesc(a: MinimalModule, b: MinimalModule): number {
+  return compareModulesByUpdatedAsc(b, a);
+}
+
 /** Pick the right comparator for a `ModuleSortId`. */
 export function getModuleComparator(sortId: ModuleSortId): (a: MinimalModule, b: MinimalModule) => number {
   switch (sortId) {
+    case 'updatedAsc':
+      return compareModulesByUpdatedAsc;
+    case 'updatedDesc':
+      return compareModulesByUpdatedDesc;
     case 'nameDesc':
       return compareModulesByNameDesc;
     case 'hpAsc':
@@ -136,7 +159,9 @@ export function sortAndGroupMinimalModules(
   sortId: ModuleSortId,
   groupId: ModuleGroupId
 ): MinimalModule[] {
-  const sorted = [...data].sort(getModuleComparator(sortId));
+  const sorted = sortId === 'backend'
+    ? [...data]
+    : [...data].sort(getModuleComparator(sortId));
   if (groupId === 'none') return sorted;
   
   const groups = new Map<string, MinimalModule[]>();
