@@ -44,6 +44,12 @@ import {
   ISelectable
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import {
+  compareModulesByManufacturerAsc,
+  compareModulesByManufacturerDesc,
+  compareModulesByNameAsc,
+  getModuleNormalizedManufacturer
+} from 'src/app/shared-interproject/utils/module-sort-utils';
 
 
 /** One card in the editor module list */
@@ -154,13 +160,6 @@ export const PATCH_EDITOR_GROUP_MODE_OPTIONS: ISelectable[] = [
   }
 ];
 
-function getNormalizedModuleName(card: EditorModuleCard): string {
-  return normalizeForSearch(card.module?.name || '');
-}
-
-function getNormalizedManufacturerName(card: EditorModuleCard): string {
-  return normalizeForSearch(card.module?.manufacturer?.name || '');
-}
 
 function getCollectionUpdatedValue(card: EditorModuleCard): string {
   return `${ (card.module as DbModuleWithCollectionUpdated)?.collectionUpdated ?? '' }`;
@@ -177,17 +176,8 @@ function compareByTrackingId(a: EditorModuleCard, b: EditorModuleCard): number {
 }
 
 function compareByNameAscending(a: EditorModuleCard, b: EditorModuleCard): number {
-  const nameComparison = getNormalizedModuleName(a).localeCompare(getNormalizedModuleName(b));
-  if (nameComparison !== 0) {
-    return nameComparison;
-  }
-  
-  const manufacturerComparison = getNormalizedManufacturerName(a).localeCompare(getNormalizedManufacturerName(b));
-  if (manufacturerComparison !== 0) {
-    return manufacturerComparison;
-  }
-  
-  return compareByTrackingId(a, b);
+  const moduleComparison = compareModulesByNameAsc(a.module, b.module);
+  return moduleComparison !== 0 ? moduleComparison : compareByTrackingId(a, b);
 }
 
 function compareByNameDescending(a: EditorModuleCard, b: EditorModuleCard): number {
@@ -213,16 +203,13 @@ function compareByAddedEarliest(a: EditorModuleCard, b: EditorModuleCard): numbe
 }
 
 function compareByManufacturerAscending(a: EditorModuleCard, b: EditorModuleCard): number {
-  const manufacturerComparison = getNormalizedManufacturerName(a).localeCompare(getNormalizedManufacturerName(b));
-  if (manufacturerComparison !== 0) {
-    return manufacturerComparison;
-  }
-  
-  return compareByNameAscending(a, b);
+  const moduleComparison = compareModulesByManufacturerAsc(a.module, b.module);
+  return moduleComparison !== 0 ? moduleComparison : compareByTrackingId(a, b);
 }
 
 function compareByManufacturerDescending(a: EditorModuleCard, b: EditorModuleCard): number {
-  return compareByManufacturerAscending(b, a);
+  const moduleComparison = compareModulesByManufacturerDesc(a.module, b.module);
+  return moduleComparison !== 0 ? moduleComparison : compareByTrackingId(a, b);
 }
 
 function compareByConnectionsMost(a: EditorModuleCard, b: EditorModuleCard): number {
@@ -240,8 +227,7 @@ function compareByConnectionsMost(a: EditorModuleCard, b: EditorModuleCard): num
 }
 
 function manufacturerGroupingKeyGenerator(card: EditorModuleCard): string {
-  const normalizedManufacturer = getNormalizedManufacturerName(card);
-  return normalizedManufacturer || unknownManufacturerGroupKey;
+  return getModuleNormalizedManufacturer(card.module) || unknownManufacturerGroupKey;
 }
 
 export const PATCH_EDITOR_SORT_STRATEGIES: Record<PatchEditorSortModeId, PatchEditorSortStrategy> = {
