@@ -50,18 +50,20 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   const staticEntries = STATIC_ROUTES.map(route => ({
     loc: `${ SITE_URL }${ route }`
   }));
-
-  const [moduleRows, patchRows, rackRows] = await Promise.all([
+  
+  const [moduleRows, patchRows, rackRows, manufacturerRows] = await Promise.all([
     fetchPublicEntityRows('modules'),
     fetchPublicEntityRows('patches'),
-    fetchPublicEntityRows('racks')
+    fetchPublicEntityRows('racks'),
+    fetchAllManufacturerRows()
   ]);
 
   const moduleEntries = moduleRows.map(row => makeEntityEntry('/modules/details/', row));
   const patchEntries = patchRows.map(row => makeEntityEntry('/patches/details/', row));
   const rackEntries = rackRows.map(row => makeEntityEntry('/racks/details/', row));
-
-  return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries]
+  const manufacturerEntries = manufacturerRows.map(row => makeEntityEntry('/manufacturers/', row));
+  
+  return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries, ...manufacturerEntries]
     .filter((entry): entry is SitemapEntry => !!entry)
     .sort((a, b) => a.loc.localeCompare(b.loc));
 }
@@ -88,6 +90,36 @@ function normalizeIsoDate(value?: string): string | undefined {
   }
 
   return parsed.toISOString();
+}
+
+async function fetchAllManufacturerRows(): Promise<PublicEntityRow[]> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return [];
+  }
+  
+  const params = new URLSearchParams();
+  params.set('select', 'id');
+  params.set('order', 'id.asc');
+  params.set('limit', '5000');
+  
+  const abortController = new AbortController();
+  const timeoutHandle = setTimeout(() => abortController.abort(), SUPABASE_TIMEOUT_MS);
+  
+  const response = await fetch(`${ SUPABASE_URL }/rest/v1/manufacturers?${ params.toString() }`, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      authorization: `Bearer ${ SUPABASE_ANON_KEY }`
+    },
+    signal: abortController.signal
+  }).catch(() => undefined);
+  clearTimeout(timeoutHandle);
+  
+  if (!response || !response.ok) {
+    return [];
+  }
+  
+  const payload = await response.json().catch(() => []);
+  return Array.isArray(payload) ? payload as PublicEntityRow[] : [];
 }
 
 async function fetchPublicEntityRows(tableName: string): Promise<PublicEntityRow[]> {

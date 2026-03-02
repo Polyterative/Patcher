@@ -33,6 +33,7 @@ import { ModuleBrowserAdderComponent } from './module-browser-adder/module-brows
 import { ModuleBrowserRootComponent } from './module-browser-root/module-browser-root.component';
 import { ModuleBrowserDetailComponent } from "src/app/features/module-browser/module-browser-detail/module-browser-detail.component";
 import { ModuleBrowserDataService } from "src/app/features/module-browser/module-browser-data.service";
+import { ManufacturerDetailComponent } from '../manufacturer-detail/manufacturer-detail.component';
 import { RouterModule } from "@angular/router";
 import { CommonSidebarComponent } from "src/app/features/backbone/common-sidebar/common-sidebar.component";
 import { MatCardModule } from "@angular/material/card";
@@ -66,7 +67,8 @@ const parentPrefix = 'modules';
     ModuleBrowserDetailComponent,
     ModuleCompositeComponent,
     ModuleListComponent,
-    ModuleBrowserAdderComponent
+    ModuleBrowserAdderComponent,
+    ManufacturerDetailComponent
   ],
   providers:    [ModuleBrowserDataService],
   imports: [
@@ -77,6 +79,11 @@ const parentPrefix = 'modules';
         path: `${ parentPrefix }/details/:id`,
         pathMatch: 'full',
         component: ModuleBrowserDetailComponent
+      },
+      {
+        path: `manufacturers/:id`,
+        pathMatch: 'full',
+        component: ManufacturerDetailComponent
       },
       {
         path: `${ parentPrefix }/add`,
