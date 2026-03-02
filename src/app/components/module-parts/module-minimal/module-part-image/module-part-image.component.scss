@@ -5,3 +5,20 @@
 img {
   max-width: 100% !important;
 }
+
+// ── Fixed-height mode (default) ─────────────────────────────────────────────
+// Locks the panel to standard 3U height so all module cards align in a grid.
+// Revert by setting [fixedHeight]="false" on app-module-part-image.
+$panel-fixed-height: 8rem;
+
+.img--fixed-height {
+  height: $panel-fixed-height !important;
+  max-height: $panel-fixed-height !important;
+  width: auto;
+  object-fit: contain;
+}
+
+.preview--fixed-height {
+  height: $panel-fixed-height !important;
+  width: 100%;
+}
