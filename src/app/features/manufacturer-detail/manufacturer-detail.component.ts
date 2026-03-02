@@ -18,6 +18,7 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { Animations } from 'src/app/shared-interproject/SharedConstants';
 
 
 const LOGO_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/';
@@ -28,6 +29,7 @@ const JSONLD_SCRIPT_ID = 'manufacturer-jsonld';
   templateUrl: './manufacturer-detail.component.html',
   styleUrls: ['./manufacturer-detail.component.scss'],
   providers: [ManufacturerDetailDataService],
+  animations: [Animations.fadeInOnEnter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
