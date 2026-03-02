@@ -7,15 +7,18 @@ import { BehaviorSubject } from 'rxjs';
 import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
 import { AsyncPipe } from "@angular/common";
 import { MatBadge } from "@angular/material/badge";
+import { RouterModule } from "@angular/router";
 
 
-interface LabelValueData {
+export interface LabelValueData {
   label: string;
   value: string;
   icon?: string;
   hidden?: boolean;
   size?: string;
   badge?: string;
+  /** When set, the stat cell becomes a clickable router link */
+  routerLink?: any[];
 }
 
 @Component({
@@ -23,7 +26,8 @@ interface LabelValueData {
   imports: [
     LabelValueShowcaseModule,
     AsyncPipe,
-    MatBadge
+    MatBadge,
+    RouterModule
   ],
   templateUrl: './lib-showcase-grid.component.html',
   styleUrl: './lib-showcase-grid.component.scss',
