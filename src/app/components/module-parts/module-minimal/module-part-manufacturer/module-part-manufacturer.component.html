@@ -3,7 +3,7 @@
      class="technical-item"
 >
   <a
-    [routerLink]="['/manufacturers', data.manufacturer.id]"
+    [routerLink]="['/manufacturers/details', data.manufacturer.id]"
     class="manufacturer-link"
     (click)="$event.stopPropagation()"
   >{{ data.manufacturer.name }}</a>
