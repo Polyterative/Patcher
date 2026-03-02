@@ -51,6 +51,17 @@
         { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module',  }
       ]">
                   </app-lib-showcase-grid>
+                      @if (bag.data.manufacturer.id && bag.data.manufacturer.id !== 10000) {
+                        <a
+                          [routerLink]="['/manufacturers', bag.data.manufacturer.id]"
+                          mat-button
+                          color="primary"
+                          style="width:fit-content"
+                        >
+                          <mat-icon>business</mat-icon>
+                          View {{ bag.data.manufacturer.name }}
+                        </a>
+                      }
                     </div>
                   </lib-clean-card>
                   <!-- Physical Characteristics Card -->

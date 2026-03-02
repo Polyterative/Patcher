@@ -1,0 +1,9 @@
+.manufacturer-link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+}
