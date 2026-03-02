@@ -2,15 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnDestroy,
   OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
-import {
-  combineLatest,
-  Subject
-} from 'rxjs';
+import { combineLatest } from 'rxjs';
 import {
   filter,
   map,
@@ -27,7 +23,7 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import {
   CommentableEntityTypes,
   CommentsDataService
-} from "src/app/components/shared-atoms/comments/comments-data.service";
+} from 'src/app/components/shared-atoms/comments/comments-data.service';
 
 
 @Component({
@@ -40,11 +36,10 @@ import {
   ],
   standalone: false
 })
-export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
-  
-  protected destroyEvent$ = new Subject<void>();
+export class PatchBrowserDetailViewComponent extends SubManager implements OnInit {
+
   @Input() ignoreSeo = false;
-  @Input() viewConfig: PatchMinimalViewConfig = {
+  @Input() readonly viewConfig: PatchMinimalViewConfig = {
     ...defaultPatchMinimalViewConfig,
     hideButtons: false
   };
@@ -110,7 +105,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     this.dataService.singlePatchData$
       .pipe(
         filter(x => !!x),
-        takeUntil(this.destroyEvent$)
+        takeUntil(this.destroy$)
       )
       .subscribe(data => {
         this.commentsDataService.requestCommentsUpdate$.next({
@@ -118,15 +113,11 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           entityType: CommentableEntityTypes.PATCH
         });
       });
-    
   }
-  
+
   ngOnDestroy(): void {
     this.dataService.singlePatchData$.next(undefined);
     this.dataService.patchEditingPanelOpenState$.next(false);
-    this.destroyEvent$.next();
-    this.destroyEvent$.complete();
-    
+    super.ngOnDestroy();
   }
-  
 }
