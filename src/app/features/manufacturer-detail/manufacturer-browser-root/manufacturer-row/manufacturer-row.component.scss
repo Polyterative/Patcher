@@ -17,11 +17,6 @@
   &:hover {
     background: rgba(255, 255, 255, 0.38);
     cursor: pointer;
-
-    .manufacturer-row-chevron {
-      opacity: 1;
-      transform: scale(1.15) translate(0.1rem, -0.1rem);
-    }
   }
 }
 
@@ -99,13 +94,15 @@
   align-items: center;
 }
 
-.manufacturer-row-chevron {
-  flex-shrink: 0;
-  margin-left: auto;
-  opacity: 0.35;
-  color: #3a5a78;
-  font-size: 1.15rem;
-  transition: opacity 120ms ease, transform 120ms ease;
+.manufacturer-row-name--link {
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  z-index: 2;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .manufacturer-row-title-line {
@@ -168,8 +165,6 @@
   box-sizing: border-box;
   overflow: hidden;
   scroll-snap-align: start;
-  // Clicks fall through to the overlay link — strip is visual-only
-  pointer-events: none;
 
   app-module-minimal {
     display: block;
