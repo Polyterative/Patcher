@@ -7,6 +7,7 @@ import {
   AsyncPipe,
   NgTemplateOutlet
 } from "@angular/common";
+import { MatPaginatorModule } from "@angular/material/paginator";
 import { UserAreaDataService } from "src/app/features/routes/user-area/user-area-data.service";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
@@ -30,6 +31,7 @@ import {
     NgTemplateOutlet,
     HeroContentCardModule,
     CommentsItemBlockComponent,
+    MatPaginatorModule,
   ]
 })
 export class UserCommentsComponent implements OnInit {
@@ -37,12 +39,12 @@ export class UserCommentsComponent implements OnInit {
     ...defaultCommentViewConfig,
     showContext: true
   };
-  
+
   constructor(
     public dataService: UserAreaDataService,
   ) {
   }
-  
+
   ngOnInit(): void {
     this.dataService.updateCommentsData$.next();
   }
