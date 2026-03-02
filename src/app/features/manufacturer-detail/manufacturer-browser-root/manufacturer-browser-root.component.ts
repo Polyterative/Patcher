@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit
 } from '@angular/core';
+import { Subject } from 'rxjs';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
-import { Router } from '@angular/router';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 
 @Component({
@@ -16,15 +18,16 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ManufacturerBrowserRootComponent implements OnInit {
-  
+export class ManufacturerBrowserRootComponent implements OnInit, OnDestroy {
+  readonly formTypes = FormTypes;
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
-    public dataService: ManufacturerBrowserRootDataService,
-    private seoAndUtilsService: SeoAndUtilsService,
-    private router: Router
+    public readonly dataService: ManufacturerBrowserRootDataService,
+    private readonly seoAndUtilsService: SeoAndUtilsService
   ) {
   }
-  
+
   ngOnInit(): void {
     this.seoAndUtilsService.updateSeo(
       {
@@ -37,7 +40,8 @@ export class ManufacturerBrowserRootComponent implements OnInit {
     this.dataService.updateList$.next();
   }
   
-  navigateToDetail(id: number): void {
-    this.router.navigate(['/manufacturers/details', id]);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
