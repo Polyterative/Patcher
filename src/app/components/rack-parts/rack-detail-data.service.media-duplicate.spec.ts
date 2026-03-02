@@ -145,18 +145,17 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.update.rack).toHaveBeenCalled();
   }));
   
-  it('renames rack from input dialog and requests rack refresh', () => {
+  it('updates rack name from inline control and auto-saves', fakeAsync(() => {
     const {service, backend} = build();
-    const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     backend.update.rack.and.returnValue(of({data: [{id: 123}]}));
     service.singleRackData$.next(rack({id: 123, name: 'Old Name'}));
     
-    service.renameCurrentRack$.next();
+    service.formData.name.control.setValue('Renamed Rack');
+    tick(900);
     
-    expect(backend.update.rack).toHaveBeenCalled();
-    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({name: 'Renamed Rack'}));
-    expect(refreshSpy).toHaveBeenCalledWith(123);
-  });
+    expect(service.singleRackData$.value?.name).toBe('Renamed Rack');
+    expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 123, name: 'Renamed Rack'}));
+  }));
   
   it('duplicates rack and syncs copied module layout to the new rack', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {

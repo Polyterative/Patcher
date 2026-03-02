@@ -57,6 +57,7 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
 import { LibShowcaseGridComponent, } from "src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component";
 import { EditFabModule } from "src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module";
 import { ManufacturerRowComponent } from "src/app/features/manufacturer-detail/manufacturer-browser-root/manufacturer-row/manufacturer-row.component";
+import { RecentActivityModule } from "src/app/components/shared-atoms/recent-activity/recent-activity.module";
 
 
 const parentPrefix = 'modules';
@@ -147,6 +148,7 @@ const parentPrefix = 'modules';
     LibShowcaseGridComponent,
     EditFabModule,
     ManufacturerRowComponent,
+    RecentActivityModule,
   ],
   exports: [
     ModuleListComponent,
