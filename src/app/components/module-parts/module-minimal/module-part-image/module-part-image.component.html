@@ -9,7 +9,8 @@
       @if (filename) {
         <img
           class="img image-transition"
-          [ngStyle]="{maxHeight:32/sizeDivider+'rem'}"
+          [class.img--fixed-height]="fixedHeight"
+          [ngStyle]="fixedHeight ? {} : {maxHeight:32/sizeDivider+'rem'}"
           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
           [@enter]
           loading="lazy"
@@ -19,11 +20,13 @@
       @if (!filename) {
         <lib-screen-wrapper
           class="img"
+          [class.img--fixed-height]="fixedHeight"
           [@enter]
         >
           <div [fxFlex]="data.hp/sizeDivider/2+'rem'"
-               [ngStyle]="{height:((bag.height)/sizeDivider/2+'rem')}"
+               [ngStyle]="fixedHeight ? {} : {height:((bag.height)/sizeDivider/2+'rem')}"
                class="preview img"
+               [class.preview--fixed-height]="fixedHeight"
           >
           </div>
         </lib-screen-wrapper>
@@ -32,7 +35,8 @@
     @if (!containImage) {
       @if (filename) {
         <img
-          [ngStyle]="{maxHeight:((bag.height)+'rem')}"
+          [class.img--fixed-height]="fixedHeight"
+          [ngStyle]="fixedHeight ? {} : {maxHeight:((bag.height)+'rem')}"
           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
           [@enter]
           class="image-transition"
