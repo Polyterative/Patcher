@@ -104,10 +104,11 @@ describe('SupabaseService - delete advanced', () => {
       const mockUser = {id: 'delete-me-user'};
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
-      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
+      const fromSpy = spyOn(supabaseClient, 'from').and.returnValue(chainable({data: null, error: null}));
       
       service.delete.allUserData().subscribe({
         next: () => {
+          expect(fromSpy).toHaveBeenCalled();
           done();
         },
         error: (err) => {
