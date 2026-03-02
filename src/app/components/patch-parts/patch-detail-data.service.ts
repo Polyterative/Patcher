@@ -148,8 +148,8 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.updateSinglePatchData$
       .pipe(
-        tap(x => this.patchConnections$.next(null)),
-        tap(x => this.editorConnections$.next(null)),
+        tap(_ => this.patchConnections$.next(null)),
+        tap(_ => this.editorConnections$.next(null)),
         tap(() => this.patchModuleInstances$.next([])),
         tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
         switchMap(x => this.backend.get.patchWithId(x)),
@@ -173,7 +173,7 @@ export class PatchDetailDataService implements OnDestroy {
         withLatestFrom(this.updateSinglePatchData$),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(([a, b]) => {
+      .subscribe(([_a, b]) => {
         const patchName = this.singlePatchData$.value?.name;
         snackBar.open(`"${ patchName }" removed from your library.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSinglePatchData$.next(b);
@@ -210,17 +210,17 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.formData.name.control.valueChanges
       .pipe(
-        filter(x => !!this.singlePatchData$.value),
-        filter(x => this.formData.name.control.valid),
+        filter(_ => !!this.singlePatchData$.value),
+        filter(_ => this.formData.name.control.valid),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(input => this.singlePatchData$.value.name = input);
     //
     this.formData.description.control.valueChanges
       .pipe(
-        filter(x => !!this.singlePatchData$.value),
-        filter(x => this.formData.description.control.valid),
-        filter(x => !!this.formData.description.control.value || this.formData.description.control.value == ''),
+        filter(_ => !!this.singlePatchData$.value),
+        filter(_ => this.formData.description.control.valid),
+        filter(_ => !!this.formData.description.control.value || this.formData.description.control.value == ''),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(input => this.singlePatchData$.value.description = input);
@@ -249,7 +249,7 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.singlePatchData$
       .pipe(
-        filter(x => !!this.singlePatchData$.value),
+        filter(_ => !!this.singlePatchData$.value),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(data => {
@@ -298,7 +298,7 @@ export class PatchDetailDataService implements OnDestroy {
         filter(x => !x),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => this.resetSelectedForConnection$.next());
+      .subscribe(_ => this.resetSelectedForConnection$.next());
     
     // when editing panel closes (was open -> closed), trigger patch refresh
     this.patchEditingPanelOpenState$
@@ -454,7 +454,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         switchMap(conn =>
           this.backend.update.patchConnectionNoteSilent(conn).pipe(
-            catchError(err => {
+            catchError(_ => {
               SharedConstants.errorCustom(this.snackBar, 'Failed to save note — check your connection.');
               return EMPTY;
             })
@@ -466,8 +466,7 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.deletePatch$
       .pipe(
-        switchMap(x => {
-          
+        switchMap(_ => {
           const data: ConfirmDialogDataInModel = {
             title: 'Deletion',
             description: 'Are you sure you want to delete this patch? This action cannot be undone. This will also delete all connections associated with this patch.',
@@ -480,7 +479,6 @@ export class PatchDetailDataService implements OnDestroy {
               theme: 'primary'
             }
           };
-          
           return this.dialog.open(
             ConfirmDialogComponent,
             {
@@ -490,18 +488,17 @@ export class PatchDetailDataService implements OnDestroy {
             }
           )
             .afterClosed()
-            .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
-            );
+            .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer));
         }),
         withLatestFrom(this.deletePatch$),
-        switchMap(([z, x]) => this.backend.delete.patchConnectionsForPatch(x)
+        switchMap(([_z, x]) => this.backend.delete.patchConnectionsForPatch(x)
           .pipe(map(() => x))),
         switchMap((x) => this.backend.delete.patchModuleInstancesForPatch(x)
           .pipe(map(() => x))),
         switchMap((x) => this.backend.delete.patch(x)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(value => {
+      .subscribe(_ => {
         this.router.navigate(['/user/area']);
       });
     
@@ -522,14 +519,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         map(instances => {
           const labelMap = new Map<number, string>();
-          // Group by module_id
-          const byModule = new Map<number, PatchModuleInstance[]>();
-          for (const inst of instances) {
-            const list = byModule.get(inst.module_id) || [];
-            list.push(inst);
-            byModule.set(inst.module_id, list);
-          }
-          // Only label instances when a module has 2+ copies
+          const byModule = this.groupInstancesByModuleId(instances);
           for (const [, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
               moduleInstances.forEach((inst, idx) => {
@@ -544,24 +534,14 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(labelMap => this.instanceLabelMap$.next(labelMap));
     
     // Build multi-instance summary for read-only display.
-    // Uses module name/manufacturer from the joined instance row (primary source).
     this.patchModuleInstances$
       .pipe(
         map(instances => {
           if (!instances.length) { return []; }
-          
-          // Group instances by module_id
-          const byModule = new Map<number, PatchModuleInstance[]>();
-          for (const inst of instances) {
-            const list = byModule.get(inst.module_id) || [];
-            list.push(inst);
-            byModule.set(inst.module_id, list);
-          }
-          
+          const byModule = this.groupInstancesByModuleId(instances);
           const summary: MultiInstanceModuleSummary[] = [];
           for (const [moduleId, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
-              // Module name comes from the Supabase join on the instance row
               const firstWithModule = moduleInstances.find(i => i.module?.name);
               summary.push({
                 moduleId,
@@ -762,6 +742,16 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(() => this.confirmSelectedConnection$.next());
   }
   
+  private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
+    const map = new Map<number, PatchModuleInstance[]>();
+    for (const inst of instances) {
+      const list = map.get(inst.module_id) ?? [];
+      list.push(inst);
+      map.set(inst.module_id, list);
+    }
+    return map;
+  }
+
   ngOnDestroy(): void {
     // Clear the bridge so the floating panel disappears when navigating away
     this.bridge.selectionState$.next({a: null, b: null});
@@ -811,7 +801,7 @@ export class PatchDetailDataService implements OnDestroy {
     const first = existingInstances.find(i => i.module_id === moduleId);
     if (!first || first.instance_label === newLabel) { return of(null); }
     return this.backend.update.patchModuleInstanceLabel(first.id, newLabel).pipe(
-      tap(updated => {
+      tap(_ => {
         // Update local state
         const current = this.patchModuleInstances$.value;
         const idx = current.findIndex(i => i.id === first.id);
