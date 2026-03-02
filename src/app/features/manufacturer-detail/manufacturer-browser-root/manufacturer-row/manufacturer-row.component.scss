@@ -31,11 +31,6 @@
 
   &:hover {
     background: rgba(0, 0, 0, 0.04);
-
-    .manufacturer-row-chevron {
-      opacity: 1;
-      transform: translateX(3px);
-    }
   }
 }
 
@@ -47,44 +42,71 @@
   border-radius: 0.2rem;
 }
 
-.manufacturer-row-logo-placeholder {
-  width: 2.75rem;
-  height: 2.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.25;
-  flex-shrink: 0;
-
-  mat-icon {
-    font-size: 2rem;
-    width: 2rem;
-    height: 2rem;
-  }
-}
-
 .manufacturer-row-name {
   @include heading-font;
   font-size: 1.95rem;
   font-weight: 600;
   line-height: 1.08;
   color: rgba(0, 0, 0, 0.9);
-  flex: 1 1 auto;
-  min-width: 0;
 
   @media (max-width: 48rem) {
     font-size: 1.55rem;
   }
 }
 
-.manufacturer-row-chevron {
-  font-size: 1.4rem;
-  width: 1.4rem;
-  height: 1.4rem;
-  opacity: 0.3;
-  transition: opacity 120ms ease, transform 120ms ease;
-  flex-shrink: 0;
-  margin-left: auto;
+.manufacturer-row-name-group {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+}
+
+.manufacturer-row-title-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.manufacturer-row-count-badge {
+  border-radius: 62.4375rem;
+  border: 1px solid #5e7792;
+  padding: 0.08rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #2d4359;
+  background: #dde9f5;
+  line-height: 1.2;
+}
+
+.manufacturer-row-updated-text {
+  @include content-font;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: rgba(36, 49, 63, 0.84);
+  white-space: nowrap;
+}
+
+.manufacturer-row-fresh-pill {
+  border-radius: 62.4375rem;
+  border: 1px solid rgba(24, 98, 43, 0.58);
+  padding: 0.06rem 0.42rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1d5f31;
+  background: rgba(186, 229, 199, 0.9);
+  white-space: nowrap;
 }
 
 // ── Module strip — single nowrap row with horizontal scroll ───────────────
