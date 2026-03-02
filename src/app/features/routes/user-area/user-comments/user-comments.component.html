@@ -20,15 +20,22 @@
 
 
 <ng-template #content>
-  <div class="col gap1"
-  >
+  <div class="col gap1">
     @if ({
-      data: (dataService.commentsData$|async),
+      data: (dataService.commentsData$ | async),
     }; as bag) {
       <app-comments-item-block [data]="bag.data"
                                [viewConfig]="commentViewConfig"
       ></app-comments-item-block>
     }
-  
+    @if ((dataService.commentsCount$ | async) > 10) {
+      <mat-paginator
+        [pageSize]="dataService.commentsPagination.take$.value"
+        [pageSizeOptions]="[10, 20, 50]"
+        [length]="dataService.commentsCount$ | async"
+        (page)="dataService.commentsPageEvent$.next($event)"
+        showFirstLastButtons
+      ></mat-paginator>
+    }
   </div>
 </ng-template>
