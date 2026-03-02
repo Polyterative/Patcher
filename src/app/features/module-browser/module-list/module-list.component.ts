@@ -4,6 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
 import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
@@ -28,7 +29,92 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import {
+  FormTypes,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { MinimalModule } from 'src/app/models/module';
 import { ModuleList } from '../module-browser-data.service';
+
+
+export type ModuleListSortId =
+  'nameAsc'
+  | 'nameDesc'
+  | 'hpAsc'
+  | 'hpDesc'
+  | 'insMost'
+  | 'outsMost';
+export type ModuleListGroupId =
+  'none'
+  | 'standard'
+  | 'hpRange';
+
+export const MODULE_LIST_SORT_OPTIONS: ISelectable[] = [
+  {id: 'nameAsc', name: 'Name (A→Z)'},
+  {id: 'nameDesc', name: 'Name (Z→A)'},
+  {id: 'hpAsc', name: 'HP (low→high)'},
+  {id: 'hpDesc', name: 'HP (high→low)'},
+  {id: 'insMost', name: 'Inputs (most first)'},
+  {id: 'outsMost', name: 'Outputs (most first)'},
+];
+
+export const MODULE_LIST_GROUP_OPTIONS: ISelectable[] = [
+  {id: 'none', name: 'Grouping off'},
+  {id: 'standard', name: 'Group by standard (3U / 1U)'},
+  {id: 'hpRange', name: 'Group by HP range'},
+];
+
+function normalizedModuleName(m: MinimalModule): string {
+  return normalizeForSearch(m.name || '');
+}
+
+function compareModules(sortId: ModuleListSortId): (a: MinimalModule, b: MinimalModule) => number {
+  switch (sortId) {
+    case 'nameDesc':
+      return (a, b) => normalizedModuleName(b).localeCompare(normalizedModuleName(a));
+    case 'hpAsc':
+      return (a, b) => (a.hp || 0) - (b.hp || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
+    case 'hpDesc':
+      return (a, b) => (b.hp || 0) - (a.hp || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
+    case 'insMost':
+      return (a, b) => (b.ins?.length || 0) - (a.ins?.length || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
+    case 'outsMost':
+      return (a, b) => (b.outs?.length || 0) - (a.outs?.length || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
+    case 'nameAsc':
+    default:
+      return (a, b) => normalizedModuleName(a).localeCompare(normalizedModuleName(b));
+  }
+}
+
+function getGroupKey(m: MinimalModule, groupId: ModuleListGroupId): string {
+  if (groupId === 'standard') {
+    const sid = m.standard?.id;
+    return sid === 1 ? 'Intellijel 1U' : sid === 2 ? 'PulpLogic 1U' : '3U';
+  }
+  if (groupId === 'hpRange') {
+    const hp = m.hp || 0;
+    if (hp <= 4) return '1–4 HP';
+    if (hp <= 8) return '5–8 HP';
+    if (hp <= 14) return '9–14 HP';
+    if (hp <= 20) return '15–20 HP';
+    return '21+ HP';
+  }
+  return '';
+}
+
+function sortAndGroupModules(data: MinimalModule[], sortId: ModuleListSortId, groupId: ModuleListGroupId): MinimalModule[] {
+  const sorted = [...data].sort(compareModules(sortId));
+  if (groupId === 'none') return sorted;
+  
+  const groups = new Map<string, MinimalModule[]>();
+  for (const m of sorted) {
+    const key = getGroupKey(m, groupId);
+    const arr = groups.get(key) ?? [];
+    arr.push(m);
+    groups.set(key, arr);
+  }
+  return [...groups.keys()].sort((a, b) => a.localeCompare(b)).flatMap(k => groups.get(k) ?? []);
+}
 
 
 @Component({
@@ -53,42 +139,51 @@ import { ModuleList } from '../module-browser-data.service';
 export class ModuleListComponent extends SubManager implements OnInit {
   @Input() data$: Observable<ModuleList>;
   @Input() viewConfig: ModuleMinimalViewConfig = {...defaultModuleMinimalViewConfig};
-  
+
   @Input() showSearch = false;
   @Input() showOrder = false;
   @Input() encloseVertically = true;
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
-  
+
   @Input()
   set externalSearchQuery(value: string) {
     this.externalSearchQuery$.next(value ?? '');
   }
-  
+
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
-  // showRichList$ = new BehaviorSubject<boolean>(false);
-  
+  // Sort & group controls (used when showOrder = true)
+  readonly formTypes = FormTypes;
+  readonly sortOptions$: Observable<ISelectable[]> = of(MODULE_LIST_SORT_OPTIONS);
+  readonly groupOptions$: Observable<ISelectable[]> = of(MODULE_LIST_GROUP_OPTIONS);
+  readonly sortControl = new UntypedFormControl(MODULE_LIST_SORT_OPTIONS[0]);
+  readonly groupControl = new UntypedFormControl(MODULE_LIST_GROUP_OPTIONS[0]);
+
   constructor(
     public patchingService: PatchDetailDataService,
     public filterService: LocalDataFilterService
   ) {
     super();
-    // if (this.showSearch) {
-    
-    // }
-    // this.service.patchEditingPanelOpenState$
-    //     .pipe(
-    //
-    //     )
-    //     .subscribe(value => {
-    //
-    //     });
   }
-  
+
   ngOnInit(): void {
     const localSearchQuery$ = this.showSearch
       ? this.filterService.filterEvent$.pipe(startWith(''))
       : of('');
+    
+    const sortId$: Observable<ModuleListSortId> = this.showOrder
+      ? this.sortControl.valueChanges.pipe(
+        startWith(this.sortControl.value),
+        map((v: ISelectable | null) => (v?.id as ModuleListSortId) ?? 'nameAsc')
+      )
+      : of('nameAsc' as ModuleListSortId);
+    
+    const groupId$: Observable<ModuleListGroupId> = this.showOrder
+      ? this.groupControl.valueChanges.pipe(
+        startWith(this.groupControl.value),
+        map((v: ISelectable | null) => (v?.id as ModuleListGroupId) ?? 'none')
+      )
+      : of('none' as ModuleListGroupId);
 
     this.manageSub(
       this.data$
@@ -98,7 +193,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
         )
         .subscribe(x => this.filteredData$.next(x))
     );
-    
+
     this.manageSub(
       combineLatest([
         this.data$.pipe(
@@ -106,30 +201,26 @@ export class ModuleListComponent extends SubManager implements OnInit {
           map(data => this.orderData(data))
         ),
         localSearchQuery$,
-        this.externalSearchQuery$
+        this.externalSearchQuery$,
+        sortId$,
+        groupId$
       ])
-        .subscribe(([data, localQuery, externalQuery]) => {
+        .subscribe(([data, localQuery, externalQuery, sortId, groupId]) => {
           const normalizedLocalQuery = normalizeForSearch(localQuery);
           const normalizedExternalQuery = normalizeForSearch(externalQuery);
           
-          const result = data.filter(item => {
-            const normalizedName = normalizeForSearch(item.name);
-            
-            return normalizedName.includes(normalizedLocalQuery)
-              && normalizedName.includes(normalizedExternalQuery);
+          const filtered = data.filter(item => {
+            const normalizedModName = normalizeForSearch(item.name);
+            return normalizedModName.includes(normalizedLocalQuery)
+              && normalizedModName.includes(normalizedExternalQuery);
           });
           
-          this.filteredData$.next(result);
+          this.filteredData$.next(sortAndGroupModules(filtered, sortId, groupId));
         })
     );
   }
   
-  // sort happening on the server side now
-  orderData(
-    moduleList: ModuleList,
-  ): ModuleList {
-    // return moduleList.sort((a, b) => a.name.localeCompare(b.name));
+  orderData(moduleList: ModuleList): ModuleList {
     return moduleList;
-  
-}
+  }
 }

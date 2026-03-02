@@ -10,10 +10,31 @@
     </lib-auto-content-loading-indicator>
   } @else {
     <div class="col gap1">
-      @if (showSearch) {
-        <div class="row gap1"
-        >
-          <app-local-data-filter></app-local-data-filter>
+      @if (showSearch || showOrder) {
+        <div class="row gap1">
+          @if (showSearch) {
+            <app-local-data-filter></app-local-data-filter>
+          }
+          @if (showOrder) {
+            <lib-mat-form-entity
+              [control]="sortControl"
+              [type]="formTypes.SELECT"
+              [options$]="sortOptions$"
+              [disableVoidSelection]="true"
+              [formFieldAppearanceType]="'outline'"
+              iconL1="sort"
+              label="Sort"
+            ></lib-mat-form-entity>
+            <lib-mat-form-entity
+              [control]="groupControl"
+              [type]="formTypes.SELECT"
+              [options$]="groupOptions$"
+              [disableVoidSelection]="true"
+              [formFieldAppearanceType]="'outline'"
+              iconL1="view_stream"
+              label="Group"
+            ></lib-mat-form-entity>
+          }
         </div>
       }
       <flexbox-row-fast
