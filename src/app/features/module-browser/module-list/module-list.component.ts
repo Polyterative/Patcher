@@ -100,9 +100,9 @@ export class ModuleListComponent extends SubManager implements OnInit {
     const sortId$: Observable<ModuleSortId> = this.showOrder
       ? this.sortControl.valueChanges.pipe(
         startWith(this.sortControl.value),
-        map((v: ISelectable | null) => (v?.id as ModuleSortId) ?? 'nameAsc')
+        map((v: ISelectable | null) => (v?.id as ModuleSortId) ?? 'updatedDesc')
       )
-      : of('nameAsc' as ModuleSortId);
+      : of('backend' as ModuleSortId);
     
     const groupId$: Observable<ModuleGroupId> = this.showOrder
       ? this.groupControl.valueChanges.pipe(
