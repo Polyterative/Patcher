@@ -109,6 +109,7 @@ export class SupabaseService extends SubManager {
       currentUserModules: this.queries.getCurrentUserModules.bind(this.queries),
       modules: this.queries.getModules.bind(this.queries),
       manufacturers: this.queries.getManufacturers.bind(this.queries),
+      manufacturersPaginated: this.queries.getManufacturersPaginated.bind(this.queries),
       comments: this.queries.getComments.bind(this.queries),
       tags: this.queries.getTags.bind(this.queries),
       moduleWithId: this.queries.getModuleWithId.bind(this.queries),
@@ -149,6 +150,7 @@ export class SupabaseService extends SubManager {
     currentUserModules: typeof SupabaseQueriesService.prototype.getCurrentUserModules;
     modules: typeof SupabaseQueriesService.prototype.getModules;
     manufacturers: typeof SupabaseQueriesService.prototype.getManufacturers;
+    manufacturersPaginated: typeof SupabaseQueriesService.prototype.getManufacturersPaginated;
     comments: typeof SupabaseQueriesService.prototype.getComments;
     tags: typeof SupabaseQueriesService.prototype.getTags;
     moduleWithId: typeof SupabaseQueriesService.prototype.getModuleWithId;
