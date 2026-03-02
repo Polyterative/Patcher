@@ -36,10 +36,10 @@
     <lib-auto-update-loading-indicator [data$]="dataService.modulesData$"
                                        [updateData$]="dataService.updateModulesData$"
     >
-      @if ((dataService.modulesData$|async); as data) {
+      @if ((dataService.pagedModulesData$ | async); as data) {
         @if (data.length > 0) {
           <app-module-list fxFlex="grow"
-                           [data$]="dataService.modulesData$"
+                           [data$]="dataService.pagedModulesData$"
                            [viewConfig]="modulesViewConfig"
                            [showSearch]="false"
                            [externalSearchQuery]="globalSearchQuery"
@@ -54,6 +54,15 @@
         }
       }
     </lib-auto-update-loading-indicator>
-  
+    @if ((dataService.modulesData$ | async)?.length > 10) {
+      <mat-paginator
+        [pageSize]="dataService.modulesPagination.take$.value"
+        [pageSizeOptions]="[10, 20, 50]"
+        [length]="(dataService.modulesData$ | async)?.length"
+        (page)="dataService.modulesPageEvent$.next($event)"
+        showFirstLastButtons
+      ></mat-paginator>
+    }
+
   </div>
 </ng-template>
