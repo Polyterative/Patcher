@@ -20,8 +20,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
-  timeoutWith
+  takeUntil
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -29,16 +28,33 @@ import { ManufacturerDetail } from '../manufacturer-detail-data.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
-const MANUFACTURER_ORDER_OPTIONS = [
-  {id: 'name', name: 'Name A→Z'},
-  {id: 'name_desc', name: 'Name Z→A'},
+type ManufacturerOrderOption = {
+  id: string;
+  name: string;
+  sortColumn: 'name' | 'module_updated';
+  sortDirection: 'asc' | 'desc';
+};
+
+const MANUFACTURER_ORDER_OPTIONS: ManufacturerOrderOption[] = [
+  {id: 'name', name: 'Name A→Z', sortColumn: 'name', sortDirection: 'asc'},
+  {id: 'name_desc', name: 'Name Z→A', sortColumn: 'name', sortDirection: 'desc'},
+  {
+    id: 'module_updated_desc',
+    name: 'Recently changed modules',
+    sortColumn: 'module_updated',
+    sortDirection: 'desc',
+  },
+  {
+    id: 'module_updated_asc',
+    name: 'Least recently changed modules',
+    sortColumn: 'module_updated',
+    sortDirection: 'asc',
+  },
 ];
-const DEFAULT_ORDER = MANUFACTURER_ORDER_OPTIONS[0];
+const DEFAULT_ORDER = MANUFACTURER_ORDER_OPTIONS[2];
 
 @Injectable()
 export class ManufacturerBrowserRootDataService extends SubManager {
-  private static readonly MAX_LOADING_MS = 2_000;
-
   // ── Actions ───────────────────────────────────────────────────────────────
   readonly updateList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
@@ -49,7 +65,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(20),
     filter$: new BehaviorSubject<string>(''),
-    sort$: new BehaviorSubject<[string, string]>(['name', 'asc']),
+    sort$: new BehaviorSubject<[string, string]>([DEFAULT_ORDER.sortColumn, DEFAULT_ORDER.sortDirection]),
   };
   serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0),
@@ -100,10 +116,10 @@ export class ManufacturerBrowserRootDataService extends SubManager {
     ).pipe(
       startWith(null),
       map(() => {
-        const order = this.fields.order.control.value;
+        const order = this.fields.order.control.value as ManufacturerOrderOption | null;
         return (
           this.fields.search.control.value !== '' ||
-          (order && order.name !== DEFAULT_ORDER.name)
+          (order && order.id !== DEFAULT_ORDER.id)
         );
       }),
       distinctUntilChanged(),
@@ -129,12 +145,12 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       debounceTime(400),
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      const orderVal = this.fields.order.control.value;
+      const orderVal = (this.fields.order.control.value as ManufacturerOrderOption | null) ?? DEFAULT_ORDER;
       const searchVal = this.fields.search.control.value ?? '';
       this.serversideTableRequestData.filter$.next(searchVal);
       this.serversideTableRequestData.sort$.next([
-        'name',
-        orderVal?.name?.includes('Z→A') ? 'desc' : 'asc',
+        orderVal.sortColumn,
+        orderVal.sortDirection,
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
@@ -165,11 +181,6 @@ export class ManufacturerBrowserRootDataService extends SubManager {
               data: Array.isArray(response?.data) ? response.data : [] as ManufacturerDetail[],
             };
           }),
-          timeoutWith(ManufacturerBrowserRootDataService.MAX_LOADING_MS, of({
-            kind: 'timeout' as const,
-            count: prevCount,
-            data: prevData,
-          })),
           catchError(err => {
             SharedConstants.errorCustom(this.snackBar, 'Failed to load manufacturers');
             return of({kind: 'error' as const, error: err, count: prevCount, data: prevData});
@@ -194,7 +205,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       this.fields.search.control.setValue('');
       this.fields.order.control.setValue(DEFAULT_ORDER);
       this.serversideTableRequestData.filter$.next('');
-      this.serversideTableRequestData.sort$.next(['name', 'asc']);
+      this.serversideTableRequestData.sort$.next([DEFAULT_ORDER.sortColumn, DEFAULT_ORDER.sortDirection]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
       this.updateList$.next();
