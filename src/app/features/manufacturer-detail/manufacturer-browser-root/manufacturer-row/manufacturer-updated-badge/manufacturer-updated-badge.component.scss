@@ -1,0 +1,11 @@
+@use "src/app/style/brand-resources" as *;
+
+.manufacturer-updated-badge {
+  @include content-font;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
