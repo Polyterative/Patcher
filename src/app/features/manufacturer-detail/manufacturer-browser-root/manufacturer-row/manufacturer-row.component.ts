@@ -2,17 +2,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnDestroy,
   OnInit
 } from '@angular/core';
-import {
-  BehaviorSubject,
-  Subject
-} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalViewConfig
+} from 'src/app/components/module-parts/module-minimal/module-minimal.component';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 @Component({
@@ -22,23 +23,36 @@ import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ManufacturerRowComponent implements OnInit, OnDestroy {
+export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
-
-  readonly modules$ = new BehaviorSubject<ModuleList>(null);
-  private readonly destroy$ = new Subject<void>();
   
-  constructor(private backend: SupabaseService) {
+  private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
+  readonly modules$ = this._modules$.asObservable();
+
+  readonly moduleViewConfig: ModuleMinimalViewConfig = {
+    ...defaultModuleMinimalViewConfig,
+    hideButtons: true,
+    hideDates: true,
+    hideDescription: true,
+    hideManufacturer: true,
+    hideLabels: true,
+    hideTags: true,
+    hidePatchedIn: true,
+    hideRackedIn: true,
+    hideBySameManufacturer: true,
+    ellipseDescription: true,
+    tagsReadOnly: true,
+    tagsShowCounts: false,
+    tagsMaxCount: 0,
+  };
+  
+  constructor(private readonly backend: SupabaseService) {
+    super();
   }
 
   ngOnInit(): void {
     this.backend.get.modulesBySameManufacturer(this.manufacturer.id, 0, 29)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(modules => this.modules$.next(modules ?? []));
-  }
-  
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+      .subscribe(modules => this._modules$.next(modules ?? []));
   }
 }
