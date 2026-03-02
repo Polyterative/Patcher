@@ -49,21 +49,21 @@ export class ToolbarComponent extends SubManager {
       disabled: false
     },
     {
+      label: 'Racks',
+      route: '/racks/browser',
+      icon: 'view_stream',
+      disabled: false
+    },
+    {
+      label: 'Patches',
+      route: '/patches/browser',
+      icon: 'settings_input_composite',
+      disabled: false
+    },
+    {
       label: 'Manufacturers',
       route: '/manufacturers/browser',
-      icon: 'precision_manufacturing',
-      disabled: false
-    },
-    {
-      label:    'Racks',
-      route: '/racks/browser',
-      icon:     'view_stream',
-      disabled: false
-    },
-    {
-      label:    'Patches',
-      route: '/patches/browser',
-      icon:     'settings_input_composite',
+      icon: 'handyman',
       disabled: false
     }
   ];
