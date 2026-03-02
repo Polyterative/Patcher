@@ -1,0 +1,30 @@
+.manufacturer-header {
+  padding: 0.5rem 0;
+}
+
+.manufacturer-logo {
+  max-height: 5rem;
+  max-width: 12rem;
+  object-fit: contain;
+  border-radius: 0.25rem;
+}
+
+.manufacturer-logo-placeholder {
+  width: 5rem;
+  height: 5rem;
+}
+
+.manufacturer-name {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.manufacturer-website {
+  width: fit-content;
+}
+
+.manufacturer-empty-state {
+  padding: 1rem 0;
+}
