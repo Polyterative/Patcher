@@ -631,7 +631,17 @@ export class SupabaseQueriesService {
   
   private parseModuleUpdatedTimestampMs(rawUpdated: unknown): number | null {
     if (typeof rawUpdated !== 'string' || rawUpdated.trim().length === 0) { return null; }
-    const ms = Date.parse(rawUpdated.trim());
+    let s = rawUpdated.trim();
+    // Normalise Postgres variants so Date.parse can handle them:
+    // 1. Space separator → T  (e.g. "2026-03-01 10:00:00" → "2026-03-01T10:00:00")
+    s = s.replace(' ', 'T');
+    // 2. Truncate microseconds to milliseconds  (.123456 → .123)
+    s = s.replace(/(\.\d{3})\d+/, '$1');
+    // 3. Short UTC offset without minutes: +00 / -05 → +00:00 / -05:00
+    s = s.replace(/([+-]\d{2})$/, '$1:00');
+    // 4. Four-digit offset without colon: +0000 → +00:00
+    s = s.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
+    const ms = Date.parse(s);
     return isNaN(ms) ? null : ms;
   }
   
@@ -673,6 +683,7 @@ export class SupabaseQueriesService {
   }
   
   private compareManufacturersByLatestModuleActivity(
+    aManufacturer: any,
     bManufacturer: any,
     activityRankByManufacturerId: Map<number, number>
   ): number {
