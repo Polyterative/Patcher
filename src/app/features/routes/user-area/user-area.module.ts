@@ -28,6 +28,7 @@ import { UserManualsComponent } from "src/app/features/routes/user-area/user-man
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 
 
@@ -65,6 +66,7 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
     RackListModule,
     PatchListModule,
     StatisticsModule,
+    MatPaginatorModule,
     UserManualsComponent,
     UserCommentsComponent,
     AppFaqComponent,
