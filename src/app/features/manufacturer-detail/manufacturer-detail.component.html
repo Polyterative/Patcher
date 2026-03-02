@@ -5,12 +5,12 @@
 }; as bag) {
   <div class="col gap1">
     <lib-hero-content-card
-      titleBig="Manufacturer"
+      titleBig="Manufacturer Details"
       [titleSub]="bag.manufacturer?.name"
       class="manufacturersBG"
     >
       <div class="col gap2">
-        
+
         @if (bag.manufacturer?.websiteURL) {
           <a
             [href]="bag.manufacturer.websiteURL"
@@ -23,6 +23,13 @@
             <mat-icon>open_in_new</mat-icon>
             Visit website
           </a>
+        }
+        
+        @if (bag.manufacturer) {
+          <lib-clean-card>
+            <app-lib-showcase-grid [data]="(stats$ | async) || []">
+            </app-lib-showcase-grid>
+          </lib-clean-card>
         }
         
         <lib-auto-content-loading-indicator
