@@ -70,5 +70,8 @@ e2e/flow-0*.spec.ts
 # Local IDE run artifacts
 /.run/TESTS.run.xml
 
+# AI agent tmp output
+/.tmp/
+
 # Local screenshot artifacts
 /output/playwright/
