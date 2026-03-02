@@ -17,22 +17,36 @@
   <mat-icon class="manufacturer-row-chevron">chevron_right</mat-icon>
 </a>
 
-<div class="manufacturer-row-modules">
-  @if ((modules$ | async) === null) {
-    <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
-    </lib-auto-content-loading-indicator>
-  } @else if ((modules$ | async)!.length === 0) {
+@if (modules$ | async; as modules) {
+  @if (modules.length === 0) {
     <span class="manufacturer-row-empty">No modules yet</span>
   } @else {
-    <div class="module-strip">
-      @for (module of (modules$ | async)!; track module.id) {
-        <lib-clean-card class="module-strip-card">
-          <app-module-minimal
-            [data]="module"
-            [viewConfig]="moduleViewConfig"
-          ></app-module-minimal>
-        </lib-clean-card>
-      }
+    <div class="manufacturer-row-modules">
+      <div class="module-strip">
+        @for (module of modules; track module.id) {
+          <a class="module-strip-card"
+             [routerLink]="['/modules/details', module.id]"
+             [title]="module.name"
+          >
+            @if (module.panels && module.panels.length > 0) {
+              <img
+                class="module-strip-panel"
+                [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/' + module.panels[0].filename"
+                [alt]="module.name"
+                loading="lazy"
+              />
+            } @else {
+              <div class="module-strip-panel module-strip-panel--placeholder">
+                <mat-icon>view_module</mat-icon>
+              </div>
+            }
+            <span class="module-strip-name">{{ module.name }}</span>
+          </a>
+        }
+      </div>
     </div>
   }
-</div>
+} @else {
+  <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
+  </lib-auto-content-loading-indicator>
+}
