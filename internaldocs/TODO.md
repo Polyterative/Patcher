@@ -28,9 +28,8 @@
 > Archived in [COMPLETED.md](./COMPLETED.md). Keep one-line summaries there.
 
 > **ABANDONED Feb 21:** Integration test for first-click CV highlight bug
-> (`patch-editor-cv-highlight.integration.spec.ts`). Test created and confirmed failing; fix deemed not worth the
-> effort.
-> Test file left in place as documentation of the race condition.
+> (`patch-editor-cv-highlight.integration.spec.ts`). Test confirmed failing; fix not worth effort. File kept as
+> race-condition documentation.
 
 ---
 
@@ -42,129 +41,216 @@ _None._
 
 ## Backlog
 
-### HIGH: E2E — Dedicated Test Account Cleanup
-
-**Why:** Authenticated E2E wiring is complete, but credentials should use a non-personal Supabase account to avoid
-owner-account coupling.
-
-**Steps when picked:**
-
-- [ ] Create dedicated Supabase test account (email/password) for E2E
-- [ ] Update local `.env` with dedicated account credentials
-- [ ] Rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD`
-- [ ] Re-run `yarn test:e2e:auth`
-
-### ON HOLD: SEO — Tagging & Rich Link Previews
-
-**Paused on 2026-02-23** to prioritize Module Details redesign.
-
-Completed before pause:
-
-- Dynamic sitemap endpoint (`api/sitemap.ts`)
-- `robots.txt` sitemap reference
-- Canonical URL injection
-- JSON-LD middleware coverage (module/patch/rack/home)
-- `llms.txt`
-- `og:image:width` + `og:image:height`
-- Bot HTML cache headers (partial; OG endpoint still pending)
-
-Remaining when resumed:
-
-- [ ] OG image generation endpoint (`@vercel/og`)
-- [ ] Middleware wiring to generated OG image URLs
-- [ ] Rich preview validation gates (Telegram/WhatsApp/Slack + debuggers)
-- [ ] OG image visual polish pass
-
-### ON HOLD: E2E — Expand module-browser spec + implement remaining flows
-
-**Scope reduced Feb 19.** N-to-N flow tests are deferred; smoke tests in `e2e/module-browser.spec.ts` are sufficient for
-now.  
-**Remaining flows (deferred):** Login→Logout, Module Search→Filter→Detail, Rack Create, Patch Privacy, Patch
-Connection, Module Submission, Sign Up, Delete Account.
-
-### HIGH: E2E — Multi-Instance Patching (Auto-Instance Feature)
-
-**Why:** The auto-instance feature (collection-first editor, "Add Copy", instance delete, connection scrub,
-self-connections) was verified with 30 unit tests but lacks E2E coverage through the real UI.  
-**Depends on:** E2E Authenticated Test Login bootstrap (completed 02-23) — patch editing requires a logged-in user.
-
-**Flows to cover:**
-
-- [ ] Open a patch in editor, verify collection modules appear as cards
-- [ ] Click "Add Copy" on a module with 0 instances → verify 2 cards appear with labels (1), (2)
-- [ ] Click "Add Copy" again → verify 3 cards appear with labels (1), (2), (3)
-- [ ] Connect an output CV from instance (1) to an input CV on another module → verify connection recorded
-- [ ] Connect the same output CV to instance (2) of the same module → verify accepted (not duplicate)
-- [ ] Attempt the exact same connection again → verify rejected as duplicate
-- [ ] Delete an instance that has connections → verify confirmation dialog appears
-- [ ] Confirm deletion → verify instance removed, connection scrubbed, remaining instances renumbered
-- [ ] Save patch and reload → verify connections and instances survive roundtrip
-- [ ] Legacy patch (pre-instance) → verify it loads and connections display correctly
-
-### MEDIUM: Unit Coverage Uplift to 75%
-
-**Why:** Baseline from 2026-02-23 is still far below target (Statements 56.79%, Lines 56.88%).
-
-**Steps when picked:**
-
-- [ ] Add targeted tests for `rack-detail-data.service.ts`, `module-detail-data.service.ts`, and
-  `user-area-data.service.ts`
-- [ ] Add tests for the next highest-yield uncovered files
-- [ ] Re-run `yarn test:ci` and record updated coverage
-- [ ] Iterate until statements and lines reach at least 75%
-
-### MEDIUM: Module Review Flagging
-
-**Why:** No way for users to report bad data (wrong specs, duplicate entries, missing image).  
-**Constraint:** Needs a new database table; admin review UI is out of scope for first iteration — focus on user-facing
-flag submission only.
-
-**Steps when picked:**
-
-- [ ] Read `module-details` component to locate the right insertion point for a "Report issue" button
-- [ ] Read `supabase.service.ts` `add` namespace to understand insertion patterns
-- [ ] Add `module_flags` to `DbPaths` in `DatabaseStrings.ts`
-- [ ] Design `module_flags` table type in `database.types.ts` (id, module_id, user_id, category, note, created_at,
-  resolved)
-- [ ] Add `add.moduleFlag()` to `supabase.service.ts` with `cacheBust` (no cached key needed yet — it's a write-only
-  path for now)
-- [ ] Create `module-flag-data.service.ts` with `submitFlag$` Subject and inline form toggle
-- [ ] Add inline flag form to module-details (predefined categories: wrong specs / missing image / duplicate / other)
-- [ ] Show confirmation snackbar on success via SharedConstants.successCustom
-- [ ] Write tests for service API surface and flag submission flow
+> Two tracks run in parallel: **Product** (user-facing features) and **Infra** (tests, tooling, hygiene).
+> Product tasks are sequenced by the Tier 0 → Tier 1 → Tier 2 arc from PRODUCT_NEEDS.md.
+> Infra tasks are independent and can be picked any time a product task is blocked.
 
 ---
 
+### PRODUCT — Tier 0 (ship in any order; no external dependencies)
 
-### LOW: Edit Module HP in Rack
+---
 
-**Why:** Correcting a wrong HP value requires removing and re-adding the module.  
-**Decision:** Rack-specific override (don't touch global module data — too risky for all users).
+#### HIGH: Manufacturer Page — Phase 1 (Read-Only)
 
-**Steps when picked:**
+**Why:** Backend query exists — this is UI-only. High SEO return immediately. First navigable manufacturer space.
+**Scope:** Read-only, anonymous-visible, statically renderable for SEO.
 
-- [ ] Read rack editor component and `rack_modules` schema in `database.types.ts`
-- [ ] Add nullable `hp_override` to the `rack_modules` Row/Insert/Update types in `database.types.ts`
-- [ ] Add `update.rackModuleHp(rackModuleId, hp)` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
-- [ ] Add inline HP edit affordance in rack editor (click-to-edit, validated number input)
-- [ ] Module rendering must prefer `hp_override` over module's default HP when set
+- [ ] Confirm `get.manufacturerWithId` data shape and module join keys in `supabase.service.ts` + `DatabaseStrings.ts`
+- [ ] Add route `/manufacturers/:id` to the router
+- [ ] Create `manufacturer-detail` feature: component + data service (`ReplaySubject<id>` trigger pattern)
+- [ ] Template: name, description/website if present, module grid (reuse existing module card)
+- [ ] Link manufacturer name from module detail page and module browser cards → `/manufacturers/:id`
+- [ ] JSON-LD for manufacturer entity; add to sitemap (`api/sitemap.ts`)
+- [ ] Write data service unit tests
+
+---
+
+#### HIGH: Module Review Flagging
+
+**Why:** Tier 0 — improves catalogue quality immediately; scales into UGC trust model later. No community layer needed.
+**Scope:** User-facing flag submission only; admin review is a manual Supabase queue for now.
+
+- [ ] Add `module_flags` to `DbPaths` in `DatabaseStrings.ts`
+- [ ] Add `module_flags` table type to `database.types.ts` (id, module_id, user_id, category, note, created_at,
+  resolved)
+- [ ] Add `add.moduleFlag()` to `supabase.service.ts`
+- [ ] Create `module-flag-data.service.ts` with `submitFlag$` Subject and inline form toggle
+- [ ] Add inline flag form to module-details (categories: wrong specs / missing image / duplicate / other)
+- [ ] Confirm snackbar on success via `SharedConstants.successCustom`
+- [ ] Write tests for service API surface
+
+---
+
+#### MEDIUM: Store Links per Module (Price Hub prerequisite)
+
+**Why:** One canonical "buy new" URL per module. No scraping — manually curated for popular modules first. Price Hub
+layer 1 cannot show anything without this data.
+
+- [ ] Add nullable `store_url` to `modules` in `database.types.ts`
+- [ ] Add `update.moduleStoreUrl()` to `supabase.service.ts` (admin/verified-only write)
+- [ ] Show "Buy new" link on module detail page when present
+- [ ] Write display logic tests
+
+---
+
+#### MEDIUM: Patch Tags — Phase 1 (Solo Organisation)
+
+**Why:** Solo org value now (filter own patches); unlocks Collection-Aware Discovery later. Free-form tags, no taxonomy
+yet.
+
+- [ ] Add `tags` (text array) to `patches` in `database.types.ts`
+- [ ] Add `update.patchTags()` to `supabase.service.ts` with `cacheBust(['patchWithId'])`
+- [ ] Inline chip tag editor in patch editor, auto-save on change
+- [ ] Tag filter in patch browser (own patches)
+- [ ] Write tests for update service and filter logic
+
+---
+
+#### LOW: Media Attachment on Patches (Embed-Only v1)
+
+**Why:** Solo memory aid (link a recording to a patch). Public showcase once profiles ship. URL field + embed renderer
+only — no upload, no moderation.
+
+- [ ] Add nullable `media_url` to `patches` in `database.types.ts`
+- [ ] Add `update.patchMediaUrl()` to `supabase.service.ts` with `cacheBust(['patchWithId'])`
+- [ ] URL input + YouTube/SoundCloud embed preview in patch editor
+- [ ] Embed visible on patch read-only view
+- [ ] Write URL validation and render tests
+
+---
+
+#### LOW: Edit Module HP in Rack
+
+**Why:** Rack-specific HP override — correcting wrong HP currently requires removing and re-adding the module.
+
+- [ ] Add nullable `hp_override` to `rack_modules` Row/Insert/Update in `database.types.ts`
+- [ ] Add `update.rackModuleHp()` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
+- [ ] Click-to-edit HP affordance in rack editor; module rendering prefers override when set
 - [ ] Write tests for override logic and rack layout reflow
 
 ---
 
-## Long-term Ideas (not yet broken into steps)
+#### LOW: Multi-Instance — Guard Against Ambiguous Collection-Card Wiring
 
-- **Manufacturer Pages** — Dedicated page per manufacturer; `get.modulesBySameManufacturer()` backend method already
-  exists. Needs UI. SEO opportunity.
-- **Manufacturer Accounts** — Role-based auth expansion; manufacturers claim and manage their own modules. Large scope.
-- **User Profile Pages** — Public activity pages; requires privacy controls. Large scope.
-- **Patch Graph: Occupied Inputs Visualization** — Color/CSS indicator on already-connected inputs in graph.
-- **Patch Graph: User-Colored Nodes** — Let users color-code modules or connections for complex patch clarity.
-- **User Organization (Tags/Folders)** — Group modules, patches, racks. Needs new DB tables + filtering UI.
-- **PWA Support** — Angular PWA schematics, service worker, offline strategy.
-- **Store Integration** — Buy links to retailers; needs business partnerships.
-- **Dark Mode** — CSS variable-based theme system; large design scope.
-- **Better SQL RLS Policies** — Security/performance audit of row-level security; supports future roles.
-- **Media Attachment on Patches** — Audio upload/embed (SoundCloud, etc.) and YouTube link per patch. Transforms a wiring diagram into a shareable piece of music. See PRODUCT_NEEDS.md for open questions.
-- **Collection-Aware Patch Discovery** — Filter public patch browser to patches whose modules are a subset of the viewer's collection. "Patches I can play right now." Requires patch tags feature for full value. See PRODUCT_NEEDS.md.
-- **Patch Tags / Genre / Technique Labels** — User-applied structured labels (e.g. ambient, percussive, FM, generative). Prerequisite for meaningful patch discovery. Needs new DB table + tag UI on patch create/edit.
+**Why:** CVs clicked from collection cards when instances exist produce ambiguous connections ("mystery node" in graph).
+**Decision needed first:** Prompt to pick an instance, or block collection-card wiring entirely when instances exist?
+
+- [ ] Decide guardrail approach (prompt vs block)
+- [ ] Implement guard in patch editor CV click handler
+- [ ] Write targeted unit test
+
+---
+
+### PRODUCT — Tier 1 (requires Tier 0 Manufacturer Phase 1 to be live)
+
+---
+
+#### MEDIUM: Manufacturer Page — Phase 2 (Accounts & Editable Profile)
+
+**Why:** Manufacturers claim their page, manage profile data, submit official MSRP.
+**Depends on:** Manufacturer Page Phase 1 live.
+**Scope:** Auth-gated edit surface. New `manufacturer_accounts` table links `user_id` → `manufacturer` entity. Profile
+fields (name, logo, website, bio) are manufacturer-owned; module data edits go through UGC review queue.
+
+- [ ] Add `manufacturer_accounts` table (user_id, manufacturer_id, verified, created_at) to `database.types.ts`
+- [ ] Add `manufacturer_accounts` to `DbPaths` in `DatabaseStrings.ts`
+- [ ] Add `add.manufacturerAccountClaim()` and `get.manufacturerAccountForUser()` to `supabase.service.ts`
+- [ ] "Claim this page" button on manufacturer detail (auth-gated; one pending claim per manufacturer; manual admin
+  approval via Supabase dashboard)
+- [ ] Verified: unlock edit controls (name, logo URL, website, bio, social links)
+- [ ] Add `update.manufacturerProfile()` with `cacheBust(['manufacturerWithId'])`
+- [ ] Verified badge on manufacturer page and on module cards from that manufacturer
+- [ ] MSRP field per module (visible to verified account only; feeds Price Hub label hierarchy)
+- [ ] Write tests for claim flow and profile update
+
+---
+
+### INFRA (independent; pick any time a product task is blocked)
+
+---
+
+#### HIGH: E2E — Dedicated Test Account Cleanup
+
+**Why:** E2E credentials are coupled to a personal Supabase account — should use a dedicated test account.
+
+- [ ] Create dedicated Supabase test account (email/password)
+- [ ] Update local `.env` and rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD`
+- [ ] Re-run `yarn test:e2e:auth` to confirm
+
+---
+
+#### HIGH: E2E — Multi-Instance Patching
+
+**Why:** Auto-instance feature has 30 unit tests but no E2E coverage through the real UI.
+**Depends on:** Dedicated test account (above).
+
+- [ ] Open patch in editor → verify collection modules appear as cards
+- [ ] "Add Copy" from 0 instances → verify 2 cards with labels (1)(2)
+- [ ] "Add Copy" again → verify 3 cards
+- [ ] Connect CV from instance (1) → verify connection recorded
+- [ ] Same output CV to instance (2) → verify accepted
+- [ ] Same connection again → verify rejected as duplicate
+- [ ] Delete instance with connections → verify confirmation dialog
+- [ ] Confirm deletion → instance removed, connections scrubbed, remaining renumbered
+- [ ] Save + reload → connections and instances survive roundtrip
+- [ ] Legacy patch (pre-instance) → loads and displays correctly
+
+---
+
+#### ON HOLD: SEO — OG Image Generation
+
+**Paused 2026-02-23.** Resume when Manufacturer Page Phase 1 is live (manufacturer pages need OG images too).
+
+Completed: sitemap, robots.txt, canonical URLs, JSON-LD, llms.txt, og:image dimensions, bot cache headers (partial).
+
+Remaining:
+
+- [ ] OG image generation endpoint (`@vercel/og`)
+- [ ] Middleware wiring to generated OG image URLs
+- [ ] Rich preview validation (Telegram / WhatsApp / Slack + debuggers)
+- [ ] Visual polish pass
+
+---
+
+#### POLICY: Unit Test Coverage
+
+Target: statements and lines ≥ 75% (baseline 03-02: ~57%).
+Not a blocking task — coverage rises naturally as new features ship with tests.
+If coverage stalls after two feature completions, revisit as a targeted task:
+
+- Highest-yield uncovered files: `rack-detail-data.service.ts`, `module-detail-data.service.ts`,
+  `user-area-data.service.ts`
+
+---
+
+## Long-term Ideas
+
+> Not yet broken into executable steps. Strategy and rationale in [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md).
+
+**Tier 1 — Community Foundation**
+
+- Public User Profiles — gate for marketplace and community price reporting
+- Contextual Activity — inline activity on module/patch/rack pages (companion to profiles, not a gate)
+
+**Tier 1–2 — Price Hub**
+
+- Cross-store price display (read-only, Tier 1)
+- Price history charts (Tier 1 for scraped data)
+- Community price reports (Tier 2, requires profiles)
+
+**Tier 2 — Market Layer**
+
+- Peer-to-peer module listings from collection; one-way inquiry contact model
+
+**Tier 3 — Discovery & Depth**
+
+- Collection-Aware Patch Discovery — "patches I can play right now" subset query (requires Tags + community layer)
+- User Organization — folders/sets on top of Patch Tags
+
+**Tier 3 — Catalogue & UX**
+
+- Manufacturer Accounts MSRP → Price Hub integration
+- PWA Support — service worker, offline for marketplace/price hub
+- Patch Graph Enhancements — color coding, connected-input indicators
+- Dark Mode — CSS variable theme system (after component library is stable)
