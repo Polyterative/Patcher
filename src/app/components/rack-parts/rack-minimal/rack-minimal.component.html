@@ -1,20 +1,29 @@
-<div class="col parent"
->
-  <app-rack-micro [data]="data"
-                  [viewConfig]="viewConfig"
-  ></app-rack-micro>
-  <ng-content></ng-content>
-  <mat-divider [inset]="true"
-               style="margin-top:.5rem"
-  ></mat-divider>
-  @if (!viewConfig.hideButtons) {
-    <div class="row gap2 opacizeOnHover"
-    >
-      @if ({
-        isCurrentRackEditable: (dataService.isCurrentRackEditable$|async),
-        isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
-        user: (userManagerService.loggedUser$|async)
-      }; as bag) {
+@if ({
+  isCurrentRackEditable: (dataService.isCurrentRackEditable$|async),
+  isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
+  user: (userManagerService.loggedUser$|async)
+}; as bag) {
+  <div class="col parent"
+  >
+    @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable) {
+      <div class="col gap1 padB1">
+        <lib-mat-form-entity [control]="dataService.formData.name.control"
+                             label="Rack name"
+                             iconL1="label"
+        ></lib-mat-form-entity>
+      </div>
+    } @else {
+      <app-rack-micro [data]="data"
+                      [viewConfig]="viewConfig"
+      ></app-rack-micro>
+    }
+    <ng-content></ng-content>
+    <mat-divider [inset]="true"
+                 style="margin-top:.5rem"
+    ></mat-divider>
+    @if (!viewConfig.hideButtons) {
+      <div class="row gap2 opacizeOnHover"
+      >
         @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
           <button mat-icon-button
                   [matTooltip]="data.public ? 'Make rack private' : 'Make rack public'"
@@ -24,35 +33,23 @@
             <mat-icon>{{ (dataService.isCurrentRackPrivate$|async) ? 'lock' : 'public' }}</mat-icon>
           </button>
           <button mat-icon-button
-                  [matTooltip]="bag.isCurrentRackEditable ? 'Rename rack' : 'Edit rack to rename'"
-                  [disabled]="!bag.isCurrentRackEditable"
-                  (click)="dataService.renameCurrentRack$.next()"
-          >
-            <mat-icon>mode_edit</mat-icon>
-          </button>
-          <button mat-icon-button
                   [matTooltip]="bag.isCurrentRackEditable ? 'Delete rack' : 'Edit rack to delete'"
                   [disabled]="!bag.isCurrentRackEditable"
                   (click)="dataService.deleteRack$.next(data)"
-                  class="danger-action"
+                  [class.danger-action]="bag.isCurrentRackEditable"
           >
             <mat-icon>delete_forever</mat-icon>
           </button>
         }
-      }
-      <div fxFlex="grow"></div>
-      <button mat-icon-button
-              [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
-              [disabled]="!(userManagerService.loggedUser$|async)"
-              (click)="dataService.duplicateRack$.next(data)"
-      >
-        <mat-icon>file_copy</mat-icon>
-      </button>
-    </div>
-    @if ({
-      isCurrentRackPropertyOfCurrentUser: (dataService.isCurrentRackPropertyOfCurrentUser$|async),
-      user: (userManagerService.loggedUser$|async)
-    }; as bag) {
+        <div fxFlex="grow"></div>
+        <button mat-icon-button
+                [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
+                [disabled]="!(userManagerService.loggedUser$|async)"
+                (click)="dataService.duplicateRack$.next(data)"
+        >
+          <mat-icon>file_copy</mat-icon>
+        </button>
+      </div>
       @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
         <app-edit-fab
           [editMode$]="dataService.isCurrentRackEditable$"
@@ -63,5 +60,5 @@
         ></app-edit-fab>
       }
     }
-  }
-</div>
+  </div>
+}
