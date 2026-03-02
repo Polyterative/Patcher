@@ -4,9 +4,24 @@
 
 :host {
   display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .manufacturer-list {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+app-manufacturer-row {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
