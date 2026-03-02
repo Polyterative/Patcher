@@ -6,7 +6,7 @@
 > 2. **Execution detail belongs in [TODO.md](./TODO.md)** — when picking up a feature, open TODO.md, not this file.
 > 3. **Keep open questions open** — do not resolve design questions here without explicit user instruction; add them to
      the relevant TODO task when it becomes Active.
-> 4. **When a feature is done** — move it to [COMPLETED.md](./COMPLETED.md) and remove from the status table below.
+> 4. **When a feature is done** — move it to [COMPLETED.md](./COMPLETED.md) and remove from this file entirely.
 
 **For execution detail, implementation steps, and task tracking → see [TODO.md](./TODO.md).**
 
@@ -62,8 +62,7 @@ physical copy of a module a cable connects to. This distinction matters for UI:
 - **Patch instances = internal wiring concept.** The system needs them to distinguish "output from copy 1" vs "output
   from copy 2." But the user doesn't need to see instance counts or labels as raw statistics.
 - **User-facing statistics should derive from connections**, not from internal instance bookkeeping. Show cables,
-  modules
-  used, multiples (one output driving multiple inputs). Don't show how many instances the system allocated.
+  modules used, multiples (one output driving multiple inputs). Don't show how many instances the system allocated.
 
 ---
 
@@ -87,80 +86,70 @@ exports, advanced org), API access.
 
 ### Multi-Instance UX Gaps
 
-The module-instances feature (code complete) introduced the ability to use the same module multiple times in a patch.
-Three user-facing gaps remain:
+The module-instances feature introduced the ability to use the same module multiple times in a patch. One user-facing
+gap remains:
 
 1. **Ambiguous wiring from collection cards** — When a module has active instances, clicking its CVs from the collection
-   list creates connections with no instance association. This silently produces ambiguous data that renders as a "
-   mystery
-   node" in the graph. Users have no guard rail steering them to the instance cards instead.
+   list creates connections with no instance association. This silently produces ambiguous data that renders as a
+   "mystery node" in the graph. Users have no guard rail steering them to the instance cards instead.
 
-2. **~~Statistics count module types, not slots~~** — ✅ Resolved (Feb 2026). Statistics now show only Cables, Modules,
-   and Multiples — all derived from connections. The raw "Module copies" counter (which leaked internal instance counts)
-   has been removed. The Module Copies summary card now derives from connections (modules with 2+ distinct connected
-   copies) rather than internal instance bookkeeping.
-
-3. **~~No unsaved-changes warning on navigation~~** — ✅ Resolved by auto-save (Feb 2026). Patch editing now persists
-   all changes immediately (name, description, connections), matching rack behavior. No manual save needed.
-
-**Open question:** For gap #1, should the system prompt users to pick an instance, or should it prevent wiring from the
-collection card entirely when instances exist? Trade-off between flexibility and guardrails.
+**Open question:** Should the system prompt users to pick an instance, or prevent wiring from the collection card
+entirely when instances exist? Trade-off between flexibility and guardrails.
 
 ---
 
-## Feature Status Summary
+## Horizon Features
 
-> Completed features archived in [COMPLETED.md](./COMPLETED.md).
+> These are directional ideas, not committed backlog. Each needs a design decision before scoping.
 
-| Feature                              | Status              | Detail                                                                          |
-|--------------------------------------|---------------------|---------------------------------------------------------------------------------|
-| Sticky floating selection panel      | ✅ Done              | position:fixed overlay; bridge service; deselect buttons                        |
-| Multiple module instances in patches | 🟡 In progress      | Core done; 1 UX gap remains (ambiguous wiring); stats rework resolved           |
-| Instance UX: ambiguous wiring guard  | 🔲 Backlog – High   | Collection-card CVs create unassociated connections                             |
-| Instance UX: stats accuracy          | ✅ Done              | Stats show Cables/Modules/Multiples only; Module Copies card connection-derived |
-| Module review flagging               | 🔲 Backlog – Medium | See TODO.md                                                                     |
-| Edit module HP in rack               | 🔲 Backlog – Low    | See TODO.md                                                                     |
-| Safari image export                  | ✅ Done              | Replaced `html-to-image` with `modern-screenshot`; download and rendering fixed |
-| Manufacturer pages                   | 💡 Long-term        | Backend method exists                                                           |
-| Manufacturer accounts                | 💡 Long-term        | Large scope, auth expansion                                                     |
-| User profile pages                   | 💡 Long-term        | Needs privacy design                                                            |
-| Patch graph — animation + progressive reveal | ✅ Done       | Progressive reveal controller, edge flow animation, progressive node rendering, enhanced node labels |
-| Patch graph — occupied inputs / user-colored nodes | 💡 Long-term | Color indicator on connected inputs; user-defined node color-coding             |
-| User organization (tags/folders)     | 💡 Long-term        | New DB tables                                                                   |
-| PWA support                          | 💡 Nice-to-have     |                                                                                 |
-| Store integration                    | 💡 Nice-to-have     | Needs partnerships                                                              |
-| Dark mode                            | 💡 Nice-to-have     | Large design scope                                                              |
-| Better SQL RLS policies              | 💡 Long-term        | Operational / security                                                          |
-| Media attachment on patches          | 💡 Long-term        | Audio upload/embed + video link; transforms patches into shareable media        |
-| Collection-aware patch discovery     | 💡 Long-term        | Filter public patches to only those playable with user's owned modules          |
-| Patch tags / genre / technique       | 💡 Long-term        | Structured labels for discovery; prerequisite for collection-aware filtering    |
+### Manufacturer Pages
 
----
+Dedicated page per manufacturer. Backend query method already exists. SEO opportunity. Needs UI design and a decision on
+whether manufacturer accounts (see below) gate edit access.
+
+### Manufacturer Accounts
+
+Role-based auth expansion; manufacturers claim and manage their own modules. Large scope with trust/verification
+implications. Blocked on Data Integrity philosophy decision above.
+
+### User Profile Pages
+
+Public activity pages showing a user's racks, patches, and contributions. Requires privacy controls and a clear answer
+to the Community vs Solo Tool question above.
 
 ### Media Attachment on Patches
-
 The platform documents *what* is connected but nothing about *what it sounds like*. Attaching audio (upload or embed) and video (YouTube/SoundCloud link) to a patch would transform it from a wiring diagram into an inspiration and learning resource — the natural way a modular musician shares their work.
 
 **Open questions:** Hosted upload vs embed-only? Moderation of uploaded audio? Does media attach to a patch version or the patch as a whole?
 
----
-
 ### Collection-Aware Patch Discovery
-
 Users have collections (modules they own) and there are public patches. The missing bridge: "show me public patches I could play right now with what I own." The query is a subset match — patches whose module set is contained in the viewer's collection. No other tool does this well and Patcher has all the data to make it work.
 
 **Open questions:** How to handle near-matches ("you're missing 1 module")? Should this be a filter on the patch browser or a dedicated discovery page?
 
----
-
 ### Patch Tags / Genre / Technique Labels
-
 Patches have a name and description but no structured metadata for discovery. Users can't find "slow evolving ambient," "euclidean rhythms," or "West Coast FM" patches. Tags (user-applied) or a controlled vocabulary of technique/genre labels would make public content actually browseable.
 
 **Open questions:** Free-form tags vs curated taxonomy? Who can add tags — author only, or community? Does this feed into collection-aware discovery (e.g. "ambient patches I can play")?
 
----
+### Patch Graph Enhancements
 
-## Won't Fix
+Color/CSS indicator on already-connected inputs; user-defined node color-coding for complex patch clarity. Design
+question: per-user preference or per-patch setting?
 
-- **Larger "+" icon for adding modules** — Design decision, current size is intentional.
+### User Organization (Tags/Folders)
+
+Group modules, patches, racks into collections or folders. Needs new DB tables and filtering UI. Depends on clarity of
+the Community vs Solo Tool direction.
+
+### PWA Support
+
+Angular PWA schematics, service worker, offline strategy. Priority depends on Mobile Strategy decision above.
+
+### Store Integration
+
+Buy links to retailers. Needs business partnerships before any engineering investment.
+
+### Dark Mode
+
+CSS variable-based theme system. Large design scope; only worth doing once the component library is stable.
