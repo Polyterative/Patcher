@@ -52,12 +52,18 @@
           } @else {
             <app-empty-state></app-empty-state>
           }
-        } @else {
-          <lib-auto-update-loading-indicator
-            [data$]="dataService.manufacturers$"
-            [updateData$]="dataService.updateList$"
-          ></lib-auto-update-loading-indicator>
         }
+        <mat-paginator
+          [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$ | async) < 20"
+          [pageSizeOptions]="[10, 20, 50]"
+          [length]="dataService.serversideAdditionalData.itemsCount$ | async"
+          (page)="dataService.onPageEvent($event)"
+          showFirstLastButtons
+        ></mat-paginator>
+        <lib-auto-update-loading-indicator
+          [data$]="dataService.manufacturers$"
+          [updateData$]="dataService.updateList$"
+        ></lib-auto-update-loading-indicator>
       </div>
     
     </div>

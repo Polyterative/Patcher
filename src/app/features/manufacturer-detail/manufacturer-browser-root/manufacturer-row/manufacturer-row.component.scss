@@ -3,7 +3,7 @@
 :host {
   display: block;
   border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-  padding: 0.75rem 0;
+  padding: 1rem 0;
 
   &:last-child {
     border-bottom: none;
@@ -22,64 +22,83 @@
   padding: 0.25rem 0.5rem 0.25rem 0;
   border-radius: 0.375rem;
   transition: background 120ms ease;
+  margin-bottom: 0.75rem;
 
   &:hover {
     background: rgba(0, 0, 0, 0.04);
 
     .manufacturer-row-chevron {
       opacity: 1;
-      transform: translateX(2px);
+      transform: translateX(3px);
     }
   }
 }
 
 .manufacturer-row-logo {
-  height: 2rem;
-  max-width: 6rem;
+  height: 2.5rem;
+  max-width: 7rem;
   object-fit: contain;
   flex-shrink: 0;
   border-radius: 0.2rem;
 }
 
 .manufacturer-row-logo-placeholder {
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.3;
+  opacity: 0.25;
   flex-shrink: 0;
 
   mat-icon {
-    font-size: 1.5rem;
-    width: 1.5rem;
-    height: 1.5rem;
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
   }
 }
 
 .manufacturer-row-name {
   @include heading-font;
-  font-size: 1.05rem;
+  font-size: 1.75rem;
   font-weight: 500;
-  line-height: 1.2;
-  color: rgba(0, 0, 0, 0.82);
+  line-height: 1.15;
+  color: rgba(0, 0, 0, 0.84);
+
+  @media (max-width: 36rem) {
+    font-size: 1.35rem;
+  }
 }
 
 .manufacturer-row-chevron {
-  font-size: 1.1rem;
-  width: 1.1rem;
-  height: 1.1rem;
-  opacity: 0.35;
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  opacity: 0.3;
   transition: opacity 120ms ease, transform 120ms ease;
   flex-shrink: 0;
 }
 
-// ── Module strip ──────────────────────────────────────────────────────────
+// ── Module strip — single nowrap row with horizontal scroll ───────────────
 .manufacturer-row-modules {
-  margin-top: 0.5rem;
   overflow-x: auto;
-  // subtle scrollbar
+  overflow-y: visible;
   @include scrollbars(0.3rem);
+}
+
+.module-strip {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; // single row — never wrap
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding-bottom: 0.25rem; // room for scrollbar
+}
+
+.module-strip-card {
+  flex: 0 0 9rem; // fixed width, no grow/shrink
+  width: 9rem;
+  min-width: 0;
 }
 
 .manufacturer-row-empty {

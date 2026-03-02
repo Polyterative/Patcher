@@ -2,9 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { MatPaginator } from '@angular/material/paginator';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
@@ -19,6 +22,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
   standalone: false
 })
 export class ManufacturerBrowserRootComponent implements OnInit, OnDestroy {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   readonly formTypes = FormTypes;
   private readonly destroy$ = new Subject<void>();
 
@@ -37,6 +41,13 @@ export class ManufacturerBrowserRootComponent implements OnInit, OnDestroy {
       },
       'Manufacturers'
     );
+    
+    this.dataService.paginatorToFistPage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.paginator?.firstPage());
+    
+    this.dataService.serversideTableRequestData.skip$.next(0);
+    this.dataService.serversideTableRequestData.take$.next(20);
     this.dataService.updateList$.next();
   }
   
