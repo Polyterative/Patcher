@@ -2,6 +2,7 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { TimeagoModule } from 'ngx-timeago';
 
 
 const WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -13,7 +14,8 @@ const STALE_COLOR = '#111111';
   selector: 'app-manufacturer-updated-badge',
   templateUrl: './manufacturer-updated-badge.component.html',
   styleUrls: ['./manufacturer-updated-badge.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [TimeagoModule]
 })
 export class ManufacturerUpdatedBadgeComponent {
   private _updatedAt: string | null = null;

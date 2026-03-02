@@ -4,8 +4,11 @@ import {
   Input,
   OnInit
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatIconModule } from '@angular/material/icon';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { ModuleList } from 'src/app/features/module-browser/module-browser-data.service';
 import { ManufacturerDetail } from '../../manufacturer-detail-data.service';
@@ -14,6 +17,10 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
+import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
+import { ManufacturerUpdatedBadgeComponent } from './manufacturer-updated-badge/manufacturer-updated-badge.component';
 
 
 @Component({
@@ -21,7 +28,16 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   templateUrl: './manufacturer-row.component.html',
   styleUrls: ['./manufacturer-row.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatIconModule,
+    AutoContentLoadingIndicatorModule,
+    CleanCardModule,
+    ModulePartsModule,
+    ManufacturerUpdatedBadgeComponent
+  ]
 })
 export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
