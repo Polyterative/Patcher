@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
 import {
   fadeInOnEnterAnimation,
@@ -28,17 +27,13 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchCompositeComponent implements OnInit {
+export class PatchCompositeComponent {
   @Input() data: Patch;
-  @Input() isEditing: boolean = false;
-  @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
-  
+  @Input() isEditing = false;
+  @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+
   constructor(
     public appState: AppStateService,
     public dataService: PatchDetailDataService
   ) {}
-  
-  ngOnInit(): void {
-  }
-  
 }
