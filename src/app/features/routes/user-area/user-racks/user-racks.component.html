@@ -35,6 +35,15 @@
         }
       }
       
+      @if ((dataService.racksCount$ | async) > 10) {
+        <mat-paginator
+          [pageSize]="dataService.racksPagination.take$.value"
+          [pageSizeOptions]="[10, 20, 50]"
+          [length]="dataService.racksCount$ | async"
+          (page)="dataService.racksPageEvent$.next($event)"
+          showFirstLastButtons
+        ></mat-paginator>
+      }
       <lib-auto-update-loading-indicator [data$]="dataService.rackData$"
                                          [updateData$]="dataService.updateRackData$"
       ></lib-auto-update-loading-indicator>

@@ -9,6 +9,7 @@ import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 
 @NgModule({
@@ -22,6 +23,7 @@ import { MatCardModule } from "@angular/material/card";
     FlexLayoutModule,
     BrandPrimaryButtonModule,
     MatCardModule,
+    MatPaginatorModule,
     MatDividerModule,
     AutoUpdateLoadingIndicatorModule,
     RouterLink
