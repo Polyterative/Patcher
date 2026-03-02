@@ -353,7 +353,7 @@
       </div>
     </lib-hero-content-card>
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
-      <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)"></app-manufacturer-row>
+      <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)" [hideRowLink]="true"></app-manufacturer-row>
     }
   </div>
 }

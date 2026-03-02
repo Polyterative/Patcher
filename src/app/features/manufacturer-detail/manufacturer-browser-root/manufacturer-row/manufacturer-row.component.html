@@ -1,9 +1,11 @@
 <div class="manufacturer-row-wrap">
-  <!-- Full-row click target -->
-  <a class="manufacturer-row-link"
-     [routerLink]="['/manufacturers/details', manufacturer.id]"
-     aria-label="View {{ manufacturer.name }} details"
-  ></a>
+  <!-- Full-row click target — hidden when used in contexts where row navigation is not desired -->
+  @if (!hideRowLink) {
+    <a class="manufacturer-row-link"
+       [routerLink]="['/manufacturers/details', manufacturer.id]"
+       aria-label="View {{ manufacturer.name }} details"
+    ></a>
+  }
   
   <!-- Header: logo + name + badges -->
   <div class="manufacturer-row-header">
@@ -17,7 +19,13 @@
     }
     <div class="manufacturer-row-name-group">
       <div class="manufacturer-row-title-line">
-        <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
+        @if (hideRowLink) {
+          <a class="manufacturer-row-name manufacturer-row-name--link"
+             [routerLink]="['/manufacturers/details', manufacturer.id]"
+          >{{ manufacturer.name }}</a>
+        } @else {
+          <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
+        }
         @if (manufacturer.moduleCount !== undefined) {
           <span class="manufacturer-row-count-badge">
             {{ manufacturer.moduleCount }} {{ manufacturer.moduleCount === 1 ? 'module' : 'modules' }}
@@ -34,10 +42,8 @@
         }
       </div>
     </div>
-    <!-- Visual cue that the row navigates to a new page -->
-    <mat-icon class="manufacturer-row-chevron">open_in_new</mat-icon>
   </div>
-  
+
   @if (modules$ | async; as modules) {
     @if (modules.length === 0) {
       <span class="manufacturer-row-empty">No modules yet</span>
@@ -48,6 +54,8 @@
             <lib-clean-card
               class="module-strip-card module-card-appear"
               [style.--module-index]="i"
+              [routerLink]="['/modules/details', module.id]"
+              style="cursor: pointer; position: relative; z-index: 3;"
             >
               <app-module-minimal
                 [data]="module"
