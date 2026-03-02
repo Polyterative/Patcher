@@ -33,6 +33,15 @@
           </div>
         }
       }
+      @if ((dataService.patchesCount$ | async) > 10) {
+        <mat-paginator
+          [pageSize]="dataService.patchesPagination.take$.value"
+          [pageSizeOptions]="[10, 20, 50]"
+          [length]="dataService.patchesCount$ | async"
+          (page)="dataService.patchesPageEvent$.next($event)"
+          showFirstLastButtons
+        ></mat-paginator>
+      }
       <lib-auto-update-loading-indicator [data$]="dataService.patchesData$"
                                          [updateData$]="dataService.updatePatchesData$"
       ></lib-auto-update-loading-indicator>
