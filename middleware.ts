@@ -156,6 +156,7 @@ function isBypassPath(pathname: string): boolean {
     || pathname.startsWith('/_vercel/')
     || pathname.startsWith('/.well-known/')
     || pathname === '/favicon.ico'
+    || pathname === '/sitemap.xml'
     || STATIC_ASSET_REGEX.test(pathname);
 }
 
@@ -382,8 +383,8 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
     descParts.push(moduleRow.description.trim());
   } else {
     if (manufacturerName) descParts.push(`Eurorack module by ${ manufacturerName }.`);
-    if (moduleRow.hp) descParts.push(`${ moduleRow.hp } HP.`);
   }
+  if (moduleRow.hp) descParts.push(`${ moduleRow.hp } HP.`);
   const description = clampDescription(descParts.join(' '), DEFAULT_DESCRIPTION);
 
   const panelFilename = moduleRow.panels?.[0]?.filename;
@@ -391,7 +392,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
     ? `${ SUPABASE_URL }/storage/v1/object/public/module-panels/${ encodeURIComponent(panelFilename) }`
     : getDefaultImage(siteOrigin);
   const source = panelFilename ? 'module-panel' : 'module-default-image';
-  
+
   const additionalProperty: Record<string, unknown>[] = [];
   if (moduleRow.hp) {
     additionalProperty.push({'@type': 'PropertyValue', name: 'HP', value: moduleRow.hp});
@@ -414,7 +415,6 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
       name: moduleName,
       description,
       image,
-      url: canonicalUrl,
       datePublished: moduleRow.created,
       dateModified: moduleRow.updated,
       ...(additionalProperty.length ? {additionalProperty} : {}),
@@ -469,7 +469,6 @@ async function getPatchMetadata(patchId: number, canonicalUrl: string, siteOrigi
       name: patchName,
       description,
       image,
-      url: canonicalUrl,
       datePublished: patchRow.created,
       dateModified: patchRow.updated,
       ...(authorName ? {
@@ -530,7 +529,6 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
       name: rackName,
       description,
       image: rackImageData.image,
-      url: canonicalUrl,
       datePublished: rackRow.created,
       dateModified: rackRow.updated,
       ...(additionalProperty.length ? {additionalProperty} : {}),
@@ -554,6 +552,7 @@ function defaultMetadata(canonicalUrl: string, siteOrigin: string, source = 'def
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
+      '@id': siteOrigin,
       name: SITE_NAME,
       url: siteOrigin,
       description: DEFAULT_DESCRIPTION,
@@ -678,7 +677,6 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <meta property="og:description" content="${ description }">
   <meta property="og:url" content="${ canonical }">
   <meta property="og:image" content="${ image }">
-  <meta property="og:image:secure_url" content="${ image }">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="${ title }">${ articleTimeTags }
@@ -686,7 +684,6 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${ title }">
   <meta name="twitter:description" content="${ description }">
-  <meta name="twitter:url" content="${ canonical }">
   <meta name="twitter:image" content="${ image }">
   <meta name="twitter:image:alt" content="${ title }">
 
