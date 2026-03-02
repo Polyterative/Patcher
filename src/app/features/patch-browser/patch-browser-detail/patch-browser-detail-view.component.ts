@@ -86,9 +86,14 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           
           const joined: string = uniqueModulesInPatch.join(', ');
           
+          const descParts: string[] = [];
+          if (patchData.description) { descParts.push(patchData.description.trim()); }
+          descParts.push(`Eurorack patch by ${ patchData.author?.username || 'unknown' } using ${ uniqueModulesInPatch.length } module${ uniqueModulesInPatch.length !== 1 ? 's' : '' }: ${ joined }.`);
+          descParts.push(`${ patchConnections.length } connection${ patchConnections.length !== 1 ? 's' : '' } recorded.`);
+          
           const seoData: SeoSocialShareData = {
             title: `${ patchData.name } - details. `,
-            description: `${ patchData.name } - patch details. Used modules: ${ joined }, for a total of ${ joined.length } connections.`,
+            description: descParts.join(' '),
             keywords: `${ patchConnections.map(x => x.a.name)
               .join(', ') },${ patchConnections.map(x => x.a.name)
               .join(', ') },${ joined }, patch, eurorack`,

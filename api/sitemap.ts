@@ -6,6 +6,9 @@ const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_TIMEOUT_MS = 2500;
 const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
+
+const STORAGE_BASE = `${ DEFAULT_SUPABASE_URL }/storage/v1/object/public`;
+
 const STATIC_ROUTES = [
   '/',
   '/home',
@@ -20,9 +23,39 @@ interface PublicEntityRow {
   updated?: string;
 }
 
+interface ModuleRow extends PublicEntityRow {
+  name?: string;
+  description?: string;
+  hp?: number;
+  manufacturer?: {
+    name?: string
+  };
+  panels?: {
+    filename?: string
+  }[];
+}
+
+interface PatchRow extends PublicEntityRow {
+  name?: string;
+  description?: string;
+}
+
+interface RackRow extends PublicEntityRow {
+  name?: string;
+  description?: string;
+  hp?: number;
+  rows?: number;
+  image?: string;
+}
+
 interface SitemapEntry {
   loc: string;
   lastmod?: string;
+  changefreq?: string;
+  priority?: string;
+  imageUrl?: string;
+  imageTitle?: string;
+  imageCaption?: string;
 }
 
 export default async function handler(req: any, res: any): Promise<void> {
@@ -47,33 +80,86 @@ export default async function handler(req: any, res: any): Promise<void> {
 }
 
 async function buildSitemapEntries(): Promise<SitemapEntry[]> {
-  const staticEntries = STATIC_ROUTES.map(route => ({
-    loc: `${ SITE_URL }${ route }`
+  const staticEntries: SitemapEntry[] = STATIC_ROUTES.map(route => ({
+    loc: `${ SITE_URL }${ route }`,
+    changefreq: 'weekly',
+    priority: route === '/home' ? '1.0' : '0.8'
   }));
-  
-  const [moduleRows, patchRows, rackRows] = await Promise.all([
-    fetchPublicEntityRows('modules'),
-    fetchPublicEntityRows('patches'),
-    fetchPublicEntityRows('racks')
-  ]);
 
-  const moduleEntries = moduleRows.map(row => makeEntityEntry('/modules/details/', row));
-  const patchEntries = patchRows.map(row => makeEntityEntry('/patches/details/', row));
-  const rackEntries = rackRows.map(row => makeEntityEntry('/racks/details/', row));
+  const [moduleRows, patchRows, rackRows] = await Promise.all([
+    fetchPublicEntityRows<ModuleRow>('modules', 'id,created,updated,name,description,hp,manufacturer:manufacturerId(name),panels:module_panels(filename)'),
+    fetchPublicEntityRows<PatchRow>('patches', 'id,created,updated,name,description'),
+    fetchPublicEntityRows<RackRow>('racks', 'id,created,updated,name,description,hp,rows,image')
+  ]);
   
+  const moduleEntries = moduleRows.map(row => makeModuleEntry(row));
+  const patchEntries = patchRows.map(row => makePatchEntry(row));
+  const rackEntries = rackRows.map(row => makeRackEntry(row));
+
   return [...staticEntries, ...moduleEntries, ...patchEntries, ...rackEntries]
     .filter((entry): entry is SitemapEntry => !!entry)
     .sort((a, b) => a.loc.localeCompare(b.loc));
 }
 
-function makeEntityEntry(routePrefix: string, row: PublicEntityRow): SitemapEntry | undefined {
-  if (!row.id) {
-    return undefined;
-  }
+function makeModuleEntry(row: ModuleRow): SitemapEntry | undefined {
+  if (!row.id) return undefined;
+  
+  const panelFilename = row.panels?.[0]?.filename;
+  const manufacturerName = row.manufacturer?.name;
+  
+  const titleParts: string[] = [];
+  if (row.name) titleParts.push(row.name);
+  if (manufacturerName) titleParts.push(`by ${ manufacturerName }`);
+  if (row.hp) titleParts.push(`${ row.hp }HP`);
+  const imageTitle = titleParts.join(' — ');
+  
+  const captionParts: string[] = [];
+  if (row.description) captionParts.push(row.description.trim());
+  if (manufacturerName) captionParts.push(`Made by ${ manufacturerName }.`);
+  const imageCaption = captionParts.join(' ');
+  
+  return {
+    loc: `${ SITE_URL }/modules/details/${ row.id }`,
+    lastmod: normalizeIsoDate(row.updated || row.created),
+    changefreq: 'monthly',
+    priority: '0.7',
+    imageUrl: panelFilename ? `${ STORAGE_BASE }/module-panels/${ panelFilename }` : undefined,
+    imageTitle: imageTitle || undefined,
+    imageCaption: imageCaption || undefined
+  };
+}
+
+function makePatchEntry(row: PatchRow): SitemapEntry | undefined {
+  if (!row.id) return undefined;
+  
+  return {
+    loc: `${ SITE_URL }/patches/details/${ row.id }`,
+    lastmod: normalizeIsoDate(row.updated || row.created),
+    changefreq: 'monthly',
+    priority: '0.6'
+  };
+}
+
+function makeRackEntry(row: RackRow): SitemapEntry | undefined {
+  if (!row.id) return undefined;
+  
+  const titleParts: string[] = [];
+  if (row.name) titleParts.push(row.name);
+  if (row.rows && row.hp) titleParts.push(`${ row.rows }×${ row.hp }HP`);
+  const imageTitle = titleParts.join(' — ');
+  
+  const captionParts: string[] = [];
+  if (row.description) captionParts.push(row.description.trim());
+  const imageCaption = captionParts.join(' ');
 
   return {
-    loc: `${ SITE_URL }${ routePrefix }${ row.id }`,
-    lastmod: normalizeIsoDate(row.updated || row.created)
+    loc: `${ SITE_URL }/racks/details/${ row.id }`,
+    lastmod: normalizeIsoDate(row.updated || row.created),
+    changefreq: 'monthly',
+    priority: '0.6',
+    imageUrl: row.image ? `${ STORAGE_BASE }/racks/${ row.image }` : undefined,
+    imageTitle: imageTitle || undefined,
+    imageCaption: imageCaption || undefined
   };
 }
 
@@ -90,14 +176,13 @@ function normalizeIsoDate(value?: string): string | undefined {
   return parsed.toISOString();
 }
 
-
-async function fetchPublicEntityRows(tableName: string): Promise<PublicEntityRow[]> {
+async function fetchPublicEntityRows<T extends PublicEntityRow>(tableName: string, select: string): Promise<T[]> {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return [];
   }
 
   const params = new URLSearchParams();
-  params.set('select', 'id,created,updated');
+  params.set('select', select);
   params.set('public', 'eq.true');
   params.set('order', 'updated.desc.nullslast,id.asc');
   params.set('limit', '5000');
@@ -119,7 +204,7 @@ async function fetchPublicEntityRows(tableName: string): Promise<PublicEntityRow
   }
 
   const payload = await response.json().catch(() => []);
-  return Array.isArray(payload) ? payload as PublicEntityRow[] : [];
+  return Array.isArray(payload) ? payload as T[] : [];
 }
 
 function resolveSiteUrl(): string {
@@ -180,11 +265,22 @@ function isPreviewRequest(req: any): boolean {
 function renderSitemapXml(entries: SitemapEntry[]): string {
   const body = entries.map((entry) => {
     const lastmodTag = entry.lastmod ? `<lastmod>${ escapeXml(entry.lastmod) }</lastmod>` : '';
-    return `<url><loc>${ escapeXml(entry.loc) }</loc>${ lastmodTag }</url>`;
+    const changefreqTag = entry.changefreq ? `<changefreq>${ escapeXml(entry.changefreq) }</changefreq>` : '';
+    const priorityTag = entry.priority ? `<priority>${ escapeXml(entry.priority) }</priority>` : '';
+    
+    let imageTag = '';
+    if (entry.imageUrl) {
+      const locTag = `<image:loc>${ escapeXml(entry.imageUrl) }</image:loc>`;
+      const titleTag = entry.imageTitle ? `<image:title>${ escapeXml(entry.imageTitle) }</image:title>` : '';
+      const captionTag = entry.imageCaption ? `<image:caption>${ escapeXml(entry.imageCaption) }</image:caption>` : '';
+      imageTag = `<image:image>${ locTag }${ titleTag }${ captionTag }</image:image>`;
+    }
+    
+    return `<url><loc>${ escapeXml(entry.loc) }</loc>${ lastmodTag }${ changefreqTag }${ priorityTag }${ imageTag }</url>`;
   }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${ body }</urlset>`;
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${ body }</urlset>`;
 }
 
 function escapeXml(value: string): string {
