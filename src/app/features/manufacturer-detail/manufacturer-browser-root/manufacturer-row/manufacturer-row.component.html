@@ -1,56 +1,65 @@
-<a class="manufacturer-row-header"
-   [routerLink]="['/manufacturers/details', manufacturer.id]"
->
-  @if (manufacturer.logo) {
-    <img
-      class="manufacturer-row-logo"
-      [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + manufacturer.logo"
-      [alt]="manufacturer.name + ' logo'"
-      loading="lazy"
-    />
-  }
-  <div class="manufacturer-row-name-group">
-    <div class="manufacturer-row-title-line">
-      <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
-      @if (manufacturer.moduleCount !== undefined) {
-        <span class="manufacturer-row-count-badge">
-          {{ manufacturer.moduleCount }} {{ manufacturer.moduleCount === 1 ? 'module' : 'modules' }}
-        </span>
-      }
-      @if ((manufacturer.changedModulesLast30Days ?? 0) > 0) {
-        <span class="manufacturer-row-fresh-pill">
-          +{{ manufacturer.changedModulesLast30Days }} in 30d
-        </span>
-      }
-      @if (manufacturer.latestModuleUpdatedAt) {
-        <app-manufacturer-updated-badge [updatedAt]="manufacturer.latestModuleUpdatedAt">
-        </app-manufacturer-updated-badge>
-      }
-    </div>
-  </div>
-</a>
-
-@if (modules$ | async; as modules) {
-  @if (modules.length === 0) {
-    <span class="manufacturer-row-empty">No modules yet</span>
-  } @else {
-    <div class="manufacturer-row-modules">
-      <div class="module-strip">
-        @for (module of modules; track module.id; let i = $index) {
-          <lib-clean-card
-            class="module-strip-card module-card-appear"
-            [style.--module-index]="i"
-          >
-            <app-module-minimal
-              [data]="module"
-              [viewConfig]="moduleViewConfig"
-            ></app-module-minimal>
-          </lib-clean-card>
+<div class="manufacturer-row-wrap">
+  <!-- Full-row click target -->
+  <a class="manufacturer-row-link"
+     [routerLink]="['/manufacturers/details', manufacturer.id]"
+     aria-label="View {{ manufacturer.name }} details"
+  ></a>
+  
+  <!-- Header: logo + name + badges -->
+  <div class="manufacturer-row-header">
+    @if (manufacturer.logo) {
+      <img
+        class="manufacturer-row-logo"
+        [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + manufacturer.logo"
+        [alt]="manufacturer.name + ' logo'"
+        loading="lazy"
+      />
+    }
+    <div class="manufacturer-row-name-group">
+      <div class="manufacturer-row-title-line">
+        <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
+        @if (manufacturer.moduleCount !== undefined) {
+          <span class="manufacturer-row-count-badge">
+            {{ manufacturer.moduleCount }} {{ manufacturer.moduleCount === 1 ? 'module' : 'modules' }}
+          </span>
+        }
+        @if ((manufacturer.changedModulesLast30Days ?? 0) > 0) {
+          <span class="manufacturer-row-fresh-pill">
+            +{{ manufacturer.changedModulesLast30Days }} in 30d
+          </span>
+        }
+        @if (manufacturer.latestModuleUpdatedAt) {
+          <app-manufacturer-updated-badge [updatedAt]="manufacturer.latestModuleUpdatedAt">
+          </app-manufacturer-updated-badge>
         }
       </div>
     </div>
+    <!-- Visual cue that the row is clickable -->
+    <mat-icon class="manufacturer-row-chevron">chevron_right</mat-icon>
+  </div>
+  
+  @if (modules$ | async; as modules) {
+    @if (modules.length === 0) {
+      <span class="manufacturer-row-empty">No modules yet</span>
+    } @else {
+      <div class="manufacturer-row-modules">
+        <div class="module-strip">
+          @for (module of modules; track module.id; let i = $index) {
+            <lib-clean-card
+              class="module-strip-card module-card-appear"
+              [style.--module-index]="i"
+            >
+              <app-module-minimal
+                [data]="module"
+                [viewConfig]="moduleViewConfig"
+              ></app-module-minimal>
+            </lib-clean-card>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
+    </lib-auto-content-loading-indicator>
   }
-} @else {
-  <lib-auto-content-loading-indicator [loadingLines]="1" [skipFirstData]="true">
-  </lib-auto-content-loading-indicator>
-}
+</div>

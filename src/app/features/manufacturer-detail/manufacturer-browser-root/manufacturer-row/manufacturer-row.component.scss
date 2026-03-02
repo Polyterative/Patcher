@@ -6,36 +6,69 @@
   min-width: 0;
   max-width: 100%;
   overflow-x: hidden;
-  padding: 1rem;
   background: rgba(255, 255, 255, 0.22);
   transition: background 120ms ease;
+  position: relative;
 
   &:nth-child(even) {
     background: rgba(255, 255, 255, 0.14);
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.38);
+    cursor: pointer;
+
+    .manufacturer-row-chevron {
+      opacity: 1;
+      transform: translateX(0.2rem);
+    }
   }
 }
 
-// ── Header row: logo + name + arrow ───────────────────────────────────────
+// ── Full-row invisible overlay link ──────────────────────────────────────
+.manufacturer-row-wrap {
+  display: block;
+  position: relative;
+  padding: 1rem;
+}
+
+.manufacturer-row-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  // Sits above the background but below the scrollable module strip
+  cursor: pointer;
+}
+
+// Module strip sits above the overlay so horizontal scroll still works
+.manufacturer-row-modules {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-gutter: stable;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  padding-bottom: 0.15rem;
+  @include scrollbars(0.3rem);
+}
 .manufacturer-row-header {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
   width: 100%;
   box-sizing: border-box;
   padding: 0.4rem 0.55rem;
-  transition: background 120ms ease;
   margin-bottom: 0.75rem;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.45);
-  }
+  position: relative;
+  z-index: 0;
 }
 
 .manufacturer-row-logo {
@@ -64,6 +97,14 @@
   min-width: 0;
   flex-direction: row;
   align-items: center;
+}
+
+.manufacturer-row-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0.35;
+  color: #3a5a78;
+  transition: opacity 120ms ease, transform 120ms ease;
 }
 
 .manufacturer-row-title-line {
@@ -104,21 +145,6 @@
 }
 
 // ── Module strip — single nowrap row with horizontal scroll ───────────────
-.manufacturer-row-modules {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  scrollbar-gutter: stable;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  padding-bottom: 0.15rem;
-  @include scrollbars(0.3rem);
-}
 
 .module-strip {
   display: inline-flex;
@@ -141,6 +167,8 @@
   box-sizing: border-box;
   overflow: hidden;
   scroll-snap-align: start;
+  // Clicks fall through to the overlay link — strip is visual-only
+  pointer-events: none;
 
   app-module-minimal {
     display: block;
@@ -191,7 +219,7 @@
 }
 
 @media (max-width: 48rem) {
-  :host {
+  .manufacturer-row-wrap {
     padding: 0.8rem;
   }
 

@@ -31,6 +31,7 @@ import { fadeInOnEnterAnimation } from 'angular-animations';
 export class HeroContentCardComponent {
   @Input() titleBig: string;
   @Input() titleNormal: string;
+  @Input() titleSub: string;
   @Input() top = false;
   @Input() bottom = false;
   @Input() sidesPadding = true;
