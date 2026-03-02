@@ -46,7 +46,7 @@ export class ManufacturerBrowserRootComponent extends SubManager implements OnIn
       .subscribe(() => this.paginator?.firstPage());
     
     this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.serversideTableRequestData.take$.next(20);
+    this.dataService.serversideTableRequestData.take$.next(10);
     this.dataService.updateList$.next();
   }
 }
