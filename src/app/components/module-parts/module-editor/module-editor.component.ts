@@ -48,6 +48,7 @@ import {
   PendingSaveState
 } from './module-editor-data.service';
 
+
 type CvSectionKind = 'IN' | 'OUT';
 
 
@@ -146,7 +147,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       this.OUTs$,
       this.fileDragHostService.files$
     ]).pipe(
-      map(() => this.computeHasPendingChanges()),
+      map(() => this.getPendingSaveState().hasPendingChanges),
       distinctUntilChanged(),
       shareReplay(1)
     );
@@ -399,14 +400,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
 
   private persistAllChanges$(): Observable<unknown> {
     const pendingState = this.getPendingSaveState();
-    const {
-      shouldSaveInsOuts,
-      shouldSavePower,
-      shouldSavePhysical,
-      shouldSavePanel
-    } = pendingState;
-
-    if (!this.validatePendingChanges(shouldSaveInsOuts, shouldSavePower, shouldSavePhysical, shouldSavePanel)) {
+    
+    const blockReason = this.getValidationBlockReason(pendingState);
+    if (blockReason) {
+      const msgMap: Record<string, string> = {
+        'Fix invalid input/output rows': 'Input/output rows have invalid values — check CV names and voltage ranges.',
+        'Fix invalid power fields': 'Power form has invalid values — check the fields and try again.',
+        'Fix invalid physical fields': 'Physical form has invalid values — check the fields and try again.',
+        'Fix panel selection or duplicate panel type': pendingState.shouldSavePanel && this.panelTypeAlreadyExists$.value
+          ? `This module already has a "${ this.duplicatePanelTypeName$.value }" panel.`
+          : 'Panel fields are invalid — check panel type and description.'
+      };
+      SharedConstants.errorCustom(this.snackBar, msgMap[blockReason] ?? blockReason);
       return EMPTY;
     }
 
@@ -465,144 +470,77 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         })
       );
   }
-
-  get isSaveFabDisabled(): boolean {
+  
+  /** Single source-of-truth for the save FAB — avoids recalculating pendingState four times. */
+  get saveFabState(): {
+    disabled: boolean;
+    label: string;
+    icon: string;
+    ariaLabel: string;
+    disabledReason: string
+  } {
     if (this.saveInProgress$.value) {
-      return true;
+      return {disabled: true, label: 'Saving...', icon: 'sync', ariaLabel: 'Saving module editor changes', disabledReason: 'Save in progress'};
+    }
+    if (this.saveJustCompleted$.value) {
+      return {disabled: false, label: 'Saved', icon: 'check', ariaLabel: 'Changes saved', disabledReason: ''};
     }
 
     const pendingState = this.getPendingSaveState();
+    const reason = this.getValidationBlockReason(pendingState);
+    
+    if (reason) {
+      return {disabled: true, label: 'Save', icon: 'save', ariaLabel: `Save disabled: ${ reason }`, disabledReason: reason};
+    }
     if (!pendingState.hasPendingChanges) {
-      return true;
+      return {disabled: true, label: 'No changes', icon: 'save', ariaLabel: 'No pending changes', disabledReason: 'No pending changes'};
     }
-
-    if (pendingState.shouldSaveInsOuts && (!this.formGroupA.valid || !this.formGroupB.valid)) {
-      return true;
-    }
-
-    if (pendingState.shouldSavePower && !this.formGroupPower.valid) {
-      return true;
-    }
-
-    if (pendingState.shouldSavePhysical && !this.formGroupPhysical.valid) {
-      return true;
-    }
-
-    if (pendingState.shouldSavePanel && this.isPanelSaveBlocked()) {
-      return true;
-    }
-
-    return false;
+    return {disabled: false, label: 'Save', icon: 'save', ariaLabel: 'Save all pending module editor changes', disabledReason: ''};
   }
-
+  
+  get isSaveFabDisabled(): boolean {
+    return this.saveFabState.disabled;
+  }
+  
   get saveFabLabel(): string {
-    if (this.saveInProgress$.value) {
-      return 'Saving...';
-    }
-    if (this.saveJustCompleted$.value) {
-      return 'Saved';
-    }
-    return this.computeHasPendingChanges() ? 'Save' : 'No changes';
+    return this.saveFabState.label;
   }
-
+  
   get saveFabIcon(): string {
-    if (this.saveInProgress$.value) {
-      return 'sync';
-    }
-    if (this.saveJustCompleted$.value) {
-      return 'check';
-    }
-    return 'save';
+    return this.saveFabState.icon;
   }
   
   get saveFabAriaLabel(): string {
-    if (this.saveInProgress$.value) {
-      return 'Saving module editor changes';
-    }
-    if (this.saveJustCompleted$.value) {
-      return 'Changes saved';
-    }
-    const reason = this.saveFabDisabledReason;
-    return reason ? `Save disabled: ${ reason }` : 'Save all pending module editor changes';
+    return this.saveFabState.ariaLabel;
   }
   
   get saveFabDisabledReason(): string {
-    if (this.saveInProgress$.value) {
-      return 'Save in progress';
-    }
-    const pendingState = this.getPendingSaveState();
-
+    return this.saveFabState.disabledReason;
+  }
+  
+  /** Returns a human-readable reason why saving is blocked, or '' if it's allowed. */
+  private getValidationBlockReason(pendingState: PendingSaveState): string {
     if (pendingState.shouldSaveInsOuts && (!this.formGroupA.valid || !this.formGroupB.valid)) {
       return 'Fix invalid input/output rows';
     }
-
     if (pendingState.shouldSavePower && !this.formGroupPower.valid) {
       return 'Fix invalid power fields';
     }
-
     if (pendingState.shouldSavePhysical && !this.formGroupPhysical.valid) {
       return 'Fix invalid physical fields';
     }
-
     if (pendingState.shouldSavePanel && this.isPanelSaveBlocked()) {
       return 'Fix panel selection or duplicate panel type';
     }
-
-    if (!pendingState.hasPendingChanges) {
-      return 'No pending changes';
-    }
-
     return '';
   }
 
-  private validatePendingChanges(
-    shouldSaveInsOuts: boolean,
-    shouldSavePower: boolean,
-    shouldSavePhysical: boolean,
-    shouldSavePanel: boolean
-  ): boolean {
-    if (shouldSaveInsOuts && (this.formGroupA.invalid || this.formGroupB.invalid)) {
-      SharedConstants.errorCustom(this.snackBar, 'Input/output rows have invalid values — check CV names and voltage ranges.');
-      return false;
-    }
-
-    if (shouldSavePower && this.formGroupPower.invalid) {
-      SharedConstants.errorCustom(this.snackBar, 'Power form has invalid values — check the fields and try again.');
-      return false;
-    }
-
-    if (shouldSavePhysical && this.formGroupPhysical.invalid) {
-      SharedConstants.errorCustom(this.snackBar, 'Physical form has invalid values — check the fields and try again.');
-      return false;
-    }
-
-    if (shouldSavePanel) {
-      if (this.formGroupPanel.invalid) {
-        SharedConstants.errorCustom(this.snackBar, 'Panel fields are invalid — check panel type and description.');
-        return false;
-      }
-      if (this.panelTypeAlreadyExists$.value) {
-        SharedConstants.errorCustom(this.snackBar, `This module already has a "${ this.duplicatePanelTypeName$.value }" panel.`);
-        return false;
-      }
-    }
-
-    return true;
-  }
 
   private markEditorFormsPristine(): void {
-    this.formGroupPower.markAsPristine();
-    this.formGroupPhysical.markAsPristine();
-    this.formGroupPanel.markAsPristine();
-    this.formGroupA.markAsPristine();
-    this.formGroupB.markAsPristine();
-
-    this.INs$.value.forEach(cv => {
-      cv.name.markAsPristine();
-      cv.a.markAsPristine();
-      cv.b.markAsPristine();
-    });
-    this.OUTs$.value.forEach(cv => {
+    [this.formGroupPower, this.formGroupPhysical, this.formGroupPanel, this.formGroupA, this.formGroupB]
+      .forEach(g => g.markAsPristine());
+    
+    [...this.INs$.value, ...this.OUTs$.value].forEach(cv => {
       cv.name.markAsPristine();
       cv.a.markAsPristine();
       cv.b.markAsPristine();
@@ -614,9 +552,6 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return shouldSavePanel && (this.formGroupPanel.invalid || this.panelTypeAlreadyExists$.value);
   }
 
-  private computeHasPendingChanges(): boolean {
-    return this.getPendingSaveState().hasPendingChanges;
-  }
 
   private showSaveCompletedState(): void {
     this.saveJustCompleted$.next(true);
