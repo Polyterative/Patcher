@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
 import {
   fadeInOnEnterAnimation,
@@ -17,7 +16,7 @@ import {
 import {
   filter,
   startWith,
-  take
+  takeUntil
 } from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
@@ -48,68 +47,47 @@ import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-
   viewProviders: [LocalDataFilterService],
   standalone: false
 })
-export class PatchListComponent extends SubManager implements OnInit {
+export class PatchListComponent extends SubManager {
   @Input() readonly data$: Observable<PatchList>;
-  
   @Input() readonly showSearch = false;
+  @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
-  
+
   @Input()
   set externalSearchQuery(value: string) {
     this.externalSearchQuery$.next(value ?? '');
   }
   
-  @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
+  readonly filteredData$ = new BehaviorSubject<PatchList>([]);
   
-  filteredData$ = new BehaviorSubject<PatchList>([]);
-  
-  constructor(
-    public filterService: LocalDataFilterService
-  ) {
+  constructor(public filterService: LocalDataFilterService) {
     super();
-    // if (this.showSearch) {
-    
-    // }
-    // this.service.patchEditingPanelOpenState$
-    //     .pipe(
-    //
-    //     )
-    //     .subscribe(value => {
-    //
-    //     });
   }
-  
+
   ngOnInit(): void {
     const localSearchQuery$ = this.showSearch
       ? this.filterService.filterEvent$.pipe(startWith(''))
       : of('');
-
-    this.manageSub(
-      this.data$
-          .pipe(take(1))
-          .subscribe(x => this.filteredData$.next(x))
-    );
     
-    this.manageSub(
-      combineLatest([
-        this.data$.pipe(filter(data => !!data)),
-        localSearchQuery$,
-        this.externalSearchQuery$
-      ])
-        .subscribe(([data, localQuery, externalQuery]) => {
-          const normalizedLocalQuery = normalizeForSearch(localQuery);
-          const normalizedExternalQuery = normalizeForSearch(externalQuery);
-          
-          const result = data.filter(item => {
+    combineLatest([
+      this.data$.pipe(filter(data => data != null)),
+      localSearchQuery$,
+      this.externalSearchQuery$
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([data, localQuery, externalQuery]) => {
+        const normalizedLocalQuery = normalizeForSearch(localQuery);
+        const normalizedExternalQuery = normalizeForSearch(externalQuery);
+        
+        this.filteredData$.next(
+          data.filter(item => {
             if (!item) return false;
             const normalizedName = normalizeForSearch(item.name);
-            
             return normalizedName.includes(normalizedLocalQuery)
               && normalizedName.includes(normalizedExternalQuery);
-          });
-          this.filteredData$.next(result);
-        })
-    );
+          })
+        );
+      });
   }
-  
 }
