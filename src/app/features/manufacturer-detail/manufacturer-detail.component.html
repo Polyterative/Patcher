@@ -6,109 +6,43 @@
   <div class="col gap1">
     <lib-hero-content-card
       titleBig="Manufacturer"
-      [titleNormal]="bag.manufacturer?.name || ''"
+      [titleSub]="bag.manufacturer?.name"
       class="manufacturersBG"
     >
-      <div class="rowwrap gap1 manufacturer-detail-layout">
+      <div class="col gap2">
         
-        <!-- LEFT COLUMN: identity card -->
-        <lib-screen-wrapper maxSize="26rem" class="manufacturer-detail-column manufacturer-detail-column--left">
-          <div class="col gap2">
-            <lib-clean-card>
-              @if (!bag.manufacturer) {
-                <lib-auto-content-loading-indicator
-                  [loadingLines]="4"
-                  [skipFirstData]="true"
-                ></lib-auto-content-loading-indicator>
-              } @else {
-                <div class="col gap2 manufacturer-identity" [@enter]>
-                  <!-- Logo -->
-                  <div class="manufacturer-logo-wrap col center">
-                    @if (bag.manufacturer.logo) {
-                      <img
-                        [alt]="bag.manufacturer.name + ' logo'"
-                        [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/' + bag.manufacturer.logo"
-                        class="manufacturer-logo"
-                        loading="eager"
-                      />
-                    } @else {
-                      <div class="manufacturer-logo-placeholder col center">
-                        <mat-icon class="manufacturer-logo-icon">handyman</mat-icon>
-                      </div>
-                    }
-                  </div>
-                  
-                  <!-- Name -->
-                  <p class="manufacturer-name">{{ bag.manufacturer.name }}</p>
-                  
-                  <!-- Website link -->
-                  @if (bag.manufacturer.websiteURL) {
-                    <a
-                      [href]="bag.manufacturer.websiteURL"
-                      rel="noopener noreferrer"
-                      target="_blank"
-                      mat-stroked-button
-                      color="primary"
-                      class="manufacturer-website-btn"
-                    >
-                      <mat-icon>open_in_new</mat-icon>
-                      Visit website
-                    </a>
-                  }
-                </div>
-              }
-            </lib-clean-card>
-          </div>
-        </lib-screen-wrapper>
-        
-        <!-- MIDDLE COLUMN: stats -->
-        <div class="col gap2 manufacturer-detail-column manufacturer-detail-column--middle">
-          @if (bag.manufacturer) {
-            <lib-hero-content-card titleNormal="Overview" [sidesPadding]="false">
-              <div class="col gap1">
-                
-                <!-- Module count card -->
-                <lib-clean-card [@enter]>
-                  <div class="col gap1">
-                    <mat-card-title>Catalogue</mat-card-title>
-                    <app-lib-showcase-grid [data]="[
-                      { label: 'Total Modules', value: bag.modules ? bag.modules.length.toString() : '…', icon: 'view_module', size: 'auto' },
-                      { label: 'Updated (30d)', value: (bag.manufacturer.changedModulesLast30Days ?? 0).toString(), icon: 'update', size: 'auto', hidden: bag.manufacturer.changedModulesLast30Days === undefined }
-                    ]">
-                    </app-lib-showcase-grid>
-                  </div>
-                </lib-clean-card>
-              
-              </div>
-            </lib-hero-content-card>
-          }
-        </div>
-        
-        <!-- RIGHT COLUMN: module list -->
-        <div class="col gap2 manufacturer-detail-column manufacturer-detail-column--right">
-          <lib-hero-content-card
-            [titleNormal]="bag.modules ? 'Modules (' + bag.modules.length + ')' : 'Modules'"
-            [sidesPadding]="false"
+        @if (bag.manufacturer?.websiteURL) {
+          <a
+            [href]="bag.manufacturer.websiteURL"
+            rel="noopener noreferrer"
+            target="_blank"
+            mat-stroked-button
+            color="primary"
+            class="manufacturer-website-btn"
           >
-            <lib-auto-content-loading-indicator
+            <mat-icon>open_in_new</mat-icon>
+            Visit website
+          </a>
+        }
+        
+        <lib-auto-content-loading-indicator
+          [data$]="dataService.modulesData$"
+          [updateData$]="dataService.updateManufacturer$"
+        >
+          @if (bag.modules && bag.modules.length > 0) {
+            <app-module-list
               [data$]="dataService.modulesData$"
-              [updateData$]="dataService.updateManufacturer$"
-            >
-              @if (bag.modules && bag.modules.length > 0) {
-                <app-module-list
-                  [data$]="dataService.modulesData$"
-                  [viewConfig]="moduleViewConfig"
-                  [showSearch]="true"
-                  [showOrder]="true"
-                ></app-module-list>
-              } @else if (bag.modules !== null) {
-                <div class="col gap1 manufacturer-empty-state">
-                  <mat-card-subtitle>No modules found for this manufacturer yet.</mat-card-subtitle>
-                </div>
-              }
-            </lib-auto-content-loading-indicator>
-          </lib-hero-content-card>
-        </div>
+              [viewConfig]="moduleViewConfig"
+              [showSearch]="true"
+              [showOrder]="true"
+              [encloseVertically]="false"
+            ></app-module-list>
+          } @else if (bag.modules !== null) {
+            <div class="col gap1 manufacturer-empty-state">
+              <mat-card-subtitle>No modules found for this manufacturer yet.</mat-card-subtitle>
+            </div>
+          }
+        </lib-auto-content-loading-indicator>
       
       </div>
     </lib-hero-content-card>
