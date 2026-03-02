@@ -34,7 +34,28 @@ import {
 import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
+interface ManufacturerModuleStats {
+  moduleCount: number;
+  latestModuleUpdatedAt: string | null;
+  latestModuleUpdatedAtMs: number | null;
+  changedModulesLast30Days: number;
+}
+
+type ModuleActivityRow = {
+  manufacturerId: number;
+  updated: string
+};
+
+
 export class SupabaseQueriesService {
+  
+  private static readonly EMPTY_STATS: ManufacturerModuleStats = {
+    moduleCount: 0,
+    latestModuleUpdatedAt: null,
+    latestModuleUpdatedAtMs: null,
+    changedModulesLast30Days: 0
+  };
+
   constructor(
     private supabase: SupabaseClient<Database>,
     private getUserSession$: () => Observable<SimpleUserModel | null>,
@@ -531,103 +552,67 @@ export class SupabaseQueriesService {
     })());
   }
   
-  private async fetchAllModuleActivityRowsForManufacturers(
-    manufacturerIds: number[],
-    orderDirection: 'asc' | 'desc' = 'desc'
+  private async fetchAllModuleActivityRows(
+    orderDirection: 'asc' | 'desc' = 'desc',
+    manufacturerIds?: number[]
   ): Promise<{
     data: {
       manufacturerId: number;
-      updated: string;
+      updated: string
     }[];
-    error: any;
+    error: any
   }> {
-    const manufacturerIdChunkSize = 200;
     const pageSize = 1000;
     const rows: {
       manufacturerId: number;
-      updated: string;
+      updated: string
     }[] = [];
+    const chunkSize = 200;
     
-    for (let chunkStart = 0; chunkStart < manufacturerIds.length; chunkStart += manufacturerIdChunkSize) {
-      const idChunk = manufacturerIds.slice(chunkStart, chunkStart + manufacturerIdChunkSize);
+    const idChunks: (number[] | null)[] = manufacturerIds
+      ? Array.from({length: Math.ceil(manufacturerIds.length / chunkSize)}, (_, i) =>
+        manufacturerIds.slice(i * chunkSize, (i + 1) * chunkSize))
+      : [null]; // null means "no IN filter" (global fetch)
+    
+    for (const chunk of idChunks) {
       let offset = 0;
-      
       while (true) {
-        const modulesResponse = await this.supabase.from(DbPaths.modules)
+        let q = this.supabase.from(DbPaths.modules)
           .select('id,manufacturerId,updated')
-          .in('manufacturerId', idChunk)
           .order('updated', {ascending: orderDirection === 'asc'})
           .order('id', {ascending: orderDirection === 'asc'})
           .range(offset, offset + pageSize - 1);
         
-        if (modulesResponse.error) {
-          return {data: [], error: modulesResponse.error};
-        }
+        if (chunk) { q = q.in('manufacturerId', chunk); }
         
-        const pageRows = (modulesResponse.data ?? []).map((x: any) => ({
+        const response = await q;
+        if (response.error) { return {data: [], error: response.error}; }
+        
+        const pageRows = (response.data ?? []).map((x: any) => ({
           manufacturerId: x.manufacturerId,
           updated: x.updated
         }));
         rows.push(...pageRows);
         
-        if (pageRows.length < pageSize) {
-          break;
-        }
+        if (pageRows.length < pageSize) { break; }
         offset += pageSize;
       }
     }
-    
     return {data: rows, error: null};
   }
   
-  private async fetchAllModuleActivityRowsGlobally(
+  private async fetchAllModuleActivityRowsForManufacturers(
+    manufacturerIds: number[],
     orderDirection: 'asc' | 'desc' = 'desc'
-  ): Promise<{
-    data: {
-      manufacturerId: number;
-      updated: string;
-    }[];
-    error: any;
-  }> {
-    const pageSize = 1000;
-    const rows: {
-      manufacturerId: number;
-      updated: string;
-    }[] = [];
-    let offset = 0;
-    
-    while (true) {
-      const modulesResponse = await this.supabase.from(DbPaths.modules)
-        .select('id,manufacturerId,updated')
-        .order('updated', {ascending: orderDirection === 'asc'})
-        .order('id', {ascending: orderDirection === 'asc'})
-        .range(offset, offset + pageSize - 1);
-      
-      if (modulesResponse.error) {
-        return {data: [], error: modulesResponse.error};
-      }
-      
-      const pageRows = (modulesResponse.data ?? []).map((x: any) => ({
-        manufacturerId: x.manufacturerId,
-        updated: x.updated
-      }));
-      rows.push(...pageRows);
-      
-      if (pageRows.length < pageSize) {
-        break;
-      }
-      offset += pageSize;
-    }
-
-    return {data: rows, error: null};
+  ) {
+    return this.fetchAllModuleActivityRows(orderDirection, manufacturerIds);
   }
   
-  private buildManufacturerActivityRank(
-    rows: {
-      manufacturerId: number;
-      updated: string;
-    }[]
-  ): Map<number, number> {
+  private async fetchAllModuleActivityRowsGlobally(orderDirection: 'asc' | 'desc' = 'desc') {
+    return this.fetchAllModuleActivityRows(orderDirection);
+  }
+  
+  private buildManufacturerActivityRank(rows: ModuleActivityRow[]): Map<number, number> {
     const rankByManufacturerId = new Map<number, number>();
     let rank = 0;
     
@@ -645,87 +630,20 @@ export class SupabaseQueriesService {
   }
   
   private parseModuleUpdatedTimestampMs(rawUpdated: unknown): number | null {
-    if (typeof rawUpdated !== 'string') {
-      return null;
-    }
-
-    const trimmed = rawUpdated.trim();
-    if (trimmed.length === 0) {
-      return null;
-    }
-    const dateOnlyMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (dateOnlyMatch) {
-      const year = Number.parseInt(dateOnlyMatch[1], 10);
-      const month = Number.parseInt(dateOnlyMatch[2], 10);
-      const day = Number.parseInt(dateOnlyMatch[3], 10);
-      return Date.UTC(year, month - 1, day, 0, 0, 0, 0);
-    }
-    
-    const fullMatch = trimmed.match(
-      /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(?:\s*(Z|[+-]\d{2}(?::?\d{2})?))?$/
-    );
-    if (!fullMatch) {
-      return null;
-    }
-    
-    const year = Number.parseInt(fullMatch[1], 10);
-    const month = Number.parseInt(fullMatch[2], 10);
-    const day = Number.parseInt(fullMatch[3], 10);
-    const hour = Number.parseInt(fullMatch[4], 10);
-    const minute = Number.parseInt(fullMatch[5], 10);
-    const second = Number.parseInt(fullMatch[6], 10);
-    const fraction = fullMatch[7] ?? '';
-    const timezone = fullMatch[8] ?? 'Z';
-    
-    const millisecond = Number.parseInt((fraction + '000').slice(0, 3), 10);
-    const utcMs = Date.UTC(year, month - 1, day, hour, minute, second, millisecond);
-    
-    if (timezone === 'Z') {
-      return utcMs;
-    }
-    
-    const tzMatch = timezone.match(/^([+-])(\d{2})(?::?(\d{2}))?$/);
-    if (!tzMatch) {
-      return utcMs;
-    }
-    
-    const sign = tzMatch[1] === '+' ? 1 : -1;
-    const offsetHours = Number.parseInt(tzMatch[2], 10);
-    const offsetMinutes = Number.parseInt(tzMatch[3] ?? '0', 10);
-    const totalOffsetMs = sign * ((offsetHours * 60) + offsetMinutes) * 60 * 1000;
-    
-    return utcMs - totalOffsetMs;
+    if (typeof rawUpdated !== 'string' || rawUpdated.trim().length === 0) { return null; }
+    const ms = Date.parse(rawUpdated.trim());
+    return isNaN(ms) ? null : ms;
   }
   
-  private buildManufacturerModuleStats(
-    rows: {
-      manufacturerId: number;
-      updated: string;
-    }[]
-  ): Map<number, {
-    moduleCount: number;
-    latestModuleUpdatedAt: string | null;
-    latestModuleUpdatedAtMs: number | null;
-    changedModulesLast30Days: number;
-  }> {
-    const stats = new Map<number, {
-      moduleCount: number;
-      latestModuleUpdatedAt: string | null;
-      latestModuleUpdatedAtMs: number | null;
-      changedModulesLast30Days: number;
-    }>();
+  private buildManufacturerModuleStats(rows: ModuleActivityRow[]): Map<number, ManufacturerModuleStats> {
+    const stats = new Map<number, ManufacturerModuleStats>();
     const thresholdMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
     
     for (const row of rows) {
       if (typeof row?.manufacturerId !== 'number') {
         continue;
       }
-      const current = stats.get(row.manufacturerId) ?? {
-        moduleCount: 0,
-        latestModuleUpdatedAt: null,
-        latestModuleUpdatedAtMs: null,
-        changedModulesLast30Days: 0
-      };
+      const current = stats.get(row.manufacturerId) ?? {...SupabaseQueriesService.EMPTY_STATS};
       current.moduleCount += 1;
       
       const updatedMs = this.parseModuleUpdatedTimestampMs(row.updated);
@@ -745,15 +663,7 @@ export class SupabaseQueriesService {
     return stats;
   }
   
-  private withManufacturerModuleStats(
-    manufacturer: any,
-    stats: {
-      moduleCount: number;
-      latestModuleUpdatedAt: string | null;
-      latestModuleUpdatedAtMs: number | null;
-      changedModulesLast30Days: number;
-    } | undefined
-  ) {
+  private withManufacturerModuleStats(manufacturer: any, stats: ManufacturerModuleStats | undefined) {
     return {
       ...manufacturer,
       moduleCount: stats?.moduleCount ?? 0,
@@ -763,7 +673,6 @@ export class SupabaseQueriesService {
   }
   
   private compareManufacturersByLatestModuleActivity(
-    aManufacturer: any,
     bManufacturer: any,
     activityRankByManufacturerId: Map<number, number>
   ): number {
