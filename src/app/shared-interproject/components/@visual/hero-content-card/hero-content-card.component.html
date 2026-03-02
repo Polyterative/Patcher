@@ -24,7 +24,9 @@
         <h1
           class="row title bgImage vertPadding gap1">
           <div class="title-text" [@title]>
-            {{ titleBig }}
+            {{ titleBig }}@if (titleSub) {
+            <span class="title-sub"> - {{ titleSub }}</span>
+          }
           </div>
           @if (icon) {
             <app-hero-content-card-head-icon [icon]="icon"
