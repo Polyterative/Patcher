@@ -4,10 +4,14 @@ import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { AutoContentLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-content-loading-indicator/auto-content-loading-indicator.module';
+import { AutoUpdateLoadingIndicatorModule } from 'src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
+import { EmptyStateModule } from 'src/app/shared-interproject/components/@smart/empty-state/empty-state.module';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
@@ -15,6 +19,7 @@ import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layout
 
 import { ManufacturerDetailComponent } from './manufacturer-detail.component';
 import { ManufacturerBrowserRootComponent } from './manufacturer-browser-root/manufacturer-browser-root.component';
+import { ManufacturerRowComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-row.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 
 
@@ -23,7 +28,8 @@ const parentPrefix = 'manufacturers';
 @NgModule({
   declarations: [
     ManufacturerDetailComponent,
-    ManufacturerBrowserRootComponent
+    ManufacturerBrowserRootComponent,
+    ManufacturerRowComponent
   ],
   imports: [
     CommonModule,
@@ -54,9 +60,13 @@ const parentPrefix = 'manufacturers';
     ScreenWrapperModule,
     CleanCardModule,
     AutoContentLoadingIndicatorModule,
+    AutoUpdateLoadingIndicatorModule,
+    EmptyStateModule,
+    MatFormEntityComponent,
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
+    MatTooltipModule,
     ModuleBrowserModule
   ]
 })
