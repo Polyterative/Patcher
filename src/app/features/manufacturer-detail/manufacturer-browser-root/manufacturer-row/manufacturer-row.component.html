@@ -24,10 +24,15 @@
   } @else if ((modules$ | async)!.length === 0) {
     <span class="manufacturer-row-empty">No modules yet</span>
   } @else {
-    <app-module-list
-      [data$]="modules$"
-      [viewConfig]="moduleViewConfig"
-      [encloseVertically]="false"
-    ></app-module-list>
+    <div class="module-strip">
+      @for (module of (modules$ | async)!; track module.id) {
+        <lib-clean-card class="module-strip-card">
+          <app-module-minimal
+            [data]="module"
+            [viewConfig]="moduleViewConfig"
+          ></app-module-minimal>
+        </lib-clean-card>
+      }
+    </div>
   }
 </div>
