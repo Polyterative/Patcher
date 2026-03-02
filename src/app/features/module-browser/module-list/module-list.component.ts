@@ -33,88 +33,20 @@ import {
   FormTypes,
   ISelectable
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { MinimalModule } from 'src/app/models/module';
+import {
+  MODULE_GROUP_OPTIONS,
+  MODULE_SORT_OPTIONS,
+  ModuleGroupId,
+  ModuleSortId,
+  sortAndGroupMinimalModules
+} from 'src/app/shared-interproject/utils/module-sort-utils';
 import { ModuleList } from '../module-browser-data.service';
 
-
-export type ModuleListSortId =
-  'nameAsc'
-  | 'nameDesc'
-  | 'hpAsc'
-  | 'hpDesc'
-  | 'insMost'
-  | 'outsMost';
-export type ModuleListGroupId =
-  'none'
-  | 'standard'
-  | 'hpRange';
-
-export const MODULE_LIST_SORT_OPTIONS: ISelectable[] = [
-  {id: 'nameAsc', name: 'Name (A→Z)'},
-  {id: 'nameDesc', name: 'Name (Z→A)'},
-  {id: 'hpAsc', name: 'HP (low→high)'},
-  {id: 'hpDesc', name: 'HP (high→low)'},
-  {id: 'insMost', name: 'Inputs (most first)'},
-  {id: 'outsMost', name: 'Outputs (most first)'},
-];
-
-export const MODULE_LIST_GROUP_OPTIONS: ISelectable[] = [
-  {id: 'none', name: 'Grouping off'},
-  {id: 'standard', name: 'Group by standard (3U / 1U)'},
-  {id: 'hpRange', name: 'Group by HP range'},
-];
-
-function normalizedModuleName(m: MinimalModule): string {
-  return normalizeForSearch(m.name || '');
-}
-
-function compareModules(sortId: ModuleListSortId): (a: MinimalModule, b: MinimalModule) => number {
-  switch (sortId) {
-    case 'nameDesc':
-      return (a, b) => normalizedModuleName(b).localeCompare(normalizedModuleName(a));
-    case 'hpAsc':
-      return (a, b) => (a.hp || 0) - (b.hp || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
-    case 'hpDesc':
-      return (a, b) => (b.hp || 0) - (a.hp || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
-    case 'insMost':
-      return (a, b) => (b.ins?.length || 0) - (a.ins?.length || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
-    case 'outsMost':
-      return (a, b) => (b.outs?.length || 0) - (a.outs?.length || 0) || normalizedModuleName(a).localeCompare(normalizedModuleName(b));
-    case 'nameAsc':
-    default:
-      return (a, b) => normalizedModuleName(a).localeCompare(normalizedModuleName(b));
-  }
-}
-
-function getGroupKey(m: MinimalModule, groupId: ModuleListGroupId): string {
-  if (groupId === 'standard') {
-    const sid = m.standard?.id;
-    return sid === 1 ? 'Intellijel 1U' : sid === 2 ? 'PulpLogic 1U' : '3U';
-  }
-  if (groupId === 'hpRange') {
-    const hp = m.hp || 0;
-    if (hp <= 4) return '1–4 HP';
-    if (hp <= 8) return '5–8 HP';
-    if (hp <= 14) return '9–14 HP';
-    if (hp <= 20) return '15–20 HP';
-    return '21+ HP';
-  }
-  return '';
-}
-
-function sortAndGroupModules(data: MinimalModule[], sortId: ModuleListSortId, groupId: ModuleListGroupId): MinimalModule[] {
-  const sorted = [...data].sort(compareModules(sortId));
-  if (groupId === 'none') return sorted;
-  
-  const groups = new Map<string, MinimalModule[]>();
-  for (const m of sorted) {
-    const key = getGroupKey(m, groupId);
-    const arr = groups.get(key) ?? [];
-    arr.push(m);
-    groups.set(key, arr);
-  }
-  return [...groups.keys()].sort((a, b) => a.localeCompare(b)).flatMap(k => groups.get(k) ?? []);
-}
+// Re-export so existing consumers that imported these from here still compile.
+export type ModuleListSortId = ModuleSortId;
+export type ModuleListGroupId = ModuleGroupId;
+export const MODULE_LIST_SORT_OPTIONS = MODULE_SORT_OPTIONS;
+export const MODULE_LIST_GROUP_OPTIONS = MODULE_GROUP_OPTIONS;
 
 
 @Component({
@@ -122,15 +54,8 @@ function sortAndGroupModules(data: MinimalModule[], sortId: ModuleListSortId, gr
   templateUrl: './module-list.component.html',
   styleUrls: ['./module-list.component.scss'],
   animations: [
-    fadeInOnEnterAnimation({
-      anchor: 'enter',
-      duration: 225,
-      animateChildren: 'after'
-    }),
-    fadeOutOnLeaveAnimation({
-      anchor: 'leave',
-      duration: 1
-    })
+    fadeInOnEnterAnimation({anchor: 'enter', duration: 225, animateChildren: 'after'}),
+    fadeOutOnLeaveAnimation({anchor: 'leave', duration: 1})
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [LocalDataFilterService],
@@ -143,6 +68,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showSearch = false;
   @Input() showOrder = false;
   @Input() encloseVertically = true;
+
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 
   @Input()
@@ -152,12 +78,12 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
   filteredData$ = new BehaviorSubject<ModuleList>([]);
   
-  // Sort & group controls (used when showOrder = true)
+  // Sort & group controls (active when showOrder = true)
   readonly formTypes = FormTypes;
-  readonly sortOptions$: Observable<ISelectable[]> = of(MODULE_LIST_SORT_OPTIONS);
-  readonly groupOptions$: Observable<ISelectable[]> = of(MODULE_LIST_GROUP_OPTIONS);
-  readonly sortControl = new UntypedFormControl(MODULE_LIST_SORT_OPTIONS[0]);
-  readonly groupControl = new UntypedFormControl(MODULE_LIST_GROUP_OPTIONS[0]);
+  readonly sortOptions$: Observable<ISelectable[]> = of(MODULE_SORT_OPTIONS);
+  readonly groupOptions$: Observable<ISelectable[]> = of(MODULE_GROUP_OPTIONS);
+  readonly sortControl = new UntypedFormControl(MODULE_SORT_OPTIONS[0]);
+  readonly groupControl = new UntypedFormControl(MODULE_GROUP_OPTIONS[0]);
 
   constructor(
     public patchingService: PatchDetailDataService,
@@ -171,52 +97,43 @@ export class ModuleListComponent extends SubManager implements OnInit {
       ? this.filterService.filterEvent$.pipe(startWith(''))
       : of('');
     
-    const sortId$: Observable<ModuleListSortId> = this.showOrder
+    const sortId$: Observable<ModuleSortId> = this.showOrder
       ? this.sortControl.valueChanges.pipe(
         startWith(this.sortControl.value),
-        map((v: ISelectable | null) => (v?.id as ModuleListSortId) ?? 'nameAsc')
+        map((v: ISelectable | null) => (v?.id as ModuleSortId) ?? 'nameAsc')
       )
-      : of('nameAsc' as ModuleListSortId);
+      : of('nameAsc' as ModuleSortId);
     
-    const groupId$: Observable<ModuleListGroupId> = this.showOrder
+    const groupId$: Observable<ModuleGroupId> = this.showOrder
       ? this.groupControl.valueChanges.pipe(
         startWith(this.groupControl.value),
-        map((v: ISelectable | null) => (v?.id as ModuleListGroupId) ?? 'none')
+        map((v: ISelectable | null) => (v?.id as ModuleGroupId) ?? 'none')
       )
-      : of('none' as ModuleListGroupId);
-
+      : of('none' as ModuleGroupId);
+    
+    // Seed with first emission so the list isn't blank on initial render
     this.manageSub(
-      this.data$
-        .pipe(
-          take(1),
-          map(data => this.orderData(data))
-        )
-        .subscribe(x => this.filteredData$.next(x))
+      this.data$.pipe(take(1)).subscribe(x => this.filteredData$.next(x ?? []))
     );
 
     this.manageSub(
       combineLatest([
-        this.data$.pipe(
-          filter(data => !!data),
-          map(data => this.orderData(data))
-        ),
+        this.data$.pipe(filter(data => !!data)),
         localSearchQuery$,
         this.externalSearchQuery$,
         sortId$,
         groupId$
-      ])
-        .subscribe(([data, localQuery, externalQuery, sortId, groupId]) => {
-          const normalizedLocalQuery = normalizeForSearch(localQuery);
-          const normalizedExternalQuery = normalizeForSearch(externalQuery);
-          
-          const filtered = data.filter(item => {
-            const normalizedModName = normalizeForSearch(item.name);
-            return normalizedModName.includes(normalizedLocalQuery)
-              && normalizedModName.includes(normalizedExternalQuery);
-          });
-          
-          this.filteredData$.next(sortAndGroupModules(filtered, sortId, groupId));
-        })
+      ]).subscribe(([data, localQuery, externalQuery, sortId, groupId]) => {
+        const normLocal = normalizeForSearch(localQuery);
+        const normExternal = normalizeForSearch(externalQuery);
+        
+        const filtered = data.filter(item => {
+          const name = normalizeForSearch(item.name);
+          return name.includes(normLocal) && name.includes(normExternal);
+        });
+        
+        this.filteredData$.next(sortAndGroupMinimalModules(filtered, sortId, groupId));
+      })
     );
   }
   
