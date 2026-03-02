@@ -20,7 +20,7 @@
 
     .manufacturer-row-chevron {
       opacity: 1;
-      transform: translateX(0.2rem);
+      transform: scale(1.15) translate(0.1rem, -0.1rem);
     }
   }
 }
@@ -104,6 +104,7 @@
   margin-left: auto;
   opacity: 0.35;
   color: #3a5a78;
+  font-size: 1.15rem;
   transition: opacity 120ms ease, transform 120ms ease;
 }
 
