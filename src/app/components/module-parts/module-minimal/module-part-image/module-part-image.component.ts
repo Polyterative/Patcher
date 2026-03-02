@@ -1,11 +1,9 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
-  OnChanges,
-  OnInit
+  OnChanges
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { MinimalModule } from 'src/app/models/module';
@@ -25,7 +23,7 @@ import { MinimalModule } from 'src/app/models/module';
   ],
   standalone: false
 })
-export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewInit {
+export class ModulePartImageComponent implements OnChanges {
   
   @Input() data: MinimalModule;
   
@@ -35,54 +33,22 @@ export class ModulePartImageComponent implements OnInit, OnChanges, AfterViewIni
   @Input() big: boolean = false;
   /** When true, the panel image is rendered at a fixed 3U-equivalent height
    *  so all cards align in a grid regardless of image aspect ratio.
-   *  Set to false (default) to use the original dynamic sizing behaviour. */
+   *  Set to false to use the original dynamic sizing behaviour. */
   @Input() fixedHeight: boolean = false;
   
-  sizeDivider: number = 2.7;
+  get sizeDivider(): number {
+    return this.big ? 1 : 2.7;
+  }
   
   constructor(
     public changeDetection: ChangeDetectorRef
   ) { }
   
-  // force change detection when the data changes
   ngOnChanges(): void {
-    if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[0].filename;
-    } else {
-      this.filename = undefined;
-    }
-    
-  }
-  
-  ngOnInit(): void {
-    if (this.data.panels && this.data.panels.length > 0) {
-      this.filename = this.data.panels[0].filename;
-    } else {
-      this.filename = undefined;
-    }
-  
-    if (this.big) {
-      this.sizeDivider = 1;
-    }
-  
+    this.filename = this.data.panels?.length > 0
+      ? this.data.panels[0].filename
+      : undefined;
     this.changeDetection.detectChanges();
-  }
-  
-  ngAfterViewInit(): void {
-    // of(undefined)
-    //   .pipe(
-    //     delay(250),
-    //     take(1)
-    //   )
-    //   .subscribe(value => {
-    //     if (this.data.panels && this.data.panels.length > 0) {
-    //       this.filename = this.data.panels[this.data.panels.length - 1].filename;
-    //     } else {
-    //       this.filename = undefined;
-    //     }
-    //
-    //     this.changeDetection.detectChanges();
-    //   });
   }
   
 }
