@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_TIMEOUT_MS = 2500;
 const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
 
-const STORAGE_BASE = `${ DEFAULT_SUPABASE_URL }/storage/v1/object/public`;
+const STORAGE_BASE = `${ SUPABASE_URL }/storage/v1/object/public`;
 
 const STATIC_ROUTES = [
   '/',
@@ -142,25 +142,42 @@ function makePatchEntry(row: PatchRow): SitemapEntry | undefined {
 
 function makeRackEntry(row: RackRow): SitemapEntry | undefined {
   if (!row.id) return undefined;
-  
+
   const titleParts: string[] = [];
   if (row.name) titleParts.push(row.name);
   if (row.rows && row.hp) titleParts.push(`${ row.rows }×${ row.hp }HP`);
   const imageTitle = titleParts.join(' — ');
-  
+
   const captionParts: string[] = [];
   if (row.description) captionParts.push(row.description.trim());
   const imageCaption = captionParts.join(' ');
+  
+  const rackImageUrl = row.image ? resolveRackImageUrl(row.image) : undefined;
 
   return {
     loc: `${ SITE_URL }/racks/details/${ row.id }`,
     lastmod: normalizeIsoDate(row.updated || row.created),
     changefreq: 'monthly',
     priority: '0.6',
-    imageUrl: row.image ? `${ STORAGE_BASE }/racks/${ row.image }` : undefined,
+    imageUrl: rackImageUrl,
     imageTitle: imageTitle || undefined,
     imageCaption: imageCaption || undefined
   };
+}
+
+function resolveRackImageUrl(image: string): string | undefined {
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+  let normalized = image.trim().replace(/^\/+/, '');
+  normalized = normalized.replace(/^racks\//, '');
+  normalized = normalized.replace(/^public\/racks\//, '');
+  normalized = normalized.replace(/^storage\/v1\/object\/public\/racks\//, '');
+  normalized = normalized.replace(/^object\/public\/racks\//, '');
+  if (!normalized) return undefined;
+  const encoded = normalized.split('/').filter(Boolean)
+    .map(seg => encodeURIComponent(decodeURIComponent(seg))).join('/');
+  return `${ STORAGE_BASE }/racks/${ encoded }`;
 }
 
 function normalizeIsoDate(value?: string): string | undefined {
