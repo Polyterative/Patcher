@@ -38,6 +38,7 @@ interface ShareMetadata {
   image: string;
   url: string;
   source: string;
+  ogType: string;
   published?: string;
   modified?: string;
   jsonLd: Record<string, unknown>;
@@ -67,6 +68,10 @@ interface PatchRow {
   description?: string;
   created?: string;
   updated?: string;
+  author?: {
+    username?: string;
+    id?: string
+  };
 }
 
 interface RackRow {
@@ -78,6 +83,10 @@ interface RackRow {
   image?: string;
   created?: string;
   updated?: string;
+  author?: {
+    username?: string;
+    id?: string
+  };
 }
 
 export default async function middleware(request: Request): Promise<Response | void> {
@@ -367,17 +376,26 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
   const title = manufacturerName
     ? `${ moduleName } by ${ manufacturerName } | ${ SITE_NAME }`
     : `${ moduleName } | ${ SITE_NAME }`;
-  const description = clampDescription(
-    moduleRow.description
-      || `${ moduleName } module details${ manufacturerName ? ` by ${ manufacturerName }` : '' }. ${ moduleRow.hp ? `${ moduleRow.hp } HP.` : '' }`,
-    DEFAULT_DESCRIPTION
-  );
+  
+  const descParts: string[] = [];
+  if (moduleRow.description) {
+    descParts.push(moduleRow.description.trim());
+  } else {
+    if (manufacturerName) descParts.push(`Eurorack module by ${ manufacturerName }.`);
+    if (moduleRow.hp) descParts.push(`${ moduleRow.hp } HP.`);
+  }
+  const description = clampDescription(descParts.join(' '), DEFAULT_DESCRIPTION);
 
   const panelFilename = moduleRow.panels?.[0]?.filename;
   const image = panelFilename
     ? `${ SUPABASE_URL }/storage/v1/object/public/module-panels/${ encodeURIComponent(panelFilename) }`
     : getDefaultImage(siteOrigin);
   const source = panelFilename ? 'module-panel' : 'module-default-image';
+  
+  const additionalProperty: Record<string, unknown>[] = [];
+  if (moduleRow.hp) {
+    additionalProperty.push({'@type': 'PropertyValue', name: 'HP', value: moduleRow.hp});
+  }
 
   return {
     type: 'module',
@@ -385,21 +403,24 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
     description,
     image,
     url: canonicalUrl,
+    ogType: 'product',
     source,
     published: moduleRow.created,
     modified: moduleRow.updated,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Product',
+      '@id': canonicalUrl,
       name: moduleName,
       description,
       image,
       url: canonicalUrl,
+      datePublished: moduleRow.created,
+      dateModified: moduleRow.updated,
+      ...(additionalProperty.length ? {additionalProperty} : {}),
       ...(manufacturerName ? {
-        brand: {
-          '@type': 'Brand',
-          name: manufacturerName
-        }
+        brand: {'@type': 'Brand', name: manufacturerName},
+        manufacturer: {'@type': 'Organization', name: manufacturerName}
       } : {})
     }
   };
@@ -407,7 +428,7 @@ async function getModuleMetadata(moduleId: number, canonicalUrl: string, siteOri
 
 async function getPatchMetadata(patchId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
-  params.set('select', 'id,name,description,created,updated');
+  params.set('select', 'id,name,description,created,updated,author:authorid(username,id)');
   params.set('id', `eq.${ patchId }`);
   params.set('public', 'eq.true');
   params.set('limit', '1');
@@ -418,35 +439,49 @@ async function getPatchMetadata(patchId: number, canonicalUrl: string, siteOrigi
   }
 
   const patchName = (patchRow.name || `Patch #${ patchRow.id }`).trim();
+  const authorName = patchRow.author?.username?.trim() || '';
   const title = `${ patchName } | ${ SITE_NAME }`;
-  const description = clampDescription(
-    patchRow.description || `${ patchName } patch details and connection overview on ${ SITE_NAME }.`,
-    DEFAULT_DESCRIPTION
-  );
+  
+  const descParts: string[] = [];
+  if (patchRow.description) {
+    descParts.push(patchRow.description.trim());
+  } else {
+    descParts.push(`Eurorack patch${ authorName ? ` by ${ authorName }` : '' } — connection map and module overview on ${ SITE_NAME }.`);
+  }
+  const description = clampDescription(descParts.join(' '), DEFAULT_DESCRIPTION);
+  
+  const image = getDefaultImage(siteOrigin);
 
   return {
     type: 'patch',
     title,
     description,
-    image: getDefaultImage(siteOrigin),
+    image,
     url: canonicalUrl,
+    ogType: 'article',
     source: 'patch',
     published: patchRow.created,
     modified: patchRow.updated,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',
+      '@id': canonicalUrl,
       name: patchName,
       description,
-      image: getDefaultImage(siteOrigin),
-      url: canonicalUrl
+      image,
+      url: canonicalUrl,
+      datePublished: patchRow.created,
+      dateModified: patchRow.updated,
+      ...(authorName ? {
+        author: {'@type': 'Person', name: authorName}
+      } : {})
     }
   };
 }
 
 async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin: string): Promise<ShareMetadata | undefined> {
   const params = new URLSearchParams();
-  params.set('select', 'id,name,description,hp,rows,image,created,updated');
+  params.set('select', 'id,name,description,hp,rows,image,created,updated,author:authorid(username,id)');
   params.set('id', `eq.${ rackId }`);
   params.set('public', 'eq.true');
   params.set('limit', '1');
@@ -457,13 +492,26 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
   }
 
   const rackName = (rackRow.name || `Rack #${ rackRow.id }`).trim();
+  const authorName = rackRow.author?.username?.trim() || '';
   const title = `${ rackName } | ${ SITE_NAME }`;
-  const description = clampDescription(
-    rackRow.description || `${ rackName } rack details on ${ SITE_NAME }. ${ rackRow.hp ? `${ rackRow.hp } HP` : '' }${ rackRow.rows ? ` across ${ rackRow.rows } rows` : '' }.`,
-    DEFAULT_DESCRIPTION
-  );
+  
+  const descParts: string[] = [];
+  if (rackRow.description) {
+    descParts.push(rackRow.description.trim());
+  } else {
+    const sizePart = [
+      rackRow.rows ? `${ rackRow.rows } row${ rackRow.rows !== 1 ? 's' : '' }` : '',
+      rackRow.hp ? `${ rackRow.hp } HP` : ''
+    ].filter(Boolean).join(', ');
+    descParts.push(`Eurorack rack${ authorName ? ` by ${ authorName }` : '' }${ sizePart ? ` — ${ sizePart }` : '' }. Browse modules and layout on ${ SITE_NAME }.`);
+  }
+  const description = clampDescription(descParts.join(' '), DEFAULT_DESCRIPTION);
 
   const rackImageData = resolveRackImageData(rackRow.image, siteOrigin);
+  
+  const additionalProperty: Record<string, unknown>[] = [];
+  if (rackRow.hp) additionalProperty.push({'@type': 'PropertyValue', name: 'HP', value: rackRow.hp});
+  if (rackRow.rows) additionalProperty.push({'@type': 'PropertyValue', name: 'Rows', value: rackRow.rows});
 
   return {
     type: 'rack',
@@ -471,16 +519,24 @@ async function getRackMetadata(rackId: number, canonicalUrl: string, siteOrigin:
     description,
     image: rackImageData.image,
     url: canonicalUrl,
+    ogType: 'website',
     source: rackImageData.source,
     published: rackRow.created,
     modified: rackRow.updated,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
+      '@id': canonicalUrl,
       name: rackName,
       description,
       image: rackImageData.image,
-      url: canonicalUrl
+      url: canonicalUrl,
+      datePublished: rackRow.created,
+      dateModified: rackRow.updated,
+      ...(additionalProperty.length ? {additionalProperty} : {}),
+      ...(authorName ? {
+        author: {'@type': 'Person', name: authorName}
+      } : {})
     }
   };
 }
@@ -493,6 +549,7 @@ function defaultMetadata(canonicalUrl: string, siteOrigin: string, source = 'def
     description: DEFAULT_DESCRIPTION,
     image: defaultImage,
     url: canonicalUrl,
+    ogType: 'website',
     source,
     jsonLd: {
       '@context': 'https://schema.org',
@@ -599,6 +656,11 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   const redirectUrl = escapeHtml(redirectTarget);
   const redirectScriptTarget = JSON.stringify(redirectTarget);
   const jsonLd = JSON.stringify(metadata.jsonLd).replace(/</g, '\\u003c');
+  const ogType = escapeHtml(metadata.ogType || 'website');
+  
+  const articleTimeTags = metadata.ogType === 'article' ? `
+  <meta property="article:published_time" content="${ escapeHtml(metadata.published || '') }">
+  <meta property="article:modified_time" content="${ escapeHtml(metadata.modified || '') }">` : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -611,7 +673,7 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <link rel="canonical" href="${ canonical }">
 
   <meta property="og:site_name" content="${ SITE_NAME }">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="${ ogType }">
   <meta property="og:title" content="${ title }">
   <meta property="og:description" content="${ description }">
   <meta property="og:url" content="${ canonical }">
@@ -619,7 +681,7 @@ function renderHtml(metadata: ShareMetadata, robotsTag: string): string {
   <meta property="og:image:secure_url" content="${ image }">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${ title }">
+  <meta property="og:image:alt" content="${ title }">${ articleTimeTags }
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${ title }">
