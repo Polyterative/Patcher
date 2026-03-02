@@ -8,3 +8,20 @@
 .manufacturer-empty-state {
   padding: 1rem;
 }
+
+.manufacturer-detail-submit-fab {
+  position: fixed;
+  right: calc(1rem + env(safe-area-inset-right));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 98;
+  border: 0.125rem solid #3e638a;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  color: #224b75;
+  box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22);
+  white-space: nowrap;
+
+  &:hover {
+    background: #f2f7fc;
+  }
+}
