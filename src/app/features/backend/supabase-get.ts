@@ -120,7 +120,8 @@ export function createGetNamespace(
           ${ QueryJoins.manufacturer },
           ${ QueryJoins.standard },
           ${ QueryJoins.module_panels },
-          ${ QueryJoins.module_tags }
+          ${ QueryJoins.module_tags },
+          ${ QueryJoins.insOuts }
           `)
         .filter('manufacturerId', 'eq', manufacturerId)
         .limit(1, {foreignTable: DbPaths.module_panels})
