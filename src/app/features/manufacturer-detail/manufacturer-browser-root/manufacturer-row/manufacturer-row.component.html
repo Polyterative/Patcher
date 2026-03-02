@@ -8,13 +8,27 @@
       [alt]="manufacturer.name + ' logo'"
       loading="lazy"
     />
-  } @else {
-    <div class="manufacturer-row-logo-placeholder">
-      <mat-icon>business</mat-icon>
-    </div>
   }
-  <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
-  <mat-icon class="manufacturer-row-chevron">chevron_right</mat-icon>
+  <div class="manufacturer-row-name-group">
+    <div class="manufacturer-row-title-line">
+      <span class="manufacturer-row-name">{{ manufacturer.name }}</span>
+      @if (manufacturer.moduleCount !== undefined) {
+        <span class="manufacturer-row-count-badge">
+          {{ manufacturer.moduleCount }} {{ manufacturer.moduleCount === 1 ? 'module' : 'modules' }}
+        </span>
+      }
+      @if ((manufacturer.changedModulesLast30Days ?? 0) > 0) {
+        <span class="manufacturer-row-fresh-pill">
+          +{{ manufacturer.changedModulesLast30Days }} in 30d
+        </span>
+      }
+      @if (manufacturer.latestModuleUpdatedAt) {
+        <span class="manufacturer-row-updated-text">
+          updated {{ manufacturer.latestModuleUpdatedAt | timeago }}
+        </span>
+      }
+    </div>
+  </div>
 </a>
 
 @if (modules$ | async; as modules) {

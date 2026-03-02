@@ -23,6 +23,9 @@ export interface ManufacturerDetail {
   logo: string | null;
   websiteURL: string | null;
   adminUser: string | null;
+  moduleCount?: number;
+  latestModuleUpdatedAt?: string | null;
+  changedModulesLast30Days?: number;
 }
 
 @Injectable()
