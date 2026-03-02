@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { TimeagoModule } from 'ngx-timeago';
 
 import { CommonSidebarComponent } from 'src/app/features/backbone/common-sidebar/common-sidebar.component';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
@@ -70,6 +71,7 @@ const parentPrefix = 'manufacturers';
     MatSnackBarModule,
     MatTooltipModule,
     MatPaginatorModule,
+    TimeagoModule,
     ModuleBrowserModule,
     ModulePartsModule
   ]

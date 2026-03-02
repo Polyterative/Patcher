@@ -142,6 +142,95 @@ describe('SupabaseService - get complex queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+    
+    it('should order by updated desc with id desc tie-break', (done) => {
+      const mock = chainable({data: [], error: null});
+      const orderSpy = spyOn(mock, 'order').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      
+      service.get.modulesBySameManufacturer(7).subscribe({
+        next: () => {
+          expect(orderSpy).toHaveBeenCalledWith('updated', {ascending: false});
+          expect(orderSpy).toHaveBeenCalledWith('id', {ascending: false});
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+  
+  describe('GET.manufacturersPaginated', () => {
+    it('should sort by latest module updated timestamp (desc) with +00 offsets', (done) => {
+      const manufacturers = [
+        {id: 1, name: 'Endorphin.es', logo: null, websiteURL: null, adminUser: null},
+        {id: 2, name: 'SD Modular', logo: null, websiteURL: null, adminUser: null}
+      ];
+      const moduleActivityRows = [
+        {id: 11, manufacturerId: 2, updated: '2026-03-01T10:00:00.123456+00'},
+        {id: 10, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
+      ];
+      
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'manufacturers') {
+          return chainable({data: manufacturers, count: manufacturers.length, error: null});
+        }
+        if (table === 'modules') {
+          return chainable({data: moduleActivityRows, error: null});
+        }
+        return chainable({data: [], error: null});
+      });
+      
+      service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
+        next: (result: any) => {
+          const orderedNames = (result?.data ?? []).map((x: any) => x.name);
+          expect(orderedNames).toEqual(['SD Modular', 'Endorphin.es']);
+          expect(result?.data?.[0]?.latestModuleUpdatedAt).toBe('2026-03-01T10:00:00.123456+00');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should sort by latest module updated timestamp (desc) with mixed timestamp formats', (done) => {
+      const manufacturers = [
+        {id: 1, name: 'Older Maker', logo: null, websiteURL: null, adminUser: null},
+        {id: 2, name: 'Newer Maker', logo: null, websiteURL: null, adminUser: null},
+        {id: 3, name: 'Middle Maker', logo: null, websiteURL: null, adminUser: null}
+      ];
+      const moduleActivityRows = [
+        {id: 22, manufacturerId: 2, updated: '2026-03-01 10:00:00.123456+0000'},
+        {id: 23, manufacturerId: 3, updated: '2026-02-20T09:15:00.4Z'},
+        {id: 21, manufacturerId: 1, updated: '2026-02-01T10:00:00.123456+00'}
+      ];
+      
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'manufacturers') {
+          return chainable({data: manufacturers, count: manufacturers.length, error: null});
+        }
+        if (table === 'modules') {
+          return chainable({data: moduleActivityRows, error: null});
+        }
+        return chainable({data: [], error: null});
+      });
+      
+      service.GET.manufacturersPaginated(0, 19, '', 'module_updated', 'desc').subscribe({
+        next: (result: any) => {
+          const orderedNames = (result?.data ?? []).map((x: any) => x.name);
+          expect(orderedNames).toEqual(['Newer Maker', 'Middle Maker', 'Older Maker']);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('get.racksWithModule', () => {
