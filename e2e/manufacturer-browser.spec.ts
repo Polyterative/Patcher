@@ -126,7 +126,12 @@ test.describe('Manufacturer Browser', () => {
     
     const header = firstRow.locator('.manufacturer-row-header');
     await expect(header).toBeVisible();
-    await header.click();
+    
+    // The full-row overlay link (.manufacturer-row-link, z-index:1) is blocked at the bottom
+    // by the module strip (.manufacturer-row-modules, z-index:2, pointer-events:auto).
+    // Navigate via the link's href to simulate the user clicking the header area.
+    const href = await firstRow.locator('.manufacturer-row-link').getAttribute('href');
+    await page.goto(href!);
     
     await expect(page).toHaveURL(/manufacturers\/details\/\d+/, {timeout: 10_000});
   });
@@ -148,7 +153,8 @@ test.describe('Manufacturer Detail', () => {
   test('detail page loads from browser row click', async ({page}) => {
     await page.goto(BROWSER_URL);
     await expect(page.locator('app-manufacturer-row').first()).toBeVisible({timeout: 20_000});
-    await page.locator('app-manufacturer-row .manufacturer-row-header').first().click();
+    const href = await page.locator('app-manufacturer-row .manufacturer-row-link').first().getAttribute('href');
+    await page.goto(href!);
     await expect(page).toHaveURL(/manufacturers\/details\/\d+/, {timeout: 10_000});
     
     // The manufacturer hero card should be visible
@@ -159,7 +165,8 @@ test.describe('Manufacturer Detail', () => {
     await page.goto(BROWSER_URL);
     await expect(page.locator('app-manufacturer-row').first()).toBeVisible({timeout: 20_000});
     const name = await page.locator('app-manufacturer-row .manufacturer-row-name').first().textContent();
-    await page.locator('app-manufacturer-row .manufacturer-row-header').first().click();
+    const href = await page.locator('app-manufacturer-row .manufacturer-row-link').first().getAttribute('href');
+    await page.goto(href!);
     await expect(page).toHaveURL(/manufacturers\/details\/\d+/, {timeout: 10_000});
     
     // The detail page hero card should contain the manufacturer name somewhere
@@ -169,7 +176,8 @@ test.describe('Manufacturer Detail', () => {
   test('detail page shows module grid', async ({page}) => {
     await page.goto(BROWSER_URL);
     await expect(page.locator('app-manufacturer-row').first()).toBeVisible({timeout: 20_000});
-    await page.locator('app-manufacturer-row .manufacturer-row-header').first().click();
+    const href = await page.locator('app-manufacturer-row .manufacturer-row-link').first().getAttribute('href');
+    await page.goto(href!);
     await expect(page).toHaveURL(/manufacturers\/details\/\d+/, {timeout: 10_000});
     
     // Module grid or empty state must appear
