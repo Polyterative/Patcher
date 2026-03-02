@@ -23,9 +23,8 @@
         </span>
       }
       @if (manufacturer.latestModuleUpdatedAt) {
-        <span class="manufacturer-row-updated-text">
-          updated {{ manufacturer.latestModuleUpdatedAt | timeago }}
-        </span>
+        <app-manufacturer-updated-badge [updatedAt]="manufacturer.latestModuleUpdatedAt">
+        </app-manufacturer-updated-badge>
       }
     </div>
   </div>
