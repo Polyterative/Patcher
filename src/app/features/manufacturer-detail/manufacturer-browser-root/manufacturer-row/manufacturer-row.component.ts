@@ -26,6 +26,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 export class ManufacturerRowComponent extends SubManager implements OnInit {
   @Input() manufacturer!: ManufacturerDetail;
   
+  
   private readonly _modules$ = new BehaviorSubject<ModuleList>(null);
   readonly modules$ = this._modules$.asObservable();
 
