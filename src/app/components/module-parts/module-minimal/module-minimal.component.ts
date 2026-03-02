@@ -30,8 +30,20 @@ export class ModuleMinimalComponent implements OnInit {
   @Input() viewConfig: ModuleMinimalViewConfig;
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
   @Input() nameSuffix: string | undefined = undefined;
-  
+
   isInCollection$: Observable<boolean>;
+  
+  get insCount(): number {
+    return this.data?.ins?.length ?? 0;
+  }
+  
+  get outsCount(): number {
+    return this.data?.outs?.length ?? 0;
+  }
+  
+  get hasIO(): boolean {
+    return this.insCount > 0 || this.outsCount > 0;
+  }
   
   constructor(
     public userManagerService: UserManagementService,
