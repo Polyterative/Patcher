@@ -33,7 +33,6 @@ import { RackedToModulesPipe } from './racked-to-modules.pipe';
 import { TotalHpOfModulesPipe } from './total-hp-of-modules.pipe';
 import { TotalHpOfRackPipe } from './total-hp-of-rack.pipe';
 import { TotalModulesOfRackPipe } from './total-modules-of-rack.pipe';
-import { InputDialogModule } from "../../shared-interproject/dialogs/input-dialog/input-dialog.module";
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatCardModule } from "@angular/material/card";
@@ -108,7 +107,6 @@ import { EditFabModule } from "src/app/shared-interproject/components/@visual/ed
     GeneralContextMenuModule,
     RackMicroModule,
     MatSlideToggleModule,
-    InputDialogModule,
     StatisticsModule,
     AdviceTooltipModule,
     DialogInfoBoxComponent,

@@ -13,6 +13,7 @@ import {
   BehaviorSubject,
   combineLatest,
   delay,
+  EMPTY,
   forkJoin,
   from,
   of,
@@ -21,6 +22,8 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  debounceTime,
+  distinctUntilChanged,
   filter,
   map,
   switchMap,
@@ -47,15 +50,9 @@ import {
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { SharedConstants } from '../../shared-interproject/SharedConstants';
 import {
-  InputDialogComponent,
-  InputDialogDataInModel,
-  InputDialogDataOutModel
-} from "../../shared-interproject/dialogs/input-dialog/input-dialog.component";
-import {
   FormControl,
   Validators
 } from "@angular/forms";
-import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
 
@@ -66,7 +63,6 @@ export class RackDetailDataService extends SubManager {
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
   duplicateRack$ = new Subject<RackMinimal>();
-  renameCurrentRack$ = new Subject<void>();
   // @ViewChild('screen') screen: ElementRef;
   // @ViewChild('canvas') canvas: ElementRef;
   downloadRackImageToUserComputer$ = new Subject<void>();
@@ -82,6 +78,16 @@ export class RackDetailDataService extends SubManager {
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   showModuleCounters$ = new BehaviorSubject<boolean>(true);
+  formData = {
+    name: {
+      control: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30),
+        Validators.pattern('^(?!\\s*$).+')
+      ])
+    }
+  };
   // name and value
   rackStatistics$ = new BehaviorSubject<{
     name: string,
@@ -357,62 +363,35 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe();
     
-    // when user renames rack, ask user for input and update local data and backend 
-    this.renameCurrentRack$
+    this.formData.name.control.valueChanges
       .pipe(
-        withLatestFrom(this.singleRackData$),
-        switchMap(([_, rack]) => {
-          
-          let formControl = new FormControl(rack.name);
-          
-          //add validation
-          formControl.addValidators(
-            [
-              Validators.required,
-              Validators.minLength(3),
-              Validators.maxLength(30),
-              // name cannot be empty characters
-              Validators.pattern('^(?!\\s*$).+')
-            ]
-          )
-          
-          
-          const data: InputDialogDataInModel = {
-            title: 'Rename Rack',
-            description: `Please enter a new name for your rack "${ rack.name }"`,
-            type: FormTypes.TEXT,
-            control: formControl,
-            label: 'New Name'
-          };
-          
-          return this.dialog.open(
-            InputDialogComponent,
-            {
-              data,
-              disableClose: false
-            }
-          )
-            .afterClosed()
-            .pipe(
-              filter((x: InputDialogDataOutModel) => !!x),
-              map((x: InputDialogDataOutModel) => ({
-                newName: x.result,
-                rack
-              })),
-            );
-        }),
-        // properly destructuring the array
-        map(({newName, rack}) => {
-          rack.name = newName;
-          this.singleRackData$.next(rack);
-          return rack;
-        }),
-        switchMap(x => this.backend.update.rack(x)),
-        // request update of local data
-        tap(x => this.updateSingleRackData$.next(x.data[0].id)),
-        takeUntil(this.destroy$),
+        filter(() => !!this.singleRackData$.value),
+        filter(() => this.formData.name.control.valid),
+        takeUntil(this.destroy$)
       )
-      .subscribe()
+      .subscribe(input => this.singleRackData$.value.name = input ?? '');
+    
+    // Auto-save rack name from inline editor while edit mode is open.
+    this.formData.name.control.valueChanges
+      .pipe(
+        debounceTime(800),
+        distinctUntilChanged(),
+        withLatestFrom(this.singleRackData$),
+        filter(([_, rack]) => !!rack),
+        map(([_, rack]) => rack as Rack),
+        filter(() => this.formData.name.control.valid),
+        switchMap(rack =>
+          this.backend.update.rack({...rack}).pipe(
+            catchError(err => {
+              console.error('Failed to auto-save rack name:', err);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
     
     this.updateSingleRackData$
       .pipe(
@@ -437,6 +416,15 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe(x => this.isCurrentRackPrivate$.next(!x.public))
+    
+    this.singleRackData$
+      .pipe(
+        filter(x => !!x),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(rack => {
+        this.formData.name.control.reset(rack.name, {emitEvent: false});
+      });
     
     // when updated rack data is received, update rowedRackedModules$
     this.singleRackData$.pipe(

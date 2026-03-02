@@ -241,6 +241,26 @@ empty at low volume.
 A lightweight "what's new" summary on the home page remains an option once public activity volume justifies it. Activity
 on private entities is visible to the owner only.
 
+**Recent Activity UI direction (shared component):**
+
+- Introduce a reusable **Recent Activity** surface that can be dropped into multiple pages with the same visual and
+  behavioral language.
+- Placement principle: on browse/index pages, show it **directly below filters** so users immediately see "what changed"
+  in the current context.
+- The surface should be **fully data-driven**: each entry is rendered from a standard activity shape (actor, action,
+  target, time, optional context) so new activity types can be added without redesigning the UI each time.
+- Comments are the reference pattern: attributable, contextual, and naturally reusable across modules, racks, patches,
+  and future entities.
+- Keep the activity layer utility-focused (recent edits, comments, listings/prices updates) rather than
+  engagement-driven.
+  No social-feed mechanics.
+
+**Open questions for execution planning:**
+
+- Which activity types are in v1 for highest signal with lowest noise?
+- What default time window/count keeps the block useful in low-activity contexts?
+- Should each page allow custom filtering of activity types, or only inherit existing page filters in v1?
+
 ---
 
 ### Tier 2 — Market Layer *(requires public user profiles)*
