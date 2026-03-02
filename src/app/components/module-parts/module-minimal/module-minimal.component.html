@@ -26,6 +26,22 @@
           ></app-module-part-hp>
         }
       </div>
+      @if (hasIO) {
+        <div class="row gap1 module-io-counts" style="font-size:0.75rem;opacity:0.7;flex-wrap:wrap">
+          @if (insCount > 0) {
+            <span class="row center" style="gap:2px">
+              <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px">input</mat-icon>
+              {{ insCount }}
+            </span>
+          }
+          @if (outsCount > 0) {
+            <span class="row center" style="gap:2px">
+              <mat-icon style="font-size:14px;width:14px;height:14px;line-height:14px">output</mat-icon>
+              {{ outsCount }}
+            </span>
+          }
+        </div>
+      }
       @if (!viewConfig.hideDates) {
         <app-timestamps-relative
           [data]="data"

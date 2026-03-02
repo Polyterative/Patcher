@@ -41,6 +41,10 @@ export interface MinimalModule extends Timestamped {
     }[];
   }[];
   panels: ModulePanel[];
+  /** Inputs — only present when explicitly fetched via insOuts join */
+  ins?: CV[];
+  /** Outputs — only present when explicitly fetched via insOuts join */
+  outs?: CV[];
 }
 
 export interface DbModule extends MinimalModule {
