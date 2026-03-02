@@ -1,14 +1,20 @@
 <div class="rowwrap gap1 grow">
   @for (item of data$ | async; track item) {
-    <app-label-value-showcase
-      class="label-value-showcase"
-      [style]="{ flex: '1 1 '+item.size, }"
-      [label]="item.label"
-      [icon]="item.icon"
-      [matBadge]="item.badge?item.badge:undefined"
-      matBadgeDescription="test"
+    <a
+      [routerLink]="item.routerLink ?? null"
+      [class.showcase-link]="!!item.routerLink"
+      [style]="{ flex: '1 1 '+item.size }"
     >
-      {{ item.value }}
-    </app-label-value-showcase>
+      <app-label-value-showcase
+        class="label-value-showcase"
+        [class.clickable]="!!item.routerLink"
+        [label]="item.label"
+        [icon]="item.icon"
+        [matBadge]="item.badge?item.badge:undefined"
+        matBadgeDescription="test"
+      >
+        {{ item.value }}
+      </app-label-value-showcase>
+    </a>
   }
 </div>
