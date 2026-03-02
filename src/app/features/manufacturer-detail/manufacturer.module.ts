@@ -25,6 +25,8 @@ import { ManufacturerRowComponent } from './manufacturer-browser-root/manufactur
 import { ManufacturerUpdatedBadgeComponent } from './manufacturer-browser-root/manufacturer-row/manufacturer-updated-badge/manufacturer-updated-badge.component';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
+import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
+import { MatChipsModule } from '@angular/material/chips';
 
 
 const parentPrefix = 'manufacturers';
@@ -75,7 +77,9 @@ const parentPrefix = 'manufacturers';
     MatPaginatorModule,
     TimeagoModule,
     ModuleBrowserModule,
-    ModulePartsModule
+    ModulePartsModule,
+    LibShowcaseGridComponent,
+    MatChipsModule
   ]
 })
 export class ManufacturerModule {}
