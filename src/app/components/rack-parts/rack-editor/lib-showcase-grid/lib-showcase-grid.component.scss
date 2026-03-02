@@ -1,0 +1,28 @@
+.showcase-link {
+  text-decoration: none;
+  display: contents;
+}
+
+:host ::ng-deep .clickable {
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  .label {
+    color: #1976d2;
+    font-weight: 500;
+  }
+
+  .value {
+    color: #1976d2;
+  }
+
+  mat-icon {
+    color: #1976d2;
+  }
+
+  &:hover {
+    background: rgba(25, 118, 210, 0.07);
+    opacity: 0.9;
+  }
+}
