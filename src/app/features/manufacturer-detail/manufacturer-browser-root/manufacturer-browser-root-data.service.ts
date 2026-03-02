@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  FormControl,
-  UntypedFormControl
-} from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent } from '@angular/material/paginator';
 import {
@@ -35,21 +32,27 @@ type ManufacturerOrderOption = {
   sortDirection: 'asc' | 'desc';
 };
 
+interface ManufacturerSearchField {
+  control: FormControl<string>;
+  label: string;
+}
+
+interface ManufacturerOrderField {
+  control: FormControl<ManufacturerOrderOption>;
+  label: string;
+  options$: Observable<ManufacturerOrderOption[]>;
+}
+
+interface ManufacturerBrowserFields {
+  search: ManufacturerSearchField;
+  order: ManufacturerOrderField;
+}
+
 const MANUFACTURER_ORDER_OPTIONS: ManufacturerOrderOption[] = [
   {id: 'name', name: 'Name A→Z', sortColumn: 'name', sortDirection: 'asc'},
   {id: 'name_desc', name: 'Name Z→A', sortColumn: 'name', sortDirection: 'desc'},
-  {
-    id: 'module_updated_desc',
-    name: 'Recently changed modules',
-    sortColumn: 'module_updated',
-    sortDirection: 'desc',
-  },
-  {
-    id: 'module_updated_asc',
-    name: 'Least recently changed modules',
-    sortColumn: 'module_updated',
-    sortDirection: 'asc',
-  },
+  {id: 'module_updated_desc', name: 'Recently changed modules', sortColumn: 'module_updated', sortDirection: 'desc'},
+  {id: 'module_updated_asc', name: 'Least recently changed modules', sortColumn: 'module_updated', sortDirection: 'asc'},
 ];
 const DEFAULT_ORDER = MANUFACTURER_ORDER_OPTIONS[2];
 
@@ -59,33 +62,22 @@ export class ManufacturerBrowserRootDataService extends SubManager {
   readonly updateList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
   readonly paginatorToFistPage$ = new Subject<void>();
-  
+  readonly pageEvent$ = new Subject<PageEvent>();
+
   // ── Server-side pagination state ──────────────────────────────────────────
-  serversideTableRequestData = {
+  readonly serversideTableRequestData = {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(10),
     filter$: new BehaviorSubject<string>(''),
     sort$: new BehaviorSubject<[string, string]>([DEFAULT_ORDER.sortColumn, DEFAULT_ORDER.sortDirection]),
   };
-  serversideAdditionalData = {
+  
+  readonly serversideAdditionalData = {
     itemsCount$: new BehaviorSubject<number>(0),
   };
 
   // ── Fields ────────────────────────────────────────────────────────────────
-  fields: {
-    search: {
-      control: FormControl<any>;
-      label: string
-    };
-    order: {
-      control: FormControl<any>;
-      label: string;
-      options$: Observable<{
-        name: string;
-        id: string
-      }[]>
-    };
-  };
+  readonly fields: ManufacturerBrowserFields;
 
   // ── Public state ──────────────────────────────────────────────────────────
   private readonly _manufacturers$ = new BehaviorSubject<ManufacturerDetail[] | null>(null);
@@ -101,11 +93,11 @@ export class ManufacturerBrowserRootDataService extends SubManager {
     this.fields = {
       search: {
         label: 'Search manufacturer…',
-        control: new UntypedFormControl(''),
+        control: new FormControl<string>('', {nonNullable: true}),
       },
       order: {
         label: 'Order by',
-        control: new UntypedFormControl(DEFAULT_ORDER),
+        control: new FormControl<ManufacturerOrderOption>(DEFAULT_ORDER, {nonNullable: true}),
         options$: of(MANUFACTURER_ORDER_OPTIONS),
       },
     };
@@ -116,7 +108,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
     ).pipe(
       startWith(null),
       map(() => {
-        const order = this.fields.order.control.value as ManufacturerOrderOption | null;
+        const order = this.fields.order.control.value;
         return (
           this.fields.search.control.value !== '' ||
           (order && order.id !== DEFAULT_ORDER.id)
@@ -126,17 +118,20 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       shareReplay(1)
     );
     
+    // Page navigation — update skip/take then re-fetch
+    this.pageEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.serversideTableRequestData.take$.next(event.pageSize);
+        this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
+        this.updateList$.next();
+      });
+
     this.initializeFormChangeHandler();
     this.initializeFetchHandler();
     this.initializeResetHandler();
   }
-  
-  onPageEvent(event: PageEvent): void {
-    this.serversideTableRequestData.take$.next(event.pageSize);
-    this.serversideTableRequestData.skip$.next(event.pageIndex * event.pageSize);
-    this.updateList$.next();
-  }
-  
+
   private initializeFormChangeHandler(): void {
     merge(
       this.fields.search.control.valueChanges,
@@ -145,7 +140,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       debounceTime(400),
       takeUntil(this.destroy$)
     ).subscribe(() => {
-      const orderVal = (this.fields.order.control.value as ManufacturerOrderOption | null) ?? DEFAULT_ORDER;
+      const orderVal = this.fields.order.control.value ?? DEFAULT_ORDER;
       const searchVal = this.fields.search.control.value ?? '';
       this.serversideTableRequestData.filter$.next(searchVal);
       this.serversideTableRequestData.sort$.next([
@@ -157,7 +152,7 @@ export class ManufacturerBrowserRootDataService extends SubManager {
       this.updateList$.next();
     });
   }
-  
+
   private initializeFetchHandler(): void {
     this.updateList$.pipe(
       switchMap(() => {

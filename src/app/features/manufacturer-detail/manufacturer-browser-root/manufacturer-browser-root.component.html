@@ -58,7 +58,7 @@
           [pageSize]="dataService.serversideTableRequestData.take$.value"
           [pageSizeOptions]="[10, 20, 50]"
           [length]="dataService.serversideAdditionalData.itemsCount$ | async"
-          (page)="dataService.onPageEvent($event)"
+          (page)="dataService.pageEvent$.next($event)"
           showFirstLastButtons
         ></mat-paginator>
         <lib-auto-update-loading-indicator
