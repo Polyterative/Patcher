@@ -38,8 +38,6 @@ const parentPrefix = 'manufacturers';
   declarations: [
     ManufacturerDetailComponent,
     ManufacturerBrowserRootComponent,
-    ManufacturerRowComponent,
-    ManufacturerUpdatedBadgeComponent
   ],
   providers: [
     TimeagoPipe
@@ -85,7 +83,9 @@ const parentPrefix = 'manufacturers';
     ModuleBrowserModule,
     ModulePartsModule,
     LibShowcaseGridComponent,
-    MatChipsModule
+    MatChipsModule,
+    ManufacturerRowComponent,
+    ManufacturerUpdatedBadgeComponent
   ]
 })
 export class ManufacturerModule {}
