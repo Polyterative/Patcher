@@ -123,4 +123,72 @@ describe('SharedConstants error handlers', () => {
     const args = snackBar.open.calls.mostRecent().args;
     expect(args[0]).toContain('email_taken');
   });
+  
+  it('errorHandlerData returns EMPTY on error', (done) => {
+    throwError(() => new Error('fail'))
+      .pipe(SharedConstants.errorHandlerData(snackBar as any))
+      .subscribe({
+        error: () => fail('should not error'),
+        complete: done
+      });
+  });
+  
+  it('errorHandlerOperation returns EMPTY on error', (done) => {
+    throwError(() => new Error('fail'))
+      .pipe(SharedConstants.errorHandlerOperation(snackBar as any))
+      .subscribe({
+        error: () => fail('should not error'),
+        complete: done
+      });
+  });
+  
+  it('successCustom uses provided message', () => {
+    SharedConstants.successCustom(snackBar as any, 'Custom success!');
+    const args = snackBar.open.calls.mostRecent().args;
+    expect(args[0]).toBe('Custom success!');
+    expect(args[2].panelClass).toBe('snack-success');
+  });
+  
+  it('successCustom falls back to "Done." when no message provided', () => {
+    SharedConstants.successCustom(snackBar as any);
+    const args = snackBar.open.calls.mostRecent().args;
+    expect(args[0]).toBe('Done.');
+  });
+  
+  it('errorCustom uses provided message', () => {
+    SharedConstants.errorCustom(snackBar as any, 'Custom error!');
+    const args = snackBar.open.calls.mostRecent().args;
+    expect(args[0]).toBe('Custom error!');
+    expect(args[2].panelClass).toBe('snack-error');
+  });
+  
+  it('errorCustom falls back to operationFailed when no message provided', () => {
+    SharedConstants.errorCustom(snackBar as any);
+    const args = snackBar.open.calls.mostRecent().args;
+    expect(args[0]).toBe(SharedConstants.messages.operationFailed);
+  });
+  
+  it('errorHandlerSignup with extra msg appends it to the message', (done) => {
+    throwError(() => new Error('fail'))
+      .pipe(SharedConstants.errorHandlerSignup(snackBar as any, 'extra info'))
+      .subscribe({
+        complete: () => {
+          const msg = snackBar.open.calls.mostRecent().args[0];
+          expect(msg).toContain('extra info');
+          done();
+        }
+      });
+  });
+  
+  it('errorHandlerLogin with extra msg appends it to the message', (done) => {
+    throwError(() => new Error('fail'))
+      .pipe(SharedConstants.errorHandlerLogin(snackBar as any, 'extra info'))
+      .subscribe({
+        complete: () => {
+          const msg = snackBar.open.calls.mostRecent().args[0];
+          expect(msg).toContain('extra info');
+          done();
+        }
+      });
+  });
 });
