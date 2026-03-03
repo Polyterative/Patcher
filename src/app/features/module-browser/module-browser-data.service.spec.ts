@@ -68,4 +68,40 @@ describe('ModuleBrowserDataService', () => {
 
     expect(sortArgs(backend)).toEqual(['updated', 'desc']);
   });
+  
+  it('canReset$ emits false when all fields are at default', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    tick();
+    expect(canReset).toBeFalse();
+  }));
+  
+  it('canReset$ emits true when name field has content', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    service.fields.name.control.setValue('rings');
+    tick();
+    expect(canReset).toBeTrue();
+  }));
+  
+  it('canReset$ emits true when hp field has value', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    service.fields.hp.control.setValue('8');
+    tick();
+    expect(canReset).toBeTrue();
+  }));
+  
+  it('pageEvent$ updates skip/take and triggers reload', fakeAsync(() => {
+    const {service, backend} = build();
+    const before = backend.GET.modules.calls.count();
+    service.pageEvent$.next({pageIndex: 2, pageSize: 20, length: 100} as any);
+    tick();
+    expect(service.serversideTableRequestData.skip$.value).toBe(40);
+    expect(service.serversideTableRequestData.take$.value).toBe(20);
+    expect(backend.GET.modules.calls.count()).toBeGreaterThan(before);
+  }));
 });

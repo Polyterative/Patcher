@@ -5,6 +5,7 @@ import {
 import {
   cacheBust,
   cacheBuster$,
+  catchErrors,
   defaultCacheTime,
   longCacheTime,
   showSuccessMessage,
@@ -100,5 +101,46 @@ describe('showSuccessMessage operator', () => {
           done();
         }
       });
+  });
+});
+
+
+describe('catchErrors operator', () => {
+  it('passes through source values when no error occurs', (done) => {
+    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    of(42)
+      .pipe(catchErrors(snackBar))
+      .subscribe(value => {
+        expect(value).toBe(42);
+        done();
+      });
+  });
+  
+  it('returns NEVER (does not error) when source errors', () => {
+    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    let errored = false;
+    const sub = throwError(() => new Error('test error'))
+      .pipe(catchErrors(snackBar))
+      .subscribe({
+        next: () => {
+        },
+        error: () => {
+          errored = true;
+        },
+        complete: () => {
+        }
+      });
+    expect(errored).toBeFalse();
+    sub.unsubscribe();
+  });
+  
+  it('emits no values after an error (NEVER produces nothing)', () => {
+    const snackBar: any = {open: jasmine.createSpy('open').and.returnValue({onAction: () => of()})};
+    const values: any[] = [];
+    const sub = throwError(() => new Error('oops'))
+      .pipe(catchErrors(snackBar))
+      .subscribe({next: v => values.push(v), error: () => fail('should not error')});
+    expect(values.length).toBe(0);
+    sub.unsubscribe();
   });
 });
