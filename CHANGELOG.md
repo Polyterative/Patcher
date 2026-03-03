@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.3.0](https://github.com/Polyterative/Patcher/compare/v5.2.0...v5.3.0) (2026-03-03)
+
+
+### Features
+
+* **manufacturer-browser:** add manufacturer module and UI components ([7e5a2ed](https://github.com/Polyterative/Patcher/commit/7e5a2ed1677c391946af094c47329025fa46414d))
+* **manufacturer-browser:** add pagination to manufacturer list ([db64360](https://github.com/Polyterative/Patcher/commit/db643600fcb64d95e1e59b3f6da3566e119dd1cf))
+* **manufacturer-browser:** implement sidebar filters and manufacturer rows ([d8367d1](https://github.com/Polyterative/Patcher/commit/d8367d1be3ebce42b92ad6100a97ddf88f8473ed))
+* **manufacturer-browser:** integrate module parts for enhanced functionality ([c367dd4](https://github.com/Polyterative/Patcher/commit/c367dd421a5ea029a13268cc507a69f19aa95a3a))
+* **manufacturer-detail:** add floating action button to submit module for manufacturer ([dc4747b](https://github.com/Polyterative/Patcher/commit/dc4747b318340f8cdfda1fae9fd0d3d6058113c9))
+* **manufacturer-detail:** implement read-only manufacturer page with SEO enhancements ([f01c1b1](https://github.com/Polyterative/Patcher/commit/f01c1b1b9f98888d58ce64be71df13cb930f5be1))
+* **manufacturer-detail:** merge floating action button for module submission ([6bd03c2](https://github.com/Polyterative/Patcher/commit/6bd03c2caf16e8df7183264dbd938943c4803b1e))
+* **manufacturer-row:** add updated badge component ([ef0aede](https://github.com/Polyterative/Patcher/commit/ef0aede3f1936e5b24eafeeb48d52a6a8d290bd1))
+* **manufacturer-row:** enhance module display with links ([588eade](https://github.com/Polyterative/Patcher/commit/588eade932551c83df7855b5bf4564b4c9c51126))
+* **module-browser:** add recent activity block for modules ([312ecf2](https://github.com/Polyterative/Patcher/commit/312ecf22774292e72e26b27f0624923982932374))
+* **module-browser:** implement recent activity service ([3751129](https://github.com/Polyterative/Patcher/commit/37511295b9ab73574f15720b0a047a3d6ee17884))
+* **module-part-image:** add fixed-height option for alignment ([94acb0c](https://github.com/Polyterative/Patcher/commit/94acb0c0e6e554bf00ed065f5939242ca3026c18))
+* **user-area:** add server-side pagination to comments, patches, racks; client-side to modules ([2318d9f](https://github.com/Polyterative/Patcher/commit/2318d9fffa61d3804a0483558cd3762a84a6858b))
+* **user-area:** merge pagination feature from worktree ([f12d4c1](https://github.com/Polyterative/Patcher/commit/f12d4c1bb114e5eebf5591ef19aeb53653693cc8))
+
+
+### Bug Fixes
+
+* **auto-update-loading:** improve loading indicator visibility ([82edd46](https://github.com/Polyterative/Patcher/commit/82edd46b1c9287542a410f4803c05ddbefd307ea))
+* **browser:** correct stale sort$ on navigation and wrong default across patches/modules/racks ([4177a43](https://github.com/Polyterative/Patcher/commit/4177a4306c5b5b72d4068dd2fc833a4f4d34dc74))
+* **manufacturer-browser:** update pagination to use 10 items per page ([fb6a14c](https://github.com/Polyterative/Patcher/commit/fb6a14cba50da1bb27cb1f4f93527041d44255dc))
+* **module-sort:** enhance sorting options ([fdae250](https://github.com/Polyterative/Patcher/commit/fdae250d4c50be104c2a620f8311fb9413800bbf))
+* **security:** harden auth guards across write/delete/storage operations ([38af1e8](https://github.com/Polyterative/Patcher/commit/38af1e8a95e9ceea1361257de51f06a36aa6a0f5))
+* **styles:** globally centre mat-menu-item icon and label via flex wrapper ([a1eda9a](https://github.com/Polyterative/Patcher/commit/a1eda9a57806debfd8e92051a340eb8bf0dbd746))
+* **tests:** resolve 15 pre-existing test failures ([6fc60c8](https://github.com/Polyterative/Patcher/commit/6fc60c883890764993b332bf534452e68e7e5834))
+
 ## [5.2.0](https://github.com/Polyterative/Patcher/compare/v5.1.1...v5.2.0) (2026-02-26)
 
 
