@@ -42,6 +42,7 @@
     "switch:develop": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout develop && git update-index --skip-worktree src/build.ts",
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
     "merge:prod-to-dev": "yarn switch:develop && git merge production",
+    "merge:dev-to-prod": "yarn switch:production && git merge develop",
     "prepare": "husky"
   },
   "lint-staged": {
