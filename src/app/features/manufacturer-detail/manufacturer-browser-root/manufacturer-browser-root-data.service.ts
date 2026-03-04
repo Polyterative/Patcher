@@ -197,8 +197,9 @@ export class ManufacturerBrowserRootDataService extends SubManager {
   
   private initializeResetHandler(): void {
     this.resetForm$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.fields.search.control.setValue('');
-      this.fields.order.control.setValue(DEFAULT_ORDER);
+      const silent = {emitEvent: false};
+      this.fields.search.control.setValue('', silent);
+      this.fields.order.control.setValue(DEFAULT_ORDER, silent);
       this.serversideTableRequestData.filter$.next('');
       this.serversideTableRequestData.sort$.next([DEFAULT_ORDER.sortColumn, DEFAULT_ORDER.sortDirection]);
       this.serversideTableRequestData.skip$.next(0);

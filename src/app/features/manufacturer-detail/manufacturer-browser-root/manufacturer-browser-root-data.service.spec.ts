@@ -102,4 +102,18 @@ describe('ManufacturerBrowserRootDataService', () => {
     const {service} = buildService();
     expect(() => service.ngOnDestroy()).not.toThrow();
   });
+  
+  it('resetForm$ triggers exactly one backend call, not two (no double reload)', fakeAsync(() => {
+    const {service, backend} = buildService();
+    tick(400);
+    backend.GET.manufacturersPaginated.calls.reset();
+    
+    service.resetForm$.next();
+    expect(backend.GET.manufacturersPaginated.calls.count()).toBe(1);
+    
+    tick(400);
+    expect(backend.GET.manufacturersPaginated.calls.count()).toBe(1);
+    
+    service.ngOnDestroy();
+  }));
 });
