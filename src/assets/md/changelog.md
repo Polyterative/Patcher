@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.1](https://github.com/Polyterative/Patcher/compare/v5.3.0...v5.3.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* **user-model:** remove email exposure in queries ([b972975](https://github.com/Polyterative/Patcher/commit/b972975f40be125b7f0f7a6e5c92fa5adfa7fb7a))
+
 ## [5.3.0](https://github.com/Polyterative/Patcher/compare/v5.2.0...v5.3.0) (2026-03-03)
 
 
