@@ -188,7 +188,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
         authorid: 'test-user-id',
-        author: {id: 'test-user-id', username: 'testuser', email: 'test@example.com'}
+        author: {id: 'test-user-id', username: 'testuser'}
       },
       {
         id: 2,
@@ -198,7 +198,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         created: new Date().toISOString(),
         updated: new Date().toISOString(),
         authorid: 'test-user-id',
-        author: {id: 'test-user-id', username: 'testuser', email: 'test@example.com'}
+        author: {id: 'test-user-id', username: 'testuser'}
       }
     ];
     
