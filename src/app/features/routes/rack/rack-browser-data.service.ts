@@ -208,8 +208,9 @@ export class RackBrowserDataService extends SubManager {
     this.resetForm$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.fields.search.control.setValue('');
-        this.fields.order.control.setValue(RACK_DEFAULT_ORDER);
+        const silent = {emitEvent: false};
+        this.fields.search.control.setValue('', silent);
+        this.fields.order.control.setValue(RACK_DEFAULT_ORDER, silent);
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([RACK_DEFAULT_ORDER.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);

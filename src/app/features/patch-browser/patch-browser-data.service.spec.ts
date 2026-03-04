@@ -98,4 +98,18 @@ describe('PatchBrowserDataService', () => {
     expect(service.serversideTableRequestData.take$.value).toBe(10);
     expect(backend.GET.patches.calls.count()).toBeGreaterThan(before);
   }));
+  
+  it('resetForm$ triggers exactly one backend call, not two (no double reload)', fakeAsync(() => {
+    const {service, backend} = build();
+    tick(750);
+    backend.GET.patches.calls.reset();
+    
+    service.resetForm$.next();
+    expect(backend.GET.patches.calls.count()).toBe(1);
+    
+    tick(750);
+    expect(backend.GET.patches.calls.count()).toBe(1);
+    
+    service.ngOnDestroy();
+  }));
 });
