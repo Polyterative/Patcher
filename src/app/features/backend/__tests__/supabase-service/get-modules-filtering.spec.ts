@@ -222,4 +222,60 @@ describe('SupabaseService - GET.modules filtering', () => {
       }
     });
   }, TEST_TIMEOUT);
+  
+  it('should apply filter on module_tags.tagid when tagIds are provided', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    
+    // tagIds is the 12th argument (index 11)
+    service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, [2, 5]).subscribe({
+      next: () => {
+        expect(filterSpy).toHaveBeenCalledWith('module_tags.tagid', 'in', '(2,5)');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+  
+  it('should NOT apply tag filter when tagIds is undefined', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    
+    service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined).subscribe({
+      next: () => {
+        const tagFilterCall = filterSpy.calls.all()
+          .find((call: any) => call.args[0] === 'module_tags.tagid');
+        expect(tagFilterCall).toBeUndefined();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+  
+  it('should NOT apply tag filter when tagIds is an empty array', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+    
+    service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, []).subscribe({
+      next: () => {
+        const tagFilterCall = filterSpy.calls.all()
+          .find((call: any) => call.args[0] === 'module_tags.tagid');
+        expect(tagFilterCall).toBeUndefined();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });

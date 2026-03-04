@@ -32,6 +32,9 @@ describe('ModuleBrowserRootComponent', () => {
               manufacturers: jasmine.createSpy('manufacturers').and.returnValue(of({data: []})),
               modules: jasmine.createSpy('modules').and.returnValue(of({data: [], count: 0}))
             },
+            get: {
+              allTags: jasmine.createSpy('allTags').and.returnValue(of([]))
+            },
             cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
           }
         },
