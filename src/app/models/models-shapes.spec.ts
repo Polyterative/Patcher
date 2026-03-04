@@ -50,7 +50,7 @@ describe('PatchMinimal interface shape', () => {
       id: 10,
       name: 'My Patch',
       public: true,
-      author: {id: 'user-1', username: 'alice', email: 'alice@example.com'},
+      author: {id: 'user-1', username: 'alice'},
       created: '2024-01-01T00:00:00.000Z',
       updated: '2024-01-01T00:00:00.000Z'
     };
@@ -68,7 +68,7 @@ describe('RackMinimal interface shape', () => {
       hp: 84,
       rows: 3,
       public: true,
-      author: {id: 'user-1', username: 'bob', email: 'bob@example.com'},
+      author: {id: 'user-1', username: 'bob'},
       locked: false,
       created: '2024-01-01T00:00:00.000Z',
       updated: '2024-01-01T00:00:00.000Z'

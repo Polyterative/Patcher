@@ -42,10 +42,10 @@ export class QueryJoins {
   static patch_connections: string = 'patch_connections:patch_connections!patch_connections_patchid_fkey(*)';
 
 // Author
-  static author: string = 'author:authorid(username,id,email)';
+  static author: string = 'author:authorid(username,id)';
 
 // Rack
-  static rack: string = 'rack:rackid(*,author:authorid(username,id,email))';
+  static rack: string = 'rack:rackid(*,author:authorid(username,id))';
 
 // Rack Modules
   static rackModules: string = 'rackModules:rackid(*)';
@@ -81,8 +81,8 @@ export class QueryJoins {
 //   manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
 //   standard: 'standard:standards!modules_standard_fkey(name,id)',
 //   patch: 'patch:patches!patch_connections_patchid_fkey(*)',
-//   author: 'author:authorid(username,id,email)',
-//   rack: 'rack:rackid(*,author:authorid(username,id,email))',
+//   author: 'author:authorid(username,id)',
+//   rack: 'rack:rackid(*,author:authorid(username,id))',
 //   rack_modules: 'rackModules:rackid(*)',
 //   module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
 //   // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',

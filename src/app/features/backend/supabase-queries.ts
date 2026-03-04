@@ -282,7 +282,7 @@ export class SupabaseQueriesService {
       .pipe(
         switchMap(user => rxFrom(
           this.supabase.from(DbPaths.comments)
-            .select(`*,profile:profiles(id,username,email)`, {count: 'exact'})
+            .select(`*,profile:profiles(id,username)`, {count: 'exact'})
             .filter('authorId', 'eq', user.id)
             .order('created', {ascending: false})
             .range(from, to)
@@ -410,7 +410,7 @@ export class SupabaseQueriesService {
   getComments(entityId: number, entityType: number): Observable<DbComment[] | null | undefined> {
     return rxFrom(
       this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username,email)`)
+        .select(`*,profile:profiles(id,username)`)
         .filter('entityId', 'eq', entityId)
         .filter('entityType', 'eq', entityType)
       // foreign key add profile information for each comment
