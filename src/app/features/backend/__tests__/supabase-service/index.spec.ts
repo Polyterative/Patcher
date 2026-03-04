@@ -35,3 +35,4 @@ import './error-handling.spec';
 import './pattern-compliance.spec';
 import './crud-operations.spec';
 import './storage-cache.spec';
+import './email-leakage.spec';
