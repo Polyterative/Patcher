@@ -1,4 +1,7 @@
-import { fakeAsync, tick } from '@angular/core/testing';
+import {
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
 import { of } from 'rxjs';
 import { RackBrowserDataService } from './rack-browser-data.service';
 
@@ -66,4 +69,18 @@ describe('RackBrowserDataService', () => {
       0, jasmine.any(Number), '', 'updated', 'desc'
     );
   });
+  
+  it('resetForm$ triggers exactly one backend call, not two (no double reload)', fakeAsync(() => {
+    const {service, backend} = build();
+    tick(750);
+    backend.GET.racksMinimal.calls.reset();
+    
+    service.resetForm$.next();
+    expect(backend.GET.racksMinimal.calls.count()).toBe(1);
+    
+    tick(750);
+    expect(backend.GET.racksMinimal.calls.count()).toBe(1);
+    
+    service.ngOnDestroy();
+  }));
 });
