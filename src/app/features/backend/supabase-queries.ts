@@ -80,14 +80,20 @@ export class SupabaseQueriesService {
     withHpCondition?: "=" | ">" | "<" | ">=" | "<=" | "!=" | undefined,
     standard: number | undefined = undefined,
     description?: string,
-    onlyPublic = true) {
+    onlyPublic = true,
+    tagIds?: number[]) {
+    const hasTagFilter = tagIds && tagIds.length > 0;
+    const moduleTagsJoin = hasTagFilter
+      ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
+      : QueryJoins.module_tags;
+
     let query = this.supabase.from(DbPaths.modules)
       .select(`
                               id,name,hp,description,public,created,updated,
                               ${ QueryJoins.manufacturer },
                               ${ QueryJoins.standard },
                               ${ QueryJoins.module_panels },
-                              ${ QueryJoins.module_tags }
+                              ${ moduleTagsJoin }
                             `, {count: 'exact'})
     
     if (onlyPublic === true) {
@@ -122,6 +128,10 @@ export class SupabaseQueriesService {
     
     if (description) {
       query = query.ilike('description', `%${ normalizeForSearch(description) }%`);
+    }
+    
+    if (hasTagFilter) {
+      query = (query as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
     }
     
     

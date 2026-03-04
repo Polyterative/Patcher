@@ -13,6 +13,9 @@ describe('ModuleBrowserDataService', () => {
         manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({data: []})),
         modules: jasmine.createSpy('GET.modules').and.returnValue(of({data: [], count: 0}))
       },
+      get: {
+        allTags: jasmine.createSpy('get.allTags').and.returnValue(of([]))
+      },
       cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
     const service = new ModuleBrowserDataService(backend as any);
@@ -103,5 +106,70 @@ describe('ModuleBrowserDataService', () => {
     expect(service.serversideTableRequestData.skip$.value).toBe(40);
     expect(service.serversideTableRequestData.take$.value).toBe(20);
     expect(backend.GET.modules.calls.count()).toBeGreaterThan(before);
+  }));
+  
+  it('canReset$ emits true when tag filter has selections', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    service.fields.tags.control.setValue([{id: '1', name: 'VCO'}]);
+    tick();
+    expect(canReset).toBeTrue();
+  }));
+  
+  it('canReset$ emits false after tags are cleared back to empty', fakeAsync(() => {
+    const {service} = build();
+    let canReset: boolean | undefined;
+    service.canReset$.subscribe(v => (canReset = v));
+    service.fields.tags.control.setValue([{id: '1', name: 'VCO'}]);
+    tick();
+    service.fields.tags.control.setValue([]);
+    tick();
+    expect(canReset).toBeFalse();
+  }));
+  
+  it('passes selected tag ids to GET.modules when updateModulesList$ fires', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.tags.control.setValue([{id: '3', name: 'Filter'}, {id: '7', name: 'Drum'}]);
+    tick(750);
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    // tagIds is the 12th argument (index 11)
+    expect(args[11]).toEqual([3, 7]);
+    service.ngOnDestroy();
+  }));
+  
+  it('passes undefined tag ids when no tags are selected', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.tags.control.setValue([]);
+    tick(750);
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[11]).toBeUndefined();
+    service.ngOnDestroy();
+  }));
+  
+  it('resets tags to empty on resetForm$', fakeAsync(() => {
+    const {service} = build();
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    tick(750);
+    service.resetForm$.next();
+    expect(service.fields.tags.control.value).toEqual([]);
+    service.ngOnDestroy();
+  }));
+  
+  it('resetForm$ triggers exactly one backend call, not two (no double reload)', fakeAsync(() => {
+    const {service, backend} = build();
+    // Let the initial load settle
+    tick(750);
+    backend.GET.modules.calls.reset();
+    
+    service.resetForm$.next();
+    // The explicit updateModulesList$.next() fires immediately → one call
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    
+    // Advancing past the debounce window must NOT produce a second call
+    tick(750);
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    
+    service.ngOnDestroy();
   }));
 });

@@ -82,6 +82,15 @@
         </div>
         
         <div class="module-filter-control module-filter-control--optional">
+          <lib-mat-form-entity [control]="dataService.fields.tags.control"
+                               [type]="dataService.fields.tags.type"
+                               [options$]="dataService.fields.tags.options$"
+                               [label]="dataService.fields.tags.label"
+                               iconL1="label"
+          ></lib-mat-form-entity>
+        </div>
+        
+        <div class="module-filter-control module-filter-control--optional">
           <lib-mat-form-entity [control]="dataService.fields.order.control"
                                [options$]="dataService.fields.order.options$"
                                [type]="dataService.fields.order.type"

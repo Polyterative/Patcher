@@ -25,6 +25,7 @@ import { MinimalModule } from '../../models/module';
 import {
   FormTypes,
   getCleanedValueId,
+  ISelectable,
   isOption
 } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
@@ -78,6 +79,15 @@ interface ModuleSelectField<T> {
   options$: Observable<T[]>;
 }
 
+interface ModuleMultiselectField<T> {
+  code: string;
+  flex: string;
+  control: FormControl<T[]>;
+  label: string;
+  type: FormTypes;
+  options$: Observable<T[]>;
+}
+
 interface ModuleAutocompleteField {
   code: string;
   flex: string;
@@ -95,6 +105,7 @@ interface ModuleBrowserFields {
   hpCondition: ModuleSelectField<HpConditionOption>;
   order: ModuleSelectField<ModuleOrderOption>;
   standard: ModuleSelectField<IdNumberOption>;
+  tags: ModuleMultiselectField<ISelectable>;
 }
 
 const DEFAULT_HP_CONDITION: HpConditionOption = {id: '=', name: 'exactly'};
@@ -217,6 +228,19 @@ export class ModuleBrowserDataService extends SubManager {
           {id: 1, name: '1U Intellijel'},
           {id: 2, name: '1U Pulp Logic'},
         ])
+      },
+      tags: {
+        label: 'Filter by tags...',
+        code: 'tags',
+        flex: '14rem',
+        control: new FormControl<ISelectable[]>([], {nonNullable: true}),
+        type: FormTypes.MULTISELECT,
+        options$: this.backend.get.allTags().pipe(
+          map(tags => (tags ?? []).map((t: any) => ({id: t.id.toString(), name: t.name}))),
+          startWith([]),
+          takeUntil(this.destroy$),
+          share()
+        )
       }
     };
 
@@ -227,7 +251,8 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.hp.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
-      this.fields.order.control.valueChanges
+      this.fields.order.control.valueChanges,
+      this.fields.tags.control.valueChanges
     ).pipe(
       startWith(null),
       map(() => {
@@ -235,6 +260,7 @@ export class ModuleBrowserDataService extends SubManager {
         const hpCondition = this.fields.hpCondition.control.value;
         const standard = this.fields.standard.control.value;
         const order = this.fields.order.control.value;
+        const tags = this.fields.tags.control.value;
         return (
           this.fields.name.control.value !== '' ||
           this.fields.description.control.value !== '' ||
@@ -242,7 +268,8 @@ export class ModuleBrowserDataService extends SubManager {
           (hp !== '' && hp !== null) ||
           (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id) ||
           (standard && standard.id !== undefined) ||
-          (order && order.id !== this.orderStartingValue.id)
+          (order && order.id !== this.orderStartingValue.id) ||
+          (tags && tags.length > 0)
         );
       }),
       distinctUntilChanged(),
@@ -266,7 +293,8 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.hp.control.valueChanges,
       this.fields.hpCondition.control.valueChanges,
       this.fields.standard.control.valueChanges,
-      this.fields.order.control.valueChanges
+      this.fields.order.control.valueChanges,
+      this.fields.tags.control.valueChanges
     ).pipe(
       debounceTime(750),
       takeUntil(this.destroy$)
@@ -291,6 +319,10 @@ export class ModuleBrowserDataService extends SubManager {
           const filter = this.serversideTableRequestData.filter$.value;
           const [sortCol, sortDir] = this.serversideTableRequestData.sort$.value;
           const standard = this.fields.standard.control.value?.id;
+          const selectedTags = this.fields.tags.control.value ?? [];
+          const tagIds = selectedTags.length > 0
+            ? selectedTags.map((t: ISelectable) => parseInt(t.id, 10))
+            : undefined;
           
           return this.backend.GET.modules(
             skip,
@@ -302,7 +334,9 @@ export class ModuleBrowserDataService extends SubManager {
             parseInt(this.fields.hp.control.value),
             this.fields.hpCondition.control.value?.id,
             standard,
-            this.fields.description.control.value
+            this.fields.description.control.value,
+            true,
+            tagIds
           );
         }),
         takeUntil(this.destroy$)
@@ -316,13 +350,15 @@ export class ModuleBrowserDataService extends SubManager {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.backend.cacheResetter$.next(['modules']);
-        this.fields.name.control.setValue('');
-        this.fields.description.control.setValue('');
-        this.fields.order.control.setValue(this.orderStartingValue);
-        this.fields.manufacturers.control.setValue('');
-        this.fields.hp.control.setValue('');
-        this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION);
-        this.fields.standard.control.setValue(DEFAULT_STANDARD);
+        const silent = {emitEvent: false};
+        this.fields.name.control.setValue('', silent);
+        this.fields.description.control.setValue('', silent);
+        this.fields.order.control.setValue(this.orderStartingValue, silent);
+        this.fields.manufacturers.control.setValue('', silent);
+        this.fields.hp.control.setValue('', silent);
+        this.fields.hpCondition.control.setValue(DEFAULT_HP_CONDITION, silent);
+        this.fields.standard.control.setValue(DEFAULT_STANDARD, silent);
+        this.fields.tags.control.setValue([], silent);
         this.serversideTableRequestData.filter$.next('');
         this.serversideTableRequestData.sort$.next([this.orderStartingValue.id, 'desc']);
         this.serversideTableRequestData.skip$.next(0);
