@@ -69,7 +69,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--mat-sys-on-surface-variant, #646b75);
 }
 
 a[mat-menu-item],
