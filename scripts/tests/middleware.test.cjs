@@ -6,10 +6,12 @@ const test = require('node:test');
 const compiledMiddlewarePath = path.resolve(process.cwd(), 'tmp/middleware-test/middleware.js');
 const originalFetch = global.fetch;
 const originalAnonKey = process.env.SUPABASE_ANON_KEY;
+const originalSupabaseUrl = process.env.SUPABASE_URL;
 const originalVercelEnv = process.env.VERCEL_ENV;
 const originalVercelProjectProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
 function loadMiddleware(anonKey = 'test-key') {
+  process.env.SUPABASE_URL = 'https://test.supabase.co';
   if (anonKey === undefined) {
     delete process.env.SUPABASE_ANON_KEY;
   } else {
@@ -79,6 +81,11 @@ test.after(() => {
     delete process.env.SUPABASE_ANON_KEY;
   } else {
     process.env.SUPABASE_ANON_KEY = originalAnonKey;
+  }
+  if (originalSupabaseUrl === undefined) {
+    delete process.env.SUPABASE_URL;
+  } else {
+    process.env.SUPABASE_URL = originalSupabaseUrl;
   }
   if (originalVercelEnv === undefined) {
     delete process.env.VERCEL_ENV;
