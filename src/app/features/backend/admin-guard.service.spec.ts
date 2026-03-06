@@ -1,33 +1,23 @@
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { of } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { AdminGuardService } from './admin-guard.service';
 
 
 describe('AdminGuardService', () => {
   let service: AdminGuardService;
-  let originalProduction: boolean;
 
-  function buildService(sessionUser: any) {
+  function buildService(sessionUser: any, isAdmin = false) {
     const mockSupabase = {
       auth: {
-        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(sessionUser))
+        getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of(sessionUser)),
+        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(isAdmin))
       }
     };
     return new AdminGuardService(mockSupabase as any);
   }
 
-  beforeEach(() => {
-    originalProduction = environment.production;
-  });
-
-  afterEach(() => {
-    Object.defineProperty(environment, 'production', {value: originalProduction, writable: true, configurable: true});
-  });
-
-  it('returns false when environment.production is true, regardless of session', (done) => {
-    Object.defineProperty(environment, 'production', {value: true, writable: true, configurable: true});
-    service = buildService({id: 'admin-user'});
+  it('returns false when user is not authenticated', (done) => {
+    service = buildService(null, false);
 
     (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
       next: (result: boolean) => {
@@ -41,29 +31,27 @@ describe('AdminGuardService', () => {
     });
   });
 
-  it('returns true in dev when user is authenticated', (done) => {
-    Object.defineProperty(environment, 'production', {value: false, writable: true, configurable: true});
-    service = buildService({id: 'dev-user'});
+  it('returns false when user is authenticated but not an admin', (done) => {
+    service = buildService({id: 'regular-user'}, false);
+
+    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
+      next: (result: boolean) => {
+        expect(result).toBeFalse();
+        done();
+      },
+      error: (err: any) => {
+        fail(err);
+        done();
+      }
+    });
+  });
+
+  it('returns true when user is authenticated and has admin role', (done) => {
+    service = buildService({id: 'admin-user'}, true);
 
     (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
       next: (result: boolean) => {
         expect(result).toBeTrue();
-        done();
-      },
-      error: (err: any) => {
-        fail(err);
-        done();
-      }
-    });
-  });
-
-  it('returns false in dev when user is not authenticated', (done) => {
-    Object.defineProperty(environment, 'production', {value: false, writable: true, configurable: true});
-    service = buildService(null);
-
-    (service.canActivate({} as ActivatedRouteSnapshot) as any).subscribe({
-      next: (result: boolean) => {
-        expect(result).toBeFalse();
         done();
       },
       error: (err: any) => {
