@@ -33,6 +33,9 @@ describe('SupabaseService - update.patch', () => {
   });
   
   it('should update the patch and strip the author field', (done) => {
+    const mockUser = {id: 'patch-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
     const mock = chainable({data: {id: 10, name: 'Test'}, error: null});
     const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
@@ -52,6 +55,8 @@ describe('SupabaseService - update.patch', () => {
   }, TEST_TIMEOUT);
   
   it('should bust patches and patchConnections caches', (done) => {
+    const mockUser = {id: 'patch-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: {id: 1}, error: null}));
     const bustedKeys: any[] = [];
     service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
@@ -85,6 +90,9 @@ describe('SupabaseService - update.patchSilent', () => {
   });
   
   it('should update the patch without showing a toast', (done) => {
+    const mockUser = {id: 'silent-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
     const mock = chainable({data: {id: 5, name: 'Silent'}, error: null});
     spyOn(mock, 'update').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
@@ -103,6 +111,8 @@ describe('SupabaseService - update.patchSilent', () => {
   }, TEST_TIMEOUT);
   
   it('should still bust patches and patchConnections caches', (done) => {
+    const mockUser = {id: 'silent-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
     spyOn(supabaseClient, 'from').and.returnValue(chainable({data: {id: 2}, error: null}));
     const bustedKeys: any[] = [];
     service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));

@@ -5,27 +5,32 @@ import {
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
 import { TagType } from '../../../../models/tag';
+import { environment } from 'src/environments/environment';
 
+const hasRealCredentials = !!environment.supabase.url && !environment.supabase.url.includes('placeholder');
 
 /**
  * Database Integration Tests - Tags
  *
  * End-to-end tests for tag retrieval from Supabase.
- * Validates database connectivity, data schema, and performance.
+ * These tests require real Supabase credentials and are skipped in CI
+ * when environment.ts contains only placeholder values.
  */
 describe('SupabaseService - getTags Integration', () => {
   let service: SupabaseService;
-  
+
   beforeEach(() => {
+    if (!hasRealCredentials) return;
     const setup = setupSupabaseServiceTest();
     service = setup.service;
   });
-  
+
   afterEach(() => {
+    if (!hasRealCredentials) return;
     cleanupSupabaseServiceTest();
   });
   
-  it('should successfully fetch tags from Supabase', (done) => {
+  (hasRealCredentials ? it : xit)('should successfully fetch tags from Supabase', (done) => {
     const tags$ = service.GET.tags();
     
     tags$.subscribe({
@@ -43,7 +48,7 @@ describe('SupabaseService - getTags Integration', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should return tags with valid schema structure', (done) => {
+  (hasRealCredentials ? it : xit)('should return tags with valid schema structure', (done) => {
     const tags$ = service.GET.tags();
     
     tags$.subscribe({
@@ -73,7 +78,7 @@ describe('SupabaseService - getTags Integration', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should return data within reasonable time', (done) => {
+  (hasRealCredentials ? it : xit)('should return data within reasonable time', (done) => {
     const startTime = Date.now();
     const tags$ = service.GET.tags();
     

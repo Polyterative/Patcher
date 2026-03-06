@@ -36,6 +36,7 @@ export function createDeleteNamespace(
           supabase.from(DbPaths.comments)
             .delete()
             .filter('id', 'eq', id)
+            .filter('authorId', 'eq', user.id)
         );
       }),
       cacheBust(['comments', 'currentUserComments']),
@@ -69,6 +70,7 @@ export function createDeleteNamespace(
           supabase.from(DbPaths.modules)
             .delete()
             .filter('id', 'eq', id)
+            .filter('submitter', 'eq', user.id)
             .select('id')
         );
         return deleteAllComments$.pipe(switchMap(() => deleteModule$));

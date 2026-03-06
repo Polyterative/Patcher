@@ -37,7 +37,7 @@
     "release:patch": "standard-version  --release-as patch --commit-all  && git push --follow-tags origin production",
     "release:minor": "standard-version  --release-as minor --commit-all  && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major --commit-all  && git push --follow-tags origin production",
-    "updateBackendTypes": "npx supabase gen types typescript --project-id sozmatmywjpstwidzlss --schema public > src/backend/database.types.ts",
+    "updateBackendTypes": "npx supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > src/backend/database.types.ts",
     "git:untrack-e2e-artifacts": "git rm -r --cached test-results/ playwright-report/ e2e/flow-0*.spec.ts 2>/dev/null || true",
     "switch:develop": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout develop && git update-index --skip-worktree src/build.ts",
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
