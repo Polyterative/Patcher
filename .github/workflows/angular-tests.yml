@@ -60,5 +60,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
 
+      - name: Generate environment files
+        run: node generate-env.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
       - name: Run tests
         run: ${{ matrix.command }}
