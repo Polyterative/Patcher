@@ -131,40 +131,48 @@ export function createUpdateNamespace(
         }
       }
       
-      return rxFrom(
-        supabase.from(DbPaths.modules)
-          .update(dbData)
-          .eq('id', data.id)
-          .select('id,updated,created')
-      ).pipe(
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.from(DbPaths.modules)
+              .update(dbData)
+              .eq('id', data.id)
+              .eq('submitter', user.id)
+              .select('id,updated,created')
+          );
+        }),
         showSuccessMessage(snackBar),
         cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
       );
     },
     
-    rackedModules: (data: RackedModule[]) => {
-      const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
-        .map(rackedModule => rackedModule.rackingData);
-      
-      return rxFrom(
-        supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
-      ).pipe(
-        switchMap(x => {
-          const newRackedModules: Omit<RackingData, 'id'>[] = data
-            .filter(x => x.rackingData.id === undefined)
-            .map(rackedModule => ({
-              moduleid: rackedModule.rackingData.moduleid,
-              rackid: rackedModule.rackingData.rackid,
-              row: rackedModule.rackingData.row,
-              column: rackedModule.rackingData.column
-            }));
-          
-          const insertNew$ = rxFrom(supabase.from(DbPaths.rack_modules).insert(newRackedModules));
-          return newRackedModules.length > 0 ? insertNew$ : of(x);
-        }),
-        remapErrors(),
-      );
-    },
+    rackedModules: (data: RackedModule[]) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
+          .map(rackedModule => rackedModule.rackingData);
+        
+        return rxFrom(
+          supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
+        ).pipe(
+          switchMap(x => {
+            const newRackedModules: Omit<RackingData, 'id'>[] = data
+              .filter(x => x.rackingData.id === undefined)
+              .map(rackedModule => ({
+                moduleid: rackedModule.rackingData.moduleid,
+                rackid: rackedModule.rackingData.rackid,
+                row: rackedModule.rackingData.row,
+                column: rackedModule.rackingData.column
+              }));
+            
+            const insertNew$ = rxFrom(supabase.from(DbPaths.rack_modules).insert(newRackedModules));
+            return newRackedModules.length > 0 ? insertNew$ : of(x);
+          }),
+          remapErrors()
+        );
+      })
+    ),
     
     rack: (data: RackMinimal) => getUserSession$().pipe(
       switchMap(user => {
@@ -189,9 +197,17 @@ export function createUpdateNamespace(
     
     patch: (data: Patch) => {
       data.author = undefined;
-      return rxFrom(
-        supabase.from(DbPaths.patches).update(data).eq('id', data.id).single()
-      ).pipe(
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.from(DbPaths.patches)
+              .update(data)
+              .eq('id', data.id)
+              .eq('authorid', user.id)
+              .single()
+          );
+        }),
         showSuccessMessage(snackBar),
         cacheBust(['patches', 'patchConnections'])
       );
@@ -200,9 +216,17 @@ export function createUpdateNamespace(
     /** Silent variant — same as patch but without success toast. For auto-save. */
     patchSilent: (data: Patch) => {
       data.author = undefined;
-      return rxFrom(
-        supabase.from(DbPaths.patches).update(data).eq('id', data.id).single()
-      ).pipe(
+      return getUserSession$().pipe(
+        switchMap(user => {
+          if (!user) return throwError(() => new Error('Authentication required'));
+          return rxFrom(
+            supabase.from(DbPaths.patches)
+              .update(data)
+              .eq('id', data.id)
+              .eq('authorid', user.id)
+              .single()
+          );
+        }),
         cacheBust(['patches', 'patchConnections'])
       );
     },

@@ -28,7 +28,7 @@ describe('JwtInterceptor', () => {
   
   it('calls next.handle for supabase API URL', (done) => {
     const {interceptor} = buildInterceptor({id: 'user-1'});
-    const request = {url: 'https://sozmatmywjpstwidzlss.supabase.co/rest/v1/modules'} as any;
+    const request = {url: 'https://test-project.supabase.co/rest/v1/modules'} as any;
     const handler = makeHandler();
     interceptor.intercept(request, handler).subscribe((_: any) => {
       expect(handler.handle).toHaveBeenCalledWith(request);

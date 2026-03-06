@@ -338,6 +338,21 @@ export function createAuthNamespace(
     
     _isValidEmail(email: string): boolean {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    },
+
+    /**
+     * Returns an observable that emits `true` only when the active session's
+     * JWT contains `app_metadata.role === 'admin'`.
+     * Falls back to `false` for all other users and unauthenticated sessions.
+     */
+    hasAdminRole$(): Observable<boolean> {
+      return rxFrom(supabase.auth.getSession()).pipe(
+        map(({ data }) => {
+          const metadata = data?.session?.user?.app_metadata as Record<string, unknown> | undefined;
+          return metadata?.['role'] === 'admin';
+        }),
+        catchError(() => of(false))
+      );
     }
   };
   

@@ -119,6 +119,11 @@ describe('SupabaseService - Patch Privacy Integration', () => {
   }, TEST_TIMEOUT);
   
   it('should update patch privacy status', (done) => {
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
+      id: 'test-user-id',
+      email: 'test@example.com'
+    }));
+
     const testPatch = {
       id: 1,
       name: 'Test Patch',
@@ -136,18 +141,19 @@ describe('SupabaseService - Patch Privacy Integration', () => {
     
     const supabaseClient = (service as any).supabase;
     let updatedData: any;
-    
+
+    const chainEnd: any = {
+      eq: () => chainEnd,
+      single: () => Promise.resolve({
+        data: {...testPatch, ...updatedData},
+        error: null
+      })
+    };
+
     spyOn(supabaseClient, 'from').and.returnValue({
       update: (data: any) => {
         updatedData = data;
-        return {
-          eq: () => ({
-            single: () => Promise.resolve({
-              data: {...testPatch, ...data},
-              error: null
-            })
-          })
-        };
+        return chainEnd;
       }
     });
     

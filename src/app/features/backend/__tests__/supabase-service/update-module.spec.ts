@@ -1,3 +1,4 @@
+import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -25,6 +26,7 @@ describe('SupabaseService - update.module', () => {
     const setup = setupSupabaseServiceTest();
     service = setup.service;
     supabaseClient = (service as any).supabase;
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user-id'}));
   });
   
   afterEach(() => {

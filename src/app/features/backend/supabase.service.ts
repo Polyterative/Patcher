@@ -172,9 +172,12 @@ export class SupabaseService extends SubManager {
   private customLock: LockFunc = (name, acquireTimeout, fn) =>
     navigatorLock(name, acquireTimeout || 1, fn);
 
+  // Fallback placeholder values satisfy the Supabase client URL/key validation
+  // during unit tests where environment.ts contains empty strings.
+  // Real values are always populated via generate-env.js before any actual build or run.
   private supabase = createClient<Database>(
-    environment.supabase.url,
-    environment.supabase.key,
+    environment.supabase.url || 'https://placeholder.supabase.co',
+    environment.supabase.key || 'placeholder-anon-key-for-tests',
     {auth: {lock: this.customLock}}
   );
   
