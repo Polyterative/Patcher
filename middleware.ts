@@ -6,8 +6,8 @@ const PRIMARY_SITE_URL = CANONICAL_ORIGIN_OVERRIDE
   || normalizeConfiguredOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL || '')
   || DEFAULT_PRIMARY_SITE_URL;
 const PRIMARY_SITE_HOST = extractHost(PRIMARY_SITE_URL);
-const DEFAULT_SUPABASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co';
-const SUPABASE_URL = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
+// No hardcoded fallback — SUPABASE_URL must be supplied via env var.
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
 const SUPABASE_FETCH_TIMEOUT_MS = 1800;

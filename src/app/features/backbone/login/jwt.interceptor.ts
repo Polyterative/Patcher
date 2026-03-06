@@ -23,7 +23,8 @@ export class JwtInterceptor implements HttpInterceptor {
       take(1),
       switchMap(user => {
         const isLoggedIn = !!user;
-        const isApiUrl = request.url.startsWith(environment.supabase.url);
+        const supabaseUrl = environment.supabase.url;
+        const isApiUrl = !!supabaseUrl && request.url.startsWith(supabaseUrl);
       
         return next.handle(request);
       })

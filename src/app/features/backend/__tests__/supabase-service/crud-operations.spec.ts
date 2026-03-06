@@ -367,19 +367,22 @@ describe('SupabaseService - CRUD Operations', () => {
   // ============================================================================
   
   describe('update.module', () => {
+    /** Builds a chainable mock: update(data).eq(id).eq(submitter).select() */
+    function buildModuleUpdateMock() {
+      const selectSpy = jasmine.createSpy('select').and.returnValue(
+        Promise.resolve({data: [{id: 1}], error: null})
+      );
+      const eqSubmitterSpy = jasmine.createSpy('eq').and.returnValue({select: selectSpy});
+      const eqIdSpy = jasmine.createSpy('eq').and.returnValue({eq: eqSubmitterSpy, select: selectSpy});
+      const updateSpy = jasmine.createSpy('update').and.returnValue({eq: eqIdSpy});
+      return {updateSpy, eqIdSpy, eqSubmitterSpy, selectSpy};
+    }
+
     it('should strip undefined and null values before update', (done) => {
-      const updateSpy = jasmine.createSpy('update').and.returnValue({
-        eq: jasmine.createSpy('eq').and.returnValue({
-          select: jasmine.createSpy('select').and.returnValue(
-            Promise.resolve({data: [{id: 1}], error: null})
-          )
-        })
-      });
-      
-      spyOn(supabaseClient, 'from').and.returnValue({
-        update: updateSpy
-      });
-      
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      const {updateSpy} = buildModuleUpdateMock();
+      spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
+
       service.update.module({
         id: 1,
         name: 'Updated Module',
@@ -391,7 +394,7 @@ describe('SupabaseService - CRUD Operations', () => {
           expect(callArgs.name).toBe('Updated Module');
           expect(callArgs.description).toBeUndefined();
           expect(callArgs.hp).toBeUndefined();
-          expect(callArgs.updated).toBeDefined(); // Should add timestamp
+          expect(callArgs.updated).toBeDefined();
           done();
         },
         error: (err) => {
@@ -400,20 +403,12 @@ describe('SupabaseService - CRUD Operations', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should transform nested objects to IDs', (done) => {
-      const updateSpy = jasmine.createSpy('update').and.returnValue({
-        eq: jasmine.createSpy('eq').and.returnValue({
-          select: jasmine.createSpy('select').and.returnValue(
-            Promise.resolve({data: [{id: 1}], error: null})
-          )
-        })
-      });
-      
-      spyOn(supabaseClient, 'from').and.returnValue({
-        update: updateSpy
-      });
-      
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      const {updateSpy} = buildModuleUpdateMock();
+      spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
+
       service.update.module({
         id: 1,
         standard: {id: 5, name: 'Eurorack'} as any
@@ -429,20 +424,12 @@ describe('SupabaseService - CRUD Operations', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
     it('should strip non-updatable fields', (done) => {
-      const updateSpy = jasmine.createSpy('update').and.returnValue({
-        eq: jasmine.createSpy('eq').and.returnValue({
-          select: jasmine.createSpy('select').and.returnValue(
-            Promise.resolve({data: [{id: 1}], error: null})
-          )
-        })
-      });
-      
-      spyOn(supabaseClient, 'from').and.returnValue({
-        update: updateSpy
-      });
-      
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1', submitter: 'u1'}));
+      const {updateSpy} = buildModuleUpdateMock();
+      spyOn(supabaseClient, 'from').and.returnValue({update: updateSpy});
+
       service.update.module({
         id: 1,
         name: 'Test',
@@ -535,20 +522,20 @@ describe('SupabaseService - CRUD Operations', () => {
   describe('delete.comment', () => {
     it('should delete comment by id when authenticated', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
-      const filterSpy = jasmine.createSpy('filter').and.returnValue(
+
+      // Chain: delete().filter('id', 'eq', 42).filter('authorId', 'eq', 'u1') → Promise
+      const ownerFilterSpy = jasmine.createSpy('ownerFilter').and.returnValue(
         Promise.resolve({data: null, error: null})
       );
-      const deleteSpy = jasmine.createSpy('delete').and.returnValue({
-        filter: filterSpy
-      });
+      const idFilterSpy = jasmine.createSpy('idFilter').and.returnValue({filter: ownerFilterSpy});
+      const deleteSpy = jasmine.createSpy('delete').and.returnValue({filter: idFilterSpy});
 
-      spyOn(supabaseClient, 'from').and.returnValue({
-        delete: deleteSpy
-      });
+      spyOn(supabaseClient, 'from').and.returnValue({delete: deleteSpy});
 
       service.delete.comment(42).subscribe({
         next: () => {
-          expect(filterSpy).toHaveBeenCalledWith('id', 'eq', 42);
+          expect(idFilterSpy).toHaveBeenCalledWith('id', 'eq', 42);
+          expect(ownerFilterSpy).toHaveBeenCalledWith('authorId', 'eq', 'u1');
           done();
         },
         error: (err) => {

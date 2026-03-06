@@ -33,6 +33,10 @@ describe('SupabaseService - update extended', () => {
   });
   
   describe('update.patch', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should update a patch and strip the author field', (done) => {
       const mock = chainable({data: {id: 1}, error: null});
       const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
@@ -72,6 +76,10 @@ describe('SupabaseService - update extended', () => {
   });
   
   describe('update.patchSilent', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should update a patch without showing a success toast', (done) => {
       const mock = chainable({data: {id: 2}, error: null});
       const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
@@ -220,6 +228,10 @@ describe('SupabaseService - update extended', () => {
   });
   
   describe('update.rackedModules', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+
     it('should upsert existing modules (with defined id)', (done) => {
       const mock = chainable({data: null, error: null});
       const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
