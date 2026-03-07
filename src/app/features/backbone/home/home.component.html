@@ -9,7 +9,7 @@
         </div>
       </app-home-experience-hero>
     </section>
-    
+
     <section class="proof-list section-enter" aria-label="product walkthrough">
       @for (section of proofSections; track section.title; let index = $index) {
         <app-home-proof-showcase
@@ -22,59 +22,69 @@
         >
           <div class="frame-host">
             <lib-device-frame-wrapper>
-              @switch (section.kind) {
-                @case ('patch') {
-                  <app-patch-browser-patch-detail
-                    [ignoreSeo]="true"
-                    [viewConfig]="patchViewConfig"
-                  ></app-patch-browser-patch-detail>
+              @defer (on viewport) {
+                @switch (section.kind) {
+                  @case ('patch') {
+                    <app-patch-browser-patch-detail
+                      [ignoreSeo]="true"
+                      [viewConfig]="patchViewConfig"
+                    ></app-patch-browser-patch-detail>
+                  }
+                  @case ('module') {
+                    <app-module-browser-detail
+                      [ignoreSeo]="true"
+                      [viewConfig]="moduleViewConfig"
+                    ></app-module-browser-detail>
+                  }
+                  @case ('rack') {
+                    <app-rack-browser-rack-detail
+                      [ignoreSeo]="true"
+                      [viewConfig]="rackViewConfig"
+                    ></app-rack-browser-rack-detail>
+                  }
                 }
-                @case ('module') {
-                  <app-module-browser-detail
-                    [ignoreSeo]="true"
-                    [viewConfig]="moduleViewConfig"
-                  ></app-module-browser-detail>
-                }
-                @case ('rack') {
-                  <app-rack-browser-rack-detail
-                    [ignoreSeo]="true"
-                    [viewConfig]="rackViewConfig"
-                  ></app-rack-browser-rack-detail>
-                }
+              } @placeholder {
+                <div class="frame-placeholder"></div>
               }
             </lib-device-frame-wrapper>
           </div>
         </app-home-proof-showcase>
       }
     </section>
-    
+
     <section class="section-enter">
-      <app-home-open-principles
-        sectionTitle="Why it feels easy to use"
-        sectionIntro="Everything is designed to help you stay creative, organized, and get back to great sounds faster."
-        [cards]="principleCards"
-      ></app-home-open-principles>
+      @defer (on viewport) {
+        <app-home-open-principles
+          sectionTitle="Why it feels easy to use"
+          sectionIntro="Everything is designed to help you stay creative, organized, and get back to great sounds faster."
+          [cards]="principleCards"
+        ></app-home-open-principles>
+      }
     </section>
-    
+
     <section class="section-enter">
-      <app-home-workflow-rail
-        sectionTitle="How to actually use it"
-        sectionIntro="Explore, build, organize, and return."
-        [steps]="workflowSteps"
-      ></app-home-workflow-rail>
+      @defer (on viewport) {
+        <app-home-workflow-rail
+          sectionTitle="How to actually use it"
+          sectionIntro="Explore, build, organize, and return."
+          [steps]="workflowSteps"
+        ></app-home-workflow-rail>
+      }
     </section>
-    
+
     <section class="section-enter">
-      <app-home-invitation-cta
-        title="Start building your library"
-        description="Create an account, map your setup, and turn today's work into something you can use tomorrow."
-        imageSrc="/assets/png/LOGO_1.png"
-        imageAlt="Patcher logo"
-      >
-        <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
-        </app-brand-primary-button>
-        <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
-      </app-home-invitation-cta>
+      @defer (on viewport) {
+        <app-home-invitation-cta
+          title="Start building your library"
+          description="Create an account, map your setup, and turn today's work into something you can use tomorrow."
+          imageSrc="/assets/png/LOGO_1.png"
+          imageAlt="Patcher logo"
+        >
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
+          </app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
+        </app-home-invitation-cta>
+      }
     </section>
   </main>
 </lib-screen-wrapper>
