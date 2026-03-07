@@ -79,8 +79,18 @@
               <div class="section-surface">
                 <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
               </div>
-              <!-- Password section -->
-              @if (userManagementService.showPasswordForm$ | async) {
+              <!-- SSO badge: shown for every non-email provider the account has linked -->
+              @for (provider of (bag.userProfile.auth_providers || []); track provider) {
+                @if (provider !== 'email') {
+                  <div class="section-surface">
+                    <app-label-value-showcase label="Linked sign-in">
+                      {{ provider | titlecase }}
+                    </app-label-value-showcase>
+                  </div>
+                }
+              }
+              <!-- Password section: only shown for pure email/password accounts (no OAuth providers linked) -->
+              @if ((!bag.userProfile.auth_providers || !bag.userProfile.auth_providers.some(p => p !== 'email')) && (userManagementService.showPasswordForm$ | async)) {
                 <form class="col gap1 section-surface"
                       [formGroup]="passwordForm"
                       (ngSubmit)="submitPasswordChange()"
@@ -132,7 +142,7 @@
                     </button>
                   </div>
                 </form>
-              } @else {
+              } @else if (!bag.userProfile.auth_providers || !bag.userProfile.auth_providers.some(p => p !== 'email')) {
                 <div class="row gap1 section-surface" fxLayoutAlign="start center">
                   <app-label-value-showcase label="Password"
                                             fxFlex="grow"

@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
+  NgZone,
   OnInit
 } from '@angular/core';
 import {
@@ -61,7 +63,9 @@ export class UserManagementComponent implements OnInit {
   
   constructor(
     public userManagementService: UserManagementService,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) { }
   
   ngOnInit(): void {
@@ -101,7 +105,11 @@ export class UserManagementComponent implements OnInit {
     }
     
     this.userManagementService.updateUsername$(nextUsername).subscribe({
-      next: () => this.cancelUsernameEdit()
+      next:  () => this.ngZone.run(() => {
+        this.cancelUsernameEdit();
+        this.cdr.markForCheck();
+      }),
+      error: () => { /* error already shown via snackbar in service */ }
     });
   }
   

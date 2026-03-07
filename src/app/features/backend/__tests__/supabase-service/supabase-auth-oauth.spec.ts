@@ -1,3 +1,4 @@
+import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -175,12 +176,116 @@ describe('SupabaseService - auth OAuth and helpers', () => {
         }
       });
     }, TEST_TIMEOUT);
+    
+    it('should return richUser directly when existing user has a proper username', (done) => {
+      const mockUser = {id: 'existing-user', email: 'existing@example.com', created_at: new Date().toISOString()};
+      
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: {user: mockUser}}, error: null})
+      );
+      
+      const existingRichUser = {
+        id: 'existing-user',
+        email: 'existing@example.com',
+        username: 'existinguser',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      spyOn(service.auth, 'getRichUserSession$').and.returnValue(of(existingRichUser as any));
+      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      
+      service.auth.handleOAuthCallback$().subscribe({
+        next: (result) => {
+          expect(result).toEqual(existingRichUser as any);
+          expect((service.auth as any)._ensureOAuthUserProfile$).not.toHaveBeenCalled();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should call _ensureOAuthUserProfile$ and re-fetch when user has no username (new user)', (done) => {
+      const mockUser = {id: 'new-user', email: 'newuser@example.com', created_at: new Date().toISOString()};
+      
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: {user: mockUser}}, error: null})
+      );
+      
+      const userWithNoUsername = {
+        id: 'new-user',
+        email: 'newuser@example.com',
+        username: null as any,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      const userWithTempUsername = {
+        ...userWithNoUsername,
+        username: 'newuser'
+      };
+      
+      let getRichCallCount = 0;
+      spyOn(service.auth, 'getRichUserSession$').and.callFake(() => {
+        getRichCallCount++;
+        return getRichCallCount === 1 ? of(userWithNoUsername as any) : of(userWithTempUsername as any);
+      });
+      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      
+      service.auth.handleOAuthCallback$().subscribe({
+        next: (result) => {
+          expect((service.auth as any)._ensureOAuthUserProfile$).toHaveBeenCalledWith(mockUser as any);
+          expect(result?.username).toBe('newuser');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should call _ensureOAuthUserProfile$ and re-fetch when richUser is null (profile missing)', (done) => {
+      const mockUser = {id: 'ghost-user', email: 'ghost@example.com', created_at: new Date().toISOString()};
+      
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: {user: mockUser}}, error: null})
+      );
+      
+      const createdProfile = {
+        id: 'ghost-user',
+        email: 'ghost@example.com',
+        username: 'ghost',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      let getRichCallCount = 0;
+      spyOn(service.auth, 'getRichUserSession$').and.callFake(() => {
+        getRichCallCount++;
+        return getRichCallCount === 1 ? of(null) : of(createdProfile as any);
+      });
+      spyOn(service.auth as any, '_ensureOAuthUserProfile$').and.returnValue(of(void 0));
+      
+      service.auth.handleOAuthCallback$().subscribe({
+        next: (result) => {
+          expect((service.auth as any)._ensureOAuthUserProfile$).toHaveBeenCalled();
+          expect(result?.username).toBe('ghost');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   // ── _ensureOAuthUserProfile$ ──────────────────────────────────────────────
   
   describe('_ensureOAuthUserProfile$', () => {
-    it('should upsert a profile with temp username derived from email', (done) => {
+    it('should upsert a profile with user_ prefixed temp username (always)', (done) => {
       const profileMock: any = {};
       const upsertSpy = jasmine.createSpy('upsert').and.returnValue(profileMock);
       profileMock.upsert = upsertSpy;
@@ -198,7 +303,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       (service.auth as any)._ensureOAuthUserProfile$(mockUser).subscribe({
         next: () => {
           expect(upsertSpy).toHaveBeenCalledWith(
-            jasmine.objectContaining({id: 'oauth-user-1', username: 'john'}),
+            jasmine.objectContaining({id: 'oauth-user-1', username: 'user_oauth-us'}),
             jasmine.any(Object)
           );
           done();
@@ -210,7 +315,7 @@ describe('SupabaseService - auth OAuth and helpers', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should fall back to user_<id> when email is empty', (done) => {
+    it('should use user_<id> when email is empty', (done) => {
       const profileMock: any = {};
       const upsertSpy = jasmine.createSpy('upsert').and.returnValue(profileMock);
       profileMock.upsert = upsertSpy;
