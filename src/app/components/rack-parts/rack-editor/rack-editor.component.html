@@ -158,9 +158,7 @@
                                  [rackDetailDataService]="dataService"
                                  [moduleRightClick$]="moduleRightClick$"
                                  class="transition-all-long"
-                                 [ngClass]="{
-                                   'smallerScale':bag.userRequestedSmallerScale
-                                 }"
+                                 [style.zoom]="bag.userRequestedSmallerScale ? autoScale * 0.65 : autoScale"
           ></app-rack-visual-model>
         </div>
       </div>
