@@ -108,6 +108,12 @@ section {
   min-width: 0;
 }
 
+.frame-placeholder {
+  min-block-size: 480px;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
 @supports not (zoom: 1) {
   .frame-host > lib-device-frame-wrapper {
     transform: scale(var(--embedded-preview-scale));

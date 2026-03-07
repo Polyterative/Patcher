@@ -1,6 +1,6 @@
 <section class="final-cta-card" aria-labelledby="home-cta-title">
   @if (imageSrc && imageAlt) {
-    <img [src]="imageSrc" [alt]="imageAlt">
+    <img [src]="imageSrc" [alt]="imageAlt" loading="lazy">
   }
   
   <h2 id="home-cta-title">{{ title }}</h2>
