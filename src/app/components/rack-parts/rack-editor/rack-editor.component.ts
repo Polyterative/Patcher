@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   Input,
   OnInit,
   ViewChild
@@ -60,6 +62,19 @@ export class RackEditorComponent extends SubManager implements OnInit {
   @Input() data: RackMinimal;
   
   moduleRightClick$ = new Subject<ModuleRightClick>();
+
+  autoScale = 1;
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateAutoScale();
+    this.cdr.markForCheck();
+  }
+
+  private updateAutoScale(): void {
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    this.autoScale = Math.min(1, window.innerWidth / (this.data.hp * rem));
+  }
   
   viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -81,14 +96,16 @@ export class RackEditorComponent extends SubManager implements OnInit {
     public snackBar: MatSnackBar,
     public backend: SupabaseService,
     public dataService: RackDetailDataService,
-    public contextMenu: GeneralContextMenuDataService
+    public contextMenu: GeneralContextMenuDataService,
+    private cdr: ChangeDetectorRef
     // userManagerService: UserManagementService
   ) {
     super();
-    
+
   }
-  
+
   ngOnInit(): void {
+    this.updateAutoScale();
     
     const rightClick$ = this.moduleRightClick$.pipe(withLatestFrom(
       this.dataService.isCurrentRackPropertyOfCurrentUser$,
