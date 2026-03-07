@@ -6,7 +6,7 @@
                      class="widthRuler"
   >{{rackData.hp}}</mat-card-subtitle>
 
-  <div class="col gap0 " #screen id="screen">
+  <div class="col gap0 " #screen id="screen" [style.min-width]="rackData.hp + 'rem'">
     @for (row of rowedRackedModules; track row; let rowId = $index) {
       <div class="row"
            [class.row-bg]="!(row|hasUnrackedModules)"
