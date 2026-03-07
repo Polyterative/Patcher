@@ -22,34 +22,28 @@
                            'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
                            }"
     >
-      <div class="col gap1 transition-all scroll custom-scrollbar"
-           [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
-      >
-        <lib-screen-wrapper [maxSize]="data.hp+'rem'"
-        >
-          <div class="col gap1"
+      <div class="col gap1 transition-all">
+        @if (dataService.isCurrentRackPrivate$|async) {
+          <app-advice-tooltip
+            [@enter]="{ value: '', params: { delay: 250}}"
           >
-            @if (dataService.isCurrentRackPrivate$|async) {
-              <app-advice-tooltip
-                [@enter]="{ value: '', params: { delay: 250}}"
-              >
-                This rack private. It won't be listed in search but will be accessible to anyone who has
-                the URL
-              </app-advice-tooltip>
-            }
-            @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
-              <app-advice-tooltip
-                [@enter]="{ value: '', params: { delay: 500}}"
-              >
-                Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
-                Blanks are available in all sizes!
-              </app-advice-tooltip>
-            }
-            <lib-clean-card [@enter]>
-              <div class="col gap1">
-                <!-- Group 1: Rack Details -->
-                <app-lib-showcase-grid class="auto"
-                                       [data]="[
+            This rack private. It won't be listed in search but will be accessible to anyone who has
+            the URL
+          </app-advice-tooltip>
+        }
+        @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
+          <app-advice-tooltip
+            [@enter]="{ value: '', params: { delay: 500}}"
+          >
+            Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
+            Blanks are available in all sizes!
+          </app-advice-tooltip>
+        }
+        <lib-clean-card [@enter]>
+          <div class="col gap1">
+            <!-- Group 1: Rack Details -->
+            <app-lib-showcase-grid class="auto"
+                                   [data]="[
           { label: 'Name', value: data.name, icon: 'label', size: 'auto' },
           { label: 'Rows', value: data.rows.toString(), icon: 'view_comfy'},
           { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets'},
@@ -58,12 +52,12 @@
           { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free'},
           { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart'}
         ]">
-                </app-lib-showcase-grid>
-                <div class="rowwrap gap1"
-                     style="display: flex; flex-wrap: wrap; justify-content: flex-start;">
-                  <!-- Group 3: Power Consumption -->
-                  <app-lib-showcase-grid class="auto" style="flex: 0 1 auto;"
-                                         [data]="[
+            </app-lib-showcase-grid>
+            <div class="rowwrap gap1"
+                 style="display: flex; flex-wrap: wrap; justify-content: flex-start;">
+              <!-- Group 3: Power Consumption -->
+              <app-lib-showcase-grid class="auto" style="flex: 0 1 auto;"
+                                     [data]="[
             {
               label: '+12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
                 ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
@@ -86,88 +80,89 @@
               icon: 'bolt'
             }
           ]">
-                  </app-lib-showcase-grid>
-                  <!-- Group 2: Module Statistics -->
-                  <app-lib-showcase-grid class="auto"
-                                         style="margin-left: auto; flex: 0 1 auto;"
-                                         [data]="[
+              </app-lib-showcase-grid>
+              <!-- Group 2: Module Statistics -->
+              <app-lib-showcase-grid class="auto"
+                                     style="margin-left: auto; flex: 0 1 auto;"
+                                     [data]="[
             { label: 'Max depth', value: (bag.rowedRackedModules | totalDepthOfRack)[0].toPrecision(2) + ' mm', icon: 'vertical_align_bottom'},
             { label: 'Min depth', value: (bag.rowedRackedModules | totalDepthOfRack)[1].toPrecision(2) + ' mm', icon: 'vertical_align_top'},
             { label: 'Average depth', value: (bag.rowedRackedModules | totalDepthOfRack)[2].toPrecision(2) + ' mm', icon: 'vertical_align_center'},
             { label: 'Modules weight', value: ((bag.rowedRackedModules | totalWeightOfRack)/1000).toPrecision(2) + ' kg', icon: 'fitness_center'}
           ]">
-                  </app-lib-showcase-grid>
-                </div>
-              </div>
-            </lib-clean-card>
-            <div class="rowwrap gap1">
-              <div class="row gap1">
-                <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
-                                  (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
-                                  style="align-self: center;"
-                >
-                  <div style="cursor: pointer;">
-                    Use images
-                  </div>
-                </mat-slide-toggle>
-                <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
-                                  (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
-                                  style="align-self: center;"
-                >
-                  <div style="cursor: pointer;">
-                    Count modules
-                  </div>
-                </mat-slide-toggle>
-                <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
-                                  (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
-                                  style="align-self: center;"
-                >
-                  <div style="cursor: pointer;">
-                    Reduce scale
-                  </div>
-                </mat-slide-toggle>
-              </div>
-              <!--              create space between these-->
-              <div fxFlex="1 1 auto"></div>
-              <div class="row gap1">
-                @if ((bag.rowedRackedModules|totalHpOfRack) > 0) {
-                  <app-brand-primary-button style="padding: 1rem 0;"
-                                            icon="download"
-                                            (click$)="dataService.downloadRackImageToUserComputer$.next()"
-                                            matTooltip="Will download an image file of the rack to your computer"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="1000"
-                  >
-                    Download jpeg
-                  </app-brand-primary-button>
-                }
-                @if (bag.isCurrentRackPropertyOfCurrentUser && (bag.rowedRackedModules|totalHpOfRack) > 0) {
-                  <app-brand-primary-button style="padding: 1rem 0;"
-                                            icon="image"
-                                            (click$)="dataService.updateRackImagePreview$.next()"
-                                            matTooltip="Will update the rack preview image to help you identify it in the lists"
-                                            matTooltipPosition="above"
-                                            matTooltipShowDelay="1000"
-                  >
-                    Update preview
-                  </app-brand-primary-button>
-                }
-              </div>
+              </app-lib-showcase-grid>
             </div>
-            <app-rack-visual-model [rackData]="data"
-                                   [rowedRackedModules]="bag.rowedRackedModules"
-                                   [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
-                                   [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                   [rackDetailDataService]="dataService"
-                                   [moduleRightClick$]="moduleRightClick$"
-                                   class="transition-all-long"
-                                   style="max-width: 100%;"
-                                   [ngClass]="{
-                                     'smallerScale':bag.userRequestedSmallerScale
-                                   }"
-            ></app-rack-visual-model>
           </div>
-        </lib-screen-wrapper>
+        </lib-clean-card>
+        <div class="rowwrap gap1">
+          <div class="row gap1">
+            <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"
+                              (change)="dataService.shouldShowPanelImages$.next(!dataService.shouldShowPanelImages$.value)"
+                              style="align-self: center;"
+            >
+              <div style="cursor: pointer;">
+                Use images
+              </div>
+            </mat-slide-toggle>
+            <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
+                              (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
+                              style="align-self: center;"
+            >
+              <div style="cursor: pointer;">
+                Count modules
+              </div>
+            </mat-slide-toggle>
+            <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
+                              (change)="dataService.userRequestedSmallerScale$.next(!dataService.userRequestedSmallerScale$.value)"
+                              style="align-self: center;"
+            >
+              <div style="cursor: pointer;">
+                Reduce scale
+              </div>
+            </mat-slide-toggle>
+          </div>
+          <!--              create space between these-->
+          <div fxFlex="1 1 auto"></div>
+          <div class="row gap1">
+            @if ((bag.rowedRackedModules|totalHpOfRack) > 0) {
+              <app-brand-primary-button style="padding: 1rem 0;"
+                                        icon="download"
+                                        (click$)="dataService.downloadRackImageToUserComputer$.next()"
+                                        matTooltip="Will download an image file of the rack to your computer"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="1000"
+              >
+                Download jpeg
+              </app-brand-primary-button>
+            }
+            @if (bag.isCurrentRackPropertyOfCurrentUser && (bag.rowedRackedModules|totalHpOfRack) > 0) {
+              <app-brand-primary-button style="padding: 1rem 0;"
+                                        icon="image"
+                                        (click$)="dataService.updateRackImagePreview$.next()"
+                                        matTooltip="Will update the rack preview image to help you identify it in the lists"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="1000"
+              >
+                Update preview
+              </app-brand-primary-button>
+            }
+          </div>
+        </div>
+        <div class="scroll custom-scrollbar transition-all"
+             [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
+        >
+          <app-rack-visual-model [rackData]="data"
+                                 [rowedRackedModules]="bag.rowedRackedModules"
+                                 [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
+                                 [isCurrentRackEditable]="bag.isCurrentRackEditable"
+                                 [rackDetailDataService]="dataService"
+                                 [moduleRightClick$]="moduleRightClick$"
+                                 class="transition-all-long"
+                                 [ngClass]="{
+                                   'smallerScale':bag.userRequestedSmallerScale
+                                 }"
+          ></app-rack-visual-model>
+        </div>
       </div>
     </lib-hero-content-card>
     <app-general-context-menu></app-general-context-menu>
