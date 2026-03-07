@@ -30,7 +30,10 @@ export type RichUserModel =
   SimpleUserModel
   & {
   username: string;
+  /** Primary provider (e.g. 'email', 'google'). Use auth_providers for full list. */
   auth_provider?: string;
+  /** All linked auth providers for this account (e.g. ['email', 'google']). */
+  auth_providers?: string[];
 };
 
 export interface SupabaseLoginResponse {

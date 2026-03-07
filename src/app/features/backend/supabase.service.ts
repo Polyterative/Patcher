@@ -9,7 +9,7 @@ import {
   LockFunc,
   navigatorLock
 } from '@supabase/supabase-js';
-import { ReplaySubject } from 'rxjs';
+import { of, ReplaySubject } from 'rxjs';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { Database } from 'src/backend/database.types';
 import { environment } from 'src/environments/environment';
@@ -89,7 +89,9 @@ export class SupabaseService extends SubManager {
       this.snackBar,
       () => this.auth.getUserSession$(),
       (filename: string) => this.storage.deletePanelFile(filename),
-      this.defaultPag
+      this.defaultPag,
+      // In dev, always privileged. In prod, requires admin JWT claim.
+      () => !environment.production ? of(true) : this.auth.hasAdminRole$()
     );
 
     this.update = createUpdateNamespace(
