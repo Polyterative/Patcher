@@ -53,7 +53,7 @@
           { label: 'Name', value: data.name, icon: 'label', size: 'auto' },
           { label: 'Rows', value: data.rows.toString(), icon: 'view_comfy'},
           { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets'},
-          { label: 'HP', value: data.hp.toString(), icon: 'straighten'},
+          { label: 'HP per row', value: data.hp.toString(), icon: 'straighten'},
           { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4'},
           { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free'},
           { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart'}
