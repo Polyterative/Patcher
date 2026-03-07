@@ -12,46 +12,47 @@
 
 ## Active
 
-_No active feature. Pick the next task from TODO.md._
+### Homepage Lazy Loading
 
----
-
-## Empty Template
-
-```
-### Feature Name
-
-**Goal:** One sentence.
+**Goal:** Defer rendering of below-fold homepage sections (especially proof showcases with API calls + panel images) until they enter the viewport, saving initial resource load.
 
 ---
 
 #### Key files
 
-- `path/to/file.ts`
+- `src/app/features/backbone/home/home.component.html`
+- `src/app/features/backbone/home/home.component.scss`
+- `src/app/features/backbone/home/components/home-invitation-cta/home-invitation-cta.component.html`
 
 ---
 
 #### Layer 1 – MVP (data wiring)
 
-- [ ] Step
+- [x] Wrap `@switch` content inside proof section device frames with `@defer (on viewport)` + `@placeholder`
+- [x] Wrap `app-home-open-principles` with `@defer (on viewport)`
+- [x] Wrap `app-home-workflow-rail` with `@defer (on viewport)`
+- [x] Wrap `app-home-invitation-cta` with `@defer (on viewport)`
 
 #### Layer 2 – Structural (template)
 
-- [ ] Step
+- [x] Add `loading="lazy"` to CTA logo `<img>`
+- [x] Add `.frame-placeholder` CSS with min-height for device frame placeholder
 
 #### Layer 3 – Polish
 
-- [ ] Step
+- [ ] (Follow-up) Tie data service timer calls to viewport visibility instead of blind timers
 
 ---
 
 #### Decisions / notes
 
--
+- Using Angular built-in `@defer (on viewport)` — no extra deps needed, uses IntersectionObserver
+- Proof section outer structure (`app-home-proof-showcase`, `.frame-host`, `lib-device-frame-wrapper`) stays eagerly rendered for layout; only the heavy sub-component content is deferred
+- Hero section is above-fold, so NOT deferred
+- Data service calls remain timer-based for now; deferring rendering is the high-impact change
 
 ---
 
 #### Status
 
-Not started.
-```
+In progress.
