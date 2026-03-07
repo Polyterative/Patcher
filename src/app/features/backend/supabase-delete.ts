@@ -6,7 +6,8 @@ import {
 } from 'rxjs';
 import {
   map,
-  switchMap
+  switchMap,
+  take
 } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from 'src/backend/database.types';
@@ -26,7 +27,8 @@ export function createDeleteNamespace(
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>,
   deletePanelFileFn: (filename: string) => Observable<any>,
-  defaultPag: number
+  defaultPag: number,
+  hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {
   return {
     comment: (id: number) => getUserSession$().pipe(
@@ -60,20 +62,22 @@ export function createDeleteNamespace(
     module: (id: number) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
-        const deleteAllComments$ = rxFrom(
-          supabase.from(DbPaths.comments)
-            .delete()
-            .filter('entityId', 'eq', id)
-            .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+        return hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => {
+            const deleteAllComments$ = rxFrom(
+              supabase.from(DbPaths.comments)
+                .delete()
+                .filter('entityId', 'eq', id)
+                .filter('entityType', 'eq', CommentableEntityTypes.MODULE)
+            );
+            // Admins can delete any module; regular users can only delete their own submissions.
+            const deleteModule$ = isAdmin
+              ? rxFrom(supabase.from(DbPaths.modules).delete().filter('id', 'eq', id).select('id'))
+              : rxFrom(supabase.from(DbPaths.modules).delete().filter('id', 'eq', id).filter('submitter', 'eq', user.id).select('id'));
+            return deleteAllComments$.pipe(switchMap(() => deleteModule$));
+          })
         );
-        const deleteModule$ = rxFrom(
-          supabase.from(DbPaths.modules)
-            .delete()
-            .filter('id', 'eq', id)
-            .filter('submitter', 'eq', user.id)
-            .select('id')
-        );
-        return deleteAllComments$.pipe(switchMap(() => deleteModule$));
       }),
       remapErrors(),
       cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'currentUserComments']),

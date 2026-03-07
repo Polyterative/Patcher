@@ -68,8 +68,10 @@ describe('SupabaseService - auth methods', () => {
   });
   
   describe('getRichUserSession$', () => {
-    it('should return null when getUserSession$ returns null', (done) => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
+    it('should return null when session is null', (done) => {
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: null}, error: null})
+      );
       
       service.auth.getRichUserSession$().subscribe({
         next: (user) => {
@@ -83,14 +85,17 @@ describe('SupabaseService - auth methods', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should enrich user with username from profiles table', (done) => {
-      const simpleUser = {
+    it('should enrich user with username and auth_provider from session', (done) => {
+      const sessionUser = {
         id: 'rich-user-1',
         email: 'rich@test.com',
         created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z'
+        updated_at: '2024-01-01T00:00:00Z',
+        app_metadata: {provider: 'google'}
       };
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(simpleUser));
+      spyOn(supabaseClient.auth, 'getSession').and.returnValue(
+        Promise.resolve({data: {session: {user: sessionUser}}, error: null})
+      );
       
       const profileMock: any = {};
       ['select', 'filter'].forEach(m => {
@@ -106,6 +111,7 @@ describe('SupabaseService - auth methods', () => {
           expect(user).not.toBeNull();
           expect(user.username).toBe('richuser');
           expect(user.email).toBe('rich@test.com');
+          expect(user.auth_provider).toBe('google');
           done();
         },
         error: (err) => {
@@ -263,11 +269,12 @@ describe('SupabaseService - auth methods', () => {
     
     it('should call DB update with trimmed username on success', (done) => {
       const profileMock: any = {};
-      ['update', 'eq'].forEach(m => {
+      // Chain: .update().eq().select() all return the same mock; mock resolves with one updated row
+      ['update', 'eq', 'select'].forEach(m => {
         profileMock[m] = () => profileMock;
       });
       profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: null, error: null}).then(res as any, rej as any);
+        Promise.resolve({data: [{username: 'validname'}], error: null}).then(res as any, rej as any);
       
       spyOn(supabaseClient, 'from').and.returnValue(profileMock);
       const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);

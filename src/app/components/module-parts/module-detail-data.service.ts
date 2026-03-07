@@ -3,6 +3,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
   delay,
+  EMPTY,
   merge,
   of,
   ReplaySubject,
@@ -12,6 +13,7 @@ import {
   filter,
   map,
   switchMap,
+  take,
   takeUntil,
   tap,
   withLatestFrom
@@ -66,7 +68,10 @@ export class ModuleDetailDataService {
     // when delete of the latest panel is requested, perform the deletion
     this.deleteLastPanel$
       .pipe(
-        filter(x => this.appState.isDev),
+        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
+        )),
         map((x) => x.panels.sort((a, b) => a.id - b.id).pop()!),
         switchMap(x => this.backend.delete.modulePanel(x)),
         takeUntil(this.destroyEvent$)
@@ -203,7 +208,10 @@ export class ModuleDetailDataService {
     this.deleteModule$
       .pipe(
         filter(x => x > 0),
-        filter(x => this.appState.isDev),
+        switchMap(id => this.backend.auth.hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(id) : EMPTY)
+        )),
         withLatestFrom(this.singleModuleData$),
         switchMap(([x, module]) => this.backend.delete.module(x).pipe(map(() => module))),
         takeUntil(this.destroyEvent$)
@@ -215,7 +223,10 @@ export class ModuleDetailDataService {
     
     this.changeModule$
       .pipe(
-        filter(x => this.appState.isDev),
+        switchMap(partial => this.backend.auth.hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(partial) : EMPTY)
+        )),
         withLatestFrom(this.singleModuleData$),
         switchMap(([partial, original]) => this.backend.update.module({...original, ...partial}).pipe(map(() => ({...original, ...partial})))),
         takeUntil(this.destroyEvent$)

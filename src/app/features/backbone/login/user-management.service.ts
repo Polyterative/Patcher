@@ -424,16 +424,19 @@ export class UserManagementService extends SubManager {
   updateUsername$(newUsername: string): Observable<void> {
     return this.loggedUserFullProfile$.pipe(
       take(1),
-      filter((profile): profile is RichUserModel => !!profile),
-      switchMap(profile =>
-        this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
+      switchMap(profile => {
+        if (!profile) {
+          SharedConstants.errorCustom(this.snackBar, 'Unable to save: user session not found. Please refresh and try again.');
+          return throwError(() => new Error('No user profile available'));
+        }
+        return this.backend.auth.updateUsername$(profile.id, newUsername).pipe(
           catchError((error) => {
             const errorMessage = error?.message || SharedConstants.messages.operationFailed;
             SharedConstants.errorCustom(this.snackBar, errorMessage);
             return throwError(() => error);
           })
-        )
-      ),
+        );
+      }),
       // Refresh the user profile after successful update
       switchMap(() => this.backend.auth.getRichUserSession$()),
       filter(x => !!x),

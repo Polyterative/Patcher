@@ -119,7 +119,10 @@ export function createAuthNamespace(
           return ns.getRichUserSession$().pipe(
             switchMap(richUser => {
               if (!richUser || !richUser.username) {
-                return ns._ensureOAuthUserProfile$(user).pipe(map(() => richUser));
+                // New OAuth user: create profile then re-fetch so we return a real RichUserModel
+                return ns._ensureOAuthUserProfile$(user).pipe(
+                  switchMap(() => ns.getRichUserSession$())
+                );
               }
               return of(richUser);
             })
@@ -130,8 +133,11 @@ export function createAuthNamespace(
     
     _ensureOAuthUserProfile$(user: User): Observable<void> {
       const email = user.email || '';
-      const tempUsername = email.split('@')[0] || `user_${ user.id.substring(0, 8) }`;
+      // Always use user_ prefix so AuthCallbackComponent can reliably detect new users
+      const tempUsername = `user_${ user.id.substring(0, 8) }`;
       
+      // INSERT a new profile if none exists; on conflict (existing user) only update
+      // non-username fields so a previously set custom username is never overwritten.
       return rxFrom(
         supabase
           .from(DbPaths.profiles)
@@ -142,8 +148,23 @@ export function createAuthNamespace(
             confirmed: true,
             created_at: user.created_at,
             updated_at: new Date().toISOString()
-          }, {onConflict: 'id'})
-      ).pipe(map(() => void 0));
+          }, {onConflict: 'id', ignoreDuplicates: true})
+      ).pipe(
+        switchMap(insertResult => {
+          if (!insertResult.error) {
+            // Row was freshly inserted — temp username is correct, nothing more to do
+            return of(void 0);
+          }
+          // Row already exists (conflict not ignored cleanly, or some other error):
+          // Update only the fields that are safe to overwrite, leaving username intact.
+          return rxFrom(
+            supabase
+              .from(DbPaths.profiles)
+              .update({email, confirmed: true, updated_at: new Date().toISOString()})
+              .eq('id', user.id)
+          ).pipe(map(() => void 0));
+        })
+      );
     },
     
     signup$(username: string, email: string, password: string): SupabaseSignupResponse {
@@ -170,14 +191,21 @@ export function createAuthNamespace(
     },
     
     getRichUserSession$(): Observable<RichUserModel | null> {
-      return ns.getUserSession$().pipe(
-        switchMap(simpleUserData => {
-          if (simpleUserData == null) return of(null);
-          return ns._getUserNameFromDatabase(simpleUserData.id).pipe(
+      return rxFrom(supabase.auth.getSession()).pipe(
+        switchMap(sessionOutput => {
+          if (!sessionOutput.data.session) return of(null);
+          const sessionUser = sessionOutput.data.session.user;
+          const authProvider = (sessionUser.app_metadata?.['provider'] as string) || 'email';
+          const authProviders = (sessionUser.app_metadata?.['providers'] as string[]) || [authProvider];
+          return ns._getUserNameFromDatabase(sessionUser.id).pipe(
             map(usernameGetterResponse => ({
-              ...simpleUserData,
+              id: sessionUser.id,
+              email: sessionUser.email,
+              created_at: sessionUser.created_at,
+              updated_at: sessionUser.updated_at,
               username: usernameGetterResponse.data[0].username,
-              email: simpleUserData.email
+              auth_provider: authProvider,
+              auth_providers: authProviders
             }))
           );
         }),
@@ -246,6 +274,7 @@ export function createAuthNamespace(
           .from(DbPaths.profiles)
           .update({username: trimmedUsername, updated_at: new Date().toISOString()})
           .eq('id', userId)
+          .select('username')
       ).pipe(
         map(response => {
           if (response.error) {
@@ -253,6 +282,11 @@ export function createAuthNamespace(
               throw new Error('This username is already taken. Please choose another one.');
             }
             throw new Error(response.error.message || 'Failed to update username.');
+          }
+          // .select() returns an empty array when RLS silently blocks the update (0 rows matched)
+          if (!response.data || response.data.length === 0) {
+            console.error('Username update silently failed — 0 rows updated. userId:', userId, 'auth.uid check may have failed.');
+            throw new Error('Username update had no effect. Your session may have expired — please refresh and try again.');
           }
           return void 0;
         }),

@@ -58,7 +58,7 @@ interface ProviderConfig {
 })
 export class SSOButtonsComponent {
   /** Array of SSO providers to display buttons for */
-  providers: SSOProvider[] = ['google'];
+  @Input() providers: SSOProvider[] = ['google'];
   
   /** Whether to show a divider above the buttons */
   @Input() showDivider = true;
