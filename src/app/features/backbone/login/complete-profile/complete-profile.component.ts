@@ -8,17 +8,15 @@ import {
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { from } from 'rxjs';
+import { NEVER } from 'rxjs';
 import {
   catchError,
-  switchMap,
   take,
   takeUntil,
   tap
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
-import { SupabaseService } from '../../../backend/supabase.service';
 import { UserManagementService } from '../user-management.service';
 
 
@@ -142,7 +140,6 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
   
   constructor(
     private userManagementService: UserManagementService,
-    private backend: SupabaseService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -172,41 +169,25 @@ export class CompleteProfileComponent extends SubManager implements OnInit {
     this.saving = true;
     const newUsername = this.usernameControl.value!.trim();
     
-    this.userManagementService.loggedUser$
-      .pipe(
-        take(1),
-        switchMap(user => {
-          if (!user) {
-            throw new Error('User not authenticated');
-          }
-          
-          // Update username in database
-          return from(
-            this.backend['supabase']
-              .from('profiles')
-              .update({username: newUsername})
-              .eq('id', user.id)
-          );
-        }),
-        tap(() => {
-          SharedConstants.successCustom(this.snackBar, 'Profile set up — username written to your account.');
-          this.router.navigate(['/user/area']);
-        }),
-        catchError((error) => {
-          console.error('Error saving username:', error);
-          
-          // Check for unique constraint violation
-          if (error?.code === '23505' || error?.message?.includes('unique')) {
-            SharedConstants.errorCustom(this.snackBar, 'That username is already taken — pick a different one.');
-          } else {
-            SharedConstants.errorCustom(this.snackBar, 'Username not saved — the database returned an error. Try again.');
-          }
-          
-          this.saving = false;
-          throw error;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe();
+    this.userManagementService.updateUsername$(newUsername).pipe(
+      tap(() => {
+        this.router.navigate(['/user/area']);
+      }),
+      catchError((error) => {
+        console.error('Error saving username:', error);
+        
+        if (error?.code === '23505' || error?.message?.includes('unique') || error?.message?.includes('already taken')) {
+          SharedConstants.errorCustom(this.snackBar, 'That username is already taken — pick a different one.');
+        } else {
+          SharedConstants.errorCustom(this.snackBar, 'Username not saved — the database returned an error. Try again.');
+        }
+        
+        this.saving = false;
+        return NEVER;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      complete: () => { this.saving = false; }
+    });
   }
 }

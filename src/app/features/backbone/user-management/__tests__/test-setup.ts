@@ -1,3 +1,7 @@
+import {
+  ChangeDetectorRef,
+  NgZone
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -81,7 +85,9 @@ export function setupComponentTest(ignoreSeo = false) {
     providers: [
       UserManagementComponent,
       {provide: UserManagementService, useValue: mockUserManagementService},
-      {provide: SeoAndUtilsService, useValue: mockSeoAndUtilsService}
+      {provide: SeoAndUtilsService, useValue: mockSeoAndUtilsService},
+      {provide: ChangeDetectorRef, useValue: {markForCheck: jasmine.createSpy('markForCheck')}},
+      {provide: NgZone, useValue: {run: (fn: () => any) => fn()}}
     ]
   });
   
