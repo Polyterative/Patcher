@@ -56,6 +56,10 @@ export class SharedConstants {
   static confirmMail(snackBar: MatSnackBar) {
     snackBar.open("Confirm your email address before signing in — check your inbox.", undefined, {duration: 5000, panelClass: 'snack-info'});
   }
+  
+  static infoCustom(snackBar: MatSnackBar, msg: string) {
+    snackBar.open(msg, undefined, {duration: 3000, panelClass: 'snack-info'});
+  }
 
   static successSignup(snackBar: MatSnackBar) {
     snackBar.open("Account created. Welcome to Patcher!", undefined, {duration: 3000, panelClass: 'snack-success'});

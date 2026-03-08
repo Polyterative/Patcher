@@ -473,22 +473,22 @@ export class PatchDetailDataService implements OnDestroy {
             positive: {
               label: 'Delete',
               theme: 'warning'
-            },
-            negative: {
-              label: 'Cancel',
-              theme: 'primary'
             }
           };
           return this.dialog.open(
             ConfirmDialogComponent,
             {
               data,
-              disableClose: true,
+              disableClose: false,
               width: '32rem'
             }
           )
             .afterClosed()
-            .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer));
+            .pipe(
+              tap((x: ConfirmDialogDataOutModel) => {
+                if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+              }),
+              filter((x: ConfirmDialogDataOutModel) => !!x?.answer));
         }),
         withLatestFrom(this.deletePatch$),
         switchMap(([_z, x]) => this.backend.delete.patchConnectionsForPatch(x)
@@ -645,14 +645,16 @@ export class PatchDetailDataService implements OnDestroy {
             const dialogData: ConfirmDialogDataInModel = {
               title: 'Remove this copy?',
               description: `This copy has ${ connCount } connection${ connCount > 1 ? 's' : '' } that will be disconnected.`,
-              positive: {label: 'Remove', theme: 'warning'},
-              negative: {label: 'Cancel', theme: 'primary'}
+              positive: {label: 'Remove', theme: 'warning'}
             };
             return this.dialog.open(ConfirmDialogComponent, {
               data: dialogData,
-              disableClose: true,
+              disableClose: false,
               width: '32rem'
             }).afterClosed().pipe(
+              tap((result: ConfirmDialogDataOutModel) => {
+                if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+              }),
               filter((result: ConfirmDialogDataOutModel) => result?.answer === true),
               map(() => instance)
             );

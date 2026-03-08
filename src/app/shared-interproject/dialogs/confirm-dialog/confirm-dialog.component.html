@@ -13,7 +13,6 @@
         (click$)="dialogRef.close({answer:false})"
         [disabled]="negative&&negative.disabled?negative.disabled:false"
         [theme]="negative?.theme?negative.theme:'negative'"
-        icon="close"
         autoFocus="true"
       >
         {{ negative && negative.label ? negative.label : "No" }}
@@ -25,7 +24,6 @@
         [disabled]="positive&&positive.disabled?positive.disabled:false"
         [theme]="positive?.theme?positive.theme:'positive'"
         theme="positive"
-        icon="check"
         autoFocus="false"
       >
         {{ positive && positive.label ? positive.label : "Yes" }}
