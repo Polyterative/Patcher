@@ -1,9 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   ViewChild
 } from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
+import { DOCUMENT } from '@angular/common';
+import {
+  skip,
+  switchMap,
+  take,
+  takeUntil
+} from 'rxjs/operators';
 import {
   defaultRackMinimalViewConfig,
   RackMinimalViewConfig
@@ -24,6 +31,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 })
 export class RackBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  private readonly document = inject(DOCUMENT);
   
   readonly formTypes = FormTypes;
   readonly viewConfig: RackMinimalViewConfig = {...defaultRackMinimalViewConfig};
@@ -42,6 +50,16 @@ export class RackBrowserRootComponent extends SubManager {
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.paginator.firstPage());
+    
+    this.dataService.pageEvent$
+      .pipe(
+        switchMap(() => this.dataService.racksList$.pipe(
+          skip(1),
+          take(1)
+        )),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
     
     this.dataService.fields.order.control.patchValue(
       {id: 'updated', name: 'Updated ↓'},
