@@ -452,7 +452,7 @@ export class UserManagementService extends SubManager {
     this.deleteAccountAction$.pipe(
       switchMap(() => {
         const dialogData: ConfirmDialogDataInModel = {
-          title: 'Delete all your data',
+          title: 'Delete all your data?',
           description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. You will be signed out immediately after.\n\nNote: your login credentials will remain active — contact support if you need full account removal.',
           positive: { label: 'Delete my data', theme: 'warning' },
           negative: { label: 'Cancel', theme: 'primary' }

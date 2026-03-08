@@ -334,15 +334,15 @@ export class ModuleAdderDataService extends SubManager {
         switchMap(x => {
           
           const data: ConfirmDialogDataInModel = {
-            title:       'Submit',
-            description: 'Are you sure you want to submit this module? Please verify that all information is correct.',
+            title: 'Submit this module?',
+            description: 'Once submitted, your module will be queued for review. Make sure all information is correct before continuing.',
             positive:    {
               label: 'Submit',
               theme: 'primary'
             },
             negative:    {
               label: 'Cancel',
-              theme: 'negative'
+              theme: 'primary'
             }
           };
           

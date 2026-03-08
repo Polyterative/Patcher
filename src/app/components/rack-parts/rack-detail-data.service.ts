@@ -537,10 +537,10 @@ export class RackDetailDataService extends SubManager {
         switchMap((rack) => {
           
           const data: ConfirmDialogDataInModel = {
-            title: 'Deletion',
-            description: `Are you sure you want to delete "${ rack.name }"?`,
-            positive: {label: '✔️ Delete'},
-            negative: {label: '❌ Cancel'}
+            title: `Delete "${ rack.name }"?`,
+            description: 'This action cannot be undone.',
+            positive: {label: 'Delete', theme: 'warning'},
+            negative: {label: 'Cancel', theme: 'primary'}
           };
           
           return this.dialog.open(
@@ -682,10 +682,10 @@ export class RackDetailDataService extends SubManager {
   
   private askForConfirmationWhenDuplicatingRack() {
     const data: ConfirmDialogDataInModel = {
-      title: 'Duplicate rack',
-      description: 'Confirm rack duplication? You will be able to change its name and content later',
+      title: 'Duplicate this rack?',
+      description: 'A copy of this rack will be created. You can rename and edit it afterwards.',
       positive: {label: 'Confirm'},
-      // negative: {label: '❌ Cancel'}
+      negative: {label: 'Cancel', theme: 'primary'}
     };
     
     return this.dialog.open(
