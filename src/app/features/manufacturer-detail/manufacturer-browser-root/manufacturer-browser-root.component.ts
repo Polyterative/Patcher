@@ -1,9 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   ViewChild
 } from '@angular/core';
-import { takeUntil } from 'rxjs/operators';
+import { DOCUMENT } from '@angular/common';
+import {
+  skip,
+  switchMap,
+  take,
+  takeUntil
+} from 'rxjs/operators';
 import { MatPaginator } from '@angular/material/paginator';
 import { ManufacturerBrowserRootDataService } from './manufacturer-browser-root-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
@@ -21,6 +28,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 })
 export class ManufacturerBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  private readonly document = inject(DOCUMENT);
   readonly formTypes = FormTypes;
 
   constructor(
@@ -41,6 +49,16 @@ export class ManufacturerBrowserRootComponent extends SubManager {
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.paginator?.firstPage());
+    
+    this.dataService.pageEvent$
+      .pipe(
+        switchMap(() => this.dataService.manufacturers$.pipe(
+          skip(1),
+          take(1)
+        )),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
     
     this.dataService.serversideTableRequestData.skip$.next(0);
     this.dataService.serversideTableRequestData.take$.next(10);
