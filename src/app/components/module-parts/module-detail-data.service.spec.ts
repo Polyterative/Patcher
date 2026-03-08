@@ -22,6 +22,9 @@ describe('ModuleDetailDataService', () => {
     };
     
     const backend = {
+      auth: {
+        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(false))
+      },
       GET: {
         currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50}])),
         moduleWithId: jasmine.createSpy('moduleWithId').and.callFake((id: number) => of({
