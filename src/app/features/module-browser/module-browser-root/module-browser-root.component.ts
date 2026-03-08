@@ -1,11 +1,18 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   Input,
   ViewChild
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {
+  skip,
+  switchMap,
+  take,
+  takeUntil
+} from 'rxjs/operators';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -29,6 +36,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 })
 export class ModuleBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  private readonly document = inject(DOCUMENT);
   @Input() showSubmitFab = true;
   mobileFiltersExpanded = false;
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;
@@ -59,6 +67,16 @@ export class ModuleBrowserRootComponent extends SubManager {
     this.dataService.paginatorToFistPage$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.paginator.firstPage());
+    
+    this.dataService.pageEvent$
+      .pipe(
+        switchMap(() => this.dataService.modulesList$.pipe(
+          skip(1),
+          take(1)
+        )),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
     
     this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
     this.dataService.serversideTableRequestData.sort$.next([this.dataService.orderStartingValue.id, 'desc']);
