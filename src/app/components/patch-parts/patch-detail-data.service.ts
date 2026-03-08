@@ -468,8 +468,8 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         switchMap(_ => {
           const data: ConfirmDialogDataInModel = {
-            title: 'Deletion',
-            description: 'Are you sure you want to delete this patch? This action cannot be undone. This will also delete all connections associated with this patch.',
+            title: 'Delete this patch?',
+            description: 'This action cannot be undone. All connections associated with this patch will also be deleted.',
             positive: {
               label: 'Delete',
               theme: 'warning'
@@ -643,8 +643,8 @@ export class PatchDetailDataService implements OnDestroy {
           if (connCount > 0) {
             // Show confirmation dialog
             const dialogData: ConfirmDialogDataInModel = {
-              title: 'Remove copy',
-              description: `This copy has ${ connCount } connection${ connCount > 1 ? 's' : '' }. Removing it will disconnect ${ connCount > 1 ? 'them' : 'it' }. Continue?`,
+              title: 'Remove this copy?',
+              description: `This copy has ${ connCount } connection${ connCount > 1 ? 's' : '' } that will be disconnected.`,
               positive: {label: 'Remove', theme: 'warning'},
               negative: {label: 'Cancel', theme: 'primary'}
             };
