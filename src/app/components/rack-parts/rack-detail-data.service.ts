@@ -539,20 +539,22 @@ export class RackDetailDataService extends SubManager {
           const data: ConfirmDialogDataInModel = {
             title: `Delete "${ rack.name }"?`,
             description: 'This action cannot be undone.',
-            positive: {label: 'Delete', theme: 'warning'},
-            negative: {label: 'Cancel', theme: 'primary'}
+            positive: {label: 'Delete', theme: 'warning'}
           };
           
           return this.dialog.open(
             ConfirmDialogComponent,
             {
               data,
-              disableClose: true
+              disableClose: false
             }
           )
             .afterClosed()
             .pipe(
-              filter((x: ConfirmDialogDataOutModel) => x.answer),
+              tap((x: ConfirmDialogDataOutModel) => {
+                if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+              }),
+              filter((x: ConfirmDialogDataOutModel) => !!x?.answer),
               map(() => rack)
             );
         }),
@@ -684,8 +686,7 @@ export class RackDetailDataService extends SubManager {
     const data: ConfirmDialogDataInModel = {
       title: 'Duplicate this rack?',
       description: 'A copy of this rack will be created. You can rename and edit it afterwards.',
-      positive: {label: 'Confirm'},
-      negative: {label: 'Cancel', theme: 'primary'}
+      positive: {label: 'Confirm'}
     };
     
     return this.dialog.open(
@@ -696,7 +697,11 @@ export class RackDetailDataService extends SubManager {
       }
     )
       .afterClosed()
-      .pipe(filter((x: ConfirmDialogDataOutModel) => x.answer)
+      .pipe(
+        tap((x: ConfirmDialogDataOutModel) => {
+          if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+        }),
+        filter((x: ConfirmDialogDataOutModel) => !!x?.answer)
       );
   }
   

@@ -454,13 +454,15 @@ export class UserManagementService extends SubManager {
         const dialogData: ConfirmDialogDataInModel = {
           title: 'Delete all your data?',
           description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. You will be signed out immediately after.\n\nNote: your login credentials will remain active — contact support if you need full account removal.',
-          positive: { label: 'Delete my data', theme: 'warning' },
-          negative: { label: 'Cancel', theme: 'primary' }
+          positive: {label: 'Delete my data', theme: 'warning'}
         };
         return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
           ConfirmDialogComponent,
-          { data: dialogData, disableClose: true, width: '36rem' }
+          {data: dialogData, disableClose: false, width: '36rem'}
         ).afterClosed();
+      }),
+      tap((result) => {
+        if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
       }),
       filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
       switchMap(() => this.backend.delete.allUserData().pipe(
