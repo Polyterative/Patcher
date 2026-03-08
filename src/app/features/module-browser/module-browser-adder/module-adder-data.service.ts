@@ -339,10 +339,6 @@ export class ModuleAdderDataService extends SubManager {
             positive:    {
               label: 'Submit',
               theme: 'primary'
-            },
-            negative:    {
-              label: 'Cancel',
-              theme: 'primary'
             }
           };
           
@@ -354,7 +350,11 @@ export class ModuleAdderDataService extends SubManager {
             }
           )
             .afterClosed()
-            .pipe(filter((x: ConfirmDialogDataOutModel) => x && x.answer)
+            .pipe(
+              tap((x: ConfirmDialogDataOutModel) => {
+                if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+              }),
+              filter((x: ConfirmDialogDataOutModel) => x && x.answer)
             );
         }),
         tap(() => this.similarModulesData$.next(undefined)),
