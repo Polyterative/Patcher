@@ -48,6 +48,7 @@ Thumbs.db
 # Secrets & credentials
 .env
 .env.*
+.mcp.json
 *.pem
 *.key
 *.p12
@@ -72,6 +73,9 @@ e2e/flow-0*.spec.ts
 
 # AI agent tmp output
 /.tmp/
+
+# Supabase CLI cache
+supabase/.temp/
 
 # Local screenshot artifacts
 /output/playwright/
