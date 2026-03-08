@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.2](https://github.com/Polyterative/Patcher/compare/v5.3.1...v5.3.2) (2026-03-08)
+
+
+### Features
+
+* **auth:** improve OAuth profile handling and user management flow ([a8e086b](https://github.com/Polyterative/Patcher/commit/a8e086b6a1eecaea1cdafe7c5ddadcc4194c23f3))
+* **auth:** temporarily hide Google SSO button ([e8a090e](https://github.com/Polyterative/Patcher/commit/e8a090ebb9601bf633b2374c4891dbddad991519))
+* **home:** add placeholders for sections ([c6d5951](https://github.com/Polyterative/Patcher/commit/c6d5951cf03d4f30e9b36aa0292a58ebaa83885a))
+* **module-browser:** add tag filtering to module list ([adde6eb](https://github.com/Polyterative/Patcher/commit/adde6ebcbc48f9ec916caec8787cf0037c4bb0a2))
+* **rack:** auto-scale rack to fit viewport width on all screen sizes ([e105cc5](https://github.com/Polyterative/Patcher/commit/e105cc5f41be18952b2a28111e0e2ac3b9118c5c))
+
+
+### Bug Fixes
+
+* **ci:** generate env files in CI and fix middleware tests missing SUPABASE_URL ([5550edf](https://github.com/Polyterative/Patcher/commit/5550edf04dc9db0175c7d8f309e8fd17179fdad9))
+* **rack:** clarify HP label as 'HP per row' to avoid confusion with total HP ([0fb1928](https://github.com/Polyterative/Patcher/commit/0fb1928128ed2abf8c5834b1aa04087f81753386))
+* **rack:** extend row backgrounds to full rack width when wider than viewport ([9e2cf2c](https://github.com/Polyterative/Patcher/commit/9e2cf2c90f8ad556998d3a6e21abc9de0e7e89ea))
+* **rack:** restore scale animation and fix background over-extending on small racks ([eb192ac](https://github.com/Polyterative/Patcher/commit/eb192acdca8cb4aa6e19d0234b0978a486a17911))
+* **rack:** restore smallerScale transform by blockifying rack visual model in flex container ([e864f08](https://github.com/Polyterative/Patcher/commit/e864f086dc086311b22dec65ad39d7abd31531fd))
+
 ### [5.3.1](https://github.com/Polyterative/Patcher/compare/v5.3.0...v5.3.1) (2026-03-04)
 
 
