@@ -1,4 +1,3 @@
-import { of } from 'rxjs';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -112,6 +111,81 @@ describe('SupabaseService - auth methods', () => {
           expect(user.username).toBe('richuser');
           expect(user.email).toBe('rich@test.com');
           expect(user.auth_provider).toBe('google');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+  
+  describe('signup$', () => {
+    it('should error when username is empty string', (done) => {
+      service.auth.signup$('', 'user@test.com', 'password123').subscribe({
+        next: () => {
+          fail('Should have errored for empty username');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('empty');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should error when username is whitespace-only', (done) => {
+      service.auth.signup$('   ', 'user@test.com', 'password123').subscribe({
+        next: () => {
+          fail('Should have errored for whitespace-only username');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('empty');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should error when username is tab/newline whitespace', (done) => {
+      service.auth.signup$('\t\n', 'user@test.com', 'password123').subscribe({
+        next: () => {
+          fail('Should have errored for whitespace-only username');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('empty');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should call supabase signUp with trimmed username when valid', (done) => {
+      spyOn(supabaseClient.auth, 'signUp').and.returnValue(
+        Promise.resolve({data: {user: {id: 'new-user-id'}, session: {}}, error: null})
+      );
+      spyOn(supabaseClient.auth, 'signInWithPassword').and.returnValue(
+        Promise.resolve({data: {user: {id: 'new-user-id', email: 'user@test.com'}, session: {}}, error: null})
+      );
+      spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
+      
+      const profileMock: any = {};
+      ['update', 'eq', 'filter', 'select'].forEach(m => {
+        profileMock[m] = () => profileMock;
+      });
+      profileMock.then = (res: Function, rej?: Function) =>
+        Promise.resolve({data: [{username: 'validuser'}], error: null}).then(res as any, rej as any);
+      
+      spyOn(supabaseClient, 'from').and.returnValue(profileMock);
+      const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);
+      
+      service.auth.signup$('  validuser  ', 'user@test.com', 'password123').subscribe({
+        next: () => {
+          const updateCalls = updateSpy.calls.all();
+          const usernameCall = updateCalls.find((c: any) => c.args[0]?.username !== undefined);
+          expect(usernameCall).toBeDefined();
+          expect((usernameCall?.args[0] as any).username).toBe('validuser');
           done();
         },
         error: (err) => {

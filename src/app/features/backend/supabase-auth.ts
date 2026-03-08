@@ -168,8 +168,12 @@ export function createAuthNamespace(
     },
     
     signup$(username: string, email: string, password: string): SupabaseSignupResponse {
+      const trimmedUsername = username?.trim() ?? '';
+      if (!trimmedUsername) {
+        return throwError(() => new Error('Username cannot be empty or whitespace.'));
+      }
       return rxFrom(supabase.auth.signUp({email, password})).pipe(
-        switchMap(x => x.error ? of(x.data) : ns._updateUserProfile(email, password, username))
+        switchMap(x => x.error ? of(x.data) : ns._updateUserProfile(email, password, trimmedUsername))
       );
     },
     
@@ -330,12 +334,16 @@ export function createAuthNamespace(
     },
     
     _updateUserProfile(email: string, password: string, username: string): Observable<SupabaseLoginResponse> {
+      const trimmedUsername = username?.trim() ?? '';
+      if (!trimmedUsername) {
+        return throwError(() => new Error('Username cannot be empty or whitespace.'));
+      }
       return ns.login$(email, password).pipe(
         switchMap(x =>
           rxFrom(
             supabase
               .from(DbPaths.profiles)
-              .update({confirmed: true, username})
+              .update({confirmed: true, username: trimmedUsername})
               .eq('id', x.user.id)
           ).pipe(
             map(() => x),
