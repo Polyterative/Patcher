@@ -36,6 +36,7 @@ export class UserSignupDataService extends SubManager {
       flex: '6rem',
       control: new UntypedFormControl('', Validators.compose([
         Validators.required,
+        Validators.pattern(/\S/),
         Validators.maxLength(128),
         Validators.minLength(3)
       ])),
@@ -99,7 +100,7 @@ export class UserSignupDataService extends SubManager {
     this.mailSignClick$
       .pipe(
         switchMap(x => this.loginInteraction.signup(
-          this.fields.username.control.value,
+          this.fields.username.control.value.trim(),
           this.fields.email.control.value,
           this.fields.password.control.value)
         ),
