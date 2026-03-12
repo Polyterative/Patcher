@@ -1,4 +1,6 @@
 User-agent: *
-Disallow:
+Disallow: /auth/
+Disallow: /user/
+Disallow: /modules/add
 Disallow: /cgi-bin/
 Sitemap: https://patcher.xyz/sitemap.xml
