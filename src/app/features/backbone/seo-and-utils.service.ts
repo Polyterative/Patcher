@@ -41,6 +41,13 @@ export class SeoAndUtilsService {
       this.setTitle(newTitle);
       this.updateCanonicalLink(canonicalUrl);
       
+      // Robots meta tag — noindex for private/auth pages
+      if (newSeoData.noindex) {
+        this.metaService.updateTag({name: 'robots', content: 'noindex, nofollow'});
+      } else {
+        this.metaService.removeTag(`name='robots'`);
+      }
+      
       // Set basic meta tags
       this.metaService.updateTag({name: 'description', content: newSeoData.description});
       this.metaService.updateTag({name: 'keywords', content: newSeoData.keywords});
@@ -90,7 +97,11 @@ export class SeoAndUtilsService {
   }
   
   private getCurrentUrl(): string {
-    return this.document.location?.href || 'https://patcher.xyz/';
+    const loc = this.document.location;
+    if (!loc || !loc.origin || !loc.pathname) {
+      return 'https://patcher.xyz/';
+    }
+    return loc.origin + loc.pathname;
   }
   
   private updateCanonicalLink(url: string): void {
