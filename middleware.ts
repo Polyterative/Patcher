@@ -115,7 +115,7 @@ export default async function middleware(request: Request): Promise<Response | v
     return;
   }
 
-  const canonicalUrl = `${ canonicalOrigin }${ pathname }`;
+  const canonicalUrl = `${ canonicalOrigin }${ resolveCanonicalPath(pathname) }`;
   const cachedMetadata = readMetadataCache(canonicalUrl);
   const metadata = cachedMetadata || await buildMetadata(detailRoute, canonicalUrl, canonicalOrigin);
   const cacheState = cachedMetadata ? 'hit' : 'miss';
@@ -125,9 +125,10 @@ export default async function middleware(request: Request): Promise<Response | v
     writeMetadataCache(canonicalUrl, metadata, isDetailRoute);
   }
 
+  const isNoIndexPath = isPrivatePath(pathname);
   const robotsTag = isPreviewDeployment
     ? 'noindex, nofollow, noarchive'
-    : (isDetailFallback
+    : (isDetailFallback || isNoIndexPath
       ? 'noindex, nofollow, noarchive'
       : 'index, follow, max-image-preview:large');
   const html = renderHtml(metadata, robotsTag);
@@ -160,11 +161,27 @@ function isBypassPath(pathname: string): boolean {
     || STATIC_ASSET_REGEX.test(pathname);
 }
 
+function isPrivatePath(pathname: string): boolean {
+  return pathname.startsWith('/auth/')
+    || pathname.startsWith('/user/')
+    || pathname === '/404'
+    || pathname.startsWith('/modules/add');
+}
+
 function normalizePathname(pathname: string): string {
   if (!pathname || pathname === '/') {
     return '/';
   }
   return pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+}
+
+/** Maps path aliases to their canonical equivalents for deduplication. */
+const PATH_CANONICAL_MAP: Record<string, string> = {
+  '/home': '/',
+};
+
+function resolveCanonicalPath(pathname: string): string {
+  return PATH_CANONICAL_MAP[pathname] ?? pathname;
 }
 
 function normalizeOrigin(origin: string): string {

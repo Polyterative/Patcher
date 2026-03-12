@@ -87,7 +87,8 @@ export class UserAreaRootComponent implements OnInit {
     if (!this.ignoreSeo) {
       this.seoAndUtilsService.updateSeo({
         title:       'User collection',
-        description: 'Personal user collection'
+        description: 'Personal user collection',
+        noindex:     true
       }, 'My collection');
     }
     

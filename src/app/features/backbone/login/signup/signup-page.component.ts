@@ -27,7 +27,7 @@ export class SignupPageComponent extends SubManager implements OnInit {
     public loginInteraction: UserManagementService
   ) {
     super();
-    this.seoAndUtilsService.updateSeo({}, 'Signup');
+    this.seoAndUtilsService.updateSeo({noindex: true}, 'Signup');
   }
   
   ngOnInit(): void {
