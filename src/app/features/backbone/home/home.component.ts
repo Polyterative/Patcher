@@ -204,6 +204,7 @@ export class HomeComponent extends SubManager {
       description: 'Free open-source workspace for Eurorack musicians to capture ideas, plan racks, and return to patches quickly.',
       keywords: 'eurorack, modular, digital twin, patch editor, rack planning, module database, auto-save, instance-aware patching',
       type: 'website',
+      url: 'https://patcher.xyz/',
     };
     
     this.seoAndUtilsService.updateSeo(seoData, 'Home');

@@ -9,12 +9,12 @@ const VERCEL_ENV = (process.env.VERCEL_ENV || '').toLowerCase();
 
 const STORAGE_BASE = `${ SUPABASE_URL }/storage/v1/object/public`;
 
-const STATIC_ROUTES = [
-  '/',
-  '/home',
-  '/modules/browser',
-  '/patches/browser',
-  '/racks/browser'
+const STATIC_ROUTES: Array<{ path: string; priority: string; changefreq: string }> = [
+  { path: '/',                  priority: '1.0', changefreq: 'weekly'  },
+  { path: '/modules/browser',   priority: '0.9', changefreq: 'daily'   },
+  { path: '/patches/browser',   priority: '0.9', changefreq: 'daily'   },
+  { path: '/racks/browser',     priority: '0.8', changefreq: 'daily'   },
+  { path: '/info/changelog',    priority: '0.5', changefreq: 'monthly' },
 ];
 
 interface PublicEntityRow {
@@ -81,9 +81,9 @@ export default async function handler(req: any, res: any): Promise<void> {
 
 async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   const staticEntries: SitemapEntry[] = STATIC_ROUTES.map(route => ({
-    loc: `${ SITE_URL }${ route }`,
-    changefreq: 'weekly',
-    priority: route === '/home' ? '1.0' : '0.8'
+    loc: `${ SITE_URL }${ route.path }`,
+    changefreq: route.changefreq,
+    priority: route.priority,
   }));
 
   const [moduleRows, patchRows, rackRows] = await Promise.all([
