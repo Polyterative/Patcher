@@ -37,7 +37,7 @@ export class LoginPageComponent extends SubManager implements OnInit {
     private snackBar: MatSnackBar
   ) {
     super();
-    this.seoAndUtilsService.updateSeo({}, 'Login');
+    this.seoAndUtilsService.updateSeo({noindex: true}, 'Login');
   }
   
   ngOnInit(): void {

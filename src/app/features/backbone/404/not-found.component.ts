@@ -24,6 +24,7 @@ export class NotFoundComponent implements OnInit {
   
   ngOnInit(): void {
     this.title.setTitle('404 - Not Found | patcher.xyz');
+    this.meta.updateTag({name: 'robots', content: 'noindex, nofollow'});
     this.meta.updateTag({name: 'description', content: '404 - Not Found'});
     this.meta.updateTag({property: 'og:title', content: '404 - Not Found | patcher.xyz'});
     this.meta.updateTag({property: 'og:description', content: '404 - Not Found'});

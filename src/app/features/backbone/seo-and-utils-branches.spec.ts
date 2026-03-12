@@ -52,11 +52,11 @@ describe('SeoAndUtilsService - additional branches', () => {
     TestBed.resetTestingModule();
   });
   
-  it('getCurrentUrl returns document href when available', () => {
+  it('getCurrentUrl returns origin+pathname without query string or hash', () => {
     const service = new SeoAndUtilsService(
       jasmine.createSpyObj('Title', ['setTitle']) as any,
       jasmine.createSpyObj('Meta', ['updateTag', 'removeTag']) as any,
-      {location: {href: 'https://patcher.xyz/modules'}} as any
+      {location: {origin: 'https://patcher.xyz', pathname: '/modules', href: 'https://patcher.xyz/modules?foo=bar#section'}} as any
     );
     
     expect((service as any).getCurrentUrl()).toBe('https://patcher.xyz/modules');
