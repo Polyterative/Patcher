@@ -11,6 +11,7 @@ const STORAGE_BASE = `${ SUPABASE_URL }/storage/v1/object/public`;
 
 const STATIC_ROUTES: Array<{ path: string; priority: string; changefreq: string }> = [
   { path: '/',                  priority: '1.0', changefreq: 'weekly'  },
+  { path: '/home',              priority: '0.9', changefreq: 'weekly'  },
   { path: '/modules/browser',   priority: '0.9', changefreq: 'daily'   },
   { path: '/patches/browser',   priority: '0.9', changefreq: 'daily'   },
   { path: '/racks/browser',     priority: '0.8', changefreq: 'daily'   },
