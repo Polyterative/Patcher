@@ -67,7 +67,8 @@ export class ResetPasswordPageComponent extends SubManager implements OnInit {
     
     this.seoAndUtilsService.updateSeo({
       title: 'Reset Password',
-      description: 'Reset your account password securely.'
+      description: 'Reset your account password securely.',
+      noindex: true
     }, 'Reset Password');
   }
   

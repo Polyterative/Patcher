@@ -13,4 +13,6 @@ export interface SeoSocialShareData {
   published?: string;
   modified?: string;
   keywords?: string;
+  /** When true, injects robots noindex,nofollow meta tag */
+  noindex?: boolean;
 }

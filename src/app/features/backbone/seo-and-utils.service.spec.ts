@@ -68,11 +68,11 @@ describe('SeoAndUtilsService', () => {
     expect(metaSpy.removeTag).toHaveBeenCalledWith(`name='title'`);
   });
   
-  it('returns fallback URL when document location href is unavailable', () => {
+  it('returns fallback URL when document location is unavailable', () => {
     const serviceDirect = new SeoAndUtilsService(
       jasmine.createSpyObj('Title', ['setTitle']) as any,
       jasmine.createSpyObj('Meta', ['updateTag', 'removeTag']) as any,
-      {location: {href: ''}} as any
+      {location: {origin: '', pathname: ''}} as any
     );
     
     expect((serviceDirect as any).getCurrentUrl()).toBe('https://patcher.xyz/');

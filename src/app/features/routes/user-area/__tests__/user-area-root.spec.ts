@@ -58,7 +58,7 @@ describe('UserAreaRootComponent - Initialization', () => {
   it('should call updateSeo on ngOnInit when ignoreSeo is false', () => {
     build(false);
     expect(mockSeoService.updateSeo).toHaveBeenCalledWith(
-      {title: 'User collection', description: 'Personal user collection'},
+      {title: 'User collection', description: 'Personal user collection', noindex: true},
       'My collection'
     );
   });
