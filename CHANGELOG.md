@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.5](https://github.com/Polyterative/Patcher/compare/v5.3.4...v5.3.5) (2026-03-12)
+
+
+### Bug Fixes
+
+* **sitemap:** add /home to static routes ([039e4fe](https://github.com/Polyterative/Patcher/commit/039e4fe932a6fc00032289eeac7c680cbc532a67))
+
 ### [5.3.4](https://github.com/Polyterative/Patcher/compare/v5.3.3...v5.3.4) (2026-03-08)
 
 ### [5.3.3](https://github.com/Polyterative/Patcher/compare/v5.3.2...v5.3.3) (2026-03-08)
