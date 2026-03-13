@@ -190,3 +190,67 @@ describe('buildPatchGraphData - duplicate routes', () => {
     expect(bridges.length).toBe(1);
   });
 });
+
+
+// Regression: buildPatchGraphData must return nodes with spread-out initial positions.
+// Previously, the graph component called circularLayout.assign() after inserting nodes, which
+// overwrote the relationship-aware positions computed here — causing the graph to render as a
+// flat featureless circle instead of showing signal-flow structure.
+describe('buildPatchGraphData - initial node positions', () => {
+  it('returns nodes with distinct positions (not all collapsed to the same point)', () => {
+    const connections = [conn(1, 10, 2, 20), conn(3, 20, 4, 30)];
+    const modules = [mod(10, [], [1, 3]), mod(20, [2], [3]), mod(30, [4], [])];
+    
+    const result = buildPatchGraphData({connections, modules, sizeConstant: 5, palette});
+    
+    expect(result.nodes.length).toBeGreaterThan(1);
+    const positions = new Set(result.nodes.map(n => `${ n.x.toFixed(4) },${ n.y.toFixed(4) }`));
+    expect(positions.size).toBe(result.nodes.length);
+  });
+  
+  it('module nodes are not all placed at (1, 1) — layout is applied before returning', () => {
+    const connections = [conn(1, 10, 2, 20)];
+    const modules = [mod(10, [], [1]), mod(20, [2], [])];
+    
+    const result = buildPatchGraphData({connections, modules, sizeConstant: 5, palette});
+    
+    const moduleNodes = result.nodes.filter(n => n.data?.type === 'module');
+    expect(moduleNodes.length).toBeGreaterThanOrEqual(2);
+    const atDefault = moduleNodes.filter(n => n.x === 1 && n.y === 1);
+    expect(atDefault.length).toBe(0);
+  });
+  
+  it('cv-out and cv-in nodes are not at (1, 1) — layout is applied before returning', () => {
+    const connections = [conn(1, 10, 2, 20)];
+    const modules = [mod(10, [], [1]), mod(20, [2], [])];
+    
+    const result = buildPatchGraphData({connections, modules, sizeConstant: 5, palette});
+    
+    const jackNodes = result.nodes.filter(n => n.data?.type === 'cv-out' || n.data?.type === 'cv-in');
+    expect(jackNodes.length).toBeGreaterThan(0);
+    const atDefault = jackNodes.filter(n => n.x === 1 && n.y === 1);
+    expect(atDefault.length).toBe(0);
+  });
+  
+  it('multi-module patch produces module nodes at distinct positions', () => {
+    const connections = [
+      conn(1, 10, 2, 20),
+      conn(3, 20, 4, 30),
+      conn(5, 30, 6, 40)
+    ];
+    const modules = [
+      mod(10, [], [1]),
+      mod(20, [2], [3]),
+      mod(30, [4], [5]),
+      mod(40, [6], [])
+    ];
+    
+    const result = buildPatchGraphData({connections, modules, sizeConstant: 5, palette});
+    
+    const moduleNodes = result.nodes.filter(n => n.data?.type === 'module');
+    expect(moduleNodes.length).toBe(4);
+    
+    const positions = new Set(moduleNodes.map(n => `${ n.x.toFixed(4) },${ n.y.toFixed(4) }`));
+    expect(positions.size).toBe(4);
+  });
+});
