@@ -13,7 +13,6 @@ import {
 
 import Graph from 'graphology';
 import FA2LayoutSupervisor, { FA2LayoutSupervisorParameters } from 'graphology-layout-forceatlas2/worker';
-import circularLayout from 'graphology-layout/circular';
 
 import { Sigma } from 'sigma';
 import { GraphViewService } from './graph-view.service';
@@ -489,14 +488,9 @@ export class GraphComponent implements AfterViewInit, OnChanges, OnDestroy {
       return;
     }
     
-    if (this.initialLayoutApplied) {
-      return;
-    }
-    
-    circularLayout.assign(this.graph, {
-      scale: Math.max(1, incomingNodesCount / 20)
-    });
-    
+    // Node positions are already computed by orderPatchGraphNodesForReveal (relationship-aware
+    // ring layout). No override needed — applying circularLayout here would destroy the
+    // semantic positioning and cause all nodes to appear in a flat ring.
     this.initialLayoutApplied = true;
   }
   

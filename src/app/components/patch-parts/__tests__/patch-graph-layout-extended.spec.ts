@@ -83,3 +83,70 @@ describe('orderPatchGraphNodesForReveal - extended coverage', () => {
     expect(outIdx).toBeLessThan(inIdx);
   });
 });
+
+
+// Regression: positions returned by orderPatchGraphNodesForReveal must not be degenerate.
+// A previous bug caused the graph component to overwrite these positions with circularLayout.assign(),
+// collapsing all relationship-aware structure into a flat featureless ring.
+describe('orderPatchGraphNodesForReveal - position integrity (regression)', () => {
+  it('no two nodes share the same position when modules and children are present', () => {
+    const m1 = node('m1', PATCH_GRAPH_NODE_TYPE.MODULE);
+    const m2 = node('m2', PATCH_GRAPH_NODE_TYPE.MODULE);
+    const o1 = node('o1', PATCH_GRAPH_NODE_TYPE.CV_OUT, 'm1');
+    const i1 = node('i1', PATCH_GRAPH_NODE_TYPE.CV_IN, 'm2');
+    
+    const result = orderPatchGraphNodesForReveal([m1, m2, o1, i1]);
+    
+    const positions = new Set(result.map(n => `${ n.x.toFixed(4) },${ n.y.toFixed(4) }`));
+    expect(positions.size).toBe(result.length);
+  });
+  
+  it('all nodes receive positions that differ from the raw input seed (0, 0)', () => {
+    const nodes = [
+      node('m1', PATCH_GRAPH_NODE_TYPE.MODULE),
+      node('o1', PATCH_GRAPH_NODE_TYPE.CV_OUT, 'm1'),
+      node('i1', PATCH_GRAPH_NODE_TYPE.CV_IN, 'm1')
+    ];
+    
+    const result = orderPatchGraphNodesForReveal(nodes);
+    
+    // Every node must be moved off the (0,0) seed the factory sets
+    result.forEach(n => {
+      const displaced = n.x !== 0 || n.y !== 0;
+      expect(displaced).toBeTrue();
+    });
+  });
+  
+  it('module nodes have a non-zero distance from origin', () => {
+    const modules = [
+      node('m1', PATCH_GRAPH_NODE_TYPE.MODULE),
+      node('m2', PATCH_GRAPH_NODE_TYPE.MODULE),
+      node('m3', PATCH_GRAPH_NODE_TYPE.MODULE)
+    ];
+    
+    const result = orderPatchGraphNodesForReveal(modules);
+    
+    result.forEach(n => {
+      const r = Math.sqrt(n.x ** 2 + n.y ** 2);
+      expect(r).toBeGreaterThan(0);
+    });
+  });
+  
+  it('children are placed near (within 3 units of) their parent module', () => {
+    const m = node('m1', PATCH_GRAPH_NODE_TYPE.MODULE);
+    const out = node('o1', PATCH_GRAPH_NODE_TYPE.CV_OUT, 'm1');
+    const inN = node('i1', PATCH_GRAPH_NODE_TYPE.CV_IN, 'm1');
+    
+    const result = orderPatchGraphNodesForReveal([m, out, inN]);
+    
+    const parent = result.find(n => n.id === 'm1')!;
+    const child1 = result.find(n => n.id === 'o1')!;
+    const child2 = result.find(n => n.id === 'i1')!;
+    
+    const dist = (a: {x: number, y: number}, b: {x: number, y: number}) =>
+      Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+    
+    expect(dist(parent, child1)).toBeLessThan(3);
+    expect(dist(parent, child2)).toBeLessThan(3);
+  });
+});
