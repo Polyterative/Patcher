@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.7](https://github.com/Polyterative/Patcher/compare/v5.3.6...v5.3.7) (2026-03-13)
+
+
+### Bug Fixes
+
+* **csp:** allow blob: worker-src for FA2 layout Web Worker ([5a09e3f](https://github.com/Polyterative/Patcher/commit/5a09e3feea31da0bed5adc2bedeec02a8b0e4c4e))
+
 ### [5.3.6](https://github.com/Polyterative/Patcher/compare/v5.3.5...v5.3.6) (2026-03-13)
 
 
