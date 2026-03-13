@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.6](https://github.com/Polyterative/Patcher/compare/v5.3.5...v5.3.6) (2026-03-13)
+
+
+### Bug Fixes
+
+* **graph:** remove circular layout override to preserve semantic node positioning ([295f974](https://github.com/Polyterative/Patcher/commit/295f974844e476685d07bbf524986193f6cf584e))
+
 ### [5.3.5](https://github.com/Polyterative/Patcher/compare/v5.3.4...v5.3.5) (2026-03-12)
 
 
