@@ -135,6 +135,21 @@ describe('SupabaseService - update.module', () => {
     });
   }, TEST_TIMEOUT);
   
+  it('should preserve standard = 0 (3U Doepfer) in the payload', (done) => {
+    const mock = chainable({data: [{id: 6}], error: null});
+    const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.update.module({id: 6, name: 'Blank', standard: 0} as any).subscribe({
+      next: () => {
+        const payload = updateSpy.calls.first().args[0] as any;
+        expect(payload.standard).toBe(0);
+        done();
+      },
+      error: (err) => { fail(err); done(); }
+    });
+  }, TEST_TIMEOUT);
+
   it('should normalise standard object to its id', (done) => {
     const mock = chainable({data: [{id: 2}], error: null});
     const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
