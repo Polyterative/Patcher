@@ -33,6 +33,9 @@ import { normalizeForSearch } from "src/app/shared-interproject/components/@smar
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 
 
+const MODULE_PANELS_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+const JSONLD_SCRIPT_ID = 'module-jsonld';
+
 @Component({
   selector: 'app-module-browser-detail',
   templateUrl: './module-browser-detail.component.html',
@@ -308,15 +311,39 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ data.name } by ${ data.manufacturer.name } - Module Details`);
+          this.injectModuleJsonLd(data);
         });
     }
   }
 
   ngOnDestroy(): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
     this.dataService.singleModuleData$.next(undefined);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
-    
+  }
+
+  private injectModuleJsonLd(data: DbModule): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    const panelFilename = data.panels?.[0]?.filename;
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      'name': data.name ?? undefined,
+      'description': data.description ?? undefined,
+      'brand': {
+        '@type': 'Brand',
+        'name': data.manufacturer?.name ?? undefined,
+      },
+      'url': `https://patcher.xyz/modules/details/${ data.id }`,
+      'image': panelFilename ? `${ MODULE_PANELS_BASE_URL }${ panelFilename }` : undefined,
+    };
+    Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
+    const script = document.createElement('script');
+    script.id = JSONLD_SCRIPT_ID;
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
   }
   
   private patchDevModule(changes: Partial<DbModule>): void {

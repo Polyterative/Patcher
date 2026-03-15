@@ -454,10 +454,25 @@
   dependencies:
     tslib "^2.3.0"
 
+"@angular/platform-server@^21.1.4":
+  version "21.2.4"
+  resolved "https://registry.yarnpkg.com/@angular/platform-server/-/platform-server-21.2.4.tgz#5fa6cf995d20c61af235afbcf8fd0c4f5f23fed7"
+  integrity sha512-3xc06g4tSiPs7R4YnOITaALzoZECaxyzTX9eVNCh5bVJF2NxxdkDNXnyEtwocCqoleJmphVCaZTMMFbdJngmIw==
+  dependencies:
+    tslib "^2.3.0"
+    xhr2 "^0.2.0"
+
 "@angular/router@^21.1.4":
   version "21.2.0"
   resolved "https://registry.yarnpkg.com/@angular/router/-/router-21.2.0.tgz#ca130f035a9c796fc0ce7c6b152127fd9b8d91bd"
   integrity sha512-siliJ+jJRUCRZ0cdkqc7zww9Didz56Z0Z2YPIuR2n5TZLiuJY+jAf6xotXKp/v6v8XoGJwLiRNipGgNDRIAlWA==
+  dependencies:
+    tslib "^2.3.0"
+
+"@angular/ssr@^21.1.4":
+  version "21.2.2"
+  resolved "https://registry.yarnpkg.com/@angular/ssr/-/ssr-21.2.2.tgz#32ce642bdbf10859334b719af05ef823cd06d08a"
+  integrity sha512-ZEdE0G3+v0JCtSxpBynSlGImXi47HwWGqANtfHcOJUdf6GGKzSzoyliT1+7Lu2TR4TyCjtDq/RQH5bETr3zghA==
   dependencies:
     tslib "^2.3.0"
 
@@ -9620,6 +9635,11 @@ wsl-utils@^0.3.0:
   dependencies:
     is-wsl "^3.1.0"
     powershell-utils "^0.1.0"
+
+xhr2@^0.2.0:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/xhr2/-/xhr2-0.2.1.tgz#4e73adc4f9cfec9cbd2157f73efdce3a5f108a93"
+  integrity sha512-sID0rrVCqkVNUn8t6xuv9+6FViXjUVXq8H5rWOH2rz9fDNQEd4g0EA2XlcEdJXRz5BMEn4O1pJFdT+z4YHhoWw==
 
 xtend@~4.0.1:
   version "4.0.2"

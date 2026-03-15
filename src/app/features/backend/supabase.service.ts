@@ -1,13 +1,17 @@
 import {
   EventEmitter,
-  Injectable
+  Inject,
+  Injectable,
+  PLATFORM_ID
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import {
   createClient,
   LockFunc,
-  navigatorLock
+  navigatorLock,
+  SupabaseClient
 } from '@supabase/supabase-js';
 import { of, ReplaySubject } from 'rxjs';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -54,9 +58,28 @@ export class SupabaseService extends SubManager {
 
   constructor(
     public activated: ActivatedRoute,
-    public snackBar: MatSnackBar
+    public snackBar: MatSnackBar,
+    @Inject(PLATFORM_ID) platformId: object
   ) {
     super();
+    const isBrowser = isPlatformBrowser(platformId);
+    this.supabase = createClient<Database>(
+      environment.supabase.url || 'https://placeholder.supabase.co',
+      environment.supabase.key || 'placeholder-anon-key-for-tests',
+      {
+        auth: {
+          lock: isBrowser
+            ? this.customLock
+            : <R>(_name: string, _t: number, fn: () => Promise<R>) => fn(),
+          storage: isBrowser ? undefined : {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          },
+          persistSession: isBrowser,
+        }
+      }
+    );
 
     const {data: authListener} = this.supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
@@ -175,14 +198,8 @@ export class SupabaseService extends SubManager {
   private customLock: LockFunc = (name, acquireTimeout, fn) =>
     navigatorLock(name, acquireTimeout || 1, fn);
 
-  // Fallback placeholder values satisfy the Supabase client URL/key validation
-  // during unit tests where environment.ts contains empty strings.
-  // Real values are always populated via generate-env.js before any actual build or run.
-  private supabase = createClient<Database>(
-    environment.supabase.url || 'https://placeholder.supabase.co',
-    environment.supabase.key || 'placeholder-anon-key-for-tests',
-    {auth: {lock: this.customLock}}
-  );
+  // Initialized in constructor to allow platform-aware auth config (SSR vs browser).
+  private supabase!: SupabaseClient<Database, 'public'>;
   
   readonly get!: ReturnType<typeof createGetNamespace>;
   readonly add!: ReturnType<typeof createAddNamespace>;
