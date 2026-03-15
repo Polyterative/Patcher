@@ -45,6 +45,8 @@
         ></app-patch-list>
         <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
                        [pageSizeOptions]="[20,25,50,100]"
+                       [pageSize]="dataService.serversideTableRequestData.take$.value"
+                       [pageIndex]="dataService.serversideTableRequestData.skip$.value / dataService.serversideTableRequestData.take$.value"
                        [length]="dataService.serversideAdditionalData.itemsCount$|async"
                        (page)="dataService.pageEvent$.next($event)"
                        showFirstLastButtons

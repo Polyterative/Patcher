@@ -22,7 +22,6 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
   selector: 'app-manufacturer-browser-root',
   templateUrl: './manufacturer-browser-root.component.html',
   styleUrls: ['./manufacturer-browser-root.component.scss'],
-  providers: [ManufacturerBrowserRootDataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
@@ -60,8 +59,6 @@ export class ManufacturerBrowserRootComponent extends SubManager {
       )
       .subscribe(() => this.document.defaultView?.scrollTo({top: 0, behavior: 'smooth'}));
     
-    this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.serversideTableRequestData.take$.next(10);
     this.dataService.updateList$.next();
   }
 }
