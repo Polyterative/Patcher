@@ -1,11 +1,13 @@
-// Polyfill for Node.js v25+ which defines localStorage as a global but without
-// working methods (requires --localstorage-file flag). Supabase and other libs
-// call localStorage.getItem at module-init time, which throws in this environment.
-// We patch it with an in-memory adapter before Angular bootstraps.
-if (typeof globalThis.localStorage === 'object' && typeof (globalThis.localStorage as Storage).getItem !== 'function') {
+// Polyfill for Node.js SSR environments where localStorage is absent or incomplete.
+//   Node.js ≤24: localStorage is undefined → the typeof check below is 'undefined'
+//   Node.js 25+: localStorage is defined as an object but getItem is not a function
+//                (requires --localstorage-file flag to be functional)
+// In both cases we install an in-memory adapter before Angular bootstraps so that
+// Supabase and other libs that call localStorage at module-init time don't throw.
+if (typeof globalThis.localStorage !== 'object' ||
+    typeof (globalThis.localStorage as unknown as Storage).getItem !== 'function') {
   const mem: Record<string, string> = {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).localStorage = {
+  (globalThis as unknown as Record<string, unknown>)['localStorage'] = {
     getItem:    (key: string) => Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : null,
     setItem:    (key: string, value: string) => { mem[key] = String(value); },
     removeItem: (key: string) => { delete mem[key]; },

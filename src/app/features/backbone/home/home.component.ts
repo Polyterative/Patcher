@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { timer } from 'rxjs';
 import {
   take,
@@ -195,7 +196,8 @@ export class HomeComponent extends SubManager {
     readonly patchDetailDataService: PatchDetailDataService,
     readonly rackDetailDataService: RackDetailDataService,
     readonly moduleDetailDataService: ModuleDetailDataService,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
     super();
 
@@ -206,34 +208,36 @@ export class HomeComponent extends SubManager {
       type: 'website',
       url: 'https://patcher.xyz/',
     };
-    
+
     this.seoAndUtilsService.updateSeo(seoData, 'Home');
 
-    timer(this.delayTime * 2)
-      .pipe(
-        take(1),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.patchDetailDataService.updateSinglePatchData$.next(5);
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      timer(this.delayTime * 2)
+        .pipe(
+          take(1),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          this.patchDetailDataService.updateSinglePatchData$.next(5);
+        });
 
-    timer(this.delayTime * 4)
-      .pipe(
-        take(1),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.moduleDetailDataService.updateSingleModuleData$.next(1025);
-      });
-    
-    timer(this.delayTime * 6)
-      .pipe(
-        take(1),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.rackDetailDataService.updateSingleRackData$.next(265);
-      });
+      timer(this.delayTime * 4)
+        .pipe(
+          take(1),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          this.moduleDetailDataService.updateSingleModuleData$.next(1025);
+        });
+
+      timer(this.delayTime * 6)
+        .pipe(
+          take(1),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          this.rackDetailDataService.updateSingleRackData$.next(265);
+        });
+    }
   }
 }
