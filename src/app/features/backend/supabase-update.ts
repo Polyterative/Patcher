@@ -121,7 +121,7 @@ export function createUpdateNamespace(
       if (dbData.standard && typeof dbData.standard === 'object') {
         dbData.standard = dbData.standard.id;
       }
-      if (!dbData.standard) {
+      if (dbData.standard === undefined || dbData.standard === null) {
         dbData.standard = undefined;
       }
 
