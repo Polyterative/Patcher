@@ -31,6 +31,25 @@ export function createAddNamespace(
   getUserSession$: () => Observable<SimpleUserModel | null>
 ) {
   return {
+    moduleFlag: (data: {
+      module_id: number;
+      category: string;
+      note?: string | null;
+    }) => getUserSession$()
+      .pipe(
+        switchMap(user => rxFrom(
+          supabase
+            .from(DbPaths.module_flags)
+            .insert({
+              module_id: data.module_id,
+              category: data.category,
+              note: data.note ?? null,
+              user_id: user.id
+            })
+        )),
+        remapErrors()
+      ),
+
     comment: (data: {
       entityId: number,
       entityType: number,

@@ -19,7 +19,9 @@ export class DbPaths {
   static standards = 'standards' as const;
   static profiles = 'profiles' as const;
   static comments = 'comments' as const;
-  
+  static module_flags = 'module_flags' as const;
+  static module_flag_counts = 'module_flag_counts' as const;
+
 }
 
 export class DbStoragePaths {

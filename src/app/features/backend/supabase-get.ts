@@ -176,6 +176,12 @@ export function createGetNamespace(
         return Array.from(countMap.entries()).map(([moduleTagId, count]) => ({moduleTagId, count}));
       })
     ),
+    moduleFlagCount: (moduleId: number) => rxFrom(
+      supabase.rpc('get_module_open_flag_count', {p_module_id: moduleId})
+    ).pipe(
+      remapErrors(),
+      map(x => ((x as any).data as number) ?? 0)
+    ),
     statistics: () => zip(
       rxFrom(
         supabase.from(DbPaths.modules)
