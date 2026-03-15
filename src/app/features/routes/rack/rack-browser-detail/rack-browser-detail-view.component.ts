@@ -26,6 +26,8 @@ import {
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
+const JSONLD_SCRIPT_ID = 'rack-jsonld';
+
 @Component({
   selector: 'app-rack-browser-rack-detail',
   templateUrl: './rack-browser-detail-view.component.html',
@@ -92,6 +94,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
             modified: rackData.updated
           };
           this.seoAndUtilsService.updateSeo(seoData, `${ rackData.name } - Rack Details`);
+          this.injectRackJsonLd(rackData, uniqueRowedFlatted);
         });
     }
     
@@ -110,7 +113,31 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   }
   
   override ngOnDestroy(): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
     this.dataService.singleRackData$.next(undefined);
     super.ngOnDestroy();
+  }
+
+  private injectRackJsonLd(rackData: any, modules: string[]): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'CreativeWork',
+      'name': rackData.name ?? undefined,
+      'description': rackData.description ?? undefined,
+      'author': rackData.author?.username
+        ? {'@type': 'Person', 'name': rackData.author.username}
+        : undefined,
+      'dateCreated': rackData.created ?? undefined,
+      'dateModified': rackData.updated ?? undefined,
+      'url': `https://patcher.xyz/racks/details/${ rackData.id }`,
+      'keywords': modules.length ? modules.join(', ') : undefined,
+    };
+    Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
+    const script = document.createElement('script');
+    script.id = JSONLD_SCRIPT_ID;
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
   }
 }
