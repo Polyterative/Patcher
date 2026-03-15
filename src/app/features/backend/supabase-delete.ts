@@ -263,7 +263,10 @@ export function createDeleteNamespace(
 
     moduleFlag: (id: number) => rxFrom(
       supabase.from(DbPaths.module_flags).delete().eq('id', id)
-    ).pipe(remapErrors()),
+    ).pipe(
+      map(({error}) => { if (error) throw error; }),
+      remapErrors()
+    ),
 
     modulePanel: (data: ModulePanel) => getUserSession$().pipe(
       switchMap(user => {
