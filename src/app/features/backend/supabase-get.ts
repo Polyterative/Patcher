@@ -22,6 +22,17 @@ import { SimpleUserModel } from './supabase.types';
 import { SupabaseQueriesService } from './supabase-queries';
 
 
+export interface AdminFlagRow {
+  id: number;
+  module_id: number;
+  module: { id: number; name: string };
+  user_id: string;
+  category: string;
+  note: string | null;
+  created_at: string;
+  resolved: boolean;
+}
+
 export function createGetNamespace(
   supabase: SupabaseClient<Database>,
   queries: SupabaseQueriesService,
@@ -181,6 +192,16 @@ export function createGetNamespace(
     ).pipe(
       remapErrors(),
       map(x => ((x as any).data as number) ?? 0)
+    ),
+    allModuleFlags: () => rxFrom(
+      supabase
+        .from(DbPaths.module_flags)
+        .select('*, module:module_id(id, name)')
+        .order('resolved', {ascending: true})
+        .order('created_at', {ascending: false})
+    ).pipe(
+      remapErrors(),
+      map(x => ((x as any).data ?? []) as AdminFlagRow[])
     ),
     statistics: () => zip(
       rxFrom(

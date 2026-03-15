@@ -6,6 +6,7 @@ import {
   from,
   NEVER,
   Observable,
+  of,
   ReplaySubject,
   Subject,
   throwError
@@ -47,6 +48,10 @@ export class UserManagementService extends SubManager {
   // PUBLIC - Read-only observables
   public readonly loggedUser$ = this._loggedUser$.asObservable();
   public readonly loggedUserFullProfile$ = this._loggedUserFullProfile$.asObservable();
+  public readonly isAdmin$ = this.loggedUser$.pipe(
+    startWith(undefined),
+    switchMap(user => user ? this._getAdminRole() : of(false))
+  );
   
   // ACTIONS - Event subjects for triggering operations
   /** Emits when user initiates logout */
@@ -511,5 +516,9 @@ export class UserManagementService extends SubManager {
       }),
       takeUntil(this.destroy$)
     ).subscribe();
+  }
+
+  private _getAdminRole(): Observable<boolean> {
+    return this.backend.auth.hasAdminRole$();
   }
 }

@@ -318,6 +318,10 @@ export function createUpdateNamespace(
       remapErrors(),
       map(x => (x as any).data as PatchModuleInstance),
       cacheBust(['patchConnections', 'patchModuleInstances'])
-    )
+    ),
+
+    moduleFlagResolved: (id: number, resolved: boolean) => rxFrom(
+      supabase.from(DbPaths.module_flags).update({resolved}).eq('id', id)
+    ).pipe(remapErrors())
   };
 }

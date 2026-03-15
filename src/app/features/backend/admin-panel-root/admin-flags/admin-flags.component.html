@@ -1,0 +1,53 @@
+@if ({flags: (dataService.flags$ | async) ?? [], open: (dataService.openFlagCount$ | async) ?? 0}; as vm) {
+  <div class="col gap2 flags-root">
+
+    <div class="flags-header">
+      <span class="flags-title">Module Flags</span>
+      <span class="flags-badge flags-badge--open">{{ vm.open }} open</span>
+      <span class="flags-badge flags-badge--total">{{ vm.flags.length }} total</span>
+    </div>
+
+    @if (vm.flags.length === 0) {
+      <p class="flags-empty">No flags reported.</p>
+    }
+
+    <div class="col gap1">
+      @for (flag of vm.flags; track flag.id) {
+        <div class="flag-row" [class.flag-row--resolved]="flag.resolved">
+
+          <div class="flag-accent" [class.flag-accent--open]="!flag.resolved"></div>
+
+          <div class="flag-body row gap2">
+            <a class="flag-module"
+               [routerLink]="['/modules', 'details', flag.module_id]">{{ flag.module?.name ?? flag.module_id }}</a>
+
+            <span class="flag-category flag-category--{{ flag.category }}">{{ flag.category }}</span>
+
+            @if (flag.note) {
+              <span class="flag-note">{{ flag.note }}</span>
+            }
+
+            <span class="flag-date">{{ flag.created_at | date: 'dd MMM yy' }}</span>
+
+            <span class="flag-status" [class.flag-status--open]="!flag.resolved">
+              {{ flag.resolved ? 'resolved' : 'open' }}
+            </span>
+          </div>
+
+          <div class="flag-actions row gap1">
+            <app-brand-primary-button [theme]="flag.resolved ? 'primary' : 'positive'"
+                                      (click$)="dataService.resolveFlag$.next({ id: flag.id, resolved: !flag.resolved })">
+              {{ flag.resolved ? 'Reopen' : 'Resolve' }}
+            </app-brand-primary-button>
+            <app-brand-primary-button theme="negative"
+                                      (click$)="dataService.deleteFlag$.next(flag.id)">
+              Delete
+            </app-brand-primary-button>
+          </div>
+
+        </div>
+      }
+    </div>
+
+  </div>
+}
