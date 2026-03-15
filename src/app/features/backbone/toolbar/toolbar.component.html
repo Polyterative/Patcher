@@ -16,6 +16,10 @@
         <app-route-clickable-link-list [data$]="homeLinks$"></app-route-clickable-link-list>
         <mat-divider vertical="true"></mat-divider>
         <app-route-clickable-link-list [data$]="mainLinks$"></app-route-clickable-link-list>
+        @if ((adminLinks$ | async)?.length) {
+          <mat-divider vertical="true"></mat-divider>
+          <app-route-clickable-link-list [data$]="adminLinks$"></app-route-clickable-link-list>
+        }
       </div>
       
       <div fxFlex="grow" [fxHide.xs]="true"></div>

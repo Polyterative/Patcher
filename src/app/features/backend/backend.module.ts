@@ -8,13 +8,15 @@ import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@
 import { LibGraphModule } from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
 import { AdminGuardService } from './admin-guard.service';
 import { AdminPanelRootComponent } from './admin-panel-root/admin-panel-root.component';
+import { AdminFlagsComponent } from './admin-panel-root/admin-flags/admin-flags.component';
 import { LocalStorageService } from './local-storage.service';
 import { SupabaseService } from './supabase.service';
 
 
 @NgModule({
   declarations: [
-    AdminPanelRootComponent
+    AdminPanelRootComponent,
+    AdminFlagsComponent
   ],
   providers:    [
     AdminGuardService,
