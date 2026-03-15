@@ -6,6 +6,7 @@
     },
   "files": [
     "main.ts",
+    "main.server.ts",
     "polyfills.ts"
   ],
   "include": [

@@ -26,6 +26,8 @@ import {
 } from 'src/app/components/shared-atoms/comments/comments-data.service';
 
 
+const JSONLD_SCRIPT_ID = 'patch-jsonld';
+
 @Component({
   selector: 'app-patch-browser-patch-detail',
   templateUrl: './patch-browser-detail-view.component.html',
@@ -103,6 +105,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ patchData.name } - Patch Details`);
+          this.injectPatchJsonLd(patchData, uniqueModulesInPatch);
         });
     }
     
@@ -121,8 +124,32 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   }
 
   ngOnDestroy(): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
     this.dataService.singlePatchData$.next(undefined);
     this.dataService.patchEditingPanelOpenState$.next(false);
     super.ngOnDestroy();
+  }
+
+  private injectPatchJsonLd(patchData: any, modules: string[]): void {
+    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'CreativeWork',
+      'name': patchData.name ?? undefined,
+      'description': patchData.description ?? undefined,
+      'author': patchData.author?.username
+        ? {'@type': 'Person', 'name': patchData.author.username}
+        : undefined,
+      'dateCreated': patchData.created ?? undefined,
+      'dateModified': patchData.updated ?? undefined,
+      'url': `https://patcher.xyz/patches/details/${ patchData.id }`,
+      'keywords': modules.join(', ') || undefined,
+    };
+    Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
+    const script = document.createElement('script');
+    script.id = JSONLD_SCRIPT_ID;
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
   }
 }

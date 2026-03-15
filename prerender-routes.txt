@@ -1,0 +1,6 @@
+/
+/home
+/modules/browser
+/patches/browser
+/racks/browser
+/info/changelog
