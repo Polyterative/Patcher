@@ -322,6 +322,9 @@ export function createUpdateNamespace(
 
     moduleFlagResolved: (id: number, resolved: boolean) => rxFrom(
       supabase.from(DbPaths.module_flags).update({resolved}).eq('id', id)
-    ).pipe(remapErrors())
+    ).pipe(
+      map(({error}) => { if (error) throw error; }),
+      remapErrors()
+    )
   };
 }
