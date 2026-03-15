@@ -51,20 +51,6 @@ _Nothing active. Pick the next task from the Backlog._
 
 ---
 
-#### HIGH: Module Review Flagging
-
-**Why:** Tier 0 — improves catalogue quality immediately; scales into UGC trust model later. No community layer needed.
-**Scope:** User-facing flag submission only; admin review is a manual Supabase queue for now.
-
-- [ ] Add `module_flags` to `DbPaths` in `DatabaseStrings.ts`
-- [ ] Add `module_flags` table type to `database.types.ts` (id, module_id, user_id, category, note, created_at,
-  resolved)
-- [ ] Add `add.moduleFlag()` to `supabase.service.ts`
-- [ ] Create `module-flag-data.service.ts` with `submitFlag$` Subject and inline form toggle
-- [ ] Add inline flag form to module-details (categories: wrong specs / missing image / duplicate / other)
-- [ ] Confirm snackbar on success via `SharedConstants.successCustom`
-- [ ] Write tests for service API surface
-
 ---
 
 #### MEDIUM: Store Links per Module (Price Hub prerequisite)
