@@ -131,6 +131,36 @@ export type Database = {
         }
         Relationships: []
       }
+      module_flags: {
+        Row: {
+          id: number
+          module_id: number
+          user_id: string
+          category: string
+          note: string | null
+          created_at: string
+          resolved: boolean
+        }
+        Insert: {
+          id?: number
+          module_id: number
+          user_id?: string
+          category: string
+          note?: string | null
+          created_at?: string
+          resolved?: boolean
+        }
+        Update: {
+          id?: number
+          module_id?: number
+          user_id?: string
+          category?: string
+          note?: string | null
+          created_at?: string
+          resolved?: boolean
+        }
+        Relationships: []
+      }
       module_ins: {
         Row: {
           authorid: string | null
@@ -887,7 +917,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_module_open_flag_count: {
+        Args: { p_module_id: number }
+        Returns: number
+      }
     }
     Enums: {
       "user module possession": "HAS" | "WANTS" | "SELLS"
