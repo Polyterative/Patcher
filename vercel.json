@@ -7,8 +7,17 @@
     {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/ssr"
     }
   ],
+  "functions": {
+    "api/ssr.mjs": {
+      "includeFiles": "dist/Patcher/server/**"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
