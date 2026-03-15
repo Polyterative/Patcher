@@ -126,24 +126,55 @@ describe('ModuleDetailDataService', () => {
   
   it('gates deletion and update actions by dev mode', () => {
     const {service, backend, appState, router, baseModule} = build();
-    
+
     appState.isDev = false;
     service.deleteModule$.next(10);
     service.changeModule$.next({name: 'No change'});
     expect(backend.delete.module).not.toHaveBeenCalled();
     expect(backend.update.module).not.toHaveBeenCalled();
-    
+
     appState.isDev = true;
     service.singleModuleData$.next(baseModule as any);
     service.deleteModule$.next(10);
     service.changeModule$.next({name: 'Renamed'});
-    
+
     expect(backend.delete.module).toHaveBeenCalledWith(10);
     expect(router.navigate).toHaveBeenCalledWith(['/modules', 'browser']);
     expect(backend.update.module).toHaveBeenCalledWith(jasmine.objectContaining({
       id: 10,
       name: 'Renamed'
     }));
+  });
+
+  it('admin role allows delete and update when not in dev mode', () => {
+    const {service, backend, appState, router, baseModule} = build();
+
+    appState.isDev = false;
+    backend.auth.hasAdminRole$.and.returnValue(of(true));
+
+    service.singleModuleData$.next(baseModule as any);
+    service.deleteModule$.next(10);
+    service.changeModule$.next({name: 'Admin rename'});
+
+    expect(backend.delete.module).toHaveBeenCalledWith(10);
+    expect(router.navigate).toHaveBeenCalledWith(['/modules', 'browser']);
+    expect(backend.update.module).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 10,
+      name: 'Admin rename'
+    }));
+  });
+
+  it('non-admin non-dev user cannot delete or update', () => {
+    const {service, backend, appState} = build();
+
+    appState.isDev = false;
+    backend.auth.hasAdminRole$.and.returnValue(of(false));
+
+    service.deleteModule$.next(10);
+    service.changeModule$.next({name: 'Blocked'});
+
+    expect(backend.delete.module).not.toHaveBeenCalled();
+    expect(backend.update.module).not.toHaveBeenCalled();
   });
   
   it('toggles editor state and clears pending changes when closing', () => {

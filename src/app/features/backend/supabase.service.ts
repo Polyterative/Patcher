@@ -98,7 +98,8 @@ export class SupabaseService extends SubManager {
       this.supabase,
       this.snackBar,
       () => this.auth.getUserSession$(),
-      (id: number) => this.delete.patchConnectionsForPatch(id)
+      (id: number) => this.delete.patchConnectionsForPatch(id),
+      () => !environment.production ? of(true) : this.auth.hasAdminRole$()
     );
 
     this.queries = new SupabaseQueriesService(
