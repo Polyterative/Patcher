@@ -261,6 +261,10 @@ export function createDeleteNamespace(
       remapErrors()
     ),
 
+    moduleFlag: (id: number) => rxFrom(
+      supabase.from(DbPaths.module_flags).delete().eq('id', id)
+    ).pipe(remapErrors()),
+
     modulePanel: (data: ModulePanel) => getUserSession$().pipe(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
