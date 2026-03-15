@@ -17,4 +17,6 @@ if (typeof globalThis.localStorage !== 'object' ||
   };
 }
 
+// Export the NgModule class directly so Angular's route extractor can use its
+// own pre-configured platformServer (with IS_DISCOVERING_ROUTES + _ENABLE_ROOT_COMPONENT_BOOTSTRAP).
 export { AppServerModule as default } from './app/app.server.module';
