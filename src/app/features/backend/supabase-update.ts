@@ -9,6 +9,7 @@ import {
 import {
   map,
   switchMap,
+  take,
   tap
 } from 'rxjs/operators';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -105,7 +106,8 @@ export function createUpdateNamespace(
   supabase: SupabaseClient<Database>,
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>,
-  patchConnectionsForPatch: (id: number) => Observable<any>
+  patchConnectionsForPatch: (id: number) => Observable<any>,
+  hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {
   return {
     module: (data: Partial<DbModule>) => {
@@ -114,7 +116,7 @@ export function createUpdateNamespace(
       data.outs = undefined;
       data.tags = undefined;
       data.panels = undefined;
-      
+
       const dbData: any = {...data};
       if (dbData.standard && typeof dbData.standard === 'object') {
         dbData.standard = dbData.standard.id;
@@ -122,24 +124,29 @@ export function createUpdateNamespace(
       if (!dbData.standard) {
         dbData.standard = undefined;
       }
-      
+
       dbData.updated = new Date().toISOString();
-      
+
       for (const key in dbData) {
         if (dbData[key] === undefined || dbData[key] === null) {
           delete dbData[key];
         }
       }
-      
+
       return getUserSession$().pipe(
         switchMap(user => {
           if (!user) return throwError(() => new Error('Authentication required'));
-          return rxFrom(
-            supabase.from(DbPaths.modules)
-              .update(dbData)
-              .eq('id', data.id)
-              .eq('submitter', user.id)
-              .select('id,updated,created')
+          return hasAdminRole$().pipe(
+            take(1),
+            switchMap(isAdmin => {
+              let query = supabase.from(DbPaths.modules)
+                .update(dbData)
+                .eq('id', data.id);
+              if (!isAdmin) {
+                query = query.eq('submitter', user.id);
+              }
+              return rxFrom(query.select('id,updated,created'));
+            })
           );
         }),
         showSuccessMessage(snackBar),
