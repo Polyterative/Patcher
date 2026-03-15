@@ -56,6 +56,7 @@
         <mat-paginator
           [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$ | async) < 10"
           [pageSize]="dataService.serversideTableRequestData.take$.value"
+          [pageIndex]="dataService.serversideTableRequestData.skip$.value / dataService.serversideTableRequestData.take$.value"
           [pageSizeOptions]="[10, 20, 50]"
           [length]="dataService.serversideAdditionalData.itemsCount$ | async"
           (page)="dataService.pageEvent$.next($event)"

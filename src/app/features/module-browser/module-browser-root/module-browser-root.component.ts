@@ -80,8 +80,6 @@ export class ModuleBrowserRootComponent extends SubManager {
     
     this.dataService.fields.order.control.patchValue(this.dataService.orderStartingValue, {emitEvent: false});
     this.dataService.serversideTableRequestData.sort$.next([this.dataService.orderStartingValue.id, 'desc']);
-    this.dataService.serversideTableRequestData.skip$.next(0);
-    this.dataService.serversideTableRequestData.take$.next(20);
     this.dataService.updateModulesList$.next();
     
     this.seoAndUtilsService.updateSeo({
