@@ -53,6 +53,7 @@ export class ModuleDetailDataService {
   changeModule$ = new Subject<Partial<DbModule>>();
   /** Toggle the module editing panel open/closed through the service layer. */
   requestModuleEditingToggle$ = new Subject<void>();
+  isAdmin$ = new BehaviorSubject<boolean>(false);
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
@@ -65,6 +66,10 @@ export class ModuleDetailDataService {
   
   ) {
     
+    this.backend.auth.hasAdminRole$()
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(x => this.isAdmin$.next(x));
+
     // when delete of the latest panel is requested, perform the deletion
     this.deleteLastPanel$
       .pipe(
