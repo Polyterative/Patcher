@@ -1,17 +1,12 @@
 {
   "version": 2,
-  "framework": "angular",
   "buildCommand": "yarn build",
+  "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)' && exit 1 || exit 0",
-  "rewrites": [
-    {
-      "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/api/ssr"
-    }
+  "routes": [
+    { "src": "/sitemap.xml", "dest": "/api/sitemap" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/ssr" }
   ],
   "functions": {
     "api/ssr.mjs": {
