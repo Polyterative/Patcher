@@ -1,26 +1,29 @@
 /**
  * Angular SSR server entry point for Vercel.
+ * Uses CommonEngine — the NgModule-compatible SSR API.
  *
- * `ssr.entry` in angular.json must point HERE (not to main.server.ts).
- * `main.server.ts` is the Angular app bootstrap; this file is the Node.js HTTP layer.
- *
- * Exports `reqHandler` which the Vercel serverless shim (api/index.js) re-exports.
+ * `ssr.entry` in angular.json points HERE.
+ * `main.server.ts` exports AppServerModule (the NgModule bootstrap).
  */
 
-import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
+import { APP_BASE_HREF } from '@angular/common';
+import { CommonEngine, createNodeRequestHandler, isMainModule } from '@angular/ssr/node';
 import express from 'express';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+// AppServerModule is exported as default from main.server.ts
+import AppServerModule from './main.server';
 
 export function app(): express.Express {
   const server = express();
   const serverDistFolder = dirname(fileURLToPath(import.meta.url));
   const browserDistFolder = resolve(serverDistFolder, '../browser');
+  const indexHtml = join(browserDistFolder, 'index.html');
 
-  const angularApp = new AngularNodeAppEngine();
+  const engine = new CommonEngine();
 
-  // Serve static assets with long-lived cache; never serve index.html from here
-  // (Angular SSR handles it via angularApp.handle below).
+  // Serve static assets with long-lived cache; never serve index.html from here.
   server.use(
     express.static(browserDistFolder, {
       maxAge: '1y',
@@ -29,13 +32,19 @@ export function app(): express.Express {
     }),
   );
 
-  // All other requests → Angular SSR
+  // All other requests → Angular SSR via CommonEngine
   server.use((req, res, next) => {
-    angularApp
-      .handle(req)
-      .then((response) =>
-        response ? writeResponseToNodeResponse(response, res) : next(),
-      )
+    const { protocol, originalUrl, baseUrl, headers } = req;
+
+    engine
+      .render({
+        bootstrap: AppServerModule,
+        documentFilePath: indexHtml,
+        url: `${protocol}://${headers.host}${originalUrl}`,
+        publicPath: browserDistFolder,
+        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+      })
+      .then((html) => res.send(html))
       .catch(next);
   });
 
@@ -52,5 +61,5 @@ if (isMainModule(import.meta.url)) {
   });
 }
 
-// Exported for the Vercel serverless shim (api/index.js)
+// Exported for the Vercel serverless shim (api/ssr.mjs)
 export const reqHandler = createNodeRequestHandler(server);
