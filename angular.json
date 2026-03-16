@@ -81,7 +81,7 @@
             },
             "outputMode": "server",
             "ssr": {
-              "entry": "src/main.server.ts"
+              "entry": "src/server.ts"
             },
             "server": "src/main.server.ts"
           },

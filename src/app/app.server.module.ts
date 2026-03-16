@@ -6,7 +6,6 @@ import { AppModule } from './app.module';
 import { AppComponent } from './app.component';
 import { serverRoutes } from './app.routes.server';
 
-
 @NgModule({
   imports: [AppModule, ServerModule],
   bootstrap: [AppComponent],
