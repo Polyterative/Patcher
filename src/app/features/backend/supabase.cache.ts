@@ -12,11 +12,15 @@ import {
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
   GlobalCacheConfig,
+  InMemoryStorageStrategy,
   LocalStorageStrategy
 } from 'ts-cacheable';
 
 
-GlobalCacheConfig.storageStrategy = LocalStorageStrategy;
+GlobalCacheConfig.storageStrategy =
+  typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+    ? LocalStorageStrategy
+    : InMemoryStorageStrategy;
 
 export const defaultCacheTime = 5 * 60 * 1000;
 export const longCacheTime = defaultCacheTime * 10;
