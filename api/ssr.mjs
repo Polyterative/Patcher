@@ -1,24 +1,10 @@
 /**
- * Vercel serverless function — Angular SSR shim.
+ * Vercel serverless shim — re-exports the Angular SSR request handler.
  *
- * Vercel does not natively wire up Angular 17+ server bundles.
- * This function imports the built server.mjs, creates an AngularNodeAppEngine,
- * and delegates every HTML request to it so crawlers get real rendered HTML.
+ * src/server.ts (compiled → dist/Patcher/server/server.mjs) sets up Express
+ * with AngularNodeAppEngine and exports `reqHandler`.  This file simply
+ * forwards every request to that handler so Vercel can invoke it as a
+ * serverless function.
  */
 
-import { AngularNodeAppEngine, createNodeRequestHandler, writeResponseToNodeResponse } from '@angular/ssr/node';
-
-// Load the Angular server bundle; this registers the app + server manifests
-// that AngularNodeAppEngine needs before it can render anything.
-await import('../dist/Patcher/server/server.mjs');
-
-const engine = new AngularNodeAppEngine();
-
-export default createNodeRequestHandler(async (req, res, next) => {
-  const response = await engine.handle(req);
-  if (response) {
-    await writeResponseToNodeResponse(response, res);
-  } else {
-    next();
-  }
-});
+export { reqHandler as default } from '../dist/Patcher/server/server.mjs';
