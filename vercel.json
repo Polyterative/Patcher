@@ -1,16 +1,14 @@
 {
   "version": 2,
   "buildCommand": "yarn build",
-  "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)' && exit 1 || exit 0",
   "routes": [
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
-    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/api/ssr" }
   ],
   "functions": {
     "api/ssr.mjs": {
-      "includeFiles": "dist/Patcher/server/**"
+      "includeFiles": "dist/Patcher/**"
     }
   },
   "headers": [
