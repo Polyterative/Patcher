@@ -19,9 +19,10 @@ export function app(): express.Express {
   const server = express();
   const serverDistFolder = dirname(fileURLToPath(import.meta.url));
   const browserDistFolder = resolve(serverDistFolder, '../browser');
-  const indexHtml = join(browserDistFolder, 'index.html');
+  // Angular 21 application builder outputs index.csr.html (CSR fallback), not index.html
+  const indexHtml = join(browserDistFolder, 'index.csr.html');
 
-  const engine = new CommonEngine();
+  const engine = new CommonEngine({ allowedHosts: ['*'] });
 
   // Serve static assets with long-lived cache; never serve index.html from here.
   server.use(
