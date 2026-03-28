@@ -35,7 +35,7 @@
 
 ## Active
 
-_Nothing active. Pick the next task from the Backlog._
+**Store Links per Module** — Adding nullable `store_url` to modules; admin-only edit; "Buy new" link on module detail page.
 
 ---
 

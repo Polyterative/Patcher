@@ -52,6 +52,7 @@ export interface DbModule extends MinimalModule {
   outs: CV[];
   switches: Switch[];
   manualURL: string;
+  store_url: string | null;
   additional: any;
   isComplete: boolean;
   isApproved: boolean;

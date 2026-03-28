@@ -2,7 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ModuleCompositeComponent } from 'src/app/features/module-browser/module-composite/module-composite.component';
 import { ModuleListComponent } from 'src/app/features/module-browser/module-list/module-list.component';
@@ -117,6 +117,7 @@ const parentPrefix = 'modules';
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
+    FormsModule,
     MatTooltipModule,
     MatDividerModule,
     MatPaginatorModule,
