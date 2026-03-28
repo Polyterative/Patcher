@@ -11,6 +11,7 @@ import {
 } from 'rxjs';
 import {
   filter,
+  catchError,
   map,
   switchMap,
   take,
@@ -51,6 +52,7 @@ export class ModuleDetailDataService {
   deleteModule$ = new Subject<number>();
   deleteLastPanel$ = new Subject<DbModule>();
   changeModule$ = new Subject<Partial<DbModule>>();
+  setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
   /** Toggle the module editing panel open/closed through the service layer. */
   requestModuleEditingToggle$ = new Subject<void>();
   isAdmin$ = new BehaviorSubject<boolean>(false);
@@ -239,6 +241,17 @@ export class ModuleDetailDataService {
       .subscribe(module => {
         snackBar.open(`"${ module?.name }" updated.`, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.updateSingleModuleData$.next(this.singleModuleData$.value.id);
+      });
+
+    this.setStoreUrl$
+      .pipe(
+        switchMap(({id, url}) => this.backend.update.moduleStoreUrl(id, url).pipe(
+          catchError(() => EMPTY)
+        )),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
+        this.updateSingleModuleData$.next(this.singleModuleData$.value?.id);
       });
     
     // when user toggles edit mode via the FAB, flip the editing panel state

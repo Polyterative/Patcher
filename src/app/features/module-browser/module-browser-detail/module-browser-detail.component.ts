@@ -383,6 +383,18 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   clearDevManualUrl(): void {
     this.patchDevModule({manualURL: ''});
   }
+
+  storeUrlDraft: string = '';
+
+  setStoreUrl(id: number): void {
+    if (!this.storeUrlDraft) return;
+    this.dataService.setStoreUrl$.next({id, url: this.storeUrlDraft});
+    this.storeUrlDraft = '';
+  }
+
+  clearStoreUrl(id: number): void {
+    this.dataService.setStoreUrl$.next({id, url: null});
+  }
   
   clampDevNumericFields(module: DbModule): void {
     const clamp = (value: number) => Number.isFinite(value) ? Math.max(0, value) : 0;

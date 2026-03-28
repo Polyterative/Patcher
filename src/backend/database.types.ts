@@ -393,6 +393,7 @@ export type Database = {
           res1: number | null
           res2: number | null
           standard: number
+          store_url: string | null
           submitter: string | null
           switches: Json
           updated: string
@@ -419,6 +420,7 @@ export type Database = {
           res1?: number | null
           res2?: number | null
           standard?: number
+          store_url?: string | null
           submitter?: string | null
           switches?: Json
           updated?: string
@@ -445,6 +447,7 @@ export type Database = {
           res1?: number | null
           res2?: number | null
           standard?: number
+          store_url?: string | null
           submitter?: string | null
           switches?: Json
           updated?: string
