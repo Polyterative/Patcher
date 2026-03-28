@@ -46,60 +46,6 @@
   </p>
   }
 
-  @if (userService.loggedUser$ | async) {
-    <div style="margin-top: 0.25rem">
-      @if (!(flagService.formVisible$ | async)) {
-        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-          <button mat-button
-                  color="warn"
-                  style="opacity: 0.6; font-size: 0.8rem; min-width: 0; padding: 0 0.5rem;"
-                  (click)="flagService.toggleForm$.next()"
-          >
-            <mat-icon style="font-size: 1rem; height: 1rem; width: 1rem; margin-right: 0.2rem">flag</mat-icon>
-            Report an issue
-          </button>
-          @if ((flagService.openFlagCount$ | async) > 0) {
-            <span style="font-size: 0.75rem; opacity: 0.55; display: flex; align-items: center; gap: 0.25rem;">
-              <mat-icon style="font-size: 0.85rem; height: 0.85rem; width: 0.85rem;">info</mat-icon>
-              {{ flagService.openFlagCount$ | async }} pending
-            </span>
-          }
-        </div>
-      }
-
-      @if (flagService.formVisible$ | async) {
-        <div class="col gap1" style="padding: 0.5rem 0.75rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;">
-          <mat-form-field appearance="outline" style="width: 100%; margin-top: 0.5rem">
-            <mat-label>Issue type</mat-label>
-            <mat-select [(ngModel)]="selectedCategory">
-              @for (cat of flagCategories; track cat.value) {
-                <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Details (optional)</mat-label>
-            <textarea matInput
-                      [(ngModel)]="flagNote"
-                      rows="2"
-                      placeholder="Add any helpful context..."
-            ></textarea>
-          </mat-form-field>
-
-          <div class="row gap1" style="margin-bottom: 0.25rem">
-            <button mat-flat-button
-                    color="warn"
-                    [disabled]="!selectedCategory"
-                    (click)="submitFlag()"
-            >Submit</button>
-            <button mat-button
-                    (click)="flagService.toggleForm$.next()"
-            >Cancel</button>
-          </div>
-        </div>
-      }
-    </div>
-  }
+  <app-module-flag [moduleId]="data.id"></app-module-flag>
 
 </div>
