@@ -35,7 +35,7 @@
 
 ## Active
 
-**Store Links per Module** — Adding nullable `store_url` to modules; admin-only edit; "Buy new" link on module detail page.
+_Nothing active. Pick the next task from the Backlog._
 
 ---
 
@@ -58,10 +58,10 @@
 **Why:** One canonical "buy new" URL per module. No scraping — manually curated for popular modules first. Price Hub
 layer 1 cannot show anything without this data.
 
-- [ ] Add nullable `store_url` to `modules` in `database.types.ts`
-- [ ] Add `update.moduleStoreUrl()` to `supabase.service.ts` (admin/verified-only write)
-- [ ] Show "Buy new" link on module detail page when present
-- [ ] Write display logic tests
+- [x] Add nullable `store_url` to `modules` in `database.types.ts`
+- [x] Add `update.moduleStoreUrl()` to `supabase.service.ts` (admin/verified-only write)
+- [x] Show "Buy new" link on module detail page when present
+- [x] Write display logic tests
 
 ---
 
