@@ -1,0 +1,67 @@
+.flag-container {
+  margin-top: 0.25rem;
+}
+
+// ── Trigger row ───────────────────────────────────────────────────────────────
+
+.flag-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.flag-trigger-btn {
+  opacity: 0.6;
+  font-size: 0.8rem;
+  min-width: 0;
+  padding: 0 0.5rem;
+}
+
+.flag-icon {
+  font-size: 1rem;
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.2rem;
+  vertical-align: middle;
+}
+
+.flag-pending {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.flag-pending-icon {
+  font-size: 0.85rem;
+  height: 0.85rem;
+  width: 0.85rem;
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+
+.flag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.flag-field {
+  width: 100%;
+
+  &--first {
+    margin-top: 0.5rem;
+  }
+}
+
+.flag-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}

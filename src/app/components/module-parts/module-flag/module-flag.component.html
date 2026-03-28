@@ -1,0 +1,58 @@
+@if (userService.loggedUser$ | async) {
+  <div class="flag-container">
+
+    @if (!(flagService.formVisible$ | async)) {
+      <div class="flag-trigger">
+        <button mat-button
+                color="warn"
+                class="flag-trigger-btn"
+                (click)="flagService.toggleForm$.next()"
+        >
+          <mat-icon class="flag-icon">flag</mat-icon>
+          Report an issue
+        </button>
+
+        @if ((flagService.openFlagCount$ | async) ?? 0 > 0) {
+          <span class="flag-pending">
+            <mat-icon class="flag-pending-icon">info</mat-icon>
+            {{ flagService.openFlagCount$ | async }} open report(s)
+          </span>
+        }
+      </div>
+    }
+
+    @if (flagService.formVisible$ | async) {
+      <div class="flag-form">
+        <mat-form-field appearance="outline" class="flag-field flag-field--first">
+          <mat-label>Issue type</mat-label>
+          <mat-select [(ngModel)]="selectedCategory">
+            @for (cat of flagCategories; track cat.value) {
+              <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flag-field">
+          <mat-label>Details (optional)</mat-label>
+          <textarea matInput
+                    [(ngModel)]="flagNote"
+                    rows="2"
+                    placeholder="Add any helpful context..."
+          ></textarea>
+        </mat-form-field>
+
+        <div class="flag-form-actions">
+          <button mat-flat-button
+                  color="warn"
+                  [disabled]="!selectedCategory"
+                  (click)="submitFlag()"
+          >Submit</button>
+          <button mat-button
+                  (click)="cancelFlag()"
+          >Cancel</button>
+        </div>
+      </div>
+    }
+
+  </div>
+}
