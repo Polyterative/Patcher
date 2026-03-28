@@ -3,6 +3,9 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { LuxonModule } from 'luxon-angular';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { BrandPrimaryButtonModule } from '../../shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { LibGraphModule } from '../../shared-interproject/components/@visual/graph-view/lib-graph.module';
@@ -36,7 +39,10 @@ import { SupabaseService } from './supabase.service';
     ], {scrollPositionRestoration: 'enabled'}),
     FlexLayoutModule,
     BrandPrimaryButtonModule,
-    LibGraphModule
+    LibGraphModule,
+    MatButtonToggleModule,
+    MatFormFieldModule,
+    MatSelectModule
   ],
   exports:      [
     AdminPanelRootComponent

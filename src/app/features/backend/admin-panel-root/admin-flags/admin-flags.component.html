@@ -1,14 +1,36 @@
-@if ({flags: (dataService.flags$ | async) ?? [], open: (dataService.openFlagCount$ | async) ?? 0}; as vm) {
+@if ({flags: (dataService.filteredFlags$ | async) ?? [], open: (dataService.openFlagCount$ | async) ?? 0}; as vm) {
   <div class="col gap2 flags-root">
 
     <div class="flags-header">
       <span class="flags-title">Module Flags</span>
       <span class="flags-badge flags-badge--open">{{ vm.open }} open</span>
-      <span class="flags-badge flags-badge--total">{{ vm.flags.length }} total</span>
+      <span class="flags-badge flags-badge--total">{{ ((dataService.filteredFlags$ | async) ?? []).length }} shown</span>
+    </div>
+
+    <div class="flags-filters row gap2">
+      <mat-button-toggle-group [value]="dataService.statusFilter$ | async"
+                               (change)="dataService.statusFilter$.next($event.value)"
+                               aria-label="Status filter">
+        <mat-button-toggle value="open">Open</mat-button-toggle>
+        <mat-button-toggle value="resolved">Resolved</mat-button-toggle>
+        <mat-button-toggle value="all">All</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <mat-form-field appearance="outline" class="flags-category-filter">
+        <mat-label>Category</mat-label>
+        <mat-select [value]="dataService.categoryFilter$ | async"
+                    (selectionChange)="dataService.categoryFilter$.next($event.value || null)">
+          <mat-option [value]="null">All categories</mat-option>
+          <mat-option value="wrong-specs">Wrong specs</mat-option>
+          <mat-option value="missing-image">Missing image</mat-option>
+          <mat-option value="duplicate">Duplicate</mat-option>
+          <mat-option value="other">Other</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
 
     @if (vm.flags.length === 0) {
-      <p class="flags-empty">No flags reported.</p>
+      <p class="flags-empty">No flags match the current filter.</p>
     }
 
     <div class="col gap1">

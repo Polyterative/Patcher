@@ -27,6 +27,7 @@ import { ModuleCVItemComponent } from './module-cvitem/module-cvitem.component';
 import { ModuleCVsComponent } from './module-cvs/module-cvs.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
 import { ModuleDetailsComponent } from './module-details/module-details.component';
+import { ModuleFlagComponent } from './module-flag/module-flag.component';
 import { ModuleEditorAdderLineComponent } from './module-editor/module-editor-adder-line/module-editor-adder-line.component';
 import { ModuleEditorCvFormLineComponent } from './module-editor/module-editor-cv-form-line/module-editor-cv-form-line.component';
 import { ModuleEditorComponent } from './module-editor/module-editor.component';
@@ -61,6 +62,7 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
     ModuleCVItemComponent,
     ModuleCVsComponent,
     ModuleDetailsComponent,
+    ModuleFlagComponent,
     ModuleEditorComponent,
     ModuleMinimalComponent,
     ModuleCvIconComponent,

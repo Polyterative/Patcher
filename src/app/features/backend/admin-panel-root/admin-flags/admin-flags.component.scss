@@ -47,6 +47,18 @@ $resolved-color: rgba(255, 255, 255, 0.25);
   font-style: italic;
 }
 
+// ── Filters ──────────────────────────────────────────────────────────────────
+
+.flags-filters {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.flags-category-filter {
+  min-width: 11rem;
+  font-size: 0.85rem;
+}
+
 // ── Row ─────────────────────────────────────────────────────────────────────
 
 .flag-row {
