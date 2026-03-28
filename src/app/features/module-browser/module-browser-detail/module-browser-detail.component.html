@@ -122,6 +122,18 @@
                       Open manual
                     </app-brand-primary-button>
                   }
+                  @if (bag.data && bag.data.store_url) {
+                    <a [href]="bag.data.store_url"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       mat-flat-button
+                       color="accent"
+                       class="module-detail-action-button"
+                    >
+                      <mat-icon>shopping_cart</mat-icon>
+                      Buy new
+                    </a>
+                  }
 
                   @if (bag.data && bag.user) {
                     <button
@@ -267,6 +279,30 @@
                                             matTooltipPosition="above"
                                             (click$)="clearDevManualUrl()">Clear manual URL
                   </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <div class="col gap1 store-url-edit" style="width: 100%">
+                    <mat-form-field appearance="outline" style="width: 100%">
+                      <mat-label>Store URL (Buy new)</mat-label>
+                      <input matInput
+                             type="url"
+                             placeholder="https://..."
+                             [(ngModel)]="storeUrlDraft"
+                      />
+                      <mat-icon matSuffix>shopping_cart</mat-icon>
+                    </mat-form-field>
+                    <div class="row gap1">
+                      <app-brand-primary-button theme="positive"
+                                                [disabled]="!storeUrlDraft"
+                                                (click$)="setStoreUrl(bag.data.id)">Save store URL
+                      </app-brand-primary-button>
+                      @if (bag.data.store_url) {
+                        <app-brand-primary-button theme="warning"
+                                                  (click$)="clearStoreUrl(bag.data.id)">Clear store URL
+                        </app-brand-primary-button>
+                      }
+                    </div>
+                  </div>
                 }
                 @if (bag.data) {
                   <app-brand-primary-button theme="warning"

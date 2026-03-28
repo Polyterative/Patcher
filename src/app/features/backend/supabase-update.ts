@@ -260,6 +260,27 @@ export function createUpdateNamespace(
         );
     },
     
+    /** Admin-only: set or clear the "buy new" store URL for a module. */
+    moduleStoreUrl: (id: number, storeUrl: string | null) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => {
+            if (!isAdmin) return throwError(() => new Error('Admin access required'));
+            return rxFrom(
+              supabase.from(DbPaths.modules)
+                .update({store_url: storeUrl || null})
+                .eq('id', id)
+            );
+          })
+        );
+      }),
+      map(({error}: any) => { if (error) throw error; }),
+      cacheBust(['modules', 'currentUserModules', 'moduleWithId']),
+      showSuccessMessage(snackBar)
+    ),
+
     moduleINsOUTs: (moduleId: number, ins: CV[], outs: CV[], authorid: string = '') => {
       return getUserSession$().pipe(
         switchMap(user => {
