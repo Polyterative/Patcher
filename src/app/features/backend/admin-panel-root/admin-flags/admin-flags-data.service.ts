@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
+  combineLatest,
   EMPTY,
   merge,
   of,
@@ -20,6 +21,7 @@ import { AdminFlagRow } from 'src/app/features/backend/supabase-get';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 export type { AdminFlagRow };
+export type FlagStatusFilter = 'all' | 'open' | 'resolved';
 
 
 @Injectable()
@@ -27,8 +29,32 @@ export class AdminFlagsDataService extends SubManager {
   private readonly _flags$ = new BehaviorSubject<AdminFlagRow[]>([]);
   private readonly _refresh$ = new Subject<void>();
 
-  readonly flags$ = this._flags$.asObservable();
-  readonly openFlagCount$ = this._flags$.pipe(map(f => f.filter(x => !x.resolved).length), shareReplay(1));
+  // ── Filter state ──────────────────────────────────────────────────────────
+  readonly statusFilter$ = new BehaviorSubject<FlagStatusFilter>('open');
+  readonly categoryFilter$ = new BehaviorSubject<string | null>(null);
+
+  // ── Derived streams ───────────────────────────────────────────────────────
+  readonly openFlagCount$ = this._flags$.pipe(
+    map(f => f.filter(x => !x.resolved).length),
+    shareReplay(1)
+  );
+
+  readonly filteredFlags$ = combineLatest([
+    this._flags$,
+    this.statusFilter$,
+    this.categoryFilter$
+  ]).pipe(
+    map(([flags, status, category]) => {
+      let result = flags;
+      if (status === 'open') result = result.filter(f => !f.resolved);
+      if (status === 'resolved') result = result.filter(f => f.resolved);
+      if (category) result = result.filter(f => f.category === category);
+      return result;
+    }),
+    shareReplay(1)
+  );
+
+  // ── Actions ───────────────────────────────────────────────────────────────
   readonly resolveFlag$ = new Subject<{ id: number; resolved: boolean }>();
   readonly deleteFlag$ = new Subject<number>();
 
