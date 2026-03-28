@@ -48,7 +48,8 @@ describe('ModuleDetailDataService', () => {
         module: jasmine.createSpy('module').and.returnValue(of({}))
       },
       update: {
-        module: jasmine.createSpy('module').and.callFake((module: any) => of(module))
+        module: jasmine.createSpy('module').and.callFake((module: any) => of(module)),
+        moduleStoreUrl: jasmine.createSpy('moduleStoreUrl').and.returnValue(of(null))
       }
     };
     
@@ -213,5 +214,38 @@ describe('ModuleDetailDataService', () => {
     
     expect(backend.delete.modulePanel).toHaveBeenCalledWith({id: 3});
     expect(nextSpy).toHaveBeenCalledWith(10);
+  });
+
+  describe('setStoreUrl$', () => {
+    it('should call update.moduleStoreUrl with the given id and url', fakeAsync(() => {
+      const {service, backend} = build();
+      service.singleModuleData$.next({id: 10} as any);
+
+      service.setStoreUrl$.next({id: 10, url: 'https://store.example.com/module'});
+      tick();
+
+      expect(backend.update.moduleStoreUrl).toHaveBeenCalledWith(10, 'https://store.example.com/module');
+    }));
+
+    it('should call update.moduleStoreUrl with null when clearing', fakeAsync(() => {
+      const {service, backend} = build();
+      service.singleModuleData$.next({id: 10} as any);
+
+      service.setStoreUrl$.next({id: 10, url: null});
+      tick();
+
+      expect(backend.update.moduleStoreUrl).toHaveBeenCalledWith(10, null);
+    }));
+
+    it('should trigger a data refresh after store url is set', fakeAsync(() => {
+      const {service} = build();
+      service.singleModuleData$.next({id: 10} as any);
+      const nextSpy = spyOn(service.updateSingleModuleData$, 'next').and.callThrough();
+
+      service.setStoreUrl$.next({id: 10, url: 'https://example.com'});
+      tick();
+
+      expect(nextSpy).toHaveBeenCalledWith(10);
+    }));
   });
 });
