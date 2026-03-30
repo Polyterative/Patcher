@@ -27,13 +27,13 @@ Use `package.json` scripts whenever possible.
 Recommended commands:
 
 ```bash
-yarn test-headless                               # Unit tests (headless, no watch)
-yarn test-headless --include="**/foo.spec.ts"   # Targeted spec run (if supported by runner)
-yarn test:e2e                                    # Playwright e2e
-yarn test:e2e:auth                               # Authenticated e2e
-yarn lint                                        # ESLint
-yarn updateBackendTypes                          # Regenerate Supabase types after schema changes
-yarn start                                       # Dev server on :5556 (only if needed and not already running)
+pnpm test-headless                               # Unit tests (headless, no watch)
+pnpm test-headless --include="**/foo.spec.ts"   # Targeted spec run (if supported by runner)
+pnpm test:e2e                                    # Playwright e2e
+pnpm test:e2e:auth                               # Authenticated e2e
+pnpm lint                                        # ESLint
+pnpm updateBackendTypes                          # Regenerate Supabase types after schema changes
+pnpm start                                       # Dev server on :5556 (only if needed and not already running)
 ```
 
 Never run directly:
@@ -46,7 +46,7 @@ Never run directly:
 
 - Prefer dedicated read/search/edit tools over generic shell for file operations.
 - Use terminal commands for scripts, tests, git, and package operations.
-- Use `yarn` as package manager.
+- Use `pnpm` as package manager.
 
 Claude Code mapping (if relevant):
 
@@ -145,7 +145,7 @@ New backend method:
 
 - table registered in `DatabaseStrings.ts`
 - reads cacheable, writes bust cache
-- run `yarn updateBackendTypes` after schema changes
+- run `pnpm updateBackendTypes` after schema changes
 
 Before commit:
 
@@ -162,7 +162,7 @@ Before commit:
 ## 9) Git and Delivery
 
 - Primary working branch: `develop`; release branch: `production`.
-- Use helper scripts when switching (`yarn switch:develop`, `yarn switch:production`).
+- Use helper scripts when switching (`pnpm switch:develop`, `pnpm switch:production`).
 - Commit format: `<type>(<scope>): <description>` (one line, imperative, lowercase, no trailing period).
 - Ask before committing unless user explicitly requested automatic commit.
 - Never push unless explicitly requested.
@@ -173,7 +173,7 @@ Before commit:
 ### Test output
 
 - Run tests with output trimmed to summary + failing file only — not full verbose logs.
-- Example: `yarn test-headless 2>&1 | tail -60` or similar tight output.
+- Example: `pnpm test-headless 2>&1 | tail -60` or similar tight output.
 - Use targeted `--include` flag when running a single spec to avoid reading unrelated results.
 
 ### Context compaction
