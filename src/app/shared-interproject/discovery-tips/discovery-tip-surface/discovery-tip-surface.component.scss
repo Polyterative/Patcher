@@ -1,0 +1,114 @@
+.discovery-tip {
+  position: fixed;
+  z-index: 1250;
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0.9rem 1rem 0.95rem;
+  border: 1px solid rgba(204, 176, 106, 0.34);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 242, 0.98) 0%, rgba(251, 245, 231, 0.98) 100%);
+  box-shadow: 0 1.1rem 2.2rem rgba(67, 56, 28, 0.16);
+  color: #2f2816;
+  backdrop-filter: blur(10px);
+  animation: discovery-tip-enter 180ms ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 2.15rem;
+    width: 0.85rem;
+    height: 0.85rem;
+    background: inherit;
+    border-left: 1px solid rgba(204, 176, 106, 0.34);
+    border-top: 1px solid rgba(204, 176, 106, 0.34);
+    transform: rotate(45deg);
+  }
+
+  &.above::after {
+    bottom: -0.45rem;
+    transform: rotate(225deg);
+  }
+
+  &.below::after {
+    top: -0.45rem;
+  }
+}
+
+.eyebrow {
+  margin-bottom: 0.35rem;
+  color: #8a6d1a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-bottom: 0.35rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.body {
+  color: rgba(47, 40, 22, 0.84);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.secondary-action,
+.primary-action {
+  border: none;
+  border-radius: 999px;
+  padding: 0.42rem 0.78rem;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease,
+    opacity 120ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.secondary-action {
+  background: transparent;
+  color: rgba(47, 40, 22, 0.72);
+}
+
+.primary-action {
+  background: #1c8b6d;
+  color: #fffdf9;
+}
+
+@keyframes discovery-tip-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discovery-tip {
+    animation: none;
+  }
+
+  .secondary-action,
+  .primary-action {
+    transition: none;
+  }
+}
+

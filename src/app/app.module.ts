@@ -43,6 +43,7 @@ import * as Sentry from "@sentry/angular";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { SelectionPanelOutletComponent } from 'src/app/components/patch-parts/selection-panel-outlet/selection-panel-outlet.component';
 import { SelectionPanelBridgeService } from 'src/app/components/patch-parts/selection-panel-bridge.service';
+import { DiscoveryTipSurfaceComponent } from './shared-interproject/discovery-tips/discovery-tip-surface/discovery-tip-surface.component';
 
 
 const locale: {
@@ -79,6 +80,7 @@ const matDatepickerLocaleIT = {
   imports: [
     BrowserModule,
     SelectionPanelOutletComponent,
+    DiscoveryTipSurfaceComponent,
     RouterModule,
     BrowserAnimationsModule,
     ToolbarModule,

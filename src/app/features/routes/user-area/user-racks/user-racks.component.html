@@ -10,7 +10,8 @@
     >
       <div class="row gap1 auto-left"
       >
-        <app-brand-primary-button (click$)="dataService.addRack$.next()"
+        <app-brand-primary-button appDiscoveryTipAnchor="user-area-racks-create"
+                                  (click$)="dataService.addRack$.next()"
                                   icon="add"
                                   fxLayoutAlign="end"
         >Create rack
