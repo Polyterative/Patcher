@@ -13,8 +13,8 @@ import {
  * Playwright configuration for Patcher E2E tests.
  *
  * Run:
- *   yarn test:e2e          — local, list reporter
- *   yarn test:e2e:ci       — CI, single worker
+ *   pnpm test:e2e          — local, list reporter
+ *   pnpm test:e2e:ci       — CI, single worker
  *
  * For local runs against localhost:5556, Playwright starts the Angular dev server automatically.
  * Set BASE_URL env var to point tests at another host (e.g. staging URL).
@@ -69,7 +69,7 @@ export default defineConfig({
   reporter: 'list',
   webServer: usesLocalDevServer
     ? {
-      command: 'yarn start',
+      command: 'pnpm start',
       url: LOCAL_DEV_SERVER_URL,
       reuseExistingServer: !process.env['CI'],
       timeout: 180_000

@@ -17,10 +17,10 @@
  * - pattern-compliance.spec.ts: Service architecture pattern validation
  *
  * To run these tests:
- * yarn test-headless
+ * pnpm test-headless
  *
  * To run specific test file:
- * yarn test --include='**\/supabase-service/**\/*.spec.ts'
+ * pnpm test --include='**\/supabase-service/**\/*.spec.ts'
  */
 
 // Import all test suites - they will auto-register with Jasmine

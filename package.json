@@ -1,11 +1,12 @@
 {
   "name": "patcher",
   "version": "5.3.7",
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "start": "ng serve --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
     "prebuild": "node generate-env.js",
-    "build": "yarn prebuild && angular-build-info && node scripts/generate-prerender-routes.mjs && ng build --configuration production && yarn sentry:sourcemaps",
+    "build": "pnpm prebuild && angular-build-info && node scripts/generate-prerender-routes.mjs && ng build --configuration production && pnpm sentry:sourcemaps",
     "bundle-report": "ng build --configuration=production --stats-json && webpack-bundle-analyzer dist/Patcher/browser/stats.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org patcher --project patcher-xyz ./dist/Patcher && sentry-cli sourcemaps upload --org patcher --project patcher-xyz ./dist/Patcher",
     "copyChangelog": "cp CHANGELOG.md src/assets/md/changelog.md",
@@ -14,17 +15,17 @@
     "lint:px": "bash scripts/check-px-ts.sh $(find src -name '*.ts' -not -path '*/node_modules/*')",
     "px-to-rem": "node scripts/px-to-rem.mjs",
     "px-to-rem:write": "node scripts/px-to-rem.mjs --write",
-    "ci": "yarn test:unit:headless",
-    "test": "yarn test:unit",
+    "ci": "pnpm test:unit:headless",
+    "test": "pnpm test:unit",
     "test:unit": "ng test --browsers=ChromeHeadlessCI",
-    "test-headless": "yarn test:unit:headless",
+    "test-headless": "pnpm test:unit:headless",
     "test:unit:headless": "ng test --browsers=ChromeHeadlessCI --watch=false",
     "test:unit:ci": "ng test --browsers=ChromeHeadlessCI --watch=false --code-coverage",
-    "test:functions": "yarn test:functions:middleware && yarn test:functions:sitemap",
+    "test:functions": "pnpm test:functions:middleware && pnpm test:functions:sitemap",
     "test:functions:middleware": "node scripts/tests/run-function-test.cjs middleware.ts tmp/middleware-test scripts/tests/middleware.test.cjs",
     "test:functions:sitemap": "node scripts/tests/run-function-test.cjs api/sitemap.ts tmp/sitemap-test scripts/tests/sitemap.test.cjs",
-    "test:ci:full": "yarn test:functions && yarn test:unit:ci",
-    "e2e": "yarn test:e2e",
+    "test:ci:full": "pnpm test:functions && pnpm test:unit:ci",
+    "e2e": "pnpm test:e2e",
     "pretest:e2e": "playwright install chromium",
     "test:e2e": "playwright test --reporter=list --project=chromium",
     "pretest:e2e:auth": "playwright install chromium",
@@ -41,8 +42,8 @@
     "git:untrack-e2e-artifacts": "git rm -r --cached test-results/ playwright-report/ e2e/flow-0*.spec.ts 2>/dev/null || true",
     "switch:develop": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout develop && git update-index --skip-worktree src/build.ts",
     "switch:production": "git update-index --no-skip-worktree src/build.ts && git checkout -- src/build.ts && git checkout production && git update-index --skip-worktree src/build.ts",
-    "merge:prod-to-dev": "yarn switch:develop && git merge production",
-    "merge:dev-to-prod": "yarn switch:production && git merge develop",
+    "merge:prod-to-dev": "pnpm switch:develop && git merge production",
+    "merge:dev-to-prod": "pnpm switch:production && git merge develop",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -63,13 +64,15 @@
     "node": ">=18.19.0 <26"
   },
   "private": true,
-  "resolutions": {
-    "body-parser": "1.20.4",
-    "serialize-javascript": "7.0.3",
-    "node-forge": "1.3.2",
-    "qs": "6.15.0",
-    "tar": "7.5.8",
-    "ws": "8.19.0"
+  "pnpm": {
+    "overrides": {
+      "body-parser": "1.20.4",
+      "serialize-javascript": "7.0.3",
+      "node-forge": "1.3.2",
+      "qs": "6.15.0",
+      "tar": "7.5.8",
+      "ws": "8.19.0"
+    }
   },
   "dependencies": {
     "@angular/animations": "^21.1.4",
