@@ -9,20 +9,24 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine, createNodeRequestHandler, isMainModule } from '@angular/ssr/node';
 import express from 'express';
+import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // AppServerModule is exported as default from main.server.ts
 import AppServerModule from './main.server';
 
+const serverDistFolder = dirname(fileURLToPath(import.meta.url));
+const browserDistFolder = resolve(serverDistFolder, '../browser');
+const csrHtml = join(browserDistFolder, 'index.csr.html');
+
+// In production the builder emits index.csr.html; in dev (ng serve) Vite serves
+// HTML in memory so the file never lands on disk.
+const isProd = existsSync(csrHtml);
+
 export function app(): express.Express {
   const server = express();
-  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-  const browserDistFolder = resolve(serverDistFolder, '../browser');
-  // Angular 21 application builder outputs index.csr.html (CSR fallback), not index.html
-  const indexHtml = join(browserDistFolder, 'index.csr.html');
-
-  const engine = new CommonEngine({ allowedHosts: ['*'] });
+  const engine = new CommonEngine({ allowedHosts: ['localhost', '127.0.0.1'] });
 
   // Serve static assets with long-lived cache; never serve index.html from here.
   server.use(
@@ -40,7 +44,7 @@ export function app(): express.Express {
     engine
       .render({
         bootstrap: AppServerModule,
-        documentFilePath: indexHtml,
+        documentFilePath: csrHtml,
         url: `${protocol}://${headers.host}${originalUrl}`,
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
@@ -52,15 +56,20 @@ export function app(): express.Express {
   return server;
 }
 
-const server = app();
-
 // When run directly (local dev: `node dist/Patcher/server/server.mjs`)
 if (isMainModule(import.meta.url)) {
   const port = process.env['PORT'] || 4000;
-  server.listen(port, () => {
+  app().listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
 }
 
-// Exported for the Vercel serverless shim (api/ssr.mjs)
-export const reqHandler = createNodeRequestHandler(server);
+// Exported for the Vercel serverless shim (api/ssr.mjs).
+// In dev mode (ng serve), export an UNTAGGED handler — the Angular CLI will see it
+// is not an SsrNodeRequestHandler and fall back to its internal Vite SSR middleware,
+// which reads HTML from in-memory outputFiles (no disk file needed) and injects CSS/scripts.
+// In production, export the full Express app tagged via createNodeRequestHandler.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const reqHandler = isProd
+  ? createNodeRequestHandler(app())
+  : ((_req: any, _res: any, next: any) => next?.());

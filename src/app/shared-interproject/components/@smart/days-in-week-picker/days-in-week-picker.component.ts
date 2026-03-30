@@ -43,9 +43,7 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
     .keys())
                                                               .map((_, i) => i >= 6 ? 0 : (i + 1))
                                                               .map(i => ({
-                                                                name: moment()
-                                                                        .day(i)
-                                                                        .format('dd'),
+                                                                name: new Intl.DateTimeFormat('en', { weekday: 'short' }).format(new Date(2017, 0, 1 + i)),
                                                                 id:   'A' + i
                                                               }));
 
