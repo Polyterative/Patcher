@@ -19,8 +19,8 @@ Project-specific guidance for Patcher development.
 
 ## Baseline Rules
 
-**Always `yarn`.** Never `npm`.  
-**Tests always `yarn test-headless`.** Never `ng test`.
+**Always `pnpm`.** Never `npm`.  
+**Tests always `pnpm test-headless`.** Never `ng test`.
 
 ## Layer Map
 

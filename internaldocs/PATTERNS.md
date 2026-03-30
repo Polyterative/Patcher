@@ -328,7 +328,7 @@ private initializeCopyHandler(): void {
 
 ## Writing Tests
 
-All tests use **Jasmine + Karma** via `yarn test-headless`. Follow the shared `test-setup.ts` pattern used throughout
+All tests use **Jasmine + Karma** via `pnpm test-headless`. Follow the shared `test-setup.ts` pattern used throughout
 the codebase.
 
 ### Spec file location
@@ -446,8 +446,8 @@ describe('MyService', () => {
 ### Run a single spec file
 
 ```
-yarn test-headless --include="**/my-service.spec.ts"
-yarn test-headless --include="**/__tests__/supabase-service/*.spec.ts"
+pnpm test-headless --include="**/my-service.spec.ts"
+pnpm test-headless --include="**/__tests__/supabase-service/*.spec.ts"
 ```
 
 ---
