@@ -10,6 +10,7 @@ import { HeroContentCardModule } from 'src/app/shared-interproject/components/@v
 import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
     MatPaginatorModule,
     MatDividerModule,
     AutoUpdateLoadingIndicatorModule,
-    RouterLink
+    RouterLink,
+    DiscoveryTipsModule
   ],
   exports:      [UserModulesComponent]
 })

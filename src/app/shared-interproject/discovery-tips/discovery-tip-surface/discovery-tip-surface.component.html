@@ -1,0 +1,32 @@
+@if ((viewModel$ | async); as tip) {
+  <section
+    class="discovery-tip"
+    [class.above]="tip.side === 'above'"
+    [class.below]="tip.side === 'below'"
+    [ngStyle]="{left: tip.left + 'px', top: tip.top + 'px'}"
+    aria-live="polite"
+    role="status"
+  >
+    <div class="eyebrow">Helpful tip</div>
+    <div class="title">{{ tip.title }}</div>
+    <div class="body">{{ tip.body }}</div>
+
+    <div class="actions">
+      <button
+        class="secondary-action"
+        type="button"
+        (click)="discoveryTipService.snoozeActiveTip()"
+      >
+        Later
+      </button>
+      <button
+        class="primary-action"
+        type="button"
+        (click)="discoveryTipService.acknowledgeActiveTip()"
+      >
+        Got it
+      </button>
+    </div>
+  </section>
+}
+

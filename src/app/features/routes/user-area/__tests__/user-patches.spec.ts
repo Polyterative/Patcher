@@ -100,4 +100,9 @@ describe('UserPatchesComponent', () => {
     mockDataService.addPatch$.next();
     expect(spy).toHaveBeenCalled();
   });
+
+  it('should expose addPatch$ for the template action hook', () => {
+    build();
+    expect(typeof mockDataService.addPatch$.next).toBe('function');
+  });
 });

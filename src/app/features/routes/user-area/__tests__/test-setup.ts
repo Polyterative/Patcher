@@ -73,6 +73,7 @@ export function createMockUserAreaDataService() {
   const updateCommentsData$ = new Subject<void>();
   const addPatch$ = new Subject<void>();
   const addRack$ = new Subject<void>();
+  const addModulesToCollection$ = new Subject<void>();
   
   return {
     modulesData$,
@@ -87,6 +88,8 @@ export function createMockUserAreaDataService() {
     updateCommentsData$,
     addPatch$,
     addRack$,
+    addModulesToCollection$,
+    connectDiscovery: jasmine.createSpy('connectDiscovery'),
   };
 }
 
@@ -112,6 +115,13 @@ export function createMockSupabaseService() {
 export function createMockSeoAndUtilsService() {
   return {
     updateSeo: jasmine.createSpy('updateSeo'),
+  };
+}
+
+export function createMockDiscoveryTipService() {
+  return {
+    updateUserAreaSnapshot: jasmine.createSpy('updateUserAreaSnapshot'),
+    recordAction: jasmine.createSpy('recordAction'),
   };
 }
 

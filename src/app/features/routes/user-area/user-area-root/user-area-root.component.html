@@ -4,7 +4,8 @@
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
     @if (bag.userProfile) {
-      <lib-clean-card style="max-width: 26rem;min-width:18rem">
+      <lib-clean-card appDiscoveryTipAnchor="user-area-profile-card"
+                      style="max-width: 26rem;min-width:18rem">
         <app-label-value-showcase label="User"
         >{{ bag.userProfile.username }}
         </app-label-value-showcase>
@@ -15,32 +16,40 @@
       <div class="profile-layout">
         <div class="container gap1 main-content"
         >
-          <app-user-modules class="block"
+          <app-user-modules appDiscoveryTipAnchor="user-area-modules-section"
+                            class="block"
                             [modulesViewConfig]="viewConfig"
                             [encloseVertically]="true"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-modules>
-          <app-user-racks class="block"
+          <app-user-racks appDiscoveryTipAnchor="user-area-racks-section"
+                          class="block"
                           [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-racks>
-          <app-user-patches class="block"
+          <app-user-patches appDiscoveryTipAnchor="user-area-patches-section"
+                            class="block"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-patches>
         </div>
         <div class="sidebar col gap1">
-          <app-statistics
+          <app-statistics appDiscoveryTipAnchor="user-area-stats"
             title="Profile stats"
             icon="analytics"
             cardClass="userBG"
             [statistics]="miscStats$ | async"
           ></app-statistics>
-          <app-user-manuals></app-user-manuals>
-          <app-user-comments></app-user-comments>
+          <div appDiscoveryTipAnchor="user-area-manuals">
+            <app-user-manuals></app-user-manuals>
+          </div>
+          <div appDiscoveryTipAnchor="user-area-comments">
+            <app-user-comments></app-user-comments>
+          </div>
         </div>
       </div>
     </div>
     
-    <div class="user-area-floating-search">
+    <div appDiscoveryTipAnchor="user-area-search"
+         class="user-area-floating-search">
       <lib-mat-form-entity [control]="globalSearchControl"
                            [type]="formTypes.TEXT"
                            label="Search modules, racks, patches"

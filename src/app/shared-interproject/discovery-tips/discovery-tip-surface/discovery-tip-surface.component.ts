@@ -1,0 +1,122 @@
+import {
+  AsyncPipe,
+  isPlatformBrowser,
+  NgStyle
+} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID
+} from '@angular/core';
+import {
+  BehaviorSubject,
+  combineLatest,
+  fromEvent,
+  merge,
+  of
+} from 'rxjs';
+import {
+  map,
+  startWith,
+  takeUntil
+} from 'rxjs/operators';
+import { SubManager } from '../../directives/subscription-manager';
+import { DiscoveryTipActive } from '../discovery-tip.models';
+import { DiscoveryTipService } from '../discovery-tip.service';
+
+
+interface DiscoveryTipPosition {
+  left: number;
+  top: number;
+  side: 'above' | 'below';
+}
+
+interface DiscoveryTipViewModel extends DiscoveryTipPosition {
+  title: string;
+  body: string;
+}
+
+export function calculateDiscoveryTipPosition(anchorRect: DOMRect, viewportWidth: number, viewportHeight: number): DiscoveryTipPosition {
+  const tipWidth = Math.min(320, viewportWidth - 32);
+  const gap = 14;
+  const preferAbove = anchorRect.top > viewportHeight * 0.45;
+  const side: 'above' | 'below' = preferAbove ? 'above' : 'below';
+  const unclampedLeft = anchorRect.left + (anchorRect.width / 2) - (tipWidth / 2);
+  const left = Math.max(16, Math.min(unclampedLeft, viewportWidth - tipWidth - 16));
+  const top = side === 'above'
+    ? Math.max(16, anchorRect.top - gap - 124)
+    : Math.min(viewportHeight - 120, anchorRect.bottom + gap);
+
+  return {
+    left,
+    top,
+    side
+  };
+}
+
+@Component({
+  selector: 'app-discovery-tip-surface',
+  templateUrl: './discovery-tip-surface.component.html',
+  styleUrls: ['./discovery-tip-surface.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+    NgStyle,
+  ],
+  standalone: true
+})
+export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
+  private readonly isBrowser: boolean;
+  private readonly refreshTick$ = new BehaviorSubject<number>(0);
+  readonly viewModel$;
+
+  constructor(
+    readonly discoveryTipService: DiscoveryTipService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    super();
+    this.isBrowser = isPlatformBrowser(platformId);
+    this.viewModel$ = combineLatest([
+      this.discoveryTipService.activeTip$.pipe(startWith(null)),
+      this.refreshTick$
+    ]).pipe(
+      map(([activeTip]) => this.buildViewModel(activeTip))
+    );
+  }
+
+  ngOnInit(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    merge(
+      of(null),
+      fromEvent(window, 'resize'),
+      fromEvent(window, 'scroll', {capture: true})
+    ).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.refreshTick$.next(Date.now());
+    });
+  }
+
+  private buildViewModel(activeTip: DiscoveryTipActive | null): DiscoveryTipViewModel | null {
+    if (!this.isBrowser || !activeTip) {
+      return null;
+    }
+
+    const anchorRect = activeTip.anchorElement.getBoundingClientRect();
+    if (anchorRect.width === 0 && anchorRect.height === 0) {
+      return null;
+    }
+
+    const position = calculateDiscoveryTipPosition(anchorRect, window.innerWidth, window.innerHeight);
+    return {
+      ...position,
+      title: activeTip.definition.title,
+      body: activeTip.definition.body
+    };
+  }
+}
