@@ -7,6 +7,7 @@ import {
   Subject
 } from 'rxjs';
 import {
+  filter,
   map,
   switchMap,
   takeUntil,
@@ -26,6 +27,10 @@ import {
 } from 'src/app/models/module';
 import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
+import {
+  DiscoveryTipUserAreaSnapshot
+} from 'src/app/shared-interproject/discovery-tips/discovery-tip.models';
+import { DiscoveryTipService } from 'src/app/shared-interproject/discovery-tips/discovery-tip.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
@@ -76,10 +81,14 @@ export class UserAreaDataService extends SubManager {
   readonly modulesPageEvent$ = new Subject<PageEvent>();
   readonly addPatch$ = new Subject<void>();
   readonly addRack$ = new Subject<void>();
+  readonly addModulesToCollection$ = new Subject<void>();
+  private readonly _searchQuery$ = new BehaviorSubject<string>('');
+  private discoveryConnected = false;
   
   constructor(
     public dialog: MatDialog,
-    public backend: SupabaseService
+    public backend: SupabaseService,
+    private readonly discoveryTipService: DiscoveryTipService
   ) {
     super();
 
@@ -91,36 +100,10 @@ export class UserAreaDataService extends SubManager {
       map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
     );
 
-    this.commentsPageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.commentsPagination.take$.next(event.pageSize);
-        this.commentsPagination.skip$.next(event.pageIndex * event.pageSize);
-        this.updateCommentsData$.next();
-      });
-
-    this.patchesPageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.patchesPagination.take$.next(event.pageSize);
-        this.patchesPagination.skip$.next(event.pageIndex * event.pageSize);
-        this.updatePatchesData$.next();
-      });
-
-    this.racksPageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.racksPagination.take$.next(event.pageSize);
-        this.racksPagination.skip$.next(event.pageIndex * event.pageSize);
-        this.updateRackData$.next(undefined);
-      });
-
-    this.modulesPageEvent$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(event => {
-        this.modulesPagination.take$.next(event.pageSize);
-        this.modulesPagination.skip$.next(event.pageIndex * event.pageSize);
-      });
+    this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
+    this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination, () => this.updatePatchesData$.next());
+    this.bindPageEvent(this.racksPageEvent$, this.racksPagination, () => this.updateRackData$.next(undefined));
+    this.bindPageEvent(this.modulesPageEvent$, this.modulesPagination);
 
     this.updateCommentsData$
       .pipe(
@@ -188,9 +171,41 @@ export class UserAreaDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.manualsData$.next(x))
+
+    combineLatest([
+      this.modulesData$,
+      this.rackData$,
+      this.patchesData$,
+      this.manualsData$,
+      this.commentsData$,
+      this._searchQuery$
+    ]).pipe(
+      map(([modules, racks, patches, manuals, comments, query]) => this.buildDiscoverySnapshot(
+        modules,
+        racks,
+        patches,
+        manuals,
+        comments,
+        query
+      )),
+      tap((snapshot) => this.discoveryTipService.updateUserAreaSnapshot(snapshot)),
+      takeUntil(this.destroy$)
+    ).subscribe();
+
+    this.addModulesToCollection$
+      .pipe(
+        tap(() => {
+          this.discoveryTipService.recordAction('user-area.modules.add-clicked');
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
     
     this.addPatch$
       .pipe(
+        tap(() => {
+          this.discoveryTipService.recordAction('user-area.patches.create-clicked');
+        }),
         switchMap(() => {
           const data: PatchCreatorInModel = {};
           
@@ -209,6 +224,9 @@ export class UserAreaDataService extends SubManager {
     
     this.addRack$
       .pipe(
+        tap(() => {
+          this.discoveryTipService.recordAction('user-area.racks.create-clicked');
+        }),
         switchMap(() => {
           const data: RackCreatorInModel = {
             userModules: this.modulesData$.value || []
@@ -229,5 +247,64 @@ export class UserAreaDataService extends SubManager {
       .subscribe(() => this.updateRackData$.next(undefined));
     
     
+  }
+
+  connectDiscovery(searchQuery$: Observable<string>): void {
+    if (this.discoveryConnected) {
+      return;
+    }
+
+    this.discoveryConnected = true;
+    searchQuery$.pipe(
+      map((query) => query.trim()),
+      tap((query) => this._searchQuery$.next(query)),
+      filter((query) => query.length > 0),
+      tap(() => this.discoveryTipService.recordAction('user-area.search-used')),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  private bindPageEvent(
+    pageEvent$: Observable<PageEvent>,
+    pagination: { skip$: BehaviorSubject<number>; take$: BehaviorSubject<number> },
+    onPageChange?: () => void
+  ): void {
+    pageEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        pagination.take$.next(event.pageSize);
+        pagination.skip$.next(event.pageIndex * event.pageSize);
+        onPageChange?.();
+      });
+  }
+
+  private buildDiscoverySnapshot(
+    modules: MinimalModule[] | undefined,
+    racks: Rack[] | undefined,
+    patches: Patch[] | undefined,
+    manuals: DbModule[] | undefined,
+    comments: DbComment[] | undefined,
+    query: string
+  ): DiscoveryTipUserAreaSnapshot {
+    const modulesCount = modules?.length ?? 0;
+    const racksCount = racks?.length ?? 0;
+    const patchesCount = patches?.length ?? 0;
+    const manualsCount = manuals?.length ?? 0;
+    const commentsCount = comments?.length ?? 0;
+
+    return {
+      modulesLoaded: modules !== undefined,
+      racksLoaded: racks !== undefined,
+      patchesLoaded: patches !== undefined,
+      manualsLoaded: manuals !== undefined,
+      commentsLoaded: comments !== undefined,
+      modulesCount,
+      racksCount,
+      patchesCount,
+      manualsCount,
+      commentsCount,
+      totalCount: modulesCount + racksCount + patchesCount,
+      hasSearchQuery: query.length > 0
+    };
   }
 }

@@ -34,6 +34,7 @@ import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
+import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 
 
 @NgModule({
@@ -74,7 +75,8 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
     UserManualsComponent,
     UserCommentsComponent,
     AppFaqComponent,
-    MatFormEntityComponent
+    MatFormEntityComponent,
+    DiscoveryTipsModule
   ],
   exports:      [
     UserAreaRootComponent

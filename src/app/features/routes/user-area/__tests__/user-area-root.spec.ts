@@ -220,10 +220,11 @@ describe('UserAreaRootComponent - miscStats$', () => {
  */
 describe('UserAreaRootComponent - Global Search', () => {
   let component: UserAreaRootComponent;
+  let mockDataService: ReturnType<typeof createMockUserAreaDataService>;
   
   function build() {
     const mockUserService = createMockUserManagementService();
-    const mockDataService = createMockUserAreaDataService();
+    mockDataService = createMockUserAreaDataService();
     const mockSeoService = createMockSeoAndUtilsService();
     const mockBackend = createMockSupabaseService();
     
@@ -263,5 +264,25 @@ describe('UserAreaRootComponent - Global Search', () => {
     tick(130); // flush debounceTime(120)
     
     expect(typeof emitted[0]).toBe('string');
+  }));
+
+  it('should connect the discovery stream through the data service', fakeAsync(() => {
+    build();
+    mockDataService.modulesData$.next(MOCK_MODULES as any);
+    mockDataService.rackData$.next(MOCK_RACKS as any);
+    mockDataService.patchesData$.next(MOCK_PATCHES as any);
+
+    tick(150);
+
+    expect(mockDataService.connectDiscovery).toHaveBeenCalledWith(component.globalSearchQuery$);
+  }));
+
+  it('should hand off the root search stream only once on init', fakeAsync(() => {
+    build();
+    component.globalSearchControl.setValue('maths');
+
+    tick(150);
+
+    expect(mockDataService.connectDiscovery).toHaveBeenCalledTimes(1);
   }));
 });

@@ -24,6 +24,7 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { UntypedFormControl } from '@angular/forms';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
 @Component({
@@ -33,7 +34,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class UserAreaRootComponent implements OnInit {
+export class UserAreaRootComponent extends SubManager implements OnInit {
   readonly formTypes = FormTypes;
   readonly globalSearchControl = new UntypedFormControl('');
   readonly globalSearchQuery$ = this.globalSearchControl.valueChanges.pipe(
@@ -65,6 +66,7 @@ export class UserAreaRootComponent implements OnInit {
     public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService
   ) {
+    super();
     this.miscStats$ = combineLatest([
       this.dataService.modulesData$,
       this.dataService.rackData$,
@@ -92,6 +94,7 @@ export class UserAreaRootComponent implements OnInit {
       }, 'My collection');
     }
     
+    this.dataService.connectDiscovery(this.globalSearchQuery$);
   }
   
 }
