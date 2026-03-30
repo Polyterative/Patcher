@@ -100,16 +100,16 @@ Patcher is built for the full modular workflow, not just patch notes.
 
 ## **Setting Up the Project Locally**
 
-Use Yarn for dependency management:
+Use pnpm for dependency management:
 
 ```bash
 git clone <repository_url>
 cd Patcher
-yarn install
-ng serve
+pnpm install
+pnpm start
 ```
 
-Local app URL: `http://localhost:4200/`
+Local app URL: `http://localhost:5556/`
 
 > **Branches:** `develop` is where active work happens. `production` is deployed automatically — do not push to it
 > directly.
@@ -118,8 +118,8 @@ Local app URL: `http://localhost:4200/`
 
 ## **Running E2E Tests**
 
-- Public smoke suite: `yarn test:e2e`
-- Authenticated suite: `yarn test:e2e:auth`
+- Public smoke suite: `pnpm test:e2e`
+- Authenticated suite: `pnpm test:e2e:auth`
 
 For contributor setup (required `.env` keys, dedicated test account, and why `playwright/.auth/` is ignored), see
 [`e2e/README.md`](e2e/README.md).
