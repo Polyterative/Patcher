@@ -5,7 +5,7 @@ This folder contains Playwright end-to-end tests.
 ## Run Public Smoke Tests
 
 ```bash
-yarn test:e2e
+pnpm test:e2e
 ```
 
 These tests do not require login credentials.
@@ -26,7 +26,7 @@ cp .env.example .env
 3. Run authenticated tests:
 
 ```bash
-yarn test:e2e:auth
+pnpm test:e2e:auth
 ```
 
 ## About `playwright/.auth/`

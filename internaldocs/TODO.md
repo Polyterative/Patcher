@@ -147,7 +147,7 @@ fields (name, logo, website, bio) are manufacturer-owned; module data edits go t
 
 - [ ] Create dedicated Supabase test account (email/password)
 - [ ] Update local `.env` and rotate GitHub secrets `E2E_TEST_EMAIL` + `E2E_TEST_PASSWORD`
-- [ ] Re-run `yarn test:e2e:auth` to confirm
+- [ ] Re-run `pnpm test:e2e:auth` to confirm
 
 ---
 
