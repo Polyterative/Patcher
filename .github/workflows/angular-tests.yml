@@ -44,9 +44,9 @@ jobs:
       matrix:
         include:
           - name: Unit tests
-            command: pnpm ci
+            command: pnpm run ci
           - name: Function tests
-            command: pnpm test:functions
+            command: pnpm run test:functions
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
