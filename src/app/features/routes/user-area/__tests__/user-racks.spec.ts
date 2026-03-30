@@ -112,4 +112,9 @@ describe('UserRacksComponent', () => {
     build();
     expect(mockBackend.get.currentUserRacks).not.toHaveBeenCalled();
   });
+
+  it('should expose addRack$ for the template action hook', () => {
+    build();
+    expect(typeof mockDataService.addRack$.next).toBe('function');
+  });
 });

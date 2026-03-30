@@ -1,4 +1,7 @@
-import { of } from 'rxjs';
+import {
+  of,
+  Subject
+} from 'rxjs';
 import { UserAreaDataService } from './user-area-data.service';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { RackCreatorComponent } from 'src/app/components/rack-parts/rack-creator/rack-creator.component';
@@ -24,9 +27,14 @@ describe('UserAreaDataService', () => {
         afterClosed: () => of(true)
       })
     };
+
+    const discoveryTipService = {
+      updateUserAreaSnapshot: jasmine.createSpy('updateUserAreaSnapshot'),
+      recordAction: jasmine.createSpy('recordAction')
+    };
     
-    const service = new UserAreaDataService(dialog as any, backend as any);
-    return {service, backend, dialog};
+    const service = new UserAreaDataService(dialog as any, backend as any, discoveryTipService as any);
+    return {service, backend, dialog, discoveryTipService};
   }
   
   it('loads comments/modules/patches/racks on update requests', () => {
@@ -58,7 +66,7 @@ describe('UserAreaDataService', () => {
   });
   
   it('opens patch creator and triggers patch refresh', () => {
-    const {service, dialog} = build();
+    const {service, dialog, discoveryTipService} = build();
     const patchUpdateSpy = spyOn(service.updatePatchesData$, 'next').and.callThrough();
     
     service.addPatch$.next();
@@ -67,11 +75,12 @@ describe('UserAreaDataService', () => {
       data: {},
       width: '24rem'
     });
+    expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.patches.create-clicked');
     expect(patchUpdateSpy).toHaveBeenCalled();
   });
   
   it('opens rack creator with current modules and triggers rack refresh', () => {
-    const {service, dialog} = build();
+    const {service, dialog, discoveryTipService} = build();
     const rackUpdateSpy = spyOn(service.updateRackData$, 'next').and.callThrough();
     service.modulesData$.next([{id: 99, name: 'Local', hp: 8} as any]);
     
@@ -82,6 +91,47 @@ describe('UserAreaDataService', () => {
       width: '24rem',
       disableClose: false
     });
+    expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.racks.create-clicked');
     expect(rackUpdateSpy).toHaveBeenCalledWith(undefined);
+  });
+
+  it('records discovery actions from service-owned helper subjects', () => {
+    const {service, discoveryTipService} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.addModulesToCollection$.next();
+    searchQuery$.next('maths');
+
+    expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.modules.add-clicked');
+    expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.search-used');
+  });
+
+  it('forwards discovery snapshots through the data service', () => {
+    const {service, discoveryTipService} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.modulesData$.next([{id: 1}] as any);
+    service.rackData$.next([{id: 2}] as any);
+    service.patchesData$.next([{id: 3}] as any);
+    service.manualsData$.next([{id: 4}] as any);
+    service.commentsData$.next([{id: 5}] as any);
+    searchQuery$.next('maths');
+
+    expect(discoveryTipService.updateUserAreaSnapshot).toHaveBeenCalledWith({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      manualsLoaded: true,
+      commentsLoaded: true,
+      modulesCount: 1,
+      racksCount: 1,
+      patchesCount: 1,
+      manualsCount: 1,
+      commentsCount: 1,
+      totalCount: 3,
+      hasSearchQuery: true
+    });
   });
 });

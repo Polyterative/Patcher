@@ -98,4 +98,9 @@ describe('UserModulesComponent', () => {
     mockDataService.modulesData$.next(undefined);
     expect(mockDataService.modulesData$.value).toBeUndefined();
   });
+
+  it('should expose the module-add action subject on the data service', () => {
+    build();
+    expect(typeof mockDataService.addModulesToCollection$.next).toBe('function');
+  });
 });

@@ -19,12 +19,15 @@
     @if (!(userModulesComponentViewConfig.hideAddModulesButton)) {
       <div class="row gap1 auto-left"
       >
-        <app-brand-primary-button routerLink="/modules/add"
+        <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-submit"
+                                  routerLink="/modules/add"
                                   icon="upload"
                                   fxLayoutAlign="end"
         >Submit NEW
         </app-brand-primary-button>
-        <app-brand-primary-button routerLink="/modules/browser"
+        <app-brand-primary-button appDiscoveryTipAnchor="user-area-modules-add"
+                                  routerLink="/modules/browser"
+                                  (click$)="dataService.addModulesToCollection$.next()"
                                   icon="add"
                                   fxLayoutAlign="end"
         >Add modules to collection

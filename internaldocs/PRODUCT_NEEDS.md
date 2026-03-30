@@ -209,8 +209,6 @@ Rack-specific HP override without touching global module data. Pure solo fix —
 removing and re-adding the module. **Upgrades when:** Data Integrity philosophy is resolved → the same override pattern
 extends to other rack-local corrections. Already scoped in [TODO.md](./TODO.md).
 
----
-
 ### Tier 1 — Community Foundation *(must ship before Tier 2)*
 
 #### Public User Profiles
