@@ -7,14 +7,27 @@
  */
 
 import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine, createNodeRequestHandler, isMainModule } from '@angular/ssr/node';
+import {
+  CommonEngine,
+  createNodeRequestHandler,
+  isMainModule
+} from '@angular/ssr/node';
 import express from 'express';
 import { existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import {
+  dirname,
+  join,
+  resolve
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // AppServerModule is exported as default from main.server.ts
 import AppServerModule from './main.server';
+import {
+  resolveRequestOrigin,
+  resolveSsrAllowedHosts
+} from './ssr-host-config';
+
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -26,7 +39,9 @@ const isProd = existsSync(csrHtml);
 
 export function app(): express.Express {
   const server = express();
-  const engine = new CommonEngine({ allowedHosts: ['localhost', '127.0.0.1'] });
+  const engine = new CommonEngine({allowedHosts: resolveSsrAllowedHosts()});
+  
+  server.set('trust proxy', true);
 
   // Serve static assets with long-lived cache; never serve index.html from here.
   server.use(
@@ -40,17 +55,40 @@ export function app(): express.Express {
   // All other requests → Angular SSR via CommonEngine
   server.use((req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
+    const requestOrigin = resolveRequestOrigin({
+      protocol,
+      host: headers.host,
+      forwardedHost: headers['x-forwarded-host'],
+      forwardedProto: headers['x-forwarded-proto'],
+    });
 
     engine
       .render({
         bootstrap: AppServerModule,
         documentFilePath: csrHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
+        url: `${ requestOrigin }${ originalUrl }`,
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
       .then((html) => res.send(html))
       .catch(next);
+  });
+  
+  server.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('SSR render failed', {
+      error,
+      host: req.headers.host,
+      path: req.originalUrl,
+      forwardedHost: req.headers['x-forwarded-host'],
+      forwardedProto: req.headers['x-forwarded-proto'],
+    });
+    
+    if (res.headersSent) {
+      next(error);
+      return;
+    }
+    
+    res.status(500).send('Internal Server Error');
   });
 
   return server;
