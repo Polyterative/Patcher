@@ -24,6 +24,10 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 import { UserAreaRootComponent } from 'src/app/features/routes/user-area/user-area-root/user-area-root.component';
 import { MatCardModule } from "@angular/material/card";
 import { AuthGuard } from "src/app/features/backbone/login/user-auth-guard.service";
+import {
+  UsernameCompleteGuard,
+  UsernameGuard
+} from "src/app/features/backbone/login/username-complete-guard.service";
 import { UserManualsComponent } from "src/app/features/routes/user-area/user-manuals/user-manuals.component";
 import { UserCommentsComponent } from "src/app/features/routes/user-area/user-comments/user-comments.component";
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
@@ -44,7 +48,7 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
       {
         path: 'user/area',
         component: UserAreaRootComponent,
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, UsernameGuard],
       }
     ]),
     FlexLayoutModule,
@@ -76,7 +80,8 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
     UserAreaRootComponent
   ],
   providers:    [
-    UserAreaDataService
+    UserAreaDataService,
+    UsernameCompleteGuard
   ]
 })
 export class UserAreaModule {}

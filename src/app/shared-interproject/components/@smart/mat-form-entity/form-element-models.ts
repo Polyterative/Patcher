@@ -72,6 +72,10 @@ export namespace CustomValidators {
   
   // check sanitized html vs original html and error if different
   export function onlyCleanHtml(control: AbstractControl) {
+    // DOMPurify requires a real DOM — skip the check in SSR (Node.js) context.
+    if (typeof DOMPurify.sanitize !== 'function') {
+      return null;
+    }
     let original  = control.value;
     let sanitized = DOMPurify.sanitize(original);
     return original === sanitized ? null : {[ErrorCodes.form.errorCode.custom.invalidContent]: true};
