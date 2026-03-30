@@ -25,21 +25,21 @@
 
 #### Layer 1 – MVP (data wiring)
 
--
+- 
 
 #### Layer 2 – Structural (template)
 
--
+- 
 
 #### Layer 3 – Polish
 
--
+- 
 
 ---
 
 #### Decisions / notes
 
--
+- 
 
 ---
 

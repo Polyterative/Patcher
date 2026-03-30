@@ -45,7 +45,7 @@ This repository currently commits:
 - a type-generation script in `package.json`:
 
 ```bash
-yarn updateBackendTypes
+pnpm updateBackendTypes
 ```
 
 This repository does not currently commit:
@@ -102,7 +102,7 @@ When making a schema change:
 3. Regenerate types:
 
 ```bash
-yarn updateBackendTypes
+pnpm updateBackendTypes
 ```
 
 4. If the app uses the new schema, update:

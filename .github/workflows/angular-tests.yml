@@ -10,7 +10,7 @@ on:
       - 'middleware.ts'
       - 'scripts/tests/**'
       - 'package.json'
-      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
       - 'angular.json'
       - 'tsconfig*.json'
       - '.github/workflows/angular-tests.yml'
@@ -21,7 +21,7 @@ on:
       - 'middleware.ts'
       - 'scripts/tests/**'
       - 'package.json'
-      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
       - 'angular.json'
       - 'tsconfig*.json'
       - '.github/workflows/angular-tests.yml'
@@ -44,21 +44,27 @@ jobs:
       matrix:
         include:
           - name: Unit tests
-            command: yarn ci
+            command: pnpm ci
           - name: Function tests
-            command: yarn test:functions
+            command: pnpm test:functions
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+          run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: yarn
+          cache: pnpm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Generate environment files
         run: node generate-env.js
