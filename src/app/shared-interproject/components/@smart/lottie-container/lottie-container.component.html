@@ -1,6 +1,8 @@
-<ng-lottie
-    [styles]="styles"
-    [options]="options"
-    [@enter]
-    class="invert-color"
-></ng-lottie>
+@if (isBrowser) {
+  <ng-lottie
+      [styles]="styles"
+      [options]="options"
+      [@enter]
+      class="invert-color"
+  ></ng-lottie>
+}

@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Inject,
   Input,
-  OnInit
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { AnimationOptions } from 'ngx-lottie';
 
@@ -29,8 +32,11 @@ export class LottieContainerComponent implements OnInit {
     maxWidth: '31.25rem',
     margin:   '0 auto'
   };
+  readonly isBrowser: boolean;
   
-  constructor() { }
+  constructor(@Inject(PLATFORM_ID) platformId: object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
   
   ngOnInit(): void {
   }

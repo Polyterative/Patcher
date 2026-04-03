@@ -17,7 +17,7 @@ import {
   ],
   providers: [
     provideLottieOptions({
-      player: () => import( 'lottie-web'),
+      player: () => import('lottie-web/build/player/esm/lottie_svg.min.js'),
     }),
   ],
   exports:      [
