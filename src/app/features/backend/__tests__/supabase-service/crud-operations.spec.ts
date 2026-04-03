@@ -367,15 +367,14 @@ describe('SupabaseService - CRUD Operations', () => {
   // ============================================================================
   
   describe('update.module', () => {
-    /** Builds a chainable mock: update(data).eq(id).eq(submitter).select() */
+    /** Builds a chainable mock: update(data).eq(id).select() */
     function buildModuleUpdateMock() {
       const selectSpy = jasmine.createSpy('select').and.returnValue(
         Promise.resolve({data: [{id: 1}], error: null})
       );
-      const eqSubmitterSpy = jasmine.createSpy('eq').and.returnValue({select: selectSpy});
-      const eqIdSpy = jasmine.createSpy('eq').and.returnValue({eq: eqSubmitterSpy, select: selectSpy});
+      const eqIdSpy = jasmine.createSpy('eq').and.returnValue({select: selectSpy});
       const updateSpy = jasmine.createSpy('update').and.returnValue({eq: eqIdSpy});
-      return {updateSpy, eqIdSpy, eqSubmitterSpy, selectSpy};
+      return {updateSpy, eqIdSpy, selectSpy};
     }
 
     it('should strip undefined and null values before update', (done) => {

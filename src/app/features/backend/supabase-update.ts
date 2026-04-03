@@ -136,17 +136,11 @@ export function createUpdateNamespace(
       return getUserSession$().pipe(
         switchMap(user => {
           if (!user) return throwError(() => new Error('Authentication required'));
-          return hasAdminRole$().pipe(
-            take(1),
-            switchMap(isAdmin => {
-              let query = supabase.from(DbPaths.modules)
-                .update(dbData)
-                .eq('id', data.id);
-              if (!isAdmin) {
-                query = query.eq('submitter', user.id);
-              }
-              return rxFrom(query.select('id,updated,created'));
-            })
+          return rxFrom(
+            supabase.from(DbPaths.modules)
+              .update(dbData)
+              .eq('id', data.id)
+              .select('id,updated,created')
           );
         }),
         showSuccessMessage(snackBar),

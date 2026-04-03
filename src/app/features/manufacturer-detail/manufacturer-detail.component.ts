@@ -24,6 +24,10 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { LabelValueData } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { TimeagoPipe } from 'ngx-timeago';
+import {
+  clearJsonLdScript,
+  upsertJsonLdScript
+} from 'src/app/shared-interproject/json-ld-dom';
 
 
 const LOGO_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/manufacturer-logos/';
@@ -123,13 +127,13 @@ export class ManufacturerDetailComponent extends SubManager {
   }
 
   override ngOnDestroy(): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     super.ngOnDestroy();
   }
   
   
   private injectManufacturerJsonLd(manufacturer: ManufacturerDetail): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
@@ -138,10 +142,6 @@ export class ManufacturerDetailComponent extends SubManager {
       'logo': manufacturer.logo ? `${ LOGO_BASE_URL }${ manufacturer.logo }` : undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    const script = document.createElement('script');
-    script.id = JSONLD_SCRIPT_ID;
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
+    upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
   }
 }

@@ -186,8 +186,8 @@ describe('SupabaseService - update.module', () => {
   }, TEST_TIMEOUT);
 });
 
-describe('update.module - admin vs non-admin submitter filter', () => {
-  function buildNamespace(isAdmin: boolean) {
+describe('update.module authorization behavior', () => {
+  function buildNamespace() {
     const eqCalls: Array<[string, unknown]> = [];
     const mock: any = {};
     ['select', 'update', 'insert', 'delete', 'upsert', 'filter'].forEach(m => { mock[m] = () => mock; });
@@ -197,25 +197,14 @@ describe('update.module - admin vs non-admin submitter filter', () => {
     const supabase: any = {from: () => mock};
     const snackBar: any = {open: () => {}};
     const getUserSession$ = () => of({id: 'user-42', created_at: ''} as any);
-    const hasAdminRole$ = () => of(isAdmin);
+    const hasAdminRole$ = () => of(false);
     const ns = createUpdateNamespace(supabase, snackBar, getUserSession$, () => of(null), hasAdminRole$);
     return {ns, eqCalls};
   }
 
-  it('non-admin: applies submitter filter with user id', (done) => {
-    const {ns, eqCalls} = buildNamespace(false);
+  it('allows logged-in users to update modules without submitter filtering', (done) => {
+    const {ns, eqCalls} = buildNamespace();
     ns.module({id: 7, name: 'VCO'} as any).subscribe({
-      next: () => {
-        expect(eqCalls).toContain(jasmine.arrayContaining(['submitter', 'user-42']));
-        done();
-      },
-      error: (err) => { fail(err); done(); }
-    });
-  });
-
-  it('admin: skips the submitter filter', (done) => {
-    const {ns, eqCalls} = buildNamespace(true);
-    ns.module({id: 8, name: 'VCA'} as any).subscribe({
       next: () => {
         const submitterCall = eqCalls.find(([col]) => col === 'submitter');
         expect(submitterCall).toBeUndefined();
