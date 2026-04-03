@@ -30,6 +30,10 @@ import {
 } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
+import {
+  clearJsonLdScript,
+  upsertJsonLdScript
+} from "src/app/shared-interproject/json-ld-dom";
 import { Animations } from "src/app/shared-interproject/SharedConstants";
 
 
@@ -317,14 +321,14 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
   }
 
   private injectModuleJsonLd(data: DbModule): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     const panelFilename = data.panels?.[0]?.filename;
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -339,11 +343,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
       'image': panelFilename ? `${ MODULE_PANELS_BASE_URL }${ panelFilename }` : undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    const script = document.createElement('script');
-    script.id = JSONLD_SCRIPT_ID;
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
+    upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
   }
   
   private patchDevModule(changes: Partial<DbModule>): void {
