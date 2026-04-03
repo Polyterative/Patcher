@@ -24,6 +24,10 @@ import {
   CommentableEntityTypes,
   CommentsDataService
 } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import {
+  clearJsonLdScript,
+  upsertJsonLdScript
+} from 'src/app/shared-interproject/json-ld-dom';
 
 
 const JSONLD_SCRIPT_ID = 'patch-jsonld';
@@ -124,14 +128,14 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   }
 
   ngOnDestroy(): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singlePatchData$.next(undefined);
     this.dataService.patchEditingPanelOpenState$.next(false);
     super.ngOnDestroy();
   }
 
   private injectPatchJsonLd(patchData: any, modules: string[]): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',
@@ -146,10 +150,6 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
       'keywords': modules.join(', ') || undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    const script = document.createElement('script');
-    script.id = JSONLD_SCRIPT_ID;
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
+    upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
   }
 }

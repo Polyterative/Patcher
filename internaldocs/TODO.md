@@ -35,7 +35,13 @@
 
 ## Active
 
-_Nothing active. Pick the next task from the Backlog._
+#### HIGH: Module editor silent save failure on incomplete modules
+
+**Why:** Logged-in users can open the editor for incomplete modules, but reported power updates are not persisting. We need the root cause pinned down and protected with regression coverage.
+
+- [x] Confirm whether the failure is caused by frontend wiring, submitter/admin gating, or Supabase/RLS behavior
+- [x] Fix the user-facing failure mode so incomplete-module edits persist again for logged-in users
+- [x] Add targeted regression coverage for the failing module-editor save path
 
 ---
 
