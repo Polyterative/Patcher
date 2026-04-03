@@ -1,5 +1,10 @@
-import { UntypedFormBuilder } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  Validators
+} from '@angular/forms';
 import { BehaviorSubject, of, Subject } from 'rxjs';
+import { FormCV } from './module-editor-data.service';
 import { ModuleEditorComponent } from './module-editor.component';
 
 function makeComponent() {
@@ -66,7 +71,17 @@ function makeComponent() {
     updated: ''
   } as any;
 
-  return {component};
+  return {component, moduleEditorDataService, fileDragHostService};
+}
+
+function makeDraftCv(partial: Partial<FormCV> = {}): FormCV {
+  return {
+    id: partial.id ?? 0,
+    isApproved: partial.isApproved ?? false,
+    name: partial.name ?? new UntypedFormControl('', Validators.required),
+    a: partial.a ?? new UntypedFormControl(0, [Validators.min(-12), Validators.max(12)]),
+    b: partial.b ?? new UntypedFormControl(5, [Validators.min(-12), Validators.max(12)])
+  };
 }
 
 describe('ModuleEditorComponent power autofill', () => {
@@ -107,5 +122,92 @@ describe('ModuleEditorComponent power autofill', () => {
     expect(component.powerRailPositive.control.value).toBe(80);
     expect(component.powerRailNegative.control.value).toBe('');
     expect(component.powerRailFiveVolts.control.value).toBe('');
+  });
+});
+
+describe('ModuleEditorComponent validation messaging', () => {
+  it('pinpoints the invalid power rail in the save reason', () => {
+    const {component} = makeComponent();
+    component.ngOnInit();
+
+    component.powerRailNegative.control.setValue(-1);
+    component.formGroupPower.markAsDirty();
+
+    expect(component.saveFabDisabledReason).toBe('Fix -12V Rail Current (mA)');
+  });
+
+  it('pinpoints the invalid physical field in the save reason', () => {
+    const {component, moduleEditorDataService} = makeComponent();
+    moduleEditorDataService.getPendingSaveState.and.callFake(({powerDirty, physicalDirty}: any) => ({
+      ins: [],
+      outs: [],
+      shouldSaveInsOuts: false,
+      shouldSavePower: powerDirty,
+      shouldSavePhysical: physicalDirty,
+      shouldSavePanel: false,
+      hasPendingChanges: powerDirty || physicalDirty
+    }));
+    component.ngOnInit();
+
+    component.depth.control.setValue(-1);
+    component.formGroupPhysical.markAsDirty();
+
+    expect(component.saveFabDisabledReason).toBe('Fix Depth (mm)');
+  });
+
+  it('reports duplicate panel type explicitly', () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    moduleEditorDataService.getPendingSaveState.and.returnValue({
+      ins: [],
+      outs: [],
+      shouldSaveInsOuts: false,
+      shouldSavePower: false,
+      shouldSavePhysical: false,
+      shouldSavePanel: true,
+      hasPendingChanges: true
+    });
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([{} as File]);
+    component.panelTypeAlreadyExists$.next(true);
+    component.duplicatePanelTypeName$.next('Light');
+
+    expect(component.saveFabDisabledReason).toBe('Duplicate panel type: Light');
+  });
+
+  it('pinpoints the invalid port row and field', () => {
+    const {component} = makeComponent();
+    component.ngOnInit();
+
+    component.INs$.next([
+      makeDraftCv({
+        name: new UntypedFormControl('', Validators.required)
+      })
+    ]);
+    component.formGroupA.addControl('name0', component.INs$.value[0].name);
+
+    const feedback = (component as any).getValidationFeedback({
+      ins: [],
+      outs: [],
+      shouldSaveInsOuts: true,
+      shouldSavePower: false,
+      shouldSavePhysical: false,
+      shouldSavePanel: false,
+      hasPendingChanges: true
+    });
+
+    expect(feedback.disabledReason).toBe('Fix Input 1 name');
+    expect(feedback.errorMessage).toBe('Port fields need attention: Input 1 name.');
+  });
+
+  it('lists multiple invalid power rails together', () => {
+    const {component} = makeComponent();
+    component.ngOnInit();
+
+    component.powerRailPositive.control.setValue(-1);
+    component.powerRailNegative.control.setValue(-2);
+    component.formGroupPower.markAsDirty();
+
+    expect(component.saveFabDisabledReason).toBe('Fix +12V Rail Current (mA), -12V Rail Current (mA)');
   });
 });

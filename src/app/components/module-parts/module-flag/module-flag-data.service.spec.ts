@@ -7,6 +7,7 @@ import {
 } from 'rxjs';
 import { take } from 'rxjs/operators';
 import {
+  FLAG_CATEGORY_GROUPS,
   FLAG_CATEGORIES,
   ModuleFlagDataService
 } from './module-flag-data.service';
@@ -64,11 +65,33 @@ describe('ModuleFlagDataService', () => {
   });
 
   describe('FLAG_CATEGORIES constant', () => {
-    it('should contain all four expected categories', () => {
+    it('should expose grouped categories for the select UI', () => {
+      expect(FLAG_CATEGORY_GROUPS.length).toBe(4);
+      expect(FLAG_CATEGORY_GROUPS.map(group => group.label)).toEqual([
+        'Module details',
+        'Specs and setup',
+        'Images and links',
+        'Catalogue'
+      ]);
+    });
+
+    it('should contain the expanded set of issue categories', () => {
       const values = FLAG_CATEGORIES.map(c => c.value);
-      expect(values).toContain('wrong-specs');
-      expect(values).toContain('missing-image');
+      expect(values).toContain('wrong-name');
+      expect(values).toContain('wrong-manufacturer');
+      expect(values).toContain('wrong-hp');
+      expect(values).toContain('wrong-power');
+      expect(values).toContain('wrong-depth-weight');
+      expect(values).toContain('wrong-io');
+      expect(values).toContain('wrong-description');
+      expect(values).toContain('missing-panel-image');
+      expect(values).toContain('wrong-panel-image');
+      expect(values).toContain('duplicate-panel-image');
+      expect(values).toContain('panel-image-cropped');
+      expect(values).toContain('missing-manual');
+      expect(values).toContain('broken-manual-link');
       expect(values).toContain('duplicate');
+      expect(values).toContain('wrong-tags');
       expect(values).toContain('other');
     });
 
@@ -76,6 +99,11 @@ describe('ModuleFlagDataService', () => {
       FLAG_CATEGORIES.forEach(c => {
         expect(c.label.length).toBeGreaterThan(0);
       });
+    });
+
+    it('should flatten all grouped options into FLAG_CATEGORIES', () => {
+      const groupedValues = FLAG_CATEGORY_GROUPS.flatMap(group => group.options.map(option => option.value));
+      expect(FLAG_CATEGORIES.map(category => category.value)).toEqual(groupedValues as any);
     });
   });
 
@@ -112,12 +140,12 @@ describe('ModuleFlagDataService', () => {
     it('should call backend.add.moduleFlag with correct payload', done => {
       const {service, mockBackend} = setupTest();
       service.moduleId$.next(42);
-      service.submitFlag$.next({category: 'wrong-specs', note: 'HP should be 8'});
+      service.submitFlag$.next({category: 'wrong-power', note: 'Should only use +12V'});
       setTimeout(() => {
         expect(mockBackend.add.moduleFlag).toHaveBeenCalledWith({
           module_id: 42,
-          category: 'wrong-specs',
-          note: 'HP should be 8'
+          category: 'wrong-power',
+          note: 'Should only use +12V'
         });
         done();
       }, 0);
@@ -151,7 +179,7 @@ describe('ModuleFlagDataService', () => {
       const {service} = setupTest();
       service.moduleId$.next(1);
       service.toggleForm$.next();
-      service.submitFlag$.next({category: 'missing-image', note: ''});
+      service.submitFlag$.next({category: 'missing-panel-image', note: ''});
       setTimeout(() => {
         service.formVisible$.pipe(take(1)).subscribe(visible => {
           expect(visible).toBeFalse();

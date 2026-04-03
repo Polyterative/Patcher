@@ -51,6 +51,11 @@ import {
 
 type CvSectionKind = 'IN' | 'OUT';
 
+interface ValidationFeedback {
+  disabledReason: string;
+  errorMessage: string;
+}
+
 
 @Component({
   selector: 'app-module-editor',
@@ -414,17 +419,9 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   private persistAllChanges$(): Observable<unknown> {
     const pendingState = this.getPendingSaveState();
     
-    const blockReason = this.getValidationBlockReason(pendingState);
-    if (blockReason) {
-      const msgMap: Record<string, string> = {
-        'Fix invalid input/output rows': 'Input/output rows have invalid values — check CV names and voltage ranges.',
-        'Fix invalid power fields': 'Power form has invalid values — check the fields and try again.',
-        'Fix invalid physical fields': 'Physical form has invalid values — check the fields and try again.',
-        'Fix panel selection or duplicate panel type': pendingState.shouldSavePanel && this.panelTypeAlreadyExists$.value
-          ? `This module already has a "${ this.duplicatePanelTypeName$.value }" panel.`
-          : 'Panel fields are invalid — check panel type and description.'
-      };
-      SharedConstants.errorCustom(this.snackBar, msgMap[blockReason] ?? blockReason);
+    const validationFeedback = this.getValidationFeedback(pendingState);
+    if (validationFeedback.disabledReason) {
+      SharedConstants.errorCustom(this.snackBar, validationFeedback.errorMessage || validationFeedback.disabledReason);
       return EMPTY;
     }
 
@@ -500,7 +497,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     }
 
     const pendingState = this.getPendingSaveState();
-    const reason = this.getValidationBlockReason(pendingState);
+    const reason = this.getValidationFeedback(pendingState).disabledReason;
     
     if (reason) {
       return {disabled: true, label: 'Save', icon: 'save', ariaLabel: `Save disabled: ${ reason }`, disabledReason: reason};
@@ -531,21 +528,60 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return this.saveFabState.disabledReason;
   }
   
-  /** Returns a human-readable reason why saving is blocked, or '' if it's allowed. */
-  private getValidationBlockReason(pendingState: PendingSaveState): string {
+  /** Returns exact field-level validation feedback for the save FAB and save errors. */
+  private getValidationFeedback(pendingState: PendingSaveState): ValidationFeedback {
     if (pendingState.shouldSaveInsOuts && (!this.formGroupA.valid || !this.formGroupB.valid)) {
-      return 'Fix invalid input/output rows';
+      const invalidPorts = [
+        ...this.describeInvalidCvRows(this.INs$.value, 'Input'),
+        ...this.describeInvalidCvRows(this.OUTs$.value, 'Output')
+      ];
+      if (invalidPorts.length > 0) {
+        return {
+          disabledReason: `Fix ${ invalidPorts.join(', ') }`,
+          errorMessage: `Port fields need attention: ${ invalidPorts.join(', ') }.`
+        };
+      }
     }
     if (pendingState.shouldSavePower && !this.formGroupPower.valid) {
-      return 'Fix invalid power fields';
+      const invalidPowerFields = this.getInvalidFieldLabels([
+        this.powerRailPositive,
+        this.powerRailNegative,
+        this.powerRailFiveVolts
+      ]);
+      return {
+        disabledReason: `Fix ${ invalidPowerFields.join(', ') }`,
+        errorMessage: `Power fields need attention: ${ invalidPowerFields.join(', ') }.`
+      };
     }
     if (pendingState.shouldSavePhysical && !this.formGroupPhysical.valid) {
-      return 'Fix invalid physical fields';
+      const invalidPhysicalFields = this.getInvalidFieldLabels([
+        this.depth,
+        this.weight
+      ]);
+      return {
+        disabledReason: `Fix ${ invalidPhysicalFields.join(', ') }`,
+        errorMessage: `Physical fields need attention: ${ invalidPhysicalFields.join(', ') }.`
+      };
     }
     if (pendingState.shouldSavePanel && this.isPanelSaveBlocked()) {
-      return 'Fix panel selection or duplicate panel type';
+      if (this.panelTypeAlreadyExists$.value) {
+        const duplicateName = this.duplicatePanelTypeName$.value || 'selected';
+        return {
+          disabledReason: `Duplicate panel type: ${ duplicateName }`,
+          errorMessage: `This module already has a "${ duplicateName }" panel.`
+        };
+      }
+
+      const invalidPanelFields = this.getInvalidFieldLabels([
+        this.panelType,
+        this.panelDescription
+      ]);
+      return {
+        disabledReason: `Fix ${ invalidPanelFields.join(', ') }`,
+        errorMessage: `Panel fields need attention: ${ invalidPanelFields.join(', ') }.`
+      };
     }
-    return '';
+    return {disabledReason: '', errorMessage: ''};
   }
 
 
@@ -612,6 +648,28 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       powerDirty: this.formGroupPower.dirty,
       physicalDirty: this.formGroupPhysical.dirty,
       panelFileCount: this.fileDragHostService.files$.value?.length ?? 0
+    });
+  }
+
+  private getInvalidFieldLabels(fields: IMatFormEntityConfig[]): string[] {
+    return fields
+      .filter(field => field.control.invalid)
+      .map(field => field.label);
+  }
+
+  private describeInvalidCvRows(cvs: FormCV[], labelPrefix: 'Input' | 'Output'): string[] {
+    return cvs.flatMap((cv, index) => {
+      const invalidLabels: string[] = [];
+      if (cv.name.invalid) {
+        invalidLabels.push(`${ labelPrefix } ${ index + 1 } name`);
+      }
+      if (cv.a.invalid) {
+        invalidLabels.push(`${ labelPrefix } ${ index + 1 } min V`);
+      }
+      if (cv.b.invalid) {
+        invalidLabels.push(`${ labelPrefix } ${ index + 1 } max V`);
+      }
+      return invalidLabels;
     });
   }
 
