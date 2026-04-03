@@ -65,6 +65,41 @@ describe('ModuleEditorDataService I/O branches', () => {
     service.touchModule$(321).subscribe();
     expect(backend.update.module).toHaveBeenCalledWith({id: 321});
   });
+
+  it('queues a module power update with the entered rail values', () => {
+    service.buildPersistPlan({
+      module: {
+        id: 17,
+        name: 'Power Test',
+        manufacturer: {name: 'Acme'},
+        standard: {name: '3U'}
+      } as any,
+      pendingState: {
+        ins: [],
+        outs: [],
+        shouldSaveInsOuts: false,
+        shouldSavePower: true,
+        shouldSavePhysical: false,
+        shouldSavePanel: false,
+        hasPendingChanges: true
+      },
+      powerPos12: 123,
+      powerNeg12: 45,
+      powerPos5: 6,
+      weight: undefined,
+      depth: undefined,
+      panelFile: undefined,
+      panelTypeValue: {name: 'light', value: 1},
+      panelDescription: ''
+    });
+
+    expect(backend.update.module).toHaveBeenCalledWith({
+      id: 17,
+      powerPos12: 123,
+      powerNeg12: 45,
+      powerPos5: 6
+    });
+  });
   
   it('creates and executes panel-save operation when panel file exists', (done) => {
     const file = {

@@ -24,6 +24,10 @@ import {
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import {
+  clearJsonLdScript,
+  upsertJsonLdScript
+} from 'src/app/shared-interproject/json-ld-dom';
 
 
 const JSONLD_SCRIPT_ID = 'rack-jsonld';
@@ -113,13 +117,13 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   }
   
   override ngOnDestroy(): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleRackData$.next(undefined);
     super.ngOnDestroy();
   }
 
   private injectRackJsonLd(rackData: any, modules: string[]): void {
-    document.getElementById(JSONLD_SCRIPT_ID)?.remove();
+    clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'CreativeWork',
@@ -134,10 +138,6 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
       'keywords': modules.length ? modules.join(', ') : undefined,
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
-    const script = document.createElement('script');
-    script.id = JSONLD_SCRIPT_ID;
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
+    upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
   }
 }
