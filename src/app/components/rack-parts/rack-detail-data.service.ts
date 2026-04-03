@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
-import _ from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
@@ -56,6 +55,10 @@ import {
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
 
+
+function cloneRackData<T>(value: T): T {
+  return structuredClone(value);
+}
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
@@ -201,7 +204,7 @@ export class RackDetailDataService extends SubManager {
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
         switchMap(([rackedModule, rackModules, rack]) => {
           
-          const originalModule: RackedModule = _.cloneDeep(rackedModule);
+          const originalModule: RackedModule = cloneRackData(rackedModule);
           
           this.removeRackedModuleFromRack(rackModules, rackedModule);
           this.rowedRackedModules$.next(rackModules);
@@ -230,8 +233,8 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         withLatestFrom(this.rowedRackedModules$, this.singleRackData$),
         switchMap(([rackedModule, allRackModule, _rack]) => {
-          const rackModules: RackedModule[][] = _.cloneDeep(allRackModule);
-          const modulesInRow: RackedModule[] = _.cloneDeep(rackModules[rackedModule.rackingData.row]);
+          const rackModules: RackedModule[][] = cloneRackData(allRackModule);
+          const modulesInRow: RackedModule[] = cloneRackData(rackModules[rackedModule.rackingData.row]);
           
           if (modulesInRow && modulesInRow.length > 0) {
             modulesInRow.forEach(module => {
@@ -827,8 +830,7 @@ export class RackDetailDataService extends SubManager {
   }
   
   private duplicateModule(rackedModules: RackedModule[][], rackedModule: RackedModule): void {
-    // make a deep copy of the module with lodash
-    const deepCopiedRackedModule: RackedModule = _.cloneDeep(rackedModule);
+    const deepCopiedRackedModule: RackedModule = cloneRackData(rackedModule);
     
     deepCopiedRackedModule.rackingData.id = undefined;
     
