@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.3.8](https://github.com/Polyterative/Patcher/compare/v5.3.7...v5.3.8) (2026-04-03)
+
+
+### Features
+
+* **admin:** add admin flags panel with resolve/delete UI and toolbar link ([065ef41](https://github.com/Polyterative/Patcher/commit/065ef41ed203954d4188a68f02b71082b4b3aec8))
+* **admin:** gate dev-utils section visibility on JWT admin role ([d3ac3c2](https://github.com/Polyterative/Patcher/commit/d3ac3c2ea4a14898000ac753999e1795596f1f5b))
+* **discovery-tips:** add contextual user-area onboarding tips ([149663c](https://github.com/Polyterative/Patcher/commit/149663c6ce33734effe91e6971b2da4729d07e16))
+* **module-flag:** add module flagging feature with pending count indicator ([bdf67bb](https://github.com/Polyterative/Patcher/commit/bdf67bb9a78583619b515de6a1e2b1bea3952628))
+* **module-flag:** polish flag feature — extract component, fix cancel reset, add admin filters ([d9a40f1](https://github.com/Polyterative/Patcher/commit/d9a40f16cbf17c50730ef646227a6038db120bfc))
+* **module:** autofill blank power rails ([5017570](https://github.com/Polyterative/Patcher/commit/5017570bc2ea170d635250ce19764d033d8a6e4e))
+* **module:** improve issue reporting ux ([5094f60](https://github.com/Polyterative/Patcher/commit/5094f60e7100ffb9ed2a2278658deff4356f64cd))
+* **modules:** add store URL per module — buy new link and admin edit ([209a311](https://github.com/Polyterative/Patcher/commit/209a311632783c2e420f99da82fefe599005d8ee))
+* **pagination:** persist page state across navigation for all four browser lists ([a7dec10](https://github.com/Polyterative/Patcher/commit/a7dec108f212ece2b8b01fe68867ab5ea6daf90f))
+* **seo:** add Angular SSR with on-demand rendering and JSON-LD structured data ([c451ac7](https://github.com/Polyterative/Patcher/commit/c451ac7c2a7356eda4be93ccc4b99ec686ad3bd5))
+* **ssr-host-config:** add request origin resolution and allowed hosts ([85ad3f5](https://github.com/Polyterative/Patcher/commit/85ad3f512e79d324ab2a9a9ba38937f24e650358))
+* **ssr:** wire Angular 21 on-demand SSR to Vercel via explicit serverless shim ([bb1ffc7](https://github.com/Polyterative/Patcher/commit/bb1ffc72699a0f51e18ff1a3d67f629d1897fc63))
+* **supabase:** add store_url migration ([df70c30](https://github.com/Polyterative/Patcher/commit/df70c3015635860eb6548954d4c239e543f0d46c))
+* **username-guard:** enforce username completion check ([e2b56d0](https://github.com/Polyterative/Patcher/commit/e2b56d0bea8692477d96dde172d5a0f17a1f1eb4))
+
+
+### Bug Fixes
+
+* **admin-flags:** surface supabase errors on delete/resolve and add admin RLS policies ([4889843](https://github.com/Polyterative/Patcher/commit/4889843fe3aa6b6dd220e7706ebbe2d764f94840))
+* **admin:** bypass submitter filter in update.module for admins and add role-gating tests ([503c01e](https://github.com/Polyterative/Patcher/commit/503c01e0b8635b3bc43d7a0869f4667ac19f17d7))
+* **build:** pause production SSR ([98c0ce6](https://github.com/Polyterative/Patcher/commit/98c0ce6f63d2a9a8223058a0f5896d000047926b))
+* **ci:** run pnpm scripts explicitly in GitHub Actions ([cb2b678](https://github.com/Polyterative/Patcher/commit/cb2b678fc4c1fbd08d4f67c3afd82885b1194e01))
+* **dev:** stabilize local serve workflow ([557fe5a](https://github.com/Polyterative/Patcher/commit/557fe5a9cbba7f1c22ca23e53b8d1291d66ed4af))
+* **module:** restore edits and guard json-ld SSR ([7088c95](https://github.com/Polyterative/Patcher/commit/7088c9597bedbcdaf7370fd9b4a686041de3de71))
+* **ssr:** add FlexLayoutServerModule, withFetch(), remove moment dependency ([91fe840](https://github.com/Polyterative/Patcher/commit/91fe840a38e38ea7a689087d6fe08a7a75f961ba))
+* **ssr:** add server.ts to TypeScript compilation ([8f2a900](https://github.com/Polyterative/Patcher/commit/8f2a9007a8a4de48fb25dc97830117988489b1b0))
+* **ssr:** broaden localStorage polyfill for Node.js 22 and skip data-fetch timers during SSR ([c386c2f](https://github.com/Polyterative/Patcher/commit/c386c2f1fbebc51d324e9f66f0fca370ee3352e9))
+* **ssr:** disable build-time prerender to unblock deploy, rely on on-demand SSR ([be0f479](https://github.com/Polyterative/Patcher/commit/be0f479e78876d3e34e231b377e6f8654d8528e7))
+* **ssr:** export NgModule class from server entry so route extractor works ([01be690](https://github.com/Polyterative/Patcher/commit/01be690f7f54cafc16c1ace74a77048a02c65bbf))
+* **ssr:** harden lottie browser loading ([99073ae](https://github.com/Polyterative/Patcher/commit/99073ae0e5da1b26505c19d91eec8785f114a9b6))
+* **ssr:** remove browser commonjs path ([bf30cac](https://github.com/Polyterative/Patcher/commit/bf30cac80c49cdd7d3f8df1b36f6f8dd32a4764d))
+* **ssr:** switch to CommonEngine for NgModule SSR compatibility, fix Express 5 wildcard syntax ([f8afd70](https://github.com/Polyterative/Patcher/commit/f8afd70fea27e2afde635bc54bbb7247a59d9a80))
+* **ssr:** use InMemoryStorageStrategy for ts-cacheable in SSR context to avoid localStorage crash on Node.js 22 ([b65111a](https://github.com/Polyterative/Patcher/commit/b65111a6b777f0caac2e0b3c70af5b97159664e8))
+* **ssr:** wire Angular 21 on-demand SSR to Vercel via explicit serverless shim ([dbd0dd7](https://github.com/Polyterative/Patcher/commit/dbd0dd77e9b97470d56722efa089698c1827d6e9))
+* **update-module:** preserve standard=0 (3U Doepfer) stripped by falsy check ([663aa75](https://github.com/Polyterative/Patcher/commit/663aa7535e63d414fa9228fc62031fbba94d1885))
+* use index.csr.html and allow all hosts for Angular 21 SSR ([2d4c837](https://github.com/Polyterative/Patcher/commit/2d4c837a3b7b65917c9f7f8b3c9f84f90d96dbbc))
+* **vercel:** route all requests through SSR function, include browser assets in function bundle ([4e19762](https://github.com/Polyterative/Patcher/commit/4e197624970ff0481d511f9f24d5941a091bef08))
+* **vercel:** use routes with handle:filesystem so SSR function takes priority over SPA index.html fallback ([4e2757e](https://github.com/Polyterative/Patcher/commit/4e2757ea1e01a30ea51c5ae2e6c83a8166ef45dd))
+
 ### [5.3.7](https://github.com/Polyterative/Patcher/compare/v5.3.6...v5.3.7) (2026-03-13)
 
 
