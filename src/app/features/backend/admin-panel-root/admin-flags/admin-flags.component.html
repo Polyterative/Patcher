@@ -1,75 +1,97 @@
 @if ({flags: (dataService.filteredFlags$ | async) ?? [], open: (dataService.openFlagCount$ | async) ?? 0}; as vm) {
-  <div class="col gap2 flags-root">
-
-    <div class="flags-header">
-      <span class="flags-title">Module Flags</span>
-      <span class="flags-badge flags-badge--open">{{ vm.open }} open</span>
-      <span class="flags-badge flags-badge--total">{{ ((dataService.filteredFlags$ | async) ?? []).length }} shown</span>
-    </div>
-
-    <div class="flags-filters row gap2">
-      <mat-button-toggle-group [value]="dataService.statusFilter$ | async"
-                               (change)="dataService.statusFilter$.next($event.value)"
-                               aria-label="Status filter">
-        <mat-button-toggle value="open">Open</mat-button-toggle>
-        <mat-button-toggle value="resolved">Resolved</mat-button-toggle>
-        <mat-button-toggle value="all">All</mat-button-toggle>
-      </mat-button-toggle-group>
-
-      <mat-form-field appearance="outline" class="flags-category-filter">
-        <mat-label>Category</mat-label>
-        <mat-select [value]="dataService.categoryFilter$ | async"
-                    (selectionChange)="dataService.categoryFilter$.next($event.value || null)">
-          <mat-option [value]="null">All categories</mat-option>
-          <mat-option value="wrong-specs">Wrong specs</mat-option>
-          <mat-option value="missing-image">Missing image</mat-option>
-          <mat-option value="duplicate">Duplicate</mat-option>
-          <mat-option value="other">Other</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    @if (vm.flags.length === 0) {
-      <p class="flags-empty">No flags match the current filter.</p>
-    }
-
-    <div class="col gap1">
-      @for (flag of vm.flags; track flag.id) {
-        <div class="flag-row" [class.flag-row--resolved]="flag.resolved">
-
-          <div class="flag-accent" [class.flag-accent--open]="!flag.resolved"></div>
-
-          <div class="flag-body row gap2">
-            <a class="flag-module"
-               [routerLink]="['/modules', 'details', flag.module_id]">{{ flag.module?.name ?? flag.module_id }}</a>
-
-            <span class="flag-category flag-category--{{ flag.category }}">{{ flag.category }}</span>
-
-            @if (flag.note) {
-              <span class="flag-note">{{ flag.note }}</span>
-            }
-
-            <span class="flag-date">{{ flag.created_at | date: 'dd MMM yy' }}</span>
-
-            <span class="flag-status" [class.flag-status--open]="!flag.resolved">
-              {{ flag.resolved ? 'resolved' : 'open' }}
-            </span>
-          </div>
-
-          <div class="flag-actions row gap1">
-            <app-brand-primary-button [theme]="flag.resolved ? 'primary' : 'positive'"
-                                      (click$)="dataService.resolveFlag$.next({ id: flag.id, resolved: !flag.resolved })">
-              {{ flag.resolved ? 'Reopen' : 'Resolve' }}
-            </app-brand-primary-button>
-            <app-brand-primary-button theme="negative"
-                                      (click$)="dataService.deleteFlag$.next(flag.id)">
-              Delete
-            </app-brand-primary-button>
-          </div>
-
+  <div class="flags-root">
+    <section class="flags-surface">
+      <div class="flags-header">
+        <div class="flags-header-copy">
+          <h2 class="flags-title">Module flags</h2>
+          <p class="flags-subtitle">
+            Review user-submitted module issues, filter by the reported area, and resolve or remove reports as needed.
+          </p>
         </div>
-      }
-    </div>
 
+        <div class="flags-summary">
+          <span class="flags-badge flags-badge--open">{{ vm.open }} open</span>
+          <span class="flags-badge flags-badge--total">{{ vm.flags.length }} shown</span>
+        </div>
+      </div>
+
+      <div class="flags-toolbar">
+        <mat-button-toggle-group [value]="dataService.statusFilter$ | async"
+                                 (change)="dataService.statusFilter$.next($event.value)"
+                                 aria-label="Status filter">
+          <mat-button-toggle value="open">Open</mat-button-toggle>
+          <mat-button-toggle value="resolved">Resolved</mat-button-toggle>
+          <mat-button-toggle value="all">All</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <mat-form-field appearance="outline" class="flags-category-filter">
+          <mat-label>Category</mat-label>
+          <mat-select [value]="dataService.categoryFilter$ | async"
+                      (selectionChange)="dataService.categoryFilter$.next($event.value || null)">
+            <mat-option [value]="null">All categories</mat-option>
+            @for (group of dataService.categoryGroups; track group.label) {
+              <mat-optgroup [label]="group.label">
+                @for (option of group.options; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-optgroup>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      @if (vm.flags.length === 0) {
+        <p class="flags-empty">No flags match the current filter.</p>
+      }
+
+      <div class="flags-list">
+        @for (flag of vm.flags; track flag.id) {
+          <article class="flag-row" [class.flag-row--resolved]="flag.resolved">
+            <div class="flag-accent" [class.flag-accent--open]="!flag.resolved"></div>
+
+            <div class="flag-content">
+              <div class="flag-body">
+                <div class="flag-meta">
+                  <a class="flag-module"
+                     [routerLink]="['/modules', 'details', flag.module_id]">{{ flag.module?.name ?? flag.module_id }}</a>
+
+                  <span class="flag-reporter">
+                    by {{ flag.reporterName || flag.user_id }}
+                  </span>
+
+                  <div class="flag-category-block">
+                    <span class="flag-category-group">{{ dataService.getCategoryGroupLabel(flag.category) }}</span>
+                    <span class="flag-category flag-category--{{ dataService.getCategoryTone(flag.category) }}">
+                      {{ dataService.getCategoryLabel(flag.category) }}
+                    </span>
+                  </div>
+
+                  <span class="flag-date">{{ flag.created_at | date: 'dd MMM yy' }}</span>
+
+                  <span class="flag-status" [class.flag-status--open]="!flag.resolved">
+                    {{ flag.resolved ? 'resolved' : 'open' }}
+                  </span>
+                </div>
+
+                @if (flag.note) {
+                  <p class="flag-note">{{ flag.note }}</p>
+                }
+              </div>
+
+              <div class="flag-actions">
+                <app-brand-primary-button [theme]="flag.resolved ? 'primary' : 'positive'"
+                                          (click$)="dataService.resolveFlag$.next({ id: flag.id, resolved: !flag.resolved })">
+                  {{ flag.resolved ? 'Reopen' : 'Resolve' }}
+                </app-brand-primary-button>
+                <app-brand-primary-button theme="negative"
+                                          (click$)="dataService.deleteFlag$.next(flag.id)">
+                  Delete
+                </app-brand-primary-button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
   </div>
 }
