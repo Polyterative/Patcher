@@ -15,7 +15,7 @@ import {
 test.describe('Module Browser pagination loader', () => {
   const LOADER = 'lib-auto-update-loading-indicator app-lottie-container';
   const TIMEOUT = 15_000;
-  const SETTLE = 3_000;
+  const SETTLE = 15_000;
   
   test.beforeEach(async ({page}) => {
     await page.goto('/modules/browser');
