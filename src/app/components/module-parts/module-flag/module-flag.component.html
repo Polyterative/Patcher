@@ -1,5 +1,7 @@
 @if (userService.loggedUser$ | async) {
-  <div class="flag-container">
+  <div class="flag-container"
+       [class.flag-container--active]="flagService.formVisible$ | async"
+  >
 
     @if (!(flagService.formVisible$ | async)) {
       <div class="flag-trigger">
@@ -23,22 +25,75 @@
 
     @if (flagService.formVisible$ | async) {
       <div class="flag-form">
-        <mat-form-field appearance="outline" class="flag-field flag-field--first">
-          <mat-label>Issue type</mat-label>
-          <mat-select [(ngModel)]="selectedCategory">
-            @for (cat of flagCategories; track cat.value) {
-              <mat-option [value]="cat.value">{{ cat.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <div class="flag-step flag-step--first">
+          <div class="flag-step-header">
+            <span class="flag-step-number">1</span>
+            <div class="flag-step-header-copy">
+              <div class="flag-step-title">Pick the problem area</div>
+              <div class="flag-step-copy">Choose the part of the module page that needs correcting.</div>
+            </div>
+          </div>
 
-        <mat-form-field appearance="outline" class="flag-field">
-          <mat-label>Details (optional)</mat-label>
+          <div class="flag-group-grid">
+            @for (group of flagCategoryGroups; track group.label) {
+              <button mat-stroked-button
+                      type="button"
+                      class="flag-group-card"
+                      [class.flag-group-card--selected]="selectedGroupLabel === group.label"
+                      (click)="selectGroup(group.label)"
+              >
+                <span class="flag-group-header">
+                  <mat-icon class="flag-group-icon">{{ group.icon }}</mat-icon>
+                  <span class="flag-group-copy">
+                    <span class="flag-group-title">{{ group.label }}</span>
+                    <span class="flag-group-description">{{ group.description }}</span>
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (selectedGroup) {
+          <div class="flag-step">
+            <div class="flag-step-header">
+              <span class="flag-step-number">2</span>
+              <div class="flag-step-header-copy">
+                <div class="flag-step-title">Pick the specific issue</div>
+                <div class="flag-step-copy">Choose the closest match inside {{ selectedGroup.label.toLowerCase() }}.</div>
+              </div>
+            </div>
+
+            <div class="flag-category-grid">
+              @for (cat of selectedGroupOptions; track cat.value) {
+                <button mat-stroked-button
+                        type="button"
+                        class="flag-category-chip"
+                        [class.flag-category-chip--selected]="selectedCategory === cat.value"
+                        (click)="selectCategory(cat.value)"
+                >
+                  <mat-icon class="flag-category-icon">{{ cat.icon }}</mat-icon>
+                  <span>{{ cat.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <mat-form-field appearance="outline" class="flag-field" subscriptSizing="dynamic">
+          <mat-label>Additional details (optional)</mat-label>
           <textarea matInput
+                    class="flag-note-input"
                     [(ngModel)]="flagNote"
-                    rows="2"
-                    placeholder="Add any helpful context..."
+                    rows="3"
           ></textarea>
+          <mat-hint>
+            @if (selectedCategoryLabel) {
+              Optional: add the correct details for "{{ selectedCategoryLabel }}".
+            } @else {
+              Optional: add the correct details, missing info, or anything else that helps.
+            }
+          </mat-hint>
         </mat-form-field>
 
         <div class="flag-form-actions">
@@ -46,7 +101,7 @@
                   color="warn"
                   [disabled]="!selectedCategory"
                   (click)="submitFlag()"
-          >Submit</button>
+          >Submit report</button>
           <button mat-button
                   (click)="cancelFlag()"
           >Cancel</button>
