@@ -88,6 +88,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   duplicatePanelTypeName$ = new BehaviorSubject<string>('');
   readonly hasPendingChanges$: Observable<boolean>;
   private saveCompletedTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private powerAutofillReady = false;
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -155,6 +156,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
+    this.powerAutofillReady = false;
     if (this.data) {
       if (Array.isArray(this.data.ins)) {
         this.data.ins.forEach(cv => this.addIN$.next(cv));
@@ -203,6 +205,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     }
 
     this.markEditorFormsPristine();
+    this.powerAutofillReady = true;
   }
   
   ngOnDestroy(): void {
@@ -382,6 +385,16 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           this.panelDescription.control.patchValue(panelTypeValue.name);
         }
       });
+
+    [
+      this.powerRailPositive.control,
+      this.powerRailNegative.control,
+      this.powerRailFiveVolts.control
+    ].forEach(control => {
+      control.valueChanges
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(value => this.autoFillBlankPowerRails(control, value));
+    });
     
     // Duplicate panel type detection: update panelTypeAlreadyExists$ when panel type selection or existing panels change
     combineLatest([
@@ -600,5 +613,19 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       physicalDirty: this.formGroupPhysical.dirty,
       panelFileCount: this.fileDragHostService.files$.value?.length ?? 0
     });
+  }
+
+  private autoFillBlankPowerRails(changedControl: UntypedFormControl, value: unknown): void {
+    if (!this.powerAutofillReady || value === '' || value === null || value === undefined) {
+      return;
+    }
+
+    [
+      this.powerRailPositive.control,
+      this.powerRailNegative.control,
+      this.powerRailFiveVolts.control
+    ]
+      .filter(control => control !== changedControl && (control.value === '' || control.value === null || control.value === undefined))
+      .forEach(control => control.setValue(0, {emitEvent: false}));
   }
 }
