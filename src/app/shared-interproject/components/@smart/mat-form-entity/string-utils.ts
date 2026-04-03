@@ -1,13 +1,18 @@
-import _ from 'lodash';
-
 /**
  * String utility functions for mat-form-entity component
  */
 
+const EXTRA_ACCENT_MAP: Record<string, string> = {
+  'Ł': 'L',
+  'ł': 'l',
+  'Ø': 'O',
+  'ø': 'o',
+};
+
 /**
  * Removes accents/diacritics from a string to enable accent-insensitive search.
  * Useful for searching brands and modules like "Instruō", "Blukač", "Lùbadh", etc.
- * Uses lodash's deburr function which properly handles Latin-1 Supplement and Latin Extended-A letters.
+ * Uses Unicode normalization to strip combining diacritic marks.
  *
  * @param str - The string to normalize
  * @returns The string with accents removed
@@ -22,7 +27,10 @@ export function removeAccents(str: string): string {
     return str;
   }
   
-  return _.deburr(str);
+  return str
+    .replace(/[ŁłØø]/g, character => EXTRA_ACCENT_MAP[character] ?? character)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 /**
