@@ -1,16 +1,13 @@
 {
   "version": 2,
   "buildCommand": "pnpm build",
+  "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)' && exit 1 || exit 0",
   "routes": [
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
-    { "src": "/(.*)", "dest": "/api/ssr" }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "functions": {
-    "api/ssr.mjs": {
-      "includeFiles": "dist/Patcher/**"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
