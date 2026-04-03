@@ -34,6 +34,7 @@ pnpm test:e2e:auth                               # Authenticated e2e
 pnpm lint                                        # ESLint
 pnpm updateBackendTypes                          # Regenerate Supabase types after schema changes
 pnpm start                                       # Dev server on :5556 (only if needed and not already running)
+pnpm start:ssr                                   # SSR dev server on :5556 for SSR-specific debugging
 ```
 
 Never run directly:

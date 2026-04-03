@@ -107,6 +107,8 @@ git clone <repository_url>
 cd Patcher
 pnpm install
 pnpm start
+# use SSR locally only when you need to debug SSR-specific behavior
+pnpm start:ssr
 ```
 
 Local app URL: `http://localhost:5556/`
