@@ -11,9 +11,12 @@ import {
  * navigates to the correct routes without errors.
  */
 test.describe('Navigation', () => {
-  test('root path redirects to /home', async ({page}) => {
+  test('root path lands on the home experience', async ({page}) => {
     await page.goto('/');
-    await expect(page).toHaveURL(/home/, {timeout: 10_000});
+    await expect(page).toHaveURL(/\/(?:home)?$/, {timeout: 10_000});
+    const heroHeading = page.locator('main.home-page h1').first();
+    await expect(heroHeading).toBeVisible({timeout: 10_000});
+    await expect(heroHeading).toContainText(/patch/i);
   });
   
   test('navigating to modules/browser lands on the correct page', async ({page}) => {

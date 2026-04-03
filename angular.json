@@ -85,10 +85,15 @@
             },
             "server": "src/main.server.ts"
           },
-          "configurations": {
-            "production": {
-              "fileReplacements": [
-                {
+            "configurations": {
+              "development": {
+                "outputMode": "static",
+                "ssr": false,
+                "server": false
+              },
+              "production": {
+                "fileReplacements": [
+                  {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
@@ -116,9 +121,12 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "buildTarget": "Patcher:build"
+            "buildTarget": "Patcher:build:development"
           },
           "configurations": {
+            "ssr": {
+              "buildTarget": "Patcher:build"
+            },
             "production": {
               "buildTarget": "Patcher:build:production"
             }

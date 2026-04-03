@@ -4,6 +4,7 @@
   "packageManager": "pnpm@10.32.1",
   "scripts": {
     "start": "ng serve --port 5556",
+    "start:ssr": "ng serve --configuration ssr --port 5556",
     "startProd": "ng serve --configuration production --hmr ",
     "prebuild": "node generate-env.js",
     "build": "pnpm prebuild && angular-build-info && node scripts/generate-prerender-routes.mjs && ng build --configuration production && pnpm sentry:sourcemaps",
