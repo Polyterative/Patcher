@@ -14,22 +14,25 @@ const makeFlag = (partial: Partial<AdminFlagRow>): AdminFlagRow => ({
   module_id:  10,
   module:     {id: 10, name: 'Test Module'},
   user_id:    'user-1',
-  category:   'wrong-specs',
+  category:   'wrong-power',
   note:       null,
   created_at: '2026-01-01T00:00:00Z',
   resolved:   false,
   ...partial
 });
 
-const OPEN_WRONG  = makeFlag({id: 1, category: 'wrong-specs', resolved: false});
+const OPEN_WRONG  = makeFlag({id: 1, category: 'wrong-power', resolved: false});
 const OPEN_DUP    = makeFlag({id: 2, category: 'duplicate', resolved: false});
-const RESOLVED    = makeFlag({id: 3, category: 'wrong-specs', resolved: true});
+const RESOLVED    = makeFlag({id: 3, category: 'wrong-power', resolved: true});
 const ALL_FLAGS   = [OPEN_WRONG, OPEN_DUP, RESOLVED];
 
 function setupTest() {
   const mockGetAllFlags = jasmine.createSpy('get.allModuleFlags').and.returnValue(of(ALL_FLAGS));
+  const mockGetUserWithId = jasmine.createSpy('get.userWithId').and.callFake((id: string) => of({
+    data: {id, username: `user-${ id }`}
+  }));
   const mockBackend = {
-    get:    {allModuleFlags: mockGetAllFlags},
+    get:    {allModuleFlags: mockGetAllFlags, userWithId: mockGetUserWithId},
     update: {moduleFlagResolved: jasmine.createSpy().and.returnValue(of(null))},
     delete: {moduleFlag: jasmine.createSpy().and.returnValue(of(null))}
   };
@@ -71,6 +74,17 @@ describe('AdminFlagsDataService', () => {
         done();
       });
     });
+
+    it('should expose grouped category options for review filters', () => {
+      const {service} = setupTest();
+      expect(service.categoryGroups.map(group => group.label)).toEqual([
+        'Module details',
+        'Specs and setup',
+        'Images and links',
+        'Catalogue',
+        'Legacy categories'
+      ]);
+    });
   });
 
   describe('openFlagCount$', () => {
@@ -78,6 +92,16 @@ describe('AdminFlagsDataService', () => {
       const {service} = setupTest();
       service.openFlagCount$.pipe(take(1)).subscribe(count => {
         expect(count).toBe(2);
+        done();
+      });
+    });
+  });
+
+  describe('reporter enrichment', () => {
+    it('should resolve reporter names for loaded flags', done => {
+      const {service} = setupTest();
+      service.filteredFlags$.pipe(take(1)).subscribe(flags => {
+        expect(flags[0].reporterName).toBe('user-user-1');
         done();
       });
     });
@@ -118,9 +142,9 @@ describe('AdminFlagsDataService', () => {
     it('should return only matching category when set', done => {
       const {service} = setupTest();
       service.statusFilter$.next('all');
-      service.categoryFilter$.next('wrong-specs');
+      service.categoryFilter$.next('wrong-power');
       service.filteredFlags$.pipe(take(1)).subscribe(flags => {
-        expect(flags.every(f => f.category === 'wrong-specs')).toBeTrue();
+        expect(flags.every(f => f.category === 'wrong-power')).toBeTrue();
         expect(flags.length).toBe(2);
         done();
       });
@@ -157,6 +181,24 @@ describe('AdminFlagsDataService', () => {
         expect(flags.length).toBe(0);
         done();
       });
+    });
+  });
+
+  describe('category metadata helpers', () => {
+    it('should resolve the friendly label for known categories', () => {
+      const {service} = setupTest();
+      expect(service.getCategoryLabel('panel-image-cropped')).toBe('Panel image cropped incorrectly');
+    });
+
+    it('should resolve the group label for known categories', () => {
+      const {service} = setupTest();
+      expect(service.getCategoryGroupLabel('wrong-power')).toBe('Specs and setup');
+    });
+
+    it('should keep legacy categories reviewable', () => {
+      const {service} = setupTest();
+      expect(service.getCategoryLabel('wrong-specs')).toBe('Wrong specs');
+      expect(service.getCategoryTone('wrong-specs')).toBe('legacy');
     });
   });
 });

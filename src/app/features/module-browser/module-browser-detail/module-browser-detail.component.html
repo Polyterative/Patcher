@@ -101,17 +101,6 @@
                       </div>
                     </lib-clean-card>
                   }
-                  <!-- Status Card -->
-                  <lib-clean-card [@enter]>
-                    <div class="col gap1">
-                      <mat-card-title>Status</mat-card-title>
-                  <app-lib-showcase-grid [data]="[
-        { label: 'Data Complete', value: bag.data.isComplete ? 'Yes' : 'No', icon: 'done', size: 'auto' },
-        { label: 'Approved', value: bag.data.isApproved ? 'Yes' : 'No', icon: 'thumb_up', size: 'auto' }
-      ]">
-                  </app-lib-showcase-grid>
-                    </div>
-                  </lib-clean-card>
                   @if (bag.data && bag.data.isComplete && bag.data.manualURL) {
                     <app-brand-primary-button
                       theme="light"
