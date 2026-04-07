@@ -22,7 +22,7 @@
             @if (item.filename) {
               <img
                 [alt]="getPanelLabel(item.filename, item.description, idx)"
-                class="image-transition"
+                class="image-transition panel-gallery-img"
                 loading="lazy"
                 [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
                 [matTooltip]="getPanelLabel(item.filename, item.description, idx)"
