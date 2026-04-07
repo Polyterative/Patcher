@@ -34,3 +34,12 @@
 .description {
   @include item-description
 }
+
+.panel-color-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.75rem;
+  background: var(--mat-sys-secondary-container, #e8def8);
+  color: var(--mat-sys-on-secondary-container, #1d192b);
+  white-space: nowrap;
+}
