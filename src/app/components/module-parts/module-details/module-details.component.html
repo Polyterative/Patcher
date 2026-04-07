@@ -30,7 +30,7 @@
               >
             }
             <span style="font-size: 0.8rem;">{{getPanelLabel(item.filename, item.description, idx)}}</span>
-            @if (getPanelColorName(item.color); as colorName) {
+            @if (getPanelColorBadge(item.filename, item.description, item.color, idx); as colorName) {
               <span class="panel-color-badge">{{colorName}}</span>
             }
           </div>
@@ -51,7 +51,7 @@
   </p>
   }
 
-  @if (!viewConfig.hideReportIssue) {
+  @if (!viewConfig.hideReportIssue && !viewConfig.hideButtons) {
     <app-module-flag [moduleId]="data.id"></app-module-flag>
   }
 
