@@ -121,6 +121,12 @@ physical copy of a module a cable connects to. This distinction matters for UI:
 This membership model is what makes [Collection-Aware Patch Discovery](#collection-aware-patch-discovery) possible: the
 subset query ("patches I can play right now") only works because collection is a clean boolean per module.
 
+**New pressure point:** panel variants and physical finishes create a real user need for user-specific choices. The
+current direction should remain: **rack state is authoritative for rack presentation**. A rack may represent a current,
+historical, aspirational, or partially owned setup, so ownership data should not silently drive or restrict what the
+rack shows. If collection/ownership expands later, it should act as optional metadata or convenience hints — not as the
+source of truth for rack configuration.
+
 ---
 
 ### Mobile Strategy
@@ -208,6 +214,14 @@ user's trust tier, creating a quality incentive. Already scoped in [TODO.md](./T
 Rack-specific HP override without touching global module data. Pure solo fix — correcting a wrong HP currently requires
 removing and re-adding the module. **Upgrades when:** Data Integrity philosophy is resolved → the same override pattern
 extends to other rack-local corrections. Already scoped in [TODO.md](./TODO.md).
+
+#### Rack Module Panel Variant Switching
+
+Switch a module's visible panel variant inside a rack (light/dark/special) without creating duplicate module records.
+This follows the same product principle as rack-local HP override: catalogue data stays canonical, while presentation can
+be overridden safely in the user's private rack context. **Boundary:** do not couple this to collection ownership;
+racks must remain valid for planned builds, past systems, and setups that do not exactly mirror what the user currently
+owns.
 
 ### Tier 1 — Community Foundation *(must ship before Tier 2)*
 
