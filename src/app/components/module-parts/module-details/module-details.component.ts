@@ -56,4 +56,12 @@ export class ModuleDetailsComponent {
   getPanelColorName(color: number): string | null {
     return PANEL_COLORS[color] ?? null;
   }
+
+  /** Returns the color badge label only when it adds info not already in the label text. */
+  getPanelColorBadge(filename: string, description: string, color: number, index: number): string | null {
+    const colorName = PANEL_COLORS[color] ?? null;
+    if (!colorName) return null;
+    const label = derivePanelLabel(filename, description, index);
+    return label.toLowerCase() === colorName.toLowerCase() ? null : colorName;
+  }
 }
