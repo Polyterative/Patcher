@@ -19,17 +19,44 @@
         </app-brand-primary-button>
       </div>
       <mat-divider inset="true"></mat-divider>
-      @if ((dataService.patchesData$|async); as data) {
+      @if ((dataService.patchesData$|async); as allPatches) {
+        @if (allPatches.length > 0) {
+          @if ((dataService.allPatchTags$ | async); as uniqueTags) {
+            @if (uniqueTags.length > 0) {
+              <div class="row gap1" style="flex-wrap: wrap; align-items: center;">
+                <mat-chip-set>
+                  @for (tag of uniqueTags; track tag) {
+                    <mat-chip
+                      [highlighted]="(dataService.activeTagFilter$ | async) === tag"
+                      (click)="dataService.activeTagFilter$.next((dataService.activeTagFilter$ | async) === tag ? null : tag)"
+                    >{{ tag }}</mat-chip>
+                  }
+                </mat-chip-set>
+                @if ((dataService.activeTagFilter$ | async)) {
+                  <button mat-button color="primary" (click)="dataService.activeTagFilter$.next(null)">
+                    <mat-icon>close</mat-icon> Clear filter
+                  </button>
+                }
+              </div>
+            }
+          }
+        }
+      }
+      @if ((dataService.filteredPatchesData$|async); as data) {
         @if (data.length > 0) {
           <app-patch-list fxFlex="grow"
-                          [data$]="dataService.patchesData$"
+                          [data$]="dataService.filteredPatchesData$"
                           [showSearch]="false"
                           [externalSearchQuery]="globalSearchQuery"
           ></app-patch-list>
         } @else {
           <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any patches
-              yet. Try adding some!
+            <mat-card-subtitle fxLayoutAlign="center center">
+              @if (dataService.activeTagFilter$ | async) {
+                No patches match the selected tag.
+              } @else {
+                It looks like you haven't created any patches yet. Try adding some!
+              }
             </mat-card-subtitle>
           </div>
         }

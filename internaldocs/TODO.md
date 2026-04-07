@@ -51,22 +51,12 @@
 
 ---
 
-#### HIGH: Patch Editor — Hide Irrelevant UI Elements ✅ DONE
-
-**Why:** Two UI elements are visible during patch editing that should not be: (1) the "Report an issue" button — it should be hidden in patch editing context, with the same options kept as-is everywhere else; (2) the input/output counter badge (number + icon) shown on module cards — it clutters the patch editing canvas. The actual CV inputs/outputs must remain fully functional; only the numeric counter badge should be hidden.
-
-- [x] Hide "Report an issue" button when in patch editing mode
-- [x] Hide the input/output counter badge (number + icon) on module cards when in patch editing mode
-- [x] Verify CV inputs/outputs remain functional and visible after hiding the counter
-
----
-
 #### LOW: Discovery Tips — Speed and Positioning
 
 **Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.
 
-- [ ] Slow down auto-cycle interval (or add a manual "next" control)
-- [ ] Review tip overlay positioning — should not obscure key interactive areas
+- [x] Slow down auto-cycle interval — 8s cooldown after acknowledge/snooze; displayDelayMs bumped to 3s
+- [x] Review tip overlay positioning — pinned to bottom-right safe zone to avoid obscuring key areas
 - [ ] Consider a dismiss/pause gesture so tips don't block normal use
 
 ---
@@ -76,24 +66,11 @@
 **Why:** Solo org value now (filter own patches); unlocks Collection-Aware Discovery later. Free-form tags, no taxonomy
 yet.
 
-- [ ] Add `tags` (text array) to `patches` in `database.types.ts`
-- [ ] Add `update.patchTags()` to `supabase.service.ts` with `cacheBust(['patchWithId'])`
-- [ ] Inline chip tag editor in patch editor, auto-save on change
-- [ ] Tag filter in patch browser (own patches)
-- [ ] Write tests for update service and filter logic
-
----
-
-#### LOW: Media Attachment on Patches (Embed-Only v1)
-
-**Why:** Solo memory aid (link a recording to a patch). Public showcase once profiles ship. URL field + embed renderer
-only — no upload, no moderation.
-
-- [ ] Add nullable `media_url` to `patches` in `database.types.ts`
-- [ ] Add `update.patchMediaUrl()` to `supabase.service.ts` with `cacheBust(['patchWithId'])`
-- [ ] URL input + YouTube/SoundCloud embed preview in patch editor
-- [ ] Embed visible on patch read-only view
-- [ ] Write URL validation and render tests
+- [x] Add `tags` (text array) to `patches` in `database.types.ts`
+- [x] Add `update.patchTags()` to `supabase-update.ts` with `cacheBust(['patches'])`
+- [x] Inline chip tag editor in patch editor, auto-save on change
+- [x] Tag filter in patch browser (own patches)
+- [x] Write tests for update service and filter logic
 
 ---
 
@@ -101,9 +78,9 @@ only — no upload, no moderation.
 
 **Why:** New racks are created public by default with no way to set privacy at creation time. Users must edit the rack after creation to make it private. The dialog should include a privacy toggle.
 
-- [ ] Add public/private toggle to the "Create new rack" dialog
-- [ ] Default to private (safer default; user can explicitly make it public)
-- [ ] Pass the selection through to `add.rack()` backend call
+- [x] Add public/private toggle to the "Create new rack" dialog
+- [x] Default to private (safer default; user can explicitly make it public)
+- [x] Pass the selection through to `add.rack()` backend call
 
 ---
 

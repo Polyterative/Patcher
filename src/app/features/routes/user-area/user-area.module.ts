@@ -33,6 +33,8 @@ import { UserCommentsComponent } from "src/app/features/routes/user-area/user-co
 import { AppFaqComponent } from "src/app/components/shared-atoms/app-faq/app-faq.component";
 import { StatisticsModule } from "src/app/components/shared-atoms/statistics/statistics.module";
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
 
@@ -72,6 +74,8 @@ import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/
     PatchListModule,
     StatisticsModule,
     MatPaginatorModule,
+    MatChipsModule,
+    MatButtonModule,
     UserManualsComponent,
     UserCommentsComponent,
     AppFaqComponent,
