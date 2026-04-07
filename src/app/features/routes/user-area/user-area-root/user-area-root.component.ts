@@ -25,6 +25,7 @@ import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area
 import { UntypedFormControl } from '@angular/forms';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -64,7 +65,8 @@ export class UserAreaRootComponent extends SubManager implements OnInit {
     public userService: UserManagementService,
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
-    readonly seoAndUtilsService: SeoAndUtilsService
+    readonly seoAndUtilsService: SeoAndUtilsService,
+    public appState: AppStateService
   ) {
     super();
     this.miscStats$ = combineLatest([

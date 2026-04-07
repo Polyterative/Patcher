@@ -9,6 +9,17 @@
         <app-label-value-showcase label="User"
         >{{ bag.userProfile.username }}
         </app-label-value-showcase>
+        <div class="row gap1" style="align-items: center; margin-top: 0.5rem;">
+          <span style="font-size: 0.85rem; white-space: nowrap;">Panel preference</span>
+          <mat-button-toggle-group
+            [value]="appState.preferredPanelColor$ | async"
+            (change)="appState.setPreferredPanelColor($event.value)"
+          >
+            <mat-button-toggle [value]="1">Light</mat-button-toggle>
+            <mat-button-toggle [value]="2">Dark</mat-button-toggle>
+            <mat-button-toggle [value]="null">None</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
       </lib-clean-card>
     }
     <div class="col gap1"

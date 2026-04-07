@@ -103,6 +103,7 @@
                                           [viewConfig]="modulesViewConfig"
                                           [instanceId]="card.instance?.id"
                                           [nameSuffix]="card.label"
+                                          [preferredPanelColor]="appState.preferredPanelColor$ | async"
                     ></app-module-composite>
                   </div>
                 </lib-clean-card>

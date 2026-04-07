@@ -25,6 +25,7 @@ export class ModuleCompositeComponent implements OnInit {
   @Input() instanceId: number | undefined;
   /** Passed through to render instance label in the module title (e.g. "(2)") */
   @Input() nameSuffix: string | undefined;
+  @Input() preferredPanelColor: number | null = null;
   
   constructor() {}
   

@@ -27,6 +27,7 @@ export class ModulePartImageComponent implements OnChanges {
   
   @Input() data: MinimalModule;
   @Input() selectedPanelId: number | null = null;
+  @Input() preferredPanelColor: number | null = null;
   
   filename: string | undefined;
   
@@ -47,10 +48,13 @@ export class ModulePartImageComponent implements OnChanges {
   
   ngOnChanges(): void {
     if (this.data.panels?.length > 0) {
-      const selected = this.selectedPanelId != null
+      let panel = this.selectedPanelId != null
         ? this.data.panels.find(p => p.id === this.selectedPanelId)
         : undefined;
-      this.filename = (selected ?? this.data.panels[0]).filename;
+      if (!panel && this.preferredPanelColor != null) {
+        panel = this.data.panels.find(p => p.color === this.preferredPanelColor) ?? undefined;
+      }
+      this.filename = (panel ?? this.data.panels[0]).filename;
     } else {
       this.filename = undefined;
     }

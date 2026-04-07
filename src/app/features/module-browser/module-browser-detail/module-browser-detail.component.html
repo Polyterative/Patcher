@@ -28,6 +28,7 @@
               } @else {
                 <app-module-composite [data]="(bag.data)"
                                       [viewConfig]="viewConfig"
+                                      [preferredPanelColor]="appState.preferredPanelColor$ | async"
                 ></app-module-composite>
               }
             </lib-clean-card>
