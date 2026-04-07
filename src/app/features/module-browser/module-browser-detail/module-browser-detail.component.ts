@@ -384,16 +384,12 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     this.patchDevModule({manualURL: ''});
   }
 
-  storeUrlDraft: string = '';
+  manualUrlDraft: string = '';
 
-  setStoreUrl(id: number): void {
-    if (!this.storeUrlDraft) return;
-    this.dataService.setStoreUrl$.next({id, url: this.storeUrlDraft});
-    this.storeUrlDraft = '';
-  }
-
-  clearStoreUrl(id: number): void {
-    this.dataService.setStoreUrl$.next({id, url: null});
+  setDevManualUrl(): void {
+    if (!this.manualUrlDraft) return;
+    this.patchDevModule({manualURL: this.manualUrlDraft.trim()});
+    this.manualUrlDraft = '';
   }
   
   clampDevNumericFields(module: DbModule): void {
