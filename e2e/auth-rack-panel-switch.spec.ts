@@ -103,7 +103,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await switchPanelTrigger.click();
 
     // Both panel items must be visible in the submenu
-    const panel1Item = page.locator('button[mat-menu-item]', {hasText: /Panel 1|Default/i});
+    const panel1Item = page.locator('button[mat-menu-item]', {hasText: /Panel 1/i});
     const panel2Item = page.locator('button[mat-menu-item]', {hasText: /Panel 2|Dark/i});
     await expect(panel1Item).toBeVisible({timeout: 5_000});
     await expect(panel2Item).toBeVisible({timeout: 5_000});
@@ -144,8 +144,8 @@ test.describe('Authenticated Rack Panel Switching', () => {
 
     // After reload: the panel we switched TO should have ✓ in its label,
     // and the context menu must also show the other panel (without ✓).
-    const expectedActiveLabel = panel1Active ? /Panel 2.*✓|Dark.*✓/i : /Panel 1.*✓|Default.*✓/i;
-    const expectedInactiveLabel = panel1Active ? /Panel 1(?!.*✓)|Default(?!.*✓)/i : /Panel 2(?!.*✓)|Dark(?!.*✓)/i;
+    const expectedActiveLabel = panel1Active ? /Panel 2.*✓|Dark.*✓/i : /Panel 1.*✓/i;
+    const expectedInactiveLabel = panel1Active ? /Panel 1(?!.*✓)|Dark(?!.*✓)/i : /Panel 2(?!.*✓)|Dark(?!.*✓)/i;
 
     await expect(page.locator('button[mat-menu-item]', {hasText: expectedActiveLabel})).toBeVisible({timeout: 8_000});
     await expect(page.locator('button[mat-menu-item]', {hasText: expectedInactiveLabel})).toBeVisible({timeout: 5_000});
