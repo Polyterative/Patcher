@@ -35,13 +35,7 @@
 
 ## Active
 
-#### HIGH: Panel Variants — Discovery, Presentation & Preference
-
-**Why:** Multi-panel modules are a core differentiator but users can't discover or navigate variants. The module details page is primitive, the patch editor ignores preferences, and there's no global panel-color preference.
-
-- [ ] Layer 1 — Fix module details panel gallery (shared constant, always-visible gallery, color badges, shared label utility)
-- [ ] Layer 2 — Global panel preference propagated through browser cards, patch editor, and module details
-- [ ] Layer 3 — Discovery badge on browser cards, click-to-preview on detail page, polish
+*(none — see Backlog)*
 
 ---
 
