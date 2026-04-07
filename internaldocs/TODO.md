@@ -51,6 +51,15 @@
 
 ---
 
+#### HIGH: Patch Editor — Report Issue Button Still Visible (regression)
+
+**Why:** The `hideReportIssue` flag was added to `ModuleMinimalViewConfig` and set in the patch editor's `modulesViewConfig`, but the button is still visible during patch editing. Needs investigation — likely a `viewConfig` not flowing through to `module-details` correctly, or the flag guard condition is wrong.
+
+- [ ] Investigate why `hideReportIssue: true` in patch editor's `modulesViewConfig` does not hide the `app-module-flag` in `module-details`
+- [ ] Fix the root cause and verify button is hidden during patch editing but visible everywhere else
+
+---
+
 #### LOW: Discovery Tips — Speed and Positioning
 
 **Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.
