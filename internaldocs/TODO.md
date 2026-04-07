@@ -60,6 +60,15 @@
 
 ---
 
+#### LOW: Module Details — Panel Images Overflow Parent Width
+
+**Why:** When panel images are very large they overflow out of the parent container on the module details page. Need CSS to constrain images to parent width.
+
+- [ ] Add `max-width: 100%` (or equivalent) to panel gallery images in `module-details.component.scss`
+- [ ] Verify images scale down correctly without breaking the gallery layout
+
+---
+
 #### LOW: Discovery Tips — Speed and Positioning
 
 **Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.
