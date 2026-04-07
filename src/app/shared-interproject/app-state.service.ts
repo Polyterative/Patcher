@@ -2,6 +2,7 @@
 import { MediaObserver } from '@angular/flex-layout';
 import { UntypedFormControl } from '@angular/forms';
 import {
+  BehaviorSubject,
   ReplaySubject,
   Subject
 } from 'rxjs';
@@ -27,7 +28,26 @@ export class AppStateService {
   };
   
   readonly isDev = !environment.production;
-  
+
+  private readonly _preferredPanelColor$ = new BehaviorSubject<number | null>(this.loadPreferredPanelColor());
+  readonly preferredPanelColor$ = this._preferredPanelColor$.asObservable();
+
+  setPreferredPanelColor(color: number | null): void {
+    this._preferredPanelColor$.next(color);
+    if (color === null) {
+      localStorage.removeItem('preferredPanelColor');
+    } else {
+      localStorage.setItem('preferredPanelColor', String(color));
+    }
+  }
+
+  private loadPreferredPanelColor(): number | null {
+    const raw = localStorage.getItem('preferredPanelColor');
+    if (raw === null) return null;
+    const parsed = Number(raw);
+    return (parsed === 1 || parsed === 2) ? parsed : null;
+  }
+
   protected destroyEvent$ = new Subject<void>();
   
   layoutFlexWidth$ = new ReplaySubject<{

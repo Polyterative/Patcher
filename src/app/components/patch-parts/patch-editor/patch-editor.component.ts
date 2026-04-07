@@ -50,6 +50,7 @@ import {
   compareModulesByNameAsc,
   getModuleNormalizedManufacturer
 } from 'src/app/shared-interproject/utils/module-sort-utils';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 /** One card in the editor module list */
@@ -458,7 +459,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   constructor(
     public backend: SupabaseService,
-    public dataService: PatchDetailDataService
+    public dataService: PatchDetailDataService,
+    public appState: AppStateService
   ) {
   }
   

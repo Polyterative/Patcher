@@ -30,6 +30,7 @@ export class ModuleMinimalComponent implements OnInit {
   @Input() viewConfig: ModuleMinimalViewConfig;
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
   @Input() nameSuffix: string | undefined = undefined;
+  @Input() preferredPanelColor: number | null = null;
 
   isInCollection$: Observable<boolean>;
   
