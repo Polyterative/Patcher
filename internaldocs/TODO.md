@@ -152,6 +152,16 @@ fields (name, logo, website, bio) are manufacturer-owned; module data edits go t
 
 ---
 
+#### HIGH: Security — Fix Dependabot Vulnerability Alerts
+
+**Why:** GitHub flagged 18 vulnerabilities on the default branch (8 high, 10 moderate). Review and resolve via Dependabot.
+
+- [ ] Review alerts at https://github.com/Polyterative/Patcher/security/dependabot
+- [ ] Apply fixes (upgrade or patch affected dependencies)
+- [ ] Re-run `pnpm test-headless` to confirm nothing breaks
+
+---
+
 #### HIGH: E2E — Dedicated Test Account Cleanup
 
 **Why:** E2E credentials are coupled to a personal Supabase account — should use a dedicated test account.
