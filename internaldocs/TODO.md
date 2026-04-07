@@ -57,6 +57,16 @@
 
 ---
 
+#### HIGH: Patch Editor — Hide Irrelevant UI Elements
+
+**Why:** Two UI elements are visible during patch editing that should not be: (1) the "Report an issue" button — it should be hidden in patch editing context, with the same options kept as-is everywhere else; (2) the input/output counter badge (number + icon) shown on module cards — it clutters the patch editing canvas. The actual CV inputs/outputs must remain fully functional; only the numeric counter badge should be hidden.
+
+- [ ] Hide "Report an issue" button when in patch editing mode
+- [ ] Hide the input/output counter badge (number + icon) on module cards when in patch editing mode
+- [ ] Verify CV inputs/outputs remain functional and visible after hiding the counter
+
+---
+
 #### LOW: Discovery Tips — Speed and Positioning
 
 **Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.
