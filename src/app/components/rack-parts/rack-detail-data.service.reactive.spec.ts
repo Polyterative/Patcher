@@ -44,7 +44,8 @@ describe('RackDetailDataService reactive flows', () => {
     const backend = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
-        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({}))
+        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
+        rackModulePanel: jasmine.createSpy('update.rackModulePanel').and.returnValue(of({}))
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
@@ -237,5 +238,41 @@ describe('RackDetailDataService reactive flows', () => {
     
     expect(backend.add.rackModule).toHaveBeenCalledWith(777, 50);
     expect(refreshSpy).toHaveBeenCalledWith(50);
+  });
+  
+  describe('requestRackedModulePanelSwitch$', () => {
+    it('updates selectedPanelId in local state and calls backend', () => {
+      const {service, backend} = build();
+      const module = moduleInRack(5, 0, 0);
+      service.rowedRackedModules$.next([[module]]);
+      
+      service.requestRackedModulePanelSwitch$.next({rackedModule: module, panelId: 2});
+      
+      expect(service.rowedRackedModules$.value[0][0].rackingData.selectedPanelId).toBe(2);
+      expect(backend.update.rackModulePanel).toHaveBeenCalledWith(5, 2);
+    });
+    
+    it('can clear panel selection by setting panelId to null', () => {
+      const {service, backend} = build();
+      const module = moduleInRack(7, 0, 1);
+      module.rackingData.selectedPanelId = 3;
+      service.rowedRackedModules$.next([[module]]);
+      
+      service.requestRackedModulePanelSwitch$.next({rackedModule: module, panelId: null});
+      
+      expect(service.rowedRackedModules$.value[0][0].rackingData.selectedPanelId).toBeNull();
+      expect(backend.update.rackModulePanel).toHaveBeenCalledWith(7, null);
+    });
+    
+    it('shows error snackbar when backend call fails', () => {
+      const {service, backend, snackBar} = build();
+      backend.update.rackModulePanel.and.returnValue(throwError(() => new Error('DB error')));
+      const module = moduleInRack(9, 0, 0);
+      service.rowedRackedModules$.next([[module]]);
+      
+      service.requestRackedModulePanelSwitch$.next({rackedModule: module, panelId: 1});
+      
+      expect(snackBar.open).toHaveBeenCalled();
+    });
   });
 });

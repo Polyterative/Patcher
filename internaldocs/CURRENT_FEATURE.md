@@ -12,51 +12,52 @@
 
 ## Active
 
+_No active feature. Pick the next task from `TODO.md`._
+
+---
+
+### Empty template
+
+```
 ### Title
 
-**Goal:** Make the module details editor stop failing silently when users try to fill in missing power data on incomplete modules, and add regression coverage for the real save path.
+**Goal:** …
 
 ---
 
 #### Key files
 
-- `src/app/features/module-browser/module-browser-detail/module-browser-detail.component.html`
-- `src/app/components/module-parts/module-detail-data.service.ts`
-- `src/app/components/module-parts/module-editor/module-editor.component.ts`
-- `src/app/features/backend/supabase-update.ts`
-- `src/app/features/backend/__tests__/supabase-service/update-module.spec.ts`
-- `e2e/module-editor-ux-review.spec.ts`
+-
+
+---
+
+#### Discovered architecture facts
+
+-
 
 ---
 
 #### Layer 1 – MVP (data wiring)
 
-- Confirm whether module edit access is incorrectly exposed to any logged-in user on incomplete modules
-- Verify whether backend updates are filtered by `submitter` / admin and whether zero-row updates currently look like success
-- Make unauthorized or zero-row module updates fail explicitly instead of presenting a silent no-op
+- [ ]
 
-#### Layer 2 – Structural (template)
+#### Layer 2 – Structural (interaction model)
 
-- Align module detail edit affordance with actual edit permissions
-- Keep editor visibility and save/close flows consistent with existing `app-edit-fab` behavior
+- [ ]
 
 #### Layer 3 – Polish
 
-- Add targeted regression tests around module update authorization and the module-detail editor path
-- Add/extend E2E coverage for module power editing so the failing workflow is exercised through the UI
+- [ ]
 
 ---
 
 #### Decisions / notes
 
-- Current leading hypothesis: UI exposes the editor too broadly (`bag.user && !bag.data.isComplete`), while `update.module()` only updates rows matching `submitter = currentUser.id` unless the user is an admin
-- Need to confirm whether Supabase/RLS returns a hard error or a zero-row response for unauthorized updates in this path
-- User-reported example: `/modules/details/1717` (Disting Mk4)
-- Simplified implementation direction per user request: make logged-in edits work again now; defer stricter permission redesign
-- Implemented direction: remove the app-layer `submitter` restriction from `update.module()` so incomplete-module edits can persist for logged-in users
+-
 
 ---
 
 #### Status
 
-In progress.
+Planning.
+```

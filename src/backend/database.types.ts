@@ -675,6 +675,7 @@ export type Database = {
           moduleid: number
           rackid: number
           row: number | null
+          selected_panel_id: number | null
           updated: string
         }
         Insert: {
@@ -684,6 +685,7 @@ export type Database = {
           moduleid: number
           rackid: number
           row?: number | null
+          selected_panel_id?: number | null
           updated?: string
         }
         Update: {
@@ -693,6 +695,7 @@ export type Database = {
           moduleid?: number
           rackid?: number
           row?: number | null
+          selected_panel_id?: number | null
           updated?: string
         }
         Relationships: [
@@ -715,6 +718,13 @@ export type Database = {
             columns: ["rackid"]
             isOneToOne: false
             referencedRelation: "racks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rack_modules_selected_panel_id_fkey"
+            columns: ["selected_panel_id"]
+            isOneToOne: false
+            referencedRelation: "module_panels"
             referencedColumns: ["id"]
           },
         ]

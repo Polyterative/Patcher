@@ -111,6 +111,7 @@ export class RackDetailDataService extends SubManager {
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
   requestRackedModuleReplaceWithBlank$ = new Subject<RackedModule>();
   requestRackedModuleRowClearing$ = new Subject<RackedModule>();
+  requestRackedModulePanelSwitch$ = new Subject<{ rackedModule: RackedModule; panelId: number | null }>();
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
   
@@ -515,6 +516,33 @@ export class RackDetailDataService extends SubManager {
         this.requestRackedModulesDbSync$.next();
         
       })
+    
+    // when request to switch panel for a rack module is received, update local state then persist to backend
+    this.requestRackedModulePanelSwitch$
+      .pipe(
+        withLatestFrom(this.rowedRackedModules$),
+        switchMap(([{rackedModule, panelId}, rackModules]) => {
+          if (rackModules) {
+            for (const row of rackModules) {
+              const target = row.find(m => m.rackingData.id === rackedModule.rackingData.id);
+              if (target) {
+                target.rackingData.selectedPanelId = panelId;
+                break;
+              }
+            }
+            this.rowedRackedModules$.next(rackModules);
+          }
+          return this.backend.update.rackModulePanel(rackedModule.rackingData.id, panelId).pipe(
+            catchError((err) => {
+              console.error(`Error updating rack module panel: ${ err }`);
+              this.snackBar.open(SharedConstants.messages.operationFailed, undefined, {duration: 8000, panelClass: 'snack-error'});
+              return of(undefined);
+            })
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe()
     
     // on request to sync rack data with backend, update backend
     this.requestRackedModulesDbSync$

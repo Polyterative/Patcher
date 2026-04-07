@@ -20,6 +20,7 @@
           <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
                                 [data]="rackedModule|mapToModule"
                                 [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
+                                [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
                                 class="module"
                                 cdkDrag
                                 [cdkDragData]="rackedModule"
