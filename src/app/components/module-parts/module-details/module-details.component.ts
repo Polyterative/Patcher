@@ -36,6 +36,7 @@ export class ModuleDetailsComponent {
 
   switches = [];
   previewPanelId: number | null = null;
+  readonly preferredPanelColor$;
 
   setPreviewPanel(panelId: number): void {
     this.previewPanelId = panelId;
@@ -44,9 +45,9 @@ export class ModuleDetailsComponent {
   constructor(
     public backend: SupabaseService,
     public appState: AppStateService
-  ) {}
-
-  readonly preferredPanelColor$ = this.appState.preferredPanelColor$;
+  ) {
+    this.preferredPanelColor$ = this.appState.preferredPanelColor$;
+  }
 
   getPanelLabel(filename: string, description: string, index: number): string {
     return derivePanelLabel(filename, description, index);
