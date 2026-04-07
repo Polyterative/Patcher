@@ -6,18 +6,46 @@
   >
   </div>
   <mat-menu #contextMenu="matMenu">
-    <ng-template matMenuContent
-    >
-      @for (menuItem of dataService.menuItems$|async; track menuItem) {
-        <!--        mat icon of menu item -->
-        <button mat-menu-item
-                (click)="menuItem.click$.next(menuItem)"
-                [disabled]="menuItem.disabled"
-                [class.danger-action]="menuItem.danger"
-        >
-        <mat-icon [class.danger-action]="menuItem.danger">{{ menuItem.icon }}</mat-icon>
-          <span>{{menuItem.label}}</span>
-        </button>
+    <ng-template matMenuContent>
+      @for (menuItem of dataService.menuItems$|async; track menuItem.id) {
+        @if (menuItem.submenu && menuItem.submenu.length > 0) {
+          <button mat-menu-item
+                  [matMenuTriggerFor]="sub"
+                  [disabled]="menuItem.disabled"
+          >
+            <mat-icon>{{ menuItem.icon }}</mat-icon>
+            <span>{{ menuItem.label }}</span>
+          </button>
+          <mat-menu #sub="matMenu">
+            @for (child of menuItem.submenu; track child.id) {
+              <button mat-menu-item
+                      (click)="child.click$.next(child)"
+                      [disabled]="child.disabled"
+                      [class.danger-action]="child.danger"
+              >
+                @if (child.imageUrl) {
+                  <img [src]="child.imageUrl"
+                       style="width:28px;height:28px;margin-right:8px;border-radius:2px;object-fit:cover;flex-shrink:0;vertical-align:middle"
+                       [alt]="child.label"
+                  >
+                }
+                @if (!child.imageUrl) {
+                  <mat-icon [class.danger-action]="child.danger">{{ child.icon }}</mat-icon>
+                }
+                <span>{{ child.label }}</span>
+              </button>
+            }
+          </mat-menu>
+        } @else {
+          <button mat-menu-item
+                  (click)="menuItem.click$.next(menuItem)"
+                  [disabled]="menuItem.disabled"
+                  [class.danger-action]="menuItem.danger"
+          >
+            <mat-icon [class.danger-action]="menuItem.danger">{{ menuItem.icon }}</mat-icon>
+            <span>{{ menuItem.label }}</span>
+          </button>
+        }
       }
     </ng-template>
   </mat-menu>

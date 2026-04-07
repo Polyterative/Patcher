@@ -35,13 +35,7 @@
 
 ## Active
 
-#### HIGH: Module editor silent save failure on incomplete modules
-
-**Why:** Logged-in users can open the editor for incomplete modules, but reported power updates are not persisting. We need the root cause pinned down and protected with regression coverage.
-
-- [x] Confirm whether the failure is caused by frontend wiring, submitter/admin gating, or Supabase/RLS behavior
-- [x] Fix the user-facing failure mode so incomplete-module edits persist again for logged-in users
-- [x] Add targeted regression coverage for the failing module-editor save path
+_None — pick next task from Backlog._
 
 ---
 
@@ -54,6 +48,16 @@
 ---
 
 ### PRODUCT — Tier 0 (ship in any order; no external dependencies)
+
+---
+
+#### LOW: Discovery Tips — Speed and Positioning
+
+**Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.
+
+- [ ] Slow down auto-cycle interval (or add a manual "next" control)
+- [ ] Review tip overlay positioning — should not obscure key interactive areas
+- [ ] Consider a dismiss/pause gesture so tips don't block normal use
 
 ---
 

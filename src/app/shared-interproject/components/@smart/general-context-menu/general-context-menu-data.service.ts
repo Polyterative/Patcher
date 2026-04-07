@@ -14,7 +14,8 @@ export interface ContextMenuItem {
   danger?: boolean;
   data?: any;
   click$: Subject<ContextMenuItem>;
-  
+  submenu?: ContextMenuItem[];
+  imageUrl?: string;
 }
 
 @Injectable()

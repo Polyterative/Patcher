@@ -176,6 +176,38 @@ describe('SupabaseService - get simple queries', () => {
       });
     }, TEST_TIMEOUT);
     
+    it('should map selected_panel_id from raw row to selectedPanelId', (done) => {
+      const rawRow = {id: 1, row: 0, column: 0, moduleid: 10, rackid: 3, selected_panel_id: 5, module: {id: 10}};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
+      
+      service.get.rackedModules(3).subscribe({
+        next: (result: any[]) => {
+          expect(result[0].rackingData.selectedPanelId).toBe(5);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should map null selected_panel_id to selectedPanelId null', (done) => {
+      const rawRow = {id: 2, row: 0, column: 0, moduleid: 10, rackid: 3, selected_panel_id: null, module: {id: 10}};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
+      
+      service.get.rackedModules(3).subscribe({
+        next: (result: any[]) => {
+          expect(result[0].rackingData.selectedPanelId).toBeNull();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
     it('should return an empty array when rack has no modules', (done) => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       

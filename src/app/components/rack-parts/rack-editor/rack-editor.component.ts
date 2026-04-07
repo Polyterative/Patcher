@@ -39,6 +39,21 @@ export interface ModuleRightClick {
   rackedModule: RackedModule;
 }
 
+const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+
+function derivePanelLabel(filename: string, description: string, index: number): string {
+  if (description?.trim()) return description.trim();
+  const base = filename?.replace(/\.[^.]+$/, '') ?? '';
+  const segments = base.split(/[-_]/);
+  const keywords = ['dark', 'light', 'black', 'white', 'silver', 'gold', 'red', 'blue', 'green', 'alt', 'v2', 'mk2', 'mk1'];
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (keywords.includes(segments[i].toLowerCase())) {
+      return segments[i].charAt(0).toUpperCase() + segments[i].slice(1).toLowerCase();
+    }
+  }
+  return index === 0 ? 'Default' : 'Panel ' + (index + 1);
+}
+
 @Component({
   selector: 'app-rack-editor',
   templateUrl: './rack-editor.component.html',
@@ -131,6 +146,33 @@ export class RackEditorComponent extends SubManager implements OnInit {
           const deleteRow$ = new Subject<ContextMenuItem>();
           const replaceWithBlank$ = new Subject<ContextMenuItem>();
           
+          const panels = rackedModule.module.panels ?? [];
+          const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
+
+          const switchPanelParentSubject = new Subject<ContextMenuItem>();
+          const panelSubmenuItem: ContextMenuItem | null = panels.length > 1
+            ? {
+                id: 'switch-panel',
+                label: 'Switch panel',
+                icon: 'contrast',
+                disabled: false,
+                data: rackedModule,
+                click$: switchPanelParentSubject,
+                submenu: panels.map((panel, idx) => {
+                  const isActive = panel.id === (rackedModule.rackingData.selectedPanelId ?? panels[0]?.id);
+                  return {
+                    id: `panel-${ panel.id }`,
+                    label: `${ derivePanelLabel(panel.filename, panel.description, idx) }${ isActive ? ' ✓' : '' }`,
+                    icon: 'contrast',
+                    disabled: false,
+                    imageUrl: panel.filename ? PANEL_IMAGE_BASE + panel.filename : undefined,
+                    data: rackedModule,
+                    click$: switchPanelSubjects[idx]
+                  } as ContextMenuItem;
+                })
+              }
+            : null;
+
           this.contextMenu.menuItems$.next([
             {
               id: 'name',
@@ -139,6 +181,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
               disabled: true,
               click$: new Subject<ContextMenuItem>()
             },
+            ...(panelSubmenuItem ? [panelSubmenuItem] : []),
             {
               id: 'duplicate',
               label: 'Duplicate',
@@ -221,6 +264,16 @@ export class RackEditorComponent extends SubManager implements OnInit {
               takeUntil(this.destroy$)
             )
             .subscribe(_ => this.dataService.requestRackedModuleRowClearing$.next(rackedModule))
+          
+          switchPanelSubjects.forEach((subject$, idx) => {
+            subject$.pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            ).subscribe(() => {
+              const panelId = panels[idx]?.id ?? null;
+              this.dataService.requestRackedModulePanelSwitch$.next({rackedModule, panelId});
+            });
+          });
           
           
         })

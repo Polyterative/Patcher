@@ -171,6 +171,21 @@ describe('RackDetailDataService helpers', () => {
     expect(unrackedRows[1][1].rackingData.id).toBeUndefined();
   });
   
+  it('preserves selectedPanelId when duplicating a module', () => {
+    const {service} = build();
+    const duplicate = (service as any).duplicateModule.bind(service);
+    
+    const source = mod(1, 0, 0);
+    source.rackingData.selectedPanelId = 3;
+    const rows = [[source]];
+    
+    duplicate(rows, rows[0][0]);
+    
+    expect(rows[0].length).toBe(2);
+    expect(rows[0][1].rackingData.selectedPanelId).toBe(3);
+    expect(rows[0][1].rackingData.id).toBeUndefined();
+  });
+  
   it('strips module identifiers when copying to new rack and detects unsynced modules', () => {
     const {service} = build();
     const strip = (service as any).removeInformationFromModulesOfCurrentRack.bind(service);

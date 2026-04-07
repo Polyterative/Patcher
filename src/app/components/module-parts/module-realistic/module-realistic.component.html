@@ -43,8 +43,9 @@
   
   @if (showPanelImages) {
     <app-module-part-image [data]="data"
+                           [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
-                           [matTooltip]="data.name+' ('+data.manufacturer.name+', '+data.standard.name+', '+data.hp+'HP)'"
+                           [matTooltip]="buildPanelTooltip(data, selectedPanelId)"
     ></app-module-part-image>
   }
 
