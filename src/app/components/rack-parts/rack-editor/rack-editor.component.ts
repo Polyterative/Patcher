@@ -51,7 +51,7 @@ function derivePanelLabel(filename: string, description: string, index: number):
       return segments[i].charAt(0).toUpperCase() + segments[i].slice(1).toLowerCase();
     }
   }
-  return index === 0 ? 'Default' : 'Panel ' + (index + 1);
+  return 'Panel ' + (index + 1);
 }
 
 @Component({
