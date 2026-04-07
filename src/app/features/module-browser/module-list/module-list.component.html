@@ -47,6 +47,7 @@
             <app-module-minimal
               [data]="item"
               [viewConfig]="viewConfig"
+              [preferredPanelColor]="appState.preferredPanelColor$ | async"
             ></app-module-minimal>
           </lib-clean-card>
         } @empty {

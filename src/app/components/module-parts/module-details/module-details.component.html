@@ -13,7 +13,10 @@
       </div>
       <div class="rowwrap gap1">
         @for (item of data.panels; track item; let idx = $index) {
-          <div class="col gap1" style="align-items: center;">
+          <div class="col gap1"
+               style="align-items: center;"
+               [class.preferred-panel]="item.color !== null && item.color === (preferredPanelColor$ | async)"
+          >
             @if (item.filename) {
               <img
                 [alt]="getPanelLabel(item.filename, item.description, idx)"

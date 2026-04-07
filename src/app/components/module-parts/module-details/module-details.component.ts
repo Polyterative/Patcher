@@ -11,6 +11,7 @@ import {
   ModuleMinimalViewConfig
 } from '../module-minimal/module-minimal.component';
 import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -35,7 +36,12 @@ export class ModuleDetailsComponent {
 
   switches = [];
 
-  constructor(public backend: SupabaseService) {}
+  constructor(
+    public backend: SupabaseService,
+    public appState: AppStateService
+  ) {}
+
+  readonly preferredPanelColor$ = this.appState.preferredPanelColor$;
 
   getPanelLabel(filename: string, description: string, index: number): string {
     return derivePanelLabel(filename, description, index);

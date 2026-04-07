@@ -126,6 +126,18 @@ export function createMockDiscoveryTipService() {
 }
 
 /**
+ * Creates a mock AppStateService.
+ */
+export function createMockAppStateService() {
+  const preferredPanelColor$ = new BehaviorSubject<number | null>(null);
+  return {
+    preferredPanelColor$: preferredPanelColor$.asObservable(),
+    setPreferredPanelColor: jasmine.createSpy('setPreferredPanelColor'),
+    _preferredPanelColor$: preferredPanelColor$,
+  };
+}
+
+/**
  * Creates a mock MatDialog.
  */
 export function createMockMatDialog() {

@@ -6,6 +6,7 @@ import {
 } from '@angular/core/testing';
 import { UserAreaRootComponent } from '../user-area-root/user-area-root.component';
 import {
+  createMockAppStateService,
   createMockSeoAndUtilsService,
   createMockSupabaseService,
   createMockUserAreaDataService,
@@ -38,7 +39,8 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockUserService as any,
       mockBackend as any,
       mockDataService as any,
-      mockSeoService as any
+      mockSeoService as any,
+      createMockAppStateService() as any
     );
     component.ignoreSeo = ignoreSeo;
     component.ngOnInit();
@@ -124,7 +126,8 @@ describe('UserAreaRootComponent - miscStats$', () => {
       mockUserService as any,
       mockBackend as any,
       mockDataService as any,
-      mockSeoService as any
+      mockSeoService as any,
+      createMockAppStateService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();
@@ -232,7 +235,8 @@ describe('UserAreaRootComponent - Global Search', () => {
       mockUserService as any,
       mockBackend as any,
       mockDataService as any,
-      mockSeoService as any
+      mockSeoService as any,
+      createMockAppStateService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();
