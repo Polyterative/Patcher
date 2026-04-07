@@ -7,12 +7,18 @@
   >
     <div class="col gap0"
     >
-      <app-module-part-image [big]="viewConfig.bigPanelImage"
-                             [data]="data"
-                             [fixedHeight]="!viewConfig.bigPanelImage"
-                             [preferredPanelColor]="preferredPanelColor"
-                             class="panel"
-      ></app-module-part-image>
+      <div class="panel image-container">
+        <app-module-part-image [big]="viewConfig.bigPanelImage"
+                               [data]="data"
+                               [fixedHeight]="!viewConfig.bigPanelImage"
+                               [preferredPanelColor]="preferredPanelColor"
+        ></app-module-part-image>
+        @if (data.panels.length > 1) {
+          <mat-icon class="panel-variants-badge"
+                    [matTooltip]="data.panels.length + ' panel variants available'"
+          >contrast</mat-icon>
+        }
+      </div>
       <app-module-part-name [data]="data" [suffix]="nameSuffix"></app-module-part-name>
       <div class="row gap1 space-between"
       >
