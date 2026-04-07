@@ -5,6 +5,11 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
+import {
+  COMMA,
+  ENTER
+} from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { Subject } from 'rxjs';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -24,8 +29,7 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   @Input() viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
   
   protected destroyEvent$ = new Subject<void>();
-  
-  // isInCollection$: Observable<boolean>;
+  readonly tagSeparatorKeysCodes: number[] = [ENTER, COMMA];
   
   constructor(
     public userManagerService: UserManagementService,
@@ -34,18 +38,24 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   ) {}
   
   ngOnInit(): void {
-  
-    // this.isInCollection$ = this.dataService.userPatchsList$
-    //                            .pipe(
-    //                              map(data => data.filter(x => x.id == this.data.id).length > 0),
-    //                              takeUntil(this.destroyEvent$)
-    //                            );
   }
   
   ngOnDestroy(): void {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     
+  }
+
+  addTag(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) {
+      this.dataService.addPatchTag(value);
+    }
+    event.chipInput?.clear();
+  }
+
+  removeTag(tag: string): void {
+    this.dataService.removePatchTag(tag);
   }
   
 }
