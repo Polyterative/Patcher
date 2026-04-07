@@ -27,7 +27,7 @@
           ></app-module-part-hp>
         }
       </div>
-      @if (hasIO) {
+      @if (hasIO && !viewConfig.hideIoCounts) {
         <div class="row gap1 module-io-counts" style="font-size:0.75rem;opacity:0.7;flex-wrap:wrap">
           @if (insCount > 0) {
             <span class="row center" style="gap:2px">
