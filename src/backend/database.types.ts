@@ -601,6 +601,7 @@ export type Database = {
           id: number
           name: string | null
           public: boolean
+          tags: string[]
           updated: string
         }
         Insert: {
@@ -610,6 +611,7 @@ export type Database = {
           id?: number
           name?: string | null
           public?: boolean
+          tags?: string[]
           updated?: string
         }
         Update: {
@@ -619,6 +621,7 @@ export type Database = {
           id?: number
           name?: string | null
           public?: boolean
+          tags?: string[]
           updated?: string
         }
         Relationships: [

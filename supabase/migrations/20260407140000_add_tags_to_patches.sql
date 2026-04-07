@@ -1,0 +1,2 @@
+ALTER TABLE patches
+  ADD COLUMN IF NOT EXISTS tags text[] NOT NULL DEFAULT '{}';
