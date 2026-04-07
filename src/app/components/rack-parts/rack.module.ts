@@ -1,6 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { RouterModule } from '@angular/router';
 import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
@@ -82,6 +83,7 @@ import { EditFabModule } from "src/app/shared-interproject/components/@visual/ed
   providers: [RackDetailDataService],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatCardModule,
     BrandPrimaryButtonModule,
     FlexLayoutModule,
