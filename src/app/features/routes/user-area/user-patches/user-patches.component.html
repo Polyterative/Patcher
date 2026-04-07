@@ -23,16 +23,17 @@
         @if (allPatches.length > 0) {
           @if ((dataService.allPatchTags$ | async); as uniqueTags) {
             @if (uniqueTags.length > 0) {
+              @let activeTag = (dataService.activeTagFilter$ | async);
               <div class="row gap1" style="flex-wrap: wrap; align-items: center;">
                 <mat-chip-set>
                   @for (tag of uniqueTags; track tag) {
                     <mat-chip
-                      [highlighted]="(dataService.activeTagFilter$ | async) === tag"
-                      (click)="dataService.activeTagFilter$.next((dataService.activeTagFilter$ | async) === tag ? null : tag)"
+                      [highlighted]="activeTag === tag"
+                      (click)="dataService.activeTagFilter$.next(activeTag === tag ? null : tag)"
                     >{{ tag }}</mat-chip>
                   }
                 </mat-chip-set>
-                @if ((dataService.activeTagFilter$ | async)) {
+                @if (activeTag) {
                   <button mat-button color="primary" (click)="dataService.activeTagFilter$.next(null)">
                     <mat-icon>close</mat-icon> Clear filter
                   </button>
