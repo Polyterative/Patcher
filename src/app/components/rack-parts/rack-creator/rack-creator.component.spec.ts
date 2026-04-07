@@ -72,7 +72,7 @@ describe('RackCreatorComponent', () => {
       name: 'My Rack',
       hp: 84,
       rows: 3,
-      public: true,
+      public: false,
       locked: false
     });
     expect(dialogRef.close).toHaveBeenCalled();

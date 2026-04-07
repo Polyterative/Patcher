@@ -13,4 +13,5 @@ export interface PatchMinimal extends Timestamped, Privatable {
   author: PublicUser;
   name: string;
   description?: string;
+  tags?: string[];
 }

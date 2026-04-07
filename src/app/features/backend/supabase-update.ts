@@ -367,6 +367,21 @@ export function createUpdateNamespace(
     ).pipe(
       map(({error}) => { if (error) throw error; }),
       remapErrors()
+    ),
+
+    patchTags: (patchId: number, tags: string[]) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase
+            .from(DbPaths.patches)
+            .update({tags})
+            .eq('id', patchId)
+            .eq('authorid', user.id)
+        );
+      }),
+      cacheBust(['patchWithId']),
+      remapErrors()
     )
   };
 }

@@ -92,7 +92,11 @@ export class RackCreatorComponent extends SubManager implements OnInit {
       control: FormControl<any>;
       label: string;
       type: FormTypes
-    }
+    };
+    public: {
+      code: string;
+      control: FormControl<boolean>;
+    };
   };
   
   formGroup: FormGroup;
@@ -147,13 +151,18 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           // Validators.max(12)
         ])),
         type: FormTypes.TEXT
+      },
+      public: {
+        code: 'public',
+        control: new FormControl<boolean>(false, { nonNullable: true })
       }
     };
     
     this.formGroup = new UntypedFormGroup({
       [this.fields.hp.code]: this.fields.hp.control,
       [this.fields.name.code]: this.fields.name.control,
-      [this.fields.rows.code]: this.fields.rows.control
+      [this.fields.rows.code]: this.fields.rows.control,
+      [this.fields.public.code]: this.fields.public.control
     });
     
     // Initialize rackAnalysis$ after fields are set up
@@ -188,7 +197,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
             name: this.fields.name.control.value,
             hp: this.fields.hp.control.value,
             rows: this.fields.rows.control.value,
-            public: true,
+            public: this.fields.public.control.value,
             locked: false
           }
         )),
