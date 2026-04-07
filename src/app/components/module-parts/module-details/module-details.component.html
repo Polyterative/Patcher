@@ -5,36 +5,36 @@
     <mat-card-subtitle>{{data.switches.length}} Switches:</mat-card-subtitle>
     <div class="rowwrap gap1"></div>
   }
-  @if ((data.panels.length > 1) && (!viewConfig.hidePanelsOptions)) {
-    <mat-accordion>
-    <mat-expansion-panel hideToggle="true"
-                         style="padding-top: 1rem"
-    >
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Available in {{data.panels.length}} versions
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+  @if (!viewConfig.hidePanelsOptions) {
+    <div class="col gap1">
+      <div class="row gap1" style="align-items: center;">
+        <mat-icon>contrast</mat-icon>
+        <span>Panel variants ({{data.panels.length}})</span>
+      </div>
       <div class="rowwrap gap1">
-        @for (item of data.panels; track item) {
-          <div class="col gap1">
-            <div>
-              @if (item.filename) {
-                <img
-                  alt="{{item.filename}}"
-                  class="image-transition"
-                  loading="lazy"
-                  [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
-                  [matTooltip]="item.filename"
-                  [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
-                >
-              }
-            </div>
+        @for (item of data.panels; track item; let idx = $index) {
+          <div class="col gap1" style="align-items: center;">
+            @if (item.filename) {
+              <img
+                [alt]="getPanelLabel(item.filename, item.description, idx)"
+                class="image-transition"
+                loading="lazy"
+                [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
+                [matTooltip]="getPanelLabel(item.filename, item.description, idx)"
+                [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
+              >
+            }
+            <span style="font-size: 0.8rem;">{{getPanelLabel(item.filename, item.description, idx)}}</span>
+            @if (getPanelColorName(item.color); as colorName) {
+              <span class="panel-color-badge">{{colorName}}</span>
+            }
           </div>
         }
       </div>
-    </mat-expansion-panel>
-    </mat-accordion>
+      @if (data.panels.length === 1) {
+        <p style="font-style: italic; color: var(--mat-sys-on-surface-variant, #666); font-size: 0.8rem;">This module has one panel variant</p>
+      }
+    </div>
   }
   
   
