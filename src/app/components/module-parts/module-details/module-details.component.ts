@@ -35,6 +35,11 @@ export class ModuleDetailsComponent {
   @Input() instanceId: number | undefined;
 
   switches = [];
+  previewPanelId: number | null = null;
+
+  setPreviewPanel(panelId: number): void {
+    this.previewPanelId = panelId;
+  }
 
   constructor(
     public backend: SupabaseService,

@@ -14,7 +14,9 @@
       <div class="rowwrap gap1">
         @for (item of data.panels; track item; let idx = $index) {
           <div class="col gap1"
-               style="align-items: center;"
+               style="align-items: center; cursor: pointer;"
+               (click)="setPreviewPanel(item.id)"
+               [class.panel-preview-active]="item.id === previewPanelId"
                [class.preferred-panel]="item.color !== null && item.color === (preferredPanelColor$ | async)"
           >
             @if (item.filename) {
