@@ -6,123 +6,151 @@ import {
 /**
  * E2E: Rack module panel switching
  *
- * Covers:
- * - "Switch panel" context-menu items appear for multi-panel modules
- * - Clicking a panel variant updates the displayed panel
- * - The selection persists after a full page reload
+ * Strategy:
+ * - beforeEach creates a dedicated private test rack named "[E2E] Panel Switch Test"
+ * - afterEach deletes it via the UI delete button — no DB pollution, no public racks
  *
  * Test module: Belgrad by XAOC Devices (id=371, 2 panels)
- *   Panel 1 (id=8)  – label "Panel 1"  (no description in DB, fallback label)
- *   Panel 2 (id=12) – label "Panel 2"
  * Active panel has " ✓" appended to its label.
- *
- * The test is state-independent: it reads the current active panel, switches
- * to the OTHER panel, reloads, and verifies the switch persisted. This means
- * it works correctly even if a previous run left the rack with Panel 2 selected.
  */
 test.describe('Authenticated Rack Panel Switching', () => {
 
-  async function openRackInEditMode(page: any): Promise<string> {
+  const TEST_RACK_NAME = '[E2E] Panel Switch Test';
+
+  /** Creates a fresh private test rack, returns its URL. Already in edit mode on return. */
+  async function createPrivateTestRack(page: any): Promise<string> {
     await page.goto('/user/area');
     await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
 
-    const rackCards = page.locator('app-user-racks app-hero-clickable-title .title');
     const createRackBtn = page.locator('app-user-racks app-brand-primary-button', {hasText: /create rack/i}).first();
+    await expect(createRackBtn).toBeVisible({timeout: 15_000});
+    await createRackBtn.click();
 
-    if ((await rackCards.count()) === 0) {
-      await expect(createRackBtn).toBeVisible({timeout: 15_000});
-      await createRackBtn.click();
-      await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
-      const confirmBtn = page.locator('mat-dialog-actions app-brand-primary-button', {hasText: /create/i}).first();
-      await expect(confirmBtn).toBeVisible({timeout: 10_000});
-      await confirmBtn.click();
-      await expect(rackCards.first()).toBeVisible({timeout: 15_000});
-    }
+    await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
 
-    await rackCards.first().click();
+    // Set the rack name so we can reliably identify and delete it later
+    const nameInput = page.locator('mat-dialog-container input').first();
+    await nameInput.fill('');
+    await nameInput.fill(TEST_RACK_NAME);
+
+    const confirmBtn = page.locator('mat-dialog-actions app-brand-primary-button', {hasText: /create/i}).first();
+    await expect(confirmBtn).toBeVisible({timeout: 10_000});
+    await confirmBtn.click();
+
+    // Wait for the new card to appear and click it
+    const newRackCard = page.locator('app-user-racks app-hero-clickable-title .title', {hasText: TEST_RACK_NAME}).first();
+    await expect(newRackCard).toBeVisible({timeout: 15_000});
+    await newRackCard.click();
+
     await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 15_000});
     const rackUrl = page.url();
 
+    // Enter edit mode
     const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
     if (await editBtn.isVisible().catch(() => false)) {
       await editBtn.click();
     }
     await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
 
+    // Make the rack private immediately
+    const privacyBtn = page.locator('button[mattooltip="Make rack private"]').first();
+    if (await privacyBtn.isVisible().catch(() => false)) {
+      await privacyBtn.click();
+      await expect(page.locator('app-advice-tooltip', {hasText: /private/i})).toBeVisible({timeout: 5_000});
+    }
+
     return rackUrl;
   }
 
-  async function ensureBelgradInRack(page: any) {
+  /** Deletes the test rack via the UI delete button. Call from afterEach. */
+  async function deleteTestRack(page: any, rackUrl: string) {
+    try {
+      await page.goto(rackUrl, {timeout: 15_000});
+      await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 10_000});
+
+      // Ensure edit mode so the delete button is enabled
+      const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
+      if (await editBtn.isVisible().catch(() => false)) {
+        await editBtn.click();
+      }
+      await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+
+      // Click the delete button (matTooltip="Delete rack")
+      const deleteBtn = page.locator('button[mattooltip="Delete rack"]').first();
+      await expect(deleteBtn).toBeVisible({timeout: 5_000});
+      await deleteBtn.click();
+
+      // Confirm the deletion dialog
+      const confirmDelete = page.locator('mat-dialog-actions button, mat-dialog-actions app-brand-primary-button')
+        .filter({hasText: /delete|confirm|yes/i}).first();
+      await expect(confirmDelete).toBeVisible({timeout: 8_000});
+      await confirmDelete.click();
+
+      // Should redirect away from the rack after deletion
+      await expect(page).not.toHaveURL(rackUrl, {timeout: 10_000});
+    } catch {
+      // Best-effort cleanup — don't fail the test if teardown has issues
+    }
+  }
+
+  let rackUrl = '';
+
+  test.beforeEach(async ({page}) => {
+    rackUrl = await createPrivateTestRack(page);
+  });
+
+  test.afterEach(async ({page}) => {
+    await deleteTestRack(page, rackUrl);
+  });
+
+  test('right-click panel switch changes module panel and persists after reload', async ({page}) => {
+    // Add Belgrad (multi-panel module) via the module browser
     const browser = page.locator('app-module-browser-root');
     await expect(browser).toBeVisible({timeout: 10_000});
-
-    // Check if Belgrad is already in the rack
-    const existingBelgrad = page.locator('app-rack-visual-model app-module-realistic')
-      .filter({has: page.locator('img[alt*="Belgrad"]')})
-      .first();
-
-    if (await existingBelgrad.isVisible().catch(() => false)) {
-      return; // Already in the rack
-    }
-
-    // Search for Belgrad in the module browser and add it
     const nameInput = browser.locator('input').first();
     await nameInput.fill('Belgrad');
     const belgradCard = browser.locator('app-module-minimal', {hasText: /Belgrad/i}).first();
     await expect(belgradCard).toBeVisible({timeout: 15_000});
-    const addBtn = belgradCard.locator('button').last();
-    await addBtn.click();
+    await belgradCard.locator('button').last().click();
 
-    // Wait for DB sync and reload so the module has a persisted id
+    // Wait for DB sync, then reload so the module has a persisted id
     await page.waitForTimeout(2_500);
-  }
-
-  test('right-click panel switch changes module panel and persists after reload', async ({page}) => {
-    const rackUrl = await openRackInEditMode(page);
-    await ensureBelgradInRack(page);
-
-    // If we added Belgrad, reload to get its DB-assigned id before switching panels
     await page.goto(rackUrl);
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
-    const editBtnFirst = page.getByRole('button', {name: /^Edit rack$/i}).first();
-    if (await editBtnFirst.isVisible().catch(() => false)) {
-      await editBtnFirst.click();
+    const editBtnReload = page.getByRole('button', {name: /^Edit rack$/i}).first();
+    if (await editBtnReload.isVisible().catch(() => false)) {
+      await editBtnReload.click();
     }
     await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
 
-    // --- Phase 1: determine current panel state ---
+    // --- Phase 1: read current panel state ---
     const belgradInRack = page.locator('app-rack-visual-model app-module-realistic')
-      .filter({has: page.locator('img[alt*="Belgrad"]')})
-      .first();
+      .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
     await expect(belgradInRack).toBeVisible({timeout: 10_000});
     await belgradInRack.click({button: 'right'});
 
-    // Click "Switch panel" to open submenu
     const switchPanelTrigger = page.locator('button[mat-menu-item]', {hasText: /Switch panel/i});
     await expect(switchPanelTrigger).toBeVisible({timeout: 8_000});
     await switchPanelTrigger.click();
 
-    // Both panel items must be visible in the submenu
     const panel1Item = page.locator('button[mat-menu-item]', {hasText: /Panel 1/i});
     const panel2Item = page.locator('button[mat-menu-item]', {hasText: /Panel 2|Dark/i});
     await expect(panel1Item).toBeVisible({timeout: 5_000});
     await expect(panel2Item).toBeVisible({timeout: 5_000});
 
-    // Determine which panel is currently active (has ✓)
-    const panel1Text = await panel1Item.textContent() ?? '';
-    const panel1Active = panel1Text.includes('✓');
+    const panel1Active = ((await panel1Item.textContent()) ?? '').includes('✓');
 
-    // Click whichever panel is NOT currently active
+    // Switch to the OTHER panel
     if (panel1Active) {
-      await panel2Item.click(); // switch to Panel 2
+      await panel2Item.click();
     } else {
-      await panel1Item.click(); // switch to Panel 1
+      await panel1Item.click();
     }
 
-    // Wait for backend persist before navigating away
+    // Wait for backend persist
     await page.waitForTimeout(2_500);
 
-    // --- Phase 2: reload and verify the switch persisted ---
+    // --- Phase 2: reload and verify persistence ---
     await page.goto(rackUrl);
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
     const editBtnAfterReload = page.getByRole('button', {name: /^Edit rack$/i}).first();
@@ -132,20 +160,16 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
 
     const belgradAfterReload = page.locator('app-rack-visual-model app-module-realistic')
-      .filter({has: page.locator('img[alt*="Belgrad"]')})
-      .first();
+      .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
     await expect(belgradAfterReload).toBeVisible({timeout: 10_000});
     await belgradAfterReload.click({button: 'right'});
 
-    // Open "Switch panel" submenu again
-    const switchPanelTriggerAfterReload = page.locator('button[mat-menu-item]', {hasText: /Switch panel/i});
-    await expect(switchPanelTriggerAfterReload).toBeVisible({timeout: 8_000});
-    await switchPanelTriggerAfterReload.click();
+    const switchPanelAfterReload = page.locator('button[mat-menu-item]', {hasText: /Switch panel/i});
+    await expect(switchPanelAfterReload).toBeVisible({timeout: 8_000});
+    await switchPanelAfterReload.click();
 
-    // After reload: the panel we switched TO should have ✓ in its label,
-    // and the context menu must also show the other panel (without ✓).
     const expectedActiveLabel = panel1Active ? /Panel 2.*✓|Dark.*✓/i : /Panel 1.*✓/i;
-    const expectedInactiveLabel = panel1Active ? /Panel 1(?!.*✓)|Dark(?!.*✓)/i : /Panel 2(?!.*✓)|Dark(?!.*✓)/i;
+    const expectedInactiveLabel = panel1Active ? /Panel 1(?!.*✓)/i : /Panel 2(?!.*✓)|Dark(?!.*✓)/i;
 
     await expect(page.locator('button[mat-menu-item]', {hasText: expectedActiveLabel})).toBeVisible({timeout: 8_000});
     await expect(page.locator('button[mat-menu-item]', {hasText: expectedInactiveLabel})).toBeVisible({timeout: 5_000});
