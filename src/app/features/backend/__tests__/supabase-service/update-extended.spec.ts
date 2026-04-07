@@ -254,6 +254,52 @@ describe('SupabaseService - update extended', () => {
       });
     }, TEST_TIMEOUT);
     
+    it('should include selected_panel_id in upsert payload', (done) => {
+      const mock = chainable({data: null, error: null});
+      const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      
+      const data = [{
+        rackingData: {id: 1, rackid: 5, moduleid: 10, row: 0, column: 0, selectedPanelId: 7},
+        module: {id: 10} as any
+      }];
+      
+      service.update.rackedModules(data).subscribe({
+        next: () => {
+          const payload = upsertSpy.calls.mostRecent().args[0];
+          expect(payload[0].selected_panel_id).toBe(7);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should send selected_panel_id as null when selectedPanelId is absent', (done) => {
+      const mock = chainable({data: null, error: null});
+      const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      
+      const data = [{
+        rackingData: {id: 2, rackid: 5, moduleid: 11, row: 0, column: 1},
+        module: {id: 11} as any
+      }];
+      
+      service.update.rackedModules(data).subscribe({
+        next: () => {
+          const payload = upsertSpy.calls.mostRecent().args[0];
+          expect(payload[0].selected_panel_id).toBeNull();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
     it('should insert new modules when rackingData.id is undefined', (done) => {
       const mock = chainable({data: null, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -267,6 +313,68 @@ describe('SupabaseService - update extended', () => {
       service.update.rackedModules(data).subscribe({
         next: () => {
           expect(insertSpy).toHaveBeenCalled();
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+  
+  describe('update.rackModulePanel', () => {
+    beforeEach(() => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
+    });
+    
+    it('should update selected_panel_id for the given rack module id', (done) => {
+      const mock = chainable({data: null, error: null});
+      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+      spyOn(mock, 'eq').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      
+      service.update.rackModulePanel(42, 5).subscribe({
+        next: () => {
+          expect(updateSpy).toHaveBeenCalledWith({selected_panel_id: 5});
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should allow setting selected_panel_id to null (clear selection)', (done) => {
+      const mock = chainable({data: null, error: null});
+      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+      spyOn(mock, 'eq').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      
+      service.update.rackModulePanel(42, null).subscribe({
+        next: () => {
+          expect(updateSpy).toHaveBeenCalledWith({selected_panel_id: null});
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+    
+    it('should bust rackWithId cache', (done) => {
+      const mock = chainable({data: null, error: null});
+      spyOn(mock, 'update').and.returnValue(mock);
+      spyOn(mock, 'eq').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+      const bustedKeys: any[] = [];
+      service.cacheResetter$.subscribe(keys => bustedKeys.push(...(keys as any[])));
+      
+      service.update.rackModulePanel(1, 3).subscribe({
+        next: () => {
+          expect(bustedKeys).toContain('rackWithId');
           done();
         },
         error: (err) => {

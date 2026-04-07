@@ -11,6 +11,7 @@ export interface RackingData {
   moduleid: number;
   row: number;
   column: number;
+  selectedPanelId?: number | null;
 }
 
 

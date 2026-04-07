@@ -152,19 +152,27 @@ export function createUpdateNamespace(
       switchMap(user => {
         if (!user) return throwError(() => new Error('Authentication required'));
         const toSimplyUpdate = data.filter(x => x.rackingData.id !== undefined)
-          .map(rackedModule => rackedModule.rackingData);
+          .map(rackedModule => ({
+            id: rackedModule.rackingData.id,
+            moduleid: rackedModule.rackingData.moduleid,
+            rackid: rackedModule.rackingData.rackid,
+            row: rackedModule.rackingData.row,
+            column: rackedModule.rackingData.column,
+            selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
+          }));
         
         return rxFrom(
           supabase.from(DbPaths.rack_modules).upsert(toSimplyUpdate)
         ).pipe(
           switchMap(x => {
-            const newRackedModules: Omit<RackingData, 'id'>[] = data
+            const newRackedModules = data
               .filter(x => x.rackingData.id === undefined)
               .map(rackedModule => ({
                 moduleid: rackedModule.rackingData.moduleid,
                 rackid: rackedModule.rackingData.rackid,
                 row: rackedModule.rackingData.row,
-                column: rackedModule.rackingData.column
+                column: rackedModule.rackingData.column,
+                selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
               }));
             
             const insertNew$ = rxFrom(supabase.from(DbPaths.rack_modules).insert(newRackedModules));
@@ -173,6 +181,18 @@ export function createUpdateNamespace(
           remapErrors()
         );
       })
+    ),
+    
+    rackModulePanel: (rackModuleId: number, panelId: number | null) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.rack_modules)
+            .update({selected_panel_id: panelId})
+            .eq('id', rackModuleId)
+        ).pipe(remapErrors());
+      }),
+      cacheBust(['rackWithId'])
     ),
     
     rack: (data: RackMinimal) => getUserSession$().pipe(

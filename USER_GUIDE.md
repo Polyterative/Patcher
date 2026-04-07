@@ -153,6 +153,16 @@ Plan and visualize your Eurorack cases before you build them.
 - **Module Organization**: Drag and drop to rearrange (visual planning)
 - **Export/Share**: Save images of your rack configuration
 
+### Per-Module Actions (Right-Click)
+
+Right-click any module in your rack to access per-module actions:
+
+- **Switch Panel**: If a module has multiple panel variants (e.g. light and dark face plates), they are listed with a ✓ next to the currently active one. Click any variant to switch — the choice is saved to this rack only and does not affect other racks using the same module. Only shown when the module actually has more than one panel variant.
+- **Duplicate**: Add a copy of the module immediately to the right.
+- **Replace with blank**: Swap the module for a blank panel (useful for spacing).
+- **Delete from rack**: Remove the module from this rack.
+- **Delete all in row**: Clear all modules from the same row.
+
 ### Use Cases
 
 - **Planning a Build**: Design your dream case before buying
