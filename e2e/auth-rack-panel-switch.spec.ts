@@ -52,12 +52,12 @@ test.describe('Authenticated Rack Panel Switching', () => {
     }
     await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
 
-    // Make the rack private immediately
-    const privacyBtn = page.locator('button[mattooltip="Make rack private"]').first();
-    if (await privacyBtn.isVisible().catch(() => false)) {
-      await privacyBtn.click();
-      await expect(page.locator('app-advice-tooltip', {hasText: /private/i})).toBeVisible({timeout: 5_000});
-    }
+    // Make the rack private — button shows mat-icon "public" when rack is currently public
+    const privacyBtn = page.locator('button', {has: page.locator('mat-icon', {hasText: 'public'})}).first();
+    await expect(privacyBtn).toBeVisible({timeout: 5_000});
+    await privacyBtn.click();
+    // Confirm the icon flipped to "lock" (now private)
+    await expect(page.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
 
     return rackUrl;
   }
