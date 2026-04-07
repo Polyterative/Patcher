@@ -41,6 +41,7 @@ import {
   sortAndGroupMinimalModules
 } from 'src/app/shared-interproject/utils/module-sort-utils';
 import { ModuleList } from '../module-browser-data.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 // Re-export so existing consumers that imported these from here still compile.
 export type ModuleListSortId = ModuleSortId;
@@ -87,7 +88,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
 
   constructor(
     public patchingService: PatchDetailDataService,
-    public filterService: LocalDataFilterService
+    public filterService: LocalDataFilterService,
+    public appState: AppStateService
   ) {
     super();
   }
