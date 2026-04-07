@@ -440,7 +440,9 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     hideHP:            true,
     hideDates:         true,
     hideTags: true,
-    hidePanelsOptions: true
+    hidePanelsOptions: true,
+    hideIoCounts:      true,
+    hideReportIssue:   true,
   };
   
   /** Unfiltered collection modules + instances merged into a flat card list */

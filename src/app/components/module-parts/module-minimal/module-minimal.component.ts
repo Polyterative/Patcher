@@ -86,6 +86,8 @@ export interface ModuleMinimalViewConfig {
   tagsShowCounts: boolean;
   tagsReadOnly: boolean;
   tagsMaxCount: number | null;
+  hideIoCounts: boolean;
+  hideReportIssue: boolean;
 }
 
 export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
@@ -104,5 +106,7 @@ export const defaultModuleMinimalViewConfig: ModuleMinimalViewConfig = {
   hideBySameManufacturer: false,
   tagsShowCounts: true,
   tagsReadOnly: false,
-  tagsMaxCount: null
+  tagsMaxCount: null,
+  hideIoCounts: false,
+  hideReportIssue: false,
 };
