@@ -49,6 +49,8 @@
   </p>
   }
 
-  <app-module-flag [moduleId]="data.id"></app-module-flag>
+  @if (!viewConfig.hideReportIssue) {
+    <app-module-flag [moduleId]="data.id"></app-module-flag>
+  }
 
 </div>
