@@ -1,6 +1,6 @@
 {
   "name": "patcher",
-  "version": "5.3.8",
+  "version": "5.4.0",
   "packageManager": "pnpm@10.32.1",
   "scripts": {
     "start": "ng serve --port 5556",
@@ -36,6 +36,7 @@
     "pretest:e2e:ci": "playwright install chromium",
     "test:e2e:ci": "playwright test --reporter=list --workers=1",
     "testRelease:patch": "standard-version  --release-as patch --dry-run && git push --follow-tags origin production",
+    "testRelease:minor": "standard-version  --release-as minor --dry-run && git push --follow-tags origin production",
     "release:patch": "standard-version  --release-as patch --commit-all  && git push --follow-tags origin production",
     "release:minor": "standard-version  --release-as minor --commit-all  && git push --follow-tags origin production",
     "release:major": "standard-version  --release-as major --commit-all  && git push --follow-tags origin production",

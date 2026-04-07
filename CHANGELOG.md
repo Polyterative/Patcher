@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.4.0](https://github.com/Polyterative/Patcher/compare/v5.3.8...v5.4.0) (2026-04-07)
+
+
+### Features
+
+* **panels:** Layer 1 — shared constants, derivePanelLabel utility, gallery UI ([afdbe70](https://github.com/Polyterative/Patcher/commit/afdbe70c7d4ae726b666de25f56c5dfbe9c3af02))
+* **panels:** Layer 2 — global panel color preference with localStorage persistence ([5399907](https://github.com/Polyterative/Patcher/commit/53999076c18f118958368a901769f8dd7c99daf7))
+* **panels:** Layer 3 — discovery badge on multi-panel cards, click-to-preview in gallery ([ddd6980](https://github.com/Polyterative/Patcher/commit/ddd6980dabbb5c9a5a4da1b02da39a06aec3d22b))
+* **rack-creator:** add privacy toggle to create rack dialog, default private ([5aec5eb](https://github.com/Polyterative/Patcher/commit/5aec5ebe0c056b5531ceafa2d8c32d6e074c96c6))
+* **rack:** rack-local panel switching for multi-panel modules ([4169798](https://github.com/Polyterative/Patcher/commit/4169798282762af379ed0a8b50ac6e8b91bf9619))
+
+
+### Bug Fixes
+
+* **build:** resolve two compile errors blocking app from building ([0cd2a13](https://github.com/Polyterative/Patcher/commit/0cd2a13e56cb915c8284218acbbe4ab6429fdf08))
+* **dev-utils:** replace store URL input with manual URL in dev panel ([aa66026](https://github.com/Polyterative/Patcher/commit/aa660267bf1f502d0c19186cabf5b4f42fe2a86d))
+* **e2e:** use mat-icon selector to reliably toggle rack privacy ([d670895](https://github.com/Polyterative/Patcher/commit/d670895049790005e6b062dd663600651d31dfb1))
+* **module-details:** constrain panel gallery images to parent width ([14d2fbb](https://github.com/Polyterative/Patcher/commit/14d2fbbaad92e6dd8285d6ed62a717a51adfd1db))
+* **panels:** hide report-issue when hideButtons set; remove redundant color badge ([9f103ea](https://github.com/Polyterative/Patcher/commit/9f103ea34e8b00eec2faf7b520c3dbfc9cbe4011))
+* **patch-editor:** hide IO counter badge and report issue button in patch editing ([531b688](https://github.com/Polyterative/Patcher/commit/531b688a394b603eac1b6a072433dc9618f5258d))
+* **rack:** replace 'Default' panel label with positional 'Panel 1' ([db3a6d3](https://github.com/Polyterative/Patcher/commit/db3a6d38efd8f4425118ff8837a122446b3c3dd2))
+* resolve TS2729 init order in module-details, fix patchTags cache key ([de8a555](https://github.com/Polyterative/Patcher/commit/de8a5556a09c104c1aa071c62bfd0519b59224a6))
+
 ### [5.3.8](https://github.com/Polyterative/Patcher/compare/v5.3.7...v5.3.8) (2026-04-03)
 
 
