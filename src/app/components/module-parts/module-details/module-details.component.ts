@@ -10,6 +10,7 @@ import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from '../module-minimal/module-minimal.component';
+import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
 
 
 @Component({
@@ -35,4 +36,12 @@ export class ModuleDetailsComponent {
   switches = [];
 
   constructor(public backend: SupabaseService) {}
+
+  getPanelLabel(filename: string, description: string, index: number): string {
+    return derivePanelLabel(filename, description, index);
+  }
+
+  getPanelColorName(color: number): string | null {
+    return PANEL_COLORS[color] ?? null;
+  }
 }

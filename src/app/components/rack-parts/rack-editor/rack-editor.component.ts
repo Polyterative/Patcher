@@ -32,6 +32,7 @@ import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
 } from "angular-animations";
+import { derivePanelLabel } from '../../module-parts/panel.constants';
 
 
 export interface ModuleRightClick {
@@ -41,18 +42,6 @@ export interface ModuleRightClick {
 
 const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
 
-function derivePanelLabel(filename: string, description: string, index: number): string {
-  if (description?.trim()) return description.trim();
-  const base = filename?.replace(/\.[^.]+$/, '') ?? '';
-  const segments = base.split(/[-_]/);
-  const keywords = ['dark', 'light', 'black', 'white', 'silver', 'gold', 'red', 'blue', 'green', 'alt', 'v2', 'mk2', 'mk1'];
-  for (let i = segments.length - 1; i >= 0; i--) {
-    if (keywords.includes(segments[i].toLowerCase())) {
-      return segments[i].charAt(0).toUpperCase() + segments[i].slice(1).toLowerCase();
-    }
-  }
-  return 'Panel ' + (index + 1);
-}
 
 @Component({
   selector: 'app-rack-editor',
