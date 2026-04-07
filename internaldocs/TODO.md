@@ -51,12 +51,12 @@
 
 ---
 
-#### HIGH: Patch Editor — Report Issue Button Still Visible (regression)
+#### ~~HIGH: Patch Editor — Report Issue Button Still Visible (regression)~~
 
-**Why:** The `hideReportIssue` flag was added to `ModuleMinimalViewConfig` and set in the patch editor's `modulesViewConfig`, but the button is still visible during patch editing. Needs investigation — likely a `viewConfig` not flowing through to `module-details` correctly, or the flag guard condition is wrong.
+**Resolved:** Root cause was two unrelated build errors (`user-patches.component.html` had `async` pipe inside event binding; `rack.module.ts` was missing `ReactiveFormsModule`) that prevented the app from compiling the fix. The guard `@if (!viewConfig.hideReportIssue && !viewConfig.hideButtons)` in `module-details.component.html` is correct; patch editor's `modulesViewConfig` has both flags `true`.
 
-- [ ] Investigate why `hideReportIssue: true` in patch editor's `modulesViewConfig` does not hide the `app-module-flag` in `module-details`
-- [ ] Fix the root cause and verify button is hidden during patch editing but visible everywhere else
+- [x] Investigate why `hideReportIssue: true` in patch editor's `modulesViewConfig` does not hide the `app-module-flag` in `module-details`
+- [x] Fix the root cause and verify button is hidden during patch editing but visible everywhere else
 
 ---
 
