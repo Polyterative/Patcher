@@ -59,7 +59,7 @@ Summary:
 
 ```
 src/app/
-├── components/          # Reusable UI
+├── components/          # Feature UI, grouped by category (module-parts, rack-parts, patch-parts, …)
 ├── features/            # Feature modules
 │   ├── backbone/        # Auth, core
 │   ├── backend/

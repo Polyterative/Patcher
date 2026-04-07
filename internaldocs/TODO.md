@@ -67,20 +67,6 @@
 
 ---
 
----
-
-#### MEDIUM: Store Links per Module (Price Hub prerequisite)
-
-**Why:** One canonical "buy new" URL per module. No scraping — manually curated for popular modules first. Price Hub
-layer 1 cannot show anything without this data.
-
-- [x] Add nullable `store_url` to `modules` in `database.types.ts`
-- [x] Add `update.moduleStoreUrl()` to `supabase.service.ts` (admin/verified-only write)
-- [x] Show "Buy new" link on module detail page when present
-- [x] Write display logic tests
-
----
-
 #### MEDIUM: Patch Tags — Phase 1 (Solo Organisation)
 
 **Why:** Solo org value now (filter own patches); unlocks Collection-Aware Discovery later. Free-form tags, no taxonomy
@@ -107,7 +93,17 @@ only — no upload, no moderation.
 
 ---
 
-#### LOW: Edit Module HP in Rack
+#### LOW: Create Rack Dialog — Privacy Selection
+
+**Why:** New racks are created public by default with no way to set privacy at creation time. Users must edit the rack after creation to make it private. The dialog should include a privacy toggle.
+
+- [ ] Add public/private toggle to the "Create new rack" dialog
+- [ ] Default to private (safer default; user can explicitly make it public)
+- [ ] Pass the selection through to `add.rack()` backend call
+
+---
+
+
 
 **Why:** Rack-specific HP override — correcting wrong HP currently requires removing and re-adding the module.
 
@@ -133,10 +129,10 @@ only — no upload, no moderation.
 
 ---
 
-#### MEDIUM: Manufacturer Page — Phase 2 (Accounts & Editable Profile)
+#### MEDIUM: Manufacturer Accounts (Claim & Editable Profile)
 
 **Why:** Manufacturers claim their page, manage profile data, submit official MSRP.
-**Depends on:** Manufacturer Page Phase 1 live.
+**Depends on:** Manufacturer Page Phase 2 live.
 **Scope:** Auth-gated edit surface. New `manufacturer_accounts` table links `user_id` → `manufacturer` entity. Profile
 fields (name, logo, website, bio) are manufacturer-owned; module data edits go through UGC review queue.
 
