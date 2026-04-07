@@ -380,7 +380,7 @@ export function createUpdateNamespace(
             .eq('authorid', user.id)
         );
       }),
-      cacheBust(['patchWithId']),
+      cacheBust(['patches']),
       remapErrors()
     )
   };

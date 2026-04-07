@@ -68,6 +68,9 @@ export class UserAreaDataService extends SubManager {
     take$: new BehaviorSubject<number>(10),
   };
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
+  readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
+  readonly filteredPatchesData$: Observable<Patch[] | undefined>;
+  readonly allPatchTags$: Observable<string[]>;
 
   //
   readonly updatePatchesData$ = new Subject<void>();
@@ -91,6 +94,30 @@ export class UserAreaDataService extends SubManager {
     private readonly discoveryTipService: DiscoveryTipService
   ) {
     super();
+
+    this.filteredPatchesData$ = combineLatest([
+      this.patchesData$,
+      this.activeTagFilter$
+    ]).pipe(
+      map(([patches, tag]) => {
+        if (!patches) { return undefined; }
+        if (!tag) { return patches; }
+        return patches.filter(p => (p.tags ?? []).includes(tag));
+      })
+    );
+
+    this.allPatchTags$ = this.patchesData$.pipe(
+      map(patches => {
+        if (!patches) { return []; }
+        const tagSet = new Set<string>();
+        for (const p of patches) {
+          for (const t of (p.tags ?? [])) {
+            tagSet.add(t);
+          }
+        }
+        return Array.from(tagSet).sort();
+      })
+    );
 
     this.pagedModulesData$ = combineLatest([
       this.modulesData$,

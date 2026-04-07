@@ -136,6 +136,8 @@ export class PatchDetailDataService implements OnDestroy {
   //
   protected destroyEvent$ = new Subject<void>();
   shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  readonly patchTags$ = new BehaviorSubject<string[]>([]);
+  private readonly _tagsUpdate$ = new Subject<string[]>();
   
   constructor(
     private router: Router,
@@ -255,6 +257,7 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(data => {
         this.formData.name.control.reset(data.name, {emitEvent: false});
         this.formData.description.control.reset(data.description ?? '', {emitEvent: false});
+        this.patchTags$.next(data.tags ?? []);
       });
     
     this.singlePatchData$
@@ -742,6 +745,46 @@ export class PatchDetailDataService implements OnDestroy {
     this.bridge.confirm$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => this.confirmSelectedConnection$.next());
+
+    // ── Patch tags auto-save ───────────────────────────────────────────────
+    this._tagsUpdate$
+      .pipe(
+        switchMap(tags => {
+          const patch = this.singlePatchData$.value;
+          if (!patch) { return EMPTY; }
+          return this.backend.update.patchTags(patch.id, tags).pipe(
+            catchError(err => {
+              console.error('Failed to save tags:', err);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save tags — check your connection.');
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe();
+  }
+
+  addPatchTag(tag: string): void {
+    const trimmed = tag.trim();
+    if (!trimmed) { return; }
+    const current = this.patchTags$.value;
+    if (current.includes(trimmed)) { return; }
+    const next = [...current, trimmed];
+    this.patchTags$.next(next);
+    if (this.singlePatchData$.value) {
+      this.singlePatchData$.value.tags = next;
+    }
+    this._tagsUpdate$.next(next);
+  }
+
+  removePatchTag(tag: string): void {
+    const next = this.patchTags$.value.filter(t => t !== tag);
+    this.patchTags$.next(next);
+    if (this.singlePatchData$.value) {
+      this.singlePatchData$.value.tags = next;
+    }
+    this._tagsUpdate$.next(next);
   }
   
   private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
