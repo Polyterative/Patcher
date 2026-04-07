@@ -145,14 +145,10 @@ form = new FormGroup({
   email: new FormControl('', [Validators.required, Validators.email])
 });
 
-submit()
-:
-void {
-  if(this.form.valid
-)
-{
-  this.dataService.submitForm$.next(this.form.value);
-}
+submit(): void {
+  if (this.form.valid) {
+    this.dataService.submitForm$.next(this.form.value);
+  }
 }
 ```
 

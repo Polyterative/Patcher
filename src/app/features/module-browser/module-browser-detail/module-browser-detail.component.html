@@ -262,32 +262,26 @@
                                             (click$)="trimDevTextFields(bag.data)">Trim text fields
                   </app-brand-primary-button>
                 }
-                @if (bag.data && bag.data.manualURL) {
-                  <app-brand-primary-button theme="warning"
-                                            matTooltip="Clear the manual URL field"
-                                            matTooltipPosition="above"
-                                            (click$)="clearDevManualUrl()">Clear manual URL
-                  </app-brand-primary-button>
-                }
                 @if (bag.data) {
                   <div class="col gap1 store-url-edit" style="width: 100%">
                     <mat-form-field appearance="outline" style="width: 100%">
-                      <mat-label>Store URL (Buy new)</mat-label>
+                      <mat-label>Manual URL</mat-label>
                       <input matInput
                              type="url"
                              placeholder="https://..."
-                             [(ngModel)]="storeUrlDraft"
+                             [(ngModel)]="manualUrlDraft"
+                             [value]="bag.data.manualURL || ''"
                       />
-                      <mat-icon matSuffix>shopping_cart</mat-icon>
+                      <mat-icon matSuffix>menu_book</mat-icon>
                     </mat-form-field>
                     <div class="row gap1">
                       <app-brand-primary-button theme="positive"
-                                                [disabled]="!storeUrlDraft"
-                                                (click$)="setStoreUrl(bag.data.id)">Save store URL
+                                                [disabled]="!manualUrlDraft"
+                                                (click$)="setDevManualUrl()">Save manual URL
                       </app-brand-primary-button>
-                      @if (bag.data.store_url) {
+                      @if (bag.data.manualURL) {
                         <app-brand-primary-button theme="warning"
-                                                  (click$)="clearStoreUrl(bag.data.id)">Clear store URL
+                                                  (click$)="clearDevManualUrl()">Clear manual URL
                         </app-brand-primary-button>
                       }
                     </div>

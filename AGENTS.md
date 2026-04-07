@@ -72,7 +72,7 @@ Component (presentation)
 
 Key paths:
 
-- `src/app/components/[feature]/` - feature UI + co-located `*-data.service.ts`
+- `src/app/components/[category]/[feature]/` - feature UI + co-located `*-data.service.ts`
 - `src/app/features/backend/supabase.service.ts` - backend namespaces (`GET/get/add/update/delete`)
 - `src/app/features/backend/DatabaseStrings.ts` - table names + select joins (register new tables first)
 - `src/backend/database.types.ts` - generated Supabase schema types

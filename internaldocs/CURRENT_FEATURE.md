@@ -40,10 +40,22 @@ The key tension today: users can select a panel per-rack (newly built), but:
 
 ---
 
+#### Key files
+
+- `src/app/components/module-parts/module-details/module-details.component.html` — panel block to rewrite (accordion → gallery)
+- `src/app/components/module-parts/module-editor/module-editor.component.ts` — contains the only current panel-color options array (no shared constant yet)
+- `src/app/components/module-parts/module-minimal/module-part-image/module-part-image.component.ts` — already accepts `selectedPanelId` @Input
+- `src/app/components/rack-parts/rack-editor/rack-editor.component.ts` — `derivePanelLabel()` defined here as a module-level function
+- `src/app/components/patch-parts/patch-editor/patch-editor.component.html` — passes `card.module` to `app-module-composite` without `selectedPanelId`
+- `src/app/features/backend/supabase-get.ts` — panels ordered by `color` ascending (line ~140)
+- `src/app/shared-interproject/app-state.service.ts` — target for `preferredPanelColor$` BehaviorSubject (Layer 2)
+
+---
+
 #### Discovered architecture facts
 
 - **Module details panel block** (`module-details.component.html` lines 8–38): renders a flat image grid inside a `mat-accordion` only when `panels.length > 1`. Tooltip is the raw filename. No label, no color badge, no interactivity.
-- **Panel color enum** is defined only in the module editor (`module-editor.component.ts` line 253–254): `{name:'Light', value:1}`, `{name:'Dark', value:2}`. No shared constant.
+- **Panel color options** are defined only in the module editor (`module-editor.component.ts` ~line 253): `{name:'Light', value:1}`, `{name:'Dark', value:2}`, `{name:'Special edition', value:3}`, `{name:'Limited edition', value:4}`. No shared constant.
 - **Patch editor** (`patch-editor.component.html`) passes module data to `app-module-composite` but never passes `selectedPanelId` — always renders `panels[0]`.
 - **Module browser cards** always use `panels[0]`; no `selectedPanelId` threading.
 - **`module-part-image`** already accepts `selectedPanelId` @Input with full fallback logic — just needs to be wired up in more places.
