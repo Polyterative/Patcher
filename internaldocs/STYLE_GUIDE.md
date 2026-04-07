@@ -29,17 +29,13 @@ Core principles (code examples in [PATTERNS.md](./PATTERNS.md)):
 
 ```typescript
 // ✅ Component emits to Subject
-onClick()
-:
-void {
-     this.dataService.deleteItem$.next(itemId);
+onClick(): void {
+  this.dataService.deleteItem$.next(itemId);
 }
 
 // ❌ Component calls method
-onClick()
-:
-void {
-     this.dataService.deleteItem(itemId); // WRONG
+onClick(): void {
+  this.dataService.deleteItem(itemId); // WRONG
 }
 ```
 
@@ -87,9 +83,7 @@ Common: `edit`, `delete_forever`, `close`, `add`, `save`, `check_circle`, `error
 .gap0 .gap1 .gap2 .gap3 // 0.25rem, 0.5rem, 1rem, 1.5rem
 .center // align-items: center
 .auto-left // margin-left: auto
-.auto-right
-
-// margin-right: auto
+.auto-right // margin-right: auto
 ```
 
 ### Inline vs SCSS

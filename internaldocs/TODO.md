@@ -125,7 +125,7 @@ only — no upload, no moderation.
 
 ---
 
-### PRODUCT — Tier 1 (requires Tier 0 Manufacturer Phase 1 to be live)
+### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 ---
 
