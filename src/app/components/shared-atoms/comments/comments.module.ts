@@ -6,7 +6,6 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { CommentsDataService } from './comments-data.service';
-import { CommentsEditorComponent } from './comments-editor/comments-editor.component';
 import { CommentsRootComponent } from './comments-root/comments-root.component';
 import {
   MatList,
@@ -18,7 +17,10 @@ import {
 } from "@angular/material/tree";
 import { AutoUpdateLoadingIndicatorModule } from "src/app/shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module";
 import { MatIcon } from "@angular/material/icon";
-import { MatIconButton } from "@angular/material/button";
+import {
+  MatButton,
+  MatIconButton
+} from "@angular/material/button";
 import { NgDatePipesModule } from "ngx-pipes";
 import { TimeagoModule } from "ngx-timeago";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -28,7 +30,6 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
 
 @NgModule({
   declarations: [
-    CommentsEditorComponent,
     CommentsRootComponent
   ],
   imports: [
@@ -44,6 +45,7 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
     MatTree,
     AutoUpdateLoadingIndicatorModule,
     MatIcon,
+    MatButton,
     MatIconButton,
     NgDatePipesModule,
     TimeagoModule,
@@ -53,7 +55,6 @@ import { CommentsItemBlockComponent } from "src/app/components/shared-atoms/comm
   ],
   providers:    [CommentsDataService],
   exports:      [
-    CommentsEditorComponent,
     CommentsRootComponent
   ]
 })

@@ -9,5 +9,4 @@ export interface DbComment {
   profile: PublicUser;
   created: string;
   updated: string;
-  deletedAt?: string;
 }

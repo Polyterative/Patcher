@@ -1,6 +1,6 @@
 @if (data && data.length > 0) {
   <div class="col gap1 ">
-    @for (item of data; track item; let i = $index) {
+    @for (item of data; track item.id; let i = $index) {
       <app-comments-item [data]="item"
                          [viewConfig]="viewConfig"
       >
