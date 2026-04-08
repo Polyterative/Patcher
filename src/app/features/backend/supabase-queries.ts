@@ -417,18 +417,23 @@ export class SupabaseQueriesService {
     maxCacheCount: 100,
     async: true
   })
-  getComments(entityId: number, entityType: number): Observable<DbComment[] | null | undefined> {
+  getComments(
+    entityId: number,
+    entityType: number,
+    from = 0,
+    to = 24
+  ): Observable<{ data: DbComment[] | null; count: number | null }> {
     return rxFrom(
       this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username)`)
+        .select(`*,profile:profiles(id,username)`, { count: 'exact' })
         .filter('entityId', 'eq', entityId)
         .filter('entityType', 'eq', entityType)
-      // foreign key add profile information for each comment
-    
+        .order('created', { ascending: false })
+        .range(from, to)
     )
       .pipe(
-        // remapErrors(),
-        map(x => x.data)
+        remapErrors(),
+        map(x => ({ data: x.data, count: x.count }))
       );
   }
   
