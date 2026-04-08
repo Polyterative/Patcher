@@ -169,6 +169,26 @@ Before commit:
 - Never push unless explicitly requested.
 - Before staging, always inspect: `git status` and `git diff HEAD --stat`.
 
+### Release procedure (patch/minor/major)
+
+**Always follow this exact order. Never run `release:*` while on `develop`.**
+
+```bash
+# 1. Commit your changes on develop as usual
+git add <files> && git commit -m "<type>(<scope>): <description>"
+
+# 2. Merge develop into production (switches branch automatically)
+pnpm merge:dev-to-prod
+
+# 3. Bump version, tag, and push to origin/production
+pnpm release:patch   # or release:minor / release:major
+
+# 4. Switch back to develop
+pnpm switch:develop
+```
+
+If `merge:dev-to-prod` opens an editor for the merge commit message, save and close it (`:wq` in vim).
+
 ## 10) Agent Output and Context Preferences
 
 ### Test output

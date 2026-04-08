@@ -4,7 +4,7 @@ import {
   Input
 } from '@angular/core';
 import { DbComment } from "src/app/models/comment";
-import { MatCardSubtitle } from "@angular/material/card";
+import { MatIcon } from "@angular/material/icon";
 
 import {
   CommentsItemComponent,
@@ -19,15 +19,13 @@ import {
   styleUrl: './comments-item-block.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatCardSubtitle,
+    MatIcon,
     CommentsItemComponent
   ]
 })
 export class CommentsItemBlockComponent {
-  
+
   @Input() data: DbComment[];
-  // user: SimpleUserModel;
   @Input() viewConfig: CommentViewConfig = defaultCommentViewConfig;
-  
-  
+
 }

@@ -1,28 +1,28 @@
-<div class="col gap1"
->
+<div class="col gap1">
   <lib-hero-content-card titleNormal="Comments"
                          description="Conversations, feedback and more"
                          class="commentsBG"
                          icon="comment"
                          id="comments"
   >
-    <ng-container *ngTemplateOutlet="content;">
-    </ng-container>
+    <ng-container *ngTemplateOutlet="content;"></ng-container>
   </lib-hero-content-card>
 </div>
 
-<!--<ng-template #voidData>-->
-<!--  <div fxFlex="100">-->
-<!--    <mat-card-subtitle fxLayoutAlign="center center">So far, you haven't left any comments. Try leaving a few!-->
-<!--    </mat-card-subtitle>-->
-<!--  </div>-->
-<!--</ng-template>-->
-
-
 <ng-template #content>
   <div class="col gap1">
+    <mat-chip-listbox class="filter-chips"
+                      [value]="activeFilter$ | async"
+                      (change)="setFilter($event.value ?? null)"
+                      hideSingleSelectionIndicator
+    >
+      @for (opt of filterOptions; track opt.value) {
+        <mat-chip-option [value]="opt.value">{{ opt.label }}</mat-chip-option>
+      }
+    </mat-chip-listbox>
+
     @if ({
-      data: (dataService.commentsData$ | async),
+      data: (filteredComments$ | async),
     }; as bag) {
       <app-comments-item-block [data]="bag.data"
                                [viewConfig]="commentViewConfig"
