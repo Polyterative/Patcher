@@ -1,35 +1,40 @@
-<lib-hero-content-card titleNormal="Comments"
->
+<lib-hero-content-card titleNormal="Comments">
   @if ({
-    data: (dataService.comments$|async),
-    user: (userManagerService.loggedUser$|async),
+    data: (dataService.comments$ | async),
+    count: (dataService.commentsCount$ | async),
+    isSubmitting: (dataService.isSubmitting$ | async),
+    user: (userManagerService.loggedUser$ | async),
   }; as bag) {
     <lib-auto-update-loading-indicator [data$]="dataService.comments$"
                                        [updateData$]="dataService.requestCommentsUpdate$"
     >
-      <div class="col gap2"
-      >
-        <app-comments-item-block [data]="bag.data"
-        ></app-comments-item-block>
+      <div class="col gap2">
+        <app-comments-item-block [data]="bag.data"></app-comments-item-block>
+
+        @if (bag.data && bag.count > bag.data.length) {
+          <button mat-stroked-button (click)="dataService.loadMore$.next()" class="load-more-btn">
+            <mat-icon>expand_more</mat-icon>
+            Load more comments ({{ bag.count - bag.data.length }} remaining)
+          </button>
+        }
+
         @if (bag.data && bag.user) {
           <lib-mat-form-entity [dataPack]="dataService.fields.submit"
-                               [hint]="dataService.fields.submit.control.value.length<dataService.maxLength/3
-                                   ?'':dataService.fields.submit.control.value.length+' /'+dataService.maxLength"
+                               [hint]="dataService.fields.submit.control.value?.length > 0
+                                   ? (dataService.fields.submit.control.value.length + ' / ' + dataService.maxLength)
+                                   : ''"
           ></lib-mat-form-entity>
-          <div style="width: 100%; align-self: flex-end"
-          >
+          <div style="width: 100%; align-self: flex-end">
             <app-brand-primary-button
-              [disabled]="!dataService.fields.submit.control.valid||(!dataService.fields.submit.control.value.length>0)"
+              [disabled]="!dataService.fields.submit.control.valid || bag.isSubmitting"
               (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
               [innerFlex]="'100%'"
               icon="send"
-            >Submit comment
+            >{{ bag.isSubmitting ? 'Posting…' : 'Submit comment' }}
             </app-brand-primary-button>
           </div>
         }
       </div>
     </lib-auto-update-loading-indicator>
   }
-
-
 </lib-hero-content-card>

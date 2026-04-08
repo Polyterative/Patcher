@@ -51,6 +51,43 @@
 
 ---
 
+#### HIGH: Comments — Bug-fix Pass (entity detail pages)
+
+**Why:** Three bugs in `getComments()` make entity-level comments broken in subtle ways. No sort order means comments
+appear in random database storage order. No `.range()` means all comments for an entity load unbounded — a popular
+module with 500 comments loads all 500 on every page visit. `remapErrors()` is commented out so network failures
+silently swallow errors. Full analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
+
+- [x] Add `.order('created', { ascending: false })` to `getComments()` in `supabase-queries.ts` (bug C-1)
+- [x] Uncomment `remapErrors()` in `getComments()` (bug C-3)
+- [x] Add `.range(from, to)` + `{ count: 'exact' }` parameters to `getComments()` and update `CommentsDataService` to
+  expose `commentsCount$` and forward pagination params; add a "Load more" button to `comments-root.component.html`
+  (bug C-2)
+- [x] Fix `@for (item of data; track item.id)` (was `track item`) in `comments-item-block.component.html`
+- [x] Delete the empty `CommentsEditorComponent` stub and remove its declaration from `comments.module.ts`
+- [x] Remove `deletedAt?` from `DbComment` model (field not in DB schema)
+- [x] Write / update unit tests for `getComments()` to cover ordering, range, and error propagation
+
+---
+
+#### MEDIUM: Comments — UX Improvement Pass
+
+**Why:** Several UX gaps make the comment flow feel rough: patch context is broken in the user area, there is no
+delete confirmation, and the character counter is hidden until users have already typed 1/3 of the limit. Full
+analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
+
+- [x] Implement `PATCH` case in `CommentContextComponent` so patch comments in the user area show a navigable context
+  link (bug M-1)
+- [x] Add delete confirmation (inline snackbar-undo or small dialog) before `deleteComment$.next()` fires (Mo-2)
+- [x] Show character counter from the first keystroke (or ≥ 10% threshold) instead of after 333 chars; optionally
+  colour-code at 80% / 95% (Mo-1)
+- [x] Add an in-flight spinner to the submit button and prevent double-submission while the server round-trip is in
+  progress (partial fix for M-2)
+
+---
+
+---
+
 #### ~~HIGH: Patch Editor — Report Issue Button Still Visible (regression)~~
 
 **Resolved:** Root cause was two unrelated build errors (`user-patches.component.html` had `async` pipe inside event binding; `rack.module.ts` was missing `ReactiveFormsModule`) that prevented the app from compiling the fix. The guard `@if (!viewConfig.hideReportIssue && !viewConfig.hideButtons)` in `module-details.component.html` is correct; patch editor's `modulesViewConfig` has both flags `true`.
