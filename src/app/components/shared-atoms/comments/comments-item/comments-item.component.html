@@ -10,7 +10,7 @@
       @if (data.profile.id === (userService.loggedUser$|async)?.id && isDeletable) {
         <div class="delete"
         >
-          <button mat-icon-button (click)="dataService.deleteComment$.next(data.id)" class="danger-action">
+          <button mat-icon-button (click)="requestDelete()" class="danger-action">
             <mat-icon class="opacizeOnHover danger-action"
             >delete
             </mat-icon>

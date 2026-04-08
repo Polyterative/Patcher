@@ -18,6 +18,7 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { MatIconButton } from "@angular/material/button";
 import { CommentContextComponent } from "src/app/components/shared-atoms/comments/comment-context/comment-context.component";
 import { CommentTextPipe } from "src/app/components/shared-atoms/comments/comment-text.pipe";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 
 export interface CommentViewConfig {
@@ -55,6 +56,7 @@ export class CommentsItemComponent implements OnInit {
   constructor(
     public dataService: CommentsDataService,
     public userService: UserManagementService,
+    private snackBar: MatSnackBar,
   ) {
   }
   
@@ -62,5 +64,12 @@ export class CommentsItemComponent implements OnInit {
     const commentDate = new Date(this.data.created);
     const diff = this.currentDateTime.getTime() - commentDate.getTime();
     this.isDeletable = diff < 30 * 60 * 1000;
+  }
+
+  requestDelete(): void {
+    const ref = this.snackBar.open('Delete this comment?', 'Delete', { duration: 5000 });
+    ref.onAction().subscribe(() => {
+      this.dataService.deleteComment$.next(this.data.id);
+    });
   }
 }
