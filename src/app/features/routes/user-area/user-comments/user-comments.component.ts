@@ -16,7 +16,17 @@ import {
   CommentViewConfig,
   defaultCommentViewConfig
 } from "src/app/components/shared-atoms/comments/comments-item/comments-item.component";
+import { BehaviorSubject, combineLatest, Observable } from "rxjs";
+import { map } from "rxjs/operators";
+import { MatChipsModule } from "@angular/material/chips";
+import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
+import { DbComment } from "src/app/models/comment";
 
+
+interface FilterOption {
+  label: string;
+  value: number | null;
+}
 
 @Component({
   selector: 'app-user-comments',
@@ -32,20 +42,44 @@ import {
     HeroContentCardModule,
     CommentsItemBlockComponent,
     MatPaginatorModule,
+    MatChipsModule,
   ]
 })
 export class UserCommentsComponent implements OnInit {
   commentViewConfig: CommentViewConfig = {
     ...defaultCommentViewConfig,
-    showContext: true
+    showContext: true,
+    alwaysDeletable: true,
   };
+
+  readonly filterOptions: FilterOption[] = [
+    { label: 'All',     value: null },
+    { label: 'Modules', value: CommentableEntityTypes.MODULE },
+    { label: 'Racks',   value: CommentableEntityTypes.RACK },
+    { label: 'Patches', value: CommentableEntityTypes.PATCH },
+  ];
+
+  readonly activeFilter$ = new BehaviorSubject<number | null>(null);
+  readonly filteredComments$: Observable<DbComment[] | undefined>;
 
   constructor(
     public dataService: UserAreaDataService,
   ) {
+    this.filteredComments$ = combineLatest([
+      this.dataService.commentsData$,
+      this.activeFilter$,
+    ]).pipe(
+      map(([data, filter]: [DbComment[] | undefined, number | null]) =>
+        filter == null ? data : data?.filter(c => c.entityType === filter)
+      )
+    );
   }
 
   ngOnInit(): void {
     this.dataService.updateCommentsData$.next();
+  }
+
+  setFilter(value: number | null): void {
+    this.activeFilter$.next(value);
   }
 }

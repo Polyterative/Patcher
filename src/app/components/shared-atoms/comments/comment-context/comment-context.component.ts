@@ -23,13 +23,20 @@ import { MatIcon } from "@angular/material/icon";
 interface CommentContext {
   description: string;
   URL: string[];
+  entityLabel: string;
 }
+
+const ENTITY_LABELS: Record<number, string> = {
+  [CommentableEntityTypes.MODULE]: 'Module',
+  [CommentableEntityTypes.RACK]:   'Rack',
+  [CommentableEntityTypes.PATCH]:  'Patch',
+  [CommentableEntityTypes.PROFILE]: 'Profile',
+};
 
 @Component({
   selector: 'app-comment-context',
   imports: [
     AsyncPipe,
-    MatButton,
     MatIcon,
   ],
   templateUrl: './comment-context.component.html',
@@ -38,105 +45,62 @@ interface CommentContext {
 })
 export class CommentContextComponent extends SubManager implements OnInit {
   @Input() data: DbComment;
-  
+
   entityTypes = CommentableEntityTypes;
-  
-  // example: "Module: Maths by Make Noise"
+
   contextInformation$ = new BehaviorSubject<CommentContext | undefined>(undefined);
-  
-  // fake foreign key add entity information for each comment
-  // use entity id and entity type to get the entity information
-  // where entity type is 1, get the module information
-  // where entity type is 2, get the patch information
-  // where entity type is 3, get the rack information
-  
+
   constructor(
     private backend: SupabaseService,
     private router: Router,
-    // private userService: UserManagementService,
-    // private snackBar: MatSnackBar,
-    // private sanitizer: DomSanitizer
   ) {
-    
     super();
   }
-  
+
   ngOnInit(): void {
-    
-    //   when data is available, get the entity information to create context information
+    const entityLabel = ENTITY_LABELS[this.data.entityType] ?? 'Item';
+
     switch (this.data.entityType) {
       case this.entityTypes.MODULE:
-        // get module information
         this.backend.GET.moduleWithId(
           this.data.entityId,
-          `name,id,${
-            QueryJoins.manufacturer
-          }`)
-          .pipe(
-            // map to data
-            map(x => x.data),
-            takeUntil(this.destroy$)
-          )
+          `name,id,${ QueryJoins.manufacturer }`)
+          .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(module => {
-            this.contextInformation$.next(
-              {
-                description: `Module: ${ module.name } by ${ module.manufacturer.name }`,
-                URL: [
-                  'modules',
-                  'details',
-                  module.id
-                ]
-              }
-            );
+            this.contextInformation$.next({
+              description: `${ module.name } by ${ module.manufacturer.name }`,
+              URL: ['modules', 'details', module.id],
+              entityLabel,
+            });
           });
         break;
       case this.entityTypes.PATCH:
         this.backend.get.patchWithId(this.data.entityId, 'name,id')
-          .pipe(
-            map(x => x.data),
-            takeUntil(this.destroy$)
-          )
+          .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(patch => {
             this.contextInformation$.next({
-              description: `Patch: ${ patch.name }`,
-              URL: [
-                'patches',
-                'details',
-                patch.id
-              ]
+              description: patch.name,
+              URL: ['patches', 'details', patch.id],
+              entityLabel,
             });
           });
         break;
       case this.entityTypes.RACK:
-        // get rack information
-        this.backend.GET.rackWithId(
-          this.data.entityId,
-          `name,id`)
-          .pipe(
-            // map to data
-            map(x => x.data),
-            takeUntil(this.destroy$)
-          )
+        this.backend.GET.rackWithId(this.data.entityId, `name,id`)
+          .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(rack => {
-            this.contextInformation$.next(
-              {
-                description: `Rack: ${ rack.name }`,
-                URL: [
-                  'racks',
-                  'details',
-                  rack.id
-                ]
-              }
-            );
+            this.contextInformation$.next({
+              description: rack.name,
+              URL: ['racks', 'details', rack.id],
+              entityLabel,
+            });
           });
         break;
       default:
-      // do nothing
+        break;
     }
-    
   }
-  
-  
+
   openURL() {
     this.router.navigate(this.contextInformation$.value.URL);
   }

@@ -1,8 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
 import { DbComment } from 'src/app/models/comment';
 import { CommentsDataService } from "src/app/components/shared-atoms/comments/comments-data.service";
@@ -23,10 +22,12 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 
 export interface CommentViewConfig {
   showContext: boolean;
+  alwaysDeletable: boolean;
 }
 
 export const defaultCommentViewConfig: CommentViewConfig = {
-  showContext: false
+  showContext: false,
+  alwaysDeletable: false,
 };
 
 @Component({
@@ -46,24 +47,28 @@ export const defaultCommentViewConfig: CommentViewConfig = {
     CommentTextPipe,
   ],
 })
-export class CommentsItemComponent implements OnInit {
+export class CommentsItemComponent {
   @Input() data: DbComment;
-  currentDateTime = new Date();
-  isDeletable = false;
-
   @Input() viewConfig: CommentViewConfig = defaultCommentViewConfig;
-  
+
   constructor(
     public dataService: CommentsDataService,
     public userService: UserManagementService,
     private snackBar: MatSnackBar,
   ) {
   }
-  
-  ngOnInit(): void {
-    const commentDate = new Date(this.data.created);
-    const diff = this.currentDateTime.getTime() - commentDate.getTime();
-    this.isDeletable = diff < 30 * 60 * 1000;
+
+  avatarColor(username: string): string {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${ hue }, 55%, 42%)`;
+  }
+
+  avatarInitials(username: string): string {
+    return username.slice(0, 2).toUpperCase();
   }
 
   requestDelete(): void {

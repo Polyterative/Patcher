@@ -2,26 +2,25 @@
   <div class="comment-content">
 
     <div class="comment-header">
+      <div class="avatar" [style.background-color]="avatarColor(data.profile.username)">
+        {{ avatarInitials(data.profile.username) }}
+      </div>
       <div class="username">{{ data.profile.username }}</div>
       <div class="timestamp"
            [matTooltip]="data.updated | date:'medium'"
       >{{ data.updated | timeago }}
       </div>
-      @if (data.profile.id === (userService.loggedUser$|async)?.id && isDeletable) {
-        <div class="delete"
-        >
+      @if (data.profile.id === (userService.loggedUser$|async)?.id || viewConfig.alwaysDeletable) {
+        <div class="delete">
           <button mat-icon-button (click)="requestDelete()" class="danger-action">
-            <mat-icon class="opacizeOnHover danger-action"
-            >delete
-            </mat-icon>
+            <mat-icon class="opacizeOnHover danger-action">delete</mat-icon>
           </button>
         </div>
       }
     </div>
-    <!--    <p class="comment-text">{{ data.content }}</p>-->
-    
+
     <div class="comment-text" [innerHTML]="data.content | commentText"></div>
-    
+
     @if (viewConfig.showContext) {
       <app-comment-context
         [data]="data"
