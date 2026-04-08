@@ -9,6 +9,9 @@
         <app-label-value-showcase label="User"
         >{{ bag.userProfile.username }}
         </app-label-value-showcase>
+        <!-- TODO: Panel preference (light/dark/none) is a planned feature but not yet fully implemented.
+             Commented out to prevent the raw toggle from appearing in the user profile area.
+             Re-enable and complete the feature (backend persistence, UX polish) before shipping.
         <div class="row gap1" style="align-items: center; margin-top: 0.5rem;">
           <span style="font-size: 0.85rem; white-space: nowrap;">Panel preference</span>
           <mat-button-toggle-group
@@ -20,6 +23,7 @@
             <mat-button-toggle [value]="null">None</mat-button-toggle>
           </mat-button-toggle-group>
         </div>
+        -->
       </lib-clean-card>
     }
     <div class="col gap1"
