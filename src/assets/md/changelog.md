@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.4.1](https://github.com/Polyterative/Patcher/compare/v5.4.0...v5.4.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **user-area:** hide unfinished panel preference toggle from user profile ([63c0e31](https://github.com/Polyterative/Patcher/commit/63c0e31a39d5c49d8ff57a5cb1f8511c4cf49073))
+
 ## [5.4.0](https://github.com/Polyterative/Patcher/compare/v5.3.8...v5.4.0) (2026-04-07)
 
 
