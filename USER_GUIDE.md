@@ -40,10 +40,15 @@ ever.
 ### Creating an Account
 
 1. Visit [patcher.xyz](https://patcher.xyz)
-2. Click on the **Sign Up** or **Login** button in the navigation bar
-3. You can sign up using:
-    - **Email**: Create an account with your email address and password
-    - **Google**: Use your Google account for quick authentication
+2. Start by browsing **Modules**, **Patches**, or **Racks** if you want to explore before creating an account
+3. Click **Sign up** when you want to save your own modules, racks, and patches
+4. Create an account with your email address and password
+
+**Good to know:**
+
+- You do **not** need an account to browse the public module database
+- Public patches and public racks can be explored before signing in
+- Your personal workspace in **My Area** requires login
 
 ### Navigating the Interface
 
@@ -288,8 +293,8 @@ Patcher is open-source and welcomes contributions!
 A: Yes! Patcher is completely free. The module database and core features will always remain free.
 
 **Q: Can I use Patcher without an account?**  
-A: You can browse modules and public patches without an account, but you'll need to sign up to create your own patches
-and racks.
+A: Yes. You can browse modules, public patches, and public racks without an account. Sign up when you want to save your
+own collection, racks, and patches in **My Area**.
 
 **Q: How do I add a module that's not in the database?**  
 A: Join our Discord and let us know! The team and community work together to keep the database up to date.

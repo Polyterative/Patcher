@@ -16,52 +16,6 @@
 
 ---
 
-
-
----
-
-### Empty template
-
-```
-### Title
-
-**Goal:** …
-
----
-
-#### Key files
-
--
-
----
-
-#### Discovered architecture facts
-
--
-
----
-
-#### Layer 1 – MVP (data wiring)
-
-- [ ]
-
-#### Layer 2 – Structural (interaction model)
-
-- [ ]
-
-#### Layer 3 – Polish
-
-- [ ]
-
----
-
-#### Decisions / notes
-
--
-
----
-
 #### Status
 
 Planning.
-```
