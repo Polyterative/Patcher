@@ -3,6 +3,7 @@ import {
   Component,
   Input
 } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { DbModule } from 'src/app/models/module';
@@ -12,6 +13,7 @@ import {
 } from '../module-minimal/module-minimal.component';
 import { derivePanelLabel, PANEL_COLORS } from '../panel.constants';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { ModulePanelZoomDialogComponent } from './module-panel-zoom-dialog.component';
 
 
 @Component({
@@ -29,6 +31,7 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   standalone:      false
 })
 export class ModuleDetailsComponent {
+  private readonly panelStorageBaseUrl = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
   @Input() data: DbModule;
   @Input() viewConfig: ModuleMinimalViewConfig = defaultModuleMinimalViewConfig;
   /** Passed through to app-module-cvs for instance-aware CV clicks */
@@ -44,13 +47,38 @@ export class ModuleDetailsComponent {
 
   constructor(
     public backend: SupabaseService,
-    public appState: AppStateService
+    public appState: AppStateService,
+    private readonly dialog: MatDialog
   ) {
     this.preferredPanelColor$ = this.appState.preferredPanelColor$;
   }
 
+  openPanelZoom(panelId: number, filename: string, description: string, index: number): void {
+    this.setPreviewPanel(panelId);
+
+    if (!filename) {
+      return;
+    }
+
+    this.dialog.open(ModulePanelZoomDialogComponent, {
+      width: 'min(96vw, 90rem)',
+      maxWidth: '96vw',
+      height: 'min(92vh, 64rem)',
+      autoFocus: false,
+      panelClass: 'panel-zoom-dialog-shell',
+      data: {
+        imageUrl: this.getPanelImageUrl(filename),
+        label: this.getPanelLabel(filename, description, index)
+      }
+    });
+  }
+
   getPanelLabel(filename: string, description: string, index: number): string {
     return derivePanelLabel(filename, description, index);
+  }
+
+  getPanelImageUrl(filename: string): string {
+    return `${ this.panelStorageBaseUrl }${ filename }`;
   }
 
   getPanelColorName(color: number): string | null {
