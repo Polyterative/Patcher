@@ -1,13 +1,15 @@
 <lib-screen-wrapper maxSize="86rem">
   <main class="home-page">
     <section class="section-enter">
-      <app-home-experience-hero [content]="heroContent">
-        <div hero-actions class="hero-action-stack">
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
+        <app-home-experience-hero [content]="heroContent">
+          <div hero-actions class="hero-action-stack">
+          <app-brand-primary-button routerLink="/modules/browser" icon="travel_explore">Browse modules
           </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
-        </div>
-      </app-home-experience-hero>
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Sign up
+          </app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
+          </div>
+        </app-home-experience-hero>
     </section>
 
     <section class="proof-list section-enter" aria-label="product walkthrough">
@@ -80,13 +82,15 @@
       @defer (on viewport) {
         <app-home-invitation-cta
           title="Start building your library"
-          description="Create an account, map your setup, and turn today's work into something you can use tomorrow."
+          description="Look around first, then sign up when you want to save modules, racks, and patches."
           imageSrc="/assets/png/LOGO_1.png"
           imageAlt="Patcher logo"
         >
-          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Create an account
+          <app-brand-primary-button routerLink="/modules/browser" icon="travel_explore">Browse modules
           </app-brand-primary-button>
-          <app-brand-primary-button routerLink="/auth/login" icon="login">Login</app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/signup" icon="person_add">Sign up
+          </app-brand-primary-button>
+          <app-brand-primary-button routerLink="/auth/login" icon="login">Log in</app-brand-primary-button>
         </app-home-invitation-cta>
       } @placeholder {
         <div></div>

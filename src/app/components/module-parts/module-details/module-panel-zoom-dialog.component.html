@@ -1,0 +1,24 @@
+<div class="panel-zoom-dialog">
+  <div class="panel-zoom-dialog__header">
+    <div class="panel-zoom-dialog__meta">
+      <p class="panel-zoom-dialog__eyebrow">PANEL VIEW</p>
+      <h2>{{ data.label }}</h2>
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      aria-label="Close panel zoom"
+      (click)="dialogRef.close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="panel-zoom-dialog__image-shell">
+    <img
+      [src]="data.imageUrl"
+      [alt]="data.label"
+      class="panel-zoom-dialog__image"
+    >
+  </div>
+</div>

@@ -13,9 +13,8 @@
       </div>
       <div class="rowwrap gap1">
         @for (item of data.panels; track item; let idx = $index) {
-          <div class="col gap1"
-               style="align-items: center; cursor: pointer;"
-               (click)="setPreviewPanel(item.id)"
+          <div class="col gap1 panel-preview-item"
+               (click)="openPanelZoom(item.id, item.filename, item.description, idx)"
                [class.panel-preview-active]="item.id === previewPanelId"
                [class.preferred-panel]="item.color !== null && item.color === (preferredPanelColor$ | async)"
           >
@@ -24,9 +23,8 @@
                 [alt]="getPanelLabel(item.filename, item.description, idx)"
                 class="image-transition panel-gallery-img"
                 loading="lazy"
-                [ngStyle]="{maxHeight:((data.standard|getModuleHeightForStandard)+'rem')}"
                 [matTooltip]="getPanelLabel(item.filename, item.description, idx)"
-                [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+item.filename"
+                [src]="getPanelImageUrl(item.filename)"
               >
             }
             <span style="font-size: 0.8rem;">{{getPanelLabel(item.filename, item.description, idx)}}</span>
@@ -36,9 +34,6 @@
           </div>
         }
       </div>
-      @if (data.panels.length === 1) {
-        <p style="font-style: italic; color: var(--mat-sys-on-surface-variant, #666); font-size: 0.8rem;">This module has one panel variant</p>
-      }
     </div>
   }
   

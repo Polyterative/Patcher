@@ -49,12 +49,14 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatButtonModule } from "@angular/material/button";
+import { MatDialogModule } from "@angular/material/dialog";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule } from "@angular/forms";
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
+import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
 
 
 @NgModule({
@@ -79,7 +81,8 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
     ModuleEditorAdderLineComponent,
     OnlyNotSavedFormCVsLengthPipe,
     GetModuleHeightForStandardPipe,
-    ModulePartImageComponent
+    ModulePartImageComponent,
+    ModulePanelZoomDialogComponent
   ],
   providers:    [
     ModuleDetailDataService
@@ -98,6 +101,7 @@ import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
+    MatDialogModule,
     RestrictedEntityModule,
     RouterModule,
     SharedAtomsModule,

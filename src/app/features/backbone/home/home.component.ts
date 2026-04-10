@@ -69,7 +69,7 @@ export class HomeComponent extends SubManager {
     mainVisual: {
       src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
       alt: 'Patcher patch detail interface with patch notes and controls',
-      caption: 'Capture the full patch while it is fresh, then reopen it later and recreate it pefectly for the next gig.'
+      caption: 'Capture the full patch while it is fresh, then reopen it later and recreate it perfectly for the next gig.'
     },
     floatingVisualA: {
       src: '/assets/screenshots/major-area-screenshots/03-module-details.jpg',
@@ -107,7 +107,7 @@ export class HomeComponent extends SubManager {
     },
     {
       kicker: 'step 02',
-      title: 'Shape you rack layout with the drag-and-drop planner',
+      title: 'Shape your rack layout with the drag-and-drop planner',
       description: 'Test layout ideas on screen before moving real hardware.'
     },
     {

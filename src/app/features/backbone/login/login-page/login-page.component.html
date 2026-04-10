@@ -7,11 +7,13 @@
         <!-- Normal Login Form -->
         @if (!(dataService.showPasswordReset$ | async)) {
           <div class="auth-container">
-            
             <!-- Email/Password Login Section -->
             <section class="email-login-section" aria-label="Email login">
               <app-login-email fxFlex="100"></app-login-email>
             </section>
+            <p class="auth-support-copy">
+              Log in to get back to your collection, racks, and patches in My Area. You can still browse public content without signing in.
+            </p>
             
             <!-- SSO Authentication Section (temporarily hidden) -->
             <!-- <section class="sso-section" aria-label="Social login options">
@@ -28,7 +30,7 @@
                    routerLink="/auth/signup">
                 <mat-card-subtitle fxLayoutAlign="center"
                                    class="action-link">
-                  Don't have an account? <strong>Sign up</strong>
+                  Need an account? <strong>Sign up</strong>
                 </mat-card-subtitle>
               </div>
               
