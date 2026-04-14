@@ -188,6 +188,23 @@ catchError(error => {
 
 ---
 
+## Shared List Search Matching
+
+Use the shared matcher in `string-utils.ts` for list filtering instead of open-coded `normalizeForSearch(...).includes(...)`
+checks in each component. Pass every user-visible field that should be searchable for that entity type.
+
+```typescript
+const searchFields = [item.name, item.description, item.manufacturer?.name];
+
+return matchesSearchQuery(localQuery, ...searchFields)
+  && matchesSearchQuery(externalQuery, ...searchFields);
+```
+
+This keeps search normalization consistent and allows the same missing/extra-character tolerance across modules, racks, and
+patches.
+
+---
+
 ## API Calls (backend namespace guide)
 
 `SupabaseService` has **two namespaces** — use the right one:

@@ -28,7 +28,7 @@ import {
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import {
   FormTypes,
   ISelectable
@@ -126,12 +126,16 @@ export class ModuleListComponent extends SubManager implements OnInit {
         sortId$,
         groupId$
       ]).subscribe(([data, localQuery, externalQuery, sortId, groupId]) => {
-        const normLocal = normalizeForSearch(localQuery);
-        const normExternal = normalizeForSearch(externalQuery);
-        
         const filtered = data.filter(item => {
-          const name = normalizeForSearch(item.name);
-          return name.includes(normLocal) && name.includes(normExternal);
+          const searchFields = [
+            item.name,
+            item.manufacturer?.name,
+            item.description,
+            ...(item.tags ?? []).map(tagVote => tagVote.tag?.name ?? '')
+          ];
+
+          return matchesSearchQuery(localQuery, ...searchFields)
+            && matchesSearchQuery(externalQuery, ...searchFields);
         });
         
         this.filteredData$.next(sortAndGroupMinimalModules(filtered, sortId, groupId));

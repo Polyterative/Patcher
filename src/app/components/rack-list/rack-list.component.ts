@@ -23,7 +23,7 @@ import { RackList } from 'src/app/features/routes/rack/rack-browser-data.service
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
 import { RackMinimalViewConfig } from '../rack-parts/rack-minimal/rack-minimal.component';
 import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-data-filter.service';
-import { normalizeForSearch } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
 @Component({
@@ -84,14 +84,10 @@ export class RackListComponent extends SubManager implements OnInit {
         this.externalSearchQuery$
       ])
         .subscribe(([data, localQuery, externalQuery]) => {
-          const normalizedLocalQuery = normalizeForSearch(localQuery);
-          const normalizedExternalQuery = normalizeForSearch(externalQuery);
-          
           const result = data.filter(item => {
-            const normalizedName = normalizeForSearch(item.name);
-            
-            return normalizedName.includes(normalizedLocalQuery)
-              && normalizedName.includes(normalizedExternalQuery);
+            const searchFields = [item.name, item.description];
+            return matchesSearchQuery(localQuery, ...searchFields)
+              && matchesSearchQuery(externalQuery, ...searchFields);
           });
           this.filteredData$.next(result);
         })

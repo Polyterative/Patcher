@@ -12,10 +12,7 @@ import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-detail-data.service';
-import {
-  getEffectiveRackedModuleHp,
-  hasRackedModuleHpOverride,
-} from '../../racked-module-hp.utils';
+import { getEffectiveRackedModuleHp } from '../../racked-module-hp.utils';
 import { ModuleRightClick } from '../rack-editor.component';
 
 
@@ -35,6 +32,7 @@ import { ModuleRightClick } from '../rack-editor.component';
   standalone: false
 })
 export class RackVisualModelComponent implements OnInit, AfterViewInit {
+  private hoveredRackedModule: RackedModule | null = null;
   
   @Input() rackData: RackMinimal;
   
@@ -72,7 +70,26 @@ export class RackVisualModelComponent implements OnInit, AfterViewInit {
     return getEffectiveRackedModuleHp(rackedModule);
   }
 
-  hasHpOverride(rackedModule: RackedModule): boolean {
-    return hasRackedModuleHpOverride(rackedModule);
+  setHoveredModule(rackedModule: RackedModule): void {
+    this.hoveredRackedModule = rackedModule;
+  }
+
+  clearHoveredModule(rackedModule: RackedModule): void {
+    if (this.hoveredRackedModule === rackedModule) {
+      this.hoveredRackedModule = null;
+    }
+  }
+
+  isHoveredModule(rackedModule: RackedModule): boolean {
+    return this.hoveredRackedModule === rackedModule;
+  }
+
+  hasCompletePowerData(rackedModule: RackedModule): boolean {
+    return [rackedModule.module.powerPos12, rackedModule.module.powerNeg12, rackedModule.module.powerPos5]
+      .every(value => value != null);
+  }
+
+  absolutePower(value: number | null | undefined): number {
+    return Math.abs(value ?? 0);
   }
 }
