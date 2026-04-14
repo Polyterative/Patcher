@@ -27,6 +27,20 @@
                                 [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
                                 (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
           >
+            @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
+              <button mat-stroked-button
+                      class="hpOverrideButton"
+                      [class.hpOverrideActive]="hasHpOverride(rackedModule)"
+                      [matTooltip]="hasHpOverride(rackedModule)
+                        ? 'Rack-specific HP override active. Click to edit or reset from the context menu.'
+                        : 'Set a rack-specific HP override for this module.'"
+                      matTooltipPosition="above"
+                      (mousedown)="$event.stopPropagation()"
+                      (click)="$event.preventDefault(); $event.stopPropagation(); rackDetailDataService.requestRackedModuleHpOverrideEdit$.next(rackedModule)"
+              >
+                {{ effectiveHp(rackedModule) }}HP{{ hasHpOverride(rackedModule) ? '*' : '' }}
+              </button>
+            }
           </app-module-realistic>
         }
       </div>

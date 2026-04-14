@@ -70,7 +70,8 @@ export function createGetNamespace(
             column: y.column,
             moduleid: y.moduleid,
             rackid: y.rackid,
-            selectedPanelId: y.selected_panel_id ?? null
+            selectedPanelId: y.selected_panel_id ?? null,
+            hpOverride: y.hp_override ?? null
           }
         })))),
     

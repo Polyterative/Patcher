@@ -207,7 +207,23 @@ describe('SupabaseService - get simple queries', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
+    it('should map hp_override from raw row to hpOverride', (done) => {
+      const rawRow = {id: 3, row: 1, column: 0, moduleid: 10, rackid: 3, hp_override: 12, module: {id: 10}};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
+
+      service.get.rackedModules(3).subscribe({
+        next: (result: any[]) => {
+          expect(result[0].rackingData.hpOverride).toBe(12);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+     
     it('should return an empty array when rack has no modules', (done) => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       
