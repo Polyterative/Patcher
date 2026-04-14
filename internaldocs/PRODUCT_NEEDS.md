@@ -58,6 +58,10 @@ identity without any migration work. Comments on *user profile pages* are explic
 identity, not a content item, and comment threads on identities are the fastest path to a moderation burden that isn't
 worth it at this stage.
 
+**Future direction for comments:** keep evolving them as a utility layer, not a social one. The highest-value upgrades are
+practical ones such as lightweight realtime refresh, a short edit window, comment reporting/moderation tools, and
+possibly reply threads only if community volume eventually justifies the added complexity.
+
 ---
 
 ### Privacy & Sharing Philosophy
@@ -387,6 +391,46 @@ Role-based auth expansion; manufacturers claim and manage their own modules. Ver
 MSRP** as a canonical price data point, distinguishing it from community-reported and scraped prices (feeds into
 the [Price Hub](#tier-12--module-price-hub-read-only-in-tier-1-write-path-requires-tier-1-profiles) label hierarchy).
 Blocked on the [Data Integrity vs User Freedom](#data-integrity-vs-user-freedom) philosophy decision.
+
+---
+
+### Tier 3 — Ecosystem & Data Access *(independent, strategic leverage)*
+
+#### Public Data Extractor / Dataset Export
+
+Create a deliberate machine-readable export of **public Patcher data** so the catalogue and other public artifacts can be
+used by external tools, research workflows, and AI agents **without scraping the live product ad hoc**. This is not a
+general data dump and not a near-term build commitment; it is a long-horizon platform idea that becomes more valuable as
+the public catalogue, manufacturer pages, patch metadata, and other structured public surfaces mature.
+
+**Intent:**
+
+- Publish a stable, documented snapshot format instead of forcing third parties to reverse-engineer HTML pages.
+- Make public catalogue data reusable for search indexing, assistants, recommendation experiments, and ecosystem tooling.
+- Keep the live app as the canonical product while allowing derived, offline, or batched use of public information.
+
+**Boundaries:**
+
+- Public-only: never include private racks, private patches, non-public profiles, or any auth-gated fields.
+- Respect authorship and ownership: if future public UGC is included, preserve attribution and allow exclusion where the
+  product policy requires it.
+- Treat this as an export layer, not permission to bypass product UX, moderation, or future access controls.
+
+**Likely shape when/if it exists:**
+
+1. Canonical snapshot job that reads public entities and emits versioned artifacts.
+2. Simple formats first: JSON/JSONL; add Parquet or similar only if scale justifies it.
+3. Explicit schema docs, freshness metadata, attribution fields, and a changelog for breaking export changes.
+4. Narrow initial scope: module catalogue + manufacturers first; only later consider public patches, tags, or activity.
+
+**Why it matters strategically:**
+
+- Reduces incentive for uncontrolled scraping by giving the ecosystem a cleaner, lower-friction source of truth.
+- Strengthens Patcher as infrastructure for the Eurorack knowledge graph, not only as an end-user app.
+- Supports future premium/API thinking from [Monetization](#monetization-future) without forcing that decision now.
+
+**Open questions:** What public license/terms govern reuse? Is the export a bulk snapshot, a query API, or both? Which
+public UGC types are safe to include by default? How are attribution, takedown, and abuse/rate controls handled?
 
 ---
 
