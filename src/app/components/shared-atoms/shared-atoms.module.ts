@@ -3,6 +3,7 @@ import { NgModule }                       from '@angular/core';
 import { FlexLayoutModule }               from '@angular/flex-layout';
 import { MatIconModule }                  from '@angular/material/icon';
 import { TimeagoModule }                  from 'ngx-timeago';
+import { RouterModule }                   from '@angular/router';
 import { HeroInfoBoxModule }              from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
 import { EntityAuthorComponent }          from './entity-author/entity-author.component';
 import { PatchConnectionSymbolComponent } from './patch-connection-symbol/patch-connection-symbol.component';
@@ -20,6 +21,7 @@ import { MatTooltipModule }               from "@angular/material/tooltip";
   imports: [
     CommonModule,
     FlexLayoutModule,
+    RouterModule,
     TimeagoModule.forChild(),
     MatCardModule,
     HeroInfoBoxModule,

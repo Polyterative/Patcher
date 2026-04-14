@@ -59,3 +59,17 @@
   align-items: center;
 
 }
+
+.hpOverrideButton {
+  min-width: 0;
+  padding: 0 0.4rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  font-size: 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.hpOverrideActive {
+  font-weight: 600;
+}

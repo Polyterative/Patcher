@@ -1,0 +1,241 @@
+import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent } from '@angular/material/paginator';
+import {
+  BehaviorSubject,
+  ReplaySubject,
+  Subject,
+} from 'rxjs';
+import {
+  catchError,
+  filter,
+  switchMap,
+  takeUntil,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { Patch } from 'src/app/models/patch';
+import { Rack } from 'src/app/models/rack';
+import { PublicProfile } from 'src/app/models/user';
+import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+
+export type PublicProfileRouteState =
+  | 'loading'
+  | 'ready'
+  | 'not-found'
+  | 'private'
+  | 'incomplete'
+  | 'error';
+
+@Injectable()
+export class PublicProfileDataService extends SubManager {
+  readonly loadProfile$ = new ReplaySubject<string>(1);
+
+  readonly routeState$ = new BehaviorSubject<PublicProfileRouteState>('loading');
+  readonly profile$ = new BehaviorSubject<PublicProfile | null>(null);
+
+  readonly patchesData$ = new BehaviorSubject<Patch[] | undefined>(undefined);
+  readonly rackData$ = new BehaviorSubject<Rack[] | undefined>(undefined);
+
+  readonly patchesCount$ = new BehaviorSubject<number>(0);
+  readonly racksCount$ = new BehaviorSubject<number>(0);
+
+  readonly patchesPagination = {
+    skip$: new BehaviorSubject<number>(0),
+    take$: new BehaviorSubject<number>(10),
+  };
+
+  readonly racksPagination = {
+    skip$: new BehaviorSubject<number>(0),
+    take$: new BehaviorSubject<number>(10),
+  };
+
+  readonly updatePatchesData$ = new Subject<void>();
+  readonly updateRacksData$ = new Subject<void>();
+  readonly patchesPageEvent$ = new Subject<PageEvent>();
+  readonly racksPageEvent$ = new Subject<PageEvent>();
+
+  constructor(
+    private readonly backend: SupabaseService,
+    private readonly snackBar: MatSnackBar,
+  ) {
+    super();
+
+    this.bindPageEvent(
+      this.patchesPageEvent$,
+      this.patchesPagination,
+      () => this.updatePatchesData$.next(),
+    );
+    this.bindPageEvent(
+      this.racksPageEvent$,
+      this.racksPagination,
+      () => this.updateRacksData$.next(),
+    );
+
+    this.initializeProfileLoadHandler();
+    this.initializePatchLoadHandler();
+    this.initializeRackLoadHandler();
+  }
+
+  private initializeProfileLoadHandler(): void {
+    this.loadProfile$
+      .pipe(
+        tap(() => {
+          this.routeState$.next('loading');
+          this.profile$.next(null);
+          this.patchesData$.next(undefined);
+          this.rackData$.next(undefined);
+          this.patchesCount$.next(0);
+          this.racksCount$.next(0);
+          this.patchesPagination.skip$.next(0);
+          this.racksPagination.skip$.next(0);
+        }),
+        switchMap((username) => this.backend.get.publicProfileByUsername(username)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (response) => {
+          const profile = this.mapProfile(response?.data);
+
+          if (!profile) {
+            this.routeState$.next('not-found');
+            this.patchesData$.next([]);
+            this.rackData$.next([]);
+            return;
+          }
+
+          if (profile.username.startsWith('user_')) {
+            this.profile$.next(this.toLimitedProfile(profile));
+            this.routeState$.next('incomplete');
+            this.patchesData$.next([]);
+            this.rackData$.next([]);
+            return;
+          }
+
+          if (!profile.public) {
+            this.profile$.next(this.toLimitedProfile(profile));
+            this.routeState$.next('private');
+            this.patchesData$.next([]);
+            this.rackData$.next([]);
+            return;
+          }
+
+          this.profile$.next(profile);
+          this.routeState$.next('ready');
+          this.updatePatchesData$.next();
+          this.updateRacksData$.next();
+        },
+        error: (error) => {
+          console.error('PublicProfileDataService profile load failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Public profile data could not be loaded.');
+          this.routeState$.next('error');
+          this.patchesData$.next([]);
+          this.rackData$.next([]);
+        },
+      });
+  }
+
+  private initializePatchLoadHandler(): void {
+    this.updatePatchesData$
+      .pipe(
+        withLatestFrom(this.profile$),
+        filter(([, profile]) => !!profile && profile.public),
+        tap(() => this.patchesData$.next(undefined)),
+        switchMap(([, profile]) => {
+          const skip = this.patchesPagination.skip$.value;
+          const take = this.patchesPagination.take$.value;
+
+          return this.backend.GET.publicUserPatchesPaginated(
+            profile!.id,
+            skip,
+            skip + take - 1,
+          );
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (response) => {
+          this.patchesData$.next((response?.data as Patch[]) ?? []);
+          this.patchesCount$.next(response?.count ?? 0);
+        },
+        error: (error) => {
+          console.error('PublicProfileDataService patch load failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Public patches could not be loaded.');
+          this.patchesData$.next([]);
+          this.patchesCount$.next(0);
+        },
+      });
+  }
+
+  private initializeRackLoadHandler(): void {
+    this.updateRacksData$
+      .pipe(
+        withLatestFrom(this.profile$),
+        filter(([, profile]) => !!profile && profile.public),
+        tap(() => this.rackData$.next(undefined)),
+        switchMap(([, profile]) => {
+          const skip = this.racksPagination.skip$.value;
+          const take = this.racksPagination.take$.value;
+
+          return this.backend.GET.publicUserRacksPaginated(
+            profile!.id,
+            skip,
+            skip + take - 1,
+          );
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (response) => {
+          this.rackData$.next((response?.data as Rack[]) ?? []);
+          this.racksCount$.next(response?.count ?? 0);
+        },
+        error: (error) => {
+          console.error('PublicProfileDataService rack load failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Public racks could not be loaded.');
+          this.rackData$.next([]);
+          this.racksCount$.next(0);
+        },
+      });
+  }
+
+  private bindPageEvent(
+    pageEvent$: Subject<PageEvent>,
+    pagination: { skip$: BehaviorSubject<number>; take$: BehaviorSubject<number> },
+    onPageChange: () => void,
+  ): void {
+    pageEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        pagination.take$.next(event.pageSize);
+        pagination.skip$.next(event.pageIndex * event.pageSize);
+        onPageChange();
+      });
+  }
+
+  private mapProfile(rawProfile: any): PublicProfile | null {
+    if (!rawProfile?.id || !rawProfile?.username) {
+      return null;
+    }
+
+    return {
+      id: rawProfile.id,
+      username: rawProfile.username,
+      public: !!rawProfile.public,
+      website: rawProfile.website ?? null,
+      avatarUrl: rawProfile.avatar_url ?? null,
+    };
+  }
+
+  private toLimitedProfile(profile: PublicProfile): PublicProfile {
+    return {
+      id: profile.id,
+      username: profile.username,
+      public: profile.public,
+      website: null,
+      avatarUrl: null,
+    };
+  }
+}

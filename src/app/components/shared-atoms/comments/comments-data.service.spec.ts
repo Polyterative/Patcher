@@ -9,39 +9,40 @@ describe('CommentsDataService', () => {
   function build() {
     const backend = {
       GET: {
-        comments: jasmine.createSpy('comments').and.returnValue(of([{id: 1, content: 'c1'}]))
+        comments: jasmine.createSpy('comments')
+          .and.returnValue(of({ data: [{ id: 1, content: 'c1' }], count: 1 }))
       },
       add: {
-        comment: jasmine.createSpy('comment').and.returnValue(of({id: 2}))
+        comment: jasmine.createSpy('comment').and.returnValue(of({ id: 2 }))
       },
       delete: {
         comment: jasmine.createSpy('deleteComment').and.returnValue(of({}))
       }
     };
     const snackBar = {
-      open: jasmine.createSpy('open')
+      open: jasmine.createSpy('open').and.returnValue({ onAction: () => of() })
     };
     
     const service = new CommentsDataService(backend as any, snackBar as any);
-    return {service, backend, snackBar};
+    return { service, backend, snackBar };
   }
   
   it('loads comments and resets the field when update is requested', () => {
-    const {service, backend} = build();
+    const { service, backend } = build();
     service.fields.submit.control.setValue('dirty');
     service.fields.submit.control.markAsTouched();
     
-    service.requestCommentsUpdate$.next({entityId: 7, entityType: CommentableEntityTypes.MODULE});
+    service.requestCommentsUpdate$.next({ entityId: 7, entityType: CommentableEntityTypes.MODULE });
     
-    expect(backend.GET.comments).toHaveBeenCalledWith(7, CommentableEntityTypes.MODULE);
-    expect(service.comments$.value).toEqual([{id: 1, content: 'c1'} as any]);
+    expect(backend.GET.comments).toHaveBeenCalledWith(7, CommentableEntityTypes.MODULE, 0, service.pageSize - 1);
+    expect(service.comments$.value).toEqual([{ id: 1, content: 'c1' } as any]);
     expect(service.fields.submit.control.value).toBe('');
     expect(service.fields.submit.control.touched).toBeFalse();
   });
   
   it('submits sanitized comments and requests a refresh', () => {
-    const {service, backend} = build();
-    service.requestCommentsUpdate$.next({entityId: 11, entityType: CommentableEntityTypes.PATCH});
+    const { service, backend } = build();
+    service.requestCommentsUpdate$.next({ entityId: 11, entityType: CommentableEntityTypes.PATCH });
     
     service.submitComment$.next('  <b>hello</b>  ');
     
@@ -55,8 +56,8 @@ describe('CommentsDataService', () => {
   });
   
   it('does not submit empty comments', () => {
-    const {service, backend} = build();
-    service.requestCommentsUpdate$.next({entityId: 11, entityType: CommentableEntityTypes.PATCH});
+    const { service, backend } = build();
+    service.requestCommentsUpdate$.next({ entityId: 11, entityType: CommentableEntityTypes.PATCH });
     
     service.submitComment$.next('   ');
     
@@ -64,38 +65,45 @@ describe('CommentsDataService', () => {
   });
   
   it('deletes comment and refreshes current entity comments', () => {
-    const {service, backend} = build();
-    service.requestCommentsUpdate$.next({entityId: 99, entityType: CommentableEntityTypes.RACK});
+    const { service, backend } = build();
+    service.requestCommentsUpdate$.next({ entityId: 99, entityType: CommentableEntityTypes.RACK });
     
     service.deleteComment$.next(123);
     
     expect(backend.delete.comment).toHaveBeenCalledWith(123);
     expect(backend.GET.comments).toHaveBeenCalledTimes(2);
-    expect(backend.GET.comments).toHaveBeenCalledWith(99, CommentableEntityTypes.RACK);
+    expect(backend.GET.comments).toHaveBeenCalledWith(99, CommentableEntityTypes.RACK, 0, service.pageSize - 1);
   });
   
   it('rejects comment below minLength via form validator', () => {
-    const {service} = build();
+    const { service } = build();
     service.fields.submit.control.setValue('ab');
     expect(service.fields.submit.control.valid).toBeFalse();
     expect(service.fields.submit.control.hasError('minlength')).toBeTrue();
   });
   
   it('rejects comment above maxLength via form validator', () => {
-    const {service} = build();
+    const { service } = build();
     service.fields.submit.control.setValue('x'.repeat(service.maxLength + 1));
     expect(service.fields.submit.control.valid).toBeFalse();
     expect(service.fields.submit.control.hasError('maxlength')).toBeTrue();
   });
 
   it('resets state when requestReset is emitted', () => {
-    const {service} = build();
-    service.comments$.next([{id: 9} as any]);
+    const { service } = build();
+    service.comments$.next([{ id: 9 } as any]);
     service.fields.submit.control.setValue('text');
     
     service.requestReset$.next();
     
     expect(service.comments$.value).toBeUndefined();
+    expect(service.commentsCount$.value).toBe(0);
     expect(service.fields.submit.control.value).toBe('');
+  });
+
+  it('exposes commentsCount after fetch', () => {
+    const { service } = build();
+    service.requestCommentsUpdate$.next({ entityId: 5, entityType: CommentableEntityTypes.MODULE });
+    expect(service.commentsCount$.value).toBe(1);
   });
 });

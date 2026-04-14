@@ -118,6 +118,23 @@ Local app URL: `http://localhost:5556/`
 
 ---
 
+## **Local Supabase Backups**
+
+- Inspect the read-only backup commands first: `pnpm backup:data:dry-run`
+- Create a local backup snapshot: `pnpm backup:data`
+- Restore a backup on purpose: `pnpm restore:data -- backups/data_YYYY-MM-DD_HH-MM-SS.sql`
+
+Notes:
+
+- `pnpm backup:data` uses local `pg_dump`, so the remote database is read-only during backup.
+- Backup uses the linked Supabase project from your authenticated CLI session.
+- Install local Postgres client tools first if needed: `brew install postgresql@16`
+- Backup files are written to `./backups/`, and that directory is gitignored because this repository is public.
+- The backup script refuses to run if git is not ignoring `backups/`.
+- Restore is intentionally separate, requires `SUPABASE_DB_URL`, and asks for explicit confirmation before writing.
+
+---
+
 ## **Running E2E Tests**
 
 - Public smoke suite: `pnpm test:e2e`

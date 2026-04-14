@@ -158,7 +158,8 @@ export function createUpdateNamespace(
             rackid: rackedModule.rackingData.rackid,
             row: rackedModule.rackingData.row,
             column: rackedModule.rackingData.column,
-            selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
+            selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null,
+            hp_override: rackedModule.rackingData.hpOverride ?? null
           }));
         
         return rxFrom(
@@ -172,7 +173,8 @@ export function createUpdateNamespace(
                 rackid: rackedModule.rackingData.rackid,
                 row: rackedModule.rackingData.row,
                 column: rackedModule.rackingData.column,
-                selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null
+                selected_panel_id: rackedModule.rackingData.selectedPanelId ?? null,
+                hp_override: rackedModule.rackingData.hpOverride ?? null
               }));
             
             const insertNew$ = rxFrom(supabase.from(DbPaths.rack_modules).insert(newRackedModules));
@@ -189,6 +191,18 @@ export function createUpdateNamespace(
         return rxFrom(
           supabase.from(DbPaths.rack_modules)
             .update({selected_panel_id: panelId})
+            .eq('id', rackModuleId)
+        ).pipe(remapErrors());
+      }),
+      cacheBust(['rackWithId'])
+    ),
+
+    rackModuleHp: (rackModuleId: number, hpOverride: number | null) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return rxFrom(
+          supabase.from(DbPaths.rack_modules)
+            .update({hp_override: hpOverride})
             .eq('id', rackModuleId)
         ).pipe(remapErrors());
       }),

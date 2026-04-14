@@ -213,6 +213,134 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
   }, TEST_TIMEOUT);
 });
 
+describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
+  let service: SupabaseService;
+  let supabaseClient: any;
+  const publicAuthorGateAlias = 'author_profile_gate';
+
+  beforeEach(() => {
+    const setup = setupSupabaseServiceTest();
+    service = setup.service;
+    supabaseClient = (service as any).supabase;
+  });
+
+  afterEach(() => {
+    cleanupSupabaseServiceTest();
+  });
+
+  it('should filter public patches by the provided author id', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicUserPatchesPaginated('public-author', 0, 9).subscribe({
+      next: () => {
+        expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'public-author');
+        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith(`${ publicAuthorGateAlias }.public`, 'eq', true);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should strip the author gate join from public patch results', (done) => {
+    spyOn(supabaseClient, 'from').and.returnValue(chainable({
+      data: [{
+        id: 123,
+        name: 'Visible patch',
+        author: {id: 'public-author', username: 'patcher'},
+        [publicAuthorGateAlias]: {public: true},
+      }],
+      count: 1,
+      error: null
+    }));
+
+    service.GET.publicUserPatchesPaginated('public-author', 0, 9).subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data).toEqual([{
+          id: 123,
+          name: 'Visible patch',
+          author: {id: 'public-author', username: 'patcher'},
+        }]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
+describe('SupabaseService - GET.publicUserRacksPaginated', () => {
+  let service: SupabaseService;
+  let supabaseClient: any;
+  const publicAuthorGateAlias = 'author_profile_gate';
+
+  beforeEach(() => {
+    const setup = setupSupabaseServiceTest();
+    service = setup.service;
+    supabaseClient = (service as any).supabase;
+  });
+
+  afterEach(() => {
+    cleanupSupabaseServiceTest();
+  });
+
+  it('should filter public racks by the provided author id', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicUserRacksPaginated('public-author', 0, 9).subscribe({
+      next: () => {
+        expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'public-author');
+        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith(`${ publicAuthorGateAlias }.public`, 'eq', true);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should strip the author gate join from public rack results', (done) => {
+    spyOn(supabaseClient, 'from').and.returnValue(chainable({
+      data: [{
+        id: 77,
+        name: 'Visible rack',
+        author: {id: 'public-author', username: 'patcher'},
+        [publicAuthorGateAlias]: {public: true},
+      }],
+      count: 1,
+      error: null
+    }));
+
+    service.GET.publicUserRacksPaginated('public-author', 0, 9).subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data).toEqual([{
+          id: 77,
+          name: 'Visible rack',
+          author: {id: 'public-author', username: 'patcher'},
+        }]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+});
+
 describe('SupabaseService - GET.racksMinimal', () => {
   let service: SupabaseService;
   let supabaseClient: any;
@@ -504,14 +632,15 @@ describe('SupabaseService - get.currentUserRacks authorid override', () => {
     cleanupSupabaseServiceTest();
   });
   
-  it('should query by provided authorid without touching session', (done) => {
+  it('should query by the current session authorid', (done) => {
     const mock = chainable({data: [{id: 5, name: 'Guest Rack'}], error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-author-id'}));
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
-    service.get.currentUserRacks('specific-author-id').subscribe({
+    service.get.currentUserRacks().subscribe({
       next: () => {
-        expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'specific-author-id');
+        expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'session-author-id');
         done();
       },
       error: (err) => {

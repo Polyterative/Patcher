@@ -1,8 +1,9 @@
 @if ({contextInformation: contextInformation$ | async}; as bag) {
   @if (bag.contextInformation) {
-    <button mat-button (click)="openURL()">
-      <mat-icon>open_in_new</mat-icon>
-      {{ bag.contextInformation.description }}
+    <button class="context-nav" (click)="openURL()">
+      <span class="entity-label">{{ bag.contextInformation.entityLabel }}</span>
+      <span class="entity-name">{{ bag.contextInformation.description }}</span>
+      <mat-icon class="nav-arrow">arrow_forward</mat-icon>
     </button>
   }
 }

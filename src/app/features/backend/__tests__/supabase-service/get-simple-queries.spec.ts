@@ -9,7 +9,7 @@ import {
 /** Builds a chainable Supabase query mock that resolves as a thenable. */
 function chainable(resolveValue: any = {data: null, error: null}) {
   const m: any = {};
-  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
+  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single', 'maybeSingle',
     'insert', 'update', 'delete', 'upsert'].forEach(method => {
     m[method] = () => m;
   });
@@ -207,13 +207,53 @@ describe('SupabaseService - get simple queries', () => {
         }
       });
     }, TEST_TIMEOUT);
-    
+
+    it('should map hp_override from raw row to hpOverride', (done) => {
+      const rawRow = {id: 3, row: 1, column: 0, moduleid: 10, rackid: 3, hp_override: 12, module: {id: 10}};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
+
+      service.get.rackedModules(3).subscribe({
+        next: (result: any[]) => {
+          expect(result[0].rackingData.hpOverride).toBe(12);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+     
     it('should return an empty array when rack has no modules', (done) => {
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [], error: null}));
       
       service.get.rackedModules(99).subscribe({
         next: (result: any[]) => {
           expect(result.length).toBe(0);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('get.publicProfileByUsername', () => {
+    it('should resolve with public profile data for a username', (done) => {
+      const mockData = {
+        id: 'user-42',
+        username: 'patcher_fan',
+        public: true,
+        website: 'https://example.com',
+        avatar_url: null,
+      };
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockData, error: null}));
+
+      service.get.publicProfileByUsername('patcher_fan').subscribe({
+        next: (result: any) => {
+          expect(result.data).toEqual(mockData);
           done();
         },
         error: (err) => {
