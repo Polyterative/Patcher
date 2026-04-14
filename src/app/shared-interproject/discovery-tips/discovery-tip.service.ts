@@ -29,6 +29,8 @@ import {
 
 
 export const DISCOVERY_TIP_STORAGE_KEY = 'patcher.discovery-tips.v1';
+const DISCOVERY_TIP_GLOBAL_PAUSE_ID = '__global_pause__';
+const DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS = 1000 * 60 * 60 * 24 * 7;
 
 const defaultStorageShape: DiscoveryTipStorageShape = {
   viewers: {}
@@ -159,6 +161,23 @@ export class DiscoveryTipService extends SubManager {
     this._activeTip$.next(null);
   }
 
+  pauseAllTips(durationMs = DEFAULT_GLOBAL_DISCOVERY_TIP_PAUSE_MS): void {
+    const pausedUntil = new Date(Date.now() + durationMs).toISOString();
+    const nextStates = {
+      ...this._tipStates$.value,
+      [DISCOVERY_TIP_GLOBAL_PAUSE_ID]: {
+        version: 1,
+        shownCount: 0,
+        snoozedUntil: pausedUntil
+      }
+    };
+
+    this._tipStates$.next(nextStates);
+    this.persistViewerTipStates(this._viewerKey$.value, nextStates);
+    this.clearQueuedTip();
+    this._activeTip$.next(null);
+  }
+
   private buildSnapshot(): DiscoveryTipContextSnapshot {
     return {
       currentRoute: this._route$.value,
@@ -233,6 +252,11 @@ export class DiscoveryTipService extends SubManager {
   }
 
   private isTipEligible(definition: DiscoveryTipDefinition, snapshot: DiscoveryTipContextSnapshot): boolean {
+    const globalPauseState = this._tipStates$.value[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
+    if (globalPauseState?.snoozedUntil && new Date(globalPauseState.snoozedUntil).getTime() > Date.now()) {
+      return false;
+    }
+
     if (definition.audience === 'signed-in' && !snapshot.isLoggedIn) {
       return false;
     }

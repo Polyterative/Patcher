@@ -13,6 +13,13 @@
 
     <div class="actions">
       <button
+        class="tertiary-action"
+        type="button"
+        (click)="discoveryTipService.pauseAllTips()"
+      >
+        Pause tips
+      </button>
+      <button
         class="secondary-action"
         type="button"
         (click)="discoveryTipService.snoozeActiveTip()"
@@ -29,4 +36,3 @@
     </div>
   </section>
 }
-

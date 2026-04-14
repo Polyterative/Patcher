@@ -101,8 +101,8 @@ analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
 
 **Why:** When panel images are very large they overflow out of the parent container on the module details page. Need CSS to constrain images to parent width.
 
-- [ ] Add `max-width: 100%` (or equivalent) to panel gallery images in `module-details.component.scss`
-- [ ] Verify images scale down correctly without breaking the gallery layout
+- [x] Add `max-width: 100%` (or equivalent) to panel gallery images in `module-details.component.scss`
+- [x] Verify images scale down correctly without breaking the gallery layout
 
 ---
 
@@ -112,7 +112,7 @@ analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
 
 - [x] Slow down auto-cycle interval — 8s cooldown after acknowledge/snooze; displayDelayMs bumped to 3s
 - [x] Review tip overlay positioning — pinned to bottom-right safe zone to avoid obscuring key areas
-- [ ] Consider a dismiss/pause gesture so tips don't block normal use
+- [x] Consider a dismiss/pause gesture so tips don't block normal use
 
 ---
 
