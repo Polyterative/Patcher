@@ -45,6 +45,9 @@ export class QueryJoins {
 
 // Author
   static author: string = 'author:authorid(username,id)';
+  static publicAuthorGate(alias = 'author_profile_gate'): string {
+    return `${ alias }:authorid!inner(public)`;
+  }
 
 // Rack
   static rack: string = 'rack:rackid(*,author:authorid(username,id))';
