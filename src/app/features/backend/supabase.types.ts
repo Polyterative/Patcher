@@ -30,6 +30,9 @@ export type RichUserModel =
   SimpleUserModel
   & {
   username: string;
+  public?: boolean;
+  website?: string | null;
+  avatar_url?: string | null;
   /** Primary provider (e.g. 'email', 'google'). Use auth_providers for full list. */
   auth_provider?: string;
   /** All linked auth providers for this account (e.g. ['email', 'google']). */

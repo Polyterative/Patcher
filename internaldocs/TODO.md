@@ -189,6 +189,20 @@ fields (name, logo, website, bio) are manufacturer-owned; module data edits go t
 
 ---
 
+#### HIGH: Security — Enforce Public Profile Privacy Server-Side
+
+**Why:** The public-profile feature currently depends on client-side gating plus existing Supabase policy behavior. Public
+rack/patch reads should be hardened so a private profile cannot still expose its publicly flagged content through direct API
+queries.
+**Constraint:** Any RLS/policy change in this task requires manual user approval before implementation; agents may investigate
+and propose but must not apply such changes autonomously.
+
+- [ ] Verify current Supabase RLS behavior for `profiles`, `patches`, and `racks` against the public-profile privacy model
+- [ ] Enforce profile-level visibility on public rack/patch reads server-side (policy and/or query-layer hardening)
+- [ ] Add regression coverage for private-profile API access paths so the privacy boundary is not UI-only
+
+---
+
 #### HIGH: Security — Fix Dependabot Vulnerability Alerts
 
 **Why:** GitHub flagged 18 vulnerabilities on the default branch (8 high, 10 moderate). Review and resolve via Dependabot.

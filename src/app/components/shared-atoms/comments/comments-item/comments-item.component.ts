@@ -18,6 +18,7 @@ import { MatIconButton } from "@angular/material/button";
 import { CommentContextComponent } from "src/app/components/shared-atoms/comments/comment-context/comment-context.component";
 import { CommentTextPipe } from "src/app/components/shared-atoms/comments/comment-text.pipe";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { RouterLink } from '@angular/router';
 
 
 export interface CommentViewConfig {
@@ -45,6 +46,7 @@ export const defaultCommentViewConfig: CommentViewConfig = {
     MatIconButton,
     CommentContextComponent,
     CommentTextPipe,
+    RouterLink,
   ],
 })
 export class CommentsItemComponent {

@@ -40,6 +40,15 @@
   }
 }
 
+.author-link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .comment-text {
   white-space: pre-line;
   overflow-wrap: break-word;
