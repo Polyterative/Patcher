@@ -9,7 +9,8 @@
      then clear Active. Also reset `CURRENT_FEATURE.md` to its Empty Template.
 > 4. **Domain detail lives in `CURRENT_FEATURE.md`** — implementation steps, file names, schema fields, test results,
      and gotchas go there while a feature is in progress. Only a one-line entry per feature belongs here.
-> 5. **Do not duplicate** strategy rationale already in PRODUCT_NEEDS.md; one sentence of context per task is enough.
+> 5. **Do not duplicate** strategy rationale already in `../product/PRINCIPLES.md` or `../product/ROADMAP.md`; one sentence of
+     context per task is enough.
 
 **Tasks are ordered by priority within each section.**
 
@@ -21,18 +22,6 @@
 - `[~]` — In progress
 - `[x]` — Done
 
----
-
-## Completed
-
-> Archived in [COMPLETED.md](./COMPLETED.md). Keep one-line summaries there.
-
-> **ABANDONED Feb 21:** Integration test for first-click CV highlight bug
-> (`patch-editor-cv-highlight.integration.spec.ts`). Test confirmed failing; fix not worth effort. File kept as
-> race-condition documentation.
-
----
-
 ## Active
 
 *(none — see Backlog)*
@@ -42,7 +31,7 @@
 ## Backlog
 
 > Two tracks run in parallel: **Product** (user-facing features) and **Infra** (tests, tooling, hygiene).
-> Product tasks are sequenced by the Tier 0 → Tier 1 → Tier 2 arc from PRODUCT_NEEDS.md.
+> Product tasks are sequenced by the Tier 0 → Tier 1 → Tier 2 arc from [../product/ROADMAP.md](../product/ROADMAP.md).
 > Infra tasks are independent and can be picked any time a product task is blocked.
 
 ---
@@ -261,40 +250,3 @@ If coverage stalls after two feature completions, revisit as a targeted task:
 
 - Highest-yield uncovered files: `rack-detail-data.service.ts`, `module-detail-data.service.ts`,
   `user-area-data.service.ts`
-
----
-
-## Long-term Ideas
-
-> Not yet broken into executable steps. Strategy and rationale in [PRODUCT_NEEDS.md](./PRODUCT_NEEDS.md).
-
-**Tier 1 — Community Foundation**
-
-- Public User Profiles — gate for marketplace and community price reporting
-- Contextual Activity — inline activity on module/patch/rack pages (companion to profiles, not a gate)
-
-**Tier 1–2 — Price Hub**
-
-- Cross-store price display (read-only, Tier 1)
-- Price history charts (Tier 1 for scraped data)
-- Community price reports (Tier 2, requires profiles)
-
-**Tier 2 — Market Layer**
-
-- Peer-to-peer module listings from collection; one-way inquiry contact model
-
-**Tier 3 — Discovery & Depth**
-
-- Collection-Aware Patch Discovery — "patches I can play right now" subset query (requires Tags + community layer)
-- User Organization — folders/sets on top of Patch Tags
-
-**Tier 3 — Catalogue & UX**
-
-- Manufacturer Accounts MSRP → Price Hub integration
-- Comments evolution — utility-first upgrades such as realtime refresh, short edit window, reporting/moderation, optional
-  reply threads only if justified, and possible soft delete
-- Public Data Extractor / Dataset Export — versioned public-data snapshots for ecosystem tooling and AI agents, with
-  strict privacy/attribution boundaries
-- PWA Support — service worker, offline for marketplace/price hub
-- Patch Graph Enhancements — color coding, connected-input indicators
-- Dark Mode — CSS variable theme system (after component library is stable)
