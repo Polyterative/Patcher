@@ -20,7 +20,7 @@ import {
 } from 'rxjs/operators';
 import { PatchList } from '../../features/patch-browser/patch-browser-data.service';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
-import { normalizeForSearch } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 import {
   defaultPatchMinimalViewConfig,
   PatchMinimalViewConfig
@@ -77,15 +77,15 @@ export class PatchListComponent extends SubManager {
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([data, localQuery, externalQuery]) => {
-        const normalizedLocalQuery = normalizeForSearch(localQuery);
-        const normalizedExternalQuery = normalizeForSearch(externalQuery);
-        
         this.filteredData$.next(
           data.filter(item => {
-            if (!item) return false;
-            const normalizedName = normalizeForSearch(item.name);
-            return normalizedName.includes(normalizedLocalQuery)
-              && normalizedName.includes(normalizedExternalQuery);
+            if (!item) {
+              return false;
+            }
+
+            const searchFields = [item.name, item.description, ...(item.tags ?? [])];
+            return matchesSearchQuery(localQuery, ...searchFields)
+              && matchesSearchQuery(externalQuery, ...searchFields);
           })
         );
       });

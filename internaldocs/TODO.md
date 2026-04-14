@@ -141,12 +141,10 @@ yet.
 
 
 
-**Why:** Rack-specific HP override — correcting wrong HP currently requires removing and re-adding the module.
+**Rack-local HP override status:** UI intentionally removed. Do not treat this as approved product scope.
 
-- [x] Add nullable `hp_override` to `rack_modules` Row/Insert/Update in `database.types.ts`
-- [x] Add `update.rackModuleHp()` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
-- [x] Click-to-edit HP affordance in rack editor; module rendering prefers override when set
-- [x] Write tests for override logic and rack layout reflow
+- [ ] Figure out why rack-local HP override was added and whether any underlying plumbing should remain at all
+- [ ] Keep rack editor UI entry points disabled until there is explicit product approval
 
 ---
 

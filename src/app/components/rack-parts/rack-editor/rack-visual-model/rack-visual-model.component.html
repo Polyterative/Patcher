@@ -25,22 +25,45 @@
                                 cdkDrag
                                 [cdkDragData]="rackedModule"
                                 [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                (mouseenter)="setHoveredModule(rackedModule)"
+                                (mouseleave)="clearHoveredModule(rackedModule)"
                                 (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
           >
             @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
-              <button mat-stroked-button
-                      class="hpOverrideButton"
-                      [class.hpOverrideActive]="hasHpOverride(rackedModule)"
-                      [matTooltip]="hasHpOverride(rackedModule)
-                        ? 'Rack-specific HP override active. Click to edit or reset from the context menu.'
-                        : 'Set a rack-specific HP override for this module.'"
-                      matTooltipPosition="above"
-                      (mousedown)="$event.stopPropagation()"
-                      (click)="$event.preventDefault(); $event.stopPropagation(); rackDetailDataService.requestRackedModuleHpOverrideEdit$.next(rackedModule)"
+              <div class="hpIndicator"
+                   (mousedown)="$event.stopPropagation()"
               >
-                {{ effectiveHp(rackedModule) }}HP{{ hasHpOverride(rackedModule) ? '*' : '' }}
-              </button>
+                {{ effectiveHp(rackedModule) }}HP
+              </div>
             }
+            <div class="moduleHoverStats"
+                 [class.moduleHoverStats--visible]="isHoveredModule(rackedModule)"
+                 (mousedown)="$event.stopPropagation()"
+            >
+              <div class="moduleHoverStats__row">
+                <span class="moduleHoverStats__label">HP</span>
+                <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
+              </div>
+              @if (hasCompletePowerData(rackedModule)) {
+                <div class="moduleHoverStats__row">
+                  <span class="moduleHoverStats__label">+12</span>
+                  <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
+                </div>
+                <div class="moduleHoverStats__row">
+                  <span class="moduleHoverStats__label">-12</span>
+                  <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
+                </div>
+                <div class="moduleHoverStats__row">
+                  <span class="moduleHoverStats__label">+5</span>
+                  <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
+                </div>
+              } @else {
+                <div class="moduleHoverStats__row">
+                  <span class="moduleHoverStats__label">PWR</span>
+                  <span class="moduleHoverStats__value">n/a</span>
+                </div>
+              }
+            </div>
           </app-module-realistic>
         }
       </div>
