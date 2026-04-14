@@ -26,6 +26,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
+import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 
 
 @Component({
@@ -66,7 +67,8 @@ export class UserAreaRootComponent extends SubManager implements OnInit {
     public backend: SupabaseService,
     public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    public appState: AppStateService
+    public appState: AppStateService,
+    public urlCreatorService: UrlCreatorService
   ) {
     super();
     this.miscStats$ = combineLatest([
@@ -98,5 +100,17 @@ export class UserAreaRootComponent extends SubManager implements OnInit {
     
     this.dataService.connectDiscovery(this.globalSearchQuery$);
   }
-  
+
+  copyPublicProfileLink(username: string): void {
+    this.urlCreatorService.copyLinkToClipboard(this.publicProfilePath(username));
+  }
+
+  publicProfilePath(username: string): string {
+    return `/u/${ username }`;
+  }
+
+  toggleProfileVisibility(isPublic: boolean): void {
+    this.userService.updateProfileVisibility$(isPublic).subscribe();
+  }
+
 }

@@ -135,6 +135,19 @@ lib-hero-content-card {
   }
 }
 
+.auth-support-copy {
+  margin: 1rem 0 0;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: left;
+
+  @media (max-width: 30rem) {
+    font-size: 0.85rem;
+  }
+}
+
 // ============================================
 // PASSWORD RESET CONTAINER
 // ============================================

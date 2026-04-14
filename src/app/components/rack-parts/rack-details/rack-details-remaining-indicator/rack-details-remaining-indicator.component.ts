@@ -4,7 +4,7 @@ import {
   Input,
   OnInit
 } from '@angular/core';
-import { DbModule } from 'src/app/models/module';
+import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 
 
@@ -19,7 +19,7 @@ export class RackDetailsRemainingIndicatorComponent implements OnInit {
   
   @Input() data: RackMinimal;
   
-  @Input() rowModules: DbModule[];
+  @Input() rowModules: RackedModule[];
   
   constructor() { }
   

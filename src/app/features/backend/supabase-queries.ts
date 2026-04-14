@@ -48,6 +48,7 @@ type ModuleActivityRow = {
 
 
 export class SupabaseQueriesService {
+  private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -61,6 +62,27 @@ export class SupabaseQueriesService {
     private getUserSession$: () => Observable<SimpleUserModel | null>,
     private defaultPag: number
   ) {
+  }
+
+  private stripPublicAuthorGate<T>(response: any) {
+    const gateAlias = SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS;
+    const data = Array.isArray(response?.data)
+      ? response.data.map((row: any) => {
+        if (!row || typeof row !== 'object') {
+          return row;
+        }
+        const {
+          [gateAlias]: _gate,
+          ...sanitizedRow
+        } = row;
+        return sanitizedRow as T;
+      })
+      : response?.data;
+
+    return {
+      ...response,
+      data
+    };
   }
   
   @Cacheable({
@@ -202,6 +224,28 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+  })
+  getPublicUserPatchesPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
+        .filter('authorid', 'eq', authorId)
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .order('updated', {ascending: false})
+        .range(from, to)
+    ).pipe(
+      remapErrors(),
+      map(response => this.stripPublicAuthorGate<Patch>(response))
+    );
+  }
+
+  @Cacheable({
+    maxAge: longCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,
   })
@@ -215,6 +259,28 @@ export class SupabaseQueriesService {
           .range(from, to)
       )),
       remapErrors(),
+    );
+  }
+
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('racksMinimal'))),
+    maxCacheCount: 50,
+  })
+  getPublicUserRacksPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
+        .filter('authorid', 'eq', authorId)
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .order('updated', {ascending: false})
+        .range(from, to)
+    ).pipe(
+      remapErrors(),
+      map(response => this.stripPublicAuthorGate<Rack>(response))
     );
   }
 
@@ -417,18 +483,23 @@ export class SupabaseQueriesService {
     maxCacheCount: 100,
     async: true
   })
-  getComments(entityId: number, entityType: number): Observable<DbComment[] | null | undefined> {
+  getComments(
+    entityId: number,
+    entityType: number,
+    from = 0,
+    to = 24
+  ): Observable<{ data: DbComment[] | null; count: number | null }> {
     return rxFrom(
       this.supabase.from(DbPaths.comments)
-        .select(`*,profile:profiles(id,username)`)
+        .select(`*,profile:profiles(id,username)`, { count: 'exact' })
         .filter('entityId', 'eq', entityId)
         .filter('entityType', 'eq', entityType)
-      // foreign key add profile information for each comment
-    
+        .order('created', { ascending: false })
+        .range(from, to)
     )
       .pipe(
-        // remapErrors(),
-        map(x => x.data)
+        remapErrors(),
+        map(x => ({ data: x.data, count: x.count }))
       );
   }
   

@@ -12,6 +12,10 @@ import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-detail-data.service';
+import {
+  getEffectiveRackedModuleHp,
+  hasRackedModuleHpOverride,
+} from '../../racked-module-hp.utils';
 import { ModuleRightClick } from '../rack-editor.component';
 
 
@@ -62,5 +66,13 @@ export class RackVisualModelComponent implements OnInit, AfterViewInit {
   
   isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
     return rowedRackedModules[rowedRackedModules.length - 1].length === 0;
+  }
+
+  effectiveHp(rackedModule: RackedModule): number {
+    return getEffectiveRackedModuleHp(rackedModule);
+  }
+
+  hasHpOverride(rackedModule: RackedModule): boolean {
+    return hasRackedModuleHpOverride(rackedModule);
   }
 }

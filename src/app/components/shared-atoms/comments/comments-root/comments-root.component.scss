@@ -1,0 +1,11 @@
+.submit-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  .submit-hint {
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+}

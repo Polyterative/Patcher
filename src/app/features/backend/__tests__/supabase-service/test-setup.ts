@@ -1,3 +1,7 @@
+import {
+  PLATFORM_ID,
+  type Provider
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -25,13 +29,15 @@ export function setupSupabaseServiceTest() {
     queryParams: of({}),
     params: of({})
   });
+  const providers: Provider[] = [
+    SupabaseService,
+    {provide: MatSnackBar, useValue: mockSnackBar},
+    {provide: ActivatedRoute, useValue: mockActivatedRoute},
+    {provide: PLATFORM_ID, useValue: 'server'}
+  ];
   
   TestBed.configureTestingModule({
-    providers: [
-      SupabaseService,
-      {provide: MatSnackBar, useValue: mockSnackBar},
-      {provide: ActivatedRoute, useValue: mockActivatedRoute}
-    ]
+    providers
   });
   
   const service = TestBed.inject(SupabaseService);
@@ -47,6 +53,9 @@ export function setupSupabaseServiceTest() {
  * Cleanup after each test
  */
 export function cleanupSupabaseServiceTest() {
+  const service = TestBed.inject(SupabaseService, null);
+  service?.ngOnDestroy();
   localStorage.clear();
+  sessionStorage.clear();
   TestBed.resetTestingModule();
 }

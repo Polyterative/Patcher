@@ -453,6 +453,36 @@ export class UserManagementService extends SubManager {
     );
   }
 
+  updateProfileVisibility$(isPublic: boolean): Observable<void> {
+    return this.loggedUserFullProfile$.pipe(
+      take(1),
+      switchMap(profile => {
+        if (!profile) {
+          SharedConstants.errorCustom(this.snackBar, 'Unable to save: user session not found. Please refresh and try again.');
+          return throwError(() => new Error('No user profile available'));
+        }
+
+        return this.backend.auth.updateProfileVisibility$(profile.id, isPublic).pipe(
+          tap(() => {
+            this._loggedUserFullProfile$.next({...profile, public: isPublic});
+            SharedConstants.successCustom(
+              this.snackBar,
+              isPublic
+                ? 'Your public profile is now visible to other users.'
+                : 'Your public profile is now private.'
+            );
+          }),
+          catchError((error) => {
+            const errorMessage = error?.message || SharedConstants.messages.operationFailed;
+            SharedConstants.errorCustom(this.snackBar, errorMessage);
+            return throwError(() => error);
+          })
+        );
+      }),
+      map(() => void 0)
+    );
+  }
+
   private initializeDeleteAccountHandler(): void {
     this.deleteAccountAction$.pipe(
       switchMap(() => {

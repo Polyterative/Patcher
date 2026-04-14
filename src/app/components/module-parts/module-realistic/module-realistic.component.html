@@ -1,8 +1,11 @@
 <div [fxFlex]="data.hp+'rem'"
      [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem')}"
-     class="col root"
-     [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
+      class="col root"
+      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
+  <div class="overlayActions">
+    <ng-content></ng-content>
+  </div>
   @if (!showPanelImages) {
     <app-module-realistic-holeline [data]="data"
                                    class="hole-padding"
@@ -25,7 +28,6 @@
         <div fxFlex="grow"
         ></div>
       }
-      <ng-content></ng-content>
       @if (data.standard.id === 0) {
         <div fxFlex="grow"
         ></div>

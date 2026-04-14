@@ -136,11 +136,11 @@ describe('SupabaseService - currentUserRacks Integration', () => {
     expect(patches$.constructor.name).toContain('Observable');
   });
   
-  it('should handle optional authorid parameter', (done) => {
+  it('should use the current session authorid when querying racks', (done) => {
     const testAuthorId = 'different-user-id';
     
     spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({
-      id: 'current-user-id',
+      id: testAuthorId,
       email: 'current@example.com',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -163,18 +163,17 @@ describe('SupabaseService - currentUserRacks Integration', () => {
       })
     });
     
-    // Call with specific authorid
-    const racks$ = service.get.currentUserRacks(testAuthorId);
+    const racks$ = service.get.currentUserRacks();
     
     racks$.subscribe({
       next: (_result: any) => {
         expect(capturedFilterValue).withContext(
-          'Should use provided authorid parameter'
+          'Should use the current session authorid'
         ).toBe(testAuthorId);
         done();
       },
       error: (error) => {
-        fail(`authorid parameter test failed: ${ error.message }`);
+        fail(`session authorid test failed: ${ error.message }`);
         done();
       }
     });

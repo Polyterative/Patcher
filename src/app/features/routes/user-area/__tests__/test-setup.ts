@@ -14,6 +14,7 @@ import { Rack } from 'src/app/models/rack';
 export const MOCK_USER_PROFILE = {
   id: 'user-123',
   username: 'testuser',
+  public: false,
   email: 'test@example.com',
   created_at: '2024-01-01T00:00:00.000Z',
   updated_at: '2024-01-01T00:00:00.000Z',
@@ -49,6 +50,7 @@ export function createMockUserManagementService() {
   return {
     loggedUser$: loggedUser$.asObservable(),
     loggedUserFullProfile$: loggedUserFullProfile$.asObservable(),
+    updateProfileVisibility$: jasmine.createSpy('updateProfileVisibility$').and.returnValue(of(void 0)),
     // internal subjects for test control
     _loggedUser$: loggedUser$,
     _loggedUserFullProfile$: loggedUserFullProfile$,
@@ -115,6 +117,12 @@ export function createMockSupabaseService() {
 export function createMockSeoAndUtilsService() {
   return {
     updateSeo: jasmine.createSpy('updateSeo'),
+  };
+}
+
+export function createMockUrlCreatorService() {
+  return {
+    copyLinkToClipboard: jasmine.createSpy('copyLinkToClipboard'),
   };
 }
 

@@ -674,6 +674,7 @@ export type Database = {
         Row: {
           column: number | null
           created: string
+          hp_override: number | null
           id: number
           moduleid: number
           rackid: number
@@ -684,6 +685,7 @@ export type Database = {
         Insert: {
           column?: number | null
           created?: string
+          hp_override?: number | null
           id?: number
           moduleid: number
           rackid: number
@@ -694,6 +696,7 @@ export type Database = {
         Update: {
           column?: number | null
           created?: string
+          hp_override?: number | null
           id?: number
           moduleid?: number
           rackid?: number

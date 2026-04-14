@@ -79,3 +79,6 @@ supabase/.temp/
 
 # Local screenshot artifacts
 /output/playwright/
+
+# Local Supabase backups — NEVER commit: contains real user data (public repo)
+/backups/

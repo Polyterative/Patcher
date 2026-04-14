@@ -191,4 +191,78 @@ describe('DiscoveryTipService', () => {
     const storage = JSON.parse(localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY) ?? '{}');
     expect(storage.viewers['user-123']['user-area-modules-add'].learnedAt).toBeDefined();
   });
+
+  it('pauses all tips for the current viewer when the global pause is applied', () => {
+    const service = build();
+    const anchor = document.createElement('button');
+    let activeTip: any = null;
+
+    service.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    service.registerAnchor('user-area-modules-add', anchor);
+    service.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+    jasmine.clock().tick(1300);
+
+    service.pauseAllTips(1000 * 60 * 60);
+    jasmine.clock().tick(10);
+
+    expect(activeTip).toBeNull();
+
+    const storage = JSON.parse(localStorage.getItem(DISCOVERY_TIP_STORAGE_KEY) ?? '{}');
+    expect(storage.viewers['user-123']['__global_pause__'].snoozedUntil).toBeDefined();
+  });
+
+  it('does not surface tips while the global pause is still active', () => {
+    const firstService = build();
+    const firstAnchor = document.createElement('button');
+
+    firstService.registerAnchor('user-area-modules-add', firstAnchor);
+    firstService.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+    jasmine.clock().tick(1300);
+    firstService.pauseAllTips(1000 * 60 * 60);
+    firstService.ngOnDestroy();
+
+    const secondService = build();
+    const secondAnchor = document.createElement('button');
+    let activeTip: any = null;
+
+    secondService.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    secondService.registerAnchor('user-area-modules-add', secondAnchor);
+    secondService.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+    jasmine.clock().tick(1300);
+
+    expect(activeTip).toBeNull();
+  });
 });
