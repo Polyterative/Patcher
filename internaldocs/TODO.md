@@ -56,7 +56,7 @@
 **Why:** Three bugs in `getComments()` make entity-level comments broken in subtle ways. No sort order means comments
 appear in random database storage order. No `.range()` means all comments for an entity load unbounded — a popular
 module with 500 comments loads all 500 on every page visit. `remapErrors()` is commented out so network failures
-silently swallow errors. Full analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
+silently swallow errors.
 
 - [x] Add `.order('created', { ascending: false })` to `getComments()` in `supabase-queries.ts` (bug C-1)
 - [x] Uncomment `remapErrors()` in `getComments()` (bug C-3)
@@ -73,8 +73,7 @@ silently swallow errors. Full analysis in `internaldocs/tracked-use-cases/commen
 #### MEDIUM: Comments — UX Improvement Pass
 
 **Why:** Several UX gaps make the comment flow feel rough: patch context is broken in the user area, there is no
-delete confirmation, and the character counter is hidden until users have already typed 1/3 of the limit. Full
-analysis in `internaldocs/tracked-use-cases/comment-feature-rework.md`.
+delete confirmation, and the character counter is hidden until users have already typed 1/3 of the limit.
 
 - [x] Implement `PATCH` case in `CommentContextComponent` so patch comments in the user area show a navigable context
   link (bug M-1)
@@ -292,6 +291,10 @@ If coverage stalls after two feature completions, revisit as a targeted task:
 **Tier 3 — Catalogue & UX**
 
 - Manufacturer Accounts MSRP → Price Hub integration
+- Comments evolution — utility-first upgrades such as realtime refresh, short edit window, reporting/moderation, optional
+  reply threads only if justified, and possible soft delete
+- Public Data Extractor / Dataset Export — versioned public-data snapshots for ecosystem tooling and AI agents, with
+  strict privacy/attribution boundaries
 - PWA Support — service worker, offline for marketplace/price hub
 - Patch Graph Enhancements — color coding, connected-input indicators
 - Dark Mode — CSS variable theme system (after component library is stable)
