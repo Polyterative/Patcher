@@ -207,9 +207,9 @@ and propose but must not apply such changes autonomously.
 
 **Why:** GitHub flagged 18 vulnerabilities on the default branch (8 high, 10 moderate). Review and resolve via Dependabot.
 
-- [ ] Review alerts at https://github.com/Polyterative/Patcher/security/dependabot
-- [ ] Apply fixes (upgrade or patch affected dependencies)
-- [ ] Re-run `pnpm test-headless` to confirm nothing breaks
+- [x] Review alerts at https://github.com/Polyterative/Patcher/security/dependabot
+- [x] Apply fixes (upgrade or patch affected dependencies)
+- [x] Re-run `pnpm test-headless` to confirm nothing breaks
 
 ---
 
