@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.4.2](https://github.com/Polyterative/Patcher/compare/v5.4.1...v5.4.2) (2026-04-14)
+
+
+### Features
+
+* **comments:** refactor comments UI with improved layout and styling ([6b1b34a](https://github.com/Polyterative/Patcher/commit/6b1b34adefd26c2d3067a12ff265159e524c2ff5))
+* **discovery-tips:** add global pause action ([b076cc7](https://github.com/Polyterative/Patcher/commit/b076cc779849c2d88872fc14da73b21319a91c06))
+* **onboarding:** polish auth and panel inspection ([de399d5](https://github.com/Polyterative/Patcher/commit/de399d5069c4c34f09f304bdf82debaf84274dc0))
+* **public-profile:** add public profile routes ([bfa40b4](https://github.com/Polyterative/Patcher/commit/bfa40b4fdbd1cffc537666f3bc9e28ee466942fc))
+* **rack-editor:** add rack hp overrides ([09854b2](https://github.com/Polyterative/Patcher/commit/09854b2577ea64b635a653e3f04a4502e3732226))
+* **scripts:** add local Supabase backup and restore harness ([2e49b4f](https://github.com/Polyterative/Patcher/commit/2e49b4f463b9372aafbced75b4d15cb980b08873))
+
+
+### Bug Fixes
+
+* **comments:** pagination, ordering, error handling and UX improvements ([ed1db72](https://github.com/Polyterative/Patcher/commit/ed1db726ff4a69deee973325d0a1dde8e7589444))
+* **public-profile:** harden public profile queries ([3a33223](https://github.com/Polyterative/Patcher/commit/3a332234696d4d2019cc3218f68a0610fa040cf0))
+
 ### [5.4.1](https://github.com/Polyterative/Patcher/compare/v5.4.0...v5.4.1) (2026-04-08)
 
 
