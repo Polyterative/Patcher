@@ -12,6 +12,7 @@
 
 .root {
   background-color: rgba(255, 255, 255, 0.96);
+  position: relative;
   //transition:       all .25s ease-in-out;
 
   &:hover {
@@ -19,6 +20,15 @@
     background-color: rgba(255, 255, 255, 0.6);
 
   }
+}
+
+.overlayActions {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.25rem;
 }
 
 .button {

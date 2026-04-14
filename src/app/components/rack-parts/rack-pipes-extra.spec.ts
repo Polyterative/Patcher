@@ -45,7 +45,7 @@ describe('TotalHpOfModulesPipe', () => {
   });
   
   it('sums HP of all modules', () => {
-    expect(pipe.transform([{id: 1, hp: 4} as any, {id: 2, hp: 8} as any, {id: 3, hp: 2} as any])).toBe(14);
+    expect(pipe.transform([makeRackedModule(1, 4), makeRackedModule(2, 8), makeRackedModule(3, 2)])).toBe(14);
   });
   
   it('returns 0 for empty array', () => {
@@ -53,7 +53,13 @@ describe('TotalHpOfModulesPipe', () => {
   });
   
   it('handles single module', () => {
-    expect(pipe.transform([{id: 1, hp: 12} as any])).toBe(12);
+    expect(pipe.transform([makeRackedModule(1, 12)])).toBe(12);
+  });
+
+  it('prefers hp overrides when present', () => {
+    const overridden = makeRackedModule(1, 4);
+    overridden.rackingData.hpOverride = 10;
+    expect(pipe.transform([overridden, makeRackedModule(2, 8)])).toBe(18);
   });
 });
 
@@ -79,5 +85,11 @@ describe('CalculateRowInformationPipe', () => {
   
   it('handles single module row', () => {
     expect(pipe.transform([makeRackedModule(1, 6)])).toBe('Total HP: 6');
+  });
+
+  it('uses hp overrides when calculating row totals', () => {
+    const overridden = makeRackedModule(1, 4);
+    overridden.rackingData.hpOverride = 10;
+    expect(pipe.transform([overridden, makeRackedModule(2, 8)])).toBe('Total HP: 18');
   });
 });

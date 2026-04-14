@@ -1,0 +1,45 @@
+.panel-zoom-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(96vw, 90rem);
+  max-width: 100%;
+  height: min(92vh, 64rem);
+  background: var(--mat-sys-surface, #fff);
+}
+
+.panel-zoom-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 0;
+}
+
+.panel-zoom-dialog__meta h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.panel-zoom-dialog__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--mat-sys-primary, #6200ee);
+}
+
+.panel-zoom-dialog__image-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  flex: 1;
+  padding: 1rem;
+}
+
+.panel-zoom-dialog__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

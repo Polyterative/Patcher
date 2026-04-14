@@ -41,7 +41,11 @@ describe('SupabaseService - API Surface', () => {
         'currentUserComments',
         'patches',
         'rackWithId',
-        'racksMinimal'
+        'racksMinimal',
+        'userPatchesPaginated',
+        'userRacksPaginated',
+        'publicUserPatchesPaginated',
+        'publicUserRacksPaginated'
       ];
       
       expectedMethods.forEach(method => {
@@ -74,7 +78,8 @@ describe('SupabaseService - API Surface', () => {
         'standards',
         'tagVotesForModule',
         'myVotes',
-        'allTags'
+        'allTags',
+        'publicProfileByUsername'
       ];
       
       expectedMethods.forEach(method => {

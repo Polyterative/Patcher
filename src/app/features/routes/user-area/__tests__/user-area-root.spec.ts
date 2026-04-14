@@ -11,6 +11,7 @@ import {
   createMockSupabaseService,
   createMockUserAreaDataService,
   createMockUserManagementService,
+  createMockUrlCreatorService,
   MOCK_MODULES,
   MOCK_PATCHES,
   MOCK_RACKS,
@@ -40,7 +41,8 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any
+      createMockAppStateService() as any,
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = ignoreSeo;
     component.ngOnInit();
@@ -127,7 +129,8 @@ describe('UserAreaRootComponent - miscStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any
+      createMockAppStateService() as any,
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();
@@ -236,7 +239,8 @@ describe('UserAreaRootComponent - Global Search', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any
+      createMockAppStateService() as any,
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();

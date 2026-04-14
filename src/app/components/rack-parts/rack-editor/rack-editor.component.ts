@@ -9,6 +9,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import {
   filter,
@@ -33,6 +34,11 @@ import {
   fadeOutOnLeaveAnimation
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
+import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
+import {
+  getEffectiveRackedModuleHp,
+  hasRackedModuleHpOverride,
+} from '../racked-module-hp.utils';
 
 
 export interface ModuleRightClick {
@@ -101,7 +107,8 @@ export class RackEditorComponent extends SubManager implements OnInit {
     public backend: SupabaseService,
     public dataService: RackDetailDataService,
     public contextMenu: GeneralContextMenuDataService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private readonly dialog: MatDialog
     // userManagerService: UserManagementService
   ) {
     super();
@@ -130,13 +137,18 @@ export class RackEditorComponent extends SubManager implements OnInit {
                       }, and, b
                     ]) => {
           
+          const inspectModule$ = new Subject<ContextMenuItem>();
           const duplicateModule$ = new Subject<ContextMenuItem>();
           const deleteModule$ = new Subject<ContextMenuItem>();
           const deleteRow$ = new Subject<ContextMenuItem>();
           const replaceWithBlank$ = new Subject<ContextMenuItem>();
+          const editHp$ = new Subject<ContextMenuItem>();
+          const resetHp$ = new Subject<ContextMenuItem>();
           
           const panels = rackedModule.module.panels ?? [];
           const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
+          const effectiveHp = getEffectiveRackedModuleHp(rackedModule);
+          const hasOverride = hasRackedModuleHpOverride(rackedModule);
 
           const switchPanelParentSubject = new Subject<ContextMenuItem>();
           const panelSubmenuItem: ContextMenuItem | null = panels.length > 1
@@ -165,11 +177,37 @@ export class RackEditorComponent extends SubManager implements OnInit {
           this.contextMenu.menuItems$.next([
             {
               id: 'name',
-              label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ rackedModule.module.hp } HP)`,
+              label: hasOverride
+                ? `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP override, base ${ rackedModule.module.hp } HP)`
+                : `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP)`,
               data: rackedModule,
               disabled: true,
               click$: new Subject<ContextMenuItem>()
             },
+            {
+              id: 'inspect',
+              label: 'Inspect panel',
+              icon: 'zoom_in',
+              data: rackedModule,
+              disabled: false,
+              click$: inspectModule$
+            },
+            {
+              id: 'edit-hp',
+              label: hasOverride ? 'Edit HP override' : 'Set HP override',
+              icon: 'straighten',
+              data: rackedModule,
+              disabled: false,
+              click$: editHp$
+            },
+            ...(hasOverride ? [{
+              id: 'reset-hp',
+              label: 'Reset HP override',
+              icon: 'restart_alt',
+              data: rackedModule,
+              disabled: false,
+              click$: resetHp$
+            } as ContextMenuItem] : []),
             ...(panelSubmenuItem ? [panelSubmenuItem] : []),
             {
               id: 'duplicate',
@@ -225,6 +263,13 @@ export class RackEditorComponent extends SubManager implements OnInit {
           ]);
           
           this.contextMenu.open$.next($event);
+
+          inspectModule$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.openInspectPanel(rackedModule))
           
           duplicateModule$
             .pipe(
@@ -246,6 +291,20 @@ export class RackEditorComponent extends SubManager implements OnInit {
               takeUntil(this.destroy$)
             )
             .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule))
+
+          editHp$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleHpOverrideEdit$.next(rackedModule))
+
+          resetHp$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleHpOverrideReset$.next(rackedModule))
           
           deleteRow$
             .pipe(
@@ -274,6 +333,38 @@ export class RackEditorComponent extends SubManager implements OnInit {
     const totalCapacity = Number(totalHp) * Number(rows);
     if (totalCapacity === 0 || isNaN(totalCapacity)) return '0%';
     return ((Number(usedHp) / totalCapacity) * 100).toFixed(2) + '%';
+  }
+
+  openInspectPanel(rackedModule: RackedModule): void {
+    const panels = rackedModule.module.panels ?? [];
+    const activePanelId = rackedModule.rackingData.selectedPanelId ?? panels[0]?.id;
+    const activePanelIndex = panels.findIndex((panel) => panel.id === activePanelId);
+    const panelIndex = activePanelIndex >= 0 ? activePanelIndex : 0;
+    const activePanel = panels[panelIndex];
+
+    if (!activePanel?.filename) {
+      return;
+    }
+
+    this.dialog.open(ModulePanelZoomDialogComponent, {
+      width: 'min(96vw, 90rem)',
+      maxWidth: '96vw',
+      height: 'min(92vh, 64rem)',
+      autoFocus: false,
+      panelClass: 'panel-zoom-dialog-shell',
+      data: {
+        imageUrl: PANEL_IMAGE_BASE + activePanel.filename,
+        label: derivePanelLabel(activePanel.filename, activePanel.description, panelIndex)
+      }
+    });
+  }
+
+  effectiveHp(rackedModule: RackedModule): number {
+    return getEffectiveRackedModuleHp(rackedModule);
+  }
+
+  hasHpOverride(rackedModule: RackedModule): boolean {
+    return hasRackedModuleHpOverride(rackedModule);
   }
   
   

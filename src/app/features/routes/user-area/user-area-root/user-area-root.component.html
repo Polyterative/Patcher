@@ -4,11 +4,34 @@
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
     @if (bag.userProfile) {
-      <lib-clean-card appDiscoveryTipAnchor="user-area-profile-card"
-                      style="max-width: 26rem;min-width:18rem">
-        <app-label-value-showcase label="User"
-        >{{ bag.userProfile.username }}
-        </app-label-value-showcase>
+      <lib-clean-card appDiscoveryTipAnchor="user-area-profile-card">
+        <div class="user-profile-card__header">
+          <div class="user-profile-card__identity">
+            <app-label-value-showcase label="User"
+            >{{ bag.userProfile.username }}
+            </app-label-value-showcase>
+          </div>
+          <div class="user-profile-card__actions">
+            <app-brand-primary-button
+              [theme]="bag.userProfile.public ? 'warning' : 'primary'"
+              [icon]="bag.userProfile.public ? 'visibility_off' : 'public'"
+              (click$)="toggleProfileVisibility(!bag.userProfile.public)"
+            >{{ bag.userProfile.public ? 'Make profile private' : 'Make profile public' }}
+            </app-brand-primary-button>
+            @if (bag.userProfile.public) {
+              <app-brand-primary-button
+                [routerLink]="publicProfilePath(bag.userProfile.username)"
+                icon="person_search"
+              >View public profile
+              </app-brand-primary-button>
+              <app-brand-primary-button
+                icon="link"
+                (click$)="copyPublicProfileLink(bag.userProfile.username)"
+              >Copy public link
+              </app-brand-primary-button>
+            }
+          </div>
+        </div>
         <!-- TODO: Panel preference (light/dark/none) is a planned feature but not yet fully implemented.
              Commented out to prevent the raw toggle from appearing in the user profile area.
              Re-enable and complete the feature (backend persistence, UX polish) before shipping.
