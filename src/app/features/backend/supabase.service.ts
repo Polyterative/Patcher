@@ -147,6 +147,8 @@ export class SupabaseService extends SubManager {
       racksMinimal: this.queries.getRacksMinimal.bind(this.queries),
       userPatchesPaginated: this.queries.getUserPatchesPaginated.bind(this.queries),
       userRacksPaginated: this.queries.getUserRacksPaginated.bind(this.queries),
+      publicUserPatchesPaginated: this.queries.getPublicUserPatchesPaginated.bind(this.queries),
+      publicUserRacksPaginated: this.queries.getPublicUserRacksPaginated.bind(this.queries),
     };
     
     this.get = createGetNamespace(
@@ -190,6 +192,8 @@ export class SupabaseService extends SubManager {
     racksMinimal: typeof SupabaseQueriesService.prototype.getRacksMinimal;
     userPatchesPaginated: typeof SupabaseQueriesService.prototype.getUserPatchesPaginated;
     userRacksPaginated: typeof SupabaseQueriesService.prototype.getUserRacksPaginated;
+    publicUserPatchesPaginated: typeof SupabaseQueriesService.prototype.getPublicUserPatchesPaginated;
+    publicUserRacksPaginated: typeof SupabaseQueriesService.prototype.getPublicUserRacksPaginated;
   };
   
   private readonly queries!: SupabaseQueriesService;

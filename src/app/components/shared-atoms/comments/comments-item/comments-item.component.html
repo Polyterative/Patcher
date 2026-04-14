@@ -2,10 +2,12 @@
   <div class="comment-content">
 
     <div class="comment-header">
-      <div class="avatar" [style.background-color]="avatarColor(data.profile.username)">
-        {{ avatarInitials(data.profile.username) }}
-      </div>
-      <div class="username">{{ data.profile.username }}</div>
+      <a class="author-link" [routerLink]="['/u', data.profile.username]">
+        <div class="avatar" [style.background-color]="avatarColor(data.profile.username)">
+          {{ avatarInitials(data.profile.username) }}
+        </div>
+      </a>
+      <a class="username author-link" [routerLink]="['/u', data.profile.username]">{{ data.profile.username }}</a>
       <div class="timestamp"
            [matTooltip]="data.updated | date:'medium'"
       >{{ data.updated | timeago }}
