@@ -1,4 +1,5 @@
 import {
+  matchesSearchQuery,
   normalizeForSearch,
   removeAccents
 } from './string-utils';
@@ -116,6 +117,34 @@ describe('String Utils', () => {
       expect(normalizeForSearch(moduleName).includes(normalizeForSearch('adh'))).toBe(true);
     });
     
+  });
+
+  describe('matchesSearchQuery', () => {
+    it('matches exact and normalized substrings', () => {
+      expect(matchesSearchQuery('instruo', 'Instruō Lùbadh')).toBeTrue();
+      expect(matchesSearchQuery('lub', 'Instruō Lùbadh')).toBeTrue();
+    });
+
+    it('matches across multiple candidate fields', () => {
+      expect(matchesSearchQuery('xaoc belgrade', 'Belgrad', 'Xaoc Devices')).toBeTrue();
+      expect(matchesSearchQuery('ambient patch', 'Patch One', 'Ambient drone study')).toBeTrue();
+    });
+
+    it('allows one missing or extra character for long search terms', () => {
+      expect(matchesSearchQuery('belgrade', 'Belgrad')).toBeTrue();
+      expect(matchesSearchQuery('belgrad', 'Belgrade')).toBeTrue();
+      expect(matchesSearchQuery('belgade', 'Belgrade')).toBeTrue();
+    });
+
+    it('does not get overly fuzzy for unrelated or short terms', () => {
+      expect(matchesSearchQuery('berlin', 'Belgrad')).toBeFalse();
+      expect(matchesSearchQuery('rings', 'Wings')).toBeFalse();
+      expect(matchesSearchQuery('vca', 'vco')).toBeFalse();
+    });
+
+    it('returns false when no candidate field matches a non-empty query', () => {
+      expect(matchesSearchQuery('plaits', undefined, '', null, 'macro oscillator')).toBeFalse();
+    });
   });
   
 });

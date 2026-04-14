@@ -32,11 +32,11 @@ export class ModuleRealisticComponent implements OnInit {
   }
   
   buildPanelTooltip(data: any, selectedPanelId: number | null): string {
-    const base = `${ data.name } (${ data.manufacturer.name }, ${ data.standard.name }, ${ data.hp }HP)`;
+    const base = `${ data.name } (${ data.manufacturer.name }, ${ data.standard.name })`;
     if (!data.panels || data.panels.length <= 1) return base;
     const active = data.panels.find((p: any) => p.id === (selectedPanelId ?? data.panels[0]?.id));
     const label = active?.description?.trim() || derivePanelLabel(active?.filename ?? '', null, 0);
-    return `${ base } · ${ data.panels.length } panel variants · showing: ${ label }`;
+    return `${ base } · panel: ${ label }`;
   }
 
 
