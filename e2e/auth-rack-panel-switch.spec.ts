@@ -3,6 +3,7 @@ import {
   test
 } from '@playwright/test';
 
+
 /**
  * E2E: Rack module panel switching
  *
@@ -51,13 +52,17 @@ test.describe('Authenticated Rack Panel Switching', () => {
       await editBtn.click();
     }
     await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
-
-    // Make the rack private — button shows mat-icon "public" when rack is currently public
-    const privacyBtn = page.locator('button', {has: page.locator('mat-icon', {hasText: 'public'})}).first();
+    
+    // New racks now default to private, so only toggle when the rack is still public.
+    const privacyBtn = page.locator('app-rack-minimal button').filter({hasText: /^(public|lock)$/i}).first();
     await expect(privacyBtn).toBeVisible({timeout: 5_000});
-    await privacyBtn.click();
-    // Confirm the icon flipped to "lock" (now private)
-    await expect(page.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
+    const privacyIcon = privacyBtn.locator('mat-icon').first();
+    await expect(privacyIcon).toBeVisible({timeout: 5_000});
+    const privacyIconName = ((await privacyIcon.textContent()) ?? '').trim();
+    if (privacyIconName === 'public') {
+      await privacyBtn.click();
+    }
+    await expect(privacyBtn.locator('mat-icon', {hasText: 'lock'})).toBeVisible({timeout: 5_000});
 
     return rackUrl;
   }
