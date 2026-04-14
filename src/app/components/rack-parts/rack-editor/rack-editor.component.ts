@@ -35,6 +35,10 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
+import {
+  getEffectiveRackedModuleHp,
+  hasRackedModuleHpOverride,
+} from '../racked-module-hp.utils';
 
 
 export interface ModuleRightClick {
@@ -138,9 +142,13 @@ export class RackEditorComponent extends SubManager implements OnInit {
           const deleteModule$ = new Subject<ContextMenuItem>();
           const deleteRow$ = new Subject<ContextMenuItem>();
           const replaceWithBlank$ = new Subject<ContextMenuItem>();
+          const editHp$ = new Subject<ContextMenuItem>();
+          const resetHp$ = new Subject<ContextMenuItem>();
           
           const panels = rackedModule.module.panels ?? [];
           const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
+          const effectiveHp = getEffectiveRackedModuleHp(rackedModule);
+          const hasOverride = hasRackedModuleHpOverride(rackedModule);
 
           const switchPanelParentSubject = new Subject<ContextMenuItem>();
           const panelSubmenuItem: ContextMenuItem | null = panels.length > 1
@@ -169,7 +177,9 @@ export class RackEditorComponent extends SubManager implements OnInit {
           this.contextMenu.menuItems$.next([
             {
               id: 'name',
-              label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ rackedModule.module.hp } HP)`,
+              label: hasOverride
+                ? `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP override, base ${ rackedModule.module.hp } HP)`
+                : `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP)`,
               data: rackedModule,
               disabled: true,
               click$: new Subject<ContextMenuItem>()
@@ -182,6 +192,22 @@ export class RackEditorComponent extends SubManager implements OnInit {
               disabled: false,
               click$: inspectModule$
             },
+            {
+              id: 'edit-hp',
+              label: hasOverride ? 'Edit HP override' : 'Set HP override',
+              icon: 'straighten',
+              data: rackedModule,
+              disabled: false,
+              click$: editHp$
+            },
+            ...(hasOverride ? [{
+              id: 'reset-hp',
+              label: 'Reset HP override',
+              icon: 'restart_alt',
+              data: rackedModule,
+              disabled: false,
+              click$: resetHp$
+            } as ContextMenuItem] : []),
             ...(panelSubmenuItem ? [panelSubmenuItem] : []),
             {
               id: 'duplicate',
@@ -265,6 +291,20 @@ export class RackEditorComponent extends SubManager implements OnInit {
               takeUntil(this.destroy$)
             )
             .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule))
+
+          editHp$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleHpOverrideEdit$.next(rackedModule))
+
+          resetHp$
+            .pipe(
+              takeUntil(this.contextMenu.open$),
+              takeUntil(this.destroy$)
+            )
+            .subscribe(_ => this.dataService.requestRackedModuleHpOverrideReset$.next(rackedModule))
           
           deleteRow$
             .pipe(
@@ -317,6 +357,14 @@ export class RackEditorComponent extends SubManager implements OnInit {
         label: derivePanelLabel(activePanel.filename, activePanel.description, panelIndex)
       }
     });
+  }
+
+  effectiveHp(rackedModule: RackedModule): number {
+    return getEffectiveRackedModuleHp(rackedModule);
+  }
+
+  hasHpOverride(rackedModule: RackedModule): boolean {
+    return hasRackedModuleHpOverride(rackedModule);
   }
   
   

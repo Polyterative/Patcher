@@ -143,10 +143,10 @@ yet.
 
 **Why:** Rack-specific HP override — correcting wrong HP currently requires removing and re-adding the module.
 
-- [ ] Add nullable `hp_override` to `rack_modules` Row/Insert/Update in `database.types.ts`
-- [ ] Add `update.rackModuleHp()` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
-- [ ] Click-to-edit HP affordance in rack editor; module rendering prefers override when set
-- [ ] Write tests for override logic and rack layout reflow
+- [x] Add nullable `hp_override` to `rack_modules` Row/Insert/Update in `database.types.ts`
+- [x] Add `update.rackModuleHp()` to `supabase.service.ts` with `cacheBust(['rackWithId'])`
+- [x] Click-to-edit HP affordance in rack editor; module rendering prefers override when set
+- [x] Write tests for override logic and rack layout reflow
 
 ---
 

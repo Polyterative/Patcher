@@ -45,7 +45,8 @@ describe('RackDetailDataService reactive flows', () => {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
         rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
-        rackModulePanel: jasmine.createSpy('update.rackModulePanel').and.returnValue(of({}))
+        rackModulePanel: jasmine.createSpy('update.rackModulePanel').and.returnValue(of({})),
+        rackModuleHp: jasmine.createSpy('update.rackModuleHp').and.returnValue(of({}))
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
@@ -273,6 +274,49 @@ describe('RackDetailDataService reactive flows', () => {
       service.requestRackedModulePanelSwitch$.next({rackedModule: module, panelId: 1});
       
       expect(snackBar.open).toHaveBeenCalled();
+    });
+  });
+
+  describe('requestRackedModuleHpOverride', () => {
+    it('updates local state and persists hp override', () => {
+      const {service, backend, dialog} = build();
+      const module = moduleInRack(5, 0, 0, 6);
+      service.rowedRackedModules$.next([[module]]);
+      dialog.open.and.returnValue({
+        afterClosed: () => of({result: '10'})
+      });
+
+      service.requestRackedModuleHpOverrideEdit$.next(module);
+
+      expect(service.rowedRackedModules$.value[0][0].rackingData.hpOverride).toBe(10);
+      expect(backend.update.rackModuleHp).toHaveBeenCalledWith(5, 10);
+    });
+
+    it('clears hp override when reset is requested', () => {
+      const {service, backend} = build();
+      const module = moduleInRack(6, 0, 0, 6);
+      module.rackingData.hpOverride = 10;
+      service.rowedRackedModules$.next([[module]]);
+
+      service.requestRackedModuleHpOverrideReset$.next(module);
+
+      expect(service.rowedRackedModules$.value[0][0].rackingData.hpOverride).toBeNull();
+      expect(backend.update.rackModuleHp).toHaveBeenCalledWith(6, null);
+    });
+
+    it('normalizes base hp edits back to null override', () => {
+      const {service, backend, dialog} = build();
+      const module = moduleInRack(7, 0, 0, 6);
+      module.rackingData.hpOverride = 10;
+      service.rowedRackedModules$.next([[module]]);
+      dialog.open.and.returnValue({
+        afterClosed: () => of({result: '6'})
+      });
+
+      service.requestRackedModuleHpOverrideEdit$.next(module);
+
+      expect(service.rowedRackedModules$.value[0][0].rackingData.hpOverride).toBeNull();
+      expect(backend.update.rackModuleHp).toHaveBeenCalledWith(7, null);
     });
   });
 });
