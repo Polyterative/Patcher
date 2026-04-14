@@ -30,10 +30,9 @@ discovery tips, creation CTAs, manuals, and personal comment history.
 Implementation complete and validated in app build + headless tests. Public `/u/:username` profiles, owner visibility/share
 controls, and cross-app author links are now wired. Follow-up still worth tracking separately: the repo does not currently
 contain explicit Supabase policy migrations for public-profile reads, and production remains on the existing static-output
-build rather than route-specific SSR. Security follow-up still open: public-profile privacy is only partially enforced in
-the client today; server-side enforcement for profile-level visibility over public racks/patches should be tracked as a
-separate backend hardening task. Any RLS/policy change for that hardening requires manual user approval and must never be
-applied autonomously by an agent.
+build rather than route-specific SSR. Security follow-up still open: public-profile privacy still needs explicit RLS
+verification and any later policy change requires manual user approval. Query-layer hardening for public rack/patch reads and
+regression coverage are now in place, but no RLS/policy changes have been applied by an agent.
 
 #### Active polish pass
 
