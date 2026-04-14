@@ -159,7 +159,29 @@ describe('UserManagementService - Account Actions', () => {
     expect(failed).toBeTrue();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   }));
-  
+
+  it('public updateProfileVisibility$ updates the local rich profile and emits success', fakeAsync(() => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    (service as any)._loggedUserFullProfile$.next(MOCK_RICH_USER);
+    mockSupabaseService.auth.updateProfileVisibility$.and.returnValue(of(void 0));
+
+    let completed = false;
+    service.updateProfileVisibility$(true).subscribe({
+      complete: () => completed = true
+    });
+    tick();
+
+    let latestProfile: any;
+    service.loggedUserFullProfile$.subscribe(profile => latestProfile = profile);
+    tick();
+
+    expect(completed).toBeTrue();
+    expect(mockSupabaseService.auth.updateProfileVisibility$).toHaveBeenCalledWith(MOCK_RICH_USER.id, true);
+    expect(latestProfile.public).toBeTrue();
+    expect(SharedConstants.successCustom).toHaveBeenCalled();
+  }));
+
   it('deletes account data, logs out, and navigates on confirmation', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });

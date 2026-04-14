@@ -75,14 +75,17 @@ export function createAuthNamespace(
           return rxFrom(
             supabase
               .from(DbPaths.profiles)
-              .select('username')
+              .select('username, public, website, avatar_url')
               .filter('id', 'eq', authResponse.data.user.id)
           ).pipe(
             map(usernameGetterResponse => ({
               returnUrl: params['returnUrl'],
               user: {
                 ...authResponse.data.user,
-                username: usernameGetterResponse.data[0].username
+                username: usernameGetterResponse.data[0].username,
+                public: usernameGetterResponse.data[0].public,
+                website: usernameGetterResponse.data[0].website,
+                avatar_url: usernameGetterResponse.data[0].avatar_url,
               }
             }))
           );
@@ -208,6 +211,9 @@ export function createAuthNamespace(
               created_at: sessionUser.created_at,
               updated_at: sessionUser.updated_at,
               username: usernameGetterResponse.data[0].username,
+              public: usernameGetterResponse.data[0].public,
+              website: usernameGetterResponse.data[0].website,
+              avatar_url: usernameGetterResponse.data[0].avatar_url,
               auth_provider: authProvider,
               auth_providers: authProviders
             }))
@@ -221,7 +227,7 @@ export function createAuthNamespace(
       return rxFrom(
         supabase
           .from(DbPaths.profiles)
-          .select('username')
+          .select('username, public, website, avatar_url')
           .filter('id', 'eq', userId)
       );
     },
@@ -296,6 +302,33 @@ export function createAuthNamespace(
         }),
         catchError(error => {
           console.error('Username update failed:', error);
+          return throwError(() => error);
+        })
+      );
+    },
+
+    updateProfileVisibility$(userId: string, isPublic: boolean): Observable<void> {
+      return rxFrom(
+        supabase
+          .from(DbPaths.profiles)
+          .update({public: isPublic, updated_at: new Date().toISOString()})
+          .eq('id', userId)
+          .select('public')
+      ).pipe(
+        map(response => {
+          if (response.error) {
+            throw new Error(response.error.message || 'Failed to update profile visibility.');
+          }
+
+          if (!response.data || response.data.length === 0) {
+            console.error('Profile visibility update silently failed — 0 rows updated. userId:', userId);
+            throw new Error('Profile visibility update had no effect. Your session may have expired — please refresh and try again.');
+          }
+
+          return void 0;
+        }),
+        catchError(error => {
+          console.error('Profile visibility update failed:', error);
           return throwError(() => error);
         })
       );
