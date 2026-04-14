@@ -48,6 +48,7 @@ type ModuleActivityRow = {
 
 
 export class SupabaseQueriesService {
+  private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -61,6 +62,27 @@ export class SupabaseQueriesService {
     private getUserSession$: () => Observable<SimpleUserModel | null>,
     private defaultPag: number
   ) {
+  }
+
+  private stripPublicAuthorGate<T>(response: any) {
+    const gateAlias = SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS;
+    const data = Array.isArray(response?.data)
+      ? response.data.map((row: any) => {
+        if (!row || typeof row !== 'object') {
+          return row;
+        }
+        const {
+          [gateAlias]: _gate,
+          ...sanitizedRow
+        } = row;
+        return sanitizedRow as T;
+      })
+      : response?.data;
+
+    return {
+      ...response,
+      data
+    };
   }
   
   @Cacheable({
@@ -206,14 +228,20 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicUserPatchesPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
     return rxFrom(
       this.supabase.from(DbPaths.patches)
-        .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
         .filter('authorid', 'eq', authorId)
         .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .order('updated', {ascending: false})
         .range(from, to)
-    ).pipe(remapErrors());
+    ).pipe(
+      remapErrors(),
+      map(response => this.stripPublicAuthorGate<Patch>(response))
+    );
   }
 
   @Cacheable({
@@ -240,14 +268,20 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicUserRacksPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
         .filter('authorid', 'eq', authorId)
         .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .order('updated', {ascending: false})
         .range(from, to)
-    ).pipe(remapErrors());
+    ).pipe(
+      remapErrors(),
+      map(response => this.stripPublicAuthorGate<Rack>(response))
+    );
   }
 
   @Cacheable({

@@ -198,8 +198,8 @@ queries.
 and propose but must not apply such changes autonomously.
 
 - [ ] Verify current Supabase RLS behavior for `profiles`, `patches`, and `racks` against the public-profile privacy model
-- [ ] Enforce profile-level visibility on public rack/patch reads server-side (policy and/or query-layer hardening)
-- [ ] Add regression coverage for private-profile API access paths so the privacy boundary is not UI-only
+- [x] Enforce profile-level visibility on public rack/patch reads server-side (policy and/or query-layer hardening)
+- [x] Add regression coverage for private-profile API access paths so the privacy boundary is not UI-only
 
 ---
 
