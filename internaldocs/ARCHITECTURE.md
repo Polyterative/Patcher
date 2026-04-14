@@ -2,7 +2,7 @@
 
 > **Rules for AI agents using this file:**
 > 1. **Structural reference only** — layers, service types, file layout, and state strategy.
-> 2. **Code patterns belong in [PATTERNS.md](./PATTERNS.md)** — do not add code examples here.
+> 2. **Code patterns belong in the split pattern docs** — do not add code examples here.
 > 3. **Enforcement rules → [../AGENTS.md](../AGENTS.md).**
 
 > ⚠️ Architectural patterns are MANDATORY. See [../AGENTS.md](../AGENTS.md) for enforcement rules.
@@ -40,20 +40,11 @@ Supabase
 - Backend calls only
 - Examples: `supabase.service.ts`, `user-management.service.ts`
 
-## Key Pattern
-
-> Full template with code → [PATTERNS.md — Data Service Template](./PATTERNS.md)
-
-Summary:
-
-- Private `_data$` BehaviorSubject, public `readonly data$` observable, public action Subjects (`loadData$`, etc.)
-- All subscriptions initialized in constructor with `takeUntil(this.destroy$)`
-
 ## SubManager
 
-- All components/services extend it
+- Shared lifecycle helper used by components and component-scoped services
 - Provides `destroy$` for cleanup
-- Use `takeUntil(this.destroy$)` on all subscriptions
+- Reactive wiring details live in [patterns/REACTIVE_SERVICES.md](./patterns/REACTIVE_SERVICES.md)
 
 ## File Structure
 

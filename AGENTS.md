@@ -12,12 +12,12 @@ Unified operating guide for AI coding agents in this repository.
 
 Start with this file, then load only the docs the task actually needs.
 
-1. Read `internaldocs/CURRENT_FEATURE.md` only when the prompt is clearly about the current in-flight feature, asks to
+1. Read `internaldocs/workflow/CURRENT_FEATURE.md` only when the prompt is clearly about the current in-flight feature, asks to
    continue existing work, or references the active plan/task list.
 2. For small one-off fixes, targeted refactors, or debugging, do not preload large planning docs unless they become relevant.
 3. If more repo context is needed, open `internaldocs/README.md` first and then only the specific doc(s) that match the task.
-4. When feature work does need planning, keep the agreed implementation state in `internaldocs/CURRENT_FEATURE.md`, archive the
-   outcome to `internaldocs/COMPLETED.md`, and reset `CURRENT_FEATURE.md` when the feature is done.
+4. When feature work does need planning, keep the agreed implementation state in `internaldocs/workflow/CURRENT_FEATURE.md`,
+   archive the outcome to `internaldocs/workflow/COMPLETED.md`, and reset `CURRENT_FEATURE.md` when the feature is done.
 
 ## 3) Command policy
 
@@ -101,7 +101,10 @@ Key paths:
 ## 8) Internal docs map
 
 - `internaldocs/README.md` - doc index and routing
-- `internaldocs/CURRENT_FEATURE.md` - active implementation details
-- `internaldocs/TODO.md` - backlog and active tasks
-- `internaldocs/COMPLETED.md` - completed feature archive
-- `internaldocs/ARCHITECTURE.md`, `STYLE_GUIDE.md`, `PATTERNS.md`, `PRODUCT_NEEDS.md` - deeper reference material
+- `internaldocs/workflow/CURRENT_FEATURE.md` - active implementation details
+- `internaldocs/workflow/TODO.md` - backlog and active tasks
+- `internaldocs/workflow/COMPLETED.md` - completed feature archive
+- `internaldocs/ARCHITECTURE.md`, `internaldocs/STYLE_GUIDE.md`, `internaldocs/product/PRINCIPLES.md`,
+  `internaldocs/product/ROADMAP.md`, `internaldocs/patterns/REACTIVE_SERVICES.md`,
+  `internaldocs/patterns/BACKEND_METHODS.md`, `internaldocs/patterns/UI_PATTERNS.md`,
+  `internaldocs/testing/UNIT_TESTING.md` - deeper reference material

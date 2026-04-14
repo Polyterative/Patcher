@@ -264,7 +264,7 @@ The **My Area** section is your personal workspace (requires login).
 
 - **Discord First**: Join our Discord server for quick help and community discussion
 - **GitHub Issues**: For bug reports or feature requests (technical users)
-    - Check the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/TODO.md) first
+    - Check the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/workflow/TODO.md) first
 - **Feature Requests**: Discuss ideas on Discord before submitting formal requests
 
 ### Contributing
@@ -313,7 +313,7 @@ future.
 
 ## What's Next?
 
-Check out the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/TODO.md) to see what
+Check out the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/workflow/TODO.md) to see what
 features are in development and what's coming next!
 
 **Happy Patching! 🎛️**

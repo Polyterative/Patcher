@@ -1,6 +1,7 @@
 # Completed Features
 
-> Archive of finished work. One-line summaries only. For strategy context see `PRODUCT_NEEDS.md`.
+> Archive of finished work. One-line summaries only. For strategy context see `../product/PRINCIPLES.md` and
+> `../product/ROADMAP.md`.
 
 ---
 
