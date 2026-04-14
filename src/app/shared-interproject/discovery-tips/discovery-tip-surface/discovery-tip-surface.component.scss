@@ -63,6 +63,7 @@
   margin-top: 0.85rem;
 }
 
+.tertiary-action,
 .secondary-action,
 .primary-action {
   border: none;
@@ -78,6 +79,11 @@
   &:hover {
     transform: translateY(-1px);
   }
+}
+
+.tertiary-action {
+  background: transparent;
+  color: rgba(47, 40, 22, 0.56);
 }
 
 .secondary-action {
@@ -106,9 +112,9 @@
     animation: none;
   }
 
+  .tertiary-action,
   .secondary-action,
   .primary-action {
     transition: none;
   }
 }
-
