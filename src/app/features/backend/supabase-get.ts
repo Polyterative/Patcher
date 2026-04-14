@@ -46,18 +46,12 @@ export function createGetNamespace(
         : of([])
       )
     ),
-    // if authorid is not provided, we will run it for the current user
-    currentUserRacks: (authorid?: string): Observable<Rack[]> => {
-      if (authorid) {
-        return queries.getCurrentUserRacksForAuthor(authorid);
-      }
-      return getUserSession$().pipe(
-        switchMap((user: SimpleUserModel | null) => user?.id
-          ? queries.getCurrentUserRacksForAuthor(user.id)
-          : of([])
-        )
-      );
-    },
+    currentUserRacks: (): Observable<Rack[]> => getUserSession$().pipe(
+      switchMap((user: SimpleUserModel | null) => user?.id
+        ? queries.getCurrentUserRacksForAuthor(user.id)
+        : of([])
+      )
+    ),
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)
@@ -168,6 +162,15 @@ export function createGetNamespace(
         .single()
     )
       .pipe(remapErrors()),
+    publicProfileByUsername: (
+      username: string,
+      columns = 'id,username,public,website,avatar_url'
+    ) => rxFrom(
+      supabase.from(DbPaths.profiles)
+        .select(columns)
+        .filter('username', 'eq', username)
+        .maybeSingle()
+    ).pipe(remapErrors()),
     myVotes: () => queries.getMyVotes(),
     allTags: () => queries.getAllTagsCached(),
     tagVotesForModule: (moduleTagIds: number[]) => rxFrom(

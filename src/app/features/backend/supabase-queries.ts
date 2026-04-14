@@ -202,6 +202,22 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    maxCacheCount: 50,
+  })
+  getPublicUserPatchesPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+        .filter('authorid', 'eq', authorId)
+        .filter('public', 'eq', true)
+        .order('updated', {ascending: false})
+        .range(from, to)
+    ).pipe(remapErrors());
+  }
+
+  @Cacheable({
+    maxAge: longCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,
   })
@@ -216,6 +232,22 @@ export class SupabaseQueriesService {
       )),
       remapErrors(),
     );
+  }
+
+  @Cacheable({
+    maxAge: longCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('racksMinimal'))),
+    maxCacheCount: 50,
+  })
+  getPublicUserRacksPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
+        .filter('authorid', 'eq', authorId)
+        .filter('public', 'eq', true)
+        .order('updated', {ascending: false})
+        .range(from, to)
+    ).pipe(remapErrors());
   }
 
   @Cacheable({
