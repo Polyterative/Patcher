@@ -41,12 +41,14 @@ export const MOCK_SIMPLE_USER_2 = {
 
 export const MOCK_RICH_USER = {
   ...MOCK_SIMPLE_USER,
-  username: 'testuser'
+  username: 'testuser',
+  public: false,
 };
 
 export const MOCK_RICH_USER_2 = {
   ...MOCK_SIMPLE_USER_2,
-  username: 'testuser2'
+  username: 'testuser2',
+  public: true,
 };
 
 /**
@@ -75,7 +77,8 @@ export function setupUserManagementServiceTest() {
     'updatePassword$',
     'loginWithOAuth$',
     'handleOAuthCallback$',
-    'updateUsername$'
+    'updateUsername$',
+    'updateProfileVisibility$'
   ]);
   mockAuthNamespace.getUserSession$.and.returnValue(of(null));
   mockAuthNamespace.getRichUserSession$.and.returnValue(of(null));

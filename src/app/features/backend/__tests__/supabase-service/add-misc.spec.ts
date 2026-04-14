@@ -202,17 +202,16 @@ describe('SupabaseService - add misc and update bulk', () => {
   });
   
   describe('get.currentUserRacks', () => {
-    it('should use explicit authorid when provided, bypassing session', (done) => {
+    it('should use the session authorid when available', (done) => {
       const getUserSessionSpy = spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'session-user'}));
       
       spyOn(supabaseClient, 'from').and.returnValue(
-        chainable({data: [{id: 1, name: 'My Rack', authorid: 'explicit-author'}], error: null})
+        chainable({data: [{id: 1, name: 'My Rack', authorid: 'session-user'}], error: null})
       );
       
-      service.get.currentUserRacks('explicit-author').subscribe({
+      service.get.currentUserRacks().subscribe({
         next: () => {
-          // With explicit authorid, getUserSession$ should NOT be called
-          expect(getUserSessionSpy).not.toHaveBeenCalled();
+          expect(getUserSessionSpy).toHaveBeenCalled();
           done();
         },
         error: (err) => {
@@ -222,7 +221,7 @@ describe('SupabaseService - add misc and update bulk', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should fall back to getUserSession$ when no authorid provided', (done) => {
+    it('should return an empty array when no session user is available', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));
       
       service.get.currentUserRacks().subscribe({

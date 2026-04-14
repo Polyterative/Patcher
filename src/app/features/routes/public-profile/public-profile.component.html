@@ -1,0 +1,145 @@
+@if ({
+  state: (dataService.routeState$ | async),
+  profile: (dataService.profile$ | async),
+  racks: (dataService.rackData$ | async),
+  patches: (dataService.patchesData$ | async),
+  stats: (publicStats$ | async),
+  isOwnProfile: (isOwnProfile$ | async),
+}; as bag) {
+  <lib-screen-wrapper maxSize="130rem">
+    @if (bag.state === 'ready' && bag.profile) {
+      <div class="col gap1">
+        <lib-clean-card class="profile-header">
+          <div class="profile-header__inner">
+            <div class="profile-header__identity">
+              <app-label-value-showcase label="Public profile">
+                {{ bag.profile.username }}
+              </app-label-value-showcase>
+
+              @if (bag.profile.website) {
+                <a
+                  class="profile-link"
+                  [href]="bag.profile.website"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >{{ bag.profile.website }}</a>
+              }
+            </div>
+
+            <div class="row gap1 profile-header__actions">
+              @if (bag.isOwnProfile) {
+                <app-brand-primary-button
+                  icon="dashboard"
+                  routerLink="/user/area"
+                >My dashboard</app-brand-primary-button>
+                <app-brand-primary-button
+                  icon="manage_accounts"
+                  routerLink="/user/account"
+                >Manage account</app-brand-primary-button>
+              }
+              <app-brand-primary-button
+                icon="link"
+                (click$)="copyProfileLink(bag.profile.username)"
+              >Copy profile link</app-brand-primary-button>
+            </div>
+          </div>
+        </lib-clean-card>
+
+        <div class="public-profile-layout">
+          <div class="container gap1 main-content">
+            <lib-hero-content-card
+              class="racksBG"
+              titleNormal="Racks"
+              description="Racks shared on this profile."
+              icon="view_stream"
+            >
+              <div class="col gap1">
+                <app-rack-list
+                  [data$]="dataService.rackData$"
+                  [showSearch]="false"
+                  [viewConfig]="rackViewConfig"
+                ></app-rack-list>
+                @if ((dataService.racksCount$ | async) > dataService.racksPagination.take$.value) {
+                  <mat-paginator
+                    [pageSize]="dataService.racksPagination.take$.value"
+                    [pageSizeOptions]="[10, 20, 50]"
+                    [length]="dataService.racksCount$ | async"
+                    (page)="dataService.racksPageEvent$.next($event)"
+                    showFirstLastButtons
+                  ></mat-paginator>
+                }
+              </div>
+            </lib-hero-content-card>
+
+            <lib-hero-content-card
+              class="patchesBG"
+              titleNormal="Patches"
+              description="Patches shared on this profile."
+              icon="settings_input_composite"
+            >
+              <div class="col gap1">
+                <app-patch-list
+                  [data$]="dataService.patchesData$"
+                  [showSearch]="false"
+                  [viewConfig]="patchViewConfig"
+                ></app-patch-list>
+                @if ((dataService.patchesCount$ | async) > dataService.patchesPagination.take$.value) {
+                  <mat-paginator
+                    [pageSize]="dataService.patchesPagination.take$.value"
+                    [pageSizeOptions]="[10, 20, 50]"
+                    [length]="dataService.patchesCount$ | async"
+                    (page)="dataService.patchesPageEvent$.next($event)"
+                    showFirstLastButtons
+                  ></mat-paginator>
+                }
+              </div>
+            </lib-hero-content-card>
+          </div>
+
+          <div class="sidebar col gap1">
+            <app-statistics
+              title="Stats"
+              icon="analytics"
+              cardClass="userBG"
+              [statistics]="bag.stats"
+            ></app-statistics>
+          </div>
+        </div>
+      </div>
+    } @else if (bag.state === 'private' && bag.profile) {
+      <div class="col gap1 public-profile-state">
+        <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
+        <mat-card-title fxLayoutAlign="center">This profile is private.</mat-card-title>
+        @if (bag.isOwnProfile) {
+          <div class="row gap1 center">
+            <app-brand-primary-button
+              icon="public"
+              (click$)="makeProfilePublic(bag.profile.username)"
+            >Make my profile public</app-brand-primary-button>
+            <app-brand-primary-button
+              icon="dashboard"
+              routerLink="/user/area"
+            >Back to dashboard</app-brand-primary-button>
+          </div>
+        }
+      </div>
+    } @else if (bag.state === 'incomplete') {
+      <div class="col gap1 public-profile-state">
+        <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
+        <mat-card-title fxLayoutAlign="center">This profile is not available yet.</mat-card-title>
+      </div>
+    } @else if (bag.state === 'not-found' || bag.state === 'error') {
+      <div class="col gap1 public-profile-state">
+        <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
+        <mat-card-title fxLayoutAlign="center">Profile not found.</mat-card-title>
+      </div>
+    } @else {
+      <div class="col gap1">
+        <lib-auto-content-loading-indicator
+          [loadingLines]="6"
+          [skipFirstData]="true"
+        ></lib-auto-content-loading-indicator>
+      </div>
+    }
+  </lib-screen-wrapper>
+}

@@ -46,14 +46,21 @@ export class CommentsDataService extends SubManager {
   
   readonly minLength = 3;
   readonly maxLength = 1000;
+  readonly pageSize = 25;
 
   readonly comments$              = new BehaviorSubject<DbComment[] | undefined>(undefined);
+  readonly commentsCount$         = new BehaviorSubject<number>(0);
+  readonly isSubmitting$          = new BehaviorSubject<boolean>(false);
+
   // ReplaySubject(1): late subscribers (withLatestFrom) always get the last entity reference.
   readonly requestCommentsUpdate$ = new ReplaySubject<CommentEntityReference>(1);
   readonly requestReset$ = new Subject<void>();
+  readonly loadMore$ = new Subject<void>();
   
   readonly submitComment$ = new Subject<string>();
   readonly deleteComment$ = new Subject<number>();
+
+  private currentOffset = 0;
   
   constructor(
     private backend: SupabaseService,
@@ -87,27 +94,54 @@ export class CommentsDataService extends SubManager {
       this.requestCommentsUpdate$.next(entity);
     });
     
-    // every time we receive a new entity id, get the comments for this entity
+    // every time we receive a new entity id, reset pagination and fetch first page
     this.requestCommentsUpdate$.pipe(
-      tap(() => this.comments$.next(undefined)),
-      switchMap(x => this.backend.GET.comments(x.entityId, x.entityType)),
+      tap(() => {
+        this.comments$.next(undefined);
+        this.commentsCount$.next(0);
+        this.currentOffset = 0;
+      }),
+      switchMap(x => this.backend.GET.comments(x.entityId, x.entityType, 0, this.pageSize - 1)),
       takeUntil(this.destroy$),
-    ).subscribe(data => {
-      this.comments$.next(data);
+    ).subscribe(({ data, count }) => {
+      this.comments$.next(data ?? []);
+      this.commentsCount$.next(count ?? 0);
+      this.currentOffset = this.pageSize;
       this.resetField();
     });
-    
+
+    // load next page and append results
+    this.loadMore$.pipe(
+      withLatestFrom(this.requestCommentsUpdate$),
+      switchMap(([_, entity]) =>
+        this.backend.GET.comments(
+          entity.entityId,
+          entity.entityType,
+          this.currentOffset,
+          this.currentOffset + this.pageSize - 1
+        )
+      ),
+      withLatestFrom(this.comments$),
+      takeUntil(this.destroy$)
+    ).subscribe(([{ data, count }, existing]) => {
+      this.comments$.next([...(existing ?? []), ...(data ?? [])]);
+      this.commentsCount$.next(count ?? 0);
+      this.currentOffset += this.pageSize;
+    });
     
     // when reset has been requested, clean the comments
     this.requestReset$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.comments$.next(undefined);
+      this.commentsCount$.next(0);
+      this.currentOffset = 0;
       this.resetField();
     });
     
     // when a new comment add has been requested, add the comment by performing the backend call
     this.submitComment$.pipe(
+      tap(() => this.isSubmitting$.next(true)),
       sanitizeItemInPipe(),
       withLatestFrom(this.requestCommentsUpdate$),
       switchMap(([comment, entity]) =>
@@ -118,10 +152,16 @@ export class CommentsDataService extends SubManager {
         }).pipe(map(() => entity))
       ),
       takeUntil(this.destroy$)
-    ).subscribe(entity => {
-      this.resetField();
-      SharedConstants.successCustom(this.snackBar, 'Comment posted.');
-      this.requestCommentsUpdate$.next(entity);
+    ).subscribe({
+      next: entity => {
+        this.isSubmitting$.next(false);
+        this.resetField();
+        SharedConstants.successCustom(this.snackBar, 'Comment posted.');
+        this.requestCommentsUpdate$.next(entity);
+      },
+      error: () => {
+        this.isSubmitting$.next(false);
+      }
     });
     
   }

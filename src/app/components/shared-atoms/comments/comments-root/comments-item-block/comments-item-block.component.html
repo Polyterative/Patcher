@@ -1,6 +1,6 @@
 @if (data && data.length > 0) {
   <div class="col gap1 ">
-    @for (item of data; track item; let i = $index) {
+    @for (item of data; track item.id; let i = $index) {
       <app-comments-item [data]="item"
                          [viewConfig]="viewConfig"
       >
@@ -8,11 +8,9 @@
     }
   </div>
 } @else {
-  <div class="col gap1 animate-fadein-slowest"
-  >
-    <mat-card-subtitle
-      style="padding: 1rem"
-    >No comments yet.
-    </mat-card-subtitle>
+  <div class="empty-state col gap1 animate-fadein-slowest">
+    <mat-icon class="empty-icon">chat_bubble_outline</mat-icon>
+    <span class="empty-title">No comments yet</span>
+    <span class="empty-subtitle">Be the first to share your thoughts!</span>
   </div>
 }

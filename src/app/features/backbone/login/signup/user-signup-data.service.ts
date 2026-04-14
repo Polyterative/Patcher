@@ -117,7 +117,10 @@ export class UserSignupDataService extends SubManager {
         filter(x => !!x),
         takeUntil(this.destroy$)
       )
-      .subscribe(x => this.router.navigate(['/user/area']));
+      .subscribe(x => {
+        const returnUrl = this.activated.snapshot.queryParamMap.get('returnUrl');
+        this.router.navigate([returnUrl || x.returnUrl || '/user/area']);
+      });
     
     // this.googleSignClick$
     //     .pipe(

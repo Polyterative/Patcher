@@ -1,195 +1,107 @@
 # AGENTS.md
 
-Unified operating guide for AI coding agents in this repository (Codex, Claude Code, and similar tools).
+Unified operating guide for AI coding agents in this repository.
 
-## 1) Authority and Scope
+## 1) Authority and scope
 
-- This file is the canonical source for agent behavior in this repo.
-- If this file conflicts with another agent-oriented doc, follow `AGENTS.md`.
-- Keep internaldocs focused on domain knowledge (architecture, style, patterns, product), not duplicated process rules.
+- This file is the canonical instruction source for agent behavior in Patcher.
+- If another agent-oriented doc conflicts with this file, follow `AGENTS.md`.
+- Keep repo-specific rules here; keep deeper architecture, style, and product detail in `internaldocs/`.
 
-## 2) Session Workflow (Mandatory for Feature Work)
+## 2) Start-of-session routing
 
-1. Read `internaldocs/CURRENT_FEATURE.md` first.
-2. Analyze and propose an implementation plan.
-3. Write/refresh the agreed plan in `internaldocs/CURRENT_FEATURE.md`.
-4. Wait for explicit user approval before coding.
-5. Implement in small, test-backed steps.
-6. On completion: archive outcome to `internaldocs/COMPLETED.md` and reset `internaldocs/CURRENT_FEATURE.md` to template
-   state.
+Start with this file, then load only the docs the task actually needs.
 
-For small, user-requested one-off fixes, the user may explicitly skip the gated planning flow.
+1. Read `internaldocs/CURRENT_FEATURE.md` only when the prompt is clearly about the current in-flight feature, asks to
+   continue existing work, or references the active plan/task list.
+2. For small one-off fixes, targeted refactors, or debugging, do not preload large planning docs unless they become relevant.
+3. If more repo context is needed, open `internaldocs/README.md` first and then only the specific doc(s) that match the task.
+4. When feature work does need planning, keep the agreed implementation state in `internaldocs/CURRENT_FEATURE.md`, archive the
+   outcome to `internaldocs/COMPLETED.md`, and reset `CURRENT_FEATURE.md` when the feature is done.
 
-## 3) Command Policy
+## 3) Command policy
 
-Use `package.json` scripts whenever possible.
+- Use `pnpm` and existing `package.json` scripts whenever possible.
+- Prefer:
+  - `pnpm test-headless`
+  - `pnpm test-headless --include="**/foo.spec.ts"` for targeted runs
+  - `pnpm test:e2e`
+  - `pnpm test:e2e:auth`
+  - `pnpm lint`
+  - `pnpm updateBackendTypes`
+  - `pnpm start` / `pnpm start:ssr` only when needed
+- Do not use `npm install`, `ng test`, `npx ng test`, or watch/interactive variants unless the user explicitly asks.
 
-Recommended commands:
+## 4) Architecture guardrails
 
-```bash
-pnpm test-headless                               # Unit tests (headless, no watch)
-pnpm test-headless --include="**/foo.spec.ts"   # Targeted spec run (if supported by runner)
-pnpm test:e2e                                    # Playwright e2e
-pnpm test:e2e:auth                               # Authenticated e2e
-pnpm lint                                        # ESLint
-pnpm updateBackendTypes                          # Regenerate Supabase types after schema changes
-pnpm start                                       # Dev server on :5556 (only if needed and not already running)
-pnpm start:ssr                                   # SSR dev server on :5556 for SSR-specific debugging
-```
+Stack: Angular 21 + TypeScript + RxJS + Angular Material + Supabase + SCSS.
 
-Never run directly:
-
-- `ng test`, `npx ng test`, `npm install`
-- watch/interactive commands unless the user explicitly asks
-- ad hoc command variants when a script already exists
-
-## 4) Tooling Principles (Cross-Agent)
-
-- Prefer dedicated read/search/edit tools over generic shell for file operations.
-- Use terminal commands for scripts, tests, git, and package operations.
-- Use `pnpm` as package manager.
-
-Claude Code mapping (if relevant):
-
-- Read files: `Read`
-- Search: `Grep`
-- Find files: `Glob`
-- Edit/write: `Edit` / `Write`
-- Terminal: `Bash` (for scripts/tasks only)
-
-## 5) Architecture Guardrails
-
-Stack: Angular 21 + TypeScript + RxJS, Angular Material, Supabase (PostgreSQL + Auth), SCSS.
-
-Service layers:
+Layering:
 
 ```text
-Component (presentation)
-  -> Data Service (state + business logic, component-scoped)
-  -> API Service (backend calls, root singleton)
-  -> Supabase
+Component -> Data Service -> API Service -> Supabase
 ```
 
 Key paths:
 
-- `src/app/components/[category]/[feature]/` - feature UI + co-located `*-data.service.ts`
+- `src/app/components/[category]/[feature]/` - feature UI and co-located `*-data.service.ts`
 - `src/app/features/backend/supabase.service.ts` - backend namespaces (`GET/get/add/update/delete`)
-- `src/app/features/backend/DatabaseStrings.ts` - table names + select joins (register new tables first)
-- `src/backend/database.types.ts` - generated Supabase schema types
-- `src/app/shared-interproject/` - shared infra (`SubManager`, constants, app state)
-- `src/app/style/tools.scss` - layout utility classes
+- `src/app/features/backend/DatabaseStrings.ts` - register tables and joins before adding backend methods
+- `src/backend/database.types.ts` - generated Supabase types
+- `src/app/shared-interproject/` - shared infra such as `SubManager`
+- `src/app/style/tools.scss` - shared layout utilities
 
-## 6) Engineering Rules
+## 5) Engineering rules
 
-### Injection scope
+### Injection and state
 
-- Data services: `@Injectable()` (no `providedIn`) and provided at component level.
-- API services: `@Injectable({ providedIn: 'root' })`.
+- Data services use `@Injectable()` without `providedIn` and are provided at component level.
+- API services use `@Injectable({ providedIn: 'root' })`.
+- Components and data services extend `SubManager`, call `super()`, and use `takeUntil(this.destroy$)` for subscriptions.
+- Prefer template `async` pipes over manual component subscriptions.
 
-### Subscription safety
+### Reactive flow
 
-- Components/services must extend `SubManager` and call `super()`.
-- Every subscription must use `takeUntil(this.destroy$)`.
-- Prefer template `async` pipe over manual component subscriptions.
+- Keep business logic in reactive pipelines wired from the constructor.
+- Components emit through Subjects instead of imperative public flow methods.
+- Use `ReplaySubject<T>(1)` for entity identity triggers and `Subject<void>` for refresh/submit/toggle events.
 
-### Event-driven pattern
+### Reuse and backend access
 
-- Keep business logic in reactive pipelines initialized from constructor wiring.
-- Components emit through Subjects; avoid public imperative service methods for flows.
-- Use `ReplaySubject<T>(1)` for entity-ID triggers with late subscribers.
-- Use `Subject<void>` for refresh/submit/toggle events.
+- Keep reusable UI-block logic in dedicated middle-layer services, not unrelated feature services or containers.
+- Route backend access through `SupabaseService`.
+- Never make Supabase RLS/policy changes without explicit manual user approval. Agents may inspect and propose RLS changes, but
+  must not apply them autonomously.
+- Before a new backend method: register the table in `DatabaseStrings.ts`; make reads cacheable when appropriate; bust all
+  invalidated cache keys after writes.
+- Run `pnpm updateBackendTypes` after schema changes.
 
-### Modular reusable UI logic
+### UI and naming
 
-- For reusable UI blocks (example: Recent Activity), keep mapping/aggregation logic in a dedicated middle-layer service.
-- Do not place reusable-block logic directly inside unrelated feature data services or container components.
-- Host components should wire input/output streams only; reusable behavior stays self-contained in its own service +
-  tests.
+- Prefer inline UI state toggles (`BehaviorSubject<boolean>`) over dialog-heavy flows.
+- Use layout helpers from `tools.scss` and shared notification helpers.
+- Observables/Subjects use a `$` suffix; private `BehaviorSubject`s use an `_` prefix.
 
-### Backend calls and caching
+## 6) Git and delivery
 
-- Route all backend access through `SupabaseService`.
-- New method checklist:
-    1. Register table in `DatabaseStrings.ts` first.
-    2. Reads: apply `@Cacheable` when appropriate.
-    3. Writes: call `cacheBust([...keys])` for all invalidated keys.
+- Primary branch: `develop`. Release branch: `production`.
+- Use helper scripts such as `pnpm switch:develop`, `pnpm switch:production`, and `pnpm merge:dev-to-prod`.
+- Commit format: `<type>(<scope>): <description>` in one line, imperative, lowercase, no trailing period.
+- Ask before committing unless the user explicitly requested a commit.
+- Never push unless the user explicitly requested it.
+- Never run `release:*` from `develop`.
 
-### UI conventions
+## 7) Output and context preferences
 
-- Prefer inline UI state toggles (`BehaviorSubject<boolean>`) over dialog-driven flows.
-- Use layout utility classes from `tools.scss`.
-- Use shared notification helpers (avoid direct raw snackbar calls).
+- Keep test output trimmed to the summary and failing file(s), not full verbose logs.
+- Prefer targeted test runs when possible.
+- When compacting context, keep file references and short keywords, not large code blocks.
+- Do not preload large repo docs unless the current task needs them.
 
-### Naming
+## 8) Internal docs map
 
-- Observables/Subjects: `$` suffix.
-- Private BehaviorSubjects: `_` prefix.
-
-## 7) Quick Checklists
-
-New data service:
-
-- extends `SubManager`, calls `super()`
-- `@Injectable()` without `providedIn`
-- private `_` BehaviorSubjects + public readonly streams
-- public action Subjects
-- all subscriptions use `takeUntil(this.destroy$)`
-
-New component:
-
-- extends `SubManager`, calls `super()`
-- provides its data service in component `providers`
-- consumes data with `async` pipe
-- uses layout classes (not ad hoc layout inline styles)
-
-New backend method:
-
-- table registered in `DatabaseStrings.ts`
-- reads cacheable, writes bust cache
-- run `pnpm updateBackendTypes` after schema changes
-
-Before commit:
-
-- no dead code, commented blocks, unused imports
-- naming conventions followed (`$`, `_`)
-- no open `TODO`/`FIXME` left unintentionally
-
-## 8) E2E Auth Setup
-
-- Configure `.env` with `E2E_TEST_EMAIL` and `E2E_TEST_PASSWORD` (dedicated test account).
-- Auth setup writes state via `e2e/global-setup.ts` to `playwright/.auth/user.json`.
-- CI must provide the same env vars for authenticated e2e.
-
-## 9) Git and Delivery
-
-- Primary working branch: `develop`; release branch: `production`.
-- Use helper scripts when switching (`pnpm switch:develop`, `pnpm switch:production`).
-- Commit format: `<type>(<scope>): <description>` (one line, imperative, lowercase, no trailing period).
-- Ask before committing unless user explicitly requested automatic commit.
-- Never push unless explicitly requested.
-- Before staging, always inspect: `git status` and `git diff HEAD --stat`.
-
-## 10) Agent Output and Context Preferences
-
-### Test output
-
-- Run tests with output trimmed to summary + failing file only — not full verbose logs.
-- Example: `pnpm test-headless 2>&1 | tail -60` or similar tight output.
-- Use targeted `--include` flag when running a single spec to avoid reading unrelated results.
-
-### Context compaction
-
-- When compacting conversation context, keep **file references + short keywords** about future relevance — not code
-  blocks.
-- Prune context irrelevant to the current task (e.g., ignore CSS style rules when doing backend refactoring).
-
-## 11) Internal Docs Ownership
-
-- `internaldocs/CURRENT_FEATURE.md` - current in-flight implementation details
+- `internaldocs/README.md` - doc index and routing
+- `internaldocs/CURRENT_FEATURE.md` - active implementation details
 - `internaldocs/TODO.md` - backlog and active tasks
 - `internaldocs/COMPLETED.md` - completed feature archive
-- `internaldocs/PRODUCT_NEEDS.md` - product goals and strategy
-- `internaldocs/PATTERNS.md` - canonical code templates
-- `internaldocs/STYLE_GUIDE.md` - naming/HTML/SCSS conventions
-- `internaldocs/ARCHITECTURE.md` - layering and structure reference
-- `internaldocs/README.md` - wiki index
+- `internaldocs/ARCHITECTURE.md`, `STYLE_GUIDE.md`, `PATTERNS.md`, `PRODUCT_NEEDS.md` - deeper reference material

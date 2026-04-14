@@ -2,6 +2,27 @@
   flex: 1 1 26rem;
 }
 
+.user-profile-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.user-profile-card__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.user-profile-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-self: flex-end;
+}
+
 .profile-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);

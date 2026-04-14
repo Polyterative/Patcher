@@ -52,8 +52,18 @@ import {
   FormControl,
   Validators
 } from "@angular/forms";
+import { FormTypes } from "../../shared-interproject/components/@smart/mat-form-entity/form-element-models";
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
+import {
+  InputDialogComponent,
+  InputDialogDataInModel,
+  InputDialogDataOutModel,
+} from "../../shared-interproject/dialogs/input-dialog/input-dialog.component";
+import {
+  getEffectiveRackedModuleHp,
+  hasRackedModuleHpOverride,
+} from "./racked-module-hp.utils";
 
 
 function cloneRackData<T>(value: T): T {
@@ -112,6 +122,8 @@ export class RackDetailDataService extends SubManager {
   requestRackedModuleReplaceWithBlank$ = new Subject<RackedModule>();
   requestRackedModuleRowClearing$ = new Subject<RackedModule>();
   requestRackedModulePanelSwitch$ = new Subject<{ rackedModule: RackedModule; panelId: number | null }>();
+  requestRackedModuleHpOverrideEdit$ = new Subject<RackedModule>();
+  requestRackedModuleHpOverrideReset$ = new Subject<RackedModule>();
   requestAddNewRow$ = new Subject<void>();
   requestRemoveRow$ = new Subject<void>();
   
@@ -180,9 +192,10 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         // if racked module HP is bigger than twenty then show snackbar and do not propagate the event
         map((rackedModule) => {
+          const effectiveHp = getEffectiveRackedModuleHp(rackedModule);
           if (rackedModule.module.standard.id === 0) {
-            if (rackedModule.module.hp > 20) {
-              this.snackBar.open(`"${ rackedModule.module.name }" is ${ rackedModule.module.hp } HP — too big to replace with a blank (max 20 HP).`, undefined, {
+            if (effectiveHp > 20) {
+              this.snackBar.open(`"${ rackedModule.module.name }" is ${ effectiveHp } HP — too big to replace with a blank (max 20 HP).`, undefined, {
                 duration: 4000,
                 panelClass: 'snack-error'
               });
@@ -190,8 +203,8 @@ export class RackDetailDataService extends SubManager {
             }
           } else if (rackedModule.module.standard.id === 1) {
             // if Intellijel module is bigger than 26 then show snackbar and do not propagate the event
-            if (rackedModule.module.hp > 26) {
-              this.snackBar.open(`"${ rackedModule.module.name }" is ${ rackedModule.module.hp } HP — too big to replace with a blank (max 26 HP).`, undefined, {
+            if (effectiveHp > 26) {
+              this.snackBar.open(`"${ rackedModule.module.name }" is ${ effectiveHp } HP — too big to replace with a blank (max 26 HP).`, undefined, {
                 duration: 4000,
                 panelClass: 'snack-error'
               });
@@ -217,7 +230,7 @@ export class RackDetailDataService extends SubManager {
               column: originalModule.rackingData.column,
               rackId: rack.id,
               moduleId: this.calculateBlankIdForSizeAndStandard(
-                rackedModule.module.hp,
+                getEffectiveRackedModuleHp(rackedModule),
                 rackedModule.module.standard.id
               )
             })),
@@ -516,6 +529,24 @@ export class RackDetailDataService extends SubManager {
         this.requestRackedModulesDbSync$.next();
         
       })
+
+    this.requestRackedModuleHpOverrideEdit$
+      .pipe(
+        switchMap(rackedModule => this.askForRackedModuleHpOverride(rackedModule).pipe(
+          map(hpOverride => ({rackedModule, hpOverride}))
+        )),
+        filter(({hpOverride}) => hpOverride !== undefined),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({rackedModule, hpOverride}) => {
+        this.applyRackedModuleHpOverride(rackedModule, hpOverride);
+      });
+
+    this.requestRackedModuleHpOverrideReset$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((rackedModule) => {
+        this.applyRackedModuleHpOverride(rackedModule, null);
+      });
     
     // when request to switch panel for a rack module is received, update local state then persist to backend
     this.requestRackedModulePanelSwitch$
@@ -677,7 +708,10 @@ export class RackDetailDataService extends SubManager {
     const byHP = new Map<number, number>();
     rows.flatMap(row => row)
       .filter(m => m.module.standard.id === 0)
-      .forEach(m => byHP.set(m.module.hp, (byHP.get(m.module.hp) ?? 0) + 1));
+      .forEach(m => {
+        const hp = getEffectiveRackedModuleHp(m);
+        byHP.set(hp, (byHP.get(hp) ?? 0) + 1);
+      });
     
     return Array.from(byHP.entries())
       .sort(([a], [b]) => a - b)
@@ -899,5 +933,92 @@ export class RackDetailDataService extends SubManager {
       : standard === 1 ? this.BLANK_IDS_STANDARD_1
         : null;
     return map?.[hp] ?? -1;
+  }
+
+  private askForRackedModuleHpOverride(rackedModule: RackedModule) {
+    const baseHp = rackedModule.module.hp;
+    const currentEffectiveHp = getEffectiveRackedModuleHp(rackedModule);
+    const control = new FormControl(String(currentEffectiveHp), {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.pattern(/^\d+$/),
+        Validators.min(1),
+        Validators.max(216)
+      ]
+    });
+
+    const data: InputDialogDataInModel = {
+      title: `Set HP for "${ rackedModule.module.name }"`,
+      description: hasRackedModuleHpOverride(rackedModule)
+        ? `This module currently overrides its catalog width of ${ baseHp } HP for this rack instance.`
+        : `This will override the catalog width of ${ baseHp } HP only for this rack instance.`,
+      control,
+      type: FormTypes.NUMBER,
+      label: 'HP'
+    };
+
+    return this.dialog.open<InputDialogComponent, InputDialogDataInModel, InputDialogDataOutModel>(
+      InputDialogComponent,
+      {
+        data,
+        disableClose: false,
+        autoFocus: false
+      }
+    )
+      .afterClosed()
+      .pipe(
+        map(result => {
+          if (!result?.result) {
+            return undefined;
+          }
+          const normalizedHp = Number(result.result);
+          return normalizedHp === baseHp ? null : normalizedHp;
+        })
+      );
+  }
+
+  private applyRackedModuleHpOverride(rackedModule: RackedModule, hpOverride: number | null): void {
+    const rackModules = this.rowedRackedModules$.value;
+    if (!rackModules) {
+      return;
+    }
+
+    for (const row of rackModules) {
+      const target = row.find(m => m.rackingData.id === rackedModule.rackingData.id || (
+        m.rackingData.id == null &&
+        rackedModule.rackingData.id == null &&
+        m.rackingData.rackid === rackedModule.rackingData.rackid &&
+        m.rackingData.row === rackedModule.rackingData.row &&
+        m.rackingData.column === rackedModule.rackingData.column &&
+        m.rackingData.moduleid === rackedModule.rackingData.moduleid
+      ));
+      if (!target) {
+        continue;
+      }
+
+      target.rackingData.hpOverride = hpOverride;
+      this.rowedRackedModules$.next(rackModules);
+
+      if (target.rackingData.id == null) {
+        this.requestRackedModulesDbSync$.next();
+        return;
+      }
+
+      this.backend.update.rackModuleHp(target.rackingData.id, hpOverride)
+        .pipe(
+          catchError((err) => {
+            console.error(`Error updating rack module HP override: ${ err }`);
+            this.snackBar.open(SharedConstants.messages.operationFailed, undefined, {
+              duration: 8000,
+              panelClass: 'snack-error'
+            });
+            return of(undefined);
+          }),
+          take(1)
+        )
+        .subscribe();
+      return;
+    }
   }
 }
