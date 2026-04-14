@@ -209,17 +209,17 @@ Report bad data (wrong HP, missing image, duplicate) from the module detail page
 no community layer needed. **Upgrades when:** UGC Trust Model tiers are implemented → flag submissions count toward a
 user's trust tier, creating a quality incentive. Already scoped in [TODO.md](./TODO.md).
 
-#### Edit Module HP in Rack
+#### Rack-local HP override *(disabled pending review)*
 
-Rack-specific HP override without touching global module data. Pure solo fix — correcting a wrong HP currently requires
-removing and re-adding the module. **Upgrades when:** Data Integrity philosophy is resolved → the same override pattern
-extends to other rack-local corrections. Already scoped in [TODO.md](./TODO.md).
+This is **not an approved product feature right now**. The rack-editor UI entry points have been removed and the current
+state is "do not re-enable until someone explains why it exists and gets explicit product approval." If the underlying
+plumbing stays around for migration safety or investigation, keep it non-discoverable in the UI.
 
 #### Rack Module Panel Variant Switching
 
 Switch a module's visible panel variant inside a rack (light/dark/special) without creating duplicate module records.
-This follows the same product principle as rack-local HP override: catalogue data stays canonical, while presentation can
-be overridden safely in the user's private rack context. **Boundary:** do not couple this to collection ownership;
+This keeps catalogue data canonical while presentation can still vary safely in the user's private rack context.
+**Boundary:** do not couple this to collection ownership;
 racks must remain valid for planned builds, past systems, and setups that do not exactly mirror what the user currently
 owns.
 
@@ -258,7 +258,7 @@ on private entities is visible to the owner only.
 - Introduce a reusable **Recent Activity** surface that can be dropped into multiple pages with the same visual and
   behavioral language.
 - Placement principle: on browse/index pages, show it **directly below filters** so users immediately see "what changed"
-  in the current context.
+  in the current context, but allow it to hide on mobile when space is too tight.
 - The surface should be **fully data-driven**: each entry is rendered from a standard activity shape (actor, action,
   target, time, optional context) so new activity types can be added without redesigning the UI each time.
 - Comments are the reference pattern: attributable, contextual, and naturally reusable across modules, racks, patches,

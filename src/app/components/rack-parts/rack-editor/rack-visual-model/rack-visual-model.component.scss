@@ -60,7 +60,7 @@
 
 }
 
-.hpOverrideButton {
+.hpIndicator {
   min-width: 0;
   padding: 0 0.4rem;
   height: 1.5rem;
@@ -68,8 +68,54 @@
   font-size: 0.7rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(34, 75, 117, 0.2);
+  color: #224b75;
+  font-weight: 600;
+  pointer-events: auto;
 }
 
-.hpOverrideActive {
+.moduleHoverStats {
+  min-width: 3.5rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(34, 75, 117, 0.16);
+  color: rgba(19, 54, 89, 0.95);
+  box-shadow: 0 0.25rem 0.75rem rgba(19, 54, 89, 0.14);
+  pointer-events: none;
+  max-width: 4.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+  opacity: 0;
+  transform: translateY(-0.2rem) scale(0.98);
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.moduleHoverStats--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.moduleHoverStats__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.moduleHoverStats__label {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.72;
+}
+
+.moduleHoverStats__value {
+  font-size: 0.58rem;
   font-weight: 600;
+  white-space: nowrap;
 }

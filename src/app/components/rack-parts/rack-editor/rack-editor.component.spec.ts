@@ -1,6 +1,10 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  BehaviorSubject,
+  Subject,
+} from 'rxjs';
 import { ModulePanelZoomDialogComponent } from 'src/app/components/module-parts/module-details/module-panel-zoom-dialog.component';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
@@ -68,5 +72,51 @@ describe('RackEditorComponent', () => {
     } as RackedModule);
 
     expect(dialog.open).not.toHaveBeenCalled();
+  });
+
+  it('does not expose HP override actions in the module context menu', () => {
+    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const open$ = new Subject<MouseEvent>();
+    const dataService = {
+      isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject(true),
+      isCurrentRackEditable$: new BehaviorSubject(true),
+      requestRackedModuleDuplication$: new Subject<RackedModule>(),
+      requestRackedModuleRemoval$: new Subject<RackedModule>(),
+      requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
+      requestRackedModuleRowClearing$: new Subject<RackedModule>(),
+      requestRackedModulePanelSwitch$: new Subject<any>(),
+    };
+
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService as any,
+      {menuItems$, open$} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    component.ngOnInit();
+
+    component.moduleRightClick$.next({
+      $event: new MouseEvent('contextmenu'),
+      rackedModule: {
+        module: {
+          name: 'Belgrad',
+          hp: 14,
+          manufacturer: {name: 'Xaoc Devices'},
+          panels: []
+        },
+        rackingData: {
+          hpOverride: 16
+        }
+      } as any
+    });
+
+    const ids = menuItems$.value.map(item => item.id);
+    expect(ids).not.toContain('edit-hp');
+    expect(ids).not.toContain('reset-hp');
+    expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 16 HP)');
   });
 });
