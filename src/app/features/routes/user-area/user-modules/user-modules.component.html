@@ -45,23 +45,26 @@
                            [data$]="dataService.pagedModulesData$"
                            [viewConfig]="modulesViewConfig"
                            [showSearch]="false"
-                           [externalSearchQuery]="globalSearchQuery"
                            [encloseVertically]="encloseVertically"
           ></app-module-list>
         } @else {
           <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">So far, you haven't added any modules to your
-              collection. Try adding a few!
+            <mat-card-subtitle fxLayoutAlign="center center">
+              @if (globalSearchQuery.trim()) {
+                No modules match "{{ globalSearchQuery.trim() }}".
+              } @else {
+                So far, you haven't added any modules to your collection. Try adding a few!
+              }
             </mat-card-subtitle>
           </div>
         }
       }
     </lib-auto-update-loading-indicator>
-    @if ((dataService.modulesData$ | async)?.length > 10) {
+    @if ((dataService.filteredModulesCount$ | async) > dataService.modulesPagination.take$.value) {
       <mat-paginator
         [pageSize]="dataService.modulesPagination.take$.value"
         [pageSizeOptions]="[10, 20, 50]"
-        [length]="(dataService.modulesData$ | async)?.length"
+        [length]="dataService.filteredModulesCount$ | async"
         (page)="dataService.modulesPageEvent$.next($event)"
         showFirstLastButtons
       ></mat-paginator>
