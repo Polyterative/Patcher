@@ -35,6 +35,7 @@ import { SubManager } from 'src/app/shared-interproject/directives/subscription-
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
 import { DbComment } from "src/app/models/comment";
+import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
 @Injectable()
@@ -67,9 +68,16 @@ export class UserAreaDataService extends SubManager {
     skip$: new BehaviorSubject<number>(0),
     take$: new BehaviorSubject<number>(10),
   };
+  readonly filteredModulesData$: Observable<MinimalModule[] | undefined>;
+  readonly filteredModulesCount$: Observable<number>;
   readonly pagedModulesData$: Observable<MinimalModule[] | undefined>;
   readonly activeTagFilter$ = new BehaviorSubject<string | null>(null);
+  readonly filteredRacksData$: Observable<Rack[] | undefined>;
+  readonly filteredRacksCount$: Observable<number>;
+  readonly pagedRacksData$: Observable<Rack[] | undefined>;
   readonly filteredPatchesData$: Observable<Patch[] | undefined>;
+  readonly filteredPatchesCount$: Observable<number>;
+  readonly pagedPatchesData$: Observable<Patch[] | undefined>;
   readonly allPatchTags$: Observable<string[]>;
 
   //
@@ -86,6 +94,10 @@ export class UserAreaDataService extends SubManager {
   readonly addRack$ = new Subject<void>();
   readonly addModulesToCollection$ = new Subject<void>();
   private readonly _searchQuery$ = new BehaviorSubject<string>('');
+  readonly searchQuery$ = this._searchQuery$.asObservable();
+  readonly hasSearchQuery$ = this.searchQuery$.pipe(
+    map((query) => query.length > 0)
+  );
   private discoveryConnected = false;
   
   constructor(
@@ -95,15 +107,74 @@ export class UserAreaDataService extends SubManager {
   ) {
     super();
 
+    this.filteredModulesData$ = combineLatest([
+      this.modulesData$,
+      this.searchQuery$
+    ]).pipe(
+      map(([modules, query]) => this.filterModules(modules, query))
+    );
+
+    this.filteredModulesCount$ = this.filteredModulesData$.pipe(
+      map((modules) => modules?.length ?? 0)
+    );
+
+    this.pagedModulesData$ = combineLatest([
+      this.filteredModulesData$,
+      this.modulesPagination.skip$,
+      this.modulesPagination.take$,
+    ]).pipe(
+      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+    );
+
+    this.filteredRacksData$ = combineLatest([
+      this.rackData$,
+      this.searchQuery$
+    ]).pipe(
+      map(([racks, query]) => this.filterRacks(racks, query))
+    );
+
+    this.filteredRacksCount$ = this.filteredRacksData$.pipe(
+      map((racks) => racks?.length ?? 0)
+    );
+
+    this.pagedRacksData$ = combineLatest([
+      this.filteredRacksData$,
+      this.racksPagination.skip$,
+      this.racksPagination.take$,
+    ]).pipe(
+      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+    );
+
     this.filteredPatchesData$ = combineLatest([
       this.patchesData$,
-      this.activeTagFilter$
+      this.activeTagFilter$,
+      this.searchQuery$
     ]).pipe(
-      map(([patches, tag]) => {
+      map(([patches, tag, query]) => {
         if (!patches) { return undefined; }
-        if (!tag) { return patches; }
-        return patches.filter(p => (p.tags ?? []).includes(tag));
+
+        return patches.filter((patch) => {
+          const matchesTag = !tag || (patch.tags ?? []).includes(tag);
+          if (!matchesTag) {
+            return false;
+          }
+
+          const searchFields = [patch.name, patch.description, ...(patch.tags ?? [])];
+          return matchesSearchQuery(query, ...searchFields);
+        });
       })
+    );
+
+    this.filteredPatchesCount$ = this.filteredPatchesData$.pipe(
+      map((patches) => patches?.length ?? 0)
+    );
+
+    this.pagedPatchesData$ = combineLatest([
+      this.filteredPatchesData$,
+      this.patchesPagination.skip$,
+      this.patchesPagination.take$,
+    ]).pipe(
+      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
     );
 
     this.allPatchTags$ = this.patchesData$.pipe(
@@ -119,17 +190,9 @@ export class UserAreaDataService extends SubManager {
       })
     );
 
-    this.pagedModulesData$ = combineLatest([
-      this.modulesData$,
-      this.modulesPagination.skip$,
-      this.modulesPagination.take$,
-    ]).pipe(
-      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
-    );
-
     this.bindPageEvent(this.commentsPageEvent$, this.commentsPagination, () => this.updateCommentsData$.next());
-    this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination, () => this.updatePatchesData$.next());
-    this.bindPageEvent(this.racksPageEvent$, this.racksPagination, () => this.updateRackData$.next(undefined));
+    this.bindPageEvent(this.patchesPageEvent$, this.patchesPagination);
+    this.bindPageEvent(this.racksPageEvent$, this.racksPagination);
     this.bindPageEvent(this.modulesPageEvent$, this.modulesPagination);
 
     this.updateCommentsData$
@@ -158,31 +221,25 @@ export class UserAreaDataService extends SubManager {
     this.updatePatchesData$
       .pipe(
         tap(() => this.patchesData$.next(undefined)),
-        switchMap(() => {
-          const skip = this.patchesPagination.skip$.value;
-          const take = this.patchesPagination.take$.value;
-          return this.backend.GET.userPatchesPaginated(skip, skip + take - 1);
-        }),
+        switchMap(() => this.backend.get.currentUserPatches()),
         takeUntil(this.destroy$)
       )
-      .subscribe(response => {
-        this.patchesData$.next((response?.data as Patch[]) ?? []);
-        this.patchesCount$.next(response?.count ?? 0);
+      .subscribe(patches => {
+        const nextPatches = patches ?? [];
+        this.patchesData$.next(nextPatches);
+        this.patchesCount$.next(nextPatches.length);
       });
 
     this.updateRackData$
       .pipe(
         tap(() => this.rackData$.next(undefined)),
-        switchMap(() => {
-          const skip = this.racksPagination.skip$.value;
-          const take = this.racksPagination.take$.value;
-          return this.backend.GET.userRacksPaginated(skip, skip + take - 1);
-        }),
+        switchMap(() => this.backend.get.currentUserRacks()),
         takeUntil(this.destroy$)
       )
-      .subscribe(response => {
-        this.rackData$.next((response?.data as Rack[]) ?? []);
-        this.racksCount$.next(response?.count ?? 0);
+      .subscribe(racks => {
+        const nextRacks = racks ?? [];
+        this.rackData$.next(nextRacks);
+        this.racksCount$.next(nextRacks.length);
       });
     
     this.updateManualsData$
@@ -218,6 +275,24 @@ export class UserAreaDataService extends SubManager {
       tap((snapshot) => this.discoveryTipService.updateUserAreaSnapshot(snapshot)),
       takeUntil(this.destroy$)
     ).subscribe();
+
+    this.searchQuery$
+      .pipe(
+        tap(() => {
+          this.modulesPagination.skip$.next(0);
+          this.racksPagination.skip$.next(0);
+          this.patchesPagination.skip$.next(0);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+
+    this.activeTagFilter$
+      .pipe(
+        tap(() => this.patchesPagination.skip$.next(0)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
 
     this.addModulesToCollection$
       .pipe(
@@ -333,5 +408,36 @@ export class UserAreaDataService extends SubManager {
       totalCount: modulesCount + racksCount + patchesCount,
       hasSearchQuery: query.length > 0
     };
+  }
+
+  private filterModules(
+    modules: MinimalModule[] | undefined,
+    query: string
+  ): MinimalModule[] | undefined {
+    if (!modules) {
+      return undefined;
+    }
+
+    return modules.filter((module) => {
+      const searchFields = [
+        module.name,
+        module.manufacturer?.name,
+        module.description,
+        ...(module.tags ?? []).map((tagVote) => tagVote.tag?.name ?? '')
+      ];
+
+      return matchesSearchQuery(query, ...searchFields);
+    });
+  }
+
+  private filterRacks(
+    racks: Rack[] | undefined,
+    query: string
+  ): Rack[] | undefined {
+    if (!racks) {
+      return undefined;
+    }
+
+    return racks.filter((rack) => matchesSearchQuery(query, rack.name, rack.description));
   }
 }

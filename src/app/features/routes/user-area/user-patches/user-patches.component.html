@@ -43,18 +43,21 @@
           }
         }
       }
-      @if ((dataService.filteredPatchesData$|async); as data) {
+      @if ((dataService.pagedPatchesData$|async); as data) {
         @if (data.length > 0) {
           <app-patch-list fxFlex="grow"
-                          [data$]="dataService.filteredPatchesData$"
+                          [data$]="dataService.pagedPatchesData$"
                           [showSearch]="false"
-                          [externalSearchQuery]="globalSearchQuery"
           ></app-patch-list>
         } @else {
           <div fxFlex="100">
             <mat-card-subtitle fxLayoutAlign="center center">
-              @if (dataService.activeTagFilter$ | async) {
+              @if ((dataService.activeTagFilter$ | async) && globalSearchQuery.trim()) {
+                No patches match the current search and tag filter.
+              } @else if (dataService.activeTagFilter$ | async) {
                 No patches match the selected tag.
+              } @else if (globalSearchQuery.trim()) {
+                No patches match "{{ globalSearchQuery.trim() }}".
               } @else {
                 It looks like you haven't created any patches yet. Try adding some!
               }
@@ -62,11 +65,11 @@
           </div>
         }
       }
-      @if ((dataService.patchesCount$ | async) > 10) {
+      @if ((dataService.filteredPatchesCount$ | async) > dataService.patchesPagination.take$.value) {
         <mat-paginator
           [pageSize]="dataService.patchesPagination.take$.value"
           [pageSizeOptions]="[10, 20, 50]"
-          [length]="dataService.patchesCount$ | async"
+          [length]="dataService.filteredPatchesCount$ | async"
           (page)="dataService.patchesPageEvent$.next($event)"
           showFirstLastButtons
         ></mat-paginator>
