@@ -2,7 +2,7 @@
 describe('trueTest', () => {
   
   it('should always return true', () => {
-    let test = true;
+    const test = true;
     expect(test)
       .toBeTrue();
   });

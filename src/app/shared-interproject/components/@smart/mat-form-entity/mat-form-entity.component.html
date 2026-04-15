@@ -341,7 +341,7 @@
         || (type === types.AUTOCOMPLETE_GROUPED))
       && (!control.disabled)) {
         <button
-          [disabled]="control.value==''||control.value==null||control.value==undefined"
+          [disabled]="control.value === '' || control.value == null"
           matSuffix
           mat-icon-button
           (click)="control.patchValue('')"

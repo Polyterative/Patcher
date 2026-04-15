@@ -15,7 +15,7 @@ import {
 })
 export class HeroClickableTitleComponent implements OnInit {
   @Input() link: string | any[] = undefined;
-  @Input() textSize: number | undefined = undefined
+  @Input() textSize: number | undefined = undefined;
 
   constructor() { }
 

@@ -3,7 +3,7 @@ import {
   ElementRef,
   HostListener,
   Input,
-  OnDestroy
+  OnDestroy, OnInit
 } from '@angular/core';
 import { HeroInfoBoxService } from './hero-info-box.service';
 
@@ -12,7 +12,7 @@ import { HeroInfoBoxService } from './hero-info-box.service';
   selector: '[infoBox]',
   standalone: false
 })
-export class HeroInfoBoxTextDirective implements OnDestroy {
+export class HeroInfoBoxTextDirective implements OnDestroy, OnInit {
   @Input() infoText: string;
   
   constructor(public dataService: HeroInfoBoxService, public el: ElementRef) {

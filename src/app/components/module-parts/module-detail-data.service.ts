@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   BehaviorSubject,
@@ -32,7 +32,7 @@ import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
 
 @Injectable()
-export class ModuleDetailDataService {
+export class ModuleDetailDataService implements OnDestroy {
   updateSingleModuleData$ = new ReplaySubject<number>();
   singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
@@ -96,7 +96,7 @@ export class ModuleDetailDataService {
       )
       .subscribe(([a, b]) => {
         if (b) {
-          let text: string = `${ b.name } by ${ b.manufacturer.name }`;
+          const text: string = `${ b.name } by ${ b.manufacturer.name }`;
           navigator.clipboard.writeText(text);
           SharedConstants.successCustom(snackBar, `Copied to clipboard: ${ text }`);
         }

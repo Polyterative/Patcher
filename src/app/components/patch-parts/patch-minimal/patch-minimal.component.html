@@ -62,7 +62,7 @@
           <mat-icon>speaker_notes</mat-icon>
         </button>
         <div fxFlex="grow"></div>
-        @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id == bag.user.id) {
+        @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
           <button mat-icon-button
                   [matTooltip]="(dataService.isCurrentPatchPrivate$|async) ? 'Make patch public' : 'Make patch private'"
                   (click)="dataService.requestPatchPrivacyStatusChange$.next()"
@@ -85,7 +85,7 @@
         <!--          <mat-icon>info</mat-icon>-->
         <!--        </button>-->
       </div>
-      @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id == bag.user.id) {
+      @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
         <app-edit-fab
           [editMode$]="dataService.patchEditingPanelOpenState$"
           (toggle$)="dataService.requestPatchEditingToggle$.next()"

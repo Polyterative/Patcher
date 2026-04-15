@@ -247,35 +247,35 @@ export class RackEditorComponent extends SubManager implements OnInit {
               takeUntil(this.contextMenu.open$),
               takeUntil(this.destroy$)
             )
-            .subscribe(_ => this.openInspectPanel(rackedModule))
+            .subscribe(_ => this.openInspectPanel(rackedModule));
           
           duplicateModule$
             .pipe(
               takeUntil(this.contextMenu.open$),
               takeUntil(this.destroy$)
             )
-            .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule))
+            .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule));
           
           deleteModule$
             .pipe(
               takeUntil(this.contextMenu.open$),
               takeUntil(this.destroy$)
             )
-            .subscribe(_ => this.dataService.requestRackedModuleRemoval$.next(rackedModule))
+            .subscribe(_ => this.dataService.requestRackedModuleRemoval$.next(rackedModule));
           
           replaceWithBlank$
             .pipe(
               takeUntil(this.contextMenu.open$),
               takeUntil(this.destroy$)
             )
-            .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule))
+            .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule));
           
           deleteRow$
             .pipe(
               takeUntil(this.contextMenu.open$),
               takeUntil(this.destroy$)
             )
-            .subscribe(_ => this.dataService.requestRackedModuleRowClearing$.next(rackedModule))
+            .subscribe(_ => this.dataService.requestRackedModuleRowClearing$.next(rackedModule));
           
           switchPanelSubjects.forEach((subject$, idx) => {
             subject$.pipe(
@@ -296,7 +296,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
   calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
     const totalCapacity = Number(totalHp) * Number(rows);
     if (totalCapacity === 0 || isNaN(totalCapacity)) return '0%';
-    return ((Number(usedHp) / totalCapacity) * 100).toFixed(2) + '%';
+    return `${((Number(usedHp) / totalCapacity) * 100).toFixed(2)  }%`;
   }
 
   openInspectPanel(rackedModule: RackedModule): void {

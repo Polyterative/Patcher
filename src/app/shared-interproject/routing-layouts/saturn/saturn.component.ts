@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fadeAnimation } from './fade.animation';
 
@@ -9,7 +9,7 @@ import { fadeAnimation } from './fade.animation';
   // do not put OnPush here
   animations: [fadeAnimation]
 })
-export class SaturnComponent {
+export class SaturnComponent implements OnInit {
   title?: string;
 
   constructor(private route: ActivatedRoute, private router: Router) {

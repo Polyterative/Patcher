@@ -69,6 +69,6 @@ export class AppFaqComponent {
       link: 'https://github.com/Polyterative/Patcher/blob/develop/internaldocs/TODO.md',
       answer: 'We are constantly improving the project. You can check the roadmap on our GitHub repository to see what is currently being developed.'
     }
-  ]
+  ];
   
 }

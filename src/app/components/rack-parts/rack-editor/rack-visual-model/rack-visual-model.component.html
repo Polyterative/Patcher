@@ -10,7 +10,7 @@
     @for (row of rowedRackedModules; track row; let rowId = $index) {
       <div class="row"
            [class.row-bg]="!(row|hasUnrackedModules)"
-           [matBadge]="row.length==0?undefined:(rackDetailDataService.showModuleCounters$|async)?row.length:undefined"
+           [matBadge]="row.length === 0 ? undefined : (rackDetailDataService.showModuleCounters$ | async) ? row.length : undefined"
            matBadgePosition="above after"
            cdkDropList
            cdkDropListOrientation="horizontal"

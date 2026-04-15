@@ -11,7 +11,7 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output, OnDestroy
 } from '@angular/core';
 import {
   fadeInOnEnterAnimation,
@@ -55,7 +55,7 @@ const popOnEnter = trigger('popOnEnter', [
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleCVItemComponent implements OnInit {
+export class ModuleCVItemComponent implements OnInit, OnDestroy {
   @Input() data: CV;
   @Input() kind: 'in' | 'out';
 
@@ -97,7 +97,7 @@ export class ModuleCVItemComponent implements OnInit {
           .pipe(
             map(([data, instanceId]) =>
               data && data.b
-                ? data.b.cv.id == this.data.id && data.b.cv.instance_id == instanceId
+                ? data.b.cv.id === this.data.id && data.b.cv.instance_id === instanceId
                 : false
             ),
             takeUntil(this.destroyEvent$)
@@ -109,7 +109,7 @@ export class ModuleCVItemComponent implements OnInit {
           .pipe(
             map(([data, instanceId]) =>
               data && data.a
-                ? data.a.cv.id == this.data.id && data.a.cv.instance_id == instanceId
+                ? data.a.cv.id === this.data.id && data.a.cv.instance_id === instanceId
                 : false
             ),
             takeUntil(this.destroyEvent$)
