@@ -76,6 +76,100 @@ philosophy document first.
 
 ---
 
+## Manufacturer Value Before Manufacturer Capture
+
+Manufacturer-facing work should begin by solving **practical brand problems** before asking manufacturers to treat Patcher
+as an account they need to maintain. The first value is straightforward:
+
+- a clean public reference page for the brand and its modules
+- accurate contact / support / manual / store-link information
+- a place to surface official releases, featured modules, and important updates
+- qualified traffic from users who are already browsing modules, building racks, or studying patches
+
+This means the manufacturer offer should evolve in layers:
+
+1. **Public utility first** — a manufacturer page is useful even before the brand claims it.
+2. **Verified control second** — once claimed, the brand can manage its official surface.
+3. **Private tools third** — analytics, APIs, widgets, and workflow integrations only matter after the public surface is
+   already valuable.
+
+**Refined strategic thesis:** the first wedge is still public utility, but the durable long-term value is not "presence"
+alone. It is that Patcher sits close to real module evaluation workflows — browsing, rack planning, patch study, and
+collection tracking. If Patcher becomes trusted enough, it can eventually provide manufacturers with aggregate demand and
+usage signal that their own sites usually cannot see. Public presence is the threshold condition; signal is the deeper
+strategic prize.
+
+**Positioning decision:** Patcher is not trying to replace a mature manufacturer's whole website or ecommerce stack.
+Instead, it should become the structured product layer around Eurorack catalogue data. For larger brands that means an
+official discoverability and reference surface; for smaller brands with weak or nonexistent sites it may also function as
+their de facto public home on the web.
+
+**Long-horizon extension:** if the manufacturer layer proves real, the strongest expansion path is not "more presence"
+features but **product-data stewardship**. Patcher could become the place where a manufacturer keeps its official module
+record coherent — specs, manuals, panel variants, official links, MSRP, firmware/lifecycle state — and then syndicates
+that record outward to other surfaces. That is a materially stronger value proposition than page customization alone, but
+it also pulls Patcher closer to infrastructure and should be treated as a later strategic bet.
+
+**Small-manufacturer-first filter:** prefer features that save time for a one-person or very small brand with weak web or
+catalogue infrastructure. Deprioritise manufacturer features that only become useful when a company already has internal
+developers, a mature CMS, or a marketing team asking for sophisticated reporting.
+
+**Boundary:** even verified manufacturers should not get unlimited silent write access to every shared catalogue field.
+Brand-owned fields (logo, website, support contact, official links, release notes, featured modules, MSRP) can be treated
+as authoritative. Shared structural data that affects the whole catalogue should still respect review/audit rules where
+appropriate.
+
+---
+
+## Manufacturer Verification & Audience Privacy
+
+Manufacturer verification is not only a trust badge for users; it is the permission boundary for manufacturer-only
+capabilities. Verification should unlock surfaces that imply official brand authority: editable manufacturer page content,
+official announcements, support contact details, MSRP submission, and private brand analytics.
+
+**Verification principle:** it must be easier than enterprise onboarding but stronger than a normal user profile claim.
+Manual approval is acceptable early on; the important part is that "official" visibly means something.
+
+**Verification lifecycle:** verification is an ongoing operational relationship, not a badge granted once forever.
+Re-verification, dormancy rules, claim disputes, and revocation paths are part of the product surface whether they are
+visible in the UI or not. The strategy should assume that verification creates a permanent support category.
+
+**Analytics boundary:** manufacturer-facing stats should help brands understand adoption without exposing individual users.
+Show aggregate and anonymised signals such as page views, collection membership counts, rack inclusion, patch usage,
+outbound click-through, or broad regional/device trends if those ever exist. Do **not** reveal personally identifying
+ownership data, private rack contents, or user-level behavioral exports to manufacturers.
+
+**Threshold rule:** analytics should not be shown below minimum usefulness/privacy thresholds. If an aggregate is too small
+to be meaningful or safe, Patcher should hide it instead of showing false precision.
+
+This distinction matters because the manufacturer dashboard is a product utility layer, not a data brokerage surface.
+
+**Authority clarification:** verification does not grant moderation authority over community comments, user-generated data,
+or public criticism. Manufacturer-provided data should be clearly framed as the brand's official input within bounded
+fields — not as unlimited power over the entire public representation of the brand on Patcher.
+
+---
+
+## Community Catalogue Sovereignty
+
+The shared module catalogue is a community asset, not a manufacturer-controlled mirror and not a generic advertising
+surface. Manufacturers, users, and admins all contribute to its usefulness, but no single party should have silent,
+unbounded control over it.
+
+This leads to three practical rules:
+
+1. **Manufacturers may control bounded official fields** such as contact/support links, official store links, brand bio,
+   featured modules, and manufacturer-reported MSRP.
+2. **Manufacturers may certify or challenge shared data, but not bypass integrity rules** for structural catalogue fields
+   that affect everyone.
+3. **Community context remains distinct** from manufacturer messaging. Comments, community activity, and public user usage
+   should not be rewritten or suppressed by verified brands.
+
+This protects both sides of the strategy: users keep trusting the catalogue, and manufacturers still get an official layer
+that is genuinely useful.
+
+---
+
 ## Collections Track Membership, Not Quantity
 
 A user's module collection records **whether they own a module** — not how many copies. There is no "I own 3 Maths" in
@@ -127,6 +221,22 @@ Currently free. Potential paths: store affiliate links, manufacturer partnership
 The module marketplace and price hub open additional paths: **affiliate commissions on store links** (users click
 through to buy at an external store) and **promoted listings** for manufacturers or verified dealers.
 Price-hub data also gives Patcher a valuable dataset that could power API access as a paid tier.
+
+There is also a distinct manufacturer-facing monetisation path: **verified manufacturer plans**. These would not paywall
+the public catalogue itself; they would fund higher-value brand tooling layered on top of it — managed manufacturer pages,
+official updates/news surfaces, support/contact controls, analytics dashboards, embeddable widgets, and authenticated API
+access for brands that want Patcher to act as lightweight catalogue infrastructure.
+
+This creates a clean split:
+
+- **Public catalogue value remains open** so users and search engines can discover modules freely.
+- **Manufacturer workflow and insight tooling can be paid** when it saves time or replaces missing web/catalogue
+  infrastructure for the brand.
+
+**Monetisation caution:** do not let manufacturer revenue become the reason user trust erodes. Paid manufacturer tooling
+must sell control, convenience, and bounded insight — not influence over rankings, moderation, or access to user-level
+data. Patcher should only lean on manufacturer revenue once the user-facing product is strong enough that manufacturers
+need access to the surface more than the surface needs their money.
 
 Store integration is no longer a standalone horizon item — it is the revenue mechanism of the price hub. The canonical
 store link per module is the first concrete step; it is scoped as

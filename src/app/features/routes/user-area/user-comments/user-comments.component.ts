@@ -21,6 +21,7 @@ import { map } from "rxjs/operators";
 import { MatChipsModule } from "@angular/material/chips";
 import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { DbComment } from "src/app/models/comment";
+import { MatCardSubtitle } from "@angular/material/card";
 
 
 interface FilterOption {
@@ -43,6 +44,7 @@ interface FilterOption {
     CommentsItemBlockComponent,
     MatPaginatorModule,
     MatChipsModule,
+    MatCardSubtitle,
   ]
 })
 export class UserCommentsComponent implements OnInit {
@@ -66,7 +68,7 @@ export class UserCommentsComponent implements OnInit {
     public dataService: UserAreaDataService,
   ) {
     this.filteredComments$ = combineLatest([
-      this.dataService.commentsData$,
+      this.dataService.filteredCommentsData$,
       this.activeFilter$,
     ]).pipe(
       map(([data, filter]: [DbComment[] | undefined, number | null]) =>

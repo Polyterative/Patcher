@@ -151,23 +151,68 @@ yet.
 
 ---
 
-#### MEDIUM: Manufacturer Accounts (Claim & Editable Profile)
+#### MEDIUM: Manufacturer Accounts & Verification
 
-**Why:** Manufacturers claim their page, manage profile data, submit official MSRP.
+**Why:** Manufacturers claim their page, manage official brand data, surface contact/support info, and submit official MSRP.
 **Depends on:** Manufacturer Page Phase 2 live.
 **Scope:** Auth-gated edit surface. New `manufacturer_accounts` table links `user_id` → `manufacturer` entity. Profile
-fields (name, logo, website, bio) are manufacturer-owned; module data edits go through UGC review queue.
+fields (name, logo, website, bio, support/contact links) are manufacturer-owned; module data edits go through UGC review
+queue.
 
+- [ ] Document objective verification criteria, dormancy rules, and revocation path before launch
+- [ ] Define manufacturer-controlled fields vs shared catalogue fields before edit access exists
 - [ ] Add `manufacturer_accounts` table (user_id, manufacturer_id, verified, created_at) to `database.types.ts`
 - [ ] Add `manufacturer_accounts` to `DbPaths` in `DatabaseStrings.ts`
 - [ ] Add `add.manufacturerAccountClaim()` and `get.manufacturerAccountForUser()` to `supabase.service.ts`
 - [ ] "Claim this page" button on manufacturer detail (auth-gated; one pending claim per manufacturer; manual admin
   approval via Supabase dashboard)
 - [ ] Verified: unlock edit controls (name, logo URL, website, bio, social links)
+- [ ] Add support/contact fields and issue-routing links to verified manufacturer profile
 - [ ] Add `update.manufacturerProfile()` with `cacheBust(['manufacturerWithId'])`
 - [ ] Verified badge on manufacturer page and on module cards from that manufacturer
 - [ ] MSRP field per module (visible to verified account only; feeds Price Hub label hierarchy)
+- [ ] Add auditability for manufacturer-edited fields and a user reporting path for abuse/disputes
 - [ ] Write tests for claim flow and profile update
+
+---
+
+#### LOW: Manufacturer Updates / Featured Surface
+
+**Why:** Verified manufacturers need a compact way to highlight new releases, updated modules, featured products, and
+important notices without turning Patcher into a blog platform.
+**Depends on:** Manufacturer Accounts & Verification.
+
+- [ ] Add manufacturer-owned update entries with title, body, timestamp, optional linked module
+- [ ] Add "featured modules" controls for verified manufacturers
+- [ ] Show a compact "what's new" / "featured" section on manufacturer detail pages
+- [ ] Define hard constraints up front: posting limits, entry length, expiry/archive model, and reporting flow
+- [ ] Define moderation / visibility rules for official update entries
+
+---
+
+#### LOW: Manufacturer Analytics
+
+**Why:** Verified manufacturers need aggregate insight into catalogue performance and audience interest inside Patcher.
+**Depends on:** Manufacturer Accounts & Verification.
+
+- [ ] Validate with a small set of boutique manufacturers what they would actually want from analytics before building it
+- [ ] Define privacy-safe aggregate metrics (views, outbound clicks, collection count, public rack count, public patch count)
+- [ ] Define minimum thresholds below which metrics are hidden instead of shown
+- [ ] Add manufacturer dashboard queries / aggregation layer
+- [ ] Add private analytics UI for verified manufacturers
+- [ ] Document privacy boundaries so no user-level ownership data is exposed
+
+---
+
+#### LOW: Manufacturer API / Widgets Pilot
+
+**Why:** Long-term B2B angle — let manufacturers use Patcher as lightweight catalogue infrastructure, not only a public page.
+**Depends on:** Manufacturer Accounts & Verification.
+
+- [ ] Decide first deliverable: narrow embeddable widget vs authenticated API, using the smallest credible B2B wedge
+- [ ] Define manufacturer-owned fields safe for programmatic access
+- [ ] Design minimal auth / key model for verified manufacturers
+- [ ] Pilot one narrow integration path (e.g. module card widget or official-profile sync)
 
 ---
 

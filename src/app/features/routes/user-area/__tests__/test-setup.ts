@@ -92,6 +92,7 @@ export function createMockUserAreaDataService() {
     addRack$,
     addModulesToCollection$,
     connectDiscovery: jasmine.createSpy('connectDiscovery'),
+    resetUiState: jasmine.createSpy('resetUiState'),
   };
 }
 

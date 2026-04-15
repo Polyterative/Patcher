@@ -1,5 +1,9 @@
-@if ((dataService.manualsData$|async); as data) {
-  @if (data.length > 0) {
+@if ({
+  manuals: (dataService.manualsData$|async),
+  filteredManuals: (dataService.filteredManualsData$|async),
+  hasSearchQuery: (dataService.hasSearchQuery$|async)
+}; as bag) {
+  @if (bag.manuals && bag.manuals.length > 0) {
     <div class="col gap1"
     >
       <lib-hero-content-card description="Available manuals for your modules. Click to open"
@@ -12,17 +16,21 @@
       >
         <div class="col gap1"
         >
-          @if (data.length > 0) {
+          @if (bag.filteredManuals && bag.filteredManuals.length > 0) {
             <mat-chip-listbox>
-              @for (item of data; track item) {
+              @for (item of bag.filteredManuals; track item) {
                 <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
               }
             </mat-chip-listbox>
           } @else {
             <mat-card-subtitle
               style="padding: 1rem; align-self: center; text-align: center; width: 100%"
-            >It looks like you haven't got any modules with manuals
-              yet
+            >
+              @if (bag.hasSearchQuery) {
+                No manuals match the current search
+              } @else {
+                It looks like you haven't got any modules with manuals yet
+              }
             </mat-card-subtitle>
           }
           <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
