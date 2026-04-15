@@ -71,6 +71,68 @@ describe('UserAreaDataService', () => {
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false, true);
     expect(service.manualsData$.value?.map(x => x.name)).toEqual(['Belgrad', 'Dixie II+']);
   });
+
+  it('filters manuals with the global search query', () => {
+    const {service} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.manualsData$.next([
+      {
+        id: 1,
+        name: 'Belgrad',
+        manufacturer: {name: 'Xaoc Devices'},
+        description: 'Dual peak filter',
+        manualURL: 'https://b'
+      },
+      {
+        id: 2,
+        name: 'Dixie II+',
+        manufacturer: {name: 'Intellijel'},
+        description: 'Precision analog VCO',
+        manualURL: 'https://a'
+      }
+    ] as any);
+
+    searchQuery$.next('intellijel');
+
+    service.filteredManualsData$.subscribe((manuals) => {
+      expect(manuals?.map((manual) => manual.name)).toEqual(['Dixie II+']);
+    });
+  });
+
+  it('filters comments with the global search query', () => {
+    const {service} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.commentsData$.next([
+      {
+        id: 1,
+        content: 'Belgrad sounds huge',
+        entityId: 10,
+        entityType: 1,
+        profile: {username: 'filterfan'},
+        created: '2024-01-01',
+        updated: '2024-01-01'
+      },
+      {
+        id: 2,
+        content: 'Love this oscillator',
+        entityId: 11,
+        entityType: 1,
+        profile: {username: 'intellijel-user'},
+        created: '2024-01-01',
+        updated: '2024-01-01'
+      }
+    ] as any);
+
+    searchQuery$.next('intellijel');
+
+    service.filteredCommentsData$.subscribe((comments) => {
+      expect(comments?.map((comment) => comment.id)).toEqual([2]);
+    });
+  });
   
   it('opens patch creator and triggers patch refresh', () => {
     const {service, dialog, discoveryTipService} = build();
@@ -252,5 +314,35 @@ describe('UserAreaDataService', () => {
     service.pagedPatchesData$.subscribe((patches) => {
       expect(patches?.map((patch) => patch.id)).toEqual([400]);
     });
+  });
+
+  it('clears and rebinds discovery search state across user-area navigation', () => {
+    const {service} = build();
+    const firstSearchQuery$ = new Subject<string>();
+    const secondSearchQuery$ = new Subject<string>();
+    let latestQuery = '';
+
+    service.searchQuery$.subscribe((query) => latestQuery = query);
+    service.connectDiscovery(firstSearchQuery$.asObservable());
+
+    firstSearchQuery$.next('belgrad');
+    service.activeTagFilter$.next('ambient');
+
+    expect(latestQuery).toBe('belgrad');
+    expect(service.activeTagFilter$.value).toBe('ambient');
+
+    service.resetUiState();
+
+    expect(latestQuery).toBe('');
+    expect(service.activeTagFilter$.value).toBeNull();
+
+    firstSearchQuery$.next('stale');
+
+    expect(latestQuery).toBe('');
+
+    service.connectDiscovery(secondSearchQuery$.asObservable());
+    secondSearchQuery$.next('dixie');
+
+    expect(latestQuery).toBe('dixie');
   });
 });

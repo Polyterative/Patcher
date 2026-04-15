@@ -293,4 +293,12 @@ describe('UserAreaRootComponent - Global Search', () => {
 
     expect(mockDataService.connectDiscovery).toHaveBeenCalledTimes(1);
   }));
+
+  it('should reset user-area UI state on destroy', () => {
+    build();
+
+    component.ngOnDestroy();
+
+    expect(mockDataService.resetUiState).toHaveBeenCalledTimes(1);
+  });
 });

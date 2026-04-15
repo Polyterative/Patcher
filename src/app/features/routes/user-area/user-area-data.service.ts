@@ -78,6 +78,8 @@ export class UserAreaDataService extends SubManager {
   readonly filteredPatchesData$: Observable<Patch[] | undefined>;
   readonly filteredPatchesCount$: Observable<number>;
   readonly pagedPatchesData$: Observable<Patch[] | undefined>;
+  readonly filteredManualsData$: Observable<DbModule[] | undefined>;
+  readonly filteredCommentsData$: Observable<DbComment[] | undefined>;
   readonly allPatchTags$: Observable<string[]>;
 
   //
@@ -98,7 +100,7 @@ export class UserAreaDataService extends SubManager {
   readonly hasSearchQuery$ = this.searchQuery$.pipe(
     map((query) => query.length > 0)
   );
-  private discoveryConnected = false;
+  private discoverySearchDestroy$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,
@@ -175,6 +177,20 @@ export class UserAreaDataService extends SubManager {
       this.patchesPagination.take$,
     ]).pipe(
       map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+    );
+
+    this.filteredManualsData$ = combineLatest([
+      this.manualsData$,
+      this.searchQuery$
+    ]).pipe(
+      map(([manuals, query]) => this.filterManuals(manuals, query))
+    );
+
+    this.filteredCommentsData$ = combineLatest([
+      this.commentsData$,
+      this.searchQuery$
+    ]).pipe(
+      map(([comments, query]) => this.filterComments(comments, query))
     );
 
     this.allPatchTags$ = this.patchesData$.pipe(
@@ -352,18 +368,32 @@ export class UserAreaDataService extends SubManager {
   }
 
   connectDiscovery(searchQuery$: Observable<string>): void {
-    if (this.discoveryConnected) {
-      return;
-    }
-
-    this.discoveryConnected = true;
+    this.disconnectDiscovery();
     searchQuery$.pipe(
       map((query) => query.trim()),
       tap((query) => this._searchQuery$.next(query)),
       filter((query) => query.length > 0),
       tap(() => this.discoveryTipService.recordAction('user-area.search-used')),
+      takeUntil(this.discoverySearchDestroy$),
       takeUntil(this.destroy$)
     ).subscribe();
+  }
+
+  disconnectDiscovery(): void {
+    this.discoverySearchDestroy$.next();
+    this.discoverySearchDestroy$.complete();
+    this.discoverySearchDestroy$ = new Subject<void>();
+  }
+
+  resetUiState(): void {
+    this.disconnectDiscovery();
+    this._searchQuery$.next('');
+    this.activeTagFilter$.next(null);
+  }
+
+  override ngOnDestroy(): void {
+    this.disconnectDiscovery();
+    super.ngOnDestroy();
   }
 
   private bindPageEvent(
@@ -439,5 +469,36 @@ export class UserAreaDataService extends SubManager {
     }
 
     return racks.filter((rack) => matchesSearchQuery(query, rack.name, rack.description));
+  }
+
+  private filterManuals(
+    manuals: DbModule[] | undefined,
+    query: string
+  ): DbModule[] | undefined {
+    if (!manuals) {
+      return undefined;
+    }
+
+    return manuals.filter((manual) => matchesSearchQuery(
+      query,
+      manual.name,
+      manual.manufacturer?.name,
+      manual.description
+    ));
+  }
+
+  private filterComments(
+    comments: DbComment[] | undefined,
+    query: string
+  ): DbComment[] | undefined {
+    if (!comments) {
+      return undefined;
+    }
+
+    return comments.filter((comment) => matchesSearchQuery(
+      query,
+      comment.content,
+      comment.profile?.username
+    ));
   }
 }

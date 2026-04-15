@@ -87,6 +87,7 @@ Key paths:
 - Primary branch: `develop`. Release branch: `production`.
 - Use helper scripts such as `pnpm switch:develop`, `pnpm switch:production`, and `pnpm merge:dev-to-prod`.
 - Commit format: `<type>(<scope>): <description>` in one line, imperative, lowercase, no trailing period.
+- Do not add `Co-authored-by` trailers or Copilot attribution lines to commits in this repository.
 - Ask before committing unless the user explicitly requested a commit.
 - Never push unless the user explicitly requested it.
 - Never run `release:*` from `develop`.

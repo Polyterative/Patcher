@@ -23,10 +23,28 @@
 
     @if ({
       data: (filteredComments$ | async),
+      hasSearchQuery: (dataService.hasSearchQuery$ | async),
+      activeFilter: (activeFilter$ | async),
     }; as bag) {
-      <app-comments-item-block [data]="bag.data"
-                               [viewConfig]="commentViewConfig"
-      ></app-comments-item-block>
+      @if (bag.data && bag.data.length > 0) {
+        <app-comments-item-block [data]="bag.data"
+                                 [viewConfig]="commentViewConfig"
+        ></app-comments-item-block>
+      } @else {
+        <div fxFlex="100">
+          <mat-card-subtitle fxLayoutAlign="center center">
+            @if (bag.hasSearchQuery && bag.activeFilter !== null) {
+              No comments match the current search and type filter.
+            } @else if (bag.hasSearchQuery) {
+              No comments match the current search.
+            } @else if (bag.activeFilter !== null) {
+              No comments match the selected type.
+            } @else {
+              No comments yet.
+            }
+          </mat-card-subtitle>
+        </div>
+      }
     }
     @if ((dataService.commentsCount$ | async) > 10) {
       <mat-paginator
