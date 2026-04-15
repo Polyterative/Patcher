@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  OnDestroy,
   OnInit
 } from '@angular/core';
 import {
@@ -36,7 +37,7 @@ import { UrlCreatorService } from 'src/app/features/backend/url-creator.service'
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class UserAreaRootComponent extends SubManager implements OnInit {
+export class UserAreaRootComponent extends SubManager implements OnInit, OnDestroy {
   readonly formTypes = FormTypes;
   readonly globalSearchControl = new UntypedFormControl('');
   readonly globalSearchQuery$ = this.globalSearchControl.valueChanges.pipe(
@@ -99,6 +100,11 @@ export class UserAreaRootComponent extends SubManager implements OnInit {
     }
     
     this.dataService.connectDiscovery(this.globalSearchQuery$);
+  }
+
+  override ngOnDestroy(): void {
+    this.dataService.resetUiState();
+    super.ngOnDestroy();
   }
 
   copyPublicProfileLink(username: string): void {

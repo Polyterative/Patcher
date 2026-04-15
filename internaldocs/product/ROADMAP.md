@@ -46,6 +46,23 @@ Dedicated page per manufacturer. Backend query already exists — this is a UI-o
 when:** Price Hub lands → becomes a price reference page per brand. Manufacturer Accounts land → becomes a verified,
 managed brand page.
 
+**Immediate usefulness:** this page should not be treated as a thin directory stub. Even before manufacturer claims exist,
+it can act as a useful public home for the brand:
+
+- official website / contact / support links
+- brand description and logo
+- module catalogue grouped in a readable, browsable way
+- a clear path for users to report module data issues or find help
+
+For smaller manufacturers, this may be the first genuinely structured web presence they have. For larger ones, it is still
+valuable as an SEO-friendly and user-context-rich reference layer around their catalogue.
+
+**Upgrades when later layers ship:**
+
+- Manufacturer verification → page becomes an official, editable brand surface
+- Manufacturer updates/news → page gains a living "what's new / what changed" section
+- Manufacturer analytics → page becomes the top of a private dashboard for the verified brand
+
 #### Store Links per Module *(Price Hub prerequisite)*
 
 A single canonical "buy new" URL per module (e.g. Thomann, Perfect Circuit). Useful immediately as a convenience on the
@@ -243,10 +260,106 @@ dependency.
 
 #### Manufacturer Accounts
 
-Role-based auth expansion; manufacturers claim and manage their own modules. Verified accounts can submit **official
-MSRP** as a canonical price data point, distinguishing it from community-reported and scraped prices (feeds into the
+Role-based auth expansion; manufacturers claim and manage their brand surface inside Patcher. This is the transition from
+"directory entry" to **official manufacturer presence**. Verified accounts can submit **official MSRP** as a canonical
+price data point, distinguishing it from community-reported and scraped prices (feeds into the
 [Price Hub](#tier-12--module-price-hub-read-only-in-tier-1-write-path-requires-tier-1-profiles) label hierarchy).
 Blocked on the [Data Integrity vs User Freedom](./PRINCIPLES.md#data-integrity-vs-user-freedom) philosophy decision.
+
+**Core capabilities once verified:**
+
+- claim and verify the manufacturer page
+- edit brand-owned fields such as logo, website, bio, support email/contact links, social links, and official store links
+- manage featured modules on the brand page
+- submit official announcements / release notes / important updates tied to the manufacturer page
+- submit official MSRP and other clearly-labelled manufacturer-owned commercial fields
+
+**Verification matters here because** these controls imply authority. Users need a clear distinction between community data
+and official manufacturer-provided information.
+
+**Sequencing note:** do not treat all manufacturer features as one bundle. The intended order is:
+
+1. public manufacturer page quality
+2. verification / claim
+3. bounded control over official fields
+4. prove that the page is worth maintaining
+5. add lightweight insight or distribution tooling only after the control layer is stable
+
+This matters because the strategy fails if Patcher jumps to dashboards or APIs before brands trust the public surface.
+
+**Design direction:** this should be useful to two very different manufacturer profiles:
+
+1. **Established brands** that already have a real website and want a structured discovery layer plus better downstream
+   module context.
+2. **Small brands / boutique builders** that may be happy to pay for a ready-made, credible public presence instead of
+   building and maintaining a fuller website stack.
+
+**Operational prerequisites before launch:**
+
+- define objective verification criteria publicly
+- define claim dispute handling and revocation path
+- define dormancy / re-verification lifecycle
+- define bounded manufacturer-controlled fields before edit access exists
+- add auditability for manufacturer-edited fields
+
+**Open questions:** What is the minimum acceptable verification flow? Which manufacturer-owned fields bypass review
+entirely, and which still need audit logs or moderation? Does one manufacturer map to one verified account, or can teams
+and delegated editors exist later?
+
+#### Manufacturer Updates / Release Surface
+
+A verified manufacturer should be able to publish a small amount of **official, high-signal brand communication** directly
+on their manufacturer page. This is not a general social feed. The goal is practical product communication:
+
+- newly released modules
+- recently updated modules or manuals
+- important product notices
+- featured modules the brand wants to highlight right now
+
+This creates a reason for the manufacturer page to stay alive after the initial import and gives users a better answer to
+"what changed recently with this brand?" than external social posts alone.
+
+**UI direction:** keep this as a compact, structured section on the manufacturer page rather than a full blogging system.
+Each entry should be skimmable and strongly tied to modules or brand-level updates.
+
+**Boundary:** no vanity engagement mechanics. No likes, follows, or creator-feed behavior. This is a utility/news layer,
+not the main manufacturer wedge.
+
+**Constraint direction:** if this ships, it should launch with hard limits (low posting frequency, short entries, clear
+separation from community activity, and a reporting path for spammy use). Without those constraints it turns into a
+marketing feed that conflicts with the "not a social network" principle.
+
+**Open questions:** Should updates be time-limited cards, permanent changelog-style entries, or both? Do module updates
+reuse the general activity system or live in a manufacturer-owned parallel surface?
+
+#### Manufacturer Analytics
+
+Verified manufacturers need a way to understand how their catalogue is performing inside Patcher without violating user
+privacy. The value proposition is not generic "analytics"; it is **audience understanding in the exact context where
+people explore, collect, patch, and plan racks**.
+
+Analytics are strategically important, but they are **not** the first thing to build. They only become credible once
+manufacturer pages are trusted, verification is stable, and Patcher has enough volume for the aggregates to be meaningful.
+Until then, analytics remain a hypothesis rather than a launch requirement.
+
+**High-value early signals:**
+
+- manufacturer page views
+- module page views
+- outbound clicks to official site / store links
+- how many users have at least one of the brand's modules in their collection
+- how many public racks include the brand
+- how many public patches use the brand
+- relative popularity of modules within the brand's own catalogue
+
+**Boundary:** keep this aggregate and anonymised. No user-level ownership exports, no exposure of private racks, and no
+"here are the people who own your module" surface.
+
+**Launch caution:** do not ship this in the first manufacturer cohort unless the underlying traffic and privacy model are
+already proven. Low-confidence analytics create support burden and false expectations faster than they create value.
+
+**Why it matters strategically:** if Patcher reaches sufficient scale, this becomes one of the clearest manufacturer-paid
+features because it helps brands learn about adoption and module usage without requiring Patcher to become an ad platform.
 
 ---
 
@@ -288,6 +401,70 @@ the public catalogue, manufacturer pages, patch metadata, and other structured p
 
 **Open questions:** What public license/terms govern reuse? Is the export a bulk snapshot, a query API, or both? Which
 public UGC types are safe to include by default? How are attribution, takedown, and abuse/rate controls handled?
+
+#### Manufacturer Source of Truth / Syndication Layer
+
+Long-horizon B2B direction: let verified manufacturers use Patcher as the **structured source of truth** for their module
+catalogue, then syndicate that data outward to other destinations. The value is not merely "having a page on Patcher" but
+"update official product data once, keep the ecosystem consistent."
+
+**Problem this solves:**
+
+- module specs drift across official sites, retailers, community databases, and old manuals
+- panel variants, revision notes, and lifecycle state are often fragmented
+- small manufacturers especially may not have strong catalogue tooling of their own
+
+**Possible scope if this ever ships:**
+
+1. Manufacturer-owned canonical fields for module-level records (within the existing integrity boundaries)
+2. Data freshness / revision tracking for official module information
+3. Structured export or sync to external destinations such as official sites, store platforms, or retailer/distributor
+   feeds
+4. Clear distinction between manufacturer-owned official data and community/contextual data
+
+**Strategic value:** this is one of the strongest plausible manufacturer-paid offerings because it saves recurring
+operational effort rather than selling presence alone. It also connects naturally to support/contact surfaces, lifecycle
+communication, and any future manufacturer API/widgets.
+
+**Boundary:** this is not a commitment to become a full ERP, ecommerce backend, or generic CMS. The useful lane is
+structured Eurorack catalogue stewardship and syndication, not all business operations.
+
+**Open questions:** Which exact fields are manufacturer-canonical vs community-controlled? Is the first outward path an
+embed, an export file, a store integration, or a retailer-ready feed? At what scale does this become worth the increased
+uptime/versioning/support burden?
+
+#### Manufacturer API / Embedded Widgets
+
+Beyond the public export layer, there is a separate B2B opportunity: give verified manufacturers structured ways to **use
+Patcher as technical infrastructure**.
+
+Possible forms:
+
+1. **Authenticated manufacturer API** for reading/writing manufacturer-owned data such as profile fields, official links,
+   MSRP, featured modules, and update entries.
+2. **Embeddable widgets** for official sites — module cards, panel galleries, "used in public patches," or "add to rack"
+   surfaces.
+3. **Lightweight sync workflows** so a small manufacturer can update data once and have both Patcher and their own public
+   surface stay consistent.
+
+This is strategically different from the public dataset export:
+
+- the **public export** helps the wider ecosystem reuse public information
+- the **manufacturer API** helps brands manage their own official presence and integrate Patcher into their workflow
+
+**Refinement:** this is a future strategic option, not an automatic next step. Pursuing it would move Patcher closer to
+being infrastructure with stronger uptime, versioning, and support expectations. That may be worth doing later, but it is
+not the same thing as shipping manufacturer pages or verification.
+
+**Practical first step:** if this path is ever tested, start with one narrow distribution primitive — likely a simple
+official module card or manufacturer catalogue embed — before designing a broader API surface.
+
+**Why it matters strategically:** this is the clearest path to positioning Patcher as a technical provider rather than only
+as a consumer-facing app. It is especially attractive for small manufacturers that lack strong internal web/catalogue
+tooling.
+
+**Open questions:** Does the first step ship as widgets or API? Which actions are safe to automate? Is this a paid
+manufacturer-plan feature from day one, or a relationship-building tool first?
 
 ---
 
