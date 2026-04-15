@@ -168,7 +168,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         tap(() => {
           const el = this.graphContainer?.nativeElement;
           if (el) {
-            el.style.height = el.offsetHeight + 'px';
+            el.style.height = `${el.offsetHeight  }px`;
           }
         }),
         tap(() => this.cancelProgressiveReveal()),

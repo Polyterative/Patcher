@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable, OnDestroy } from '@angular/core';
 import { MediaObserver } from '@angular/flex-layout';
 import { UntypedFormControl } from '@angular/forms';
 import {
@@ -17,7 +17,7 @@ import { AppFormUtils } from "src/app/shared-interproject/components/@smart/mat-
 
 
 @Injectable()
-export class AppStateService {
+export class AppStateService implements OnDestroy {
   
   /*
    *  this one is needed in service form to be able to access it from the HTML

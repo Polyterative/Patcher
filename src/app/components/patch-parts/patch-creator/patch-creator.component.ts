@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Inject,
-  OnInit
+  OnInit, OnDestroy
 } from '@angular/core';
 import {
   UntypedFormControl,
@@ -44,7 +44,7 @@ export interface PatchCreatorInModel {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchCreatorComponent implements OnInit {
+export class PatchCreatorComponent implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   

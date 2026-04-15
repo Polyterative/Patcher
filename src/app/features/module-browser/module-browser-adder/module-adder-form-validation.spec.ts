@@ -149,7 +149,7 @@ describe('ModuleAdderDataService - Form Validation', () => {
   
   it('manual is invalid when URL exceeds 999 chars', () => {
     const {service} = build();
-    service.formData.manual.control.setValue('https://x.com/' + 'a'.repeat(990));
+    service.formData.manual.control.setValue(`https://x.com/${  'a'.repeat(990)}`);
     expect(service.formData.manual.control.valid).toBeFalse();
   });
   

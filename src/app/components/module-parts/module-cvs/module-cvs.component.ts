@@ -4,7 +4,7 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output, OnDestroy
 } from '@angular/core';
 import {
   fadeInOnEnterAnimation,
@@ -45,7 +45,7 @@ import { DbModule } from 'src/app/models/module';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleCVsComponent implements OnInit {
+export class ModuleCVsComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   /** When set, CV clicks will include this instance_id in the emitted CVwithModule */
   @Input() instanceId: number | undefined;

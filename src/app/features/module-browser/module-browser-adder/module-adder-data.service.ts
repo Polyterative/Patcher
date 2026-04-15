@@ -246,7 +246,7 @@ export class ModuleAdderDataService extends SubManager {
         ]),
         type:     FormTypes.SELECT
       }
-    }
+    };
     
     
     this.formGroup = new UntypedFormGroup({

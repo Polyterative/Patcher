@@ -36,7 +36,7 @@ export class SeoAndUtilsService {
         ...data
       };
       
-      const newTitle: string = appArea + ' | ' + this.defaults.title;
+      const newTitle: string = `${appArea  } | ${  this.defaults.title}`;
       const canonicalUrl = newSeoData.url || this.getCurrentUrl();
       this.setTitle(newTitle);
       this.updateCanonicalLink(canonicalUrl);

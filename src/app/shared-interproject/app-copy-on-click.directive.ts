@@ -30,7 +30,7 @@ export class CopyableDirective {
     const textToCopy = this.el.nativeElement.innerText;
     
     this.copyToClipboard(textToCopy).then(() => {
-      this.snackBar.open('Copied to clipboard: ' + textToCopy, undefined, {
+      this.snackBar.open(`Copied to clipboard: ${  textToCopy}`, undefined, {
         duration: 3000,
         verticalPosition: 'bottom',
         horizontalPosition: 'center',

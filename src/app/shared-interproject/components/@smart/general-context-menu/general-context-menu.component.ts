@@ -32,8 +32,8 @@ export class GeneralContextMenuComponent extends SubManager implements OnInit {
         event.preventDefault();
         
         this.dataService.positionData$.next({
-          x: event.clientX + 'px',
-          y: event.clientY + 'px'
+          x: `${event.clientX  }px`,
+          y: `${event.clientY  }px`
         });
         
         

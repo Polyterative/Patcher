@@ -30,8 +30,8 @@
   >
   </lib-mat-form-entity>
   
-  @if (dataService.fields.password.control.value != '' && dataService.fields.passwordAgain.control.value.length > 0 &&
-  dataService.fields.password.control.value != dataService.fields.passwordAgain.control.value) {
+  @if (dataService.fields.password.control.value !== '' && dataService.fields.passwordAgain.control.value.length > 0 &&
+  dataService.fields.password.control.value !== dataService.fields.passwordAgain.control.value) {
     <mat-error
     >Repeated password should be the same as original password
     </mat-error>
@@ -41,8 +41,8 @@
                             innerFlex="auto"
                             theme="positive"
                             icon="person_add"
-                            [error]="(dataService.fields.username.control.invalid||dataService.fields.email.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value!=''&&
-dataService.fields.password.control.value!=dataService.fields.passwordAgain.control.value)"
+                            [error]="(dataService.fields.username.control.invalid||dataService.fields.email.control.invalid||dataService.fields.password.control.invalid||dataService.fields.passwordAgain.control.invalid)||(dataService.fields.password.control.value !== '' &&
+dataService.fields.password.control.value !== dataService.fields.passwordAgain.control.value)"
                             (click$)="dataService.mailSignClick$.next()"
   >Sign up
   </app-brand-primary-button>

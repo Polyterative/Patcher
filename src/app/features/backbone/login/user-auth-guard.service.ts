@@ -43,7 +43,7 @@ export class UserAuthGuard {
       tap((user) => {
         if (!user) {
           // this.dialog.open(LoginProposalComponent);
-          let snack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
+          const snack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
             duration: 10000,
             panelClass: 'snack-info'
           });
@@ -68,4 +68,4 @@ export class UserAuthGuard {
 
 export const AuthGuard: CanActivateFn = (next: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   return inject(UserAuthGuard).canActivate(next, state);
-}
+};

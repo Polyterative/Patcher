@@ -39,7 +39,7 @@ describe('ModuleCVItemComponent - Instance-Aware Highlighting', () => {
   /** Helper: build a CVConnectionEntity */
   function makeCVEntity(cvId: number, instanceId: number | undefined, kind: 'in' | 'out'): CVConnectionEntity {
     return {
-      cv: {id: cvId, name: 'cv-' + cvId, module: {id: 10, name: 'Mod'}, instance_id: instanceId} as any,
+      cv: {id: cvId, name: `cv-${  cvId}`, module: {id: 10, name: 'Mod'}, instance_id: instanceId} as any,
       kind
     };
   }

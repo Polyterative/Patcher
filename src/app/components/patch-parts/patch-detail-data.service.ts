@@ -222,7 +222,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         filter(_ => !!this.singlePatchData$.value),
         filter(_ => this.formData.description.control.valid),
-        filter(_ => !!this.formData.description.control.value || this.formData.description.control.value == ''),
+        filter(_ => !!this.formData.description.control.value || this.formData.description.control.value === ''),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(input => this.singlePatchData$.value.description = input);
@@ -282,7 +282,7 @@ export class PatchDetailDataService implements OnDestroy {
         filter(x => !!x),
         // check if patch is owned by logged-in user
         withLatestFrom(this.backend.auth.getUserSession$()),
-        filter(([patch, user]) => !!patch && !!user && patch.author.id == user.id),
+        filter(([patch, user]) => !!patch && !!user && patch.author.id === user.id),
         // check data integrity and if ids exist
         filter(([patch, user]) => !!patch && !!patch.id && user && !!user.id),
         take(1),
@@ -291,7 +291,7 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(([patch, user]) => {
         // open editing panel only if patch is owned by logged-in user
         this.patchEditingPanelOpenState$.next(
-          patch.author.id == user.id
+          patch.author.id === user.id
         );
         
       });

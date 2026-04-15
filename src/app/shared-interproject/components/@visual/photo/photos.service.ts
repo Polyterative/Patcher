@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 interface UnsplashResponse {
@@ -9,7 +9,7 @@ interface UnsplashResponse {
 }
 
 @Injectable()
-export class PhotosService {
+export class PhotosService implements OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   public readonly url$ = new BehaviorSubject<string>('');
   public readonly loadUnsplash$ = new Subject<string>();

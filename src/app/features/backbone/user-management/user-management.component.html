@@ -90,7 +90,7 @@
                 }
               }
               <!-- Password section: only shown for pure email/password accounts (no OAuth providers linked) -->
-              @if ((!bag.userProfile.auth_providers || !bag.userProfile.auth_providers.some(p => p !== 'email')) && (userManagementService.showPasswordForm$ | async)) {
+              @if (isEmailOnlyAccount(bag.userProfile.auth_providers) && (userManagementService.showPasswordForm$ | async)) {
                 <form class="col gap1 section-surface"
                       [formGroup]="passwordForm"
                       (ngSubmit)="submitPasswordChange()"
@@ -142,7 +142,7 @@
                     </button>
                   </div>
                 </form>
-              } @else if (!bag.userProfile.auth_providers || !bag.userProfile.auth_providers.some(p => p !== 'email')) {
+              } @else if (isEmailOnlyAccount(bag.userProfile.auth_providers)) {
                 <div class="row gap1 section-surface" fxLayoutAlign="start center">
                   <app-label-value-showcase label="Password"
                                             fxFlex="grow"

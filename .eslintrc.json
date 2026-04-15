@@ -8,6 +8,9 @@
       "files":         [
         "*.ts"
       ],
+      "plugins":       [
+        "@typescript-eslint"
+      ],
       "parserOptions": {
         "project":              [
           "tsconfig.json",
@@ -36,7 +39,11 @@
           "error",
           {
             "type":   "attribute",
-            "prefix": "app",
+            "prefix": [
+              "app",
+              "lib",
+              "infoBox"
+            ],
             "style":  "camelCase"
           }
         ],
@@ -44,14 +51,22 @@
           "error",
           {
             "type":   "element",
-            "prefix": "app",
+            "prefix": [
+              "app",
+              "lib",
+              "flexbox"
+            ],
             "style":  "kebab-case"
           }
         ],
         "eqeqeq":                             [
           "error",
           "smart"
-        ]
+        ],
+        "@angular-eslint/prefer-inject":      "off",
+        "@angular-eslint/prefer-standalone":  "off",
+        "@angular-eslint/no-empty-lifecycle-method": "off",
+        "@angular-eslint/no-input-rename":    "off"
       }
     },
     {
@@ -67,7 +82,9 @@
           {
             "allowNullOrUndefined": true
           }
-        ]
+        ],
+        "@angular-eslint/template/prefer-control-flow": "off",
+        "@angular-eslint/template/no-negated-async": "off"
       }
     }
   ]

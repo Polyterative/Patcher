@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   ActivatedRoute,
   Router
@@ -14,7 +14,7 @@ import { fadeAnimation } from './fade.animation';
   animations: [fadeAnimation],
   standalone: false
 })
-export class UranusComponent {
+export class UranusComponent implements OnInit {
   public title?: string;
   
   constructor(private route: ActivatedRoute, private router: Router) {
