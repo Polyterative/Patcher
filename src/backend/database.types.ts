@@ -1078,4 +1078,4 @@ export const Constants = {
       "user module possession": ["HAS", "WANTS", "SELLS"],
     },
   },
-} as const
+} as const;

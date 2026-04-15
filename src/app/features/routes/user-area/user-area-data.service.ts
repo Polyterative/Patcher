@@ -270,7 +270,7 @@ export class UserAreaDataService extends SubManager {
         map(x => x.sort((a, b) => a.name.localeCompare(b.name))),
         takeUntil(this.destroy$)
       )
-      .subscribe(x => this.manualsData$.next(x))
+      .subscribe(x => this.manualsData$.next(x));
 
     combineLatest([
       this.modulesData$,
@@ -338,7 +338,7 @@ export class UserAreaDataService extends SubManager {
         }),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => this.updatePatchesData$.next())
+      .subscribe(() => this.updatePatchesData$.next());
     
     this.addRack$
       .pipe(

@@ -1,7 +1,7 @@
 import {
   ChangeDetectorRef,
   Pipe,
-  PipeTransform
+  PipeTransform, OnDestroy
 } from '@angular/core';
 import {
   UntypedFormControl,
@@ -18,7 +18,7 @@ type LocalType = UntypedFormControl | UntypedFormGroup;
   pure: false,
   standalone: true
 })
-export class FormValidPipe implements PipeTransform {
+export class FormValidPipe implements PipeTransform, OnDestroy {
   valid = false;
   subscribed = false;
   

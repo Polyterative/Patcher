@@ -15,5 +15,5 @@ export function derivePanelLabel(filename: string, description: string | null | 
       return segments[i].charAt(0).toUpperCase() + segments[i].slice(1).toLowerCase();
     }
   }
-  return 'Panel ' + (index + 1);
+  return `Panel ${  index + 1}`;
 }

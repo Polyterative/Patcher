@@ -17,7 +17,7 @@ import { map } from 'rxjs/operators';
 export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValueAccessor {
 
   writeValue(obj: number[]): void {
-    this.checkboxGroupForm.setValue(this.getDay(a => Array.isArray(obj) && obj.some(c => 'A' + c === a)));
+    this.checkboxGroupForm.setValue(this.getDay(a => Array.isArray(obj) && obj.some(c => `A${  c}` === a)));
   }
 
   @Input()
@@ -44,7 +44,7 @@ export class DaysInWeekPickerComponent implements OnInit, OnDestroy, ControlValu
                                                               .map((_, i) => i >= 6 ? 0 : (i + 1))
                                                               .map(i => ({
                                                                 name: new Intl.DateTimeFormat('en', { weekday: 'short' }).format(new Date(2017, 0, 1 + i)),
-                                                                id:   'A' + i
+                                                                id:   `A${  i}`
                                                               }));
 
   public checkboxGroupForm: FormGroup;

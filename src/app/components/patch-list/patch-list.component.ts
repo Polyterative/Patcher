@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input
+  Input, OnInit
 } from '@angular/core';
 import {
   fadeInOnEnterAnimation,
@@ -47,7 +47,7 @@ import { LocalDataFilterService } from '../shared-atoms/local-data-filter/local-
   viewProviders: [LocalDataFilterService],
   standalone: false
 })
-export class PatchListComponent extends SubManager {
+export class PatchListComponent extends SubManager implements OnInit {
   @Input() readonly data$: Observable<PatchList>;
   @Input() readonly showSearch = false;
   @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;

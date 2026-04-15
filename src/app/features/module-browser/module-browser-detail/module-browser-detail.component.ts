@@ -268,12 +268,12 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
           takeUntil(this.destroyEvent$)
         )
         .subscribe(data => {
-          let rawTags = data.tags.map(x => x.tag.name).filter(x => !!x);
+          const rawTags = data.tags.map(x => x.tag.name).filter(x => !!x);
           
           const ins  = data.ins.map(x => x.name);
           const outs = data.outs.map(x => x.name);
           
-          let keywords = [
+          const keywords = [
             'eurorack',
             'module',
             data.manufacturer.name,
@@ -289,7 +289,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
             .map(x => x.trim())
             .join(', ');
           
-          let tagsClean = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
+          const tagsClean = rawTags.map(x => x.replace(/[^a-z0-9]/g, '')).filter(x => !!x).map(x => x.trim()).join(', ');
           
           const descParts: string[] = [];
           if (data.description) { descParts.push(data.description.trim()); }

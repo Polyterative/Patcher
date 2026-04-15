@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit, OnDestroy
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
@@ -42,7 +42,7 @@ const JSONLD_SCRIPT_ID = 'patch-jsonld';
   ],
   standalone: false
 })
-export class PatchBrowserDetailViewComponent extends SubManager implements OnInit {
+export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
 
   @Input() ignoreSeo = false;
   @Input() readonly viewConfig: PatchMinimalViewConfig = {

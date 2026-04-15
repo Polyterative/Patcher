@@ -67,7 +67,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         done();
       },
       error: (err) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });
@@ -112,7 +112,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         done();
       },
       error: (err) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });
@@ -170,7 +170,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         done();
       },
       error: (err) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });
@@ -235,7 +235,7 @@ describe('SupabaseService - Patch Privacy Integration', () => {
         done();
       },
       error: (err) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });
@@ -280,7 +280,7 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
         done();
       },
       error: (err: any) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });
@@ -328,7 +328,7 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
         done();
       },
       error: (err: any) => {
-        fail('Should not error: ' + err);
+        fail(`Should not error: ${  err}`);
         done();
       }
     });

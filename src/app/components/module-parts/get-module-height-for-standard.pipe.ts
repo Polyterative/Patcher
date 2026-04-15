@@ -15,8 +15,8 @@ import { Standard } from '../../models/standard';
 export class GetModuleHeightForStandardPipe implements PipeTransform {
   
   transform(standard: Standard): number {
-    let visuallyFound3UHeight: number = 25.4;
-    let visuallyFound1UHeight: number = 7.6;
-    return (standard.id == 0) || (standard.id == 1000) ? visuallyFound3UHeight : visuallyFound1UHeight;
+    const visuallyFound3UHeight: number = 25.4;
+    const visuallyFound1UHeight: number = 7.6;
+    return (standard.id === 0) || (standard.id === 1000) ? visuallyFound3UHeight : visuallyFound1UHeight;
   }
 }
