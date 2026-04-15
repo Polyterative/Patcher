@@ -18,29 +18,31 @@
         </app-brand-primary-button>
       </div>
       <mat-divider inset="true"></mat-divider>
-      @if ((dataService.rackData$|async); as data) {
+      @if ((dataService.pagedRacksData$|async); as data) {
         @if (data.length > 0) {
           <app-rack-list fxFlex="grow"
-                         [data$]="dataService.rackData$"
+                         [data$]="dataService.pagedRacksData$"
                          [showSearch]="false"
-                         [externalSearchQuery]="globalSearchQuery"
                          [viewConfig]="rackMinimalViewConfig"
           ></app-rack-list>
         } @else {
           <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">It looks like you haven't created any racks
-              yet.
-              Try adding your first!
+            <mat-card-subtitle fxLayoutAlign="center center">
+              @if (globalSearchQuery.trim()) {
+                No racks match "{{ globalSearchQuery.trim() }}".
+              } @else {
+                It looks like you haven't created any racks yet. Try adding your first!
+              }
             </mat-card-subtitle>
           </div>
         }
       }
       
-      @if ((dataService.racksCount$ | async) > 10) {
+      @if ((dataService.filteredRacksCount$ | async) > dataService.racksPagination.take$.value) {
         <mat-paginator
           [pageSize]="dataService.racksPagination.take$.value"
           [pageSizeOptions]="[10, 20, 50]"
-          [length]="dataService.racksCount$ | async"
+          [length]="dataService.filteredRacksCount$ | async"
           (page)="dataService.racksPageEvent$.next($event)"
           showFirstLastButtons
         ></mat-paginator>

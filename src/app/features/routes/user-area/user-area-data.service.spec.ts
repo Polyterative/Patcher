@@ -13,13 +13,20 @@ describe('UserAreaDataService', () => {
       GET: {
         currentUserComments: jasmine.createSpy('currentUserComments').and.returnValue(of({data: [{id: 1}], count: 1})),
         currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([
-          {id: 2, name: 'B module', manualURL: 'https://b'},
-          {id: 1, name: 'A module', manualURL: 'https://a'},
+          {id: 2, name: 'Belgrad', manufacturer: {name: 'Xaoc Devices'}, description: 'Dual peak filter', manualURL: 'https://b'},
+          {id: 1, name: 'Dixie II+', manufacturer: {name: 'Intellijel'}, description: 'Precision analog VCO', manualURL: 'https://a'},
           {id: 3, name: 'No Manual', manualURL: ''}
         ])),
-        userPatchesPaginated: jasmine.createSpy('userPatchesPaginated').and.returnValue(of({data: [{id: 10}], count: 1})),
-        userRacksPaginated: jasmine.createSpy('userRacksPaginated').and.returnValue(of({data: [{id: 20}], count: 1})),
       }
+      ,
+      get: {
+        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([
+          {id: 10, name: 'Belgrad Drone Study', description: 'Ambient feedback patch', tags: ['ambient', 'filter']},
+        ])),
+        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([
+          {id: 20, name: 'Studio Performance Case', description: 'Main Xaoc and Intellijel rack'},
+        ])),
+      },
     };
     
     const dialog = {
@@ -47,8 +54,8 @@ describe('UserAreaDataService', () => {
     
     expect(backend.GET.currentUserComments).toHaveBeenCalledWith(0, 9);
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith();
-    expect(backend.GET.userPatchesPaginated).toHaveBeenCalledWith(0, 9);
-    expect(backend.GET.userRacksPaginated).toHaveBeenCalledWith(0, 9);
+    expect(backend.get.currentUserPatches).toHaveBeenCalledWith();
+    expect(backend.get.currentUserRacks).toHaveBeenCalledWith();
     
     expect(service.commentsData$.value as any).toEqual([{id: 1}]);
     expect(service.modulesData$.value?.length).toBe(3);
@@ -62,7 +69,7 @@ describe('UserAreaDataService', () => {
     service.updateManualsData$.next();
     
     expect(backend.GET.currentUserModules).toHaveBeenCalledWith(false, true);
-    expect(service.manualsData$.value?.map(x => x.name)).toEqual(['A module', 'B module']);
+    expect(service.manualsData$.value?.map(x => x.name)).toEqual(['Belgrad', 'Dixie II+']);
   });
   
   it('opens patch creator and triggers patch refresh', () => {
@@ -132,6 +139,118 @@ describe('UserAreaDataService', () => {
       commentsCount: 1,
       totalCount: 3,
       hasSearchQuery: true
+    });
+  });
+
+  it('filters modules, racks, and patches before paginating when search is active', () => {
+    const {service} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.modulesPagination.skip$.next(10);
+    service.racksPagination.skip$.next(10);
+    service.patchesPagination.skip$.next(10);
+
+    service.modulesData$.next([
+      ...Array.from({length: 10}, (_, index) => ({
+        id: index + 1,
+        name: `Utility ${ index + 1 }`,
+        manufacturer: {name: 'Generic'},
+        description: 'Support module'
+      })),
+      {
+        id: 99,
+        name: 'Belgrad',
+        manufacturer: {name: 'Xaoc Devices'},
+        description: 'Dual peak filter'
+      }
+    ] as any);
+
+    service.rackData$.next([
+      ...Array.from({length: 10}, (_, index) => ({
+        id: index + 1,
+        name: `Rack ${ index + 1 }`,
+        description: 'Travel case'
+      })),
+      {
+        id: 199,
+        name: 'Belgrade Performance Case',
+        description: 'Dedicated filter showcase'
+      }
+    ] as any);
+
+    service.patchesData$.next([
+      ...Array.from({length: 10}, (_, index) => ({
+        id: index + 1,
+        name: `Patch ${ index + 1 }`,
+        description: 'Utility patch',
+        tags: ['utility']
+      })),
+      {
+        id: 299,
+        name: 'Belgrad Resonance Study',
+        description: 'Ambient drone patch',
+        tags: ['ambient', 'filter']
+      }
+    ] as any);
+
+    searchQuery$.next('belgrade');
+
+    expect(service.modulesPagination.skip$.value).toBe(0);
+    expect(service.racksPagination.skip$.value).toBe(0);
+    expect(service.patchesPagination.skip$.value).toBe(0);
+
+    service.filteredModulesData$.subscribe((modules) => {
+      expect(modules?.map((module) => module.name)).toEqual(['Belgrad']);
+    });
+
+    service.pagedRacksData$.subscribe((racks) => {
+      expect(racks?.map((rack) => rack.name)).toEqual(['Belgrade Performance Case']);
+    });
+
+    service.pagedPatchesData$.subscribe((patches) => {
+      expect(patches?.map((patch) => patch.name)).toEqual(['Belgrad Resonance Study']);
+    });
+  });
+
+  it('combines patch tag filtering with global search before counting and paging', () => {
+    const {service} = build();
+    const searchQuery$ = new Subject<string>();
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    service.patchesPagination.skip$.next(10);
+    service.patchesData$.next([
+      ...Array.from({length: 10}, (_, index) => ({
+        id: index + 1,
+        name: `Patch ${ index + 1 }`,
+        description: 'Sequencer workout',
+        tags: ['sequence']
+      })),
+      {
+        id: 400,
+        name: 'Belgrad Drone Study',
+        description: 'Long-form ambient filter patch',
+        tags: ['ambient', 'filter']
+      },
+      {
+        id: 401,
+        name: 'Belgrad Techno Hit',
+        description: 'Percussive filter ping',
+        tags: ['techno', 'filter']
+      }
+    ] as any);
+
+    service.activeTagFilter$.next('ambient');
+    searchQuery$.next('belgrade');
+
+    expect(service.patchesPagination.skip$.value).toBe(0);
+
+    service.filteredPatchesCount$.subscribe((count) => {
+      expect(count).toBe(1);
+    });
+
+    service.pagedPatchesData$.subscribe((patches) => {
+      expect(patches?.map((patch) => patch.id)).toEqual([400]);
     });
   });
 });
