@@ -116,7 +116,7 @@ export class SupabaseQueriesService {
                               ${ QueryJoins.standard },
                               ${ QueryJoins.module_panels },
                               ${ moduleTagsJoin }
-                            `, {count: 'exact'})
+                            `, {count: 'exact'});
     
     if (onlyPublic === true) {
       query = query.filter('public', 'eq', true);
@@ -167,7 +167,7 @@ export class SupabaseQueriesService {
     )
       .pipe(
         remapErrors()
-      )
+      );
   }
   
   @Cacheable({
@@ -461,13 +461,13 @@ export class SupabaseQueriesService {
       queryBuilder$ = queryBuilder$.order(`color`, {
         referencedTable: DbPaths.module_panels,
         ascending: true
-      })
+      });
     }
     
     if (columns.includes(QueryJoins.insOuts)) {
       queryBuilder$ = queryBuilder$
         .order('id', {referencedTable: DbPaths.moduleINs})
-        .order('id', {referencedTable: DbPaths.moduleOUTs})
+        .order('id', {referencedTable: DbPaths.moduleOUTs});
     }
     
     
@@ -835,17 +835,17 @@ export class SupabaseQueriesService {
     includeManuals = false,
     orderConfig?: Partial<CurrentUserModulesOrderConfig>,
   ): Observable<any> {
-    let prefix = `module`;
-    let panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
+    const prefix = `module`;
+    const panelsTable: string = `${ prefix }.${ DbPaths.module_panels }`;
     
     
-    let moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
+    const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
     
-    let columns = [
+    const columns = [
       moduleColumns,
       QueryJoins.manufacturer,
       QueryJoins.module_panels,
-    ]
+    ];
     // can be optimized to avoid calling it all the time but for now it is ok
     if (includeInsOuts) {
       columns.push(QueryJoins.insOuts);

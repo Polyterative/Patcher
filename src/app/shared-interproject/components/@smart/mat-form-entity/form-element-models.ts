@@ -76,8 +76,8 @@ export namespace CustomValidators {
     if (typeof DOMPurify.sanitize !== 'function') {
       return null;
     }
-    let original  = control.value;
-    let sanitized = DOMPurify.sanitize(original);
+    const original  = control.value;
+    const sanitized = DOMPurify.sanitize(original);
     return original === sanitized ? null : {[ErrorCodes.form.errorCode.custom.invalidContent]: true};
   }
   // @ts-ignore

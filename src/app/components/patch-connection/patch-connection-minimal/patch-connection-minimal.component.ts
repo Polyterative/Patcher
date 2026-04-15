@@ -5,7 +5,7 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  Output
+  Output, OnDestroy
 } from '@angular/core';
 import {
   UntypedFormControl,
@@ -32,7 +32,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class PatchConnectionMinimalComponent implements OnInit {
+export class PatchConnectionMinimalComponent implements OnInit, OnDestroy {
   @Input() index?: number;
   @Input() data: PatchConnection;
   @Input() isEditing = false;

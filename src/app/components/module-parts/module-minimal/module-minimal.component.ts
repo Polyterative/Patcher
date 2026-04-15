@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit, OnDestroy
 } from '@angular/core';
 import {
   Observable,
@@ -25,7 +25,7 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleMinimalComponent implements OnInit {
+export class ModuleMinimalComponent implements OnInit, OnDestroy {
   @Input() data: MinimalModule;
   @Input() viewConfig: ModuleMinimalViewConfig;
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
@@ -55,9 +55,9 @@ export class ModuleMinimalComponent implements OnInit {
   ngOnInit(): void {
     this.isInCollection$ = this.dataService.userModulesList$
                                .pipe(
-                                 map(data => data.filter(x => x.id == this.data.id).length > 0),
-                                 takeUntil(this.destroyEvent$)
-                               );
+                                  map(data => data.filter(x => x.id === this.data.id).length > 0),
+                                  takeUntil(this.destroyEvent$)
+                                );
   }
   
   protected destroyEvent$ = new Subject<void>();

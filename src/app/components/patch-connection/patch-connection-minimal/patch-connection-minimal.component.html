@@ -103,12 +103,12 @@
   
   <ng-template #ordinal>
     @if (index) {
-      <mat-card-subtitle
-        fxLayoutAlign="end center"
-        class="monospace"
-        [ngClass]="index%5!=0?'fade-ordinal':''"
-      >#{{ index }}
-      </mat-card-subtitle>
+        <mat-card-subtitle
+          fxLayoutAlign="end center"
+          class="monospace"
+          [ngClass]="index % 5 !== 0 ? 'fade-ordinal' : ''"
+        >#{{ index }}
+        </mat-card-subtitle>
     }
   </ng-template>
 </div>

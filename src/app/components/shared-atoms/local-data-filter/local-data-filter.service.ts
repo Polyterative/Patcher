@@ -92,13 +92,13 @@ export class LocalDataFilterService extends SubManager {
         debounceTime(350),
         takeUntil(this.destroy$)
       )
-      .subscribe(x => this.filterEvent$.next(x))
+      .subscribe(x => this.filterEvent$.next(x));
     
     this.order.control.valueChanges
       .pipe(
         takeUntil(this.destroy$)
       )
-      .subscribe(x => this.orderEvent$.next(x))
+      .subscribe(x => this.orderEvent$.next(x));
     
   }
   

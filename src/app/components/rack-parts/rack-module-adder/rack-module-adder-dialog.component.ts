@@ -72,7 +72,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
       }[]>;
       type: FormTypes
     }
-  }
+  };
   
   static open(dialog: MatDialog, data: RackModuleAdderInModel): MatDialogRef<RackModuleAdderDialogComponent, RackModuleAdderOutModel> {
     return dialog.open(RackModuleAdderDialogComponent, {
@@ -135,7 +135,7 @@ export class RackModuleAdderDialogComponent extends SubManager implements OnInit
             );
           
           this.dialogRef.close();
-        })
+        });
     
     this.userAreaDataService.updateRackData$.next(undefined);
     

@@ -112,5 +112,9 @@ export class UserManagementComponent implements OnInit {
       error: () => { /* error already shown via snackbar in service */ }
     });
   }
+
+  isEmailOnlyAccount(authProviders: string[] | null | undefined): boolean {
+    return !authProviders || authProviders.every(provider => provider === 'email');
+  }
   
 }

@@ -95,14 +95,14 @@ export class SharedConstants {
 
   static errorHandlerSignup<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
+      snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ` ${  msg}` : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
 
   static errorHandlerLogin<T>(snackBar: MatSnackBar, msg?: string) {
     return catchError<T, Observable<never>>(() => {
-      snackBar.open(`${ SharedConstants.messages.loginFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
+      snackBar.open(`${ SharedConstants.messages.loginFailed }${ msg ? ` ${  msg}` : '' }`, undefined, {duration: 8000, panelClass: 'snack-error'});
       return EMPTY;
     });
   }
@@ -122,7 +122,7 @@ export class SharedConstants {
   }
   
   static errorSignup<T>(snackBar: MatSnackBar, msg?: string) {
-    snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ' ' + msg : '' }`, undefined, {duration: 5000, panelClass: 'snack-error'});
+    snackBar.open(`${ SharedConstants.messages.signupFailed }${ msg ? ` ${  msg}` : '' }`, undefined, {duration: 5000, panelClass: 'snack-error'});
   }
   
   static errorLogin<T>(snackBar: MatSnackBar) {
@@ -139,5 +139,5 @@ export namespace Animations {
     anchor: 'enter',
     duration: 225,
     animateChildren: 'after'
-  })
+  });
 }

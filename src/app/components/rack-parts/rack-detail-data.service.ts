@@ -296,7 +296,7 @@ export class RackDetailDataService extends SubManager {
         ([imageData, rackData]) => {
           
           const link = document.createElement('a');
-          let downloadName = `${ rackData.name } by ${ rackData.author.username } - ${ rackData.hp } HP - ${ rackData.rows } rows - ${ new Date().toLocaleDateString() }`;
+          const downloadName = `${ rackData.name } by ${ rackData.author.username } - ${ rackData.hp } HP - ${ rackData.rows } rows - ${ new Date().toLocaleDateString() }`;
           link.download = `${ downloadName }.jpeg`;
           // replace any characters that make use problems in the download filename
           link.download = link.download.replace(/[/\\?%*:|"<>]/g, '-');
@@ -304,7 +304,7 @@ export class RackDetailDataService extends SubManager {
           link.click();
           link.remove();
           
-          this.snackBar.open('Image downloaded: ' + downloadName, undefined, {duration: 5000});
+          this.snackBar.open(`Image downloaded: ${  downloadName}`, undefined, {duration: 5000});
         }
       );
     
@@ -412,7 +412,7 @@ export class RackDetailDataService extends SubManager {
         switchMap(x => this.backend.GET.rackWithId(x)),
         takeUntil(this.destroy$),
       )
-      .subscribe(x => this.singleRackData$.next(x.data))
+      .subscribe(x => this.singleRackData$.next(x.data));
     
     // sync editable, privacy and form state whenever rack data changes
     this.singleRackData$
@@ -438,7 +438,7 @@ export class RackDetailDataService extends SubManager {
         // create a 2d array of racked modules and sort them by row
         const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
         this.rowedRackedModules$.next(rowedRackedModules);
-      })
+      });
     
     // on order change, update local rack data and backend
     this.rackOrderChange$
@@ -478,7 +478,7 @@ export class RackDetailDataService extends SubManager {
           this.requestRackedModulesDbSync$.next();
         }
         
-      })
+      });
     
     // track if rack is property of current user
     combineLatest([
@@ -492,7 +492,7 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe(([user, rackData]) => {
         this.isCurrentRackPropertyOfCurrentUser$.next(user.id === rackData.author.id);
-      })
+      });
     
     // when request to remove module is received, find module and remove it, then update the local rack data
     this.requestRackedModuleRemoval$
@@ -513,7 +513,7 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe(([_, rackData]) => {
         this.singleRackData$.next(rackData);
-      })
+      });
     
     // when request to duplicate module is received, find module and duplicate it, then update the local rack data
     this.requestRackedModuleDuplication$
@@ -528,7 +528,7 @@ export class RackDetailDataService extends SubManager {
         
         this.requestRackedModulesDbSync$.next();
         
-      })
+      });
 
     this.requestRackedModuleHpOverrideEdit$
       .pipe(
@@ -573,7 +573,7 @@ export class RackDetailDataService extends SubManager {
         }),
         takeUntil(this.destroy$)
       )
-      .subscribe()
+      .subscribe();
     
     // on request to sync rack data with backend, update backend
     this.requestRackedModulesDbSync$
@@ -591,7 +591,7 @@ export class RackDetailDataService extends SubManager {
       )
       .subscribe(() => {
         // SharedConstants.successSaveShort(this.snackBar);
-      })
+      });
     
     // on rack delete, ask for confirmation and delete rack on backend
     this.deleteRack$
@@ -653,12 +653,12 @@ export class RackDetailDataService extends SubManager {
           const rackModules = this.removeInformationFromModulesOfCurrentRack(newRackId);
           
           // load the new empty rack
-          this.updateSingleRackData$.next(newRackId)
+          this.updateSingleRackData$.next(newRackId);
           return this.singleRackData$.pipe(
             filter(x => x.id === newRackId),
             take(1),
             map(() => ({rackModules, originalName})),
-          )
+          );
           }
         ),
         // wait for the new empty rack to arrive, then add the modules to the new rack
@@ -772,7 +772,7 @@ export class RackDetailDataService extends SubManager {
   
   // bump up version number in name of rack if it has one, otherwise add "V2" — used when duplicating
   private bumpUpVersionInNameOfOfRack() {
-    let originalName = this.singleRackData$.value.name;
+    const originalName = this.singleRackData$.value.name;
     
     // if original name ends with version "V" something you with a number,bump up the number and update the variable
     const versionRegex = /V(\d+)$/;

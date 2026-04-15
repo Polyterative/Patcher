@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit
+  OnInit, OnDestroy
 } from '@angular/core';
 import { Subject } from 'rxjs';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
@@ -17,12 +17,12 @@ import { RackMinimal } from 'src/app/models/rack';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RackMinimalComponent implements OnInit {
+export class RackMinimalComponent implements OnInit, OnDestroy {
   @Input() data: RackMinimal;
   @Input() viewConfig: RackMinimalViewConfig = {
     ...defaultRackMinimalViewConfig,
     containImage: false
-  }
+  };
   
   constructor(
     public userManagerService: UserManagementService,
