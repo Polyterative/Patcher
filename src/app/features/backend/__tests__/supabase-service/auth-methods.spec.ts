@@ -163,29 +163,32 @@ describe('SupabaseService - auth methods', () => {
     
     it('should call supabase signUp with trimmed username when valid', (done) => {
       spyOn(supabaseClient.auth, 'signUp').and.returnValue(
-        Promise.resolve({data: {user: {id: 'new-user-id'}, session: {}}, error: null})
+        Promise.resolve({
+          data: {
+            user: {
+              id: 'new-user-id',
+              email: 'user@test.com',
+              created_at: '2024-01-01T00:00:00Z',
+              updated_at: '2024-01-01T00:00:00Z'
+            },
+            session: null
+          },
+          error: null
+        })
       );
-      spyOn(supabaseClient.auth, 'signInWithPassword').and.returnValue(
-        Promise.resolve({data: {user: {id: 'new-user-id', email: 'user@test.com'}, session: {}}, error: null})
-      );
-      spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
-      
-      const profileMock: any = {};
-      ['update', 'eq', 'filter', 'select'].forEach(m => {
-        profileMock[m] = () => profileMock;
-      });
-      profileMock.then = (res: Function, rej?: Function) =>
-        Promise.resolve({data: [{username: 'validuser'}], error: null}).then(res as any, rej as any);
-      
-      spyOn(supabaseClient, 'from').and.returnValue(profileMock);
-      const updateSpy = spyOn(profileMock, 'update').and.returnValue(profileMock);
       
       service.auth.signup$('  validuser  ', 'user@test.com', 'password123').subscribe({
-        next: () => {
-          const updateCalls = updateSpy.calls.all();
-          const usernameCall = updateCalls.find((c: any) => c.args[0]?.username !== undefined);
-          expect(usernameCall).toBeDefined();
-          expect((usernameCall?.args[0] as any).username).toBe('validuser');
+        next: (result: any) => {
+          expect(supabaseClient.auth.signUp).toHaveBeenCalledWith({
+            email: 'user@test.com',
+            password: 'password123',
+            options: {
+              data: {
+                username: 'validuser'
+              }
+            }
+          });
+          expect(result.requiresEmailConfirmation).toBeTrue();
           done();
         },
         error: (err) => {

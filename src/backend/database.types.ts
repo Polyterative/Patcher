@@ -936,6 +936,10 @@ export type Database = {
       }
     }
     Functions: {
+      delete_current_user_account: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_module_open_flag_count: {
         Args: { p_module_id: number }
         Returns: number

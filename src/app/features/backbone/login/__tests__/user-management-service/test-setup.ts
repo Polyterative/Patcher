@@ -78,11 +78,14 @@ export function setupUserManagementServiceTest() {
     'loginWithOAuth$',
     'handleOAuthCallback$',
     'updateUsername$',
-    'updateProfileVisibility$'
+    'updateProfileVisibility$',
+    'deleteCurrentUserAccount$',
+    'logoffLocal$'
   ]);
   mockAuthNamespace.getUserSession$.and.returnValue(of(null));
   mockAuthNamespace.getRichUserSession$.and.returnValue(of(null));
   mockAuthNamespace.logoff$.and.returnValue(of({error: null}));
+  mockAuthNamespace.logoffLocal$.and.returnValue(of({error: null}));
   
   // Mock SupabaseService as a plain object so individual tests can override properties
   const mockSupabaseService: any = {

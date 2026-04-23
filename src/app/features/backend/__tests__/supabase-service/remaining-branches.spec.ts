@@ -160,37 +160,53 @@ describe('SupabaseService - Remaining Branches', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('signup$ returns raw signUp data when provider responds with an error payload', (done) => {
+  it('signup$ errors when provider responds with an error payload', (done) => {
     spyOn(supabaseClient.auth, 'signUp').and.returnValue(
       Promise.resolve({
         data: {user: null, session: null},
         error: {message: 'signup blocked'}
       })
     );
-    const updateSpy = spyOn(service.auth as any, '_updateUserProfile').and.returnValue(of({} as any));
     
     service.auth.signup$('userx', 'u@example.com', 'password').subscribe({
-      next: (result: any) => {
-        expect(result).toEqual({user: null, session: null});
-        expect(updateSpy).not.toHaveBeenCalled();
+      next: () => {
+        fail('Expected signup$ to error');
         done();
       },
-      error: done.fail
+      error: (error: Error) => {
+        expect(error.message).toContain('signup blocked');
+        done();
+      }
     });
   }, TEST_TIMEOUT);
 
-  it('signup$ delegates to updateUserProfile when signUp has no error', (done) => {
+  it('signup$ returns pending confirmation when signUp succeeds without a session', (done) => {
     spyOn(supabaseClient.auth, 'signUp').and.returnValue(
       Promise.resolve({
-        data: {user: {id: 'new-user'}, session: null},
+        data: {
+          user: {
+            id: 'new-user',
+            email: 'new@example.com',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z'
+          },
+          session: null
+        },
         error: null
       })
     );
-    spyOn(service.auth as any, '_updateUserProfile').and.returnValue(of({returnUrl: null, user: {id: 'new-user'}} as any));
     
     service.auth.signup$('newname', 'new@example.com', 'password').subscribe({
-      next: () => {
-        expect((service.auth as any)._updateUserProfile).toHaveBeenCalledWith('new@example.com', 'password', 'newname');
+      next: (result: any) => {
+        expect(result).toEqual({
+          user: {
+            id: 'new-user',
+            email: 'new@example.com',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z'
+          },
+          requiresEmailConfirmation: true
+        });
         done();
       },
       error: done.fail
@@ -205,22 +221,6 @@ describe('SupabaseService - Remaining Branches', () => {
     
     expect(unsubscribe).toHaveBeenCalled();
   });
-  
-  it('signup and updateUserProfile path logs in, updates profile, and signs out', (done) => {
-    spyOn(service.auth as any, 'login$').and.returnValue(of({user: {id: 'u-1'}} as any));
-    const profileQuery = chainable({data: {}, error: null});
-    spyOn(supabaseClient, 'from').and.returnValue(profileQuery);
-    spyOn(supabaseClient.auth, 'signOut').and.returnValue(Promise.resolve({error: null}));
-    
-    (service.auth as any)._updateUserProfile('x@example.com', 'pass', 'newname').subscribe({
-      next: () => {
-        expect(supabaseClient.from).toHaveBeenCalledWith('profiles');
-        expect(supabaseClient.auth.signOut).toHaveBeenCalled();
-        done();
-      },
-      error: done.fail
-    });
-  }, TEST_TIMEOUT);
   
   it('buildPatchConnectionInserter, getCvMapper, buildCVInserter and buildCVUpdater branches', (done) => {
     const insertQuery = chainable({data: [{patchid: 1}], error: null});

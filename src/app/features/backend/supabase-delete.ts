@@ -1,7 +1,9 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
+  forkJoin,
   from as rxFrom,
   Observable,
+  of,
   throwError
 } from 'rxjs';
 import {
@@ -286,60 +288,115 @@ export function createDeleteNamespace(
      * Deletes all user-generated data for the current user in the correct dependency order:
      * patch_connections → patches → rack_modules → racks → user_modules → comments
      */
-    allUserData: () => getUserSession$().pipe(
-      switchMap(user => {
-        const uid = user.id;
-        
-        const deletePatchConnections$ = rxFrom(
-          supabase.from(DbPaths.patch_connections)
-            .delete()
-            .in('patchid',
-              supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-        
-        const deletePatchModuleInstances$ = rxFrom(
-          supabase.from(DbPaths.patch_module_instances)
-            .delete()
-            .in('patch_id',
-              supabase.from(DbPaths.patches).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-        
-        const deletePatches$ = rxFrom(
-          supabase.from(DbPaths.patches).delete().eq('authorid', uid)
-        ).pipe(remapErrors());
-        
-        const deleteRackModules$ = rxFrom(
-          supabase.from(DbPaths.rack_modules)
-            .delete()
-            .in('rackid',
-              supabase.from(DbPaths.racks).select('id').eq('authorid', uid) as any
-            )
-        ).pipe(remapErrors());
-        
-        const deleteRacks$ = rxFrom(
-          supabase.from(DbPaths.racks).delete().eq('authorid', uid)
-        ).pipe(remapErrors());
-        
-        const deleteUserModules$ = rxFrom(
-          supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)
-        ).pipe(remapErrors());
-        
+     allUserData: () => getUserSession$().pipe(
+       switchMap(user => {
+         if (!user) return throwError(() => new Error('Authentication required'));
+         const uid = user.id;
+
+         const loadPatchIds$ = rxFrom(
+           supabase.from(DbPaths.patches)
+             .select('id')
+             .eq('authorid', uid)
+         ).pipe(
+           map(({data, error}) => {
+             if (error) throw error;
+             return (data ?? []).map(row => row.id);
+           }),
+           remapErrors()
+         );
+
+         const loadRackIds$ = rxFrom(
+           supabase.from(DbPaths.racks)
+             .select('id')
+             .eq('authorid', uid)
+         ).pipe(
+           map(({data, error}) => {
+             if (error) throw error;
+             return (data ?? []).map(row => row.id);
+           }),
+           remapErrors()
+         );
+
+         const deletePatchConnections$ = (patchIds: number[]) =>
+           patchIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.patch_connections)
+                 .delete()
+                 .in('patchid', patchIds)
+             ).pipe(remapErrors());
+
+         const deletePatchModuleInstances$ = (patchIds: number[]) =>
+           patchIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.patch_module_instances)
+                 .delete()
+                 .in('patch_id', patchIds)
+             ).pipe(remapErrors());
+
+         const deletePatches$ = (patchIds: number[]) =>
+           patchIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.patches)
+                 .delete()
+                 .in('id', patchIds)
+             ).pipe(remapErrors());
+
+         const deleteRackModules$ = (rackIds: number[]) =>
+           rackIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.rack_modules)
+                 .delete()
+                 .in('rackid', rackIds)
+             ).pipe(remapErrors());
+
+         const deleteRacks$ = (rackIds: number[]) =>
+           rackIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.racks)
+                 .delete()
+                 .in('id', rackIds)
+             ).pipe(remapErrors());
+
+         const deleteEntityComments$ = (entityType: number, entityIds: number[]) =>
+           entityIds.length === 0
+             ? of({data: null, error: null})
+             : rxFrom(
+               supabase.from(DbPaths.comments)
+                 .delete()
+                 .eq('entityType', entityType)
+                 .in('entityId', entityIds)
+             ).pipe(remapErrors());
+         
+         const deleteUserModules$ = rxFrom(
+           supabase.from(DbPaths.user_modules).delete().eq('profileid', uid)
+         ).pipe(remapErrors());
+         
         const deleteComments$ = rxFrom(
-          supabase.from(DbPaths.comments).delete().eq('authorId', uid)
-        ).pipe(remapErrors());
-        
-        return deletePatchConnections$.pipe(
-          switchMap(() => deletePatchModuleInstances$),
-          switchMap(() => deletePatches$),
-          switchMap(() => deleteRackModules$),
-          switchMap(() => deleteRacks$),
-          switchMap(() => deleteUserModules$),
-          switchMap(() => deleteComments$),
-          cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'patches', 'patchConnections', 'rackWithId', 'racksMinimal', 'comments', 'currentUserComments'])
-        );
-      })
-    )
-  };
+           supabase.from(DbPaths.comments).delete().eq('authorId', uid)
+         ).pipe(remapErrors());
+
+         return forkJoin({
+           patchIds: loadPatchIds$,
+           rackIds: loadRackIds$
+         }).pipe(
+           switchMap(({patchIds, rackIds}) => deletePatchConnections$(patchIds).pipe(
+             switchMap(() => deletePatchModuleInstances$(patchIds)),
+             switchMap(() => deleteEntityComments$(CommentableEntityTypes.PATCH, patchIds)),
+             switchMap(() => deletePatches$(patchIds)),
+             switchMap(() => deleteRackModules$(rackIds)),
+             switchMap(() => deleteEntityComments$(CommentableEntityTypes.RACK, rackIds)),
+             switchMap(() => deleteRacks$(rackIds)),
+             switchMap(() => deleteUserModules$),
+             switchMap(() => deleteComments$),
+             cacheBust(['modules', 'currentUserModules', 'moduleWithId', 'patches', 'patchConnections', 'rackWithId', 'racksMinimal', 'comments', 'currentUserComments'])
+           ))
+         );
+       })
+     )
+   };
 }

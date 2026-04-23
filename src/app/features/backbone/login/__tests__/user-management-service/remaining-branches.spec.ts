@@ -102,10 +102,10 @@ describe('UserManagementService - Remaining Branches', () => {
     expect(value).toEqual(MOCK_SIMPLE_USER as any);
   }));
   
-  it('deleteAccount flow catches logoff failure branch', fakeAsync(() => {
+  it('reset data flow catches logoff failure branch', fakeAsync(() => {
     mockSupabaseService.auth.logoff$.and.returnValue(Promise.reject(new Error('logout fail')));
     
-    service.deleteAccountAction$.next();
+    service.resetUserDataAction$.next();
     tick();
     
     expect(mockSupabaseService.delete.allUserData).toHaveBeenCalled();
