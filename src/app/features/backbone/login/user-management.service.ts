@@ -78,7 +78,10 @@ export class UserManagementService extends SubManager {
   /** Emits when user wants to update their username */
   public updateUsernameAction$ = new Subject<string>();
 
-  /** Emits when user requests to delete all their data and account */
+  /** Emits when user requests to delete only their app data */
+  public resetUserDataAction$ = new Subject<void>();
+
+  /** Emits when user requests full permanent account deletion */
   public deleteAccountAction$ = new Subject<void>();
   
   /** Emits new password when user submits the inline password-change form */
@@ -116,6 +119,7 @@ export class UserManagementService extends SubManager {
     this.initializeSSOLoginHandler();
     this.initializeOAuthCallbackHandler();
     this.initializeUpdateUsernameHandler();
+    this.initializeResetUserDataHandler();
     this.initializeDeleteAccountHandler();
     this.initializeChangePasswordHandler();
     this.initializeTogglePasswordFormHandler();
@@ -483,12 +487,12 @@ export class UserManagementService extends SubManager {
     );
   }
 
-  private initializeDeleteAccountHandler(): void {
-    this.deleteAccountAction$.pipe(
+  private initializeResetUserDataHandler(): void {
+    this.resetUserDataAction$.pipe(
       switchMap(() => {
         const dialogData: ConfirmDialogDataInModel = {
           title: 'Delete all your data?',
-          description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. You will be signed out immediately after.\n\nNote: your login credentials will remain active — contact support if you need full account removal.',
+          description: 'This will permanently delete all your patches, racks, collections, and comments. This cannot be undone. Your account will stay active so you can start fresh afterward.',
           positive: {label: 'Delete my data', theme: 'warning'}
         };
         return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
@@ -515,7 +519,56 @@ export class UserManagementService extends SubManager {
         catchError(() => NEVER)
       )),
       tap(() => {
-        SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. You have been signed out.');
+        SharedConstants.successCustom(this.snackBar, 'All your data has been deleted. Your account is still available if you want to sign back in.');
+        this.router.navigate(['/auth/login']);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe();
+  }
+
+  private initializeDeleteAccountHandler(): void {
+    this.deleteAccountAction$.pipe(
+      switchMap(() => {
+        const dialogData: ConfirmDialogDataInModel = {
+          title: 'Delete your account?',
+          description: 'This permanently deletes your account, profile, and all your data. This cannot be undone.',
+          positive: {label: 'Delete my account', theme: 'negative'}
+        };
+        return this.dialog.open<ConfirmDialogComponent, ConfirmDialogDataInModel, ConfirmDialogDataOutModel>(
+          ConfirmDialogComponent,
+          {data: dialogData, disableClose: false, width: '36rem'}
+        ).afterClosed();
+      }),
+      tap((result) => {
+        if (!result?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
+      }),
+      filter((result): result is ConfirmDialogDataOutModel => !!result?.answer),
+      switchMap(() => this.backend.delete.allUserData().pipe(
+        catchError((error) => {
+          console.error('Data deletion failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Account deletion failed while removing your data. Please try again or contact support.');
+          return NEVER;
+        })
+      )),
+      switchMap(() => this.backend.auth.deleteCurrentUserAccount$().pipe(
+        catchError((error) => {
+          console.error('Account deletion failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Account deletion failed. Please try again or contact support.');
+          return NEVER;
+        })
+      )),
+      tap(() => {
+        this._loggedUser$.next(undefined);
+        this._loggedUserFullProfile$.next(undefined);
+      }),
+      switchMap(() => this.backend.auth.logoffLocal$().pipe(
+        catchError((error) => {
+          console.error('Local sign-out after account deletion failed:', error);
+          return of({error: null});
+        })
+      )),
+      tap(() => {
+        SharedConstants.successCustom(this.snackBar, 'Your account has been permanently deleted.');
         this.router.navigate(['/auth/login']);
       }),
       takeUntil(this.destroy$)

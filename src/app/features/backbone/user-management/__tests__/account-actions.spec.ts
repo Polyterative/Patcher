@@ -12,7 +12,7 @@ import { UserManagementComponent } from '../user-management.component';
 /**
  * Account Actions Tests
  *
- * Covers: logout delegation, deleteAccountAction$ delegation,
+ * Covers: logout delegation, reset/delete account action delegation,
  * and togglePasswordForm$ delegations.
  */
 describe('UserManagementComponent - Account Actions', () => {
@@ -36,8 +36,24 @@ describe('UserManagementComponent - Account Actions', () => {
     });
   });
   
-  // ─── Delete account ───────────────────────────────────────────────────────
+  // ─── Reset / delete account ───────────────────────────────────────────────
   
+  describe('resetUserDataAction$', () => {
+    it('should be a Subject that can be subscribed to', () => {
+      expect(typeof mockUserManagementService.resetUserDataAction$.subscribe).toBe('function');
+    });
+    
+    it('should emit when resetUserDataAction$.next() is called', fakeAsync(() => {
+      let emitted = false;
+      mockUserManagementService.resetUserDataAction$.subscribe(() => (emitted = true));
+      
+      mockUserManagementService.resetUserDataAction$.next();
+      tick();
+      
+      expect(emitted).toBe(true);
+    }));
+  });
+
   describe('deleteAccountAction$', () => {
     it('should be a Subject that can be subscribed to', () => {
       expect(typeof mockUserManagementService.deleteAccountAction$.subscribe).toBe('function');
