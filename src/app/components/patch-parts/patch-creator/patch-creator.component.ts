@@ -5,6 +5,7 @@ import {
   OnInit, OnDestroy
 } from '@angular/core';
 import {
+  FormControl,
   UntypedFormControl,
   Validators
 } from '@angular/forms';
@@ -84,6 +85,10 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
         // Validators.max(12)
       ])),
       type:    FormTypes.TEXT
+    },
+    public: {
+      code: 'public',
+      control: new FormControl<boolean>(false, { nonNullable: true })
     }
   };
   protected destroyEvent$ = new Subject<void>();
@@ -114,7 +119,8 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
         .pipe(
           switchMap(x => this.backend.add.patch(
             {
-              name: this.fields.name.control.value
+              name: this.fields.name.control.value,
+              public: this.fields.public.control.value
               // hp:       this.fields.hp.control.value,
               // rows:     this.fields.rows.control.value
             }
