@@ -32,13 +32,23 @@ describe('PatchCreatorComponent', () => {
     
     component.save$.next();
     
-    expect(backend.add.patch).toHaveBeenCalledWith({name: 'My Patch'});
+    expect(backend.add.patch).toHaveBeenCalledWith({name: 'My Patch', public: false});
     expect(snackBar.open).toHaveBeenCalledWith(
       '"My Patch" created and saved to your library.',
       undefined,
       {duration: 3000, panelClass: 'snack-success'}
     );
     expect(dialogRef.close).toHaveBeenCalled();
+  });
+  
+  it('passes the selected privacy value when saving', () => {
+    const {component, backend} = build();
+    component.fields.name.control.setValue('Private Patch');
+    component.fields.public.control.setValue(true);
+    
+    component.save$.next();
+    
+    expect(backend.add.patch).toHaveBeenCalledWith({name: 'Private Patch', public: true});
   });
   
   it('stops reacting to save after destroy', () => {
