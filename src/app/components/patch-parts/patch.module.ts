@@ -2,6 +2,7 @@ import { ScrollingModule as ExperimentalScrollingModule } from '@angular/cdk-exp
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -77,6 +78,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     ConfirmDialogModule,
     TimeagoModule.forChild(),
     MatCardModule,
+    ReactiveFormsModule,
     BrandPrimaryButtonModule,
     FlexLayoutModule,
     MatDividerModule,
