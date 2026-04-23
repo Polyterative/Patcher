@@ -24,58 +24,12 @@
                                         theme="warning"
               >Logout
               </app-brand-primary-button>
-              @if (editingUsername) {
-                <form class="col gap1 section-surface"
-                      (ngSubmit)="submitUsernameChange(bag.userProfile.username)"
-                >
-                  <mat-form-field appearance="outline">
-                    <mat-label>Display name</mat-label>
-                    <input matInput
-                           [formControl]="usernameControl"
-                           autocomplete="nickname"
-                    >
-                    <mat-hint>3-30 chars. Letters, numbers, hyphens, underscores.</mat-hint>
-                    <mat-error *ngIf="usernameControl.hasError('required')">Display name is required</mat-error>
-                    <mat-error *ngIf="usernameControl.hasError('minlength')">At least 3 characters required</mat-error>
-                    <mat-error *ngIf="usernameControl.hasError('maxlength')">At most 30 characters allowed</mat-error>
-                    <mat-error *ngIf="usernameControl.hasError('pattern')">Only letters, numbers, hyphens (-), and
-                      underscores (_) are allowed
-                    </mat-error>
-                  </mat-form-field>
-                  <div class="row gap1">
-                    <button mat-raised-button
-                            class="primary-action"
-                            color="primary"
-                            type="submit"
-                            [disabled]="usernameControl.invalid || (usernameControl.value || '').trim() === bag.userProfile.username"
-                    >
-                      <mat-icon>check_circle</mat-icon>
-                      Save display name
-                    </button>
-                    <button mat-stroked-button
-                            type="button"
-                            (click)="cancelUsernameEdit()"
-                    >
-                      <mat-icon>close</mat-icon>
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              } @else {
-                <div class="row gap1 section-surface" fxLayoutAlign="start center">
-                  <app-label-value-showcase label="Display Name"
-                                            fxFlex="grow"
-                  >{{ bag.userProfile.username }}
-                  </app-label-value-showcase>
-                  <app-brand-primary-button
-                    (click$)="beginUsernameEdit(bag.userProfile.username)"
-                    icon="edit"
-                    matTooltip="Change your display name"
-                    theme="primary"
-                  >Change
-                  </app-brand-primary-button>
-                </div>
-              }
+              <div class="row gap1 section-surface" fxLayoutAlign="start center">
+                <app-label-value-showcase label="Display Name"
+                                          fxFlex="grow"
+                >{{ bag.userProfile.username }}
+                </app-label-value-showcase>
+              </div>
               <div class="section-surface">
                 <app-label-value-showcase label="Email Address">{{ bag.userProfile.email }}</app-label-value-showcase>
               </div>
@@ -171,10 +125,16 @@
         
         <div class="row gap1 danger-zone">
           <app-brand-primary-button
-                                    (click$)="userManagementService.deleteAccountAction$.next()"
-                                    matTooltip="Permanently delete all your patches, racks, collections and comments. Your login credentials will remain — contact support for full account removal."
-                                    theme="negative"
+                                    (click$)="userManagementService.resetUserDataAction$.next()"
+                                    matTooltip="Delete your patches, racks, collections, and comments, but keep your account so you can start fresh."
+                                    theme="warning"
           >Delete my data
+          </app-brand-primary-button>
+          <app-brand-primary-button
+                                    (click$)="userManagementService.deleteAccountAction$.next()"
+                                    matTooltip="Permanently delete your account and all associated data. This cannot be undone."
+                                    theme="negative"
+          >Delete my account
           </app-brand-primary-button>
         </div>
       

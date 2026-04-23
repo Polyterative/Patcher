@@ -175,8 +175,30 @@ export function createAuthNamespace(
       if (!trimmedUsername) {
         return throwError(() => new Error('Username cannot be empty or whitespace.'));
       }
-      return rxFrom(supabase.auth.signUp({email, password})).pipe(
-        switchMap(x => x.error ? of(x.data) : ns._updateUserProfile(email, password, trimmedUsername))
+      return rxFrom(supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: trimmedUsername
+          }
+        }
+      })).pipe(
+        map(({data, error}) => {
+          if (error) {
+            throw error;
+          }
+
+          return {
+            user: data.user ? {
+              id: data.user.id,
+              email: data.user.email,
+              created_at: data.user.created_at,
+              updated_at: data.user.updated_at
+            } : null,
+            requiresEmailConfirmation: !data.session
+          };
+        })
       );
     },
     
@@ -237,6 +259,25 @@ export function createAuthNamespace(
     }> {
       ns._burstAllCaches();
       return rxFrom(supabase.auth.signOut());
+    },
+
+    logoffLocal$(): Observable<{
+      error: AuthError | null
+    }> {
+      ns._burstAllCaches();
+      return rxFrom(supabase.auth.signOut({scope: 'local'}));
+    },
+
+    deleteCurrentUserAccount$(): Observable<void> {
+      return rxFrom(supabase.rpc('delete_current_user_account')).pipe(
+        map(({error}) => {
+          if (error) {
+            throw error;
+          }
+          return void 0;
+        }),
+        catchError(error => throwError(() => error))
+      );
     },
     
     resetPassword$(emailOrToken: string, newPassword?: string): Observable<void> {

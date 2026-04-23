@@ -34,42 +34,53 @@ describe('SupabaseService - auth signup and profile helpers', () => {
   // ── signup$ ───────────────────────────────────────────────────────────────
   
   describe('signup$', () => {
-    it('should call supabase.auth.signUp with email and password', (done) => {
+    it('should call supabase.auth.signUp with email, password, and username metadata', (done) => {
       spyOn(supabaseClient.auth, 'signUp').and.returnValue(
-        Promise.resolve({data: {user: {id: 'new-user'}}, error: {message: 'Email already exists'}})
+        Promise.resolve({
+          data: {
+            user: {
+              id: 'new-user',
+              email: 'test@example.com',
+              created_at: '',
+              updated_at: ''
+            },
+            session: null
+          },
+          error: null
+        })
       );
       
       service.auth.signup$('testuser', 'test@example.com', 'Password123').subscribe({
         next: () => {
           expect(supabaseClient.auth.signUp).toHaveBeenCalledWith({
             email: 'test@example.com',
-            password: 'Password123'
+            password: 'Password123',
+            options: {
+              data: {
+                username: 'testuser'
+              }
+            }
           });
           done();
         },
-        error: () => {
-          // signup$ returns data even on error from supabase, so both branches are fine
-          expect(supabaseClient.auth.signUp).toHaveBeenCalled();
-          done();
-        }
+        error: done.fail
       });
     }, TEST_TIMEOUT);
     
-    it('should return data when supabase signup returns an error', (done) => {
-      const mockData = {user: null, session: null};
+    it('should error when supabase signup returns an error', (done) => {
       spyOn(supabaseClient.auth, 'signUp').and.returnValue(
-        Promise.resolve({data: mockData, error: {message: 'Email taken'}})
+        Promise.resolve({data: {user: null, session: null}, error: {message: 'Email taken'}})
       );
       
       service.auth.signup$('user', 'taken@test.com', 'pass').subscribe({
-        next: (result: any) => {
-          // On error, signup$ returns `of(x.data)` — the raw data object
-          expect(result).toBeDefined();
+        next: () => {
+          fail('Expected signup$ to error');
           done();
         },
-        error: () => {
+        error: (error: Error) => {
+          expect(error.message).toContain('Email taken');
           done();
-        } // also valid
+        }
       });
     }, TEST_TIMEOUT);
   });

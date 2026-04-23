@@ -182,12 +182,12 @@ describe('UserManagementService - Account Actions', () => {
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 
-  it('deletes account data, logs out, and navigates on confirmation', fakeAsync(() => {
+  it('resets account data, logs out, and navigates on confirmation', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     mockSupabaseService.auth.logoff$.and.returnValue(Promise.resolve({error: null}));
     
-    service.deleteAccountAction$.next();
+    service.resetUserDataAction$.next();
     tick();
     
     expect(mockSupabaseService.delete.allUserData).toHaveBeenCalled();
@@ -195,18 +195,34 @@ describe('UserManagementService - Account Actions', () => {
     expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
   
-  it('handles delete-account backend error without navigation', fakeAsync(() => {
+  it('handles reset-data backend error without navigation', fakeAsync(() => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
     });
     spyOn(console, 'error');
     mockSupabaseService.delete.allUserData.and.returnValue(throwError(() => new Error('delete failed')));
     mockRouter.navigate.calls.reset();
     
-    service.deleteAccountAction$.next();
+    service.resetUserDataAction$.next();
     tick();
     
     expect(console.error).toHaveBeenCalled();
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
     expect(mockRouter.navigate).not.toHaveBeenCalled();
+  }));
+
+  it('deletes the full account, clears session locally, and navigates on confirmation', fakeAsync(() => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {
+    });
+    mockSupabaseService.auth.deleteCurrentUserAccount$.and.returnValue(of(void 0));
+    mockSupabaseService.auth.logoffLocal$.and.returnValue(of({error: null}));
+    
+    service.deleteAccountAction$.next();
+    tick();
+    
+    expect(mockSupabaseService.delete.allUserData).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.deleteCurrentUserAccount$).toHaveBeenCalled();
+    expect(mockSupabaseService.auth.logoffLocal$).toHaveBeenCalled();
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/auth/login']);
+    expect(SharedConstants.successCustom).toHaveBeenCalled();
   }));
 });
