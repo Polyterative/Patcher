@@ -157,6 +157,7 @@ describe('SupabaseService - add.patch', () => {
         const payload = insertSpy.calls.first().args[0] as any;
         expect(payload.authorid).toBe('patch-author');
         expect(payload.name).toBe('Generative Patch');
+        expect(payload.public).toBeFalse();
         done();
       },
       error: (err) => {
