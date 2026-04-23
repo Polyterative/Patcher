@@ -52,7 +52,7 @@
       <!--          </lib-mat-form-entity>-->
     </div>
   </mat-dialog-content>
-  <mat-dialog-actions style="border-top: 0.5rem solid rgba(13,112,35,0.4)">
+  <mat-dialog-actions>
     <div class="col gap1" style="width:100%">
       <div class="row gap1" style="align-items:center">
         <mat-icon style="font-size:18px;width:18px;height:18px;line-height:18px;opacity:0.7">
@@ -63,6 +63,7 @@
         </span>
         <mat-slide-toggle [formControl]="fields.public.control" color="primary"></mat-slide-toggle>
       </div>
+      <mat-divider></mat-divider>
       <div fxFlex
            fxLayout="row"
            fxLayoutGap="2rem"
