@@ -42,6 +42,7 @@ export function createMockUserManagementService() {
   const changePassword$ = new Subject<{
     newPassword: string
   }>();
+  const resetUserDataAction$ = new Subject<void>();
   const deleteAccountAction$ = new Subject<void>();
   
   loggedUser$.next(undefined);
@@ -53,6 +54,7 @@ export function createMockUserManagementService() {
     showPasswordForm$: showPasswordForm$.asObservable(),
     togglePasswordForm$,
     changePassword$,
+    resetUserDataAction$,
     deleteAccountAction$,
     logoff$: jasmine.createSpy('logoff$'),
     updateUsername$: jasmine.createSpy('updateUsername$').and.returnValue(of(void 0)),

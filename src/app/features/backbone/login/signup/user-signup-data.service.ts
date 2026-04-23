@@ -9,10 +9,12 @@ import {
   Router
 } from '@angular/router';
 import {
+  EMPTY,
   of,
   Subject
 } from 'rxjs';
 import {
+  catchError,
   filter,
   switchMap,
   takeUntil
@@ -99,20 +101,24 @@ export class UserSignupDataService extends SubManager {
     
     this.mailSignClick$
       .pipe(
-        switchMap(x => this.loginInteraction.signup(
+        switchMap(() => this.loginInteraction.signup(
           this.fields.username.control.value.trim(),
           this.fields.email.control.value,
-          this.fields.password.control.value)
-        ),
-        switchMap(x => {
-          if (x) {
-            SharedConstants.successSignup(snackBar);
-            return this.loginInteraction.login$(this.fields.email.control.value, this.fields.password.control.value);
-            
-          } else {
-            SharedConstants.errorSignup(snackBar, 'Something went wrong, a user with this email address or username may already have been registered');
+          this.fields.password.control.value
+        ).pipe(
+          catchError((error: Error) => {
+            SharedConstants.errorSignup(snackBar, error?.message);
+            return EMPTY;
+          })
+        )),
+        switchMap(result => {
+          if (result.requiresEmailConfirmation) {
+            SharedConstants.confirmMail(snackBar);
             return of(undefined);
           }
+
+          SharedConstants.successSignup(snackBar);
+          return this.loginInteraction.login$(this.fields.email.control.value, this.fields.password.control.value);
         }),
         filter(x => !!x),
         takeUntil(this.destroy$)

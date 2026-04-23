@@ -1,7 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import {
   Observable,
-  ObservedValueOf
 } from 'rxjs';
 
 
@@ -44,9 +43,12 @@ export interface SupabaseLoginResponse {
   user: RichUserModel;
 }
 
-export type SupabaseSignupResponse = Observable<SupabaseLoginResponse | ObservedValueOf<Promise<{
+export interface SupabaseSignupResult {
   user: SimpleUserModel | null;
-}>>>;
+  requiresEmailConfirmation: boolean;
+}
+
+export type SupabaseSignupResponse = Observable<SupabaseSignupResult>;
 
 export type CurrentUserModulesOrderKey =
   'moduleName'

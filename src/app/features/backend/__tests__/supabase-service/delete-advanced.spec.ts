@@ -123,8 +123,23 @@ describe('SupabaseService - delete advanced', () => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
       const tablesAccessed: string[] = [];
+      let patchCalls = 0;
+      let rackCalls = 0;
+      let commentCalls = 0;
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         tablesAccessed.push(table);
+        if (table === 'patches') {
+          patchCalls++;
+          return chainable({data: patchCalls === 1 ? [{id: 1}] : null, error: null});
+        }
+        if (table === 'racks') {
+          rackCalls++;
+          return chainable({data: rackCalls === 1 ? [{id: 2}] : null, error: null});
+        }
+        if (table === 'comments') {
+          commentCalls++;
+          return chainable({data: null, error: null});
+        }
         return chainable({data: null, error: null});
       });
       
@@ -160,6 +175,104 @@ describe('SupabaseService - delete advanced', () => {
           expect(bustedKeys).toContain('comments');
           expect(bustedKeys).toContain('rackWithId');
           expect(bustedKeys).toContain('modules');
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should resolve owned ids before using .in filters', (done) => {
+      const mockUser = {id: 'delete-user-ids'};
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+      const inCalls: Array<{
+        table: string;
+        column: string;
+        ids: number[];
+      }> = [];
+      const buildDeleteMock = (table: string) => {
+        const mock = chainable({data: null, error: null});
+        spyOn(mock, 'in').and.callFake((column: string, ids: number[]) => {
+          inCalls.push({table, column, ids: [...ids]});
+          return mock;
+        });
+        return mock;
+      };
+
+      const patchSelect = chainable({data: [{id: 11}, {id: 12}], error: null});
+      const patchConnectionsDelete = buildDeleteMock('patch_connections');
+      const patchModuleInstancesDelete = buildDeleteMock('patch_module_instances');
+      const patchDelete = buildDeleteMock('patches');
+      const rackSelect = chainable({data: [{id: 21}], error: null});
+      const rackModulesDelete = buildDeleteMock('rack_modules');
+      const rackDelete = buildDeleteMock('racks');
+      const userModulesDelete = chainable({data: null, error: null});
+      const patchCommentsDelete = buildDeleteMock('comments');
+      const rackCommentsDelete = buildDeleteMock('comments');
+      const authorCommentsDelete = chainable({data: null, error: null});
+
+      let patchCalls = 0;
+      let rackCalls = 0;
+      let commentCalls = 0;
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'patches') {
+          patchCalls++;
+          return patchCalls === 1 ? patchSelect : patchDelete;
+        }
+        if (table === 'patch_connections') return patchConnectionsDelete;
+        if (table === 'patch_module_instances') return patchModuleInstancesDelete;
+        if (table === 'racks') {
+          rackCalls++;
+          return rackCalls === 1 ? rackSelect : rackDelete;
+        }
+        if (table === 'rack_modules') return rackModulesDelete;
+        if (table === 'user_modules') return userModulesDelete;
+        if (table === 'comments') {
+          commentCalls++;
+          if (commentCalls === 1) return patchCommentsDelete;
+          if (commentCalls === 2) return rackCommentsDelete;
+          return authorCommentsDelete;
+        }
+        fail(`Unexpected table access: ${ table }`);
+        return chainable({data: null, error: null});
+      });
+
+      service.delete.allUserData().subscribe({
+        next: () => {
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'patch_connections',
+            column: 'patchid',
+            ids: [11, 12]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'patch_module_instances',
+            column: 'patch_id',
+            ids: [11, 12]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'patches',
+            column: 'id',
+            ids: [11, 12]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'rack_modules',
+            column: 'rackid',
+            ids: [21]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'racks',
+            column: 'id',
+            ids: [21]
+          }));
+          expect(inCalls).toContain(jasmine.objectContaining({
+            table: 'comments',
+            column: 'entityId',
+            ids: [11, 12]
+          }));
           done();
         },
         error: (err) => {
