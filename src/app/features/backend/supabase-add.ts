@@ -146,7 +146,8 @@ export function createAddNamespace(
     ),
     
     patch: (data: {
-      name: string
+      name: string;
+      public?: boolean;
     }) => {
       return getUserSession$().pipe(
         switchMap(user => {
@@ -157,7 +158,7 @@ export function createAddNamespace(
               .insert({
                 ...data,
                 authorid: user.id,
-                public: true
+                public: data.public ?? true
               })
           );
         }),
