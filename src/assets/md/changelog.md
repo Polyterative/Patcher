@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.4.3](https://github.com/Polyterative/Patcher/compare/v5.4.2...v5.4.3) (2026-04-23)
+
+
+### Features
+
+* **discovery:** improve search matching and rack hover details ([a273911](https://github.com/Polyterative/Patcher/commit/a273911af09eff720c5bc000f42d6a20acc0a1f6))
+* **patch:** add privacy toggle to patch creator ([0b9efff](https://github.com/Polyterative/Patcher/commit/0b9efffea45dac4edad6adf28b5daec42effb061))
+* **user-area:** reset discovery search and expand manufacturer docs ([85c4b9d](https://github.com/Polyterative/Patcher/commit/85c4b9d1c4a79e1892b0c46336d8a725c505f316))
+
+
+### Bug Fixes
+
+* **account:** stabilize signup and account actions ([7c3337d](https://github.com/Polyterative/Patcher/commit/7c3337dddb9426d41fb38df4f018a6cafe78cac2))
+* **patch:** import reactive forms in patch module ([9b29799](https://github.com/Polyterative/Patcher/commit/9b29799c50525db590489b6e4d3b764977a9d485))
+* **user-area:** search before pagination ([f4c8f99](https://github.com/Polyterative/Patcher/commit/f4c8f9910b53c65090162c950e32c5bf123bd54a))
+
 ### [5.4.2](https://github.com/Polyterative/Patcher/compare/v5.4.1...v5.4.2) (2026-04-14)
 
 
