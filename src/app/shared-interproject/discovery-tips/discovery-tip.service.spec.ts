@@ -223,6 +223,37 @@ describe('DiscoveryTipService', () => {
     expect(storage.viewers['user-123']['__global_pause__'].snoozedUntil).toBeDefined();
   });
 
+  it('does not auto-advance to the next eligible tip while the current tip is still active', () => {
+    const service = build();
+    const profileAnchor = document.createElement('section');
+    const modulesAddAnchor = document.createElement('button');
+    let activeTip: any = null;
+
+    service.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    service.registerAnchor('user-area-profile-card', profileAnchor);
+    service.registerAnchor('user-area-modules-add', modulesAddAnchor);
+    service.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+
+    jasmine.clock().tick(1300);
+    const firstTipId = activeTip?.definition.id;
+    expect(firstTipId).toBeDefined();
+
+    jasmine.clock().tick(3000);
+    expect(activeTip?.definition.id).toBe(firstTipId);
+  });
+
   it('does not surface tips while the global pause is still active', () => {
     const firstService = build();
     const firstAnchor = document.createElement('button');
