@@ -8,7 +8,9 @@ on:
       - 'src/**'
       - 'api/**'
       - 'middleware.ts'
-      - 'scripts/tests/**'
+      - 'generate-env.js'
+      - 'scripts/**'
+      - 'vercel.json'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'angular.json'
@@ -19,7 +21,9 @@ on:
       - 'src/**'
       - 'api/**'
       - 'middleware.ts'
-      - 'scripts/tests/**'
+      - 'generate-env.js'
+      - 'scripts/**'
+      - 'vercel.json'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'angular.json'
@@ -43,10 +47,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: Lint
+            command: pnpm run lint
+          - name: Stylelint
+            command: pnpm run lint:styles
           - name: Unit tests
             command: pnpm run ci
           - name: Function tests
             command: pnpm run test:functions
+          - name: Production build
+            command: pnpm run build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,7 +70,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: pnpm
 
       - name: Install dependencies
@@ -72,5 +82,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: Run tests
+      - name: Run checks
         run: ${{ matrix.command }}
