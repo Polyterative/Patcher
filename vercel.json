@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "pnpm build:release",
   "outputDirectory": "dist/Patcher/browser",
   "ignoreCommand": "git diff HEAD^ HEAD --name-only | grep -qvE '^(internaldocs/|[^/]+\\.md$|[^/]+\\.txt$|\\.github/)' && exit 1 || exit 0",
   "routes": [
