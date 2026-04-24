@@ -1,15 +1,12 @@
 name: Audit
 
-# Only trigger, when the build workflow succeeded
 on:
-  workflow_run:
-    workflows: [ "Build and deploy" ]
-    types:
-      - success
-
-
-  # Run workflow manually
+  push:
+    branches:
+      - production
   workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
 
 jobs:
   audit:
@@ -20,7 +17,7 @@ jobs:
         with:
           url: 'https://patcher.xyz/'
       - name: Upload results as an artifact
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: report
           path: './report'
