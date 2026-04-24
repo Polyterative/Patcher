@@ -195,8 +195,16 @@ export class DiscoveryTipService extends SubManager {
       return;
     }
 
-    const candidate = this.findCandidate();
+    const snapshot = this.buildSnapshot();
     const currentTip = this._activeTip$.value;
+    if (currentTip) {
+      if (this.shouldKeepActiveTip(currentTip.definition, snapshot)) {
+        return;
+      }
+      this._activeTip$.next(null);
+    }
+
+    const candidate = this.findCandidate();
 
     if (!candidate) {
       this.clearQueuedTip();
@@ -231,18 +239,47 @@ export class DiscoveryTipService extends SubManager {
         return;
       }
 
+      this._activeTip$.next({
+        definition: latestCandidate,
+        anchorElement
+      });
+
       this.updateTipState(latestCandidate, (currentState) => ({
         ...currentState,
         shownCount: currentState.shownCount + 1,
         lastShownAt: new Date().toISOString(),
         snoozedUntil: undefined
       }));
-
-      this._activeTip$.next({
-        definition: latestCandidate,
-        anchorElement
-      });
     }, delay);
+  }
+
+  private shouldKeepActiveTip(
+    definition: DiscoveryTipDefinition,
+    snapshot: DiscoveryTipContextSnapshot
+  ): boolean {
+    if (definition.audience === 'signed-in' && !snapshot.isLoggedIn) {
+      return false;
+    }
+
+    if (!definition.routePrefixes.some((routePrefix) => snapshot.currentRoute.startsWith(routePrefix))) {
+      return false;
+    }
+
+    const anchorElement = this.anchors.get(definition.anchorId);
+    if (!anchorElement) {
+      return false;
+    }
+
+    const currentState = this.getTipState(definition);
+    if (currentState.learnedAt) {
+      return false;
+    }
+
+    if (currentState.snoozedUntil && new Date(currentState.snoozedUntil).getTime() > Date.now()) {
+      return false;
+    }
+
+    return definition.isEligible(snapshot);
   }
 
   private findCandidate(): DiscoveryTipDefinition | null {
