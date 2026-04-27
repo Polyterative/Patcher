@@ -86,6 +86,29 @@ describe('ModuleEditorDataService', () => {
       expect(result.locked).toBe(1);
     });
   });
+
+  describe('buildCroppedPanelFile', () => {
+    it('creates a jpg file for the cropped panel output', () => {
+      const sourceFile = new File(['source'], 'front-panel.jpeg', {type: 'image/jpeg'});
+      const croppedBlob = new Blob(['cropped'], {type: 'image/jpeg'});
+
+      const result = service.buildCroppedPanelFile(sourceFile, croppedBlob);
+
+      expect(result.name).toBe('front-panel-cropped.jpg');
+      expect(result.type).toBe('image/jpeg');
+      expect(result.size).toBe(croppedBlob.size);
+    });
+
+    it('falls back to the source file extension when the blob type is missing', () => {
+      const sourceFile = new File(['source'], 'front-panel.png', {type: 'image/png'});
+      const croppedBlob = new Blob(['cropped']);
+
+      const result = service.buildCroppedPanelFile(sourceFile, croppedBlob);
+
+      expect(result.name).toBe('front-panel-cropped.png');
+      expect(result.type).toBe('image/png');
+    });
+  });
   
   describe('createFormCV', () => {
     it('uses empty string when name is undefined', () => {

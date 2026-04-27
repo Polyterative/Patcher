@@ -64,6 +64,16 @@ interface BuildPersistPlanArgs {
 export class ModuleEditorDataService {
   constructor(private readonly backend: SupabaseService) {}
 
+  buildCroppedPanelFile(sourceFile: File, blob: Blob): File {
+    const fileType = blob.type || sourceFile.type || 'image/jpeg';
+    const extension = this.fileExtensionFromType(fileType) || this.fileExtensionFromName(sourceFile.name) || 'jpg';
+    const baseName = this.stripFileExtension(sourceFile.name) || 'module-panel';
+    return new File([blob], `${ baseName }-cropped.${ extension }`, {
+      type: fileType,
+      lastModified: Date.now()
+    });
+  }
+
   buildCvSummary(cvs: FormCV[]): CvSectionSummary {
     const editable = cvs.filter(cv => cv.id === 0).length;
     return {
@@ -320,5 +330,30 @@ export class ModuleEditorDataService {
 
   private safeString(str: string | undefined): string {
     return (str || '').replace(/[^a-z0-9]/gi, '_');
+  }
+
+  private fileExtensionFromName(filename: string | undefined): string {
+    if (!filename || !filename.includes('.')) {
+      return '';
+    }
+    return filename.split('.').pop()?.toLowerCase() ?? '';
+  }
+
+  private stripFileExtension(filename: string | undefined): string {
+    if (!filename) {
+      return '';
+    }
+    return filename.replace(/\.[^.]+$/, '');
+  }
+
+  private fileExtensionFromType(fileType: string | undefined): string {
+    const normalizedType = (fileType || '').toLowerCase();
+    if (!normalizedType) {
+      return '';
+    }
+    if (normalizedType === 'image/jpeg') {
+      return 'jpg';
+    }
+    return normalizedType.split('/').pop() ?? '';
   }
 }
