@@ -56,11 +56,6 @@ describe('TotalHpOfModulesPipe', () => {
     expect(pipe.transform([makeRackedModule(1, 12)])).toBe(12);
   });
 
-  it('prefers hp overrides when present', () => {
-    const overridden = makeRackedModule(1, 4);
-    overridden.rackingData.hpOverride = 10;
-    expect(pipe.transform([overridden, makeRackedModule(2, 8)])).toBe(18);
-  });
 });
 
 
@@ -87,9 +82,4 @@ describe('CalculateRowInformationPipe', () => {
     expect(pipe.transform([makeRackedModule(1, 6)])).toBe('Total HP: 6');
   });
 
-  it('uses hp overrides when calculating row totals', () => {
-    const overridden = makeRackedModule(1, 4);
-    overridden.rackingData.hpOverride = 10;
-    expect(pipe.transform([overridden, makeRackedModule(2, 8)])).toBe('Total HP: 18');
-  });
 });

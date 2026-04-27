@@ -231,7 +231,7 @@ describe('SupabaseService - update extended', () => {
     beforeEach(() => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
     });
-
+ 
     it('should upsert existing modules (with defined id)', (done) => {
       const mock = chainable({data: null, error: null});
       const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
@@ -244,7 +244,14 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          expect(upsertSpy).toHaveBeenCalled();
+          expect(upsertSpy).toHaveBeenCalledWith([{
+            id: 1,
+            moduleid: 10,
+            rackid: 5,
+            row: 0,
+            column: 0,
+            selected_panel_id: null
+          }]);
           done();
         },
         error: (err) => {
@@ -266,7 +273,7 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          const payload = upsertSpy.calls.mostRecent().args[0];
+          const payload = upsertSpy.calls.mostRecent().args[0] as any[];
           expect(payload[0].selected_panel_id).toBe(7);
           done();
         },
@@ -289,7 +296,7 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          const payload = upsertSpy.calls.mostRecent().args[0];
+          const payload = upsertSpy.calls.mostRecent().args[0] as any[];
           expect(payload[0].selected_panel_id).toBeNull();
           done();
         },
@@ -299,30 +306,7 @@ describe('SupabaseService - update extended', () => {
         }
       });
     }, TEST_TIMEOUT);
-
-    it('should include hp_override in upsert payload', (done) => {
-      const mock = chainable({data: null, error: null});
-      const upsertSpy = spyOn(mock, 'upsert').and.returnValue(mock);
-      spyOn(supabaseClient, 'from').and.returnValue(mock);
-
-      const data = [{
-        rackingData: {id: 3, rackid: 5, moduleid: 11, row: 0, column: 1, hpOverride: 12},
-        module: {id: 11} as any
-      }];
-
-      service.update.rackedModules(data).subscribe({
-        next: () => {
-          const payload = upsertSpy.calls.mostRecent().args[0];
-          expect(payload[0].hp_override).toBe(12);
-          done();
-        },
-        error: (err) => {
-          fail(err);
-          done();
-        }
-      });
-    }, TEST_TIMEOUT);
-     
+ 
     it('should insert new modules when rackingData.id is undefined', (done) => {
       const mock = chainable({data: null, error: null});
       const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
@@ -335,31 +319,13 @@ describe('SupabaseService - update extended', () => {
       
       service.update.rackedModules(data).subscribe({
         next: () => {
-          expect(insertSpy).toHaveBeenCalled();
-          done();
-        },
-        error: (err) => {
-          fail(err);
-          done();
-        }
-      });
-    }, TEST_TIMEOUT);
-  });
-
-  describe('update.rackModuleHp', () => {
-    beforeEach(() => {
-      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'test-user'}));
-    });
-
-    it('should update hp_override for the given rack module id', (done) => {
-      const mock = chainable({data: null, error: null});
-      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
-      spyOn(mock, 'eq').and.returnValue(mock);
-      spyOn(supabaseClient, 'from').and.returnValue(mock);
-
-      service.update.rackModuleHp(42, 10).subscribe({
-        next: () => {
-          expect(updateSpy).toHaveBeenCalledWith({hp_override: 10});
+          expect(insertSpy).toHaveBeenCalledWith([{
+            moduleid: 11,
+            rackid: 5,
+            row: 1,
+            column: 2,
+            selected_panel_id: null
+          }]);
           done();
         },
         error: (err) => {
@@ -369,23 +335,6 @@ describe('SupabaseService - update extended', () => {
       });
     }, TEST_TIMEOUT);
 
-    it('should allow clearing hp_override', (done) => {
-      const mock = chainable({data: null, error: null});
-      const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
-      spyOn(mock, 'eq').and.returnValue(mock);
-      spyOn(supabaseClient, 'from').and.returnValue(mock);
-
-      service.update.rackModuleHp(42, null).subscribe({
-        next: () => {
-          expect(updateSpy).toHaveBeenCalledWith({hp_override: null});
-          done();
-        },
-        error: (err) => {
-          fail(err);
-          done();
-        }
-      });
-    }, TEST_TIMEOUT);
   });
   
   describe('update.rackModulePanel', () => {

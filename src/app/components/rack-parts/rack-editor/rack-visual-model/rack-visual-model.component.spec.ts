@@ -59,7 +59,6 @@ describe('RackVisualModelComponent', () => {
         powerPos5: null,
       },
       rackingData: {
-        hpOverride: 16,
         selectedPanelId: null,
       }
     } as any;
@@ -78,7 +77,7 @@ describe('RackVisualModelComponent', () => {
     const badge = host.querySelector('.hpIndicator');
 
     expect(badge).not.toBeNull();
-    expect(badge?.textContent?.trim()).toBe('16HP');
+    expect(badge?.textContent?.trim()).toBe('14HP');
   });
 
   it('renders module hover stats and reveals them on hover', () => {
@@ -91,7 +90,7 @@ describe('RackVisualModelComponent', () => {
     const hoverStats = host.querySelector('.moduleHoverStats');
     expect(hoverStats).not.toBeNull();
     expect(component.isHoveredModule(moduleRef)).toBeTrue();
-    expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('HP16HP');
+    expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('HP14HP');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('PWRn/a');
   });
 

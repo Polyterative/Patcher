@@ -101,22 +101,19 @@ describe('RackEditorComponent', () => {
 
     component.moduleRightClick$.next({
       $event: new MouseEvent('contextmenu'),
-      rackedModule: {
-        module: {
-          name: 'Belgrad',
-          hp: 14,
-          manufacturer: {name: 'Xaoc Devices'},
-          panels: []
-        },
-        rackingData: {
-          hpOverride: 16
-        }
-      } as any
-    });
+        rackedModule: {
+          module: {
+            name: 'Belgrad',
+            hp: 14,
+            manufacturer: {name: 'Xaoc Devices'},
+            panels: []
+          }
+        } as any
+      });
 
     const ids = menuItems$.value.map(item => item.id);
-    expect(ids).not.toContain('edit-hp');
-    expect(ids).not.toContain('reset-hp');
-    expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 16 HP)');
+      expect(ids).not.toContain('edit-hp');
+      expect(ids).not.toContain('reset-hp');
+      expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
   });
 });
