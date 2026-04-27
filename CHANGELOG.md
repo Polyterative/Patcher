@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.5.0](https://github.com/Polyterative/Patcher/compare/v5.4.4...v5.5.0) (2026-04-27)
+
+
+### Features
+
+* **module-editor:** add local panel crop workflow ([fd39731](https://github.com/Polyterative/Patcher/commit/fd3973186776a305778c92503fc39ea2eabe3608))
+
+
+### Bug Fixes
+
+* **module-editor:** refine panel crop workflow ([deb68e4](https://github.com/Polyterative/Patcher/commit/deb68e4f116780bfa29b715f9671e9500339f6f0))
+
 ### [5.4.4](https://github.com/Polyterative/Patcher/compare/v5.4.3...v5.4.4) (2026-04-27)
 
 
