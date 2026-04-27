@@ -1,5 +1,8 @@
 import { Standard } from '../../models/standard';
-import { GetModuleHeightForStandardPipe } from './get-module-height-for-standard.pipe';
+import {
+  getModulePanelAspectRatio,
+  GetModuleHeightForStandardPipe
+} from './get-module-height-for-standard.pipe';
 
 
 describe('GetModuleHeightForStandardPipe', () => {
@@ -27,5 +30,19 @@ describe('GetModuleHeightForStandardPipe', () => {
   
   it('returns 7.6 rem for any standard id other than 0 or 1000', () => {
     expect(pipe.transform({id: 99, name: 'Other'} as Standard)).toBe(7.6);
+  });
+
+  it('derives the same aspect ratio used by realistic module rendering for 3U modules', () => {
+    expect(getModulePanelAspectRatio({
+      hp: 10,
+      standard: {id: 0, name: '3U'}
+    } as any)).toBeCloseTo(10 / 25.4, 6);
+  });
+
+  it('derives the same aspect ratio used by realistic module rendering for 1U modules', () => {
+    expect(getModulePanelAspectRatio({
+      hp: 20,
+      standard: {id: 2, name: 'Pulp Logic 1U'}
+    } as any)).toBeCloseTo(20 / 7.6, 6);
   });
 });
