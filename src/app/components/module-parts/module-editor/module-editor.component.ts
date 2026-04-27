@@ -3,7 +3,8 @@ import {
   Component,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import {
   UntypedFormBuilder,
@@ -12,6 +13,11 @@ import {
   Validators
 } from '@angular/forms';
 import { MatSnackBar } from "@angular/material/snack-bar";
+import {
+  CropperPosition,
+  ImageCropperComponent,
+  ImageCroppedEvent
+} from 'ngx-image-cropper';
 import {
   BehaviorSubject,
   combineLatest,
@@ -42,6 +48,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { getModulePanelAspectRatio } from '../get-module-height-for-standard.pipe';
 import {
   FormCV,
   ModuleEditorDataService,
@@ -91,9 +98,20 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   panelTypeAlreadyExists$ = new BehaviorSubject<boolean>(false);
   /** The human-readable name of the duplicate panel type, for display in the warning. */
   duplicatePanelTypeName$ = new BehaviorSubject<string>('');
+  readonly selectedPanelSourceFile$ = new BehaviorSubject<File | undefined>(undefined);
+  readonly selectedPanelSourcePreviewUrl$ = new BehaviorSubject<string | null>(null);
+  readonly croppedPanelFile$ = new BehaviorSubject<File | undefined>(undefined);
+  readonly croppedPanelPreviewUrl$ = new BehaviorSubject<string | null>(null);
+  readonly panelCropLoading$ = new BehaviorSubject<boolean>(false);
+  readonly panelCropLoadFailed$ = new BehaviorSubject<boolean>(false);
+  readonly panelCropScale$ = new BehaviorSubject<number>(1);
+  readonly panelCropPosition$ = new BehaviorSubject<CropperPosition | undefined>(undefined);
   readonly hasPendingChanges$: Observable<boolean>;
   private saveCompletedTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private powerAutofillReady = false;
+  private activePanelSourcePreviewUrl: string | null = null;
+  private activeCroppedPanelPreviewUrl: string | null = null;
+  @ViewChild(ImageCropperComponent) private panelCropper?: ImageCropperComponent;
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -218,6 +236,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       clearTimeout(this.saveCompletedTimeoutId);
       this.saveCompletedTimeoutId = null;
     }
+    this.resetPanelCropState();
     this.dataService.moduleEditorHasPendingChanges$.next(false);
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
@@ -413,7 +432,26 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         this.panelTypeAlreadyExists$.next(isDuplicate);
         this.duplicatePanelTypeName$.next(isDuplicate ? panelTypeValue?.name ?? '' : '');
       });
-    
+
+    this.fileDragHostService.files$
+      .pipe(
+        map(files => files[0]),
+        distinctUntilChanged(),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(file => {
+        if (!file) {
+          this.resetPanelCropState();
+          return;
+        }
+
+        this.selectedPanelSourceFile$.next(file);
+        this.croppedPanelFile$.next(undefined);
+        this.panelCropLoadFailed$.next(false);
+        this.panelCropLoading$.next(true);
+        this.replacePanelSourcePreviewUrl(this.tryCreateObjectUrl(file));
+        this.replaceCroppedPanelPreviewUrl(null);
+      });
   }
 
   private persistAllChanges$(): Observable<unknown> {
@@ -441,7 +479,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       powerPos5: this.powerRailFiveVolts.control.value,
       weight: this.weight.control.value,
       depth: this.depth.control.value,
-      panelFile: this.fileDragHostService.files$.value[0],
+      panelFile: this.croppedPanelFile$.value,
       panelTypeValue: this.panelType.control.value,
       panelDescription: this.panelDescription.control.value
     });
@@ -473,6 +511,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           });
           this.markEditorFormsPristine();
           this.fileDragHostService.removeAllFiles$.emit();
+          this.resetPanelCropState();
           this.dataService.moduleEditorHasPendingChanges$.next(false);
           this.dataService.updateSingleModuleData$.next(this.data.id);
           this.showSaveCompletedState();
@@ -527,6 +566,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   get saveFabDisabledReason(): string {
     return this.saveFabState.disabledReason;
   }
+
+  get panelCropAspectRatio(): number {
+    return getModulePanelAspectRatio(this.data);
+  }
+
+  get panelCropTransform(): {scale: number} {
+    return {scale: this.panelCropScale$.value};
+  }
+
+  get panelCropPosition(): CropperPosition | undefined {
+    return this.panelCropPosition$.value;
+  }
   
   /** Returns exact field-level validation feedback for the save FAB and save errors. */
   private getValidationFeedback(pendingState: PendingSaveState): ValidationFeedback {
@@ -571,6 +622,18 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
           errorMessage: `This module already has a "${ duplicateName }" panel.`
         };
       }
+      if (this.panelCropLoadFailed$.value) {
+        return {
+          disabledReason: 'Reload panel image',
+          errorMessage: 'The selected panel image could not be opened locally.'
+        };
+      }
+      if (!this.croppedPanelFile$.value) {
+        return {
+          disabledReason: 'Adjust panel crop',
+          errorMessage: 'Adjust the local panel crop before saving.'
+        };
+      }
 
       const invalidPanelFields = this.getInvalidFieldLabels([
         this.panelType,
@@ -598,7 +661,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
 
   private isPanelSaveBlocked(): boolean {
     const shouldSavePanel = (this.fileDragHostService.files$.value?.length ?? 0) > 0;
-    return shouldSavePanel && (this.formGroupPanel.invalid || this.panelTypeAlreadyExists$.value);
+    return shouldSavePanel
+      && (this.formGroupPanel.invalid || this.panelTypeAlreadyExists$.value || this.panelCropLoadFailed$.value || !this.croppedPanelFile$.value);
   }
 
 
@@ -685,5 +749,106 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     ]
       .filter(control => control !== changedControl && (control.value === '' || control.value === null || control.value === undefined))
       .forEach(control => control.setValue(0, {emitEvent: false}));
+  }
+
+  onPanelImageCropped(event: ImageCroppedEvent): void {
+    const sourceFile = this.selectedPanelSourceFile$.value;
+    if (!sourceFile || !event.blob) {
+      this.croppedPanelFile$.next(undefined);
+      this.replaceCroppedPanelPreviewUrl(null);
+      return;
+    }
+
+    this.croppedPanelFile$.next(this.moduleEditorDataService.buildCroppedPanelFile(sourceFile, event.blob));
+    this.panelCropLoadFailed$.next(false);
+    this.panelCropLoading$.next(false);
+    this.replaceCroppedPanelPreviewUrl(event.objectUrl ?? this.tryCreateObjectUrl(event.blob));
+  }
+
+  onPanelImageLoaded(): void {
+    this.panelCropLoadFailed$.next(false);
+  }
+
+  onPanelCropperReady(): void {
+    this.panelCropLoading$.next(false);
+  }
+
+  onPanelCropperChange(position: CropperPosition): void {
+    this.panelCropPosition$.next({...position});
+  }
+
+  onPanelImageLoadFailed(): void {
+    this.croppedPanelFile$.next(undefined);
+    this.panelCropLoading$.next(false);
+    this.panelCropLoadFailed$.next(true);
+    this.replacePanelSourcePreviewUrl(null);
+    this.replaceCroppedPanelPreviewUrl(null);
+  }
+
+  fitPanelImage(): void {
+    this.panelCropScale$.next(1);
+  }
+
+  fillPanelImage(): void {
+    this.panelCropScale$.next(1.15);
+  }
+
+  resetPanelCropper(): void {
+    this.panelCropScale$.next(1);
+    this.panelCropPosition$.next(undefined);
+    this.panelCropper?.resetCropperPosition();
+  }
+
+  nudgePanelCrop(direction: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): void {
+    if (!this.panelCropPosition$.value || !this.panelCropper) {
+      return;
+    }
+    this.panelCropper.keyboardAccess(this.buildCropperKeyboardEvent(direction));
+  }
+
+  private resetPanelCropState(): void {
+    this.selectedPanelSourceFile$.next(undefined);
+    this.replacePanelSourcePreviewUrl(null);
+    this.croppedPanelFile$.next(undefined);
+    this.panelCropPosition$.next(undefined);
+    this.panelCropScale$.next(1);
+    this.panelCropLoading$.next(false);
+    this.panelCropLoadFailed$.next(false);
+    this.replaceCroppedPanelPreviewUrl(null);
+  }
+
+  private replacePanelSourcePreviewUrl(nextUrl: string | null): void {
+    if (this.activePanelSourcePreviewUrl && this.activePanelSourcePreviewUrl !== nextUrl) {
+      URL.revokeObjectURL(this.activePanelSourcePreviewUrl);
+    }
+
+    this.activePanelSourcePreviewUrl = nextUrl;
+    this.selectedPanelSourcePreviewUrl$.next(nextUrl);
+  }
+
+  private replaceCroppedPanelPreviewUrl(nextUrl: string | null): void {
+    if (this.activeCroppedPanelPreviewUrl && this.activeCroppedPanelPreviewUrl !== nextUrl) {
+      URL.revokeObjectURL(this.activeCroppedPanelPreviewUrl);
+    }
+
+    this.activeCroppedPanelPreviewUrl = nextUrl;
+    this.croppedPanelPreviewUrl$.next(nextUrl);
+  }
+
+  private tryCreateObjectUrl(file: Blob | undefined): string | null {
+    if (!(file instanceof Blob)) {
+      return null;
+    }
+    return URL.createObjectURL(file);
+  }
+
+  private buildCropperKeyboardEvent(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): KeyboardEvent {
+    return {
+      key,
+      shiftKey: false,
+      altKey: false,
+      preventDefault: () => undefined,
+      stopPropagation: () => undefined
+    } as KeyboardEvent;
   }
 }

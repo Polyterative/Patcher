@@ -33,7 +33,9 @@
               }
             </lib-clean-card>
           </div>
-          <app-comments-root></app-comments-root>
+          @if (!bag.editing) {
+            <app-comments-root></app-comments-root>
+          }
         </lib-screen-wrapper>
         <div class="col gap2 module-detail-column module-detail-column--middle">
           @if (bag.data) {
@@ -169,7 +171,7 @@
           @if (bag.data && bag.editing && !bag.data.isComplete) {
             <lib-clean-card class="editing-focus-note">
               <mat-card-subtitle>
-                Focus mode enabled: discovery links and related module lists are hidden while editing.
+                Focus mode enabled: comments, discovery links, and related module lists are hidden while editing.
               </mat-card-subtitle>
             </lib-clean-card>
           }

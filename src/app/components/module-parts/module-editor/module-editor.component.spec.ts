@@ -21,16 +21,17 @@ function makeComponent() {
     createFormCV: jasmine.createSpy('createFormCV'),
     updateFormGroupAndContainer: jasmine.createSpy('updateFormGroupAndContainer'),
     buildPersistPlan: jasmine.createSpy('buildPersistPlan').and.returnValue({operations: [], savedSections: []}),
+    buildCroppedPanelFile: jasmine.createSpy('buildCroppedPanelFile'),
     touchModule$: jasmine.createSpy('touchModule$').and.returnValue(of(null)),
-    syncDataSnapshotAfterSave: jasmine.createSpy('syncDataSnapshotAfterSave'),
-    getPendingSaveState: jasmine.createSpy('getPendingSaveState').and.callFake(({powerDirty}: any) => ({
+    syncDataSnapshotAfterSave: jasmine.createSpy('syncDataSnapshotAfterSave').and.callFake(({module}: any) => module),
+    getPendingSaveState: jasmine.createSpy('getPendingSaveState').and.callFake(({powerDirty, panelFileCount}: any) => ({
       ins: [],
       outs: [],
       shouldSaveInsOuts: false,
       shouldSavePower: powerDirty,
       shouldSavePhysical: false,
-      shouldSavePanel: false,
-      hasPendingChanges: powerDirty
+      shouldSavePanel: panelFileCount > 0,
+      hasPendingChanges: powerDirty || panelFileCount > 0
     }))
   };
 
@@ -209,5 +210,153 @@ describe('ModuleEditorComponent validation messaging', () => {
     component.formGroupPower.markAsDirty();
 
     expect(component.saveFabDisabledReason).toBe('Fix +12V Rail Current (mA), -12V Rail Current (mA)');
+  });
+
+  it('requires a local crop before panel save can proceed', () => {
+    const {component, fileDragHostService} = makeComponent();
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+
+    expect(component.saveFabDisabledReason).toBe('Adjust panel crop');
+    expect(component.isSaveFabDisabled).toBeTrue();
+  });
+});
+
+describe('ModuleEditorComponent panel crop flow', () => {
+  it('uses the selected file as the initial preview while waiting for the cropped file', () => {
+    const {component, fileDragHostService} = makeComponent();
+    const sourceFile = new File(['panel'], 'panel.jpg', {type: 'image/jpeg'});
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([sourceFile]);
+
+    expect(component.selectedPanelSourcePreviewUrl$.value).toBe('blob:source-panel');
+    expect(component.croppedPanelFile$.value).toBeUndefined();
+  });
+
+  it('locks the cropper to the same panel aspect ratio used by module rendering', () => {
+    const {component} = makeComponent();
+    component.data = {
+      ...component.data,
+      hp: 12,
+      standard: {id: 0, name: '3U'}
+    } as any;
+
+    expect(component.panelCropAspectRatio).toBeCloseTo(12 / 25.4, 6);
+  });
+
+  it('stores the locally cropped file and preview', () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    const sourceFile = new File(['panel'], 'panel.jpg', {type: 'image/jpeg'});
+    const croppedFile = new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'});
+    const previewUrl = 'blob:panel-preview';
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(croppedFile);
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([sourceFile]);
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: previewUrl,
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+
+    expect(moduleEditorDataService.buildCroppedPanelFile).toHaveBeenCalledWith(sourceFile, jasmine.any(Blob));
+    expect(component.croppedPanelFile$.value).toBe(croppedFile);
+    expect(component.croppedPanelPreviewUrl$.value).toBe(previewUrl);
+  });
+
+  it('passes the cropped panel file into the existing persist plan', () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    const sourceFile = new File(['panel'], 'panel.jpg', {type: 'image/jpeg'});
+    const croppedFile = new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'});
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(croppedFile);
+    moduleEditorDataService.buildPersistPlan.and.returnValue({
+      operations: [of(null)],
+      savedSections: ['panel']
+    });
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([sourceFile]);
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+
+    component.saveAll$.next();
+
+    expect(moduleEditorDataService.buildPersistPlan).toHaveBeenCalledWith(jasmine.objectContaining({
+      panelFile: croppedFile
+    }));
+  });
+
+  it('clears the loading state when the cropper reports readiness', () => {
+    const {component, fileDragHostService} = makeComponent();
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    expect(component.panelCropLoading$.value).toBeTrue();
+
+    component.onPanelCropperReady();
+
+    expect(component.panelCropLoading$.value).toBeFalse();
+  });
+
+  it('stores the current cropper selection for precision nudging', () => {
+    const {component} = makeComponent();
+
+    component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
+
+    expect(component.panelCropPosition).toEqual({x1: 10, y1: 20, x2: 110, y2: 220});
+  });
+
+  it('applies fit and fill scale presets for the cropper', () => {
+    const {component} = makeComponent();
+
+    component.fillPanelImage();
+    expect(component.panelCropTransform.scale).toBe(1.15);
+
+    component.fitPanelImage();
+    expect(component.panelCropTransform.scale).toBe(1);
+  });
+
+  it('nudges the crop selection in small precision steps', () => {
+    const {component} = makeComponent();
+    const keyboardAccess = jasmine.createSpy('keyboardAccess');
+    (component as any).panelCropper = {keyboardAccess};
+    component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
+
+    component.nudgePanelCrop('ArrowRight');
+
+    expect(keyboardAccess).toHaveBeenCalled();
+    expect(keyboardAccess.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
+      key: 'ArrowRight'
+    }));
+  });
+
+  it('resets the cropper position and scale together', () => {
+    const {component} = makeComponent();
+    const resetCropperPosition = jasmine.createSpy('resetCropperPosition');
+    (component as any).panelCropper = {resetCropperPosition};
+    component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
+
+    component.fillPanelImage();
+    component.resetPanelCropper();
+
+    expect(component.panelCropTransform.scale).toBe(1);
+    expect(component.panelCropPosition).toBeUndefined();
+    expect(resetCropperPosition).toHaveBeenCalled();
   });
 });
