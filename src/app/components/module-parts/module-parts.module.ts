@@ -55,6 +55,7 @@ import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule } from "@angular/forms";
+import { ImageCropperComponent } from 'ngx-image-cropper';
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
 import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zoom-dialog.component';
 
@@ -119,6 +120,7 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     MatInputModule,
     FormsModule,
     FileDragHostModule,
+    ImageCropperComponent,
     NgOptimizedImage,
     CopyableDirective
   ],

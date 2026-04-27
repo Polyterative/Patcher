@@ -40,6 +40,147 @@
               acceptedFileType="image/jpeg,image/jpg"
             ></lib-file-drag-host>
 
+            @if ({
+              selectedPanelFile: selectedPanelSourceFile$ | async,
+              selectedPanelPreviewUrl: selectedPanelSourcePreviewUrl$ | async,
+              croppedPreviewUrl: croppedPanelPreviewUrl$ | async,
+              croppedPanelFile: croppedPanelFile$ | async,
+              cropLoading: panelCropLoading$ | async,
+              cropLoadFailed: panelCropLoadFailed$ | async
+            }; as cropBag) {
+              @if (cropBag.selectedPanelFile) {
+                <section class="setup-panel-crop col gap1"
+                         aria-label="Panel crop workspace"
+                >
+                  <div class="setup-panel-crop-copy">
+                    <mat-card-subtitle>Adjust the crop locally. Only the cropped image preview below will be uploaded.</mat-card-subtitle>
+                  </div>
+
+                  <div class="setup-panel-controls">
+                    <div class="setup-panel-crop-actions">
+                      <button type="button"
+                              mat-stroked-button
+                              (click)="fitPanelImage()"
+                      >
+                        Fit
+                      </button>
+                      <button type="button"
+                              mat-stroked-button
+                              (click)="fillPanelImage()"
+                      >
+                        Fill
+                      </button>
+                      <button type="button"
+                              mat-stroked-button
+                              (click)="resetPanelCropper()"
+                      >
+                        Reset
+                      </button>
+                    </div>
+
+                    <div class="setup-panel-nudge"
+                         aria-label="Precision crop controls"
+                    >
+                      <button type="button"
+                              mat-icon-button
+                              [disabled]="!panelCropPosition"
+                              (click)="nudgePanelCrop('ArrowUp')"
+                              aria-label="Nudge crop up"
+                      >
+                        <mat-icon>keyboard_arrow_up</mat-icon>
+                      </button>
+                      <button type="button"
+                              mat-icon-button
+                              [disabled]="!panelCropPosition"
+                              (click)="nudgePanelCrop('ArrowLeft')"
+                              aria-label="Nudge crop left"
+                      >
+                        <mat-icon>keyboard_arrow_left</mat-icon>
+                      </button>
+                      <button type="button"
+                              mat-icon-button
+                              [disabled]="!panelCropPosition"
+                              (click)="nudgePanelCrop('ArrowRight')"
+                              aria-label="Nudge crop right"
+                      >
+                        <mat-icon>keyboard_arrow_right</mat-icon>
+                      </button>
+                      <button type="button"
+                              mat-icon-button
+                              [disabled]="!panelCropPosition"
+                              (click)="nudgePanelCrop('ArrowDown')"
+                              aria-label="Nudge crop down"
+                      >
+                        <mat-icon>keyboard_arrow_down</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="setup-panel-crop-grid">
+                    <div class="setup-panel-crop-stage">
+                      <image-cropper
+                        [imageFile]="cropBag.selectedPanelFile"
+                        [output]="'blob'"
+                        [format]="'jpeg'"
+                        [imageQuality]="92"
+                        [maintainAspectRatio]="true"
+                        [aspectRatio]="panelCropAspectRatio"
+                        [containWithinAspectRatio]="true"
+                        [onlyScaleDown]="true"
+                        [cropperMinWidth]="120"
+                        [cropperMinHeight]="120"
+                        [checkImageType]="true"
+                        [imageAltText]="'Selected panel image'"
+                        [cropperFrameAriaLabel]="'Panel crop selection'"
+                        [initialStepSize]="1"
+                        [transform]="panelCropTransform"
+                        (imageCropped)="onPanelImageCropped($event)"
+                        (imageLoaded)="onPanelImageLoaded()"
+                        (cropperChange)="onPanelCropperChange($event)"
+                        (cropperReady)="onPanelCropperReady()"
+                        (loadImageFailed)="onPanelImageLoadFailed()"
+                      ></image-cropper>
+
+                      @if (cropBag.cropLoading) {
+                        <div class="setup-panel-crop-status">
+                          Preparing the local cropper...
+                        </div>
+                      }
+
+                      @if (cropBag.cropLoadFailed) {
+                        <div class="setup-panel-crop-error">
+                          This image could not be opened locally. Pick another JPG file to continue.
+                        </div>
+                      }
+                    </div>
+
+                    <div class="setup-panel-preview">
+                      <div class="setup-panel-preview-header">
+                        <span class="setup-panel-preview-label">Final preview</span>
+                        @if (cropBag.croppedPanelFile) {
+                          <span class="setup-panel-preview-meta">
+                            {{ cropBag.croppedPanelFile.type || 'image/jpeg' }}
+                          </span>
+                        }
+                      </div>
+
+                      @if (cropBag.croppedPreviewUrl || cropBag.selectedPanelPreviewUrl) {
+                        <img
+                          class="setup-panel-preview-image"
+                          [src]="cropBag.croppedPreviewUrl || cropBag.selectedPanelPreviewUrl"
+                          alt="Cropped panel preview"
+                        >
+                      } @else {
+                        <div class="setup-panel-preview-placeholder">
+                          Move or resize the crop to generate the final panel preview.
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </section>
+              }
+            }
+
             <div class="col gap1 setup-field-stack setup-panel-fields">
               <lib-mat-form-entity
                 [dataPack]="panelType"
