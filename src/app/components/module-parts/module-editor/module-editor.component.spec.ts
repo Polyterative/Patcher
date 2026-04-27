@@ -22,6 +22,7 @@ function makeComponent() {
     updateFormGroupAndContainer: jasmine.createSpy('updateFormGroupAndContainer'),
     buildPersistPlan: jasmine.createSpy('buildPersistPlan').and.returnValue({operations: [], savedSections: []}),
     buildCroppedPanelFile: jasmine.createSpy('buildCroppedPanelFile'),
+    suggestPanelTypeFromBlob: jasmine.createSpy('suggestPanelTypeFromBlob').and.resolveTo(1),
     touchModule$: jasmine.createSpy('touchModule$').and.returnValue(of(null)),
     syncDataSnapshotAfterSave: jasmine.createSpy('syncDataSnapshotAfterSave').and.callFake(({module}: any) => module),
     getPendingSaveState: jasmine.createSpy('getPendingSaveState').and.callFake(({powerDirty, panelFileCount}: any) => ({
@@ -272,6 +273,98 @@ describe('ModuleEditorComponent panel crop flow', () => {
     expect(component.croppedPanelPreviewUrl$.value).toBe(previewUrl);
   });
 
+  it('auto-suggests Dark panel type from the cropped image when the user has not overridden it', async () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'}));
+    moduleEditorDataService.suggestPanelTypeFromBlob.and.resolveTo(2);
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+    await Promise.resolve();
+
+    expect(component.panelType.control.value).toEqual({name: 'Dark', value: 2, id: '1'});
+  });
+
+  it('raises the visual cue when auto-detection updates the panel type', async () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'}));
+    moduleEditorDataService.suggestPanelTypeFromBlob.and.resolveTo(2);
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+    await Promise.resolve();
+
+    expect(component.panelTypeAutoSelectionCue$.value).toBeTrue();
+  });
+
+  it('preserves a manual panel type override after auto-detection', async () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'}));
+    moduleEditorDataService.suggestPanelTypeFromBlob.and.resolveTo(2);
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    component.panelType.control.setValue({name: 'Limited edition', value: 4, id: '3'});
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+    await Promise.resolve();
+
+    expect(component.panelType.control.value).toEqual({name: 'Limited edition', value: 4, id: '3'});
+  });
+
+  it('ignores late auto-detection results after the user changes panel type manually', async () => {
+    const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
+    let resolveSuggestion!: (value: number) => void;
+    moduleEditorDataService.buildCroppedPanelFile.and.returnValue(new File(['cropped'], 'panel-cropped.jpg', {type: 'image/jpeg'}));
+    moduleEditorDataService.suggestPanelTypeFromBlob.and.returnValue(new Promise(resolve => {
+      resolveSuggestion = resolve;
+    }));
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:source-panel');
+    component.ngOnInit();
+
+    fileDragHostService.files$.next([new File(['panel'], 'panel.jpg', {type: 'image/jpeg'})]);
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 0, y1: 0, x2: 320, y2: 640},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+
+    component.panelType.control.setValue({name: 'Limited edition', value: 4, id: '3'});
+    resolveSuggestion(2);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(component.panelType.control.value).toEqual({name: 'Limited edition', value: 4, id: '3'});
+  });
+
   it('passes the cropped panel file into the existing persist plan', () => {
     const {component, moduleEditorDataService, fileDragHostService} = makeComponent();
     const sourceFile = new File(['panel'], 'panel.jpg', {type: 'image/jpeg'});
@@ -322,14 +415,80 @@ describe('ModuleEditorComponent panel crop flow', () => {
     expect(component.panelCropPosition).toEqual({x1: 10, y1: 20, x2: 110, y2: 220});
   });
 
-  it('applies fit and fill scale presets for the cropper', () => {
+  it('fits the crop selection to the available image area', () => {
     const {component} = makeComponent();
-
-    component.fillPanelImage();
-    expect(component.panelCropTransform.scale).toBe(1.15);
+    component.onPanelCropperReady({width: 320, height: 640});
+    component.data = {
+      ...component.data,
+      hp: 12,
+      standard: {id: 0, name: '3U'}
+    } as any;
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 40, y1: 40, x2: 160, y2: 300},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
 
     component.fitPanelImage();
-    expect(component.panelCropTransform.scale).toBe(1);
+
+    expect(component.panelCropPosition?.x1 ?? 0).toBeCloseTo(8.81889763779526, 6);
+    expect(component.panelCropPosition?.y1 ?? 0).toBe(0);
+    expect(component.panelCropPosition?.x2 ?? 0).toBeCloseTo(311.18110236220474, 6);
+    expect(component.panelCropPosition?.y2 ?? 0).toBe(640);
+  });
+
+  it('fills by tightening the crop selection instead of scaling the image', () => {
+    const {component} = makeComponent();
+    component.onPanelCropperReady({width: 320, height: 640});
+    component.data = {
+      ...component.data,
+      hp: 12,
+      standard: {id: 0, name: '3U'}
+    } as any;
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 10, y1: 20, x2: 310, y2: 620},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+
+    component.fillPanelImage();
+
+    expect(component.panelCropPosition?.x1 ?? 0).toBeCloseTo(36.03244094488189, 2);
+    expect(component.panelCropPosition?.y1 ?? 0).toBeCloseTo(57.6, 6);
+    expect(component.panelCropPosition?.x2 ?? 0).toBeCloseTo(283.9675590551181, 2);
+    expect(component.panelCropPosition?.y2 ?? 0).toBeCloseTo(582.4, 6);
+  });
+
+  it('clears one-shot crop overrides after the cropper reports a new drag position', () => {
+    const {component} = makeComponent();
+    component.onPanelCropperReady({width: 320, height: 640});
+    component.data = {
+      ...component.data,
+      hp: 12,
+      standard: {id: 0, name: '3U'}
+    } as any;
+    component.onPanelImageCropped({
+      blob: new Blob(['cropped'], {type: 'image/jpeg'}),
+      objectUrl: 'blob:panel-preview',
+      width: 320,
+      height: 640,
+      cropperPosition: {x1: 10, y1: 20, x2: 310, y2: 620},
+      imagePosition: {x1: 0, y1: 0, x2: 320, y2: 640}
+    });
+
+    component.fillPanelImage();
+    expect(component.panelCropOverride).toBeDefined();
+
+    component.onPanelCropperChange({x1: 32, y1: 52, x2: 280, y2: 576});
+
+    expect(component.panelCropOverride).toBeUndefined();
+    expect(component.panelCropPosition).toEqual({x1: 32, y1: 52, x2: 280, y2: 576});
   });
 
   it('nudges the crop selection in small precision steps', () => {
@@ -352,10 +511,8 @@ describe('ModuleEditorComponent panel crop flow', () => {
     (component as any).panelCropper = {resetCropperPosition};
     component.onPanelCropperChange({x1: 10, y1: 20, x2: 110, y2: 220});
 
-    component.fillPanelImage();
     component.resetPanelCropper();
 
-    expect(component.panelCropTransform.scale).toBe(1);
     expect(component.panelCropPosition).toBeUndefined();
     expect(resetCropperPosition).toHaveBeenCalled();
   });

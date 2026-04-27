@@ -109,6 +109,87 @@ describe('ModuleEditorDataService', () => {
       expect(result.type).toBe('image/png');
     });
   });
+
+  describe('suggestPanelTypeFromBlob', () => {
+    const imageBitmapTarget = window as Window & {createImageBitmap?: (blob: Blob) => Promise<unknown>};
+    let previousCreateImageBitmap: typeof imageBitmapTarget.createImageBitmap;
+    let createImageBitmapSpy: jasmine.Spy;
+    let drawImageSpy: jasmine.Spy;
+    let getImageDataSpy: jasmine.Spy;
+    let closeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      drawImageSpy = jasmine.createSpy('drawImage');
+      getImageDataSpy = jasmine.createSpy('getImageData');
+      closeSpy = jasmine.createSpy('close');
+      previousCreateImageBitmap = imageBitmapTarget.createImageBitmap;
+      createImageBitmapSpy = jasmine.createSpy('createImageBitmap');
+      imageBitmapTarget.createImageBitmap = createImageBitmapSpy as any;
+      const nativeCreateElement = document.createElement.bind(document);
+      spyOn(document, 'createElement').and.callFake((tagName: string) => {
+        if (tagName === 'canvas') {
+          return {
+            width: 0,
+            height: 0,
+            getContext: () => ({
+              drawImage: drawImageSpy,
+              getImageData: getImageDataSpy
+            })
+          } as any;
+        }
+        return nativeCreateElement(tagName);
+      });
+    });
+
+    afterEach(() => {
+      imageBitmapTarget.createImageBitmap = previousCreateImageBitmap;
+    });
+
+    it('suggests Light for bright desaturated panels', async () => {
+      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
+      getImageDataSpy.and.returnValue({
+        data: new Uint8ClampedArray([
+          240, 240, 240, 255, 245, 245, 245, 255, 235, 235, 235, 255, 238, 238, 238, 255
+        ])
+      });
+
+      await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(1);
+    });
+
+    it('suggests Dark for dark desaturated panels', async () => {
+      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
+      getImageDataSpy.and.returnValue({
+        data: new Uint8ClampedArray([
+          20, 20, 20, 255, 32, 32, 32, 255, 40, 40, 40, 255, 28, 28, 28, 255
+        ])
+      });
+
+      await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(2);
+    });
+
+    it('suggests Special edition for colorful panels', async () => {
+      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
+      getImageDataSpy.and.returnValue({
+        data: new Uint8ClampedArray([
+          255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 180, 0, 255
+        ])
+      });
+
+      await expectAsync(service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}))).toBeResolvedTo(3);
+    });
+
+    it('downsamples oversized images before reading pixels', async () => {
+      createImageBitmapSpy.and.resolveTo({width: 1200, height: 600, close: closeSpy} as any);
+      getImageDataSpy.and.returnValue({
+        data: new Uint8ClampedArray([240, 240, 240, 255])
+      });
+
+      await service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}));
+
+      expect(drawImageSpy).toHaveBeenCalledWith(jasmine.anything(), 0, 0, 192, 96);
+      expect(getImageDataSpy).toHaveBeenCalledWith(0, 0, 192, 96);
+    });
+  });
   
   describe('createFormCV', () => {
     it('uses empty string when name is undefined', () => {
