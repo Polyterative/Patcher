@@ -12,7 +12,6 @@ export interface RackingData {
   row: number;
   column: number;
   selectedPanelId?: number | null;
-  hpOverride?: number | null;
 }
 
 
