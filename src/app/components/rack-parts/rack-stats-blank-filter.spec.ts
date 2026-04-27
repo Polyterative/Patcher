@@ -152,12 +152,6 @@ describe('TotalHpOfRackPipe', () => {
     expect(pipe.transform(modules)).toBe(16);
   });
 
-  it('should use hp overrides for non-blank modules', () => {
-    const overridden = makeRackedModule(1, { hp: 6 });
-    overridden.rackingData.hpOverride = 12;
-    const modules: RackedModule[][] = [[overridden, makeRackedModule(BLANK_3U_ID, { hp: 2 })]];
-    expect(pipe.transform(modules)).toBe(12);
-  });
 });
 
 describe('TotalPowerOfRackPipe', () => {

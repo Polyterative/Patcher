@@ -38,8 +38,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     const backend = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({data: [{id: 1}]})),
-        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
-        rackModuleHp: jasmine.createSpy('update.rackModuleHp').and.returnValue(of({}))
+        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({}))
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
@@ -207,19 +206,4 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(stats.map(x => x.value)).toEqual(['1', '2']);
   });
 
-  it('computes rack statistics using hp overrides', () => {
-    const {service, backend} = build();
-    const overridden = mod(1, 0, 0, 8, 0);
-    overridden.rackingData.hpOverride = 10;
-    backend.get.rackedModules.and.returnValue(of([
-      overridden,
-      mod(2, 0, 1, 4, 0),
-      mod(3, 0, 2, 8, 0)
-    ]));
-    service.singleRackData$.next(rack({id: 3, rows: 1}));
-
-    const stats = service.rackStatistics$.value || [];
-    expect(stats.map(x => x.name)).toEqual(['4HP count', '8HP count', '10HP count']);
-    expect(stats.map(x => x.value)).toEqual(['1', '1', '1']);
-  });
 });

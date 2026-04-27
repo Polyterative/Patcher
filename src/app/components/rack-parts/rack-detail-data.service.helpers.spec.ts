@@ -7,8 +7,7 @@ describe('RackDetailDataService helpers', () => {
     const backend = {
       update: {
         rack: jasmine.createSpy('update.rack').and.returnValue(of({})),
-        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({})),
-        rackModuleHp: jasmine.createSpy('update.rackModuleHp').and.returnValue(of({}))
+        rackedModules: jasmine.createSpy('update.rackedModules').and.returnValue(of({}))
       },
       delete: {
         rackedModule: jasmine.createSpy('delete.rackedModule').and.returnValue(of({})),
@@ -187,20 +186,6 @@ describe('RackDetailDataService helpers', () => {
     expect(rows[0][1].rackingData.id).toBeUndefined();
   });
 
-  it('preserves hpOverride when duplicating a module', () => {
-    const {service} = build();
-    const duplicate = (service as any).duplicateModule.bind(service);
-
-    const source = mod(1, 0, 0);
-    source.rackingData.hpOverride = 10;
-    const rows = [[source]];
-
-    duplicate(rows, rows[0][0]);
-
-    expect(rows[0][1].rackingData.hpOverride).toBe(10);
-    expect(rows[0][1].rackingData.id).toBeUndefined();
-  });
-  
   it('strips module identifiers when copying to new rack and detects unsynced modules', () => {
     const {service} = build();
     const strip = (service as any).removeInformationFromModulesOfCurrentRack.bind(service);
