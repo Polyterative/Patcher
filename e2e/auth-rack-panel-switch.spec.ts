@@ -18,6 +18,25 @@ test.describe('Authenticated Rack Panel Switching', () => {
 
   const TEST_RACK_NAME = '[E2E] Panel Switch Test';
 
+  async function enterEditMode(page: any): Promise<void> {
+    const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
+    if (await editBtn.isVisible().catch(() => false)) {
+      await editBtn.click();
+    }
+    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+  }
+
+  async function getModuleRowIndex(page: any, moduleAltText: string): Promise<number> {
+    const rows = page.locator('app-rack-visual-model #screen > .row');
+    const rowCount = await rows.count();
+    for (let i = 0; i < rowCount; i++) {
+      if (await rows.nth(i).locator(`img[alt*="${ moduleAltText }"]`).count() > 0) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
   /** Creates a fresh private test rack, returns its URL. Already in edit mode on return. */
   async function createPrivateTestRack(page: any): Promise<string> {
     await page.goto('/user/area');
@@ -47,11 +66,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     const rackUrl = page.url();
 
     // Enter edit mode
-    const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
-    if (await editBtn.isVisible().catch(() => false)) {
-      await editBtn.click();
-    }
-    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+    await enterEditMode(page);
     
     // New racks now default to private, so only toggle when the rack is still public.
     const privacyBtn = page.locator('app-rack-minimal button').filter({hasText: /^(public|lock)$/i}).first();
@@ -74,11 +89,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
       await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 10_000});
 
       // Ensure edit mode so the delete button is enabled
-      const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
-      if (await editBtn.isVisible().catch(() => false)) {
-        await editBtn.click();
-      }
-      await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+      await enterEditMode(page);
 
       // Click the delete button (matTooltip="Delete rack")
       const deleteBtn = page.locator('button[mattooltip="Delete rack"]').first();
@@ -108,6 +119,94 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await deleteTestRack(page, rackUrl);
   });
 
+  test('moving a module between rows persists after reload', async ({page}) => {
+    const browser = page.locator('app-module-browser-root');
+    await expect(browser).toBeVisible({timeout: 10_000});
+    await browser.locator('input').first().fill('Belgrad');
+
+    const belgradCard = browser.locator('app-module-minimal', {hasText: /Belgrad/i}).first();
+    await expect(belgradCard).toBeVisible({timeout: 15_000});
+    await belgradCard.locator('button').last().click();
+
+    await page.waitForTimeout(2_500);
+    await page.goto(rackUrl);
+    await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
+    await enterEditMode(page);
+
+    const rows = page.locator('app-rack-visual-model #screen > .row');
+    await expect.poll(async () => rows.count(), {timeout: 10_000}).toBeGreaterThan(2);
+
+    const sourceRowIndex = await getModuleRowIndex(page, 'Belgrad');
+    expect(sourceRowIndex).toBeGreaterThanOrEqual(0);
+
+    const targetRowIndex = sourceRowIndex === 0 ? 1 : 0;
+
+    const saveRequest = page.waitForResponse(response => {
+      if (!response.url().includes('/rest/v1/rack_modules')) {
+        return false;
+      }
+      if (!['POST', 'PATCH'].includes(response.request().method())) {
+        return false;
+      }
+      const body = response.request().postData() ?? '';
+      return body.includes('"row":') && body.includes('"column":');
+    }, {timeout: 10_000});
+
+    await page.evaluate(({moduleName, targetRowIndex}) => {
+      const ng = (window as any).ng;
+      if (!ng?.getComponent) {
+        throw new Error('Angular debug API unavailable');
+      }
+
+      const rackVisualModel = document.querySelector('app-rack-visual-model');
+      if (!rackVisualModel) {
+        throw new Error('Rack visual model not found');
+      }
+
+      const component = ng.getComponent(rackVisualModel);
+      const service = component.rackDetailDataService;
+      const rows = service.rowedRackedModules$.value;
+      let sourceRowIndex = -1;
+      let sourceColumnIndex = -1;
+      let moduleToMove = null;
+
+      for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+        const columnIndex = rows[rowIndex].findIndex((entry: any) => entry.module?.name === moduleName);
+        if (columnIndex >= 0) {
+          sourceRowIndex = rowIndex;
+          sourceColumnIndex = columnIndex;
+          moduleToMove = rows[rowIndex][columnIndex];
+          break;
+        }
+      }
+
+      if (!moduleToMove) {
+        throw new Error(`Module ${moduleName} not found`);
+      }
+
+      service.rackOrderChange$.next({
+        event: {
+          previousIndex: sourceColumnIndex,
+          currentIndex: 0
+        },
+        newRow: targetRowIndex,
+        module: moduleToMove
+      });
+    }, {
+      moduleName: 'Belgrad',
+      targetRowIndex
+    });
+    await saveRequest;
+
+    await page.getByRole('button', {name: /^Lock rack$/i}).first().click();
+    await page.goto(rackUrl);
+    await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
+    await enterEditMode(page);
+
+    const persistedRowIndex = await getModuleRowIndex(page, 'Belgrad');
+    expect(persistedRowIndex).toBe(targetRowIndex);
+  });
+
   test('right-click panel switch changes module panel and persists after reload', async ({page}) => {
     // Add Belgrad (multi-panel module) via the module browser
     const browser = page.locator('app-module-browser-root');
@@ -122,11 +221,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await page.waitForTimeout(2_500);
     await page.goto(rackUrl);
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
-    const editBtnReload = page.getByRole('button', {name: /^Edit rack$/i}).first();
-    if (await editBtnReload.isVisible().catch(() => false)) {
-      await editBtnReload.click();
-    }
-    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+    await enterEditMode(page);
 
     // --- Phase 1: read current panel state ---
     const belgradInRack = page.locator('app-rack-visual-model app-module-realistic')
@@ -158,11 +253,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     // --- Phase 2: reload and verify persistence ---
     await page.goto(rackUrl);
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
-    const editBtnAfterReload = page.getByRole('button', {name: /^Edit rack$/i}).first();
-    if (await editBtnAfterReload.isVisible().catch(() => false)) {
-      await editBtnAfterReload.click();
-    }
-    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+    await enterEditMode(page);
 
     const belgradAfterReload = page.locator('app-rack-visual-model app-module-realistic')
       .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
