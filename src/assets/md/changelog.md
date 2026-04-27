@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.4.4](https://github.com/Polyterative/Patcher/compare/v5.4.3...v5.4.4) (2026-04-27)
+
+
+### Bug Fixes
+
+* **discovery-tips:** keep active tip stable ([31396d1](https://github.com/Polyterative/Patcher/commit/31396d1f2e6ca28e9c9cb47f49c944ab0c94a846))
+* **rack:** remove hp override persistence ([3d26a72](https://github.com/Polyterative/Patcher/commit/3d26a72feead27d1f263dbcb47a43685820a56ee))
+
 ### [5.4.3](https://github.com/Polyterative/Patcher/compare/v5.4.2...v5.4.3) (2026-04-23)
 
 
