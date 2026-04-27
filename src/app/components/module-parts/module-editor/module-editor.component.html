@@ -50,8 +50,10 @@
             }; as cropBag) {
               @if (cropBag.selectedPanelFile) {
                 <section class="setup-panel-crop col gap1"
+                         [class.setup-panel-crop--loading]="cropBag.cropLoading"
+                         [class.setup-panel-crop--ready]="!!cropBag.croppedPanelFile"
                          aria-label="Panel crop workspace"
-                >
+                 >
                   <div class="setup-panel-crop-copy">
                     <mat-card-subtitle>Adjust the crop locally. Only the cropped image preview below will be uploaded.</mat-card-subtitle>
                   </div>
@@ -60,13 +62,13 @@
                     <div class="setup-panel-crop-actions">
                       <button type="button"
                               mat-stroked-button
-                              (click)="fitPanelImage()"
+                              (click)="fillPanelImage()"
                       >
                         Fit
                       </button>
                       <button type="button"
                               mat-stroked-button
-                              (click)="fillPanelImage()"
+                              (click)="fitPanelImage()"
                       >
                         Fill
                       </button>
@@ -133,7 +135,7 @@
                         [imageAltText]="'Selected panel image'"
                         [cropperFrameAriaLabel]="'Panel crop selection'"
                         [initialStepSize]="1"
-                        [transform]="panelCropTransform"
+                        [cropper]="panelCropOverride"
                         (imageCropped)="onPanelImageCropped($event)"
                         (imageLoaded)="onPanelImageLoaded()"
                         (cropperChange)="onPanelCropperChange($event)"
@@ -154,7 +156,9 @@
                       }
                     </div>
 
-                    <div class="setup-panel-preview">
+                    <div class="setup-panel-preview"
+                         [class.setup-panel-preview--ready]="!!cropBag.croppedPanelFile"
+                    >
                       <div class="setup-panel-preview-header">
                         <span class="setup-panel-preview-label">Final preview</span>
                         @if (cropBag.croppedPanelFile) {
@@ -182,10 +186,14 @@
             }
 
             <div class="col gap1 setup-field-stack setup-panel-fields">
-              <lib-mat-form-entity
-                [dataPack]="panelType"
-                [disableVoidSelection]="true"
-              ></lib-mat-form-entity>
+              <div class="setup-panel-type-shell"
+                   [class.setup-panel-type-shell--auto-selected]="panelTypeAutoSelectionCue$ | async"
+              >
+                <lib-mat-form-entity
+                  [dataPack]="panelType"
+                  [disableVoidSelection]="true"
+                ></lib-mat-form-entity>
+              </div>
 
               <lib-mat-form-entity [dataPack]="panelDescription"></lib-mat-form-entity>
             </div>

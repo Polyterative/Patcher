@@ -128,6 +128,18 @@
   border-radius: 0.55rem;
   background: #f8fbff;
   padding: 0.65rem;
+  animation: panel-workspace-enter 220ms ease-out;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.setup-panel-crop--loading {
+  border-color: #d7e4f0;
+  box-shadow: inset 0 0 0 1px rgba(143, 184, 234, 0.12);
+}
+
+.setup-panel-crop--ready {
+  border-color: #cfe0f0;
+  box-shadow: 0 0.45rem 1rem rgba(48, 89, 130, 0.06);
 }
 
 .setup-panel-crop-copy .mat-card-subtitle {
@@ -186,6 +198,7 @@
   border-radius: 0.5rem;
   background: #ffffff;
   padding: 0.5rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .setup-panel-crop-stage image-cropper {
@@ -195,6 +208,7 @@
   --cropper-outline-color: rgba(23, 49, 76, 0.62);
   --cropper-overlay-color: rgba(15, 24, 38, 0.58);
   --cropper-color: #8fb8ea;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .setup-panel-crop-status,
@@ -226,6 +240,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.setup-panel-preview--ready {
+  .setup-panel-preview-image {
+    border-color: #c5d9ee;
+    box-shadow: 0 0.5rem 1.15rem rgba(48, 89, 130, 0.08);
+    transform: translateY(0);
+  }
 }
 
 .setup-panel-preview-header {
@@ -257,6 +280,19 @@
   border-radius: 0.5rem;
   background: linear-gradient(135deg, #edf4fb, #ffffff);
   border: 1px solid #d8e5f1;
+  opacity: 0.94;
+  transform: translateY(2px) scale(0.995);
+  transition: opacity 220ms ease, transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  animation: panel-preview-enter 220ms ease-out;
+}
+
+.setup-panel-type-shell {
+  border-radius: 0.5rem;
+  transition: box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.setup-panel-type-shell--auto-selected {
+  animation: panel-type-autofill-cue 900ms ease-out;
 }
 
 .workflow-block + .workflow-block {
@@ -340,6 +376,61 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes panel-workspace-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes panel-preview-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 0.94;
+    transform: translateY(2px) scale(0.995);
+  }
+}
+
+@keyframes panel-type-autofill-cue {
+  0% {
+    background: rgba(143, 184, 234, 0);
+    box-shadow: 0 0 0 0 rgba(143, 184, 234, 0);
+  }
+  30% {
+    background: rgba(143, 184, 234, 0.14);
+    box-shadow: 0 0 0 0.2rem rgba(143, 184, 234, 0.16);
+  }
+  100% {
+    background: rgba(143, 184, 234, 0);
+    box-shadow: 0 0 0 0 rgba(143, 184, 234, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-panel-crop,
+  .setup-panel-crop-stage,
+  .setup-panel-crop-stage image-cropper,
+  .setup-panel-preview,
+  .setup-panel-preview-image,
+  .setup-panel-type-shell,
+  .save-fab {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .save-fab--saving .mat-icon,
+  .setup-panel-type-shell--auto-selected {
+    animation: none !important;
   }
 }
 

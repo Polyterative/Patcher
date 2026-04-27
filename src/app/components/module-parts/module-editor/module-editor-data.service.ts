@@ -44,6 +44,20 @@ export interface PendingSaveState {
   hasPendingChanges: boolean;
 }
 
+interface PanelAppearanceMetrics {
+  averageLuminance: number;
+  averageSaturation: number;
+  colorfulPixelRatio: number;
+}
+
+type DecodedPanelImage = ImageBitmap | HTMLImageElement;
+
+const PANEL_ANALYSIS_MAX_EDGE = 192;
+const COLORFUL_PIXEL_SATURATION_THRESHOLD = 0.22;
+const SPECIAL_EDITION_COLORFUL_PIXEL_RATIO_THRESHOLD = 0.18;
+const SPECIAL_EDITION_AVERAGE_SATURATION_THRESHOLD = 0.16;
+const DARK_PANEL_LUMINANCE_THRESHOLD = 0.45;
+
 interface BuildPersistPlanArgs {
   module: DbModule;
   pendingState: PendingSaveState;
@@ -63,6 +77,12 @@ interface BuildPersistPlanArgs {
 @Injectable()
 export class ModuleEditorDataService {
   constructor(private readonly backend: SupabaseService) {}
+
+  async suggestPanelTypeFromBlob(blob: Blob): Promise<number> {
+    const imageData = await this.readImageDataFromBlob(blob);
+    const metrics = this.measurePanelAppearance(imageData.data);
+    return this.classifyPanelType(metrics);
+  }
 
   buildCroppedPanelFile(sourceFile: File, blob: Blob): File {
     const fileType = blob.type || sourceFile.type || 'image/jpeg';
@@ -330,6 +350,125 @@ export class ModuleEditorDataService {
 
   private safeString(str: string | undefined): string {
     return (str || '').replace(/[^a-z0-9]/gi, '_');
+  }
+
+  private async readImageDataFromBlob(blob: Blob): Promise<ImageData> {
+    const image = await this.decodePanelImage(blob);
+    const canvas = document.createElement('canvas');
+    const dimensions = this.getPanelAnalysisDimensions(image.width, image.height);
+    canvas.width = dimensions.width;
+    canvas.height = dimensions.height;
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      this.releaseDecodedPanelImage(image);
+      throw new Error('Could not prepare panel image analysis.');
+    }
+
+    context.drawImage(image, 0, 0, dimensions.width, dimensions.height);
+    this.releaseDecodedPanelImage(image);
+    return context.getImageData(0, 0, canvas.width, canvas.height);
+  }
+
+  private measurePanelAppearance(data: Uint8ClampedArray): PanelAppearanceMetrics {
+    let totalLuminance = 0;
+    let totalSaturation = 0;
+    let colorfulPixels = 0;
+    let opaquePixels = 0;
+
+    for (let i = 0; i < data.length; i += 16) {
+      const alpha = data[i + 3] / 255;
+      if (alpha < 0.5) {
+        continue;
+      }
+
+      const red = data[i] / 255;
+      const green = data[i + 1] / 255;
+      const blue = data[i + 2] / 255;
+      const max = Math.max(red, green, blue);
+      const min = Math.min(red, green, blue);
+      const luminance = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+      const saturation = max === 0 ? 0 : (max - min) / max;
+
+      totalLuminance += luminance;
+      totalSaturation += saturation;
+      if (saturation > COLORFUL_PIXEL_SATURATION_THRESHOLD) {
+        colorfulPixels++;
+      }
+      opaquePixels++;
+    }
+
+    if (opaquePixels === 0) {
+      return {
+        averageLuminance: 1,
+        averageSaturation: 0,
+        colorfulPixelRatio: 0
+      };
+    }
+
+    return {
+      averageLuminance: totalLuminance / opaquePixels,
+      averageSaturation: totalSaturation / opaquePixels,
+      colorfulPixelRatio: colorfulPixels / opaquePixels
+    };
+  }
+
+  private classifyPanelType(metrics: PanelAppearanceMetrics): number {
+    if (
+      metrics.colorfulPixelRatio > SPECIAL_EDITION_COLORFUL_PIXEL_RATIO_THRESHOLD
+      || metrics.averageSaturation > SPECIAL_EDITION_AVERAGE_SATURATION_THRESHOLD
+    ) {
+      return 3;
+    }
+
+    return metrics.averageLuminance < DARK_PANEL_LUMINANCE_THRESHOLD ? 2 : 1;
+  }
+
+  private async decodePanelImage(blob: Blob): Promise<DecodedPanelImage> {
+    if (typeof createImageBitmap === 'function') {
+      return createImageBitmap(blob);
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    try {
+      return await this.loadImageElement(objectUrl);
+    } catch {
+      URL.revokeObjectURL(objectUrl);
+      throw new Error('Could not decode panel image locally.');
+    }
+  }
+
+  private loadImageElement(objectUrl: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(image);
+      };
+      image.onerror = () => {
+        reject(new Error('Could not decode panel image locally.'));
+      };
+      image.src = objectUrl;
+    });
+  }
+
+  private releaseDecodedPanelImage(image: DecodedPanelImage): void {
+    if ('close' in image && typeof image.close === 'function') {
+      image.close();
+    }
+  }
+
+  private getPanelAnalysisDimensions(width: number, height: number): {width: number; height: number} {
+    const maxEdge = Math.max(width, height);
+    if (maxEdge <= PANEL_ANALYSIS_MAX_EDGE) {
+      return {width, height};
+    }
+
+    const scale = PANEL_ANALYSIS_MAX_EDGE / maxEdge;
+    return {
+      width: Math.max(1, Math.round(width * scale)),
+      height: Math.max(1, Math.round(height * scale))
+    };
   }
 
   private fileExtensionFromName(filename: string | undefined): string {
