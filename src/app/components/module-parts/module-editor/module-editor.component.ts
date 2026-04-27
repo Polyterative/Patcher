@@ -15,6 +15,7 @@ import {
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   CropperPosition,
+  Dimensions,
   ImageCropperComponent,
   ImageCroppedEvent
 } from 'ngx-image-cropper';
@@ -63,6 +64,20 @@ interface ValidationFeedback {
   errorMessage: string;
 }
 
+interface PanelTypeOption {
+  name: string;
+  value: number;
+  id: string;
+}
+
+const PANEL_TYPE_OPTIONS: PanelTypeOption[] = [
+  {name: 'Light', value: 1, id: '0'},
+  {name: 'Dark', value: 2, id: '1'},
+  {name: 'Special edition', value: 3, id: '2'},
+  {name: 'Limited edition', value: 4, id: '3'}
+];
+const PANEL_CROP_FILL_SCALE = 0.82;
+
 
 @Component({
   selector: 'app-module-editor',
@@ -104,11 +119,17 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   readonly croppedPanelPreviewUrl$ = new BehaviorSubject<string | null>(null);
   readonly panelCropLoading$ = new BehaviorSubject<boolean>(false);
   readonly panelCropLoadFailed$ = new BehaviorSubject<boolean>(false);
-  readonly panelCropScale$ = new BehaviorSubject<number>(1);
   readonly panelCropPosition$ = new BehaviorSubject<CropperPosition | undefined>(undefined);
+  readonly panelTypeAutoSelectionCue$ = new BehaviorSubject<boolean>(false);
   readonly hasPendingChanges$: Observable<boolean>;
   private saveCompletedTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private panelTypeAutoSelectionCueTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private panelCropperMaxBounds?: CropperPosition;
+  private pendingPanelCropOverride?: CropperPosition;
   private powerAutofillReady = false;
+  private panelTypeAutoSelectionEnabled = true;
+  private suppressPanelTypeManualOverride = false;
+  private panelTypeSuggestionRequestId = 0;
   private activePanelSourcePreviewUrl: string | null = null;
   private activeCroppedPanelPreviewUrl: string | null = null;
   @ViewChild(ImageCropperComponent) private panelCropper?: ImageCropperComponent;
@@ -236,6 +257,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       clearTimeout(this.saveCompletedTimeoutId);
       this.saveCompletedTimeoutId = null;
     }
+    if (this.panelTypeAutoSelectionCueTimeoutId) {
+      clearTimeout(this.panelTypeAutoSelectionCueTimeoutId);
+      this.panelTypeAutoSelectionCueTimeoutId = null;
+    }
     this.resetPanelCropState();
     this.dataService.moduleEditorHasPendingChanges$.next(false);
     this.destroyEvent$.next();
@@ -261,19 +286,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       label: 'Panel Type',
       type: FormTypes.SELECT,
       control: new UntypedFormControl(
-        {
-          name: 'Light',
-          value: 1,
-          id: '0'
-        },
+        PANEL_TYPE_OPTIONS[0],
         [Validators.required]
       ),
-      options$: of([
-        {name: 'Light', value: 1, id: '0'},
-        {name: 'Dark', value: 2, id: '1'},
-        {name: 'Special edition', value: 3, id: '2'},
-        {name: 'Limited edition', value: 4, id: '3'}
-      ]),
+      options$: of(PANEL_TYPE_OPTIONS),
       flex: 'auto'
     };
     
@@ -400,6 +416,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
         withLatestFrom(this.panelType.options$)
       )
       .subscribe(([panelTypeValue, options]) => {
+        if (this.selectedPanelSourceFile$.value && !this.suppressPanelTypeManualOverride) {
+          this.panelTypeAutoSelectionEnabled = false;
+        }
+
         const descValue = this.panelDescription.control.value;
         const isDefaultDescription = options
           .map(option => option.name)
@@ -447,6 +467,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
 
         this.selectedPanelSourceFile$.next(file);
         this.croppedPanelFile$.next(undefined);
+        this.panelTypeAutoSelectionEnabled = true;
+        this.panelTypeSuggestionRequestId++;
         this.panelCropLoadFailed$.next(false);
         this.panelCropLoading$.next(true);
         this.replacePanelSourcePreviewUrl(this.tryCreateObjectUrl(file));
@@ -571,12 +593,12 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     return getModulePanelAspectRatio(this.data);
   }
 
-  get panelCropTransform(): {scale: number} {
-    return {scale: this.panelCropScale$.value};
-  }
-
   get panelCropPosition(): CropperPosition | undefined {
     return this.panelCropPosition$.value;
+  }
+
+  get panelCropOverride(): CropperPosition | undefined {
+    return this.pendingPanelCropOverride;
   }
   
   /** Returns exact field-level validation feedback for the save FAB and save errors. */
@@ -763,18 +785,30 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.panelCropLoadFailed$.next(false);
     this.panelCropLoading$.next(false);
     this.replaceCroppedPanelPreviewUrl(event.objectUrl ?? this.tryCreateObjectUrl(event.blob));
+    if (this.panelTypeAutoSelectionEnabled) {
+      void this.autoSelectPanelType(event.blob);
+    }
   }
 
   onPanelImageLoaded(): void {
     this.panelCropLoadFailed$.next(false);
   }
 
-  onPanelCropperReady(): void {
+  onPanelCropperReady(dimensions?: Dimensions): void {
+    if (dimensions) {
+      this.panelCropperMaxBounds = {
+        x1: 0,
+        y1: 0,
+        x2: dimensions.width,
+        y2: dimensions.height
+      };
+    }
     this.panelCropLoading$.next(false);
   }
 
   onPanelCropperChange(position: CropperPosition): void {
     this.panelCropPosition$.next({...position});
+    this.pendingPanelCropOverride = undefined;
   }
 
   onPanelImageLoadFailed(): void {
@@ -786,15 +820,38 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   }
 
   fitPanelImage(): void {
-    this.panelCropScale$.next(1);
+    if (this.panelCropper) {
+      this.pendingPanelCropOverride = undefined;
+      this.panelCropper.resetCropperPosition();
+      return;
+    }
+
+    if (!this.panelCropperMaxBounds) {
+      return;
+    }
+
+    this.applyPanelCropPreset(this.buildFittedPanelCropPosition(this.panelCropperMaxBounds));
   }
 
   fillPanelImage(): void {
-    this.panelCropScale$.next(1.15);
+    const maxBounds = this.panelCropperMaxBounds;
+    if (!maxBounds) {
+      return;
+    }
+
+    if (this.panelCropper) {
+      this.pendingPanelCropOverride = undefined;
+      this.panelCropper.resetCropperPosition();
+    }
+
+    const basePosition = this.panelCropPosition$.value ?? this.buildFittedPanelCropPosition(maxBounds);
+    this.applyPanelCropPreset(
+      this.scalePanelCropPosition(basePosition, PANEL_CROP_FILL_SCALE, maxBounds)
+    );
   }
 
   resetPanelCropper(): void {
-    this.panelCropScale$.next(1);
+    this.pendingPanelCropOverride = undefined;
     this.panelCropPosition$.next(undefined);
     this.panelCropper?.resetCropperPosition();
   }
@@ -810,8 +867,11 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     this.selectedPanelSourceFile$.next(undefined);
     this.replacePanelSourcePreviewUrl(null);
     this.croppedPanelFile$.next(undefined);
+    this.panelTypeSuggestionRequestId++;
+    this.panelTypeAutoSelectionEnabled = true;
+    this.panelCropperMaxBounds = undefined;
+    this.pendingPanelCropOverride = undefined;
     this.panelCropPosition$.next(undefined);
-    this.panelCropScale$.next(1);
     this.panelCropLoading$.next(false);
     this.panelCropLoadFailed$.next(false);
     this.replaceCroppedPanelPreviewUrl(null);
@@ -840,6 +900,126 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       return null;
     }
     return URL.createObjectURL(file);
+  }
+
+  private applyPanelCropPreset(position: CropperPosition): void {
+    const nextPosition = {...position};
+    this.pendingPanelCropOverride = nextPosition;
+    this.panelCropPosition$.next(nextPosition);
+  }
+
+  private buildFittedPanelCropPosition(imagePosition: CropperPosition): CropperPosition {
+    const imageWidth = imagePosition.x2 - imagePosition.x1;
+    const imageHeight = imagePosition.y2 - imagePosition.y1;
+    const imageAspectRatio = imageWidth / imageHeight;
+    const targetAspectRatio = this.panelCropAspectRatio;
+
+    if (imageAspectRatio > targetAspectRatio) {
+      const cropHeight = imageHeight;
+      const cropWidth = cropHeight * targetAspectRatio;
+      const offsetX = (imageWidth - cropWidth) / 2;
+      return {
+        x1: imagePosition.x1 + offsetX,
+        y1: imagePosition.y1,
+        x2: imagePosition.x2 - offsetX,
+        y2: imagePosition.y2
+      };
+    }
+
+    const cropWidth = imageWidth;
+    const cropHeight = cropWidth / targetAspectRatio;
+    const offsetY = (imageHeight - cropHeight) / 2;
+    return {
+      x1: imagePosition.x1,
+      y1: imagePosition.y1 + offsetY,
+      x2: imagePosition.x2,
+      y2: imagePosition.y2 - offsetY
+    };
+  }
+
+  private scalePanelCropPosition(
+    position: CropperPosition,
+    scaleFactor: number,
+    imagePosition: CropperPosition
+  ): CropperPosition {
+    const aspectRatio = this.panelCropAspectRatio;
+    const imageWidth = imagePosition.x2 - imagePosition.x1;
+    const imageHeight = imagePosition.y2 - imagePosition.y1;
+    const currentWidth = position.x2 - position.x1;
+    const currentHeight = position.y2 - position.y1;
+    const minCropWidth = Math.min(120, imageWidth);
+    const minCropHeight = minCropWidth / aspectRatio;
+    const maxCropWidth = Math.min(imageWidth, imageHeight * aspectRatio);
+    const targetWidth = Math.min(maxCropWidth, Math.max(minCropWidth, currentWidth * scaleFactor));
+    const targetHeight = Math.min(imageHeight, Math.max(minCropHeight, currentHeight * scaleFactor));
+    const finalWidth = Math.min(targetWidth, targetHeight * aspectRatio);
+    const finalHeight = finalWidth / aspectRatio;
+    const centerX = (position.x1 + position.x2) / 2;
+    const centerY = (position.y1 + position.y2) / 2;
+    const halfWidth = finalWidth / 2;
+    const halfHeight = finalHeight / 2;
+
+    let x1 = centerX - halfWidth;
+    let x2 = centerX + halfWidth;
+    let y1 = centerY - halfHeight;
+    let y2 = centerY + halfHeight;
+
+    if (x1 < imagePosition.x1) {
+      x2 += imagePosition.x1 - x1;
+      x1 = imagePosition.x1;
+    }
+    if (x2 > imagePosition.x2) {
+      x1 -= x2 - imagePosition.x2;
+      x2 = imagePosition.x2;
+    }
+    if (y1 < imagePosition.y1) {
+      y2 += imagePosition.y1 - y1;
+      y1 = imagePosition.y1;
+    }
+    if (y2 > imagePosition.y2) {
+      y1 -= y2 - imagePosition.y2;
+      y2 = imagePosition.y2;
+    }
+
+    return {x1, y1, x2, y2};
+  }
+
+  private async autoSelectPanelType(blob: Blob): Promise<void> {
+    try {
+      const requestId = ++this.panelTypeSuggestionRequestId;
+      const suggestedValue = await this.moduleEditorDataService.suggestPanelTypeFromBlob(blob);
+
+      if (!this.panelTypeAutoSelectionEnabled || requestId !== this.panelTypeSuggestionRequestId) {
+        return;
+      }
+
+      const nextOption = PANEL_TYPE_OPTIONS.find(option => option.value === suggestedValue);
+      if (!nextOption || this.panelType.control.value?.value === nextOption.value) {
+        return;
+      }
+
+      this.suppressPanelTypeManualOverride = true;
+      this.panelType.control.patchValue(nextOption);
+      this.suppressPanelTypeManualOverride = false;
+      this.triggerPanelTypeAutoSelectionCue();
+    } catch (error) {
+      console.error('Panel appearance analysis failed:', error);
+      this.suppressPanelTypeManualOverride = false;
+    }
+  }
+
+  private triggerPanelTypeAutoSelectionCue(): void {
+    this.panelTypeAutoSelectionCue$.next(false);
+
+    if (this.panelTypeAutoSelectionCueTimeoutId) {
+      clearTimeout(this.panelTypeAutoSelectionCueTimeoutId);
+    }
+
+    this.panelTypeAutoSelectionCue$.next(true);
+    this.panelTypeAutoSelectionCueTimeoutId = setTimeout(() => {
+      this.panelTypeAutoSelectionCue$.next(false);
+      this.panelTypeAutoSelectionCueTimeoutId = null;
+    }, 900);
   }
 
   private buildCropperKeyboardEvent(key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight'): KeyboardEvent {
