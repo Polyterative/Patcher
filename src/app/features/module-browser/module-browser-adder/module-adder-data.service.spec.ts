@@ -22,7 +22,8 @@ describe('ModuleAdderDataService', () => {
       add: {
         modules: jasmine.createSpy('add.modules').and.returnValue(of({data: [{id: 111}]})),
         manufacturers: jasmine.createSpy('add.manufacturers').and.returnValue(of({data: [{id: 55, name: 'NewCo'}]}))
-      }
+      },
+      cacheResetter$: {next: jasmine.createSpy('cacheResetter$.next')}
     };
     const dialog = {
       open: jasmine.createSpy('open').and.returnValue({
@@ -46,6 +47,7 @@ describe('ModuleAdderDataService', () => {
   it('loads manufacturer options and enables control after data arrives', () => {
     const {service, backend, standards$} = build();
     expect(backend.GET.manufacturers).toHaveBeenCalled();
+    expect(backend.cacheResetter$.next).toHaveBeenCalledWith(['manufacturers']);
     expect(service.formData.manufacturer.control.enabled).toBeTrue();
     
     standards$.next([{id: 0, name: '3U'}] as any);

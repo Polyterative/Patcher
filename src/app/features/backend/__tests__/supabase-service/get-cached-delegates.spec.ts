@@ -84,6 +84,52 @@ describe('SupabaseService - GET cached delegates', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should fetch additional manufacturer pages when the first page is full', (done) => {
+      const responses = [
+        {
+          data: Array.from({length: 500}, (_, index) => ({id: index + 1, name: `Maker ${ index + 1 }`})),
+          count: 710,
+          error: null
+        },
+        {
+          data: [
+            {id: 701, name: 'TLM Audio'},
+            {id: 702, name: 'TouellSkouarn'}
+          ],
+          count: 710,
+          error: null
+        }
+      ];
+      const seenRanges: Array<[number, number]> = [];
+
+      spyOn(supabaseClient, 'from').and.callFake(() => {
+        const mock = chainable();
+        let currentResponse = {data: [], count: 0, error: null};
+        spyOn(mock, 'range').and.callFake((from: number, to: number) => {
+          seenRanges.push([from, to]);
+          currentResponse = responses.shift() ?? {data: [], count: 710, error: null};
+          return mock;
+        });
+        mock.then = (res: Function, rej?: Function) =>
+          Promise.resolve(currentResponse).then(res as any, rej as any);
+        return mock;
+      });
+
+      service.GET.manufacturers(0, 9999, 'id,name').subscribe({
+        next: (result: any) => {
+          expect(seenRanges).toEqual([[0, 499], [500, 999]]);
+          expect(result.data.length).toBe(502);
+          expect(result.data[500].name).toBe('TLM Audio');
+          expect(result.count).toBe(710);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('GET.patchConnections', () => {
