@@ -49,6 +49,7 @@ type ModuleActivityRow = {
 
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
+  private static readonly MAX_QUERY_ROWS = 500;
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -509,14 +510,65 @@ export class SupabaseQueriesService {
   })
   getManufacturers(from = 0, to = this.defaultPag, columns = '*', orderBy?: string) {
     return rxFrom(
-      this.supabase.from(DbPaths.manufacturers)
-        .select(columns)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name')
+      this.fetchManufacturersRange(
+        this.normalizePaginationBound(from),
+        this.normalizePaginationBound(to, this.defaultPag),
+        columns,
+        orderBy ? orderBy : 'name'
+      )
     )
       .pipe(
         remapErrors()
       );
+  }
+
+  private async fetchManufacturersRange(
+    from: number,
+    to: number,
+    columns: string,
+    orderBy: string
+  ): Promise<{ data: any[]; error: null; count: number | null } | { data: any[] | null; error: any; count: number | null }> {
+    const safeTo = Math.max(from, to);
+    const data: any[] = [];
+    let count: number | null = null;
+
+    for (let chunkFrom = from; chunkFrom <= safeTo; chunkFrom += SupabaseQueriesService.MAX_QUERY_ROWS) {
+      const chunkTo = Math.min(chunkFrom + SupabaseQueriesService.MAX_QUERY_ROWS - 1, safeTo);
+      const response = await this.supabase.from(DbPaths.manufacturers)
+        .select(columns, {count: 'exact'})
+        .range(chunkFrom, chunkTo)
+        .order(orderBy);
+
+      if (response.error) {
+        return {
+          data: response.data,
+          error: response.error,
+          count: response.count ?? count
+        };
+      }
+
+      if (count === null) {
+        count = response.count ?? null;
+      }
+
+      const chunkData = Array.isArray(response.data) ? response.data : [];
+      data.push(...chunkData);
+
+      if (chunkData.length < (chunkTo - chunkFrom + 1)) {
+        break;
+      }
+    }
+
+    return {
+      data,
+      error: null,
+      count
+    };
+  }
+
+  private normalizePaginationBound(value: number | undefined, fallback: number = 0): number {
+    const normalized = Number.isFinite(value) ? Math.trunc(value as number) : fallback;
+    return Math.max(0, normalized);
   }
   
   getManufacturersPaginated(

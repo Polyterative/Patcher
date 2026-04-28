@@ -27,6 +27,11 @@ describe('ModuleBrowserDataService', () => {
     expect(service.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
   });
 
+  it('busts manufacturers cache on init so autocomplete reloads fresh options', () => {
+    const {backend} = build();
+    expect(backend.cacheResetter$.next).toHaveBeenCalledWith(['manufacturers']);
+  });
+
   function sortArgs(backend: any): [string, string] {
     const args = backend.GET.modules.calls.mostRecent().args as any[];
     return [args[3], args[4]];

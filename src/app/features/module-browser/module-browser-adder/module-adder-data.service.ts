@@ -145,6 +145,7 @@ export class ModuleAdderDataService extends SubManager {
     private router: Router
   ) {
     super();
+    this.backend.cacheResetter$?.next(['manufacturers']);
     this.formData = {
       name:         {
         label: 'Name',

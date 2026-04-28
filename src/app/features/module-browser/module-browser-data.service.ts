@@ -150,6 +150,7 @@ export class ModuleBrowserDataService extends SubManager {
   
   constructor(private backend: SupabaseService) {
     super();
+    this.backend.cacheResetter$?.next(['manufacturers']);
 
     this.fields = {
       name: {
