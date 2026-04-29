@@ -3,7 +3,7 @@ import { RackedModule } from 'src/app/models/module';
 import { TagType } from 'src/app/models/tag';
 import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
 
-function makeRackedModule(id: number, tagData: Array<{name: string; type: TagType}> = []): RackedModule {
+function makeRackedModule(id: number, tagData: Array<{name: string; type: unknown}> = []): RackedModule {
   return {
     rackingData: {
       id,
@@ -104,6 +104,19 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'modulation')?.matchedModules).toBe(1);
     expect(result.axes.find(axis => axis.id === 'utilities')?.matchedModules).toBe(1);
     expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
+  });
+
+  it('ignores non-role database tag categories even when their label matches a balance axis', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'Clock', type: 'technology' as any}]),
+      makeRackedModule(2, [{name: 'Utility', type: 'character' as any}]),
+      makeRackedModule(3, [{name: 'Filter', type: TagType.Character}])
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(0);
+    expect(result.axes.every(axis => axis.matchedModules === 0)).toBeTrue();
   });
 
   it('reports partial confidence when many modules have no recognized tags', () => {
