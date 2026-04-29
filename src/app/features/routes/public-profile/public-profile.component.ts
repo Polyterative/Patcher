@@ -64,7 +64,7 @@ export class PublicProfileComponent extends SubManager {
     this.contributorStats$ = this.dataService.contributorStats$.pipe(
       map((stats: PublicUserContributorStats | undefined) => stats
         ? [
-          {name: 'Approved modules', value: stats.approvedPublicModules, icon: 'check_circle'},
+          {name: 'Approved public modules', value: stats.approvedPublicModules, icon: 'check_circle'},
         ]
         : null
       ),
