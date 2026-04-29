@@ -157,16 +157,51 @@ describe('SupabaseService - get simple queries', () => {
   
   describe('get.rackedModules', () => {
     it('should map raw rows to rackingData + module shape', (done) => {
-      const rawRow = {id: 1, row: 0, column: 2, moduleid: 42, rackid: 7, module: {id: 42, name: 'VCO'}};
+      const rawRow = {
+        id: 1,
+        row: 0,
+        column: 2,
+        moduleid: 42,
+        rackid: 7,
+        module: {
+          id: 42,
+          name: 'VCO',
+          tags: [
+            {
+              id: 8,
+              tag: {id: 3, name: 'VCO', type: 0},
+              voteCount: [{moduletagid: 8}]
+            }
+          ]
+        }
+      };
       spyOn(supabaseClient, 'from').and.returnValue(chainable({data: [rawRow], error: null}));
       
       service.get.rackedModules(7).subscribe({
         next: (result: any[]) => {
           expect(result.length).toBe(1);
           expect(result[0].module.id).toBe(42);
+          expect(result[0].module.tags?.[0]?.tag?.name).toBe('VCO');
           expect(result[0].rackingData.rackid).toBe(7);
           expect(result[0].rackingData.row).toBe(0);
           expect(result[0].rackingData.column).toBe(2);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('requests module tags in the rack-module join', (done) => {
+      const mock = chainable({data: [], error: null});
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.rackedModules(7).subscribe({
+        next: () => {
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('tags:module_tags'));
           done();
         },
         error: (err) => {

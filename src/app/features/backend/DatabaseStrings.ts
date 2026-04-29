@@ -56,7 +56,20 @@ export class QueryJoins {
   static rackModules: string = 'rackModules:rackid(*)';
 
 // Module Foreign Key in Rack Modules
-  static module_fk_rackmodules: string = 'module:modules!rack_modules_moduleid_fkey(id,name,hp,weight,depth,powerPos12,powerNeg12,powerPos5,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))';
+  static module_fk_rackmodules: string = `module:modules!rack_modules_moduleid_fkey(
+    id,
+    name,
+    hp,
+    weight,
+    depth,
+    powerPos12,
+    powerNeg12,
+    powerPos5,
+    manufacturer:manufacturerId(name,id),
+    standard:standards!modules_standard_fkey(name,id),
+    tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid)),
+    panels:module_panels!module_panels_moduleid_fkey(*)
+  )`;
 
 // Module Tags
   static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
