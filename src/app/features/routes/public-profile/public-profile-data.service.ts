@@ -18,6 +18,7 @@ import { Patch } from 'src/app/models/patch';
 import { Rack } from 'src/app/models/rack';
 import { PublicProfile } from 'src/app/models/user';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
+import { PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
@@ -38,6 +39,7 @@ export class PublicProfileDataService extends SubManager {
 
   readonly patchesData$ = new BehaviorSubject<Patch[] | undefined>(undefined);
   readonly rackData$ = new BehaviorSubject<Rack[] | undefined>(undefined);
+  readonly contributorStats$ = new BehaviorSubject<PublicUserContributorStats | undefined>(undefined);
 
   readonly patchesCount$ = new BehaviorSubject<number>(0);
   readonly racksCount$ = new BehaviorSubject<number>(0);
@@ -54,6 +56,7 @@ export class PublicProfileDataService extends SubManager {
 
   readonly updatePatchesData$ = new Subject<void>();
   readonly updateRacksData$ = new Subject<void>();
+  readonly updateContributorStats$ = new Subject<void>();
   readonly patchesPageEvent$ = new Subject<PageEvent>();
   readonly racksPageEvent$ = new Subject<PageEvent>();
 
@@ -77,6 +80,7 @@ export class PublicProfileDataService extends SubManager {
     this.initializeProfileLoadHandler();
     this.initializePatchLoadHandler();
     this.initializeRackLoadHandler();
+    this.initializeContributorLoadHandler();
   }
 
   private initializeProfileLoadHandler(): void {
@@ -87,6 +91,7 @@ export class PublicProfileDataService extends SubManager {
           this.profile$.next(null);
           this.patchesData$.next(undefined);
           this.rackData$.next(undefined);
+          this.contributorStats$.next(undefined);
           this.patchesCount$.next(0);
           this.racksCount$.next(0);
           this.patchesPagination.skip$.next(0);
@@ -126,6 +131,7 @@ export class PublicProfileDataService extends SubManager {
           this.routeState$.next('ready');
           this.updatePatchesData$.next();
           this.updateRacksData$.next();
+          this.updateContributorStats$.next();
         },
         error: (error) => {
           console.error('PublicProfileDataService profile load failed:', error);
@@ -133,6 +139,27 @@ export class PublicProfileDataService extends SubManager {
           this.routeState$.next('error');
           this.patchesData$.next([]);
           this.rackData$.next([]);
+        },
+      });
+  }
+
+  private initializeContributorLoadHandler(): void {
+    this.updateContributorStats$
+      .pipe(
+        withLatestFrom(this.profile$),
+        filter(([, profile]) => !!profile && profile.public),
+        tap(() => this.contributorStats$.next(undefined)),
+        switchMap(([, profile]) => this.backend.GET.publicUserContributorStats(profile!.id)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (stats) => {
+          this.contributorStats$.next(stats);
+        },
+        error: (error) => {
+          console.error('PublicProfileDataService contributor stats load failed:', error);
+          SharedConstants.errorCustom(this.snackBar, 'Public contributor stats could not be loaded.');
+          this.contributorStats$.next({approvedPublicModules: 0});
         },
       });
   }

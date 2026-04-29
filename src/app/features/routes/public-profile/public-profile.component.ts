@@ -15,6 +15,7 @@ import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.serv
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { PublicProfileDataService } from 'src/app/features/routes/public-profile/public-profile-data.service';
+import { PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 @Component({
@@ -38,6 +39,7 @@ export class PublicProfileComponent extends SubManager {
   };
 
   readonly publicStats$: Observable<{name: string; value: number; icon: string}[]>;
+  readonly contributorStats$: Observable<{name: string; value: number; icon: string}[] | null>;
   readonly isOwnProfile$: Observable<boolean>;
 
   constructor(
@@ -57,6 +59,15 @@ export class PublicProfileComponent extends SubManager {
         {name: 'Racks', value: racks, icon: 'dashboard'},
         {name: 'Patches', value: patches, icon: 'cable'},
       ]),
+    );
+
+    this.contributorStats$ = this.dataService.contributorStats$.pipe(
+      map((stats: PublicUserContributorStats | undefined) => stats
+        ? [
+          {name: 'Approved modules', value: stats.approvedPublicModules, icon: 'check_circle'},
+        ]
+        : null
+      ),
     );
 
     this.isOwnProfile$ = combineLatest([

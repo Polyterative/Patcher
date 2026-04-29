@@ -103,6 +103,12 @@
               cardClass="userBG"
               [statistics]="bag.stats"
             ></app-statistics>
+            <app-statistics
+              title="Contributor stats"
+              icon="insights"
+              cardClass="userBG"
+              [statistics]="contributorStats$ | async"
+            ></app-statistics>
           </div>
         </div>
       </div>
