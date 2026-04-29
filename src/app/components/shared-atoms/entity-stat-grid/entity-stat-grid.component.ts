@@ -33,4 +33,10 @@ export class EntityStatGridComponent {
   itemFlex(item: EntityStatItem): string {
     return this.equalColumns ? '1 1 0' : `1 1 ${ item.size ?? '12rem' }`;
   }
+
+  itemTrackKey(item: EntityStatItem, index: number): string {
+    const routerLink = item.routerLink?.join('/') ?? '';
+
+    return `${ item.label }|${ item.value }|${ item.icon ?? '' }|${ item.badge ?? '' }|${ routerLink }|${ index }`;
+  }
 }
