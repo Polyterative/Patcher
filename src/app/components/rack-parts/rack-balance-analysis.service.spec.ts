@@ -89,6 +89,23 @@ describe('RackBalanceAnalysisService', () => {
     expect(modulation?.matchedModules).toBe(1);
   });
 
+  it('recognizes legacy string tag types from live backend payloads', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'VCO', type: 'module_type' as any}]),
+      makeRackedModule(2, [{name: 'Envelope', type: 'function' as any}]),
+      makeRackedModule(3, [{name: 'Utility', type: 'module_type' as any}]),
+      makeRackedModule(4, [{name: 'Filter', type: 'function' as any}]),
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(4);
+    expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'modulation')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'utilities')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
+  });
+
   it('reports partial confidence when many modules have no recognized tags', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
