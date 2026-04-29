@@ -51,6 +51,7 @@ export default defineConfig({
     '**/patch-browser.spec.ts',
     '**/patch-graph-stability.spec.ts',
     '**/rack-browser.spec.ts',
+    '**/rack-details-layout.spec.ts',
     '**/home.spec.ts',
     '**/navigation.spec.ts',
     AUTH_SPEC_GLOB
