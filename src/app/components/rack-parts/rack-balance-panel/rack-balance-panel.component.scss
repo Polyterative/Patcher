@@ -52,8 +52,41 @@
 }
 
 .rackBalancePanel__toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
   min-width: auto;
-  padding-inline: 0.55rem;
+  padding: 0.18rem 0.42rem 0.18rem 0.55rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(34, 75, 117, 0.08);
+  color: rgba(19, 54, 89, 0.86);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.rackBalancePanel__toggleButton:hover {
+  background: rgba(34, 75, 117, 0.14);
+}
+
+.rackBalancePanel__toggleButton:focus-visible {
+  outline: 2px solid rgba(52, 123, 193, 0.35);
+  outline-offset: 2px;
+}
+
+.rackBalancePanel__toggleChevron {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.95rem;
+  color: rgba(19, 54, 89, 0.72);
+  transition: transform 160ms ease, color 120ms ease;
+}
+
+.rackBalancePanel__toggleChevron--expanded {
+  transform: rotate(90deg);
 }
 
 .rackBalancePanel__infoButton {
@@ -180,7 +213,7 @@
   }
 
   .rackBalancePanel__toggleButton {
-    padding-inline: 0.45rem;
+    padding: 0.15rem 0.35rem 0.15rem 0.5rem;
   }
 
   .rackBalancePanel__highlightChip {
