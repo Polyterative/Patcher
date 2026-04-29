@@ -101,7 +101,7 @@ describe('ModuleCVsComponent — first click on 0-instance module', () => {
 
   it('should have the out CV highlighted after the first click resolves', () => {
     // Create the ModuleCVsComponent (0-instance module, instanceId=undefined)
-    const cvs = new ModuleCVsComponent(mockService);
+    const cvs = new ModuleCVsComponent(mockService, {open: jasmine.createSpy('open')} as any);
     (cvs as any).data = fakeModule;
     cvs.instanceId = undefined;
     cvs.ngOnInit();
@@ -136,7 +136,7 @@ describe('ModuleCVsComponent — first click on 0-instance module', () => {
       return of(newInstance.id);
     };
 
-    const cvs = new ModuleCVsComponent(mockService);
+    const cvs = new ModuleCVsComponent(mockService, {open: jasmine.createSpy('open')} as any);
     (cvs as any).data = fakeModule;
     cvs.instanceId = undefined;
     cvs.ngOnInit();
