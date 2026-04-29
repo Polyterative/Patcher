@@ -3,7 +3,7 @@ import { RackedModule } from 'src/app/models/module';
 import { TagType } from 'src/app/models/tag';
 import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
 
-function makeRackedModule(id: number, tagData: Array<{name: string; type: unknown}> = []): RackedModule {
+function makeRackedModule(id: number, tagData: Array<{name: string; type: unknown}> = [], hp = 8): RackedModule {
   return {
     rackingData: {
       id,
@@ -15,7 +15,7 @@ function makeRackedModule(id: number, tagData: Array<{name: string; type: unknow
     module: {
       id,
       name: `Module ${ id }`,
-      hp: 8,
+      hp,
       description: '',
       public: true,
       manufacturer: {id: 1, name: 'Maker'},
@@ -152,6 +152,23 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.confidence).toBe(0.25);
     expect(result.warningMessage).toContain('Guidance is partial');
     expect(result.summary).toContain('Early signal only');
+  });
+
+  it('weights HP more strongly than raw module count when scoring axes', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'Filter', type: TagType.Purpose}], 24),
+      makeRackedModule(2, [{name: 'VCO', type: TagType.Purpose}], 4),
+      makeRackedModule(3, [{name: 'VCO', type: TagType.Purpose}], 4),
+      makeRackedModule(4, [{name: 'VCO', type: TagType.Purpose}], 4),
+    ]];
+
+    const result = service.analyze(rack);
+    const tone = result.axes.find(axis => axis.id === 'tone');
+    const voices = result.axes.find(axis => axis.id === 'voices');
+
+    expect(tone?.matchedModules).toBe(1);
+    expect(voices?.matchedModules).toBe(3);
+    expect(tone?.share).toBeGreaterThan(voices?.share ?? 0);
   });
 
   it('surfaces balanced guidance when coverage is broad across axes', () => {
