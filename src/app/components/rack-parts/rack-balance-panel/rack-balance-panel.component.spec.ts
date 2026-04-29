@@ -94,4 +94,35 @@ describe('RackBalancePanelComponent', () => {
     expect(component.isExpanded).toBeFalse();
     expect(component.isDetailsOpen()).toBeTrue();
   });
+
+  it('treats partial coverage as not reliable enough for the detailed radar view', () => {
+    const {component} = build();
+
+    expect(component.hasReliableAnalysis({
+      axes: [],
+      confidence: 0.25,
+      recognizedModuleCount: 1,
+      totalModules: 4,
+      warningMessage: 'Guidance is partial',
+      summary: 'Summary',
+      isEmpty: false
+    })).toBeFalse();
+  });
+
+  it('builds a low-data explanation for partial tag coverage', () => {
+    const {component} = build();
+
+    const analysis: RackBalanceAnalysisResult = {
+      axes: [],
+      confidence: 0.25,
+      recognizedModuleCount: 1,
+      totalModules: 4,
+      warningMessage: 'Guidance is partial',
+      summary: 'Summary',
+      isEmpty: false
+    };
+
+    expect(component.lowDataTitle(analysis)).toContain('hidden');
+    expect(component.lowDataMessage(analysis)).toContain('1 of 4 modules');
+  });
 });
