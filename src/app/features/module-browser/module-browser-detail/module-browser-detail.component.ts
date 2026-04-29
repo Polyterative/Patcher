@@ -55,6 +55,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$                      = new Subject<void>();
   @Input() ignoreSeo                           = false;
+  @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     ellipseDescription: false,
