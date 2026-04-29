@@ -149,8 +149,8 @@
             }
           </div>
         </div>
-        <div class="col scroll custom-scrollbar transition-all"
-             [style.zoom]="autoScale"
+        <div #rackViewport
+             class="col scroll custom-scrollbar transition-all"
              [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
         >
           <app-rack-visual-model [rackData]="data"
@@ -159,6 +159,7 @@
                                  [isCurrentRackEditable]="bag.isCurrentRackEditable"
                                  [rackDetailDataService]="dataService"
                                  [moduleRightClick$]="moduleRightClick$"
+                                 [style.zoom]="autoScale"
                                  class="transition-all-long"
                                  [ngClass]="{'smallerScale':bag.userRequestedSmallerScale}"
           ></app-rack-visual-model>
