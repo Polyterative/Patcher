@@ -4,29 +4,22 @@
       <div class="rowwrap gap1 rackBalancePanel__header">
         <div class="col gap0 rackBalancePanel__headerCopy">
           <div class="rackBalancePanel__titleRow">
-            <div class="rackBalancePanel__title">
-              <mat-icon class="rackBalancePanel__titleIcon">balance</mat-icon>
+            <mat-card-title class="rackBalancePanel__title">
               <span>Balance analysis</span>
-            </div>
-            <span class="rackBalancePanel__confidencePill">
-              {{ confidencePercent(analysis) }}% tag coverage
-            </span>
+            </mat-card-title>
           </div>
-          <div class="rackBalancePanel__summary">{{ analysis.summary }}</div>
-          @if (!isExpanded && compactHighlights(analysis).length > 0) {
-            <div class="rowwrap gap0 rackBalancePanel__highlightRow">
-              @for (axis of compactHighlights(analysis); track axis.id) {
-                <div class="rackBalancePanel__highlightChip">
-                  <mat-icon>{{ axis.icon }}</mat-icon>
-                  <span>{{ axis.label }}</span>
-                  <strong>{{ axis.share }}%</strong>
-                </div>
-              }
-            </div>
-          }
+          <div class="rackBalancePanel__meta">
+            <app-label-value-showcase
+              class="rackBalancePanel__metaShowcase"
+              label="Coverage"
+              [bigText]="false"
+            >
+              {{ confidencePercent(analysis) }}% tag coverage
+            </app-label-value-showcase>
+          </div>
         </div>
         <div class="row gap0 rackBalancePanel__actions">
-          @if (!alwaysExpanded) {
+          @if (!alwaysExpanded && hasReliableAnalysis(analysis)) {
             <button
               type="button"
               class="rackBalancePanel__toggleButton"
@@ -45,7 +38,7 @@
           <button
             mat-icon-button
             class="rackBalancePanel__infoButton"
-            matTooltip="Advisory only. This panel reads the current module tags and highlights where the rack appears heavier or lighter."
+            [matTooltip]="infoTooltip(analysis)"
             matTooltipPosition="above"
             type="button"
           >
@@ -54,7 +47,15 @@
         </div>
       </div>
 
-      @if (isDetailsOpen()) {
+      @if (!hasReliableAnalysis(analysis)) {
+        <div class="rackBalancePanel__lowDataState">
+          <mat-icon class="rackBalancePanel__lowDataIcon">query_stats</mat-icon>
+          <div class="col gap0 rackBalancePanel__lowDataCopy">
+            <mat-card-title class="rackBalancePanel__lowDataTitle">{{ lowDataTitle(analysis) }}</mat-card-title>
+            <mat-card-subtitle class="rackBalancePanel__lowDataMessage">{{ lowDataMessage(analysis) }}</mat-card-subtitle>
+          </div>
+        </div>
+      } @else if (isDetailsOpen()) {
         @if (radarAxes(analysis); as radarAxes) {
           <div class="col gap1 rackBalancePanel__details">
             <div class="rackBalancePanel__visualSurface">
@@ -110,46 +111,22 @@
                 </svg>
               </div>
 
-              <div class="rackBalancePanel__signals">
-                <div class="rackBalancePanel__signal">
-                  <span class="rackBalancePanel__signalLabel">Leans toward</span>
-                  <div class="rackBalancePanel__signalValue">
-                    <mat-icon>{{ strongestAxis(analysis).icon }}</mat-icon>
-                    <span>{{ strongestAxis(analysis).label }}</span>
-                  </div>
-                </div>
-
-                <div class="rackBalancePanel__signal">
-                  <span class="rackBalancePanel__signalLabel">Light on</span>
-                  <div class="rackBalancePanel__signalValue">
-                    <mat-icon>{{ weakestAxis(analysis).icon }}</mat-icon>
-                    <span>{{ weakestAxis(analysis).label }}</span>
-                  </div>
-                </div>
-
-                <div class="rackBalancePanel__coverageNote">
-                  Weighted 75% by HP area, 25% by module count.
-                </div>
-
-                <div class="rackBalancePanel__coverageNote">
-                  {{ analysis.recognizedModuleCount }} tagged modules shaping this view
-                </div>
-
-                @if (analysis.warningMessage) {
-                  <div class="rackBalancePanel__coverageNote rackBalancePanel__coverageNote--muted">
-                    Guidance is still early.
-                  </div>
-                }
+              <div class="rackBalancePanel__supportingStats">
+                <mat-card-title class="rackBalancePanel__sectionTitle">Highlights</mat-card-title>
+                <app-entity-stat-grid
+                  class="rackBalancePanel__showcaseGrid"
+                  [items]="radarShowcaseStats(analysis)"
+                ></app-entity-stat-grid>
               </div>
             </div>
 
-            <div class="rowwrap gap0 rackBalancePanel__legend">
-              @for (axis of radarAxes; track axis.axis.id) {
-                <div class="rackBalancePanel__legendChip">
-                  <mat-icon>{{ axis.axis.icon }}</mat-icon>
-                  <span>{{ axis.shortLabel }}</span>
-                </div>
-              }
+            <div class="rackBalancePanel__axisSection">
+              <mat-card-title class="rackBalancePanel__sectionTitle">Axis mix</mat-card-title>
+              <app-entity-stat-grid
+                class="rackBalancePanel__axisGrid"
+                [items]="axisShareStats(analysis)"
+                [stacked]="true"
+              ></app-entity-stat-grid>
             </div>
           </div>
         }
