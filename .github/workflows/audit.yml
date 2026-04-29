@@ -1,23 +1,23 @@
 name: Audit
 
 on:
-  push:
-    branches:
-      - production
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * 1'
 
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+
       - name: Audit live URL
-        uses: jakejarvis/lighthouse-action@master
+        uses: treosh/lighthouse-ci-action@v12
         with:
-          url: 'https://patcher.xyz/'
-      - name: Upload results as an artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: report
-          path: './report'
+          urls: 'https://patcher.xyz/'
+          uploadArtifacts: true
+          artifactName: report
