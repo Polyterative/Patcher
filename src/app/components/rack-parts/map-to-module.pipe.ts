@@ -3,9 +3,9 @@ import {
   PipeTransform
 } from '@angular/core';
 import {
+  DbModule,
   RackedModule
 } from '../../models/module';
-import { buildEffectiveRackedModule } from './racked-module-hp.utils';
 
 
 @Pipe({
@@ -14,8 +14,8 @@ import { buildEffectiveRackedModule } from './racked-module-hp.utils';
 })
 export class MapToModulePipe implements PipeTransform {
   
-  transform(value: RackedModule) {
-    return buildEffectiveRackedModule(value);
+  transform(value: RackedModule): DbModule {
+    return value.module;
   }
   
   

@@ -4,7 +4,6 @@ import {
 } from '@angular/core';
 import { RackedModule } from '../../models/module';
 import { isBlankModule } from './rack-blank-module.constants';
-import { getEffectiveRackedModuleHp } from './racked-module-hp.utils';
 
 
 @Pipe({
@@ -17,7 +16,7 @@ export class TotalHpOfRackPipe implements PipeTransform {
     // total hp for all non-blank modules
     return value.reduce((accumulator, value) => accumulator.concat(value), [])
                 .filter(m => !isBlankModule(m.module.id))
-                .reduce((acc, cur) => acc + getEffectiveRackedModuleHp(cur), 0);
+                .reduce((acc, cur) => acc + cur.module.hp, 0);
   }
   
 }

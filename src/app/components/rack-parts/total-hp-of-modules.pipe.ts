@@ -3,7 +3,6 @@ import {
   PipeTransform
 } from '@angular/core';
 import { RackedModule } from '../../models/module';
-import { getEffectiveRackedModuleHp } from './racked-module-hp.utils';
 
 
 @Pipe({
@@ -14,7 +13,7 @@ export class TotalHpOfModulesPipe implements PipeTransform {
   
   transform(value: RackedModule[]): number {
     // total hp for all modules
-    return value.reduce((acc, cur) => acc + getEffectiveRackedModuleHp(cur), 0);
+    return value.reduce((acc, cur) => acc + cur.module.hp, 0);
   }
   
 }
