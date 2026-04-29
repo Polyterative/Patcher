@@ -2,57 +2,84 @@
   <lib-clean-card>
     <div class="col gap1 rackBalancePanel">
       <div class="rowwrap gap1 rackBalancePanel__header">
-        <div class="col gap0">
-          <div class="rackBalancePanel__title">
-            Balance analysis
-            <button
-              mat-icon-button
-              class="rackBalancePanel__infoButton"
-              matTooltip="Advisory only. This panel reads the current module tags and highlights where the rack appears heavier or lighter."
-              matTooltipPosition="above"
-              type="button"
-            >
-              <mat-icon>info</mat-icon>
-            </button>
+        <div class="col gap0 rackBalancePanel__headerCopy">
+          <div class="rackBalancePanel__titleRow">
+            <div class="rackBalancePanel__title">
+              <mat-icon class="rackBalancePanel__titleIcon">balance</mat-icon>
+              <span>Balance analysis</span>
+            </div>
+            <span class="rackBalancePanel__confidencePill">
+              {{ confidencePercent(analysis) }}% tag coverage
+            </span>
           </div>
           <div class="rackBalancePanel__summary">{{ analysis.summary }}</div>
+          @if (!isExpanded && compactHighlights(analysis).length > 0) {
+            <div class="rowwrap gap0 rackBalancePanel__highlightRow">
+              @for (axis of compactHighlights(analysis); track axis.id) {
+                <div class="rackBalancePanel__highlightChip">
+                  <mat-icon>{{ axis.icon }}</mat-icon>
+                  <span>{{ axis.label }}</span>
+                  <strong>{{ axis.share }}%</strong>
+                </div>
+              }
+            </div>
+          }
         </div>
-        <div class="rackBalancePanel__confidence">
-          <span class="rackBalancePanel__confidenceValue">{{ confidencePercent(analysis) }}%</span>
-          <span class="rackBalancePanel__confidenceLabel">tag coverage</span>
+        <div class="row gap0 rackBalancePanel__actions">
+          <button
+            mat-stroked-button
+            type="button"
+            class="rackBalancePanel__toggleButton"
+            (click)="toggleExpanded()"
+            [attr.aria-expanded]="isExpanded"
+          >
+            <mat-icon>{{ isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+            {{ isExpanded ? 'Hide details' : 'Show details' }}
+          </button>
+          <button
+            mat-icon-button
+            class="rackBalancePanel__infoButton"
+            matTooltip="Advisory only. This panel reads the current module tags and highlights where the rack appears heavier or lighter."
+            matTooltipPosition="above"
+            type="button"
+          >
+            <mat-icon>info</mat-icon>
+          </button>
         </div>
       </div>
 
-      @if (analysis.warningMessage) {
-        <div class="rackBalancePanel__warning">
-          {{ analysis.warningMessage }}
-        </div>
-      }
-
-      <div class="col gap1">
-        @for (axis of analysis.axes; track axis.id) {
-          <div class="rackBalancePanel__axis">
-            <div class="row gap1 rackBalancePanel__axisMeta">
-              <div class="row gap0 rackBalancePanel__axisTitle">
-                <mat-icon>{{ axis.icon }}</mat-icon>
-                <span>{{ axis.label }}</span>
-              </div>
-              <div class="rackBalancePanel__axisValues">
-                <span>{{ axis.share }}%</span>
-                <span>{{ axis.matchedModules }} module{{ axis.matchedModules === 1 ? '' : 's' }}</span>
-              </div>
-            </div>
-            <div class="rackBalancePanel__barTrack">
-              <div class="rackBalancePanel__barFill"
-                   [style.width.%]="axis.share"
-              ></div>
-            </div>
-            <div class="rackBalancePanel__guidance">
-              {{ axis.guidance }}
-            </div>
+      @if (isExpanded) {
+        @if (analysis.warningMessage) {
+          <div class="rackBalancePanel__warning">
+            {{ analysis.warningMessage }}
           </div>
         }
-      </div>
+
+        <div class="col gap1 rackBalancePanel__details">
+          @for (axis of analysis.axes; track axis.id) {
+            <div class="rackBalancePanel__axis">
+              <div class="row gap1 rackBalancePanel__axisMeta">
+                <div class="row gap0 rackBalancePanel__axisTitle">
+                  <mat-icon>{{ axis.icon }}</mat-icon>
+                  <span>{{ axis.label }}</span>
+                </div>
+                <div class="rackBalancePanel__axisValues">
+                  <span>{{ axis.share }}%</span>
+                  <span>{{ axis.matchedModules }} module{{ axis.matchedModules === 1 ? '' : 's' }}</span>
+                </div>
+              </div>
+              <div class="rackBalancePanel__barTrack">
+                <div class="rackBalancePanel__barFill"
+                     [style.width.%]="axis.share"
+                ></div>
+              </div>
+              <div class="rackBalancePanel__guidance">
+                {{ axis.guidance }}
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
   </lib-clean-card>
 }
