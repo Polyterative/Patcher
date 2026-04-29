@@ -2,6 +2,7 @@ export interface RackBalanceAxisDefinition {
   id: RackBalanceAxisId;
   label: string;
   icon: string;
+  dbTagNames: string[];
   purposePatterns: RegExp[];
   naturePatterns: RegExp[];
   guidance: {
@@ -27,6 +28,12 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     id: 'voices',
     label: 'Voices',
     icon: 'graphic_eq',
+    dbTagNames: [
+      'Full Voice',
+      'Noise',
+      'Sample',
+      'VCO'
+    ],
     purposePatterns: [
       /\bvco\b/i,
       /\bosc/i,
@@ -47,6 +54,17 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     id: 'modulation',
     label: 'Modulation',
     icon: 'swap_calls',
+    dbTagNames: [
+      'Control',
+      'Env. Follow',
+      'Envelope Gen.',
+      'Function Gen.',
+      'LFO',
+      'Modulate',
+      'S&H',
+      'Slew Limit',
+      'Uncertainty'
+    ],
     purposePatterns: [
       /\blfo\b/i,
       /\benvelope\b/i,
@@ -67,6 +85,18 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     id: 'utilities',
     label: 'Utilities',
     icon: 'build',
+    dbTagNames: [
+      'Attenuate',
+      'Compare',
+      'Logic',
+      'Mix',
+      'Multiply',
+      'Polarize',
+      'Quad',
+      'Switch',
+      'Utility',
+      'VCA'
+    ],
     purposePatterns: [
       /\bvca\b/i,
       /\bmix/i,
@@ -93,6 +123,14 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     id: 'timing',
     label: 'Timing',
     icon: 'timer',
+    dbTagNames: [
+      'Clock Gen',
+      'Clock Mod',
+      'Frequency Div.',
+      'Quantize',
+      'Rhythm',
+      'Sequence'
+    ],
     purposePatterns: [
       /\bclock\b/i,
       /\bsequenc/i,
@@ -113,6 +151,22 @@ export const RACK_BALANCE_AXES: RackBalanceAxisDefinition[] = [
     id: 'tone',
     label: 'Tone shaping',
     icon: 'tune',
+    dbTagNames: [
+      'Compress',
+      'Delay',
+      'Distort',
+      'EQ',
+      'FX',
+      'LPG',
+      'Pan',
+      'Phase Shift',
+      'Pitch Shift',
+      'Reverb',
+      'Ring Mod',
+      'Stereo',
+      'VCF',
+      'Waveshape'
+    ],
     purposePatterns: [
       /\bfilter\b/i,
       /\beq\b/i,

@@ -116,6 +116,11 @@ export class RackBalanceAnalysisService {
       }
 
       for (const axis of RACK_BALANCE_AXES) {
+        if (this.matchesDbTagName(axis, tagName)) {
+          matchedAxes.add(axis.id);
+          continue;
+        }
+
         const patterns = this.getPatternsForTagType(axis, tagType);
 
         if (patterns.some(pattern => pattern.test(tagName))) {
@@ -145,6 +150,22 @@ export class RackBalanceAnalysisService {
     }
 
     return null;
+  }
+
+  private matchesDbTagName(axis: RackBalanceAxisDefinition, tagName: string): boolean {
+    const normalizedTagName = this.normalizeTagName(tagName);
+
+    return axis.dbTagNames.some(name => this.normalizeTagName(name) === normalizedTagName);
+  }
+
+  private normalizeTagName(tagName: string): string {
+    return tagName
+      .trim()
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private isBalanceRelevantTagType(tagType: string | null): boolean {
