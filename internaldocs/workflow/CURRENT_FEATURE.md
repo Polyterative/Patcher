@@ -93,6 +93,45 @@
 - [ ] limit the first verified surface to official profile fields plus MSRP / official links
 - [ ] keep all shared catalogue edits audited or review-gated
 
+#### Proposed MVP data model
+
+Core table remains intentionally small for the first pass:
+
+```text
+manufacturer_accounts
+- user_id uuid fk -> profiles.id
+- manufacturer_id bigint fk -> manufacturers.id
+- verified boolean default false
+- created_at timestamptz default now()
+```
+
+MVP semantics:
+
+- one row with `verified = false` = pending claim
+- one row with `verified = true` = verified owner
+- first pass assumes **one active claim row per manufacturer**
+- defer richer workflow columns (`reviewed_at`, `reviewed_by`, `revoked_at`, `notes`) until the manual moderation loop is proven necessary
+
+#### Proposed claim-flow behavior
+
+1. Logged-in user opens manufacturer detail page.
+2. If they have no claim row for that manufacturer, show **Claim this page** CTA.
+3. Submit creates `manufacturer_accounts(user_id, manufacturer_id, verified=false)`.
+4. UI flips to **Claim pending review** state with reassurance copy and verification requirements.
+5. Manual admin review in Supabase/dashboard sets `verified=true` for the approved row.
+6. Verified row unlocks manufacturer-owned edit controls on the same surface.
+
+#### First-pass guardrails
+
+- one pending claim per manufacturer at a time
+- a user can hold multiple manufacturer claims only after separate manual approvals
+- if a verified row already exists, the CTA becomes **Request ownership review** rather than opening a parallel self-serve claim flow
+- all verified edits should cache-bust manufacturer detail reads and keep auditability possible later
+
+#### Known implementation blocker
+
+- Working claim creation almost certainly needs explicit insert/select policy decisions for `manufacturer_accounts`, so code implementation should wait until the user explicitly approves the required Supabase/RLS work.
+
 ### Layer 3 — Polish
 
 - [ ] add verified badge rules and ownership messaging
