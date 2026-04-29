@@ -14,13 +14,27 @@
       ></lib-auto-content-loading-indicator>
       @if (bag.data) {
         <div class="col gap1">
-          <app-rack-composite [data]="(bag.data)"
-          ></app-rack-composite>
+          <div class="rackBrowserDetailView__summaryLayout">
+            <app-rack-composite [data]="(bag.data)"
+            ></app-rack-composite>
+            <div class="rackBrowserDetailView__desktopAnalysis">
+              <app-rack-balance-panel
+                [rowedRackedModules]="(dataService.rowedRackedModules$|async)"
+                [alwaysExpanded]="!bag.isCurrentRackEditable"
+              ></app-rack-balance-panel>
+            </div>
+          </div>
           <lib-clean-card>
             <app-rack-editor
               [data]="(bag.data)"
             ></app-rack-editor>
           </lib-clean-card>
+          <div class="rackBrowserDetailView__mobileAnalysis">
+            <app-rack-balance-panel
+              [rowedRackedModules]="(dataService.rowedRackedModules$|async)"
+              [alwaysExpanded]="!bag.isCurrentRackEditable"
+            ></app-rack-balance-panel>
+          </div>
         </div>
       }
     </lib-hero-content-card>

@@ -74,6 +74,12 @@ describe('RackBalancePanelComponent', () => {
     expect(component.radarPolygonPoints(analysis).split(' ').length).toBe(5);
     expect(component.strongestAxis(analysis).id).toBe('modulation');
     expect(component.weakestAxis(analysis).id).toBe('utilities');
+    const strongestPoint = radarAxes.find(axis => axis.axis.id === 'modulation')!.point;
+    const strongestDistance = Math.hypot(
+      strongestPoint.x - component.radarCenter,
+      strongestPoint.y - component.radarCenter
+    );
+    expect(strongestDistance).toBeCloseTo(component.radarRadius, 4);
   });
 
   it('keeps details open and ignores toggles when always expanded', () => {
