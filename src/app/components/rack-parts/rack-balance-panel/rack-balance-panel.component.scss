@@ -3,6 +3,52 @@
   min-width: 0;
 }
 
+@keyframes rack-balance-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rack-balance-chart-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rack-balance-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rack-balance-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .rackBalancePanel {
   padding: 0.1rem 0;
   min-width: 0;
@@ -22,34 +68,19 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .rackBalancePanel__title {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.94rem;
-  font-weight: 700;
-  color: rgba(19, 54, 89, 0.96);
+  margin: 0;
 }
 
-.rackBalancePanel__titleIcon {
-  width: 1rem;
-  height: 1rem;
-  font-size: 1rem;
-}
-
-.rackBalancePanel__confidencePill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(34, 75, 117, 0.08);
-  color: rgba(19, 54, 89, 0.8);
-  font-size: 0.74rem;
-  font-weight: 600;
-  white-space: nowrap;
+.rackBalancePanel__meta {
+  width: 100%;
+  max-width: 14rem;
 }
 
 .rackBalancePanel__actions {
@@ -108,52 +139,31 @@
 }
 
 .rackBalancePanel__summary {
-  color: rgba(19, 54, 89, 0.74);
-  line-height: 1.3;
-  max-width: 52rem;
-  font-size: 0.84rem;
-  overflow-wrap: anywhere;
-}
-
-.rackBalancePanel__highlightRow {
-  margin-top: 0.15rem;
-}
-
-.rackBalancePanel__highlightChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(52, 123, 193, 0.09);
-  color: rgba(19, 54, 89, 0.82);
-  font-size: 0.76rem;
-}
-
-.rackBalancePanel__highlightChip .mat-icon {
-  width: 0.9rem;
-  height: 0.9rem;
-  font-size: 0.9rem;
+  display: none;
 }
 
 .rackBalancePanel__details {
-  padding-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(19, 54, 89, 0.08);
+  animation: rack-balance-panel-enter 220ms ease-out both;
 }
 
 .rackBalancePanel__visualSurface {
   display: grid;
-  grid-template-columns: minmax(12rem, 16rem) minmax(12rem, 1fr);
-  gap: 1rem;
-  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 1.15rem;
+  align-items: start;
 }
 
 .rackBalancePanel__chartWrap {
   display: flex;
   justify-content: center;
+  min-width: 0;
+  animation: rack-balance-chart-enter 260ms ease-out both;
 }
 
 .rackBalancePanel__radar {
-  width: min(100%, 14.5rem);
+  width: min(100%, 14rem);
   height: auto;
   overflow: visible;
 }
@@ -162,100 +172,127 @@
   fill: rgba(52, 123, 193, 0.03);
   stroke: rgba(34, 75, 117, 0.13);
   stroke-width: 1;
+  animation: rack-balance-fade-in 260ms ease-out both;
 }
 
 .rackBalancePanel__radarAxisLine {
   stroke: rgba(34, 75, 117, 0.12);
   stroke-width: 1;
+  animation: rack-balance-fade-in 260ms ease-out both;
 }
 
 .rackBalancePanel__radarShape {
   fill: rgba(52, 123, 193, 0.18);
   stroke: rgba(52, 123, 193, 0.9);
   stroke-width: 2;
+  transform-origin: center;
+  animation: rack-balance-chart-enter 320ms ease-out both 40ms;
 }
 
 .rackBalancePanel__radarPoint {
   fill: rgba(71, 170, 156, 0.95);
   stroke: white;
   stroke-width: 1.5;
+  transform-origin: center;
+  animation: rack-balance-pop-in 220ms ease-out both 120ms;
 }
 
 .rackBalancePanel__radarLabel {
   fill: rgba(19, 54, 89, 0.72);
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  animation: rack-balance-fade-in 220ms ease-out both 120ms;
 }
 
-.rackBalancePanel__signals {
+.rackBalancePanel__supportingStats {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  min-width: 0;
+  animation: rack-balance-panel-enter 220ms ease-out both 90ms;
 }
 
-.rackBalancePanel__signal {
+.rackBalancePanel__showcaseGrid {
+  width: 100%;
+}
+
+.rackBalancePanel__metaShowcase {
+  display: block;
+  width: 100%;
+}
+
+.rackBalancePanel__lowDataState {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding-top: 0.45rem;
 }
 
-.rackBalancePanel__signalLabel {
-  color: rgba(19, 54, 89, 0.58);
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+.rackBalancePanel__lowDataIcon {
+  width: 1.15rem;
+  height: 1.15rem;
+  font-size: 1.15rem;
+  color: rgba(19, 54, 89, 0.62);
+  margin-top: 0.2rem;
 }
 
-.rackBalancePanel__signalValue {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  color: rgba(19, 54, 89, 0.9);
-  font-size: 0.88rem;
-  font-weight: 600;
+.rackBalancePanel__lowDataCopy {
   min-width: 0;
-  overflow-wrap: anywhere;
 }
 
-.rackBalancePanel__signalValue .mat-icon {
-  width: 1rem;
-  height: 1rem;
-  font-size: 1rem;
-  color: rgba(52, 123, 193, 0.88);
+.rackBalancePanel__lowDataTitle {
+  margin: 0 0 0.35rem;
 }
 
-.rackBalancePanel__coverageNote {
+.rackBalancePanel__lowDataMessage {
+  margin: 0;
   color: rgba(19, 54, 89, 0.68);
-  font-size: 0.76rem;
-  overflow-wrap: anywhere;
+  line-height: 1.35;
+  white-space: normal;
 }
 
-.rackBalancePanel__coverageNote--muted {
-  color: rgba(19, 54, 89, 0.52);
+.rackBalancePanel__sectionTitle {
+  margin: 0 0 0.75rem;
 }
 
-.rackBalancePanel__legend {
-  margin-top: 0.1rem;
+.rackBalancePanel__axisSection {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.15rem;
+  animation: rack-balance-panel-enter 220ms ease-out both 140ms;
 }
 
-.rackBalancePanel__legendChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  padding: 0.18rem 0.45rem;
-  border-radius: 999px;
-  background: rgba(34, 75, 117, 0.06);
-  color: rgba(19, 54, 89, 0.8);
-  font-size: 0.74rem;
-  min-width: 0;
-  overflow-wrap: anywhere;
+.rackBalancePanel__axisGrid {
+  width: 100%;
 }
 
-.rackBalancePanel__legendChip .mat-icon {
-  width: 0.9rem;
-  height: 0.9rem;
-  font-size: 0.9rem;
+@media (min-width: 48.0625rem) {
+  .rackBalancePanel__chartWrap {
+    align-self: start;
+  }
+
+  .rackBalancePanel__radar {
+    width: min(100%, 14rem);
+  }
+}
+
+@media (min-width: 60.0625rem) and (max-width: 74.9375rem) {
+  .rackBalancePanel__visualSurface {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+}
+
+@media (min-width: 90rem) {
+  .rackBalancePanel__visualSurface {
+    grid-template-columns: minmax(12.75rem, 13.75rem) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .rackBalancePanel__chartWrap,
+  .rackBalancePanel__supportingStats {
+    align-self: start;
+  }
 }
 
 @media (max-width: 48rem) {
@@ -290,5 +327,20 @@
 
   .rackBalancePanel__radar {
     width: min(100%, 13rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rackBalancePanel__details,
+  .rackBalancePanel__chartWrap,
+  .rackBalancePanel__radarRing,
+  .rackBalancePanel__radarAxisLine,
+  .rackBalancePanel__radarShape,
+  .rackBalancePanel__radarPoint,
+  .rackBalancePanel__radarLabel,
+  .rackBalancePanel__supportingStats,
+  .rackBalancePanel__axisSection {
+    animation: none;
+    transform: none;
   }
 }
