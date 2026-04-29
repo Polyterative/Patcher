@@ -50,6 +50,7 @@ import { CommonModule } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   of,
@@ -210,7 +211,8 @@ describe('Integration — ModuleCVsComponent first CV click on 0-instance module
       ],
       providers: [
         {provide: PatchDetailDataService, useValue: mockService},
-        {provide: AppStateService, useValue: {}}
+        {provide: AppStateService, useValue: {}},
+        {provide: MatSnackBar, useValue: {open: jasmine.createSpy('open')}}
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
