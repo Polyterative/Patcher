@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -64,12 +65,13 @@ const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/ob
   ],
   standalone: false
 })
-export class RackEditorComponent extends SubManager implements OnInit {
+export class RackEditorComponent extends SubManager implements OnInit, AfterViewInit {
   @Input() data: RackMinimal;
   
   moduleRightClick$ = new Subject<ModuleRightClick>();
 
   autoScale = 1;
+  private rackViewportRef?: ElementRef<HTMLElement>;
 
   @HostListener('window:resize')
   onWindowResize(): void {
@@ -79,7 +81,9 @@ export class RackEditorComponent extends SubManager implements OnInit {
 
   private updateAutoScale(): void {
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    this.autoScale = Math.min(1, window.innerWidth / (this.data.hp * rem));
+    const rackWidth = this.data.hp * rem;
+    const availableWidth = this.rackViewportRef?.nativeElement.clientWidth ?? window.innerWidth;
+    this.autoScale = Math.min(1, availableWidth / rackWidth);
   }
   
   viewConfig: ModuleMinimalViewConfig = {
@@ -94,6 +98,15 @@ export class RackEditorComponent extends SubManager implements OnInit {
   };
   //
   @ViewChild('screen') screenReference: ElementRef;
+  @ViewChild('rackViewport') set rackViewport(reference: ElementRef<HTMLElement> | undefined) {
+    this.rackViewportRef = reference;
+    if (reference) {
+      queueMicrotask(() => {
+        this.updateAutoScale();
+        this.cdr.markForCheck();
+      });
+    }
+  }
   @ViewChild('canvas') canvasReference: ElementRef;
   @ViewChild('download') downloadReference: ElementRef;
   
@@ -287,7 +300,12 @@ export class RackEditorComponent extends SubManager implements OnInit {
           
         })
     );
-    
+     
+  }
+
+  ngAfterViewInit(): void {
+    this.updateAutoScale();
+    this.cdr.markForCheck();
   }
   
   calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
