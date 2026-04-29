@@ -12,82 +12,107 @@
 
 ## Active
 
-### Contributor stats / contribution profile
+### Manufacturer accounts & verification
 
-**Goal:** Add a long-term, trust-first feature that shows how a user improves Patcher's shared data, especially the module catalogue, while keeping the product utility-first and explicitly non-social.
+**Goal:** Define a trustable manufacturer-claim model that lets real brands control official surface-area fields without giving them silent write access to shared catalogue structure.
 
 ### Product boundaries
 
-- contributor stats are **not** collection stats
-- private dashboard phase first; public-safe subset later
-- no leaderboards, likes, follows, streaks, or comparison mechanics
-- public surfaces should prefer approved/public-safe contribution signals only
-- backend instrumentation beyond current data is future-only for now
+- manufacturer-facing work must start with **practical profile stewardship**, not custom CMS ambition
+- verification is manual-first; no speculative self-serve automation in the first pass
+- one verified claim per manufacturer for MVP; multi-admin workflows are later
+- verified status is about **brand control of official fields**, not blanket authority over all module data
+- any future RLS or moderation-policy changes still require explicit manual approval before implementation
 
-### Signals already available
+### Verification criteria
 
-- `modules.submitter`
-- `modules.isApproved`
-- `comments.authorId`
-- `module_flags.user_id`
+1. **Acceptable proof of control**
+   - reply from an email on the manufacturer's official domain
+   - or a temporary verification token placed on the official website
+   - or a corroborated public contact point already linked from the official site
+2. **Non-acceptable proof**
+   - reseller/distributor email without explicit manufacturer mandate
+   - social account alone when it is not linked from the official site
+   - unverifiable free-mail claims without independent corroboration
+3. **Approval record**
+   - verification stays manual in Supabase/dashboard for MVP
+   - approval notes should record which proof path was used
+   - re-review should not require re-collecting evidence unless the brand identity or contact surface changes
 
-### Signals to keep out of scope for the first step
+### Dormancy and revocation
 
-- collection size / owned modules
-- profile views or other vanity metrics
-- trust-tier badges before the trust model exists
-- price-report stats before price reporting ships
-- contributor rankings or public comparison
+- **Dormant, but still valid:** no profile edits or account activity for up to 12 months; keep access unless there is an active dispute
+- **Needs re-verification:** official website/domain/contact changes materially, or a competing claimant provides stronger evidence
+- **Soft-freeze trigger:** repeated inaccurate edits to manufacturer-owned fields, bounced official contact, or credible ownership dispute
+- **Revocation path:** freeze edit access, document the reason, notify the claimant, allow a manual review window, then revoke if proof is not restored
+- **Reclaim path:** a revoked or dormant manufacturer can be re-verified using the same objective proof rules; do not silently transfer control
 
-### Persona refinements
+### Field ownership split
 
-1. **New contributor:** needs clarity, reassurance, and low-friction empty states
-2. **Steady contributor:** needs momentum and quality-oriented acknowledgement
-3. **Power contributor / trust-builder:** needs durable proof of approved catalogue work
-4. **Private / low-ego contributor:** needs private-by-default recognition without performative pressure
+#### Manufacturer-owned fields (authoritative once verified)
+
+- manufacturer display name
+- logo URL / brand image
+- official website
+- support / contact links
+- manufacturer bio / brand description
+- official social links
+- featured modules
+- manufacturer update entries
+- MSRP
+- official module-adjacent links such as support, manual, firmware, or store destinations
+
+#### Shared catalogue fields (reviewed or audited, not silent-write)
+
+- module HP / width / depth / power
+- format / standard
+- IO counts and signal metadata
+- tags / taxonomy
+- panel geometry and technical dimensions
+- moderation / approval state
+- user-submitted correction history
+
+#### Mixed fields (brand can propose; system should preserve auditability)
+
+- module name copy
+- short marketing description
+- release / lifecycle annotations
+- official imagery where it affects shared presentation
 
 ### Layer 1 — MVP
 
-- [x] add a dedicated **Contributor stats** card in the user-area sidebar
-- [x] reuse `app-statistics`
-- [x] create a contributor-specific query/data layer instead of piggybacking on collection stats
-- [x] initial private metrics:
-  - [x] modules submitted
-  - [x] approved modules
-  - [x] pending modules
-  - [x] comments posted
-  - [x] module flags submitted
-- [x] add empty/zero-state copy that nudges contribution without feeling game-like
+- [x] define objective verification criteria and rejection rules
+- [x] define dormancy, freeze, revocation, and reclaim path
+- [x] define manufacturer-owned fields vs shared catalogue fields
+- [ ] convert these rules into claim-flow implementation tasks
 
 ### Layer 2 — Structural
 
-- [x] add a public-safe subset on public profiles once privacy rules are settled
-- [x] keep pending/private metrics owner-only
-- consider a companion contribution activity surface using the shared `recent-activity` atom
-- [x] keep the query layer ready for future trust-tier evolution
+- [ ] add `manufacturer_accounts` data model and service methods
+- [ ] add claim request flow on manufacturer detail pages
+- [ ] limit the first verified surface to official profile fields plus MSRP / official links
+- [ ] keep all shared catalogue edits audited or review-gated
 
 ### Layer 3 — Polish
 
-- [x] refine wording/tooltips/icon choices
-- [x] mobile layout review
-- [x] clearer distinction between approved/public contributions and in-review/private work
-- [x] targeted tests for backend aggregation and stats-array mapping
+- [ ] add verified badge rules and ownership messaging
+- [ ] define dormancy / dispute admin UI copy
+- [ ] refine small-manufacturer onboarding guidance
+- [ ] add tests for claim flow, ownership boundaries, and revocation edge cases
 
 ### Likely implementation touchpoints
 
-- `src/app/components/shared-atoms/statistics/`
-- `src/app/features/routes/user-area/`
-- `src/app/features/routes/public-profile/`
 - `src/app/features/backend/supabase.service.ts`
-- `src/app/features/backend/supabase-queries.ts`
+- `src/app/features/backend/DatabaseStrings.ts`
+- `src/backend/database.types.ts`
+- `src/app/features/routes/manufacturer-detail/`
+- `internaldocs/product/PRINCIPLES.md`
 
-### Future-only backend options (documented, not in this first step)
+### Notes
 
-- approval audit trail / approval rate
-- flag resolution attribution
-- price-report contribution stats
-- contribution timeline / trend snapshots
-- edit-history stewardship metrics
+- Verified manufacturers should control the **official brand surface**, not bypass community trust mechanics.
+- Brand-owned fields can be authoritative without turning Patcher into a full manufacturer CMS.
+- Small-manufacturer-first remains the filter: the first version should help a one-person brand correct its public surface fast.
 
 ---
 
