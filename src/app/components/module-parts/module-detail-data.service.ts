@@ -50,6 +50,7 @@ export class ModuleDetailDataService implements OnDestroy {
   modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
   deleteModule$ = new Subject<number>();
+  deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
   deleteLastPanel$ = new Subject<DbModule>();
   changeModule$ = new Subject<Partial<DbModule>>();
   setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
@@ -225,6 +226,42 @@ export class ModuleDetailDataService implements OnDestroy {
       )
       .subscribe(module => {
         snackBar.open(`"${ module?.name }" deleted from the database.`, undefined, {duration: 2000, panelClass: 'snack-success'});
+        this.router.navigate(['/modules', 'browser']);
+      });
+
+    this.deleteModuleAndOrphanManufacturer$
+      .pipe(
+        filter(module => !!module?.id),
+        switchMap(module => this.backend.auth.hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => (this.appState.isDev || isAdmin) ? of(module) : EMPTY)
+        )),
+        switchMap(module => this.backend.get.modulesBySameManufacturer(module.manufacturerId, 0, 20, 'id,manufacturerId').pipe(
+          map(modules => ({
+            module,
+            shouldDeleteManufacturer: module.manufacturerId != null
+              && modules.every(relatedModule => relatedModule.id === module.id)
+          }))
+        )),
+        switchMap(({module, shouldDeleteManufacturer}) => this.backend.delete.module(module.id).pipe(
+          switchMap(() => {
+            if (!shouldDeleteManufacturer) {
+              return of({module, manufacturerDeleted: false});
+            }
+
+            return this.backend.delete.manufacturer(module.manufacturerId).pipe(
+              map(() => ({module, manufacturerDeleted: true}))
+            );
+          })
+        )),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({module, manufacturerDeleted}) => {
+        const successMessage = manufacturerDeleted
+          ? `"${ module.name }" and orphan manufacturer "${ module.manufacturer.name }" deleted from the database.`
+          : `"${ module.name }" deleted from the database.`;
+
+        snackBar.open(successMessage, undefined, {duration: 2000, panelClass: 'snack-success'});
         this.router.navigate(['/modules', 'browser']);
       });
     

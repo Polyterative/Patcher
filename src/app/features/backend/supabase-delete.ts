@@ -263,6 +263,28 @@ export function createDeleteNamespace(
       remapErrors()
     ),
 
+    manufacturer: (id: number) => getUserSession$().pipe(
+      switchMap(user => {
+        if (!user) return throwError(() => new Error('Authentication required'));
+        return hasAdminRole$().pipe(
+          take(1),
+          switchMap(isAdmin => {
+            if (!isAdmin) {
+              return throwError(() => new Error('Admin access required'));
+            }
+            return rxFrom(
+              supabase.from(DbPaths.manufacturers)
+                .delete()
+                .filter('id', 'eq', id)
+                .select('id')
+            );
+          })
+        );
+      }),
+      cacheBust(['manufacturers']),
+      remapErrors()
+    ),
+
     moduleFlag: (id: number) => rxFrom(
       supabase.from(DbPaths.module_flags).delete().eq('id', id)
     ).pipe(
