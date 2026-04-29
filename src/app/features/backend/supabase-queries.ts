@@ -51,6 +51,10 @@ export interface CurrentUserContributorStats {
   moduleFlagsSubmitted: number;
 }
 
+export interface PublicUserContributorStats {
+  approvedPublicModules: number;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
@@ -81,6 +85,18 @@ export class SupabaseQueriesService {
     private getUserSession$: () => Observable<SimpleUserModel | null>,
     private defaultPag: number
   ) {
+  }
+
+  private countRows(
+    table: typeof DbPaths.modules | typeof DbPaths.comments | typeof DbPaths.module_flags,
+    applyFilters: (query: any) => any
+  ): Observable<number> {
+    return rxFrom(
+      applyFilters(this.supabase.from(table))
+    ).pipe(
+      remapErrors(),
+      map((result: any) => result.count ?? 0)
+    );
   }
 
   private stripPublicAuthorGate<T>(response: any) {
@@ -396,18 +412,6 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getCurrentUserContributorStats(): Observable<CurrentUserContributorStats> {
-    const countRows$ = (
-      table: typeof DbPaths.modules | typeof DbPaths.comments | typeof DbPaths.module_flags,
-      applyFilters: (query: any) => any
-    ) => rxFrom(
-      applyFilters(
-        this.supabase.from(table).select('id', {count: 'exact', head: true})
-      )
-    ).pipe(
-      remapErrors(),
-      map((result: any) => result.count ?? 0)
-    );
-
     return this.getUserSession$()
       .pipe(
         switchMap(user => {
@@ -416,23 +420,30 @@ export class SupabaseQueriesService {
           }
 
           return forkJoin({
-            modulesSubmitted: countRows$(
-              DbPaths.modules,
-              query => query.filter('submitter', 'eq', user.id)
-            ),
-            approvedModules: countRows$(
+            modulesSubmitted: this.countRows(
               DbPaths.modules,
               query => query
+                .select('id', {count: 'exact', head: true})
+                .filter('submitter', 'eq', user.id)
+            ),
+            approvedModules: this.countRows(
+              DbPaths.modules,
+              query => query
+                .select('id', {count: 'exact', head: true})
                 .filter('submitter', 'eq', user.id)
                 .filter('isApproved', 'eq', true)
             ),
-            commentsPosted: countRows$(
+            commentsPosted: this.countRows(
               DbPaths.comments,
-              query => query.filter('authorId', 'eq', user.id)
+              query => query
+                .select('id', {count: 'exact', head: true})
+                .filter('authorId', 'eq', user.id)
             ),
-            moduleFlagsSubmitted: countRows$(
+            moduleFlagsSubmitted: this.countRows(
               DbPaths.module_flags,
-              query => query.filter('user_id', 'eq', user.id)
+              query => query
+                .select('id', {count: 'exact', head: true})
+                .filter('user_id', 'eq', user.id)
             ),
           }).pipe(
             map((stats) => ({
@@ -442,6 +453,27 @@ export class SupabaseQueriesService {
           );
         })
       );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
+    maxCacheCount: 50,
+  })
+  getPublicUserContributorStats(authorId: string): Observable<PublicUserContributorStats> {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
+    return this.countRows(
+      DbPaths.modules,
+      query => query
+        .select(`id, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+        .filter('submitter', 'eq', authorId)
+        .filter('public', 'eq', true)
+        .filter('isApproved', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+    ).pipe(
+      map((approvedPublicModules) => ({approvedPublicModules}))
+    );
   }
   
   @Cacheable({
