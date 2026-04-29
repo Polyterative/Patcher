@@ -1,0 +1,23 @@
+<lib-clean-card>
+  <div
+    class="col gap1 entityStatCard"
+    [class.entityStatCard--verticallyCentered]="verticallyCentered"
+  >
+    @for (row of visibleRows(); track row) {
+      <div class="entityStatCard__row">
+        @for (group of row; track group) {
+          <div class="entityStatCard__group">
+            @if (group.title) {
+              <mat-card-title class="entityStatCard__groupTitle">{{ group.title }}</mat-card-title>
+            }
+            <app-entity-stat-grid
+              [items]="group.items"
+              [equalColumns]="equalColumns"
+              [stacked]="stackedItems"
+            ></app-entity-stat-grid>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</lib-clean-card>

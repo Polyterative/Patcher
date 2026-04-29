@@ -9,14 +9,21 @@ import { EntityAuthorComponent }          from './entity-author/entity-author.co
 import { PatchConnectionSymbolComponent } from './patch-connection-symbol/patch-connection-symbol.component';
 import { TimestampsRelativeComponent }    from './timestamps-relative/timestamps-relative.component';
 import { MatCardModule }                  from "@angular/material/card";
+import { MatBadgeModule }                from "@angular/material/badge";
 import { MatTooltipModule }               from "@angular/material/tooltip";
+import { CleanCardModule } from "src/app/shared-interproject/components/@visual/clean-card/clean-card.module";
+import { LabelValueShowcaseModule } from "src/app/shared-interproject/components/@visual/label-value-showcase/label-value-showcase.module";
+import { EntityStatGridComponent } from "./entity-stat-grid/entity-stat-grid.component";
+import { EntityStatCardComponent } from "./entity-stat-card/entity-stat-card.component";
 
 
 @NgModule({
   declarations: [
     TimestampsRelativeComponent,
     EntityAuthorComponent,
-    PatchConnectionSymbolComponent
+    PatchConnectionSymbolComponent,
+    EntityStatGridComponent,
+    EntityStatCardComponent
   ],
   imports: [
     CommonModule,
@@ -24,14 +31,19 @@ import { MatTooltipModule }               from "@angular/material/tooltip";
     RouterModule,
     TimeagoModule.forChild(),
     MatCardModule,
+    MatBadgeModule,
     HeroInfoBoxModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
+    CleanCardModule,
+    LabelValueShowcaseModule
   ],
   exports:      [
     TimestampsRelativeComponent,
     EntityAuthorComponent,
-    PatchConnectionSymbolComponent
+    PatchConnectionSymbolComponent,
+    EntityStatGridComponent,
+    EntityStatCardComponent
   ]
 })
 export class SharedAtomsModule {}
