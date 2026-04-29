@@ -4,16 +4,20 @@ import {
 } from '@angular/core';
 import { MinimalModule } from 'src/app/models/module';
 import { Standard } from '../../models/standard';
+import {
+  getModuleFormatGeometry,
+  MODULE_FORMAT_GEOMETRY
+} from './module-format-geometry.constants';
 
 
 /**
  * Output in REM
  */
-export const VISUAL_3U_MODULE_HEIGHT_REM = 25.4;
-export const VISUAL_1U_MODULE_HEIGHT_REM = 7.6;
+export const VISUAL_3U_MODULE_HEIGHT_REM = MODULE_FORMAT_GEOMETRY.EURORACK_3U.heightRem;
+export const VISUAL_1U_MODULE_HEIGHT_REM = MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem;
 
 export function getModuleHeightForStandard(standard: Standard | undefined): number {
-  return (standard?.id === 0) || (standard?.id === 1000) ? VISUAL_3U_MODULE_HEIGHT_REM : VISUAL_1U_MODULE_HEIGHT_REM;
+  return getModuleFormatGeometry(standard).heightRem;
 }
 
 export function getModulePanelAspectRatio(module: Pick<MinimalModule, 'hp' | 'standard'> | undefined): number {

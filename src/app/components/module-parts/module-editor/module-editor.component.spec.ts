@@ -4,6 +4,7 @@ import {
   Validators
 } from '@angular/forms';
 import { BehaviorSubject, of, Subject } from 'rxjs';
+import { MODULE_FORMAT_GEOMETRY } from '../module-format-geometry.constants';
 import { FormCV } from './module-editor-data.service';
 import { ModuleEditorComponent } from './module-editor.component';
 
@@ -239,15 +240,23 @@ describe('ModuleEditorComponent panel crop flow', () => {
     expect(component.croppedPanelFile$.value).toBeUndefined();
   });
 
-  it('locks the cropper to the same panel aspect ratio used by module rendering', () => {
+  it('locks the cropper to the same panel aspect ratio used by module rendering for each supported format', () => {
     const {component} = makeComponent();
-    component.data = {
-      ...component.data,
-      hp: 12,
-      standard: {id: 0, name: '3U'}
-    } as any;
+    const expectations = [
+      {id: 0, name: '3U', expectedHeightRem: MODULE_FORMAT_GEOMETRY.EURORACK_3U.heightRem},
+      {id: 1, name: 'Intellijel 1U', expectedHeightRem: MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem},
+      {id: 2, name: 'Pulp Logic 1U', expectedHeightRem: MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightRem}
+    ];
 
-    expect(component.panelCropAspectRatio).toBeCloseTo(12 / 25.4, 6);
+    expectations.forEach(testCase => {
+      component.data = {
+        ...component.data,
+        hp: 12,
+        standard: {id: testCase.id, name: testCase.name}
+      } as any;
+
+      expect(component.panelCropAspectRatio).toBeCloseTo(12 / testCase.expectedHeightRem, 6);
+    });
   });
 
   it('prefers webp crop output when the browser supports it', () => {
