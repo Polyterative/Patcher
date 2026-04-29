@@ -12,7 +12,6 @@ import { Subject } from 'rxjs';
 import { RackedModule } from 'src/app/models/module';
 import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-detail-data.service';
-import { getEffectiveRackedModuleHp } from '../../racked-module-hp.utils';
 import { ModuleRightClick } from '../rack-editor.component';
 
 
@@ -67,7 +66,7 @@ export class RackVisualModelComponent implements OnInit, AfterViewInit {
   }
 
   effectiveHp(rackedModule: RackedModule): number {
-    return getEffectiveRackedModuleHp(rackedModule);
+    return rackedModule.module.hp;
   }
 
   setHoveredModule(rackedModule: RackedModule): void {
