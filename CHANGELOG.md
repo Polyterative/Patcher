@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.5.1](https://github.com/Polyterative/Patcher/compare/v5.5.0...v5.5.1) (2026-04-29)
+
+
+### Features
+
+* **module-browser:** add module maintenance actions ([bb65665](https://github.com/Polyterative/Patcher/commit/bb65665287f0e619f154398220c2ddc69e602306))
+* **module-editor:** improve module panel image handling ([c63fca3](https://github.com/Polyterative/Patcher/commit/c63fca31a96098f51e4d5ad5b69909377fb13919))
+
+
+### Bug Fixes
+
+* **module-browser:** load full manufacturer lists ([7f47119](https://github.com/Polyterative/Patcher/commit/7f4711957b002b76d2de49e8d7fd00f7a2e74d88))
+
 ## [5.5.0](https://github.com/Polyterative/Patcher/compare/v5.4.4...v5.5.0) (2026-04-27)
 
 
