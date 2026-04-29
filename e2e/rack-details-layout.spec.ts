@@ -32,6 +32,7 @@ const MOBILE_VIEWPORT = {
 const WIDE_RACK_ID = 464;
 const STABLE_RACK_ID = 265;
 const EDGE_TOLERANCE_PX = 1;
+const HUGGED_COMMENTS_MAX_WIDTH_PX = 721;
 
 type RackViewportMetrics = {
   canvasLeft: number;
@@ -58,6 +59,10 @@ type SummaryLayoutMetrics = {
   statsLeft: number;
   statsTop: number;
   statsWidth: number;
+  bottomCommentsDisplay: string;
+  bottomCommentsTop: number;
+  bottomCommentsWidth: number;
+  editorTop: number;
   desktopAnalysisDisplay: string;
   desktopAnalysisLeft: number;
   desktopAnalysisTop: number;
@@ -151,6 +156,9 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
     const summary = document.querySelector<HTMLElement>('.rackBrowserDetailView__summaryLayout');
     const composite = document.querySelector<HTMLElement>('.rackBrowserDetailView__summaryLayout app-rack-composite');
     const stats = document.querySelector<HTMLElement>('.rackBrowserDetailView__summaryStats');
+    const bottomComments = document.querySelector<HTMLElement>('.rackBrowserDetailView__bottomComments .content')
+      ?? document.querySelector<HTMLElement>('.rackBrowserDetailView__bottomComments');
+    const editorCard = document.querySelector<HTMLElement>('app-rack-editor')?.closest('lib-clean-card') as HTMLElement | null;
     const desktopAnalysis = document.querySelector<HTMLElement>('.rackBrowserDetailView__desktopAnalysis');
     const mobileAnalysis = document.querySelector<HTMLElement>('.rackBrowserDetailView__mobileAnalysis');
     const visualSurface = document.querySelector<HTMLElement>('.rackBalancePanel__visualSurface');
@@ -158,15 +166,18 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
     const chartWrap = document.querySelector<HTMLElement>('.rackBalancePanel__chartWrap');
     const supportingStats = document.querySelector<HTMLElement>('.rackBalancePanel__supportingStats');
 
-    if (!summary || !composite || !stats || !desktopAnalysis || !mobileAnalysis) {
+    if (!summary || !composite || !stats || !bottomComments || !editorCard || !desktopAnalysis || !mobileAnalysis) {
       return null;
     }
 
     const summaryStyle = getComputedStyle(summary);
+    const bottomCommentsStyle = getComputedStyle(bottomComments);
     const desktopAnalysisStyle = getComputedStyle(desktopAnalysis);
     const mobileAnalysisStyle = getComputedStyle(mobileAnalysis);
     const compositeRect = composite.getBoundingClientRect();
     const statsRect = stats.getBoundingClientRect();
+    const bottomCommentsRect = bottomComments.getBoundingClientRect();
+    const editorRect = editorCard.getBoundingClientRect();
     const desktopAnalysisRect = desktopAnalysis.getBoundingClientRect();
     const mobileAnalysisRect = mobileAnalysis.getBoundingClientRect();
 
@@ -177,6 +188,10 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
       statsLeft: Math.round(statsRect.left),
       statsTop: Math.round(statsRect.top),
       statsWidth: Math.round(statsRect.width),
+      bottomCommentsDisplay: bottomCommentsStyle.display,
+      bottomCommentsTop: Math.round(bottomCommentsRect.top),
+      bottomCommentsWidth: Math.round(bottomCommentsRect.width),
+      editorTop: Math.round(editorRect.top),
       desktopAnalysisDisplay: desktopAnalysisStyle.display,
       desktopAnalysisLeft: Math.round(desktopAnalysisRect.left),
       desktopAnalysisTop: Math.round(desktopAnalysisRect.top),
@@ -252,12 +267,16 @@ test.describe('Rack Details Summary Layout Desktop', () => {
 
     const metrics = await readSummaryLayoutMetrics(page);
 
-    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('grid');
+    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
     expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.statsTop, JSON.stringify(metrics)).toBe(metrics.compositeTop);
-    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.compositeTop);
-    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThan(metrics.desktopAnalysisWidth);
+    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
+    expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
+    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(300);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -271,9 +290,13 @@ test.describe('Rack Details Summary Layout Mid Desktop', () => {
 
     const metrics = await readSummaryLayoutMetrics(page);
 
-    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('grid');
+    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
     expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsTop);
     expect(metrics.chartTop, JSON.stringify(metrics)).toBeLessThan(metrics.supportingStatsTop);
     expect(metrics.visualSurfaceColumns, JSON.stringify(metrics)).not.toContain(' ');
@@ -289,12 +312,16 @@ test.describe('Rack Details Summary Layout Wide Desktop', () => {
 
     const metrics = await readSummaryLayoutMetrics(page);
 
-    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('grid');
+    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
     expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
-    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(380);
+    expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(300);
     expect(metrics.chartTop, JSON.stringify(metrics)).toBe(metrics.supportingStatsTop);
-    expect(metrics.visualSurfaceColumns, JSON.stringify(metrics)).toContain(' ');
+    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
+    expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
   });
 });
@@ -307,13 +334,15 @@ test.describe('Rack Details Summary Layout Tablet', () => {
 
     const metrics = await readSummaryLayoutMetrics(page);
 
-    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('grid');
+    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
     expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
-    expect(metrics.statsTop, JSON.stringify(metrics)).toBe(metrics.compositeTop);
+    expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsTop);
-    expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBe(metrics.statsLeft);
-    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThan(metrics.desktopAnalysisWidth);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
+    expect(metrics.statsWidth, JSON.stringify(metrics)).toBe(metrics.desktopAnalysisWidth);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -327,9 +356,11 @@ test.describe('Rack Details Summary Layout Mobile', () => {
 
     const metrics = await readSummaryLayoutMetrics(page);
 
-    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
     expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
+    expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
   });
 });
