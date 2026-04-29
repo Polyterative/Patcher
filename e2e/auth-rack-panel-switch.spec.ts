@@ -37,6 +37,27 @@ test.describe('Authenticated Rack Panel Switching', () => {
     return -1;
   }
 
+  async function openPanelSwitchMenu(page: any, moduleLocator: any) {
+    await expect(moduleLocator).toBeVisible({timeout: 10_000});
+    await moduleLocator.click({button: 'right'});
+
+    const switchPanelTrigger = page.getByRole('menuitem', {name: /Switch panel/i});
+    await expect(switchPanelTrigger).toBeVisible({timeout: 8_000});
+    await switchPanelTrigger.hover();
+
+    const panelMenu = page.locator('.cdk-overlay-pane').filter({
+      has: page.getByRole('menuitem', {name: /Panel 1/i})
+    }).last();
+    await expect(panelMenu).toBeVisible({timeout: 5_000});
+
+    const panel1Item = panelMenu.getByRole('menuitem', {name: /Panel 1/i});
+    const panel2Item = panelMenu.getByRole('menuitem', {name: /Panel 2|Dark/i});
+    await expect(panel1Item).toBeVisible({timeout: 5_000});
+    await expect(panel2Item).toBeVisible({timeout: 5_000});
+
+    return {panel1Item, panel2Item};
+  }
+
   /** Creates a fresh private test rack, returns its URL. Already in edit mode on return. */
   async function createPrivateTestRack(page: any): Promise<string> {
     await page.goto('/user/area');
@@ -226,29 +247,26 @@ test.describe('Authenticated Rack Panel Switching', () => {
     // --- Phase 1: read current panel state ---
     const belgradInRack = page.locator('app-rack-visual-model app-module-realistic')
       .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
-    await expect(belgradInRack).toBeVisible({timeout: 10_000});
-    await belgradInRack.click({button: 'right'});
-
-    const switchPanelTrigger = page.locator('button[mat-menu-item]', {hasText: /Switch panel/i});
-    await expect(switchPanelTrigger).toBeVisible({timeout: 8_000});
-    await switchPanelTrigger.click();
-
-    const panel1Item = page.locator('button[mat-menu-item]', {hasText: /Panel 1/i});
-    const panel2Item = page.locator('button[mat-menu-item]', {hasText: /Panel 2|Dark/i});
-    await expect(panel1Item).toBeVisible({timeout: 5_000});
-    await expect(panel2Item).toBeVisible({timeout: 5_000});
+    const {panel1Item, panel2Item} = await openPanelSwitchMenu(page, belgradInRack);
 
     const panel1Active = ((await panel1Item.textContent()) ?? '').includes('✓');
+    const panelSwitchRequest = page.waitForResponse(response => {
+      if (!response.url().includes('/rest/v1/rack_modules')) {
+        return false;
+      }
+      if (response.request().method() !== 'PATCH') {
+        return false;
+      }
+      return (response.request().postData() ?? '').includes('selected_panel_id');
+    }, {timeout: 10_000});
 
     // Switch to the OTHER panel
     if (panel1Active) {
-      await panel2Item.click();
+      await panel2Item.evaluate((element: HTMLButtonElement) => element.click());
     } else {
-      await panel1Item.click();
+      await panel1Item.evaluate((element: HTMLButtonElement) => element.click());
     }
-
-    // Wait for backend persist
-    await page.waitForTimeout(2_500);
+    await panelSwitchRequest;
 
     // --- Phase 2: reload and verify persistence ---
     await page.goto(rackUrl);
@@ -257,17 +275,11 @@ test.describe('Authenticated Rack Panel Switching', () => {
 
     const belgradAfterReload = page.locator('app-rack-visual-model app-module-realistic')
       .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
-    await expect(belgradAfterReload).toBeVisible({timeout: 10_000});
-    await belgradAfterReload.click({button: 'right'});
+    const afterReloadMenu = await openPanelSwitchMenu(page, belgradAfterReload);
+    const activePanelItem = panel1Active ? afterReloadMenu.panel2Item : afterReloadMenu.panel1Item;
+    const inactivePanelItem = panel1Active ? afterReloadMenu.panel1Item : afterReloadMenu.panel2Item;
 
-    const switchPanelAfterReload = page.locator('button[mat-menu-item]', {hasText: /Switch panel/i});
-    await expect(switchPanelAfterReload).toBeVisible({timeout: 8_000});
-    await switchPanelAfterReload.click();
-
-    const expectedActiveLabel = panel1Active ? /Panel 2.*✓|Dark.*✓/i : /Panel 1.*✓/i;
-    const expectedInactiveLabel = panel1Active ? /Panel 1(?!.*✓)/i : /Panel 2(?!.*✓)|Dark(?!.*✓)/i;
-
-    await expect(page.locator('button[mat-menu-item]', {hasText: expectedActiveLabel})).toBeVisible({timeout: 8_000});
-    await expect(page.locator('button[mat-menu-item]', {hasText: expectedInactiveLabel})).toBeVisible({timeout: 5_000});
+    await expect(activePanelItem).toContainText('✓', {timeout: 8_000});
+    await expect(inactivePanelItem).not.toContainText('✓');
   });
 });
