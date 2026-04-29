@@ -61,4 +61,42 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.selectedPanelId).toBeNull();
   });
 
+  it('preserves legacy jpg filenames without rewriting them', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'legacy-panel.jpg'}]);
+    c.ngOnChanges();
+
+    expect(c.filename).toBe('legacy-panel.jpg');
+  });
+
+  it('preserves new webp filenames without rewriting them', () => {
+    const c = buildComponent();
+    c.data = makeModule([{...PANEL_DARK, filename: 'optimized-panel.webp'}]);
+    c.ngOnChanges();
+
+    expect(c.filename).toBe('optimized-panel.webp');
+  });
+
+  it('prefers an explicit selectedPanelId over preferredPanelColor', () => {
+    const c = buildComponent();
+    c.data = makeModule();
+    c.selectedPanelId = 2;
+    c.preferredPanelColor = 0;
+
+    c.ngOnChanges();
+
+    expect(c.filename).toBe('light.png');
+  });
+
+  it('falls back to preferredPanelColor when selectedPanelId does not resolve', () => {
+    const c = buildComponent();
+    c.data = makeModule();
+    c.selectedPanelId = 999;
+    c.preferredPanelColor = 1;
+
+    c.ngOnChanges();
+
+    expect(c.filename).toBe('light.png');
+  });
+
 });

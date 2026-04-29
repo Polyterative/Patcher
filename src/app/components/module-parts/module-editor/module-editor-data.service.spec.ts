@@ -88,14 +88,14 @@ describe('ModuleEditorDataService', () => {
   });
 
   describe('buildCroppedPanelFile', () => {
-    it('creates a jpg file for the cropped panel output', () => {
+    it('creates a webp file when the cropped blob is webp', () => {
       const sourceFile = new File(['source'], 'front-panel.jpeg', {type: 'image/jpeg'});
-      const croppedBlob = new Blob(['cropped'], {type: 'image/jpeg'});
+      const croppedBlob = new Blob(['cropped'], {type: 'image/webp'});
 
       const result = service.buildCroppedPanelFile(sourceFile, croppedBlob);
 
-      expect(result.name).toBe('front-panel-cropped.jpg');
-      expect(result.type).toBe('image/jpeg');
+      expect(result.name).toBe('front-panel-cropped.webp');
+      expect(result.type).toBe('image/webp');
       expect(result.size).toBe(croppedBlob.size);
     });
 
@@ -107,6 +107,59 @@ describe('ModuleEditorDataService', () => {
 
       expect(result.name).toBe('front-panel-cropped.png');
       expect(result.type).toBe('image/png');
+    });
+
+    it('falls back to a default jpg filename when neither blob nor source define a format', () => {
+      const sourceFile = new File(['source'], 'panel-source');
+      const croppedBlob = new Blob(['cropped']);
+
+      const result = service.buildCroppedPanelFile(sourceFile, croppedBlob);
+
+      expect(result.name).toBe('panel-source-cropped.jpg');
+      expect(result.type).toBe('image/jpeg');
+      expect(result.size).toBe(croppedBlob.size);
+    });
+  });
+
+  describe('getPreferredPanelCropFormat', () => {
+    it('prefers webp when canvas encoding is supported', () => {
+      const nativeCreateElement = document.createElement.bind(document);
+      spyOn(document, 'createElement').and.callFake((tagName: string) => {
+        if (tagName === 'canvas') {
+          return {
+            toDataURL: (type?: string) => type === 'image/webp' ? 'data:image/webp;base64,AAAA' : 'data:image/png;base64,AAAA'
+          } as any;
+        }
+        return nativeCreateElement(tagName);
+      });
+
+      expect(service.getPreferredPanelCropFormat()).toBe('webp');
+    });
+
+    it('falls back to jpeg when webp encoding is unavailable', () => {
+      const nativeCreateElement = document.createElement.bind(document);
+      spyOn(document, 'createElement').and.callFake((tagName: string) => {
+        if (tagName === 'canvas') {
+          return {
+            toDataURL: () => 'data:image/png;base64,AAAA'
+          } as any;
+        }
+        return nativeCreateElement(tagName);
+      });
+
+      expect(service.getPreferredPanelCropFormat()).toBe('jpeg');
+    });
+
+    it('falls back to jpeg when the canvas cannot encode data urls', () => {
+      const nativeCreateElement = document.createElement.bind(document);
+      spyOn(document, 'createElement').and.callFake((tagName: string) => {
+        if (tagName === 'canvas') {
+          return {} as any;
+        }
+        return nativeCreateElement(tagName);
+      });
+
+      expect(service.getPreferredPanelCropFormat()).toBe('jpeg');
     });
   });
 
@@ -188,6 +241,17 @@ describe('ModuleEditorDataService', () => {
 
       expect(drawImageSpy).toHaveBeenCalledWith(jasmine.anything(), 0, 0, 192, 96);
       expect(getImageDataSpy).toHaveBeenCalledWith(0, 0, 192, 96);
+    });
+
+    it('releases decoded image resources after analysis', async () => {
+      createImageBitmapSpy.and.resolveTo({width: 4, height: 4, close: closeSpy} as any);
+      getImageDataSpy.and.returnValue({
+        data: new Uint8ClampedArray([240, 240, 240, 255])
+      });
+
+      await service.suggestPanelTypeFromBlob(new Blob(['x'], {type: 'image/jpeg'}));
+
+      expect(closeSpy).toHaveBeenCalledTimes(1);
     });
   });
   
