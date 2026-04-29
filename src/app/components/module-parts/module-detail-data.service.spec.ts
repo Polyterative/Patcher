@@ -11,7 +11,7 @@ import { ModuleDetailDataService } from './module-detail-data.service';
 
 
 describe('ModuleDetailDataService', () => {
-  function build() {
+  function build(options: {modulesBySameManufacturer?: any[]} = {}) {
     const loggedUser$ = new BehaviorSubject<any>({id: 'user-1'});
     const baseModule = {
       id: 10,
@@ -34,7 +34,7 @@ describe('ModuleDetailDataService', () => {
       get: {
         racksWithModule: jasmine.createSpy('racksWithModule').and.returnValue(of({data: [{rack: {id: 1}}]})),
         patchesWithModule: jasmine.createSpy('patchesWithModule').and.returnValue(of([{id: 21}])),
-        modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of([
+        modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
           {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
           {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
         ]))
@@ -45,7 +45,8 @@ describe('ModuleDetailDataService', () => {
       delete: {
         userModule: jasmine.createSpy('userModule').and.returnValue(of({})),
         modulePanel: jasmine.createSpy('modulePanel').and.returnValue(of({})),
-        module: jasmine.createSpy('module').and.returnValue(of({}))
+        module: jasmine.createSpy('module').and.returnValue(of({})),
+        manufacturer: jasmine.createSpy('manufacturer').and.returnValue(of({}))
       },
       update: {
         module: jasmine.createSpy('module').and.callFake((module: any) => of(module)),
@@ -163,6 +164,36 @@ describe('ModuleDetailDataService', () => {
       id: 10,
       name: 'Admin rename'
     }));
+  });
+
+  it('deletes module and orphan manufacturer together for admin/dev flow', () => {
+    const {service, backend, baseModule, router} = build({
+      modulesBySameManufacturer: [
+        {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}}
+      ]
+    });
+
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+
+    expect(backend.get.modulesBySameManufacturer).toHaveBeenCalledWith(7, 0, 20, 'id,manufacturerId');
+    expect(backend.delete.module).toHaveBeenCalledWith(10);
+    expect(backend.delete.manufacturer).toHaveBeenCalledWith(7);
+    expect(router.navigate).toHaveBeenCalledWith(['/modules', 'browser']);
+  });
+
+  it('keeps manufacturer when other modules still use it', () => {
+    const {service, backend, baseModule, router} = build({
+      modulesBySameManufacturer: [
+        {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
+        {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
+      ]
+    });
+
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+
+    expect(backend.delete.module).toHaveBeenCalledWith(10);
+    expect(backend.delete.manufacturer).not.toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/modules', 'browser']);
   });
 
   it('non-admin non-dev user cannot delete or update', () => {
