@@ -1,0 +1,25 @@
+<div
+  class="entityStatGrid"
+  [class.entityStatGrid--stacked]="stacked"
+>
+  @for (item of visibleItems(); track item; let i = $index) {
+    <a
+      class="entityStatGrid__item"
+      [routerLink]="item.routerLink ?? null"
+      [class.entityStatGrid__link]="!!item.routerLink"
+      [style.flex]="itemFlex(item)"
+      [style.animation-delay]="(i * 35) + 'ms'"
+    >
+      <app-label-value-showcase
+        class="entityStatGrid__showcase"
+        [class.entityStatGrid__showcase--clickable]="!!item.routerLink"
+        [label]="item.label"
+        [icon]="item.icon"
+        [matBadge]="item.badge ? item.badge : undefined"
+        matBadgeDescription="Stat badge"
+      >
+        {{ item.value }}
+      </app-label-value-showcase>
+    </a>
+  }
+</div>

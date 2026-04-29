@@ -44,6 +44,7 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatInputModule } from "@angular/material/input";
 import { CommentsModule } from "src/app/components/shared-atoms/comments/comments.module";
+import { SharedAtomsModule } from "src/app/components/shared-atoms/shared-atoms.module";
 
 
 const parentPrefix: string = 'racks';
@@ -122,6 +123,7 @@ const parentPrefix: string = 'racks';
     StatisticsModule,
     MatInputModule,
     CommentsModule,
+    SharedAtomsModule,
   ]
 })
 export class RackBrowserModule {}
