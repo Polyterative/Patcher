@@ -95,6 +95,11 @@ describe('UserAreaRootComponent - Initialization', () => {
     build();
     expect(component.miscStats$).toBeDefined();
   });
+
+  it('should expose contributorStats$', () => {
+    build();
+    expect(component.contributorStats$).toBeDefined();
+  });
   
   it('should expose userService publicly', () => {
     build();
@@ -104,6 +109,29 @@ describe('UserAreaRootComponent - Initialization', () => {
   it('should expose dataService publicly', () => {
     build();
     expect(component.dataService).toBeDefined();
+  });
+
+  it('should request contributor stats on ngOnInit', () => {
+    mockUserService = createMockUserManagementService();
+    mockDataService = createMockUserAreaDataService();
+    mockSeoService = createMockSeoAndUtilsService();
+    mockBackend = createMockSupabaseService();
+
+    component = new UserAreaRootComponent(
+      mockUserService as any,
+      mockBackend as any,
+      mockDataService as any,
+      mockSeoService as any,
+      createMockAppStateService() as any,
+      createMockUrlCreatorService() as any
+    );
+    component.ignoreSeo = true;
+
+    spyOn(mockDataService.updateContributorStats$, 'next');
+
+    component.ngOnInit();
+
+    expect(mockDataService.updateContributorStats$.next).toHaveBeenCalledWith();
   });
 });
 
@@ -217,6 +245,56 @@ describe('UserAreaRootComponent - miscStats$', () => {
       expect(stats.length).toBe(5);
       done();
     });
+  });
+});
+
+
+describe('UserAreaRootComponent - contributorStats$', () => {
+  let component: UserAreaRootComponent;
+  let mockDataService: ReturnType<typeof createMockUserAreaDataService>;
+
+  function build() {
+    const mockUserService = createMockUserManagementService();
+    mockDataService = createMockUserAreaDataService();
+    const mockSeoService = createMockSeoAndUtilsService();
+    const mockBackend = createMockSupabaseService();
+
+    component = new UserAreaRootComponent(
+      mockUserService as any,
+      mockBackend as any,
+      mockDataService as any,
+      mockSeoService as any,
+      createMockAppStateService() as any,
+      createMockUrlCreatorService() as any
+    );
+    component.ignoreSeo = true;
+  }
+
+  it('maps contributor metrics to statistics entries', (done) => {
+    build();
+
+    mockDataService.contributorStats$.next({
+      modulesSubmitted: 8,
+      approvedModules: 5,
+      pendingModules: 3,
+      commentsPosted: 11,
+      moduleFlagsSubmitted: 2
+    });
+
+    component.contributorStats$.subscribe((stats) => {
+      expect(stats?.find(s => s.name === 'Modules submitted')?.value).toBe(8);
+      expect(stats?.find(s => s.name === 'Approved modules')?.value).toBe(5);
+      expect(stats?.find(s => s.name === 'Pending modules')?.value).toBe(3);
+      expect(stats?.find(s => s.name === 'Comments posted')?.value).toBe(11);
+      expect(stats?.find(s => s.name === 'Module flags')?.value).toBe(2);
+      done();
+    });
+  });
+
+  it('exposes the contributor empty-state message', () => {
+    build();
+
+    expect(component.contributorStatsEmptyMessage).toContain('Submit a module');
   });
 });
 

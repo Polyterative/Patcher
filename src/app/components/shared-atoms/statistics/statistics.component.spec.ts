@@ -56,4 +56,23 @@ describe('StatisticsComponent', () => {
     expect(component.cardClass).toBe('');
     expect(component.icon).toBeUndefined();
   });
+
+  it('showEmptyState is true when empty message is provided and all values are zero', () => {
+    component.statistics = [
+      {name: 'Modules submitted', value: 0},
+      {name: 'Comments posted', value: 0}
+    ];
+    component.emptyMessage = 'Start contributing';
+
+    expect(component.showEmptyState).toBeTrue();
+    expect(component.shouldRenderCard).toBeTrue();
+  });
+
+  it('showEmptyState stays false while statistics are still loading', () => {
+    component.statistics = null;
+    component.emptyMessage = 'Start contributing';
+
+    expect(component.showEmptyState).toBeFalse();
+    expect(component.shouldRenderCard).toBeFalse();
+  });
 });

@@ -36,6 +36,7 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { MatDialog } from "@angular/material/dialog";
 import { DbComment } from "src/app/models/comment";
 import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 
 
 @Injectable()
@@ -45,6 +46,7 @@ export class UserAreaDataService extends SubManager {
   rackData$: BehaviorSubject<Rack[] | undefined> = new BehaviorSubject(undefined);
   manualsData$: BehaviorSubject<DbModule[] | undefined> = new BehaviorSubject(undefined);
   commentsData$: BehaviorSubject<DbComment[] | undefined> = new BehaviorSubject(undefined);
+  contributorStats$ = new BehaviorSubject<CurrentUserContributorStats | undefined>(undefined);
 
   readonly commentsCount$ = new BehaviorSubject<number>(0);
   readonly commentsPagination = {
@@ -88,6 +90,7 @@ export class UserAreaDataService extends SubManager {
   readonly updateRackData$ = new Subject<string | undefined>(); // user id otherwise current (not yet implemented)
   readonly updateManualsData$ = new Subject<void>();
   readonly updateCommentsData$ = new Subject<void>();
+  readonly updateContributorStats$ = new Subject<void>();
   readonly commentsPageEvent$ = new Subject<PageEvent>();
   readonly patchesPageEvent$ = new Subject<PageEvent>();
   readonly racksPageEvent$ = new Subject<PageEvent>();
@@ -233,6 +236,14 @@ export class UserAreaDataService extends SubManager {
         takeUntil(this.destroy$)
       )
       .subscribe(x => this.modulesData$.next(x));
+
+    this.updateContributorStats$
+      .pipe(
+        tap(() => this.contributorStats$.next(undefined)),
+        switchMap(() => this.backend.GET.currentUserContributorStats()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((stats) => this.contributorStats$.next(stats));
 
     this.updatePatchesData$
       .pipe(

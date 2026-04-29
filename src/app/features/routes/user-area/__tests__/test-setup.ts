@@ -67,12 +67,14 @@ export function createMockUserAreaDataService() {
   const rackData$ = new BehaviorSubject<any[] | undefined>(undefined);
   const manualsData$ = new BehaviorSubject<any[] | undefined>(undefined);
   const commentsData$ = new BehaviorSubject<any[] | undefined>(undefined);
+  const contributorStats$ = new BehaviorSubject<any | undefined>(undefined);
   
   const updateModulesData$ = new Subject<void>();
   const updatePatchesData$ = new Subject<void>();
   const updateRackData$ = new Subject<string | undefined>();
   const updateManualsData$ = new Subject<void>();
   const updateCommentsData$ = new Subject<void>();
+  const updateContributorStats$ = new Subject<void>();
   const addPatch$ = new Subject<void>();
   const addRack$ = new Subject<void>();
   const addModulesToCollection$ = new Subject<void>();
@@ -83,11 +85,13 @@ export function createMockUserAreaDataService() {
     rackData$,
     manualsData$,
     commentsData$,
+    contributorStats$,
     updateModulesData$,
     updatePatchesData$,
     updateRackData$,
     updateManualsData$,
     updateCommentsData$,
+    updateContributorStats$,
     addPatch$,
     addRack$,
     addModulesToCollection$,
@@ -104,6 +108,13 @@ export function createMockSupabaseService() {
     GET: {
       currentUserComments: jasmine.createSpy('currentUserComments').and.returnValue(of([])),
       currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([])),
+      currentUserContributorStats: jasmine.createSpy('currentUserContributorStats').and.returnValue(of({
+        modulesSubmitted: 0,
+        approvedModules: 0,
+        pendingModules: 0,
+        commentsPosted: 0,
+        moduleFlagsSubmitted: 0
+      })),
     },
     get: {
       currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([])),

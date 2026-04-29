@@ -142,6 +142,7 @@ export class SupabaseService extends SubManager {
       patchConnections: this.queries.getPatchConnections.bind(this.queries),
       patchModuleInstances: this.queries.getPatchModuleInstances.bind(this.queries),
       currentUserComments: this.queries.getCurrentUserComments.bind(this.queries),
+      currentUserContributorStats: this.queries.getCurrentUserContributorStats.bind(this.queries),
       patches: this.queries.getPatches.bind(this.queries),
       rackWithId: this.queries.getRackWithId.bind(this.queries),
       racksMinimal: this.queries.getRacksMinimal.bind(this.queries),
@@ -187,6 +188,7 @@ export class SupabaseService extends SubManager {
     patchConnections: typeof SupabaseQueriesService.prototype.getPatchConnections;
     patchModuleInstances: typeof SupabaseQueriesService.prototype.getPatchModuleInstances;
     currentUserComments: typeof SupabaseQueriesService.prototype.getCurrentUserComments;
+    currentUserContributorStats: typeof SupabaseQueriesService.prototype.getCurrentUserContributorStats;
     patches: typeof SupabaseQueriesService.prototype.getPatches;
     rackWithId: typeof SupabaseQueriesService.prototype.getRackWithId;
     racksMinimal: typeof SupabaseQueriesService.prototype.getRacksMinimal;
