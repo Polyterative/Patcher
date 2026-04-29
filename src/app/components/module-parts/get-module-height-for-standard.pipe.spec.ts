@@ -22,13 +22,17 @@ describe('GetModuleHeightForStandardPipe', () => {
   });
   
   it('returns the canonical Intellijel 1U height for standard id 1', () => {
+    expect(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightMm).toBe(39.65);
+    expect(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem).toBe(7.8374);
     expect(pipe.transform({id: 1, name: 'Intellijel 1U'} as Standard))
-      .toBe(MODULE_FORMAT_GEOMETRY.INTELLIJEL_1U.heightRem);
+      .toBe(7.8374);
   });
   
   it('returns the canonical Pulp Logic 1U height for standard id 2', () => {
+    expect(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightMm).toBe(43.18);
+    expect(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightRem).toBe(8.5352);
     expect(pipe.transform({id: 2, name: 'Pulp Logic 1U'} as Standard))
-      .toBe(MODULE_FORMAT_GEOMETRY.PULP_LOGIC_1U.heightRem);
+      .toBe(8.5352);
   });
   
   it('falls back to the generic 1U geometry for unknown non-3U standard ids', () => {
