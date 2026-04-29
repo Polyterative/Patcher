@@ -78,6 +78,19 @@ interface BuildPersistPlanArgs {
 export class ModuleEditorDataService {
   constructor(private readonly backend: SupabaseService) {}
 
+  getPreferredPanelCropFormat(): 'webp' | 'jpeg' {
+    if (typeof document === 'undefined') {
+      return 'jpeg';
+    }
+
+    const canvas = document.createElement('canvas');
+    if (typeof canvas.toDataURL !== 'function') {
+      return 'jpeg';
+    }
+
+    return canvas.toDataURL('image/webp').startsWith('data:image/webp') ? 'webp' : 'jpeg';
+  }
+
   async suggestPanelTypeFromBlob(blob: Blob): Promise<number> {
     const imageData = await this.readImageDataFromBlob(blob);
     const metrics = this.measurePanelAppearance(imageData.data);

@@ -7,7 +7,7 @@ import { BehaviorSubject, of, Subject } from 'rxjs';
 import { FormCV } from './module-editor-data.service';
 import { ModuleEditorComponent } from './module-editor.component';
 
-function makeComponent() {
+function makeComponent(preferredPanelCropFormat: 'webp' | 'jpeg' = 'webp') {
   const dataService = {
     moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
     updateSingleModuleData$: new Subject<number>()
@@ -22,6 +22,7 @@ function makeComponent() {
     updateFormGroupAndContainer: jasmine.createSpy('updateFormGroupAndContainer'),
     buildPersistPlan: jasmine.createSpy('buildPersistPlan').and.returnValue({operations: [], savedSections: []}),
     buildCroppedPanelFile: jasmine.createSpy('buildCroppedPanelFile'),
+    getPreferredPanelCropFormat: jasmine.createSpy('getPreferredPanelCropFormat').and.returnValue(preferredPanelCropFormat),
     suggestPanelTypeFromBlob: jasmine.createSpy('suggestPanelTypeFromBlob').and.resolveTo(1),
     touchModule$: jasmine.createSpy('touchModule$').and.returnValue(of(null)),
     syncDataSnapshotAfterSave: jasmine.createSpy('syncDataSnapshotAfterSave').and.callFake(({module}: any) => module),
@@ -247,6 +248,20 @@ describe('ModuleEditorComponent panel crop flow', () => {
     } as any;
 
     expect(component.panelCropAspectRatio).toBeCloseTo(12 / 25.4, 6);
+  });
+
+  it('prefers webp crop output when the browser supports it', () => {
+    const {component} = makeComponent();
+
+    expect(component.panelCropOutputFormat).toBe('webp');
+    expect(component.panelCropOutputMimeType).toBe('image/webp');
+  });
+
+  it('falls back to jpeg crop output when webp is unavailable', () => {
+    const {component} = makeComponent('jpeg');
+
+    expect(component.panelCropOutputFormat).toBe('jpeg');
+    expect(component.panelCropOutputMimeType).toBe('image/jpeg');
   });
 
   it('stores the locally cropped file and preview', () => {
