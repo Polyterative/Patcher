@@ -26,20 +26,22 @@
           }
         </div>
         <div class="row gap0 rackBalancePanel__actions">
-          <button
-            type="button"
-            class="rackBalancePanel__toggleButton"
-            (click)="toggleExpanded()"
-            [attr.aria-expanded]="isExpanded"
-          >
-            <span>{{ isExpanded ? 'Hide details' : 'Show details' }}</span>
-            <mat-icon
-              class="rackBalancePanel__toggleChevron"
-              [class.rackBalancePanel__toggleChevron--expanded]="isExpanded"
+          @if (!alwaysExpanded) {
+            <button
+              type="button"
+              class="rackBalancePanel__toggleButton"
+              (click)="toggleExpanded()"
+              [attr.aria-expanded]="isDetailsOpen()"
             >
-              chevron_right
-            </mat-icon>
-          </button>
+              <span>{{ isExpanded ? 'Hide details' : 'Show details' }}</span>
+              <mat-icon
+                class="rackBalancePanel__toggleChevron"
+                [class.rackBalancePanel__toggleChevron--expanded]="isDetailsOpen()"
+              >
+                chevron_right
+              </mat-icon>
+            </button>
+          }
           <button
             mat-icon-button
             class="rackBalancePanel__infoButton"
@@ -52,37 +54,104 @@
         </div>
       </div>
 
-      @if (isExpanded) {
-        @if (analysis.warningMessage) {
-          <div class="rackBalancePanel__warning">
-            {{ analysis.warningMessage }}
-          </div>
-        }
+      @if (isDetailsOpen()) {
+        @if (radarAxes(analysis); as radarAxes) {
+          <div class="col gap1 rackBalancePanel__details">
+            <div class="rackBalancePanel__visualSurface">
+              <div class="rackBalancePanel__chartWrap">
+                <svg
+                  class="rackBalancePanel__radar"
+                  [attr.viewBox]="'0 0 ' + radarSize + ' ' + radarSize"
+                  role="img"
+                  aria-label="Rack balance radar chart"
+                >
+                  @for (ring of radarRings; track ring) {
+                    <polygon
+                      class="rackBalancePanel__radarRing"
+                      [attr.points]="radarGridPoints(ring)"
+                    ></polygon>
+                  }
 
-        <div class="col gap1 rackBalancePanel__details">
-          @for (axis of analysis.axes; track axis.id) {
-            <div class="rackBalancePanel__axis">
-              <div class="row gap1 rackBalancePanel__axisMeta">
-                <div class="row gap0 rackBalancePanel__axisTitle">
-                  <mat-icon>{{ axis.icon }}</mat-icon>
-                  <span>{{ axis.label }}</span>
-                </div>
-                <div class="rackBalancePanel__axisValues">
-                  <span>{{ axis.share }}%</span>
-                  <span>{{ axis.matchedModules }} module{{ axis.matchedModules === 1 ? '' : 's' }}</span>
-                </div>
+                  @for (axis of radarAxes; track axis.axis.id) {
+                    <line
+                      class="rackBalancePanel__radarAxisLine"
+                      [attr.x1]="radarCenter"
+                      [attr.y1]="radarCenter"
+                      [attr.x2]="axis.labelPoint.x"
+                      [attr.y2]="axis.labelPoint.y"
+                    ></line>
+                  }
+
+                  <polygon
+                    class="rackBalancePanel__radarShape"
+                    [attr.points]="radarPolygonPoints(analysis)"
+                  ></polygon>
+
+                  @for (axis of radarAxes; track axis.axis.id) {
+                    <circle
+                      class="rackBalancePanel__radarPoint"
+                      [attr.cx]="axis.point.x"
+                      [attr.cy]="axis.point.y"
+                      r="3.5"
+                    ></circle>
+                  }
+
+                  @for (axis of radarAxes; track axis.axis.id) {
+                    <text
+                      class="rackBalancePanel__radarLabel"
+                      [attr.x]="axis.labelPoint.x"
+                      [attr.y]="axis.labelPoint.y"
+                      text-anchor="middle"
+                      dominant-baseline="middle"
+                    >
+                      {{ axis.shortLabel }}
+                    </text>
+                  }
+                </svg>
               </div>
-              <div class="rackBalancePanel__barTrack">
-                <div class="rackBalancePanel__barFill"
-                     [style.width.%]="axis.share"
-                ></div>
-              </div>
-              <div class="rackBalancePanel__guidance">
-                {{ axis.guidance }}
+
+              <div class="rackBalancePanel__signals">
+                <div class="rackBalancePanel__signal">
+                  <span class="rackBalancePanel__signalLabel">Most present</span>
+                  <div class="rackBalancePanel__signalValue">
+                    <mat-icon>{{ strongestAxis(analysis).icon }}</mat-icon>
+                    <span>{{ strongestAxis(analysis).label }}</span>
+                    <strong>{{ strongestAxis(analysis).share }}%</strong>
+                  </div>
+                </div>
+
+                <div class="rackBalancePanel__signal">
+                  <span class="rackBalancePanel__signalLabel">Lightest</span>
+                  <div class="rackBalancePanel__signalValue">
+                    <mat-icon>{{ weakestAxis(analysis).icon }}</mat-icon>
+                    <span>{{ weakestAxis(analysis).label }}</span>
+                    <strong>{{ weakestAxis(analysis).share }}%</strong>
+                  </div>
+                </div>
+
+                <div class="rackBalancePanel__coverageNote">
+                  {{ analysis.recognizedModuleCount }} tagged modules shaping this view
+                </div>
+
+                @if (analysis.warningMessage) {
+                  <div class="rackBalancePanel__coverageNote rackBalancePanel__coverageNote--muted">
+                    Guidance is still early.
+                  </div>
+                }
               </div>
             </div>
-          }
-        </div>
+
+            <div class="rowwrap gap0 rackBalancePanel__legend">
+              @for (axis of radarAxes; track axis.axis.id) {
+                <div class="rackBalancePanel__legendChip">
+                  <mat-icon>{{ axis.axis.icon }}</mat-icon>
+                  <span>{{ axis.shortLabel }}</span>
+                  <strong>{{ axis.axis.share }}%</strong>
+                </div>
+              }
+            </div>
+          </div>
+        }
       }
     </div>
   </lib-clean-card>
