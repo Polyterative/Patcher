@@ -82,7 +82,14 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     RackDetailsComponent,
     RackBalancePanelComponent,
     RackDetailsRemainingIndicatorComponent,
-    RackVisualModelComponent
+    RackVisualModelComponent,
+    LibShowcaseGridComponent,
+    TotalHpOfRackPipe,
+    TotalModulesOfRackPipe,
+    TotalPowerOfRackPipe,
+    TotalMissingPowerDataInRackPipe,
+    TotalDepthOfRackPipe,
+    TotalWeightOfRackPipe
   ],
   providers: [RackDetailDataService],
   imports: [

@@ -39,61 +39,6 @@
             Blanks are available in all sizes!
           </app-advice-tooltip>
         }
-        <lib-clean-card [@enter]>
-          <div class="col gap1">
-            <!-- Group 1: Rack Details -->
-            <app-lib-showcase-grid class="auto"
-                                   [data]="[
-          { label: 'Name', value: data.name, icon: 'label', size: 'auto' },
-          { label: 'Rows', value: data.rows.toString(), icon: 'view_comfy'},
-          { label: 'Modules', value: (bag.rowedRackedModules | totalModulesOfRack).toString(), icon: 'widgets'},
-          { label: 'HP per row', value: data.hp.toString(), icon: 'straighten'},
-          { label: 'HP used', value: (bag.rowedRackedModules | totalHpOfRack).toString(), icon: 'crop_5_4'},
-          { label: 'HP available', value: (data.hp * data.rows - (bag.rowedRackedModules | totalHpOfRack)).toString(), icon: 'crop_free'},
-          { label: 'Rack Utilization', value: calculateRackUtilization(data.hp, data.rows, bag.rowedRackedModules | totalHpOfRack), icon: 'bar_chart'}
-        ]">
-            </app-lib-showcase-grid>
-            <div class="rowwrap gap1"
-                 style="display: flex; flex-wrap: wrap; justify-content: flex-start;">
-              <!-- Group 3: Power Consumption -->
-              <app-lib-showcase-grid class="auto" style="flex: 0 1 auto;"
-                                     [data]="[
-            {
-              label: '+12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
-                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
-                : ''),
-              value: (bag.rowedRackedModules | totalPowerOfRack)[0].toString() + ' mA',
-              icon: 'bolt'
-            },
-            {
-              label: '-12V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
-                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
-                : ''),
-              value: (bag.rowedRackedModules | totalPowerOfRack)[1].toString() + ' mA',
-              icon: 'bolt'
-            },
-            {
-              label: '+5V' + ((bag.rowedRackedModules | totalMissingPowerDataInRack) > 0
-                ? ' (' + (bag.rowedRackedModules | totalMissingPowerDataInRack) + ' missing data)'
-                : ''),
-              value: (bag.rowedRackedModules | totalPowerOfRack)[2].toString() + ' mA',
-              icon: 'bolt'
-            }
-          ]">
-              </app-lib-showcase-grid>
-              <!-- Group 2: Module Statistics -->
-              <app-lib-showcase-grid class="auto"
-                                     style="margin-left: auto; flex: 0 1 auto;"
-                                     [data]="[
-            { label: 'Max depth', value: (bag.rowedRackedModules | totalDepthOfRack)[0].toPrecision(2) + ' mm', icon: 'vertical_align_bottom'},
-            { label: 'Min depth', value: (bag.rowedRackedModules | totalDepthOfRack)[1].toPrecision(2) + ' mm', icon: 'vertical_align_top'},
-            { label: 'Average depth', value: (bag.rowedRackedModules | totalDepthOfRack)[2].toPrecision(2) + ' mm', icon: 'vertical_align_center'},
-            { label: 'Modules weight', value: ((bag.rowedRackedModules | totalWeightOfRack)/1000).toPrecision(2) + ' kg', icon: 'fitness_center'}
-          ]">
-              </app-lib-showcase-grid>
-            </div>
-          </div>
-        </lib-clean-card>
         <div class="rowwrap gap1">
           <div class="row gap1">
             <mat-slide-toggle [checked]="dataService.shouldShowPanelImages$|async"

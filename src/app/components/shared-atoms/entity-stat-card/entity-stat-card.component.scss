@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.entityStatCard {
+  min-width: 0;
+  width: 100%;
+}
+
+.entityStatCard--verticallyCentered {
+  justify-content: center;
+}
+
+.entityStatCard__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.entityStatCard__group {
+  flex: 1 1 14rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.entityStatCard__groupTitle {
+  margin-bottom: 0.75rem;
+}
