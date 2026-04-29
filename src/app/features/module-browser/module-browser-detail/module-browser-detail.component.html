@@ -104,7 +104,7 @@
                       </div>
                     </lib-clean-card>
                   }
-                  @if (bag.data && bag.data.isComplete && bag.data.manualURL) {
+                  @if (showManualButton && bag.data && bag.data.isComplete && bag.data.manualURL) {
                     <app-brand-primary-button
                       theme="light"
                       class="module-detail-action-button"
