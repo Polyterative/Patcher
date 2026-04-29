@@ -21,6 +21,8 @@ export function getModuleHeightForStandard(standard: Standard | undefined): numb
 }
 
 export function getModulePanelAspectRatio(module: Pick<MinimalModule, 'hp' | 'standard'> | undefined): number {
+  // Rack rendering uses HP as the horizontal unit, so crop ratios must stay in
+  // HP space as well and only vary the vertical dimension per format geometry.
   const widthRem = Math.max(module?.hp ?? 1, 1);
   const heightRem = getModuleHeightForStandard(module?.standard);
   return widthRem / heightRem;

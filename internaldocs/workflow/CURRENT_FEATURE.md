@@ -159,6 +159,8 @@ MVP semantics:
 
 - Contributor stats should reuse shared UI surfaces before introducing any bespoke dashboard chrome.
 - Public profile exposure should be explicit and narrow even after the private dashboard phase ships.
+- Contributor stats should be visible on public profiles when the profile is public, using only public-safe metrics.
+- The contributor surface should integrate into the existing shared statistics presentation instead of rendering as a separate standalone stats section.
 - Any future Supabase RLS/policy change still requires explicit manual user approval before implementation.
 - Layer 1 now uses a dedicated contributor stats query that aggregates current-user module submissions, approvals, comments, and flags into one cached payload for the private dashboard.
 - The shared `app-statistics` atom now supports an optional empty-state message so zero-value contributor stats still render guidance instead of disappearing.
