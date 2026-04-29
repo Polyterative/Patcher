@@ -9,6 +9,7 @@ test.describe('Authenticated rack edit flow', () => {
     await page.goto('/user/area');
     await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
     await expect(page.locator('app-user-racks')).toBeVisible({timeout: 20_000});
+    let createdRack = false;
     
     const rackTitle = page.locator('app-user-racks app-hero-clickable-title .title').first();
     const hasRack = await rackTitle.isVisible({timeout: 20_000}).catch(() => false);
@@ -23,6 +24,7 @@ test.describe('Authenticated rack edit flow', () => {
       
       // Try multiple selectors for the confirm button
       const dialog = page.locator('mat-dialog-container').last();
+      await expect(dialog.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
       const confirmByRole = dialog.getByRole('button', {name: /^Create$/i}).first();
       if (await confirmByRole.isVisible({timeout: 5_000}).catch(() => false)) {
         await confirmByRole.click();
@@ -32,12 +34,16 @@ test.describe('Authenticated rack edit flow', () => {
       
       await expect(dialog).toBeHidden({timeout: 20_000});
       await expect(rackTitle).toBeVisible({timeout: 20_000});
+      createdRack = true;
     }
     
     await rackTitle.click();
     
     await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 20_000});
     await expect(page.getByRole('heading', {name: /Rack (Details|Editing)/i}).first()).toBeVisible({timeout: 20_000});
+    if (createdRack) {
+      await expect(page.locator('app-rack-minimal mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 20_000});
+    }
     
     // Wait for rack data and ownership state to settle
     await page.waitForTimeout(3_000);

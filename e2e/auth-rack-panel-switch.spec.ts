@@ -68,9 +68,11 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await createRackBtn.click();
 
     await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
+    const createRackDialog = page.locator('mat-dialog-container').last();
+    await expect(createRackDialog.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
 
     // Set the rack name so we can reliably identify and delete it later
-    const nameInput = page.locator('mat-dialog-container input').first();
+    const nameInput = createRackDialog.locator('input').first();
     await nameInput.fill('');
     await nameInput.fill(TEST_RACK_NAME);
 
