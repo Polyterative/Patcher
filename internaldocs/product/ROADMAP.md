@@ -102,6 +102,19 @@ This keeps catalogue data canonical while presentation can still vary safely in 
 racks must remain valid for planned builds, past systems, and setups that do not exactly mirror what the user currently
 owns.
 
+#### Rack Analysis / Balance Radar
+
+An analysis layer for a rack that goes beyond HP and power totals and estimates functional balance: voices, utilities,
+modulation, sequencing/control, mixing/output, and similar roles. The aim is helpful guidance ("voice-heavy", "light on
+utilities") rather than a normative score or blocker.
+
+The first pass should lean on existing module tags and rack data, then degrade gracefully when tag coverage is sparse. A
+clean visual summary such as a radar/spider chart is desirable, but it must remain readable on mobile and be backed by
+plain-language guidance.
+
+**Boundary:** this is advisory, not prescriptive. It should never imply there is one "correct" rack, and it should never
+block editing because the system judges a rack as unbalanced.
+
 ### Tier 1 — Community Foundation *(must ship before Tier 2)*
 
 #### Public User Profiles
@@ -118,6 +131,21 @@ This is the **single blocking dependency** for the module marketplace and commun
 Privacy defaults and URL scheme are resolved in
 [Privacy & Sharing Philosophy](./PRINCIPLES.md#privacy--sharing-philosophy).
 The profile page must be statically renderable for SEO.
+
+---
+
+#### Contributor Stats / Contribution Profile
+
+A user-facing contribution layer showing how a person has improved Patcher's shared data — approved module submissions,
+comments, module flags, and later price reports. The private dashboard phase can ship before public-profile exposure; the
+public subset layers on top once profile privacy is stable.
+
+This should incentivise useful contribution and support the trust-tier direction without turning profiles into social-status
+pages. Reuse the shared statistics and recent-activity surfaces where possible. No leaderboards, likes, follows, or streak
+mechanics.
+
+**Open questions:** Which metrics are public-safe in v1? Should pending/unapproved submissions remain private? Does public
+contributor display require an explicit opt-in beyond profile visibility?
 
 ---
 

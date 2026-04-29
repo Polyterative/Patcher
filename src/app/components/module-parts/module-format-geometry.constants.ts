@@ -12,6 +12,10 @@ const EURORACK_3U_HEIGHT_MM = 128.5;
 const EURORACK_3U_HEIGHT_REM = 25.4;
 const EURORACK_HP_WIDTH_MM = 5.08;
 const REM_PER_MM = EURORACK_3U_HEIGHT_REM / EURORACK_3U_HEIGHT_MM;
+// Intellijel 1U panel height from the official 1U technical specification drawing.
+const INTELLIJEL_1U_HEIGHT_MM = 39.65;
+// Pulp Logic tile height is specified as 1.700" = 43.18 mm.
+const PULP_LOGIC_1U_HEIGHT_MM = 43.18;
 
 function mmToRem(heightMm: number): number {
   return Number((heightMm * REM_PER_MM).toFixed(4));
@@ -28,15 +32,15 @@ export const MODULE_FORMAT_GEOMETRY = {
   INTELLIJEL_1U: {
     id: 1,
     name: 'Intellijel 1U',
-    heightMm: 45.72,
-    heightRem: mmToRem(45.72),
+    heightMm: INTELLIJEL_1U_HEIGHT_MM,
+    heightRem: mmToRem(INTELLIJEL_1U_HEIGHT_MM),
     hpWidthMm: EURORACK_HP_WIDTH_MM
   },
   PULP_LOGIC_1U: {
     id: 2,
     name: 'Pulp Logic 1U',
-    heightMm: 50,
-    heightRem: mmToRem(50),
+    heightMm: PULP_LOGIC_1U_HEIGHT_MM,
+    heightRem: mmToRem(PULP_LOGIC_1U_HEIGHT_MM),
     hpWidthMm: EURORACK_HP_WIDTH_MM
   },
   EURORACK_3U_ALT: {
