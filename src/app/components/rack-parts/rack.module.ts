@@ -28,6 +28,7 @@ import { RackMicroModule } from '../rack-micro/rack-micro.module';
 import { MapToModulePipe } from './map-to-module.pipe';
 import { RackCreatorComponent } from './rack-creator/rack-creator.component';
 import { RackDetailsRemainingIndicatorComponent } from './rack-details/rack-details-remaining-indicator/rack-details-remaining-indicator.component';
+import { RackBalancePanelComponent } from './rack-balance-panel/rack-balance-panel.component';
 import { HasUnrackedModulesPipe } from './rack-editor/rack-visual-model/has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-editor/rack-visual-model/rack-visual-model.component';
 import { RackedToModulesPipe } from './racked-to-modules.pipe';
@@ -63,6 +64,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     RackCreatorComponent,
     RackModuleAdderDialogComponent,
     RackDetailsComponent,
+    RackBalancePanelComponent,
     TotalHpOfModulesPipe,
     RackDetailsRemainingIndicatorComponent,
     TotalHpOfRackPipe,
@@ -78,6 +80,7 @@ import { InputDialogModule } from "src/app/shared-interproject/dialogs/input-dia
     RackCreatorComponent,
     RackModuleAdderDialogComponent,
     RackDetailsComponent,
+    RackBalancePanelComponent,
     RackDetailsRemainingIndicatorComponent,
     RackVisualModelComponent
   ],
