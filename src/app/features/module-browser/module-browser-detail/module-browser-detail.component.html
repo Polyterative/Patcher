@@ -186,6 +186,13 @@
                                             (click$)="dataService.deleteModule$.next(bag.data.id)">Delete module
                   </app-brand-primary-button>
                 }
+                @if (bag.data.isComplete === false && bag.data.manufacturerId) {
+                  <app-brand-primary-button theme="negative"
+                                            matTooltip="Delete this module and remove its manufacturer only if it becomes orphaned"
+                                            matTooltipPosition="above"
+                                            (click$)="confirmDeleteModuleAndOrphanManufacturer(bag.data)">Delete module + orphan manufacturer
+                  </app-brand-primary-button>
+                }
                 @if (bag.data.isComplete === false) {
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Remove the newest panel image from this module"
@@ -256,6 +263,34 @@
                                             matTooltip="Remove DIY flag from this module"
                                             matTooltipPosition="above"
                                             (click$)="setDevDIY(false)">Mark as non-DIY
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Lower module width by 5 HP"
+                                            matTooltipPosition="above"
+                                            (click$)="adjustDevHp(bag.data, -5)">HP -5
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="warning"
+                                            matTooltip="Lower module width by 1 HP"
+                                            matTooltipPosition="above"
+                                            (click$)="adjustDevHp(bag.data, -1)">HP -1
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="positive"
+                                            matTooltip="Increase module width by 1 HP"
+                                            matTooltipPosition="above"
+                                            (click$)="adjustDevHp(bag.data, 1)">HP +1
+                  </app-brand-primary-button>
+                }
+                @if (bag.data) {
+                  <app-brand-primary-button theme="positive"
+                                            matTooltip="Increase module width by 5 HP"
+                                            matTooltipPosition="above"
+                                            (click$)="adjustDevHp(bag.data, 5)">HP +5
                   </app-brand-primary-button>
                 }
                 @if (bag.data) {

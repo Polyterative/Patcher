@@ -12,12 +12,14 @@ describe('ModuleBrowserDetailComponent', () => {
     const updateSingleModuleData$ = new Subject<number>();
     const changeModule$ = new Subject<any>();
     const requestModuleEditingToggle$ = new Subject<void>();
+    const deleteModuleAndOrphanManufacturer$ = new Subject<any>();
     
     const dataService = {
       singleModuleData$,
       updateSingleModuleData$,
       changeModule$,
-      requestModuleEditingToggle$
+      requestModuleEditingToggle$,
+      deleteModuleAndOrphanManufacturer$
     };
     
     const route = {
@@ -115,6 +117,12 @@ describe('ModuleBrowserDetailComponent', () => {
     component.setDevComplete(true);
     component.setDevApproved(true);
     component.setDevDIY(true);
+    component.adjustDevHp({hp: 12} as any, -5);
+    component.adjustDevHp({hp: 12} as any, -1);
+    component.adjustDevHp({hp: 12} as any, 1);
+    component.adjustDevHp({hp: 12} as any, 5);
+    component.adjustDevHp({hp: 0} as any, -1);
+    component.adjustDevHp({hp: 3} as any, -5);
     component.trimDevTextFields({
       name: '  My   Module ',
       description: '  rich   text  ',
@@ -134,13 +142,19 @@ describe('ModuleBrowserDetailComponent', () => {
     expect(emitted[1]).toEqual({isComplete: true});
     expect(emitted[2]).toEqual({isApproved: true});
     expect(emitted[3]).toEqual({isDIY: true});
-    expect(emitted[4]).toEqual({
+    expect(emitted[4]).toEqual({hp: 7});
+    expect(emitted[5]).toEqual({hp: 11});
+    expect(emitted[6]).toEqual({hp: 13});
+    expect(emitted[7]).toEqual({hp: 17});
+    expect(emitted[8]).toEqual({hp: 0});
+    expect(emitted[9]).toEqual({hp: 0});
+    expect(emitted[10]).toEqual({
       name: 'My Module',
       description: 'rich text',
       manualURL: 'https://manual'
     });
-    expect(emitted[5]).toEqual({manualURL: ''});
-    expect(emitted[6]).toEqual({
+    expect(emitted[11]).toEqual({manualURL: ''});
+    expect(emitted[12]).toEqual({
       hp: 0,
       depth: 0,
       weight: 10,
@@ -165,6 +179,21 @@ describe('ModuleBrowserDetailComponent', () => {
     
     component.onEditorToggleRequest(false, false);
     expect(toggleSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('confirms duplicate cleanup before deleting module and orphan manufacturer', () => {
+    const {component, dataService} = build();
+    const confirmSpy = spyOn(window, 'confirm');
+    const deleteSpy = spyOn(dataService.deleteModuleAndOrphanManufacturer$, 'next').and.callThrough();
+    const module = moduleFixture();
+
+    confirmSpy.and.returnValue(false);
+    component.confirmDeleteModuleAndOrphanManufacturer(module as any);
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    confirmSpy.and.returnValue(true);
+    component.confirmDeleteModuleAndOrphanManufacturer(module as any);
+    expect(deleteSpy).toHaveBeenCalledWith(module);
   });
   
   it('opens manual/similar/external links via window.open', () => {

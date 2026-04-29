@@ -1,4 +1,5 @@
 import { of } from 'rxjs';
+import { createDeleteNamespace } from '../../supabase-delete';
 import { SupabaseService } from '../../supabase.service';
 import {
   cleanupSupabaseServiceTest,
@@ -317,6 +318,49 @@ describe('SupabaseService - delete simple operations', () => {
         },
         error: (err) => {
           expect(err.message).toContain('Authentication required');
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('delete.manufacturer', () => {
+    it('should delete a single manufacturer by id for admins', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      spyOn(service.auth as any, 'hasAdminRole$').and.returnValue(of(true));
+      const mock = chainable({data: null, error: null});
+      const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.delete.manufacturer(1626).subscribe({
+        next: () => {
+          expect(filterSpy).toHaveBeenCalledWith('id', 'eq', 1626);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should error for non-admin users', (done) => {
+      const namespace = createDeleteNamespace(
+        supabaseClient,
+        {open: () => undefined} as any,
+        () => of({id: 'u1'} as any),
+        () => of(null),
+        20,
+        () => of(false)
+      );
+
+      namespace.manufacturer(1626).subscribe({
+        next: () => {
+          fail('Expected admin error');
+          done();
+        },
+        error: (err) => {
+          expect(err.message).toContain('Admin access required');
           done();
         }
       });

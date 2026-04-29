@@ -370,6 +370,11 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   setDevDIY(isDIY: boolean): void {
     this.patchDevModule({isDIY});
   }
+
+  adjustDevHp(module: Pick<DbModule, 'hp'>, delta: number): void {
+    const currentHp = Number.isFinite(module.hp) ? module.hp : 0;
+    this.patchDevModule({hp: Math.max(0, currentHp + delta)});
+  }
   
   trimDevTextFields(module: DbModule): void {
     const normalizeText = (value: string) => value.replace(/\s+/g, ' ').trim();
@@ -434,6 +439,18 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
       }
     }
     this.dataService.requestModuleEditingToggle$.next();
+  }
+
+  confirmDeleteModuleAndOrphanManufacturer(module: DbModule): void {
+    const confirmed = window.confirm(
+      `Delete "${ module.name }" and remove manufacturer "${ module.manufacturer.name }" if no other modules still use it?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.dataService.deleteModuleAndOrphanManufacturer$.next(module);
   }
   
   openExternalLink(url: string) {
