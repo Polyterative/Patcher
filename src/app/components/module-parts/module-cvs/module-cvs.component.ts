@@ -6,6 +6,7 @@ import {
   OnInit,
   Output, OnDestroy
 } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
@@ -59,7 +60,8 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   
   constructor(
-    public patchService: PatchDetailDataService
+    public patchService: PatchDetailDataService,
+    private readonly snackBar: MatSnackBar
   ) {
   }
   
@@ -102,7 +104,7 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
       .pipe(
         filter(() => this.patchService.patchEditingPanelOpenState$.value),
         switchMap(([cv, module]) =>
-          this.ensureInstanceId$(module).pipe(
+          this.resolveInstanceIdForClick$(module).pipe(
             tap(resolvedId => {
               this.patchService.clickOnModuleCV$.next({
                 cv: {...cv, module, instance_id: resolvedId},
@@ -120,7 +122,7 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
       .pipe(
         filter(() => this.patchService.patchEditingPanelOpenState$.value),
         switchMap(([cv, module]) =>
-          this.ensureInstanceId$(module).pipe(
+          this.resolveInstanceIdForClick$(module).pipe(
             tap(resolvedId => {
               this.patchService.clickOnModuleCV$.next({
                 cv: {...cv, module, instance_id: resolvedId},
@@ -157,6 +159,30 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
         this.instanceId = newId;
       })
     );
+  }
+
+  private resolveInstanceIdForClick$(module: DbModule) {
+    if (this.shouldBlockAmbiguousClick(module.id)) {
+      this.snackBar.open(
+        `"${ module.name }" has multiple copies — wire from a labeled copy instead.`,
+        undefined,
+        {duration: 4000, panelClass: 'snack-info'}
+      );
+      return EMPTY;
+    }
+
+    return this.ensureInstanceId$(module);
+  }
+
+  private shouldBlockAmbiguousClick(moduleId: number): boolean {
+    if (this.instanceId != null) {
+      return false;
+    }
+
+    const matchingInstances = this.patchService.patchModuleInstances$.value
+      .filter(instance => instance.module_id === moduleId);
+
+    return matchingInstances.length > 1;
   }
   
 }

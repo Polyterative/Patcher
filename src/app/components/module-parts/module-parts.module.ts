@@ -54,6 +54,7 @@ import { MatMenuModule } from "@angular/material/menu";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatSelectModule } from "@angular/material/select";
 import { MatInputModule } from "@angular/material/input";
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from "@angular/forms";
 import { ImageCropperComponent } from 'ngx-image-cropper';
 import { CopyableDirective } from "src/app/shared-interproject/app-copy-on-click.directive";
@@ -118,6 +119,7 @@ import { ModulePanelZoomDialogComponent } from './module-details/module-panel-zo
     MatExpansionModule,
     MatSelectModule,
     MatInputModule,
+    MatSnackBarModule,
     FormsModule,
     FileDragHostModule,
     ImageCropperComponent,
