@@ -284,9 +284,9 @@ describe('UserAreaRootComponent - contributorStats$', () => {
     component.contributorStats$.subscribe((stats) => {
       expect(stats?.find(s => s.name === 'Modules submitted')?.value).toBe(8);
       expect(stats?.find(s => s.name === 'Approved modules')?.value).toBe(5);
-      expect(stats?.find(s => s.name === 'Pending modules')?.value).toBe(3);
+      expect(stats?.find(s => s.name === 'Pending review')?.value).toBe(3);
       expect(stats?.find(s => s.name === 'Comments posted')?.value).toBe(11);
-      expect(stats?.find(s => s.name === 'Module flags')?.value).toBe(2);
+      expect(stats?.find(s => s.name === 'Issue reports')?.value).toBe(2);
       done();
     });
   });
