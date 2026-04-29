@@ -35,9 +35,6 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
-import {
-  getEffectiveRackedModuleHp,
-} from '../racked-module-hp.utils';
 
 
 export interface ModuleRightClick {
@@ -144,7 +141,7 @@ export class RackEditorComponent extends SubManager implements OnInit {
           
           const panels = rackedModule.module.panels ?? [];
           const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
-          const effectiveHp = getEffectiveRackedModuleHp(rackedModule);
+          const effectiveHp = rackedModule.module.hp;
 
           const switchPanelParentSubject = new Subject<ContextMenuItem>();
           const panelSubmenuItem: ContextMenuItem | null = panels.length > 1
