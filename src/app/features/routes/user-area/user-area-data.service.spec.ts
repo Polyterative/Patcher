@@ -84,6 +84,20 @@ describe('UserAreaDataService', () => {
       moduleFlagsSubmitted: 2
     });
   });
+
+  it('re-requests paged comments when the comments paginator changes', () => {
+    const {service, backend} = build();
+
+    service.commentsPageEvent$.next({
+      pageIndex: 2,
+      pageSize: 20,
+      length: 100
+    } as any);
+
+    expect(service.commentsPagination.skip$.value).toBe(40);
+    expect(service.commentsPagination.take$.value).toBe(20);
+    expect(backend.GET.currentUserComments).toHaveBeenCalledWith(40, 59);
+  });
   
   it('loads and sorts only modules with manuals', () => {
     const {service, backend} = build();
@@ -155,6 +169,20 @@ describe('UserAreaDataService', () => {
       expect(comments?.map((comment) => comment.id)).toEqual([2]);
     });
   });
+
+  it('collects unique patch tags in sorted order', () => {
+    const {service} = build();
+
+    service.patchesData$.next([
+      {id: 1, name: 'A', description: '', tags: ['drone', 'ambient']} as any,
+      {id: 2, name: 'B', description: '', tags: ['ambient', 'filter']} as any,
+      {id: 3, name: 'C', description: '', tags: undefined} as any
+    ]);
+
+    service.allPatchTags$.subscribe((tags) => {
+      expect(tags).toEqual(['ambient', 'drone', 'filter']);
+    });
+  });
   
   it('opens patch creator and triggers patch refresh', () => {
     const {service, dialog, discoveryTipService} = build();
@@ -184,6 +212,47 @@ describe('UserAreaDataService', () => {
     });
     expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.racks.create-clicked');
     expect(rackUpdateSpy).toHaveBeenCalledWith(undefined);
+  });
+
+  it('pages modules, racks, and patches locally without triggering extra backend calls', () => {
+    const {service, backend} = build();
+
+    service.modulesData$.next([
+      {id: 1, name: 'One', manufacturer: {name: 'A'}, description: ''},
+      {id: 2, name: 'Two', manufacturer: {name: 'A'}, description: ''},
+      {id: 3, name: 'Three', manufacturer: {name: 'A'}, description: ''}
+    ] as any);
+    service.rackData$.next([
+      {id: 1, name: 'Rack One', description: ''},
+      {id: 2, name: 'Rack Two', description: ''},
+      {id: 3, name: 'Rack Three', description: ''}
+    ] as any);
+    service.patchesData$.next([
+      {id: 1, name: 'Patch One', description: '', tags: []},
+      {id: 2, name: 'Patch Two', description: '', tags: []},
+      {id: 3, name: 'Patch Three', description: '', tags: []}
+    ] as any);
+
+    service.modulesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
+    service.racksPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
+    service.patchesPageEvent$.next({pageIndex: 1, pageSize: 1, length: 3} as any);
+
+    expect(service.modulesPagination.skip$.value).toBe(1);
+    expect(service.racksPagination.skip$.value).toBe(1);
+    expect(service.patchesPagination.skip$.value).toBe(1);
+    expect(backend.GET.currentUserModules).not.toHaveBeenCalled();
+    expect(backend.get.currentUserRacks).not.toHaveBeenCalled();
+    expect(backend.get.currentUserPatches).not.toHaveBeenCalled();
+
+    service.pagedModulesData$.subscribe((modules) => {
+      expect(modules?.map((module) => module.id)).toEqual([2]);
+    });
+    service.pagedRacksData$.subscribe((racks) => {
+      expect(racks?.map((rack) => rack.id)).toEqual([2]);
+    });
+    service.pagedPatchesData$.subscribe((patches) => {
+      expect(patches?.map((patch) => patch.id)).toEqual([2]);
+    });
   });
 
   it('records discovery actions from service-owned helper subjects', () => {
@@ -366,5 +435,41 @@ describe('UserAreaDataService', () => {
     secondSearchQuery$.next('dixie');
 
     expect(latestQuery).toBe('dixie');
+  });
+
+  it('trims search input and ignores empty discovery actions', () => {
+    const {service, discoveryTipService} = build();
+    const searchQuery$ = new Subject<string>();
+    let latestQuery = 'initial';
+
+    service.searchQuery$.subscribe((query) => latestQuery = query);
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    searchQuery$.next('   belgrad  ');
+    expect(latestQuery).toBe('belgrad');
+    expect(discoveryTipService.recordAction).toHaveBeenCalledWith('user-area.search-used');
+
+    (discoveryTipService.recordAction as jasmine.Spy).calls.reset();
+    searchQuery$.next('   ');
+
+    expect(latestQuery).toBe('');
+    expect(discoveryTipService.recordAction).not.toHaveBeenCalled();
+  });
+
+  it('stops reacting to discovery input after destroy', () => {
+    const {service} = build();
+    const searchQuery$ = new Subject<string>();
+    let latestQuery = '';
+
+    service.searchQuery$.subscribe((query) => latestQuery = query);
+    service.connectDiscovery(searchQuery$.asObservable());
+
+    searchQuery$.next('before destroy');
+    expect(latestQuery).toBe('before destroy');
+
+    service.ngOnDestroy();
+    searchQuery$.next('after destroy');
+
+    expect(latestQuery).toBe('before destroy');
   });
 });
