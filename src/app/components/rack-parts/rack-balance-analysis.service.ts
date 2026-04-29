@@ -109,15 +109,14 @@ export class RackBalanceAnalysisService {
 
     for (const entry of tagEntries) {
       const tagName = entry?.tag?.name?.trim();
-      if (!tagName) {
+      const tagType = this.normalizeTagType(entry?.tag?.type);
+
+      if (!tagName || !this.isBalanceRelevantTagType(tagType)) {
         continue;
       }
 
       for (const axis of RACK_BALANCE_AXES) {
-        const patterns = [
-          ...axis.purposePatterns,
-          ...axis.naturePatterns
-        ];
+        const patterns = this.getPatternsForTagType(axis, tagType);
 
         if (patterns.some(pattern => pattern.test(tagName))) {
           matchedAxes.add(axis.id);
@@ -126,6 +125,48 @@ export class RackBalanceAnalysisService {
     }
 
     return matchedAxes;
+  }
+
+  private normalizeTagType(tagType: unknown): string | null {
+    if (typeof tagType === 'string') {
+      return tagType.trim().toLowerCase();
+    }
+
+    if (typeof tagType === 'number') {
+      if (tagType === 0) {
+        return 'purpose';
+      }
+      if (tagType === 1) {
+        return 'nature';
+      }
+      if (tagType === 2) {
+        return 'character';
+      }
+    }
+
+    return null;
+  }
+
+  private isBalanceRelevantTagType(tagType: string | null): boolean {
+    return tagType === 'purpose'
+      || tagType === 'nature'
+      || tagType === 'function'
+      || tagType === 'module_type';
+  }
+
+  private getPatternsForTagType(axis: RackBalanceAxisDefinition, tagType: string): RegExp[] {
+    if (tagType === 'purpose') {
+      return axis.purposePatterns;
+    }
+
+    if (tagType === 'nature') {
+      return axis.naturePatterns;
+    }
+
+    return [
+      ...axis.purposePatterns,
+      ...axis.naturePatterns
+    ];
   }
 
   private getGuidance(axis: RackBalanceAxisDefinition, share: number): string {
