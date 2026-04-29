@@ -156,6 +156,44 @@ describe('SupabaseService - storage', () => {
       });
     }, TEST_TIMEOUT);
 
+    it('should preserve a custom webp content type during upload', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock();
+
+      service.storage.uploadModulePanel(new Blob([], {type: 'image/webp'}), 'Panel.WebP', 'image/webp').subscribe({
+        next: (filename) => {
+          expect(filename).toBe('panel.webp');
+          expect(mockBucket.upload).toHaveBeenCalledWith('panel.webp', jasmine.any(Blob), jasmine.objectContaining({
+            contentType: 'image/webp'
+          }));
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should default the upload content type to image/jpeg when none is provided', (done) => {
+      spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
+      setupStorageMock();
+
+      service.storage.uploadModulePanel(new Blob(), 'Panel.JPG').subscribe({
+        next: (filename) => {
+          expect(filename).toBe('panel.jpg');
+          expect(mockBucket.upload).toHaveBeenCalledWith('panel.jpg', jasmine.any(Blob), jasmine.objectContaining({
+            contentType: 'image/jpeg'
+          }));
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
     it('should call both upload and remove on module_panels bucket', (done) => {
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of({id: 'u1'}));
       setupStorageMock();

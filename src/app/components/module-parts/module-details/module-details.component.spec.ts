@@ -38,4 +38,24 @@ describe('ModuleDetailsComponent', () => {
     expect(component.previewPanelId).toBe(7);
     expect(dialog.open).not.toHaveBeenCalled();
   });
+
+  it('builds panel URLs transparently for both legacy jpg and new webp filenames', () => {
+    expect(component.getPanelImageUrl('panel.jpg'))
+      .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.jpg');
+    expect(component.getPanelImageUrl('panel.webp'))
+      .toBe('https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/panel.webp');
+  });
+
+  it('returns null when panel color is unknown', () => {
+    expect(component.getPanelColorName(999)).toBeNull();
+  });
+
+  it('suppresses the color badge when the derived label already matches the color', () => {
+    expect(component.getPanelColorBadge('ignored.png', 'Dark', 2, 0)).toBeNull();
+  });
+
+  it('shows the color badge when the derived label adds distinct info', () => {
+    expect(component.getPanelColorBadge('proto-panel.png', 'Prototype panel', 2, 0)).toBe('Dark');
+    expect(component.getPanelColorBadge('proto-panel.png', 'Prototype panel', 999, 0)).toBeNull();
+  });
 });

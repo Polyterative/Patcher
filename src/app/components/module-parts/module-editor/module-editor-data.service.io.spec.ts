@@ -139,7 +139,11 @@ describe('ModuleEditorDataService I/O branches', () => {
     
     result.operations[0].subscribe({
       complete: () => {
-        expect(backend.storage.uploadModulePanel).toHaveBeenCalled();
+        expect(backend.storage.uploadModulePanel).toHaveBeenCalledWith(
+          jasmine.any(ArrayBuffer),
+          'My_Module-Acme_Co-light-3U.png',
+          'image/png'
+        );
         expect(backend.add.panel).toHaveBeenCalledWith([{
           filename: 'panel-db.jpg',
           color: 2,
@@ -185,5 +189,43 @@ describe('ModuleEditorDataService I/O branches', () => {
         done();
       }
     });
+  });
+
+  it('queues IN/OUT persistence and reports the saved section', () => {
+    const result = service.buildPersistPlan({
+      module: {
+        id: 7,
+        name: 'Signal Module',
+        manufacturer: {name: 'Acme Co'},
+        standard: {name: '3U'}
+      } as any,
+      pendingState: {
+        ins: [{id: 1, name: 'In', min: 0, max: 5, isApproved: false}],
+        outs: [{id: 2, name: 'Out', min: -5, max: 5, isApproved: false}],
+        shouldSaveInsOuts: true,
+        shouldSavePower: false,
+        shouldSavePhysical: false,
+        shouldSavePanel: false,
+        hasPendingChanges: true
+      },
+      powerPos12: 0,
+      powerNeg12: 0,
+      powerPos5: 0,
+      weight: undefined,
+      depth: undefined,
+      panelFile: undefined,
+      panelTypeValue: {name: 'light', value: 2},
+      panelDescription: 'desc'
+    });
+
+    expect(result.savedSections).toEqual(['IN/OUT ports']);
+    expect(result.operations.length).toBe(1);
+    expect(backend.update.moduleINsOUTs).toHaveBeenCalledWith(
+      7,
+      [{id: 1, name: 'In', min: 0, max: 5, isApproved: false}],
+      [{id: 2, name: 'Out', min: -5, max: 5, isApproved: false}]
+    );
+    expect(backend.update.module).not.toHaveBeenCalled();
+    expect(backend.storage.uploadModulePanel).not.toHaveBeenCalled();
   });
 });

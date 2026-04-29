@@ -58,6 +58,7 @@ import {
 
 
 type CvSectionKind = 'IN' | 'OUT';
+type PanelCropOutputFormat = 'webp' | 'jpeg';
 
 interface ValidationFeedback {
   disabledReason: string;
@@ -96,6 +97,8 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
   readonly saveAll$ = new Subject<void>();
   readonly saveInProgress$ = new BehaviorSubject<boolean>(false);
   readonly saveJustCompleted$ = new BehaviorSubject<boolean>(false);
+  readonly panelCropOutputFormat: PanelCropOutputFormat;
+  readonly panelCropOutputQuality = 95;
   
   removeIN$ = new Subject<number>();
   removeOUT$ = new Subject<number>();
@@ -181,6 +184,7 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
     public fileDragHostService: FileDragHostService,
     private readonly moduleEditorDataService: ModuleEditorDataService
   ) {
+    this.panelCropOutputFormat = this.moduleEditorDataService.getPreferredPanelCropFormat();
     this.initializeFormControls();
     this.initializeFormGroups();
     this.hasPendingChanges$ = combineLatest([
@@ -197,6 +201,10 @@ export class ModuleEditorComponent implements OnInit, OnDestroy {
       shareReplay(1)
     );
     this.initializeSubscriptions();
+  }
+
+  get panelCropOutputMimeType(): string {
+    return this.panelCropOutputFormat === 'webp' ? 'image/webp' : 'image/jpeg';
   }
   
   ngOnInit(): void {

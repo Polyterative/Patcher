@@ -37,7 +37,7 @@
               class="setup-panel-upload"
               [isImageOnlyMode]="true"
               [multipleFilesMode]="false"
-              acceptedFileType="image/jpeg,image/jpg"
+              acceptedFileType="image/jpeg,image/jpg,image/png,image/webp"
             ></lib-file-drag-host>
 
             @if ({
@@ -123,8 +123,8 @@
                       <image-cropper
                         [imageFile]="cropBag.selectedPanelFile"
                         [output]="'blob'"
-                        [format]="'jpeg'"
-                        [imageQuality]="92"
+                        [format]="panelCropOutputFormat"
+                        [imageQuality]="panelCropOutputQuality"
                         [maintainAspectRatio]="true"
                         [aspectRatio]="panelCropAspectRatio"
                         [containWithinAspectRatio]="true"
@@ -151,7 +151,7 @@
 
                       @if (cropBag.cropLoadFailed) {
                         <div class="setup-panel-crop-error">
-                          This image could not be opened locally. Pick another JPG file to continue.
+                          This image could not be opened locally. Pick another JPG, PNG, or WebP image to continue.
                         </div>
                       }
                     </div>
@@ -163,7 +163,7 @@
                         <span class="setup-panel-preview-label">Final preview</span>
                         @if (cropBag.croppedPanelFile) {
                           <span class="setup-panel-preview-meta">
-                            {{ cropBag.croppedPanelFile.type || 'image/jpeg' }}
+                            {{ cropBag.croppedPanelFile.type || panelCropOutputMimeType }}
                           </span>
                         }
                       </div>
