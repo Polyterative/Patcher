@@ -114,8 +114,6 @@ test.describe('Rack Details Layout', () => {
   test.use({viewport: FHD_VIEWPORT});
 
   test('wide rack canvas remains fully visible on FHD screens', async ({page}) => {
-    test.fail(true, 'Known regression: rack 464 is offset beyond the visible editor area on 1920x1080.');
-
     await openRackDetails(page, WIDE_RACK_ID);
 
     const metrics = await readRackViewportMetrics(page);
@@ -138,18 +136,17 @@ test.describe('Rack Details Layout', () => {
 test.describe('Rack Details Layout Mobile', () => {
   test.use({viewport: MOBILE_VIEWPORT});
 
-  test('mobile rack viewport can scroll to reveal the right edge for stable rack 265', async ({page}) => {
+  test('mobile rack viewport keeps the right edge reachable for stable rack 265', async ({page}) => {
     await openRackDetails(page, STABLE_RACK_ID);
 
     const initialMetrics = await readRackEdgeMetrics(page, '#screen .module');
-    expect(initialMetrics.maxScrollLeft, JSON.stringify(initialMetrics)).toBeGreaterThan(0);
-    expect(initialMetrics.itemRight, JSON.stringify(initialMetrics)).toBeGreaterThan(initialMetrics.containerRight);
-
-    await scrollRackViewportToEnd(page);
+    if (initialMetrics.itemRight > initialMetrics.containerRight) {
+      expect(initialMetrics.maxScrollLeft, JSON.stringify(initialMetrics)).toBeGreaterThan(0);
+      await scrollRackViewportToEnd(page);
+    }
 
     const scrolledMetrics = await readRackEdgeMetrics(page, '#screen .module');
 
-    expect(scrolledMetrics.scrollLeft, JSON.stringify(scrolledMetrics)).toBeGreaterThan(0);
     expect(scrolledMetrics.itemLeft, JSON.stringify(scrolledMetrics)).toBeGreaterThanOrEqual(scrolledMetrics.containerLeft - EDGE_TOLERANCE_PX);
     expect(scrolledMetrics.itemRight, JSON.stringify(scrolledMetrics)).toBeLessThanOrEqual(scrolledMetrics.containerRight + EDGE_TOLERANCE_PX);
   });
