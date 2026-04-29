@@ -2,7 +2,7 @@
   class="entityStatGrid"
   [class.entityStatGrid--stacked]="stacked"
 >
-  @for (item of visibleItems(); track item; let i = $index) {
+  @for (item of visibleItems(); track itemTrackKey(item, $index); let i = $index) {
     <a
       class="entityStatGrid__item"
       [routerLink]="item.routerLink ?? null"
