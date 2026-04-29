@@ -54,9 +54,6 @@ import {
 } from "@angular/forms";
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
-import {
-  getEffectiveRackedModuleHp,
-} from "./racked-module-hp.utils";
 
 
 function cloneRackData<T>(value: T): T {
@@ -183,7 +180,7 @@ export class RackDetailDataService extends SubManager {
       .pipe(
         // if racked module HP is bigger than twenty then show snackbar and do not propagate the event
         map((rackedModule) => {
-          const effectiveHp = getEffectiveRackedModuleHp(rackedModule);
+          const effectiveHp = rackedModule.module.hp;
           if (rackedModule.module.standard.id === 0) {
             if (effectiveHp > 20) {
               this.snackBar.open(`"${ rackedModule.module.name }" is ${ effectiveHp } HP — too big to replace with a blank (max 20 HP).`, undefined, {
@@ -221,7 +218,7 @@ export class RackDetailDataService extends SubManager {
               column: originalModule.rackingData.column,
               rackId: rack.id,
               moduleId: this.calculateBlankIdForSizeAndStandard(
-                getEffectiveRackedModuleHp(rackedModule),
+                rackedModule.module.hp,
                 rackedModule.module.standard.id
               )
             })),
@@ -682,7 +679,7 @@ export class RackDetailDataService extends SubManager {
     rows.flatMap(row => row)
       .filter(m => m.module.standard.id === 0)
       .forEach(m => {
-        const hp = getEffectiveRackedModuleHp(m);
+        const hp = m.module.hp;
         byHP.set(hp, (byHP.get(hp) ?? 0) + 1);
       });
     
