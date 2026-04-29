@@ -97,9 +97,9 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
         ? [
           {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload_file'},
           {name: 'Approved modules', value: stats.approvedModules, icon: 'check_circle'},
-          {name: 'Pending modules', value: stats.pendingModules, icon: 'schedule'},
+          {name: 'Pending review', value: stats.pendingModules, icon: 'schedule'},
           {name: 'Comments posted', value: stats.commentsPosted, icon: 'chat'},
-          {name: 'Module flags', value: stats.moduleFlagsSubmitted, icon: 'flag'}
+          {name: 'Issue reports', value: stats.moduleFlagsSubmitted, icon: 'report'}
         ]
         : null
       )

@@ -59,7 +59,7 @@ describe('PublicProfileComponent', () => {
 
     component.contributorStats$.subscribe((stats) => {
       expect(stats).toEqual([
-        {name: 'Approved modules', value: 4, icon: 'check_circle'},
+        {name: 'Approved public modules', value: 4, icon: 'check_circle'},
       ]);
       done();
     });

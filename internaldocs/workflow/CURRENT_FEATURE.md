@@ -68,10 +68,10 @@
 
 ### Layer 3 — Polish
 
-- refine wording/tooltips/icon choices
-- mobile layout review
-- clearer distinction between approved/public contributions and in-review/private work
-- targeted tests for backend aggregation and stats-array mapping
+- [x] refine wording/tooltips/icon choices
+- [x] mobile layout review
+- [x] clearer distinction between approved/public contributions and in-review/private work
+- [x] targeted tests for backend aggregation and stats-array mapping
 
 ### Likely implementation touchpoints
 
@@ -99,3 +99,4 @@
 - Layer 1 now uses a dedicated contributor stats query that aggregates current-user module submissions, approvals, comments, and flags into one cached payload for the private dashboard.
 - The shared `app-statistics` atom now supports an optional empty-state message so zero-value contributor stats still render guidance instead of disappearing.
 - Layer 2 exposes only approved public modules on public profiles; pending modules, private review state, comments, and flags remain owner-only.
+- Layer 3 wording now explicitly distinguishes private in-review work (`Pending review`) from public-safe approved catalogue work (`Approved public modules`).
