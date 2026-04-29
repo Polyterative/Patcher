@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { RackedModule } from 'src/app/models/module';
-import { TagType } from 'src/app/models/tag';
 import {
   HIGH_AXIS_SHARE,
   LOW_AXIS_SHARE,
@@ -110,13 +109,16 @@ export class RackBalanceAnalysisService {
 
     for (const entry of tagEntries) {
       const tagName = entry?.tag?.name?.trim();
-      const tagType = entry?.tag?.type;
-      if (!tagName || tagType === undefined || tagType === null) {
+      if (!tagName) {
         continue;
       }
 
       for (const axis of RACK_BALANCE_AXES) {
-        const patterns = tagType === TagType.Nature ? axis.naturePatterns : axis.purposePatterns;
+        const patterns = [
+          ...axis.purposePatterns,
+          ...axis.naturePatterns
+        ];
+
         if (patterns.some(pattern => pattern.test(tagName))) {
           matchedAxes.add(axis.id);
         }
