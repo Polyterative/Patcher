@@ -16,38 +16,48 @@
       @if (bag.data) {
         <div class="col gap1">
           <div class="rackBrowserDetailView__summaryLayout">
-            <app-rack-composite [data]="(bag.data)"
-            ></app-rack-composite>
-            @if (bag.rowedRackedModules) {
-              <app-entity-stat-card
-                class="rackBrowserDetailView__summaryStats"
-                [rows]="rackSummaryStatRows(bag.data, bag.rowedRackedModules)"
-                [equalColumns]="true"
-                [stackedItems]="true"
-              ></app-entity-stat-card>
-            }
-            @if (bag.rowedRackedModules) {
-              <div class="rackBrowserDetailView__desktopAnalysis">
-                <app-rack-balance-panel
-                  [rowedRackedModules]="bag.rowedRackedModules"
-                  [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
-                ></app-rack-balance-panel>
+            <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--left">
+              <app-rack-composite [data]="(bag.data)"
+              ></app-rack-composite>
+            </div>
+            <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--right">
+              <div class="rackBrowserDetailView__summaryInsights">
+                @if (bag.rowedRackedModules) {
+                  <app-entity-stat-card
+                    class="rackBrowserDetailView__summaryStats"
+                    [rows]="rackSummaryStatRows(bag.data, bag.rowedRackedModules)"
+                    [equalColumns]="true"
+                    [stackedItems]="true"
+                  ></app-entity-stat-card>
+                }
+                @if (bag.rowedRackedModules) {
+                  <div class="rackBrowserDetailView__desktopAnalysis">
+                    <app-rack-balance-panel
+                      [rowedRackedModules]="bag.rowedRackedModules"
+                      [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
+                    ></app-rack-balance-panel>
+                  </div>
+                }
               </div>
-            }
+              @if (bag.rowedRackedModules) {
+                <div class="rackBrowserDetailView__mobileAnalysis">
+                  <app-rack-balance-panel
+                    [rowedRackedModules]="bag.rowedRackedModules"
+                    [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
+                  ></app-rack-balance-panel>
+                </div>
+              }
+            </div>
           </div>
           <lib-clean-card>
             <app-rack-editor
               [data]="(bag.data)"
             ></app-rack-editor>
           </lib-clean-card>
-          @if (bag.rowedRackedModules) {
-            <div class="rackBrowserDetailView__mobileAnalysis">
-              <app-rack-balance-panel
-                [rowedRackedModules]="bag.rowedRackedModules"
-                [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
-              ></app-rack-balance-panel>
-            </div>
-          }
+          <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
+                              maxSize="45rem">
+            <app-comments-root></app-comments-root>
+          </lib-screen-wrapper>
         </div>
       }
     </lib-hero-content-card>
@@ -75,14 +85,6 @@
           </app-brand-primary-button>
         </div>
       }
-    }
-    @if (bag.data) {
-      <lib-screen-wrapper maxSize="45rem"
-                          style="padding-bottom: 2rem;"
-      >
-        <app-comments-root
-        ></app-comments-root>
-      </lib-screen-wrapper>
     }
   </div>
 }

@@ -1,11 +1,59 @@
+.commentsRoot {
+  min-width: 0;
+}
+
+.commentsRoot__list {
+  min-width: 0;
+}
+
+.commentsRoot__loadMore {
+  align-self: center;
+}
+
+.commentsRoot__composer {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.commentsRoot__composerField {
+  min-width: 0;
+}
+
+:host ::ng-deep .commentsRoot__composer textarea[cdktextareaautosize] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none;
+  resize: none;
+}
+
+:host ::ng-deep .commentsRoot__composer textarea[cdktextareaautosize]::-webkit-resizer,
+:host ::ng-deep .commentsRoot__composer textarea[cdktextareaautosize]::-webkit-scrollbar-corner {
+  display: none;
+}
+
+:host ::ng-deep .commentsRoot__composer .mat-mdc-form-field-subscript-wrapper {
+  min-height: 1.25rem;
+}
+
+:host ::ng-deep .commentsRoot__composer .mat-mdc-icon-button.mat-mdc-button-base {
+  color: rgba(19, 54, 89, 0.56);
+}
+
 .submit-row {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
 
   .submit-hint {
     font-size: 0.75rem;
-    opacity: 0.5;
+    color: rgba(19, 54, 89, 0.56);
+  }
+}
+
+@media (max-width: 48rem) {
+  .submit-row {
+    justify-content: flex-end;
   }
 }

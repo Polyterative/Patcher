@@ -8,32 +8,37 @@
     <lib-auto-update-loading-indicator [data$]="dataService.comments$"
                                        [updateData$]="dataService.requestCommentsUpdate$"
     >
-      <div class="col gap2">
-        <app-comments-item-block [data]="bag.data"></app-comments-item-block>
+      <div class="col gap2 commentsRoot">
+        <div class="commentsRoot__list">
+          <app-comments-item-block [data]="bag.data"></app-comments-item-block>
+        </div>
 
         @if (bag.data && bag.count > bag.data.length) {
-          <button mat-stroked-button (click)="dataService.loadMore$.next()" class="load-more-btn">
+          <button mat-stroked-button (click)="dataService.loadMore$.next()" class="commentsRoot__loadMore">
             <mat-icon>expand_more</mat-icon>
             Load more comments ({{ bag.count - bag.data.length }} remaining)
           </button>
         }
 
         @if (bag.data && bag.user) {
-          <div (keydown.control.enter)="dataService.submitComment$.next(dataService.fields.submit.control.value)">
-            <lib-mat-form-entity [dataPack]="dataService.fields.submit"
-                                 [hint]="dataService.fields.submit.control.value?.length > 0
-                                     ? (dataService.fields.submit.control.value.length + ' / ' + dataService.maxLength)
-                                     : ''"
-            ></lib-mat-form-entity>
-          </div>
-          <div class="submit-row">
-            <span class="submit-hint">Ctrl + Enter to post</span>
-            <app-brand-primary-button
-              [disabled]="!dataService.fields.submit.control.valid || bag.isSubmitting"
-              (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
-              icon="send"
-            >{{ bag.isSubmitting ? 'Posting…' : 'Submit comment' }}
-            </app-brand-primary-button>
+          <div class="commentsRoot__composer">
+            <div class="commentsRoot__composerField"
+                 (keydown.control.enter)="dataService.submitComment$.next(dataService.fields.submit.control.value)">
+              <lib-mat-form-entity [dataPack]="dataService.fields.submit"
+                                   [hint]="dataService.fields.submit.control.value?.length > 0
+                                       ? (dataService.fields.submit.control.value.length + ' / ' + dataService.maxLength)
+                                       : ''"
+              ></lib-mat-form-entity>
+            </div>
+            <div class="submit-row">
+              <span class="submit-hint">Ctrl + Enter to post</span>
+              <app-brand-primary-button
+                [disabled]="!dataService.fields.submit.control.valid || bag.isSubmitting"
+                (click$)="dataService.submitComment$.next(dataService.fields.submit.control.value)"
+                icon="send"
+              >{{ bag.isSubmitting ? 'Posting…' : 'Post comment' }}
+              </app-brand-primary-button>
+            </div>
           </div>
         }
       </div>

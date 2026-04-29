@@ -1,127 +1,103 @@
 .rackBrowserDetailView__summaryLayout {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: start;
   justify-content: flex-start;
-}
-
-.rackBrowserDetailView__summaryLayout app-rack-composite {
-  flex: 0 1 26rem;
+  width: 100%;
   min-width: 0;
-  width: min(100%, 26rem);
-  grid-area: composite;
 }
 
-.rackBrowserDetailView__summaryStats {
-  flex: 1 1 auto;
-  min-width: min(100%, 24rem);
+.rackBrowserDetailView__summaryLayout > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rackBrowserDetailView__summaryColumn {
+  min-width: 0;
+  max-width: min(100%, 100vw);
+  box-sizing: border-box;
+}
+
+.rackBrowserDetailView__summaryColumn > * {
   width: 100%;
-  align-self: start;
-  grid-area: stats;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.rackBrowserDetailView__desktopAnalysis {
+.rackBrowserDetailView__summaryColumn--left {
   flex: 0 1 24rem;
-  min-width: 22rem;
-  width: 100%;
-  align-self: start;
-  grid-area: analysis;
+  max-width: 24rem;
+}
+
+.rackBrowserDetailView__summaryColumn--right {
+  flex: 0 1 50rem;
+  max-width: 50rem;
 }
 
 .rackBrowserDetailView__mobileAnalysis {
   display: none;
 }
 
-@media (min-width: 60.0625rem) and (max-width: 74.9375rem) {
-  .rackBrowserDetailView__summaryLayout {
-    display: grid;
-    grid-template-columns: minmax(18rem, 21rem) minmax(0, 1fr);
-    grid-template-areas:
-      'composite stats'
-      'composite analysis';
-    gap: 1.25rem;
-    align-items: start;
-    justify-content: start;
-  }
+.rackBrowserDetailView__summaryComments {
+  display: none;
+  min-width: 0;
+}
 
-  .rackBrowserDetailView__summaryLayout app-rack-composite,
-  .rackBrowserDetailView__summaryStats,
-  .rackBrowserDetailView__desktopAnalysis {
-    min-width: 0;
-    max-width: 100%;
-  }
+.rackBrowserDetailView__bottomComments {
+  width: 100%;
+  min-width: 0;
+}
 
-  .rackBrowserDetailView__summaryStats {
-    justify-self: stretch;
-  }
+.rackBrowserDetailView__summaryInsights {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+}
 
-  .rackBrowserDetailView__desktopAnalysis {
-    justify-self: start;
-    width: min(100%, 28rem);
+.rackBrowserDetailView__desktopAnalysis {
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 90rem) {
+  .rackBrowserDetailView__summaryColumn--right {
+    flex-basis: 54rem;
+    max-width: 54rem;
   }
 }
 
 @media (min-width: 75rem) {
-  .rackBrowserDetailView__summaryLayout {
-    display: grid;
-    grid-template-columns:
-      minmax(20rem, 26rem)
-      minmax(32rem, 36rem)
-      minmax(24rem, 26rem);
-    grid-template-areas: 'composite stats analysis';
-    gap: 1.25rem;
+  .rackBrowserDetailView__summaryInsights {
+    grid-template-columns: minmax(20rem, 1fr) minmax(20rem, 1fr);
     align-items: start;
-    justify-content: start;
-  }
-
-  .rackBrowserDetailView__summaryLayout app-rack-composite,
-  .rackBrowserDetailView__summaryStats,
-  .rackBrowserDetailView__desktopAnalysis {
-    min-width: 0;
-    max-width: 100%;
   }
 
   .rackBrowserDetailView__desktopAnalysis {
-    justify-self: start;
-    max-width: 26rem;
-  }
-
-  .rackBrowserDetailView__summaryStats {
-    justify-self: start;
-    max-width: 36rem;
+    align-self: start;
   }
 }
 
-@media (min-width: 90rem) {
-  .rackBrowserDetailView__summaryLayout {
-    grid-template-columns:
-      minmax(20rem, 24rem)
-      minmax(32rem, 35rem)
-      minmax(29rem, 32rem);
-  }
-
-  .rackBrowserDetailView__desktopAnalysis {
-    max-width: 32rem;
-  }
-
-  .rackBrowserDetailView__summaryStats {
-    max-width: 35rem;
+@media (max-width: 70rem) {
+  .rackBrowserDetailView__summaryColumn--left,
+  .rackBrowserDetailView__summaryColumn--right {
+    flex: 1 0 100%;
+    max-width: 100%;
   }
 }
 
 @media (max-width: 60rem) {
-  .rackBrowserDetailView__summaryLayout {
-    display: block;
-  }
-
-  .rackBrowserDetailView__summaryStats {
-    min-width: 0;
-    margin-top: 1rem;
-  }
-
   .rackBrowserDetailView__desktopAnalysis {
     display: none;
+  }
+
+  .rackBrowserDetailView__summaryColumn--left,
+  .rackBrowserDetailView__summaryColumn--right {
+    flex: 1 0 100%;
+    width: 100%;
+    max-width: 100%;
   }
 
   .rackBrowserDetailView__mobileAnalysis {
