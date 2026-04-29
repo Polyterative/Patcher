@@ -17,6 +17,7 @@ export class StatisticsComponent {
   @Input() title: string | null = null;
   @Input() cardClass: string = '';
   @Input() icon: string | undefined;
+  @Input() emptyMessage: string | null = null;
 
   @Input() statistics: {
     name: string;
@@ -26,6 +27,16 @@ export class StatisticsComponent {
   
   get visibleStatistics() {
     return this.statistics?.filter(s => s.value > 0) ?? [];
+  }
+
+  get showEmptyState(): boolean {
+    return !!this.emptyMessage
+      && !!this.statistics
+      && this.visibleStatistics.length === 0;
+  }
+
+  get shouldRenderCard(): boolean {
+    return this.visibleStatistics.length > 0 || this.showEmptyState;
   }
   
 }

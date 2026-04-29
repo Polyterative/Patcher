@@ -29,6 +29,7 @@ export const smallCacheTime = defaultCacheTime / 5;
 export type CachedEntity =
   'comments'
   | 'modules'
+  | 'module_flags'
   | 'manufacturers'
   | 'currentUserModules'
   | 'moduleWithId'

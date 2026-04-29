@@ -1,6 +1,8 @@
 import {
+  forkJoin,
   from as rxFrom,
-  Observable
+  Observable,
+  of
 } from 'rxjs';
 import {
   filter,
@@ -41,6 +43,14 @@ interface ManufacturerModuleStats {
   changedModulesLast30Days: number;
 }
 
+export interface CurrentUserContributorStats {
+  modulesSubmitted: number;
+  approvedModules: number;
+  pendingModules: number;
+  commentsPosted: number;
+  moduleFlagsSubmitted: number;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
@@ -56,6 +66,14 @@ export class SupabaseQueriesService {
     latestModuleUpdatedAt: null,
     latestModuleUpdatedAtMs: null,
     changedModulesLast30Days: 0
+  };
+
+  private static readonly EMPTY_CONTRIBUTOR_STATS: CurrentUserContributorStats = {
+    modulesSubmitted: 0,
+    approvedModules: 0,
+    pendingModules: 0,
+    commentsPosted: 0,
+    moduleFlagsSubmitted: 0
   };
 
   constructor(
@@ -365,6 +383,64 @@ export class SupabaseQueriesService {
             .range(from, to)
         )),
         remapErrors(),
+      );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('modules')
+      || x.includes('comments')
+      || x.includes('module_flags')
+    )),
+    maxCacheCount: 50,
+  })
+  getCurrentUserContributorStats(): Observable<CurrentUserContributorStats> {
+    const countRows$ = (
+      table: typeof DbPaths.modules | typeof DbPaths.comments | typeof DbPaths.module_flags,
+      applyFilters: (query: any) => any
+    ) => rxFrom(
+      applyFilters(
+        this.supabase.from(table).select('id', {count: 'exact', head: true})
+      )
+    ).pipe(
+      remapErrors(),
+      map((result: any) => result.count ?? 0)
+    );
+
+    return this.getUserSession$()
+      .pipe(
+        switchMap(user => {
+          if (!user?.id) {
+            return of(SupabaseQueriesService.EMPTY_CONTRIBUTOR_STATS);
+          }
+
+          return forkJoin({
+            modulesSubmitted: countRows$(
+              DbPaths.modules,
+              query => query.filter('submitter', 'eq', user.id)
+            ),
+            approvedModules: countRows$(
+              DbPaths.modules,
+              query => query
+                .filter('submitter', 'eq', user.id)
+                .filter('isApproved', 'eq', true)
+            ),
+            commentsPosted: countRows$(
+              DbPaths.comments,
+              query => query.filter('authorId', 'eq', user.id)
+            ),
+            moduleFlagsSubmitted: countRows$(
+              DbPaths.module_flags,
+              query => query.filter('user_id', 'eq', user.id)
+            ),
+          }).pipe(
+            map((stats) => ({
+              ...stats,
+              pendingModules: Math.max(stats.modulesSubmitted - stats.approvedModules, 0)
+            }))
+          );
+        })
       );
   }
   
