@@ -17,6 +17,13 @@ describe('UserAreaDataService', () => {
           {id: 1, name: 'Dixie II+', manufacturer: {name: 'Intellijel'}, description: 'Precision analog VCO', manualURL: 'https://a'},
           {id: 3, name: 'No Manual', manualURL: ''}
         ])),
+        currentUserContributorStats: jasmine.createSpy('currentUserContributorStats').and.returnValue(of({
+          modulesSubmitted: 4,
+          approvedModules: 3,
+          pendingModules: 1,
+          commentsPosted: 6,
+          moduleFlagsSubmitted: 2
+        })),
       }
       ,
       get: {
@@ -61,6 +68,21 @@ describe('UserAreaDataService', () => {
     expect(service.modulesData$.value?.length).toBe(3);
     expect((service.patchesData$.value as any)?.[0]?.id).toBe(10);
     expect((service.rackData$.value as any)?.[0]?.id).toBe(20);
+  });
+
+  it('loads contributor stats on update requests', () => {
+    const {service, backend} = build();
+
+    service.updateContributorStats$.next();
+
+    expect(backend.GET.currentUserContributorStats).toHaveBeenCalledWith();
+    expect(service.contributorStats$.value).toEqual({
+      modulesSubmitted: 4,
+      approvedModules: 3,
+      pendingModules: 1,
+      commentsPosted: 6,
+      moduleFlagsSubmitted: 2
+    });
   });
   
   it('loads and sorts only modules with manuals', () => {

@@ -52,6 +52,7 @@ export function createGetNamespace(
         : of([])
       )
     ),
+    currentUserContributorStats: () => queries.getCurrentUserContributorStats(),
     rackedModules: (rackid: number) => rxFrom(
       supabase.from(DbPaths.rack_modules)
         .select(`*, ${ QueryJoins.module_fk_rackmodules }`)

@@ -76,6 +76,13 @@
             cardClass="userBG"
             [statistics]="miscStats$ | async"
           ></app-statistics>
+          <app-statistics
+            title="Contributor stats"
+            icon="insights"
+            cardClass="userBG"
+            [statistics]="contributorStats$ | async"
+            [emptyMessage]="contributorStatsEmptyMessage"
+          ></app-statistics>
           <div appDiscoveryTipAnchor="user-area-manuals">
             <app-user-manuals></app-user-manuals>
           </div>

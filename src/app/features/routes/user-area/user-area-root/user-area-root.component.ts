@@ -28,6 +28,7 @@ import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-for
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
+import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 
 
 @Component({
@@ -62,6 +63,9 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   @Input() ignoreSeo = false;
   
   miscStats$ = of([]);
+  contributorStats$ = of<any[] | null>(null);
+  readonly contributorStatsEmptyMessage =
+    'No contributor activity yet. Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
   
   constructor(
     public userService: UserManagementService,
@@ -87,6 +91,19 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
         {name: 'Manual links', value: manuals?.length ?? 0, icon: 'menu_book'}
       ])
     );
+
+    this.contributorStats$ = this.dataService.contributorStats$.pipe(
+      map((stats: CurrentUserContributorStats | undefined) => stats
+        ? [
+          {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload_file'},
+          {name: 'Approved modules', value: stats.approvedModules, icon: 'check_circle'},
+          {name: 'Pending modules', value: stats.pendingModules, icon: 'schedule'},
+          {name: 'Comments posted', value: stats.commentsPosted, icon: 'chat'},
+          {name: 'Module flags', value: stats.moduleFlagsSubmitted, icon: 'flag'}
+        ]
+        : null
+      )
+    );
   }
   
   ngOnInit(): void {
@@ -100,6 +117,7 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     }
     
     this.dataService.connectDiscovery(this.globalSearchQuery$);
+    this.dataService.updateContributorStats$.next();
   }
 
   override ngOnDestroy(): void {

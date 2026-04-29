@@ -1,20 +1,24 @@
-@if (visibleStatistics && visibleStatistics.length > 0) {
+@if (shouldRenderCard) {
   <lib-hero-content-card [titleNormal]="title ?? ''"
                          [icon]="icon"
                          [class]="cardClass"
   >
     <div style="width: 100%">
-      <div class="rowwrap gap2">
-        @for (statistic of visibleStatistics; track statistic; let i = $index) {
-          <div class="stat-item" [style.animation-delay]="(i * 40) + 'ms'">
-            <div style="min-width: 8rem">
-              <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
-                {{ statistic.value }}
-              </app-label-value-showcase>
+      @if (visibleStatistics.length > 0) {
+        <div class="rowwrap gap2">
+          @for (statistic of visibleStatistics; track statistic; let i = $index) {
+            <div class="stat-item" [style.animation-delay]="(i * 40) + 'ms'">
+              <div style="min-width: 8rem">
+                <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
+                  {{ statistic.value }}
+                </app-label-value-showcase>
+              </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      } @else {
+        <p>{{ emptyMessage }}</p>
+      }
     </div>
   </lib-hero-content-card>
 }
