@@ -106,6 +106,26 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
   });
 
+  it('matches the stored DB tag labels, including punctuation-heavy purpose tags', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'Envelope Gen.', type: TagType.Purpose}]),
+      makeRackedModule(2, [{name: 'Clock Gen', type: TagType.Purpose}]),
+      makeRackedModule(3, [{name: 'Env. Follow', type: TagType.Purpose}]),
+      makeRackedModule(4, [{name: 'Waveshape', type: TagType.Purpose}]),
+      makeRackedModule(5, [{name: 'VCA', type: TagType.Purpose}]),
+      makeRackedModule(6, [{name: 'Full Voice', type: TagType.Purpose}])
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.recognizedModuleCount).toBe(6);
+    expect(result.axes.find(axis => axis.id === 'modulation')?.matchedModules).toBe(2);
+    expect(result.axes.find(axis => axis.id === 'timing')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'tone')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'utilities')?.matchedModules).toBe(1);
+    expect(result.axes.find(axis => axis.id === 'voices')?.matchedModules).toBe(1);
+  });
+
   it('ignores non-role database tag categories even when their label matches a balance axis', () => {
     const rack = [[
       makeRackedModule(1, [{name: 'Clock', type: 'technology' as any}]),
