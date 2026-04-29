@@ -1,0 +1,34 @@
+.rackBrowserDetailView__summaryLayout {
+  display: flex;
+  gap: 1rem;
+  align-items: start;
+  justify-content: flex-start;
+}
+
+.rackBrowserDetailView__summaryLayout app-rack-composite {
+  flex: 0 1 36rem;
+  min-width: 0;
+}
+
+.rackBrowserDetailView__desktopAnalysis {
+  flex: 0 0 min(24rem, 32vw);
+  min-width: 18rem;
+}
+
+.rackBrowserDetailView__mobileAnalysis {
+  display: none;
+}
+
+@media (max-width: 60rem) {
+  .rackBrowserDetailView__summaryLayout {
+    display: block;
+  }
+
+  .rackBrowserDetailView__desktopAnalysis {
+    display: none;
+  }
+
+  .rackBrowserDetailView__mobileAnalysis {
+    display: block;
+  }
+}
