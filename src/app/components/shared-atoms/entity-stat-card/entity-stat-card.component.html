@@ -3,9 +3,9 @@
     class="col gap1 entityStatCard"
     [class.entityStatCard--verticallyCentered]="verticallyCentered"
   >
-    @for (row of visibleRows(); track row) {
+    @for (row of visibleRows(); track rowTrackKey($index); let rowIndex = $index) {
       <div class="entityStatCard__row">
-        @for (group of row; track group) {
+        @for (group of row; track groupTrackKey(group, rowIndex, $index)) {
           <div class="entityStatCard__group">
             @if (group.title) {
               <mat-card-title class="entityStatCard__groupTitle">{{ group.title }}</mat-card-title>
