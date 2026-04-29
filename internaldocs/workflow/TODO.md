@@ -24,7 +24,7 @@
 
 ## Active
 
-*(none — see Backlog)*
+- [~] Contributor stats — show public-safe contributor stats on public profiles, fold the contribution slice into the existing shared statistics surface instead of a detached block, keep implementation detail in `CURRENT_FEATURE.md`, and separate contributor metrics from collection/profile stats.
 
 ---
 
@@ -124,6 +124,20 @@ yet.
 - [x] Add public/private toggle to the "Create new rack" dialog
 - [x] Default to private (safer default; user can explicitly make it public)
 - [x] Pass the selection through to `add.rack()` backend call
+
+---
+
+#### MEDIUM: Rack Analysis — Balance Radar
+
+**Why:** Raw rack stats explain capacity but not system balance. A guided analysis layer can turn tags and rack composition
+into useful advice such as "voice-heavy", "low on utilities", or "light on modulation", helping users shape better systems
+without pretending there is one correct answer.
+
+- [ ] Define the first rack-balance axes from existing module tags and keep the heuristics explicitly advisory
+- [ ] Build a reusable rack-analysis aggregation layer from the modules already loaded in rack detail flows
+- [ ] Add an analysis surface that expands rack stats with plain-language guidance and a visual summary (radar chart only if it stays legible on mobile)
+- [ ] Define the fallback when tags are sparse or missing so the UI communicates partial confidence instead of fake precision
+- [ ] Add targeted tests for heuristic scoring, empty-data states, and low-tag-coverage behavior
 
 ---
 
@@ -244,6 +258,20 @@ and propose but must not apply such changes autonomously.
 
 ---
 
+#### MEDIUM: Module Format Geometry — Canonicalize Rack and Crop Ratios
+
+**Why:** Module rendering and panel-image cropping already share one helper, but the current constants are only approximate
+for 3U and incorrectly collapse **Intellijel 1U** and **Pulp Logic 1U** into one visual height. This keeps the UI
+internally consistent while still being wrong against published format dimensions.
+
+- [ ] Create one canonical format-geometry source for visual dimensions instead of pipe-level magic constants
+- [ ] Encode explicit geometry for **3U Eurorack**, **Intellijel 1U**, and **Pulp Logic 1U**
+- [ ] Update rack/module rendering and image-crop aspect-ratio logic to consume only that shared source
+- [ ] Decide whether initial implementation should model only nominal format geometry or also front-panel face tolerances
+- [ ] Add targeted tests proving render ratios and crop ratios stay aligned for each supported standard
+
+---
+
 #### HIGH: E2E — Dedicated Test Account Cleanup
 
 **Why:** E2E credentials are coupled to a personal Supabase account — should use a dedicated test account.
@@ -269,6 +297,18 @@ and propose but must not apply such changes autonomously.
 - [ ] Confirm deletion → instance removed, connections scrubbed, remaining renumbered
 - [ ] Save + reload → connections and instances survive roundtrip
 - [ ] Legacy patch (pre-instance) → loads and displays correctly
+
+---
+
+#### HIGH: Rack Details — Resolve Known Layout Expected Failure
+
+**Why:** `e2e/rack-details-layout.spec.ts` intentionally carries an expected failure for `/racks/details/464` because the rack
+canvas is offset outside the visible editor area on FHD screens. This should be fixed in the UI and then converted from an
+expected failure into a normal passing regression test.
+
+- [ ] Investigate rack editor autoscaling / viewport sizing in `rack-editor.component.ts` and `rack-editor.component.html`
+- [ ] Fix the left-side cutoff for wide racks on desktop without regressing the good desktop/mobile cases already covered for rack `265`
+- [ ] Remove the `test.fail(...)` expectation from the rack `464` E2E once the layout bug is fixed and keep all rack layout tests passing
 
 ---
 
