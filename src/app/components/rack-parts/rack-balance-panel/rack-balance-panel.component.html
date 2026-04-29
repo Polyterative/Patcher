@@ -112,21 +112,23 @@
 
               <div class="rackBalancePanel__signals">
                 <div class="rackBalancePanel__signal">
-                  <span class="rackBalancePanel__signalLabel">Most present</span>
+                  <span class="rackBalancePanel__signalLabel">Leans toward</span>
                   <div class="rackBalancePanel__signalValue">
                     <mat-icon>{{ strongestAxis(analysis).icon }}</mat-icon>
                     <span>{{ strongestAxis(analysis).label }}</span>
-                    <strong>{{ strongestAxis(analysis).share }}%</strong>
                   </div>
                 </div>
 
                 <div class="rackBalancePanel__signal">
-                  <span class="rackBalancePanel__signalLabel">Lightest</span>
+                  <span class="rackBalancePanel__signalLabel">Light on</span>
                   <div class="rackBalancePanel__signalValue">
                     <mat-icon>{{ weakestAxis(analysis).icon }}</mat-icon>
                     <span>{{ weakestAxis(analysis).label }}</span>
-                    <strong>{{ weakestAxis(analysis).share }}%</strong>
                   </div>
+                </div>
+
+                <div class="rackBalancePanel__coverageNote">
+                  Weighted 75% by HP area, 25% by module count.
                 </div>
 
                 <div class="rackBalancePanel__coverageNote">
@@ -146,7 +148,6 @@
                 <div class="rackBalancePanel__legendChip">
                   <mat-icon>{{ axis.axis.icon }}</mat-icon>
                   <span>{{ axis.shortLabel }}</span>
-                  <strong>{{ axis.axis.share }}%</strong>
                 </div>
               }
             </div>

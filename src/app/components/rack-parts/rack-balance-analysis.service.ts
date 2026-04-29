@@ -32,6 +32,9 @@ export interface RackBalanceAnalysisResult {
   providedIn: 'root'
 })
 export class RackBalanceAnalysisService {
+  private static readonly AREA_WEIGHT = 0.75;
+  private static readonly COUNT_WEIGHT = 0.25;
+
   analyze(rowedRackedModules: RackedModule[][] | null | undefined): RackBalanceAnalysisResult {
     const modules = (rowedRackedModules ?? [])
       .flat()
@@ -57,7 +60,9 @@ export class RackBalanceAnalysisService {
     }
 
     const matchedCounts = new Map<RackBalanceAxisId, number>();
+    const matchedArea = new Map<RackBalanceAxisId, number>();
     RACK_BALANCE_AXES.forEach(axis => matchedCounts.set(axis.id, 0));
+    RACK_BALANCE_AXES.forEach(axis => matchedArea.set(axis.id, 0));
 
     let recognizedModuleCount = 0;
 
@@ -69,14 +74,32 @@ export class RackBalanceAnalysisService {
 
       matchedAxes.forEach(axisId => {
         matchedCounts.set(axisId, (matchedCounts.get(axisId) ?? 0) + 1);
+        matchedArea.set(axisId, (matchedArea.get(axisId) ?? 0) + Math.max(rackedModule.module.hp ?? 0, 0));
       });
     }
 
     const totalMatches = [...matchedCounts.values()].reduce((sum, value) => sum + value, 0);
+    const totalMatchedArea = [...matchedArea.values()].reduce((sum, value) => sum + value, 0);
     const confidence = recognizedModuleCount / modules.length;
+
+    const weightedScores = new Map<RackBalanceAxisId, number>();
+    let totalWeightedScore = 0;
+
+    RACK_BALANCE_AXES.forEach(axis => {
+      const countShare = totalMatches > 0 ? (matchedCounts.get(axis.id) ?? 0) / totalMatches : 0;
+      const areaShare = totalMatchedArea > 0 ? (matchedArea.get(axis.id) ?? 0) / totalMatchedArea : 0;
+      const weightedScore = RackBalanceAnalysisService.AREA_WEIGHT * areaShare
+        + RackBalanceAnalysisService.COUNT_WEIGHT * countShare;
+
+      weightedScores.set(axis.id, weightedScore);
+      totalWeightedScore += weightedScore;
+    });
+
     const axes = RACK_BALANCE_AXES.map(axis => {
       const matchedModules = matchedCounts.get(axis.id) ?? 0;
-      const share = totalMatches > 0 ? Math.round((matchedModules / totalMatches) * 100) : 0;
+      const share = totalWeightedScore > 0
+        ? Math.round(((weightedScores.get(axis.id) ?? 0) / totalWeightedScore) * 100)
+        : 0;
 
       return {
         id: axis.id,
@@ -98,7 +121,7 @@ export class RackBalanceAnalysisService {
       recognizedModuleCount,
       totalModules: modules.length,
       warningMessage,
-      summary: this.buildSummary(axes, totalMatches, warningMessage),
+      summary: this.buildSummary(axes, totalWeightedScore, warningMessage),
       isEmpty: false
     };
   }

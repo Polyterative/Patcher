@@ -100,9 +100,11 @@ export class RackBalancePanelComponent {
   }
 
   radarAxes(analysis: RackBalanceAnalysisResult): RadarAxisViewModel[] {
+    const strongestShare = Math.max(this.strongestAxis(analysis).share, 1);
+
     return analysis.axes.map((axis, index, axes) => ({
       axis,
-      point: this.getRadarPoint(index, axes.length, this.radarRadius * (axis.share / 100)),
+      point: this.getRadarPoint(index, axes.length, this.radarRadius * (axis.share / strongestShare)),
       labelPoint: this.getRadarPoint(index, axes.length, this.radarLabelRadius),
       shortLabel: this.getShortLabel(axis.label)
     }));
