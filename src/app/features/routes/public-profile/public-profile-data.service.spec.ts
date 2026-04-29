@@ -10,6 +10,7 @@ describe('PublicProfileDataService', () => {
       GET: {
         publicUserPatchesPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
         publicUserRacksPaginated: jasmine.createSpy().and.returnValue(of({data: [], count: 0})),
+        publicUserContributorStats: jasmine.createSpy().and.returnValue(of({approvedPublicModules: 2})),
       },
     };
     const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
@@ -42,5 +43,21 @@ describe('PublicProfileDataService', () => {
     });
     expect(backend.GET.publicUserPatchesPaginated).not.toHaveBeenCalled();
     expect(backend.GET.publicUserRacksPaginated).not.toHaveBeenCalled();
+    expect(backend.GET.publicUserContributorStats).not.toHaveBeenCalled();
+  });
+
+  it('loads public contributor stats for public profiles', () => {
+    const { service, backend } = build({
+      id: 'public-user',
+      username: 'public-user',
+      public: true,
+      website: 'https://public.example',
+      avatar_url: 'https://public.example/avatar.png',
+    });
+
+    service.loadProfile$.next('public-user');
+
+    expect(backend.GET.publicUserContributorStats).toHaveBeenCalledWith('public-user');
+    expect(service.contributorStats$.value).toEqual({approvedPublicModules: 2});
   });
 });
