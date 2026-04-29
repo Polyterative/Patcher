@@ -28,6 +28,11 @@ import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
+import { RackMinimal } from 'src/app/models/rack';
+import { RackedModule } from 'src/app/models/module';
+import { EntityStatItem } from 'src/app/components/shared-atoms/entity-stat-grid/entity-stat-grid.component';
+import { isBlankModule } from 'src/app/components/rack-parts/rack-blank-module.constants';
+import { EntityStatGroup } from 'src/app/components/shared-atoms/entity-stat-card/entity-stat-card.component';
 
 
 const JSONLD_SCRIPT_ID = 'rack-jsonld';
@@ -122,6 +127,67 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     super.ngOnDestroy();
   }
 
+  calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
+    const totalAvailableHp = totalHp * rows;
+    if (totalAvailableHp === 0) {
+      return '0%';
+    }
+
+    return `${ ((usedHp / totalAvailableHp) * 100).toFixed(1) }%`;
+  }
+
+  rackSummaryStatRows(data: RackMinimal, rowedRackedModules: RackedModule[][]): EntityStatGroup[][] {
+    const rackModules = rowedRackedModules.flat().filter(module => !isBlankModule(module.module.id));
+    const totalModules = rackModules.length;
+    const usedHp = rackModules.reduce((sum, module) => sum + module.module.hp, 0);
+    const remainingHp = data.hp * data.rows - usedHp;
+    const [powerPos12, powerNeg12, powerPos5] = this.totalPower(rowedRackedModules);
+    const missingPowerDataCount = this.totalMissingPowerData(rowedRackedModules);
+    const [maxDepth, minDepth, averageDepth] = this.totalDepth(rowedRackedModules);
+    const totalWeightKg = this.totalWeight(rowedRackedModules) / 1000;
+    const missingPowerSuffix = missingPowerDataCount > 0 ? ` (${ missingPowerDataCount } missing data)` : '';
+
+    return [
+      [
+        {
+          title: 'Rack',
+          items: [
+            { label: 'Rows', value: data.rows.toString(), icon: 'view_comfy' },
+            { label: 'Modules', value: totalModules.toString(), icon: 'widgets' },
+            { label: 'HP per row', value: data.hp.toString(), icon: 'straighten' }
+          ]
+        },
+        {
+          title: 'Space',
+          items: [
+            { label: 'HP used', value: usedHp.toString(), icon: 'crop_5_4' },
+            { label: 'HP available', value: remainingHp.toString(), icon: 'crop_free' },
+            { label: 'Rack utilization', value: this.calculateRackUtilization(data.hp, data.rows, usedHp), icon: 'bar_chart' }
+          ]
+        }
+      ],
+      [
+        {
+          title: 'Power',
+          items: [
+            { label: `+12V${ missingPowerSuffix }`, value: `${ powerPos12 } mA`, icon: 'bolt' },
+            { label: `-12V${ missingPowerSuffix }`, value: `${ powerNeg12 } mA`, icon: 'bolt' },
+            { label: `+5V${ missingPowerSuffix }`, value: `${ powerPos5 } mA`, icon: 'bolt' }
+          ]
+        },
+        {
+          title: 'Physical',
+          items: [
+            { label: 'Max depth', value: `${ maxDepth.toPrecision(2) } mm`, icon: 'vertical_align_bottom' },
+            { label: 'Min depth', value: `${ minDepth.toPrecision(2) } mm`, icon: 'vertical_align_top' },
+            { label: 'Average depth', value: `${ averageDepth.toPrecision(2) } mm`, icon: 'vertical_align_center' },
+            { label: 'Modules weight', value: `${ totalWeightKg.toPrecision(2) } kg`, icon: 'fitness_center' }
+          ]
+        }
+      ]
+    ];
+  }
+
   private injectRackJsonLd(rackData: any, modules: string[]): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
@@ -139,5 +205,56 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
     upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
+  }
+
+  private totalPower(rowedRackedModules: RackedModule[][]): [number, number, number] {
+    return rowedRackedModules
+      .flat()
+      .filter(module => !isBlankModule(module.module.id))
+      .reduce<[number, number, number]>((accumulator, value) => {
+        accumulator[0] += value.module.powerPos12;
+        accumulator[1] += value.module.powerNeg12;
+        accumulator[2] += value.module.powerPos5;
+        return accumulator;
+      }, [0, 0, 0]);
+  }
+
+  private totalMissingPowerData(rowedRackedModules: RackedModule[][]): number {
+    return rowedRackedModules
+      .flat()
+      .filter(module => !isBlankModule(module.module.id))
+      .filter((module, index, self) => self.findIndex(candidate => candidate.module.id === module.module.id) === index)
+      .reduce((count, value) => {
+        if (value.module.powerPos12 == null || value.module.powerNeg12 == null || value.module.powerPos5 == null) {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+  }
+
+  private totalDepth(rowedRackedModules: RackedModule[][]): [number, number, number] {
+    const depths = rowedRackedModules
+      .flat()
+      .filter(module => !isBlankModule(module.module.id))
+      .map(module => module.module.depth)
+      .filter((depth): depth is number => depth !== null);
+
+    if (depths.length === 0) {
+      return [0, 0, 0];
+    }
+
+    const maxDepth = Math.max(...depths);
+    const minDepth = Math.min(...depths);
+    const averageDepth = depths.reduce((sum, depth) => sum + depth, 0) / depths.length;
+    return [maxDepth, minDepth, averageDepth];
+  }
+
+  private totalWeight(rowedRackedModules: RackedModule[][]): number {
+    return rowedRackedModules
+      .flat()
+      .filter(module => !isBlankModule(module.module.id))
+      .map(module => module.module.weight)
+      .filter((weight): weight is number => weight !== null)
+      .reduce((sum, weight) => sum + weight, 0);
   }
 }
