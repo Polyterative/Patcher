@@ -27,14 +27,18 @@
         </div>
         <div class="row gap0 rackBalancePanel__actions">
           <button
-            mat-stroked-button
             type="button"
             class="rackBalancePanel__toggleButton"
             (click)="toggleExpanded()"
             [attr.aria-expanded]="isExpanded"
           >
-            <mat-icon>{{ isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-            {{ isExpanded ? 'Hide details' : 'Show details' }}
+            <span>{{ isExpanded ? 'Hide details' : 'Show details' }}</span>
+            <mat-icon
+              class="rackBalancePanel__toggleChevron"
+              [class.rackBalancePanel__toggleChevron--expanded]="isExpanded"
+            >
+              chevron_right
+            </mat-icon>
           </button>
           <button
             mat-icon-button
