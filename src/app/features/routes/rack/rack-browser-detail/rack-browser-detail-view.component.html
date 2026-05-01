@@ -39,14 +39,6 @@
                   </div>
                 }
               </div>
-              @if (bag.rowedRackedModules) {
-                <div class="rackBrowserDetailView__mobileAnalysis">
-                  <app-rack-balance-panel
-                    [rowedRackedModules]="bag.rowedRackedModules"
-                    [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
-                  ></app-rack-balance-panel>
-                </div>
-              }
             </div>
           </div>
           <lib-clean-card>
@@ -54,6 +46,14 @@
               [data]="(bag.data)"
             ></app-rack-editor>
           </lib-clean-card>
+          @if (bag.rowedRackedModules) {
+            <div class="rackBrowserDetailView__mobileAnalysis">
+              <app-rack-balance-panel
+                [rowedRackedModules]="bag.rowedRackedModules"
+                [alwaysExpanded]="!bag.isCurrentRackPropertyOfCurrentUser || !bag.isCurrentRackEditable"
+              ></app-rack-balance-panel>
+            </div>
+          }
           <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
                               maxSize="45rem">
             <app-comments-root></app-comments-root>
