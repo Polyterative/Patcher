@@ -80,11 +80,13 @@ type SummaryLayoutMetrics = {
   rightColumnRight: number;
   rightColumnWidth: number;
   statsLeft: number;
+  statsHeight: number;
   statsTop: number;
   statsWidth: number;
   bottomCommentsDisplay: string;
   bottomCommentsTop: number;
   bottomCommentsWidth: number;
+  editorBottom: number;
   editorTop: number;
   desktopAnalysisDisplay: string;
   desktopAnalysisLeft: number;
@@ -92,6 +94,7 @@ type SummaryLayoutMetrics = {
   desktopAnalysisHeight: number;
   desktopAnalysisWidth: number;
   mobileAnalysisDisplay: string;
+  mobileAnalysisTop: number;
   mobileAnalysisWidth: number;
   visualSurfaceColumns: string;
   chartTop: number;
@@ -218,11 +221,13 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
       rightColumnRight: Math.round(rightColumnRect.right),
       rightColumnWidth: Math.round(rightColumnRect.width),
       statsLeft: Math.round(statsRect.left),
+      statsHeight: Math.round(statsRect.height),
       statsTop: Math.round(statsRect.top),
       statsWidth: Math.round(statsRect.width),
       bottomCommentsDisplay: bottomCommentsStyle.display,
       bottomCommentsTop: Math.round(bottomCommentsRect.top),
       bottomCommentsWidth: Math.round(bottomCommentsRect.width),
+      editorBottom: Math.round(editorRect.bottom),
       editorTop: Math.round(editorRect.top),
       desktopAnalysisDisplay: desktopAnalysisStyle.display,
       desktopAnalysisLeft: Math.round(desktopAnalysisRect.left),
@@ -230,6 +235,7 @@ async function readSummaryLayoutMetrics(page: Page): Promise<SummaryLayoutMetric
       desktopAnalysisHeight: Math.round(desktopAnalysisRect.height),
       desktopAnalysisWidth: Math.round(desktopAnalysisRect.width),
       mobileAnalysisDisplay: mobileAnalysisStyle.display,
+      mobileAnalysisTop: Math.round(mobileAnalysisRect.top),
       mobileAnalysisWidth: Math.round(mobileAnalysisRect.width),
       visualSurfaceColumns: getComputedStyle(visualSurface ?? summary).gridTemplateColumns,
       chartTop: Math.round(chartWrap?.getBoundingClientRect().top ?? 0),
@@ -343,22 +349,22 @@ test.describe('Rack Details Summary Layout iPad Pro Landscape', () => {
 test.describe('Rack Details Summary Layout Mid Desktop', () => {
   test.use({viewport: SUMMARY_MID_DESKTOP_VIEWPORT});
 
-  test('mid desktop keeps the analysis panel internally stacked without overflow', async ({page}) => {
+  test('mid desktop moves the balance analysis below the editor while keeping the top summary compact', async ({page}) => {
     await openRackDetails(page, 559);
 
     const metrics = await readSummaryLayoutMetrics(page);
 
     expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
-    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
-    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
-    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.mobileAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorBottom);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.mobileAnalysisTop);
     expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
-    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsTop);
-    expect(metrics.chartTop, JSON.stringify(metrics)).toBeLessThan(metrics.supportingStatsTop);
-    expect(metrics.visualSurfaceColumns, JSON.stringify(metrics)).not.toContain(' ');
+    expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
+    expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
 });
 
@@ -377,7 +383,8 @@ test.describe('Rack Details Summary Layout Wide Desktop', () => {
     expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(300);
     expect(metrics.chartTop, JSON.stringify(metrics)).toBe(metrics.supportingStatsTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(300);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(275);
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
     expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
@@ -400,7 +407,8 @@ test.describe('Rack Details Summary Layout 1728 Desktop', () => {
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.chartTop, JSON.stringify(metrics)).toBe(metrics.supportingStatsTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(300);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(275);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -443,7 +451,8 @@ test.describe('Rack Details Summary Layout Full HD Wide', () => {
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.supportingStatsTop, JSON.stringify(metrics)).toBe(metrics.chartTop);
     expect(metrics.axisSectionTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.supportingStatsTop);
-    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(285);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBeLessThanOrEqual(270);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -464,9 +473,10 @@ test.describe('Rack Details Summary Layout Compact Desktop', () => {
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
     expect(metrics.rightColumnRight, JSON.stringify(metrics)).toBeGreaterThanOrEqual(metrics.summaryRight - 8);
-    expect(metrics.rightColumnWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(760);
-    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(370);
-    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(370);
+    expect(metrics.rightColumnWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(820);
+    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(400);
+    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(400);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
     expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
@@ -487,9 +497,10 @@ test.describe('Rack Details Summary Layout 1130 Desktop', () => {
     expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBe(metrics.statsTop);
     expect(metrics.desktopAnalysisLeft, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsLeft);
     expect(metrics.rightColumnRight, JSON.stringify(metrics)).toBeGreaterThanOrEqual(metrics.summaryRight - 8);
-    expect(metrics.rightColumnWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(780);
-    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(380);
-    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(380);
+    expect(metrics.rightColumnWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(820);
+    expect(metrics.statsWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(400);
+    expect(metrics.desktopAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThanOrEqual(400);
+    expect(metrics.desktopAnalysisHeight, JSON.stringify(metrics)).toBe(metrics.statsHeight);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -498,20 +509,20 @@ test.describe('Rack Details Summary Layout 1130 Desktop', () => {
 test.describe('Rack Details Summary Layout Tablet', () => {
   test.use({viewport: SUMMARY_TABLET_VIEWPORT});
 
-  test('tablet summary keeps stats wide while analysis drops below without overflow', async ({page}) => {
+  test('tablet summary keeps stats above and moves balance analysis below the editor', async ({page}) => {
     await openRackDetails(page, 559);
 
     const metrics = await readSummaryLayoutMetrics(page);
 
     expect(metrics.summaryDisplay, JSON.stringify(metrics)).toBe('flex');
-    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
-    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.desktopAnalysisDisplay, JSON.stringify(metrics)).toBe('none');
+    expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.statsLeft, JSON.stringify(metrics)).toBe(metrics.compositeLeft);
-    expect(metrics.desktopAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.statsTop);
-    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.mobileAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorBottom);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.mobileAnalysisTop);
     expect(metrics.bottomCommentsWidth, JSON.stringify(metrics)).toBeLessThanOrEqual(HUGGED_COMMENTS_MAX_WIDTH_PX);
-    expect(metrics.statsWidth, JSON.stringify(metrics)).toBe(metrics.desktopAnalysisWidth);
+    expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
     expect(metrics.visualSurfaceOverflowX, JSON.stringify(metrics)).toBe(false);
     expect(metrics.axisListOverflowX, JSON.stringify(metrics)).toBe(false);
   });
@@ -530,6 +541,7 @@ test.describe('Rack Details Summary Layout Mobile', () => {
     expect(metrics.mobileAnalysisDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.bottomCommentsDisplay, JSON.stringify(metrics)).toBe('block');
     expect(metrics.mobileAnalysisWidth, JSON.stringify(metrics)).toBeGreaterThan(0);
-    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorTop);
+    expect(metrics.mobileAnalysisTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.editorBottom);
+    expect(metrics.bottomCommentsTop, JSON.stringify(metrics)).toBeGreaterThan(metrics.mobileAnalysisTop);
   });
 });
