@@ -159,6 +159,7 @@
   display: flex;
   justify-content: center;
   min-width: 0;
+  align-self: start;
   animation: rack-balance-chart-enter 260ms ease-out both;
 }
 
@@ -266,16 +267,6 @@
   width: 100%;
 }
 
-@media (min-width: 48.0625rem) {
-  .rackBalancePanel__chartWrap {
-    align-self: start;
-  }
-
-  .rackBalancePanel__radar {
-    width: min(100%, 14rem);
-  }
-}
-
 @media (min-width: 60.0625rem) and (max-width: 74.9375rem) {
   .rackBalancePanel__visualSurface {
     grid-template-columns: 1fr;
@@ -292,6 +283,36 @@
   .rackBalancePanel__chartWrap,
   .rackBalancePanel__supportingStats {
     align-self: start;
+  }
+}
+
+@media (min-width: 105rem) {
+  .rackBalancePanel__details {
+    display: grid;
+    grid-template-columns: minmax(12.75rem, 13.75rem) minmax(0, 1fr);
+    column-gap: 1rem;
+    row-gap: 0.75rem;
+    align-items: start;
+  }
+
+  .rackBalancePanel__visualSurface {
+    display: contents;
+  }
+
+  .rackBalancePanel__chartWrap {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .rackBalancePanel__supportingStats {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .rackBalancePanel__axisSection {
+    grid-column: 2;
+    grid-row: 2;
+    padding-top: 0;
   }
 }
 
