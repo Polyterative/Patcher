@@ -62,16 +62,22 @@
   width: 100%;
 }
 
-@media (min-width: 90rem) {
-  .rackBrowserDetailView__summaryColumn--right {
-    flex-basis: 54rem;
-    max-width: 54rem;
+@media (min-width: 70.625rem) {
+  .rackBrowserDetailView__summaryLayout {
+    flex-wrap: nowrap;
   }
-}
 
-@media (min-width: 75rem) {
+  .rackBrowserDetailView__summaryColumn--left {
+    flex: 0 0 24rem;
+  }
+
+  .rackBrowserDetailView__summaryColumn--right {
+    flex: 1 1 0;
+    max-width: none;
+  }
+
   .rackBrowserDetailView__summaryInsights {
-    grid-template-columns: minmax(20rem, 1fr) minmax(20rem, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
   }
 
@@ -80,7 +86,7 @@
   }
 }
 
-@media (max-width: 70rem) {
+@media (max-width: 70.5625rem) {
   .rackBrowserDetailView__summaryColumn--left,
   .rackBrowserDetailView__summaryColumn--right {
     flex: 1 0 100%;
