@@ -1,7 +1,7 @@
 .rackBrowserDetailView__summaryLayout {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.25rem;
+  gap: clamp(0.85rem, 1vw, 1.25rem);
   align-items: start;
   justify-content: flex-start;
   width: 100%;
@@ -37,6 +37,8 @@
 
 .rackBrowserDetailView__mobileAnalysis {
   display: none;
+  width: 100%;
+  min-width: 0;
 }
 
 .rackBrowserDetailView__summaryComments {
@@ -52,11 +54,12 @@
 .rackBrowserDetailView__summaryInsights {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: clamp(0.75rem, 0.9vw, 1rem);
   width: 100%;
   min-width: 0;
 }
 
+.rackBrowserDetailView__summaryStats,
 .rackBrowserDetailView__desktopAnalysis {
   min-width: 0;
   width: 100%;
@@ -65,10 +68,12 @@
 @media (min-width: 70.625rem) {
   .rackBrowserDetailView__summaryLayout {
     flex-wrap: nowrap;
+    align-items: stretch;
   }
 
   .rackBrowserDetailView__summaryColumn--left {
-    flex: 0 0 24rem;
+    flex: 0 0 clamp(20.5rem, 24vw, 24rem);
+    max-width: clamp(20.5rem, 24vw, 24rem);
   }
 
   .rackBrowserDetailView__summaryColumn--right {
@@ -78,23 +83,18 @@
 
   .rackBrowserDetailView__summaryInsights {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    align-items: stretch;
+    grid-auto-rows: 1fr;
   }
 
+  .rackBrowserDetailView__summaryStats,
   .rackBrowserDetailView__desktopAnalysis {
-    align-self: start;
+    height: 100%;
+    align-self: stretch;
   }
 }
 
 @media (max-width: 70.5625rem) {
-  .rackBrowserDetailView__summaryColumn--left,
-  .rackBrowserDetailView__summaryColumn--right {
-    flex: 1 0 100%;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 60rem) {
   .rackBrowserDetailView__desktopAnalysis {
     display: none;
   }
@@ -102,7 +102,6 @@
   .rackBrowserDetailView__summaryColumn--left,
   .rackBrowserDetailView__summaryColumn--right {
     flex: 1 0 100%;
-    width: 100%;
     max-width: 100%;
   }
 
