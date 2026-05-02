@@ -10,6 +10,7 @@ describe('ApplicationStatisticsService', () => {
     publicRacks: 84,
     publicRackAuthors: 31,
     publicPatches: 42,
+    publicPatchConnections: 168,
     publicPatchAuthors: 18
   }) {
     const backend = {
@@ -51,6 +52,7 @@ describe('ApplicationStatisticsService', () => {
       publicRacks: 0,
       publicRackAuthors: 0,
       publicPatches: 0,
+      publicPatchConnections: 0,
       publicPatchAuthors: 0
     });
 
@@ -85,6 +87,11 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Rack-sharing profiles per 100 public profiles', value: 13, icon: 'dashboard_customize'},
         {name: 'Patch-sharing profiles per 100 public profiles', value: 8, icon: 'hub'}
       ]);
+      expect(page.patchNetwork).toEqual([
+        {name: 'Saved connections total', value: 168, icon: 'linear_scale'},
+        {name: 'Saved connections per shared patch', value: 4, icon: 'share'},
+        {name: 'Saved connections per patch-sharing profile', value: 9, icon: 'hub'}
+      ]);
       expect(page.sharingMix).toEqual([
         {name: 'Shared works total', value: 126, icon: 'layers'},
         {name: 'Racks share of shared works', value: 67, icon: 'space_dashboard'},
@@ -93,13 +100,14 @@ describe('ApplicationStatisticsService', () => {
       expect(page.coverage[0].title).toContain('live');
       expect(page.coverage[1].description).toContain('at least 10 public shared works');
       expect(page.coverage[3].title).toContain('Participation rates are live');
+      expect(page.coverage[4].title).toContain('Patch-network rates are live');
       expect(page.derived).toEqual([
         {name: 'Modules per represented maker', value: 13, icon: 'rule'},
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
         {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
       ]);
-      expect(page.methodology.length).toBe(6);
-      expect(page.interpretation).toContain('Normalized coverage rates');
+      expect(page.methodology.length).toBe(7);
+      expect(page.interpretation).toContain('patch-network density');
       done();
     });
   });
@@ -112,6 +120,7 @@ describe('ApplicationStatisticsService', () => {
       publicRacks: 5,
       publicRackAuthors: 2,
       publicPatches: 4,
+      publicPatchConnections: 8,
       publicPatchAuthors: 1
     });
 
@@ -120,12 +129,16 @@ describe('ApplicationStatisticsService', () => {
       expect(page.participation).toEqual([
         {name: 'Public profiles', value: 8, icon: 'person_search'}
       ]);
+      expect(page.patchNetwork).toEqual([
+        {name: 'Saved connections total', value: 8, icon: 'linear_scale'}
+      ]);
       expect(page.sharingMix).toEqual([]);
       expect(page.derived).toEqual([]);
       expect(page.coverage[1].title).toContain('currently suppressed');
       expect(page.coverage[2].description).toContain('fake KPI');
       expect(page.coverage[3].description).toContain('adoption as a rate');
-      expect(page.methodology[5].description).toContain('rounded to whole numbers');
+      expect(page.coverage[4].description).toContain('tiny-sample curiosity');
+      expect(page.methodology[6].description).toContain('specific patch graph');
       done();
     });
   });

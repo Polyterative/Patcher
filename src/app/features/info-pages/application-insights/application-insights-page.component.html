@@ -51,6 +51,14 @@
         ></app-statistics>
 
         <app-statistics
+          title="Patch network patterns"
+          icon="share"
+          cardClass="home-insights-card"
+          [statistics]="page.patchNetwork"
+          emptyMessage="Patch-network signals appear once enough public patches with saved connections exist to describe connection density without over-reading a tiny graph sample."
+        ></app-statistics>
+
+        <app-statistics
           title="Sharing mix"
           icon="pie_chart"
           cardClass="home-insights-card"
