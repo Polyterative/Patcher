@@ -99,6 +99,7 @@ export class ApplicationStatisticsService extends SubManager {
   private mapPage(statistics: PublicApplicationStatistics): ApplicationInsightsPage {
     const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
     const sharedWorks = statistics.publicRacks + statistics.publicPatches;
+    const recentSharedWorks = statistics.publicRacksUpdatedLast30Days + statistics.publicPatchesUpdatedLast30Days;
     const roundRatio = (numerator: number, denominator: number): number =>
       denominator > 0 ? Math.round(numerator / denominator) : 0;
     const buildSignalStatistic = (
@@ -164,8 +165,10 @@ export class ApplicationStatisticsService extends SubManager {
         name: 'Shared patches updated last 30 days',
         value: statistics.publicPatchesUpdatedLast30Days,
         icon: 'cable'
-      }
-    ];
+      },
+      buildSignalStatistic('Modules updated last 30 days per 100 public modules', statistics.publicModulesUpdatedLast30Days, statistics.publicModules, 'monitoring', 100, 5, 25),
+      buildSignalStatistic('Shared works updated last 30 days per 100 shared works', recentSharedWorks, sharedWorks, 'timelapse', 100, 5, 10)
+    ].filter((value): value is ApplicationInsightStatistic => !!value);
     const patchNetwork = [
       ...(statistics.publicPatchConnections > 0
         ? [{
@@ -245,6 +248,12 @@ export class ApplicationStatisticsService extends SubManager {
             : 'Participation rates stay hidden until there are enough public profiles and enough sharing authors to describe adoption as a rate instead of a tiny-sample anecdote.'
         },
         {
+          title: freshness.length > 3 ? 'Freshness rates are live' : 'Freshness rates are currently suppressed',
+          description: freshness.length > 3
+            ? 'Recent-activity rates are visible because there is enough public footprint and enough last-30-day movement to normalize freshness instead of leaving it as raw counts alone.'
+            : 'Freshness rates stay hidden until there is enough public footprint and enough recent movement to read 30-day activity as a directional rate instead of a tiny-sample burst.'
+        },
+        {
           title: patchNetwork.length > 1 ? 'Patch-network rates are live' : 'Patch-network rates are currently suppressed',
           description: patchNetwork.length > 1
             ? 'Patch-network density signals are visible because there are enough saved public connections to describe how interconnected shared patches are without over-reading only a few cables.'
@@ -252,7 +261,7 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Freshness counts, normalized coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Freshness counts, normalized freshness rates, coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
       methodology: [
         {
@@ -294,6 +303,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'schedule',
           title: 'Freshness uses recent updates',
           description: 'Freshness counts use trailing 30-day `updated` activity on public modules, racks, and connected patches. They describe recent movement, not publication order or long-term trends.'
+        },
+        {
+          icon: 'timelapse',
+          title: 'Freshness rates are normalized',
+          description: 'Where recent-update counts would be hard to compare across a growing library, this page can scale them per 100 public modules or shared works once the sample is large enough to support a directional rate.'
         }
       ]
     };
