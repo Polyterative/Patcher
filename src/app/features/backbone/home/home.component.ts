@@ -160,8 +160,8 @@ export class HomeComponent extends SubManager {
   readonly communityLinks: HomeLinkPill[] = [
     {
       icon: 'insights',
-      label: 'Public patch browser',
-      href: '/patches/browser'
+      label: 'Explore insights',
+      href: '/insights'
     },
     {
       icon: 'view_module',
@@ -172,6 +172,11 @@ export class HomeComponent extends SubManager {
       icon: 'dashboard_customize',
       label: 'Rack browser',
       href: '/racks/browser'
+    },
+    {
+      icon: 'cable',
+      label: 'Patch browser',
+      href: '/patches/browser'
     },
   ];
   readonly applicationInsights$!: Observable<ApplicationInsightsTeaser>;

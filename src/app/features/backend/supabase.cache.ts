@@ -31,6 +31,7 @@ export type CachedEntity =
   | 'modules'
   | 'module_flags'
   | 'manufacturers'
+  | 'profiles'
   | 'currentUserModules'
   | 'moduleWithId'
   | 'patchConnections'

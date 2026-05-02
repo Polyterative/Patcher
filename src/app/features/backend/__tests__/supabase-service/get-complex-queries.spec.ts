@@ -110,19 +110,31 @@ describe('SupabaseService - get complex queries', () => {
   });
 
   describe('GET.applicationStatistics', () => {
-    it('should return public-safe aggregate counts for modules, racks, and connected patches', (done) => {
+    it('should return public-safe aggregate counts for modules, manufacturers, shared racks/patches, and public authors', (done) => {
       const modulesQuery = chainable({data: [], count: 150, error: null});
+      const manufacturersQuery = chainable({data: [], count: 28, error: null});
       const racksQuery = chainable({data: [], count: 24, error: null});
+      const rackAuthorsQuery = chainable({data: [], count: 12, error: null});
       const patchesQuery = chainable({data: [], count: 11, error: null});
+      const patchAuthorsQuery = chainable({data: [], count: 7, error: null});
 
       const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
+      const manufacturersFilterSpy = spyOn(manufacturersQuery, 'filter').and.callThrough();
       const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
+      const rackAuthorsFilterSpy = spyOn(rackAuthorsQuery, 'filter').and.callThrough();
       const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
+      const patchAuthorsFilterSpy = spyOn(patchAuthorsQuery, 'filter').and.callThrough();
+      const manufacturersSelectSpy = spyOn(manufacturersQuery, 'select').and.callThrough();
+      const rackAuthorsSelectSpy = spyOn(rackAuthorsQuery, 'select').and.callThrough();
       const patchesSelectSpy = spyOn(patchesQuery, 'select').and.callThrough();
+      const patchAuthorsSelectSpy = spyOn(patchAuthorsQuery, 'select').and.callThrough();
+      let profilesCallCount = 0;
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'modules') return modulesQuery;
+        if (table === 'manufacturers') return manufacturersQuery;
         if (table === 'racks') return racksQuery;
+        if (table === 'profiles') return profilesCallCount++ === 0 ? rackAuthorsQuery : patchAuthorsQuery;
         return patchesQuery;
       });
 
@@ -130,14 +142,32 @@ describe('SupabaseService - get complex queries', () => {
         next: (result: any) => {
           expect(result).toEqual({
             publicModules: 150,
+            publicManufacturers: 28,
             publicRacks: 24,
-            publicPatches: 11
+            publicRackAuthors: 12,
+            publicPatches: 11,
+            publicPatchAuthors: 7
           });
           expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(manufacturersFilterSpy).toHaveBeenCalledWith('public_modules.public', 'eq', true);
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(rackAuthorsFilterSpy).toHaveBeenCalledWith('public_racks.public', 'eq', true);
           expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(patchAuthorsFilterSpy).toHaveBeenCalledWith('public_patches.public', 'eq', true);
+          expect(manufacturersSelectSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/public_modules:modules!inner/),
+            {count: 'exact', head: true}
+          );
+          expect(rackAuthorsSelectSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/public_racks:racks!inner/),
+            {count: 'exact', head: true}
+          );
           expect(patchesSelectSpy).toHaveBeenCalledWith(
             jasmine.stringMatching(/patch_connections!inner/),
+            {count: 'exact', head: true}
+          );
+          expect(patchAuthorsSelectSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/public_patches:patches!inner/),
             {count: 'exact', head: true}
           );
           done();

@@ -21,7 +21,10 @@ import {
 import { Database } from 'src/backend/database.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { DbPaths } from './DatabaseStrings';
-import { cacheBuster$ } from './supabase.cache';
+import {
+  cacheBuster$,
+  cacheBust
+} from './supabase.cache';
 import {
   OAuthProvider,
   RichUserModel,
@@ -368,6 +371,7 @@ export function createAuthNamespace(
 
           return void 0;
         }),
+        cacheBust(['profiles']),
         catchError(error => {
           console.error('Profile visibility update failed:', error);
           return throwError(() => error);
