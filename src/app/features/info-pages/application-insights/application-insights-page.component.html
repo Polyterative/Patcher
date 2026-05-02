@@ -1,31 +1,68 @@
-@if (page$ | async; as page) {
+@if (vm$ | async; as vm) {
   <lib-screen-wrapper maxSize="110rem">
-    <div class="insights-page">
-      <lib-hero-content-card
-        titleBig="Insights"
-        icon="insights"
-        description="Public catalogue composition, update velocity, format mix, and sharing activity across the last 30 days."
-      >
-        <p class="hero-summary">{{ page.heroSummary }}</p>
-        <div class="hero-highlights">
-          @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
-            <div class="insight-chip" [class.insight-chip--featured]="i === 0">
-              <mat-icon>{{ highlight.icon }}</mat-icon>
-              <div>
-                <span class="insight-chip__label">{{ highlight.label }}</span>
-                <strong>{{ highlight.value }}</strong>
+    @if (vm.isLoading) {
+      <div class="insights-loader">
+        <lib-hero-content-card
+          titleBig="Insights"
+          icon="insights"
+          description="Loading the public catalogue snapshot, update velocity, and sharing analysis."
+        >
+          <div class="insights-loader__body">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <p class="insights-loader__label">Preparing the insights view</p>
+            <div class="insights-loader__chips">
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>view_module</mat-icon>
+                <div>
+                  <span class="insight-chip__label">Public catalogue</span>
+                  <strong>Loading</strong>
+                </div>
+              </div>
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>timeline</mat-icon>
+                <div>
+                  <span class="insight-chip__label">Recent activity</span>
+                  <strong>Loading</strong>
+                </div>
+              </div>
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>pie_chart</mat-icon>
+                <div>
+                  <span class="insight-chip__label">Sharing layer</span>
+                  <strong>Loading</strong>
+                </div>
               </div>
             </div>
-          }
-        </div>
+          </div>
+        </lib-hero-content-card>
+      </div>
+    } @else if (vm.page; as page) {
+      <div class="insights-page">
+        <lib-hero-content-card
+          titleBig="Insights"
+          icon="insights"
+          description="Public catalogue composition, update velocity, format mix, and sharing activity across the last 30 days."
+        >
+          <p class="hero-summary">{{ page.heroSummary }}</p>
+          <div class="hero-highlights">
+            @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
+              <div class="insight-chip" [class.insight-chip--featured]="i === 0">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
 
-        <div class="hero-actions">
-          <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
-          <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
-        </div>
-      </lib-hero-content-card>
+          <div class="hero-actions">
+            <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
+            <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
+          </div>
+        </lib-hero-content-card>
 
-      <div class="insights-grid">
+        <div class="insights-grid">
         <lib-hero-content-card
           titleNormal="Library now"
           icon="analytics"
@@ -589,7 +626,8 @@
             }
           </div>
         </lib-hero-content-card>
+        </div>
       </div>
-    </div>
+    }
   </lib-screen-wrapper>
 }
