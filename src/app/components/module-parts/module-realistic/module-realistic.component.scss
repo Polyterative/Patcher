@@ -37,8 +37,8 @@
   box-shadow: none;
 }
 
-@mixin power-analysis-overlay-tone($background, $border-color: null) {
-  background: $background;
+@mixin power-analysis-overlay-tone($start-color, $end-color, $border-color: null) {
+  background: linear-gradient(180deg, $start-color 0%, $end-color 100%);
 
   @if $border-color != null {
     box-shadow: inset 0 0 0 1px $border-color;
@@ -48,23 +48,43 @@
 }
 
 .powerAnalysisModule--shadow .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(76, 109, 145, 0.18), rgba(55, 81, 110, 0.12));
+  @include power-analysis-overlay-tone(
+    rgba(92, 126, 170, 0.14),
+    rgba(74, 108, 150, 0.22),
+    rgba(55, 81, 110, 0.12)
+  );
 }
 
 .powerAnalysisModule--smoke .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(84, 120, 160, 0.26), rgba(58, 91, 129, 0.16));
+  @include power-analysis-overlay-tone(
+    rgba(91, 129, 178, 0.18),
+    rgba(76, 117, 165, 0.3),
+    rgba(58, 91, 129, 0.16)
+  );
 }
 
 .powerAnalysisModule--signal .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(82, 136, 194, 0.34), rgba(48, 96, 149, 0.18));
+  @include power-analysis-overlay-tone(
+    rgba(83, 137, 196, 0.24),
+    rgba(67, 120, 183, 0.38),
+    rgba(48, 96, 149, 0.18)
+  );
 }
 
 .powerAnalysisModule--glow .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(221, 184, 92, 0.38), rgba(173, 129, 37, 0.22));
+  @include power-analysis-overlay-tone(
+    rgba(79, 145, 214, 0.3),
+    rgba(63, 128, 201, 0.46),
+    rgba(52, 103, 166, 0.24)
+  );
 }
 
 .powerAnalysisModule--peak .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(240, 181, 46, 0.52), rgba(194, 135, 21, 0.34));
+  @include power-analysis-overlay-tone(
+    rgba(72, 150, 226, 0.38),
+    rgba(56, 133, 214, 0.58),
+    rgba(43, 96, 166, 0.3)
+  );
 }
 
 .powerAnalysisModule--missing .powerAnalysisOverlay {
@@ -79,7 +99,11 @@
 }
 
 .powerAnalysisModule--blank .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(rgba(143, 161, 181, 0.24), rgba(104, 122, 145, 0.24));
+  @include power-analysis-overlay-tone(
+    rgba(143, 161, 181, 0.18),
+    rgba(118, 138, 163, 0.28),
+    rgba(104, 122, 145, 0.24)
+  );
 }
 
 .overlayActions {
