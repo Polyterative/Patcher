@@ -69,6 +69,13 @@ export interface PublicApplicationStatistics {
   publicPatchesUpdatedLast30Days: number;
 }
 
+export interface PublicApplicationActivityPoint {
+  date: string;
+  modules: number;
+  racks: number;
+  patches: number;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
@@ -122,7 +129,90 @@ export class SupabaseQueriesService {
   }
 
   private getLastThirtyDaysIso(): string {
-    return new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    return this.getLastNDaysStartDate(30).toISOString();
+  }
+
+  private getNow(): Date {
+    return new Date();
+  }
+
+  private getLastNDaysStartDate(days: number): Date {
+    const startDate = this.getNow();
+    startDate.setUTCHours(0, 0, 0, 0);
+    startDate.setUTCDate(startDate.getUTCDate() - Math.max(days - 1, 0));
+    return startDate;
+  }
+
+  private async fetchAllUpdatedRows(
+    table:
+      | typeof DbPaths.modules
+      | typeof DbPaths.racks
+      | typeof DbPaths.patches,
+    buildQuery: (query: any) => any
+  ): Promise<{data: {updated: string}[]; error: any}> {
+    const pageSize = 1000;
+    const rows: {updated: string}[] = [];
+    let offset = 0;
+
+    while (true) {
+      const response = await buildQuery(this.supabase.from(table))
+        .order('updated', {ascending: true})
+        .order('id', {ascending: true})
+        .range(offset, offset + pageSize - 1);
+
+      if (response.error) {
+        return {data: [], error: response.error};
+      }
+
+      const pageRows = (response.data ?? [])
+        .map((row: any) => ({updated: row.updated}))
+        .filter((row: {updated: string}) => !!row.updated);
+
+      rows.push(...pageRows);
+
+      if (pageRows.length < pageSize) {
+        break;
+      }
+      offset += pageSize;
+    }
+
+    return {data: rows, error: null};
+  }
+
+  private buildPublicActivitySeries(
+    days: number,
+    startDate: Date,
+    modules: {updated: string}[],
+    racks: {updated: string}[],
+    patches: {updated: string}[]
+  ): PublicApplicationActivityPoint[] {
+    const points = Array.from({length: days}, (_, index) => {
+      const pointDate = new Date(startDate);
+      pointDate.setUTCDate(startDate.getUTCDate() + index);
+      return {
+        date: pointDate.toISOString().slice(0, 10),
+        modules: 0,
+        racks: 0,
+        patches: 0
+      };
+    });
+
+    const pointsByDate = new Map(points.map((point) => [point.date, point]));
+    const increment = (rows: {updated: string}[], key: 'modules' | 'racks' | 'patches') => {
+      rows.forEach((row) => {
+        const dateKey = row.updated.slice(0, 10);
+        const point = pointsByDate.get(dateKey);
+        if (point) {
+          point[key] += 1;
+        }
+      });
+    };
+
+    increment(modules, 'modules');
+    increment(racks, 'racks');
+    increment(patches, 'patches');
+
+    return points;
   }
 
   private stripPublicAuthorGate<T>(response: any) {
@@ -646,6 +736,63 @@ export class SupabaseQueriesService {
           .filter('public_patches.public', 'eq', true)
       )
     });
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules')
+      || x.includes('patches')
+      || x.includes('profiles')
+      || x.includes('rackWithId')
+      || x.includes('racksMinimal')
+    )),
+    maxCacheCount: 20,
+  })
+  getApplicationActivitySeries(days = 30): Observable<PublicApplicationActivityPoint[]> {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+    const connectedPatchJoin = 'patch_connections!inner(patchid)';
+    const startDate = this.getLastNDaysStartDate(days);
+    const startIso = startDate.toISOString();
+
+    return rxFrom((async () => {
+      const [modulesResponse, racksResponse, patchesResponse] = await Promise.all([
+        this.fetchAllUpdatedRows(
+          DbPaths.modules,
+          query => query
+            .select('id,updated')
+            .filter('public', 'eq', true)
+            .filter('updated', 'gte', startIso)
+        ),
+        this.fetchAllUpdatedRows(
+          DbPaths.racks,
+          query => query
+            .select(`id,updated,${ publicAuthorGateJoin }`)
+            .filter('public', 'eq', true)
+            .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+            .filter('updated', 'gte', startIso)
+        ),
+        this.fetchAllUpdatedRows(
+          DbPaths.patches,
+          query => query
+            .select(`id,updated,${ connectedPatchJoin },${ publicAuthorGateJoin }`)
+            .filter('public', 'eq', true)
+            .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+            .filter('updated', 'gte', startIso)
+        )
+      ]);
+
+      if (modulesResponse.error) { throw modulesResponse.error; }
+      if (racksResponse.error) { throw racksResponse.error; }
+      if (patchesResponse.error) { throw patchesResponse.error; }
+
+      return this.buildPublicActivitySeries(
+        days,
+        startDate,
+        modulesResponse.data,
+        racksResponse.data,
+        patchesResponse.data
+      );
+    })());
   }
   
   @Cacheable({

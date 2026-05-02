@@ -160,7 +160,7 @@ export class HomeComponent extends SubManager {
   readonly communityLinks: HomeLinkPill[] = [
     {
       icon: 'insights',
-      label: 'Explore insights',
+      label: 'Open insights',
       href: '/insights'
     },
     {
@@ -180,9 +180,9 @@ export class HomeComponent extends SubManager {
     },
   ];
   readonly applicationInsights$!: Observable<ApplicationInsightsTeaser>;
-  readonly insightsTitle = 'See what the public library already holds';
+  readonly insightsTitle = 'Open the full insights page';
   readonly insightsDescription =
-    'Patcher is growing into a browsable map of real modular work, so the homepage can now show a small public-safe snapshot without turning into dashboard theater.';
+    'Start with the homepage snapshot, then jump into the dedicated insights page for the fuller read on catalogue growth, activity, and sharing patterns.';
   
   readonly userStories: HomeFounderNote[] = [
     {

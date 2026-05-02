@@ -144,6 +144,7 @@ export class SupabaseService extends SubManager {
       currentUserComments: this.queries.getCurrentUserComments.bind(this.queries),
       currentUserContributorStats: this.queries.getCurrentUserContributorStats.bind(this.queries),
       applicationStatistics: this.queries.getApplicationStatistics.bind(this.queries),
+      applicationActivitySeries: this.queries.getApplicationActivitySeries.bind(this.queries),
       patches: this.queries.getPatches.bind(this.queries),
       publicPatchWithId: this.queries.getPublicPatchWithId.bind(this.queries),
       publicUserContributorStats: this.queries.getPublicUserContributorStats.bind(this.queries),
@@ -194,6 +195,7 @@ export class SupabaseService extends SubManager {
     currentUserComments: typeof SupabaseQueriesService.prototype.getCurrentUserComments;
     currentUserContributorStats: typeof SupabaseQueriesService.prototype.getCurrentUserContributorStats;
     applicationStatistics: typeof SupabaseQueriesService.prototype.getApplicationStatistics;
+    applicationActivitySeries: typeof SupabaseQueriesService.prototype.getApplicationActivitySeries;
     patches: typeof SupabaseQueriesService.prototype.getPatches;
     publicPatchWithId: typeof SupabaseQueriesService.prototype.getPublicPatchWithId;
     publicUserContributorStats: typeof SupabaseQueriesService.prototype.getPublicUserContributorStats;

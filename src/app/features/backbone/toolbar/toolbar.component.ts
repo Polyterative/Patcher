@@ -61,6 +61,12 @@ export class ToolbarComponent extends SubManager {
       disabled: false
     },
     {
+      label:    'Insights',
+      route:    '/insights',
+      icon:     'insights',
+      disabled: false
+    },
+    {
       label:    'Manufacturers',
       route:    '/manufacturers/browser',
       icon:     'handyman',
