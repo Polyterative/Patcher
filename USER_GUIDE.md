@@ -155,6 +155,7 @@ Plan and visualize your Eurorack cases before you build them.
 - **Visual Layout**: See how modules fit together
 - **HP Calculation**: Automatically tracks remaining space
 - **Power Planning**: Monitor total power consumption
+- **Row-by-Row Power View**: Compare rail draw per row while planning distribution
 - **Module Organization**: Drag and drop to rearrange (visual planning)
 - **Export/Share**: Save images of your rack configuration
 
@@ -223,7 +224,7 @@ The **My Area** section is your personal workspace (requires login).
 
 - **Leave Space**: Don't fill every HP—leave room for cables and future additions
 - **Consider Ergonomics**: Place frequently-used modules where they're easy to reach
-- **Power Budget**: Keep some power headroom; don't max out your power supply
+- **Power Budget**: Keep some power headroom; use the rack totals and row-by-row breakdown together so no single row ends up overloaded
 - **Cable Access**: Think about how cables will route between modules
 
 ---
