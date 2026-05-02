@@ -59,11 +59,14 @@ export interface PublicApplicationStatistics {
   publicModules: number;
   publicManufacturers: number;
   publicProfiles: number;
+  publicModulesUpdatedLast30Days: number;
   publicRacks: number;
   publicRackAuthors: number;
+  publicRacksUpdatedLast30Days: number;
   publicPatches: number;
   publicPatchConnections: number;
   publicPatchAuthors: number;
+  publicPatchesUpdatedLast30Days: number;
 }
 
 type ModuleActivityRow = {
@@ -116,6 +119,10 @@ export class SupabaseQueriesService {
       remapErrors(),
       map((result: any) => result.count ?? 0)
     );
+  }
+
+  private getLastThirtyDaysIso(): string {
+    return new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   }
 
   private stripPublicAuthorGate<T>(response: any) {
@@ -559,6 +566,7 @@ export class SupabaseQueriesService {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connectedPatchJoin = 'patch_connections!inner(patchid)';
     const publicPatchJoin = `patch:patches!patch_connections_patchid_fkey!inner(id, ${ publicAuthorGateJoin })`;
+    const lastThirtyDaysIso = this.getLastThirtyDaysIso();
 
     return forkJoin({
       publicModules: this.countRows(
@@ -566,6 +574,13 @@ export class SupabaseQueriesService {
         query => query
           .select('id', {count: 'exact', head: true})
           .filter('public', 'eq', true)
+      ),
+      publicModulesUpdatedLast30Days: this.countRows(
+        DbPaths.modules,
+        query => query
+          .select('id', {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter('updated', 'gte', lastThirtyDaysIso)
       ),
       publicManufacturers: this.countRows(
         DbPaths.manufacturers,
@@ -586,6 +601,14 @@ export class SupabaseQueriesService {
           .filter('public', 'eq', true)
           .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       ),
+      publicRacksUpdatedLast30Days: this.countRows(
+        DbPaths.racks,
+        query => query
+          .select(`id, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+          .filter('updated', 'gte', lastThirtyDaysIso)
+      ),
       publicRackAuthors: this.countRows(
         DbPaths.profiles,
         query => query
@@ -599,6 +622,14 @@ export class SupabaseQueriesService {
           .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
           .filter('public', 'eq', true)
           .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+      ),
+      publicPatchesUpdatedLast30Days: this.countRows(
+        DbPaths.patches,
+        query => query
+          .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+          .filter('updated', 'gte', lastThirtyDaysIso)
       ),
       publicPatchConnections: this.countRows(
         DbPaths.patch_connections,
