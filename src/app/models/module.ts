@@ -57,9 +57,9 @@ export interface DbModule extends MinimalModule {
   isComplete: boolean;
   isApproved: boolean;
   isDIY: boolean;
-  powerPos12: number;
-  powerNeg12: number;
-  powerPos5: number;
+  powerPos12: number | null;
+  powerNeg12: number | null;
+  powerPos5: number | null;
   depth: number;
   weight: number;
 }

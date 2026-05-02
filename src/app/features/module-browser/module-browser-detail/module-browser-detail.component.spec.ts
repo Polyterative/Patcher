@@ -163,6 +163,30 @@ describe('ModuleBrowserDetailComponent', () => {
       powerPos5: 0
     });
   });
+
+  it('clamps null power rails to zero in dev helpers', () => {
+    const {component, dataService} = build();
+    const emitted: any[] = [];
+    dataService.changeModule$.subscribe(x => emitted.push(x));
+
+    component.clampDevNumericFields({
+      hp: 4,
+      depth: 12,
+      weight: 20,
+      powerPos12: null,
+      powerNeg12: null,
+      powerPos5: null
+    } as any);
+
+    expect(emitted[0]).toEqual({
+      hp: 4,
+      depth: 12,
+      weight: 20,
+      powerPos12: 0,
+      powerNeg12: 0,
+      powerPos5: 0
+    });
+  });
   
   it('guards editor close by confirmation when there are pending changes', () => {
     const {component, dataService} = build();

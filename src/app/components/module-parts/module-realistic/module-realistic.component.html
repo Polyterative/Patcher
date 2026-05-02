@@ -1,12 +1,15 @@
 <div [fxFlex]="data.hp+'rem'"
      [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem')}"
       class="col root"
+      [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
       [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
+      [matTooltip]="powerAnalysisMode ? powerAnalysisTooltip() : ''"
+      [matTooltipDisabled]="!powerAnalysisMode"
 >
   <div class="overlayActions">
     <ng-content></ng-content>
   </div>
-  @if (!showPanelImages) {
+  @if (shouldRenderTextSurface()) {
     <app-module-realistic-holeline [data]="data"
                                    class="hole-padding"
     >
@@ -43,13 +46,18 @@
     ></app-module-realistic-holeline>
   }
   
-  @if (showPanelImages) {
+  @if (shouldRenderPanelImageSurface()) {
     <app-module-part-image [data]="data"
                            [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
-                           [matTooltip]="buildPanelTooltip(data, selectedPanelId)"
+                           [matTooltip]="powerAnalysisMode ? '' : buildPanelTooltip(data, selectedPanelId)"
+                           [matTooltipDisabled]="powerAnalysisMode"
                            matTooltipClass="module-panel-tooltip"
     ></app-module-part-image>
   }
-
+  @if (powerAnalysisMode) {
+    <div class="powerAnalysisOverlay"
+         aria-hidden="true"
+    ></div>
+  }
 </div>
