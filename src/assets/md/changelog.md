@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.6.0](https://github.com/Polyterative/Patcher/compare/v5.5.1...v5.6.0) (2026-05-02)
+
+
+### Features
+
+* **profile:** add public contributor stats ([b33e14e](https://github.com/Polyterative/Patcher/commit/b33e14edd80c0e493dd446eac7a08a5e60384767))
+* **rack-editor:** enhance power analysis ([2d96c2e](https://github.com/Polyterative/Patcher/commit/2d96c2e0ed4814410bf86f88416a2534eb8795fc))
+* **rack-editor:** refine responsive controls and rack defaults ([257a0b5](https://github.com/Polyterative/Patcher/commit/257a0b5fd0562a801d6f060a84f54516d31354ae))
+* **rack:** add balance analysis panel ([881eec9](https://github.com/Polyterative/Patcher/commit/881eec90e023de8b79a2d178587f9b57e06375e0))
+* **rack:** refine balance analysis panel ([6bee5ca](https://github.com/Polyterative/Patcher/commit/6bee5ca72fea6fa0fcfa81f4de469b9c3a9f2b14))
+* **rack:** refine summary layout and comments ([24acc10](https://github.com/Polyterative/Patcher/commit/24acc103edf3e4d1b74c400be673a8a1306e5feb))
+* **stats:** unify detail stat cards ([637a562](https://github.com/Polyterative/Patcher/commit/637a562e36935409d3db22985131c85efcf675bf))
+* **user:** add contributor stats card ([b1b11ee](https://github.com/Polyterative/Patcher/commit/b1b11ee7c26e234244fa86ea36e1eadcc9b8f96f))
+
+
+### Bug Fixes
+
+* **module:** hide manual action in details ([5b29ca7](https://github.com/Polyterative/Patcher/commit/5b29ca7757f8efbd4167167059c30a9d9cb29b63))
+* **patch:** block ambiguous instance wiring ([1520c36](https://github.com/Polyterative/Patcher/commit/1520c36ce41fe415064840b41a9f210f14805289))
+* **rack-details:** refine summary analysis placement ([2c5a6cc](https://github.com/Polyterative/Patcher/commit/2c5a6ccb21513d4cd61558091bc2faa15833d5c4))
+* **rack-details:** refine summary layout breakpoints ([b94e701](https://github.com/Polyterative/Patcher/commit/b94e7010432713c840a5ff643ba40396b9171e93))
+* **rack:** align scaled rack viewport ([df94eea](https://github.com/Polyterative/Patcher/commit/df94eea36bcff6c49039b0345588c0b1e2c86c4f))
+* **rack:** compact balance panel on mobile ([7d46dd0](https://github.com/Polyterative/Patcher/commit/7d46dd0beea204690ecfc14baf201f99cdeeaaad))
+* **rack:** load module tags in rack details ([0b401cb](https://github.com/Polyterative/Patcher/commit/0b401cb4644d693c46643cd34144ddf65a4ce117))
+* **rack:** recognize legacy balance tags ([219b095](https://github.com/Polyterative/Patcher/commit/219b095b43dcfcaf91e0239a3d18a01ca21f8e7d))
+* **stats:** stabilize detail stat rendering ([76060d2](https://github.com/Polyterative/Patcher/commit/76060d21dc7f5eb8d0101c0cd67dd439b9b5403c))
+
 ### [5.5.1](https://github.com/Polyterative/Patcher/compare/v5.5.0...v5.5.1) (2026-04-29)
 
 
