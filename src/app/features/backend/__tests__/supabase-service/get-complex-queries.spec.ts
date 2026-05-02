@@ -386,6 +386,70 @@ describe('SupabaseService - get complex queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should continue paginating when Supabase returns a full 500-row page', (done) => {
+      const firstPage = Array.from({length: 500}, (_, index) => ({
+        id: index + 1,
+        manufacturerId: 1,
+        hp: 10,
+        updated: '2026-05-01T10:00:00.000Z',
+        manufacturer: {id: 1, name: 'Make Noise'},
+        standardMeta: {id: 1, name: '3U'}
+      }));
+      const secondPage = [
+        {
+          id: 501,
+          manufacturerId: 2,
+          hp: 14,
+          updated: '2026-05-01T11:00:00.000Z',
+          manufacturer: {id: 2, name: 'Intellijel'},
+          standardMeta: {id: 1, name: '3U'}
+        }
+      ];
+
+      const pagedQuery: any = {};
+      let lastRangeStart = 0;
+
+      pagedQuery.select = () => pagedQuery;
+      pagedQuery.filter = () => pagedQuery;
+      pagedQuery.order = () => pagedQuery;
+      pagedQuery.range = (start: number) => {
+        lastRangeStart = start;
+        return Promise.resolve({
+          data: start === 0 ? firstPage : secondPage,
+          error: null
+        });
+      };
+
+      spyOn(supabaseClient, 'from').and.returnValue(pagedQuery);
+
+      service.GET.applicationModuleInsights().subscribe({
+        next: (result: any) => {
+          expect(result.topManufacturers[0]).toEqual({
+            label: 'Make Noise',
+            count: 500,
+            detail: '500 public modules'
+          });
+          expect(result.topManufacturers[1]).toEqual({
+            label: 'Intellijel',
+            count: 1,
+            detail: '1 public modules'
+          });
+          expect(result.freshnessWindows).toEqual([
+            {label: 'Updated in 7 days', count: 501, detail: '501 public modules updated in the last week'},
+            {label: 'Updated in 30 days', count: 501, detail: '501 public modules updated in the last month'},
+            {label: 'Updated in 90 days', count: 501, detail: '501 public modules updated in the last quarter'},
+            {label: 'Updated in 365 days', count: 501, detail: '501 public modules updated in the last year'}
+          ]);
+          expect(lastRangeStart).toBe(500);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
   });
   
   describe('get.modulesBySameManufacturer', () => {
