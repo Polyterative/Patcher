@@ -23,7 +23,14 @@ export class HomeExperienceHeroComponent {
     }
   };
   
-  getSubtitleSegments() {
-    return buildHomeTextSegments(this.content.subtitle, this.content.subtitleKeywords ?? []);
+  getSubtitleLines() {
+    return this.content.subtitle
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+  }
+
+  getSubtitleSegments(line: string) {
+    return buildHomeTextSegments(line, this.content.subtitleKeywords ?? []);
   }
 }
