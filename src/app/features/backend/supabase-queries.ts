@@ -57,8 +57,11 @@ export interface PublicUserContributorStats {
 
 export interface PublicApplicationStatistics {
   publicModules: number;
+  publicManufacturers: number;
   publicRacks: number;
+  publicRackAuthors: number;
   publicPatches: number;
+  publicPatchAuthors: number;
 }
 
 type ModuleActivityRow = {
@@ -98,6 +101,8 @@ export class SupabaseQueriesService {
       | typeof DbPaths.modules
       | typeof DbPaths.comments
       | typeof DbPaths.module_flags
+      | typeof DbPaths.manufacturers
+      | typeof DbPaths.profiles
       | typeof DbPaths.racks
       | typeof DbPaths.patches,
     applyFilters: (query: any) => any
@@ -270,7 +275,7 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: longCacheTime,
-    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches'))),
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches') || x.includes('profiles'))),
     maxCacheCount: 50,
   })
   getPublicUserPatchesPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
@@ -310,7 +315,7 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: longCacheTime,
-    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('racksMinimal'))),
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('racksMinimal') || x.includes('profiles'))),
     maxCacheCount: 50,
   })
   getPublicUserRacksPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
@@ -468,7 +473,7 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: defaultCacheTime,
-    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules') || x.includes('profiles'))),
     maxCacheCount: 50,
   })
   getPublicUserContributorStats(authorId: string): Observable<PublicUserContributorStats> {
@@ -491,7 +496,9 @@ export class SupabaseQueriesService {
     maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x =>
       x.includes('modules')
+      || x.includes('manufacturers')
       || x.includes('patches')
+      || x.includes('profiles')
       || x.includes('rackWithId')
       || x.includes('racksMinimal')
     )),
@@ -508,6 +515,12 @@ export class SupabaseQueriesService {
           .select('id', {count: 'exact', head: true})
           .filter('public', 'eq', true)
       ),
+      publicManufacturers: this.countRows(
+        DbPaths.manufacturers,
+        query => query
+          .select('id, public_modules:modules!inner(id)', {count: 'exact', head: true})
+          .filter('public_modules.public', 'eq', true)
+      ),
       publicRacks: this.countRows(
         DbPaths.racks,
         query => query
@@ -515,12 +528,26 @@ export class SupabaseQueriesService {
           .filter('public', 'eq', true)
           .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       ),
+      publicRackAuthors: this.countRows(
+        DbPaths.profiles,
+        query => query
+          .select('id, public_racks:racks!inner(id)', {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter('public_racks.public', 'eq', true)
+      ),
       publicPatches: this.countRows(
         DbPaths.patches,
         query => query
           .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
           .filter('public', 'eq', true)
           .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+      ),
+      publicPatchAuthors: this.countRows(
+        DbPaths.profiles,
+        query => query
+          .select('id, public_patches:patches!inner(id, patch_connections!inner(patchid))', {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter('public_patches.public', 'eq', true)
       )
     });
   }

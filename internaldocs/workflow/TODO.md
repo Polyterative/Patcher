@@ -127,13 +127,6 @@ yet.
 
 ---
 
-**Rack-local HP override status:** UI intentionally removed. Do not treat this as approved product scope.
-
-- [ ] Figure out why rack-local HP override was added and whether any underlying plumbing should remain at all
-- [ ] Keep rack editor UI entry points disabled until there is explicit product approval
-
----
-
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 ---
@@ -197,19 +190,14 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
-#### LOW: Application Statistics & Data Insights — Dedicated Surface
+#### LOW: Application Statistics & Data Insights — Expansion
 
-**Why:** The home teaser now ships a public-safe snapshot, but there is still room for a fuller insight surface once public-profile volume is high enough to support more exploration without thin-sample noise.
+**Why:** The first dedicated insights page is now live, but there is still room for richer public-safe exploration once there is enough signal to support more specific patterns without thin-sample noise.
 
-- [ ] Decide the smallest reusable chart/stat vocabulary needed beyond the shared statistics card
-- [ ] Add a dedicated insights surface for catalogue health, community activity, rack composition, and other public-safe patterns
-- [ ] Define freshness / coverage / suppression rules for multi-metric public insight blocks
-
----
-
-- [ ] Structural: carry forward Balance Analysis rules — advisory tone, plain-language interpretation, visible methodology, and confidence/coverage messaging when signal is partial
-- [ ] Structural: ensure the public surface avoids ranking people, drill-down leakage, or overlapping filters that expose tiny cohorts
-- [ ] Polish: decide which deeper analysis directions are worth later investment (co-occurrence, trend lines, rare-module discovery, archetype clustering) and require baseline comparators / thresholds before launch
+- [ ] Decide the smallest reusable chart/stat vocabulary worth adding beyond the current stat-card page
+- [ ] Add deeper public-safe blocks for catalogue health, rack composition, and patch/network patterns only where the sample is credible
+- [ ] Define stronger freshness / coverage / suppression language for any richer multi-metric insight sections
+- [ ] Decide which deeper analysis directions are worth later investment (co-occurrence, trends, rare-module discovery, archetypes)
 
 ---
 
