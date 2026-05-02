@@ -192,7 +192,7 @@ important notices without turning Patcher into a blog platform.
 
 #### LOW: Application Statistics & Data Insights — Expansion
 
-**Why:** The first dedicated insights page is now live, but there is still room for richer public-safe exploration once there is enough signal to support more specific patterns without thin-sample noise.
+**Why:** The insights page now covers headline counts and rounded derived signals, but there is still room for richer public-safe exploration once there is enough signal to support more specific patterns without thin-sample noise.
 
 - [ ] Decide the smallest reusable chart/stat vocabulary worth adding beyond the current stat-card page
 - [ ] Add deeper public-safe blocks for catalogue health, rack composition, and patch/network patterns only where the sample is credible
