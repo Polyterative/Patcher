@@ -84,7 +84,7 @@
 - [x] define objective verification criteria and rejection rules
 - [x] define dormancy, freeze, revocation, and reclaim path
 - [x] define manufacturer-owned fields vs shared catalogue fields
-- [ ] convert these rules into claim-flow implementation tasks
+- [x] convert these rules into claim-flow implementation tasks
 
 ### Layer 2 — Structural
 
@@ -127,6 +127,14 @@ MVP semantics:
 - a user can hold multiple manufacturer claims only after separate manual approvals
 - if a verified row already exists, the CTA becomes **Request ownership review** rather than opening a parallel self-serve claim flow
 - all verified edits should cache-bust manufacturer detail reads and keep auditability possible later
+
+#### Claim-flow implementation tasks
+
+1. Add the minimal `manufacturer_accounts` table shape to generated types plus backend table registration.
+2. Add one read path (`get.manufacturerAccountForUser()`) and one create path (`add.manufacturerAccountClaim()`), both scoped to the current manufacturer detail surface.
+3. Add manufacturer-page CTA states for **Claim this page**, **Claim pending review**, and **Request ownership review**.
+4. Limit the first verified edit surface to official profile fields, MSRP, and official support/manual/store links.
+5. Keep shared catalogue edits review-gated and add targeted coverage for claim-state UI plus verified-field boundaries.
 
 #### Known implementation blocker
 
