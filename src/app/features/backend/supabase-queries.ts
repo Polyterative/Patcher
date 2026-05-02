@@ -337,6 +337,28 @@ export class SupabaseQueriesService {
 
   @Cacheable({
     maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId') || x.includes('profiles'))),
+    maxCacheCount: 50,
+  })
+  getPublicRackWithId(id: number, columns = '*') {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
+    return rxFrom(
+      this.supabase.from(DbPaths.racks)
+        .select(`${ columns }, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`)
+        .filter('id', 'eq', id)
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map(response => this.stripPublicAuthorGate<Rack>(response))
+      );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
     cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('rackWithId'))),
     maxCacheCount: 50,
   })
@@ -494,6 +516,28 @@ export class SupabaseQueriesService {
     ).pipe(
       map((approvedPublicModules) => ({approvedPublicModules}))
     );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('patches') || x.includes('profiles'))),
+    maxCacheCount: 50,
+  })
+  getPublicPatchWithId(id: number, columns = '*') {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+
+    return rxFrom(
+      this.supabase.from(DbPaths.patches)
+        .select(`${ columns }, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`)
+        .filter('id', 'eq', id)
+        .filter('public', 'eq', true)
+        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .single()
+    )
+      .pipe(
+        remapErrors(),
+        map(response => this.stripPublicAuthorGate<Patch>(response))
+      );
   }
 
   @Cacheable({

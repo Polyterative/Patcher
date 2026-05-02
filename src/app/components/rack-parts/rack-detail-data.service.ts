@@ -62,6 +62,7 @@ function cloneRackData<T>(value: T): T {
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
+  private usePublicDetailReads = false;
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
   deleteRack$ = new Subject<RackMinimal>();
@@ -395,7 +396,9 @@ export class RackDetailDataService extends SubManager {
     this.updateSingleRackData$
       .pipe(
         // tap(x => this.singleRackData$.next(undefined)),
-        switchMap(x => this.backend.GET.rackWithId(x)),
+        switchMap(x => this.usePublicDetailReads
+          ? this.backend.GET.publicRackWithId(x)
+          : this.backend.GET.rackWithId(x)),
         takeUntil(this.destroy$),
       )
       .subscribe(x => this.singleRackData$.next(x.data));
@@ -667,6 +670,10 @@ export class RackDetailDataService extends SubManager {
     )
       .subscribe(([rows]) => this.rackStatistics$.next(this.buildRackStatistics(rows)));
     
+  }
+
+  setPublicDetailMode(enabled: boolean) {
+    this.usePublicDetailReads = enabled;
   }
   
   private buildRackStatistics(rows: RackedModule[][]): {

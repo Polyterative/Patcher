@@ -49,6 +49,24 @@ describe('SupabaseService - GET cached delegates', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('GET.publicRackWithId', () => {
+    it('should return rack data for the given id', (done) => {
+      const mockRack = {data: {id: 8, name: 'Public Rack'}, error: null};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockRack));
+
+      service.GET.publicRackWithId(8).subscribe({
+        next: (result: any) => {
+          expect(result.data.id).toBe(8);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
   
   describe('GET.comments', () => {
     it('should return comments for the given entity', (done) => {
@@ -211,6 +229,24 @@ describe('SupabaseService - GET cached delegates', () => {
       service.GET.patches(0, 10, 'Ambient').subscribe({
         next: () => {
           expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('ambient'));
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
+  describe('GET.publicPatchWithId', () => {
+    it('should return patch data for the given id', (done) => {
+      const mockPatch = {data: {id: 3, name: 'Public Patch'}, error: null};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable(mockPatch));
+
+      service.GET.publicPatchWithId(3).subscribe({
+        next: (result: any) => {
+          expect(result.data.id).toBe(3);
           done();
         },
         error: (err) => {
