@@ -8,64 +8,104 @@
 
   <div class="col gap0 " #screen id="screen" [style.width]="rackData.hp + 'rem'">
     @for (row of rowedRackedModules; track row; let rowId = $index) {
-      <div class="row"
-           [class.row-bg]="!(row|hasUnrackedModules)"
-           [matBadge]="row.length === 0 ? undefined : (rackDetailDataService.showModuleCounters$ | async) ? row.length : undefined"
-           matBadgePosition="above after"
-           cdkDropList
-           cdkDropListOrientation="horizontal"
-           (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
-      >
-        @for (rackedModule of row; track rackedModule; let i = $index) {
-          <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
-                                [data]="rackedModule|mapToModule"
-                                [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
-                                [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                class="module"
-                                cdkDrag
-                                [cdkDragData]="rackedModule"
-                                [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
-                                (mouseenter)="setHoveredModule(rackedModule)"
-                                (mouseleave)="clearHoveredModule(rackedModule)"
-                                (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-          >
-            @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser) {
-              <div class="hpIndicator"
-                   (mousedown)="$event.stopPropagation()"
-              >
-                {{ effectiveHp(rackedModule) }}HP
+      <div class="rackRowShell"
+           #rowSurface
+           (mouseenter)="setHoveredRow(rowId, rowSurface)"
+           (mouseleave)="clearHoveredRow(rowId)">
+        @if (shouldShowRowPowerPanel(rowId, ((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false))) {
+          @if (rowPowerBreakdownAt(rowId); as rowPower) {
+            <div class="rowPowerPanel"
+                 [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
+              <div class="rowPowerPanel__header">
+                <div class="rowPowerPanel__titleGroup">
+                  <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
+                  <span class="rowPowerPanel__title">{{ rowPower.moduleCount }} module{{ rowPower.moduleCount === 1 ? '' : 's' }}</span>
+                </div>
+                <span class="rowPowerPanel__badge">
+                  {{ row.length }} placed
+                </span>
               </div>
-            }
-            <div class="moduleHoverStats"
-                 [class.moduleHoverStats--visible]="isHoveredModule(rackedModule)"
-                 (mousedown)="$event.stopPropagation()"
+              <div class="rowPowerPanel__rails">
+                <div class="rowPowerPanel__rail">
+                  <span class="rowPowerPanel__railLabel">+12V</span>
+                  <span class="rowPowerPanel__railValue">{{ rowPower.powerPos12 }}mA</span>
+                </div>
+                <div class="rowPowerPanel__rail">
+                  <span class="rowPowerPanel__railLabel">-12V</span>
+                  <span class="rowPowerPanel__railValue">{{ absolutePower(rowPower.powerNeg12) }}mA</span>
+                </div>
+                <div class="rowPowerPanel__rail">
+                  <span class="rowPowerPanel__railLabel">+5V</span>
+                  <span class="rowPowerPanel__railValue">{{ rowPower.powerPos5 }}mA</span>
+                </div>
+              </div>
+              <div class="rowPowerPanel__footer">
+                {{ rowPowerMissingLabel(rowId) }}
+              </div>
+            </div>
+          }
+        }
+        <div class="row rackRow"
+             [class.row-bg]="!(row|hasUnrackedModules)"
+             cdkDropList
+             cdkDropListOrientation="horizontal"
+             (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
             >
-              <div class="moduleHoverStats__row">
-                <span class="moduleHoverStats__label">HP</span>
-                <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
-              </div>
-              @if (hasCompletePowerData(rackedModule)) {
-                <div class="moduleHoverStats__row">
-                  <span class="moduleHoverStats__label">+12</span>
-                  <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
-                </div>
-                <div class="moduleHoverStats__row">
-                  <span class="moduleHoverStats__label">-12</span>
-                  <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
-                </div>
-                <div class="moduleHoverStats__row">
-                  <span class="moduleHoverStats__label">+5</span>
-                  <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
-                </div>
-              } @else {
-                <div class="moduleHoverStats__row">
-                  <span class="moduleHoverStats__label">PWR</span>
-                  <span class="moduleHoverStats__value">n/a</span>
+          @for (rackedModule of row; track rackedModule; let i = $index) {
+            <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+                                  [data]="rackedModule|mapToModule"
+                                  [powerAnalysisMode]="(rackDetailDataService.showPowerAnalysisMode$ | async) ?? false"
+                                  [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
+                                  [powerAnalysisSummary]="powerAnalysisVisual(rackedModule).totalLabel"
+                                  [powerAnalysisDetails]="powerAnalysisVisual(rackedModule).railsLabel"
+                                  [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
+                                  [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                  class="module"
+                                  cdkDrag
+                                  [cdkDragData]="rackedModule"
+                                  [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                  (mouseenter)="setHoveredModule(rackedModule)"
+                                  (mouseleave)="clearHoveredModule(rackedModule)"
+                                  (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+            >
+              @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
+                <div class="hpIndicator"
+                     (mousedown)="$event.stopPropagation()"
+                >
+                  {{ effectiveHp(rackedModule) }}HP
                 </div>
               }
-            </div>
-          </app-module-realistic>
-        }
+              <div class="moduleHoverStats"
+                   [class.moduleHoverStats--visible]="isHoveredModule(rackedModule)"
+                   (mousedown)="$event.stopPropagation()"
+              >
+                <div class="moduleHoverStats__row">
+                  <span class="moduleHoverStats__label">HP</span>
+                  <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
+                </div>
+                @if (hasCompletePowerData(rackedModule)) {
+                  <div class="moduleHoverStats__row">
+                    <span class="moduleHoverStats__label">+12</span>
+                    <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
+                  </div>
+                  <div class="moduleHoverStats__row">
+                    <span class="moduleHoverStats__label">-12</span>
+                    <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
+                  </div>
+                  <div class="moduleHoverStats__row">
+                    <span class="moduleHoverStats__label">+5</span>
+                    <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
+                  </div>
+                } @else {
+                  <div class="moduleHoverStats__row">
+                    <span class="moduleHoverStats__label">PWR</span>
+                    <span class="moduleHoverStats__value">n/a</span>
+                  </div>
+                }
+              </div>
+            </app-module-realistic>
+          }
+        </div>
       </div>
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->

@@ -299,9 +299,9 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
             descParts.push(`${ data.ins.length } input${ data.ins.length !== 1 ? 's' : '' } and ${ data.outs.length } output${ data.outs.length !== 1 ? 's' : '' }.`);
           }
           const powerParts: string[] = [];
-          if (data.powerPos12) { powerParts.push(`+12V: ${ data.powerPos12 }mA`); }
-          if (data.powerNeg12) { powerParts.push(`-12V: ${ data.powerNeg12 }mA`); }
-          if (data.powerPos5) { powerParts.push(`+5V: ${ data.powerPos5 }mA`); }
+          if (data.powerPos12 != null) { powerParts.push(`+12V: ${ data.powerPos12 }mA`); }
+          if (data.powerNeg12 != null) { powerParts.push(`-12V: ${ data.powerNeg12 }mA`); }
+          if (data.powerPos5 != null) { powerParts.push(`+5V: ${ data.powerPos5 }mA`); }
           if (powerParts.length) { descParts.push(`Power draw — ${ powerParts.join(', ') }.`); }
           if (data.depth) { descParts.push(`Depth: ${ data.depth }mm.`); }
           if (data.isDIY) { descParts.push(`DIY module.`); }
@@ -399,7 +399,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   }
   
   clampDevNumericFields(module: DbModule): void {
-    const clamp = (value: number) => Number.isFinite(value) ? Math.max(0, value) : 0;
+    const clamp = (value: number | null | undefined) => Number.isFinite(value) ? Math.max(0, value) : 0;
     this.patchDevModule({
       hp: clamp(module.hp),
       depth: clamp(module.depth),

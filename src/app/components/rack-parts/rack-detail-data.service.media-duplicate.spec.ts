@@ -126,7 +126,6 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.update.rack).toHaveBeenCalled();
     expect(refreshSpy).toHaveBeenCalledWith(7);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
-    expect(service.showModuleCounters$.value).toBeTrue();
   }));
   
   it('updates rack preview image without deleting when no previous image exists', fakeAsync(() => {

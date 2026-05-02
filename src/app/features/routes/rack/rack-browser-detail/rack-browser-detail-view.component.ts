@@ -33,6 +33,10 @@ import { RackedModule } from 'src/app/models/module';
 import { EntityStatItem } from 'src/app/components/shared-atoms/entity-stat-grid/entity-stat-grid.component';
 import { isBlankModule } from 'src/app/components/rack-parts/rack-blank-module.constants';
 import { EntityStatGroup } from 'src/app/components/shared-atoms/entity-stat-card/entity-stat-card.component';
+import {
+  buildRackPowerBreakdown,
+  formatPowerRailValue
+} from 'src/app/components/rack-parts/rack-power-breakdown.utils';
 
 
 const JSONLD_SCRIPT_ID = 'rack-jsonld';
@@ -141,11 +145,10 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     const totalModules = rackModules.length;
     const usedHp = rackModules.reduce((sum, module) => sum + module.module.hp, 0);
     const remainingHp = data.hp * data.rows - usedHp;
-    const [powerPos12, powerNeg12, powerPos5] = this.totalPower(rowedRackedModules);
-    const missingPowerDataCount = this.totalMissingPowerData(rowedRackedModules);
+    const powerBreakdown = buildRackPowerBreakdown(rowedRackedModules);
     const [maxDepth, minDepth, averageDepth] = this.totalDepth(rowedRackedModules);
     const totalWeightKg = this.totalWeight(rowedRackedModules) / 1000;
-    const missingPowerSuffix = missingPowerDataCount > 0 ? ` (${ missingPowerDataCount } missing data)` : '';
+    const missingPowerSuffix = this.missingPowerSuffix(powerBreakdown.missingPowerDataCount);
 
     return [
       [
@@ -170,9 +173,9 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
         {
           title: 'Power',
           items: [
-            { label: `+12V${ missingPowerSuffix }`, value: `${ powerPos12 } mA`, icon: 'bolt' },
-            { label: `-12V${ missingPowerSuffix }`, value: `${ powerNeg12 } mA`, icon: 'bolt' },
-            { label: `+5V${ missingPowerSuffix }`, value: `${ powerPos5 } mA`, icon: 'bolt' }
+            { label: `+12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos12), icon: 'bolt' },
+            { label: `-12V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerNeg12), icon: 'bolt' },
+            { label: `+5V${ missingPowerSuffix }`, value: formatPowerRailValue(powerBreakdown.powerPos5), icon: 'bolt' }
           ]
         },
         {
@@ -186,6 +189,10 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
         }
       ]
     ];
+  }
+
+  private missingPowerSuffix(count: number): string {
+    return count > 0 ? ` (${ count } missing)` : '';
   }
 
   private injectRackJsonLd(rackData: any, modules: string[]): void {
@@ -205,31 +212,6 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     };
     Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
     upsertJsonLdScript(JSONLD_SCRIPT_ID, jsonLd);
-  }
-
-  private totalPower(rowedRackedModules: RackedModule[][]): [number, number, number] {
-    return rowedRackedModules
-      .flat()
-      .filter(module => !isBlankModule(module.module.id))
-      .reduce<[number, number, number]>((accumulator, value) => {
-        accumulator[0] += value.module.powerPos12;
-        accumulator[1] += value.module.powerNeg12;
-        accumulator[2] += value.module.powerPos5;
-        return accumulator;
-      }, [0, 0, 0]);
-  }
-
-  private totalMissingPowerData(rowedRackedModules: RackedModule[][]): number {
-    return rowedRackedModules
-      .flat()
-      .filter(module => !isBlankModule(module.module.id))
-      .filter((module, index, self) => self.findIndex(candidate => candidate.module.id === module.module.id) === index)
-      .reduce((count, value) => {
-        if (value.module.powerPos12 == null || value.module.powerNeg12 == null || value.module.powerPos5 == null) {
-          return count + 1;
-        }
-        return count;
-      }, 0);
   }
 
   private totalDepth(rowedRackedModules: RackedModule[][]): [number, number, number] {
