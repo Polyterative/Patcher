@@ -25,6 +25,7 @@ export interface ApplicationInsightStatistic {
 export interface ApplicationInsightsPage {
   interpretation: string;
   overview: ApplicationInsightStatistic[];
+  freshness: ApplicationInsightStatistic[];
   catalogueHealth: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
   participation: ApplicationInsightStatistic[];
@@ -148,6 +149,23 @@ export class ApplicationStatisticsService extends SubManager {
       buildSignalStatistic('Rack-sharing profiles per 100 public profiles', statistics.publicRackAuthors, statistics.publicProfiles, 'dashboard_customize', 100, 3, 10),
       buildSignalStatistic('Patch-sharing profiles per 100 public profiles', statistics.publicPatchAuthors, statistics.publicProfiles, 'hub', 100, 3, 10)
     ].filter((value): value is ApplicationInsightStatistic => !!value);
+    const freshness = [
+      {
+        name: 'Public modules updated last 30 days',
+        value: statistics.publicModulesUpdatedLast30Days,
+        icon: 'schedule'
+      },
+      {
+        name: 'Shared racks updated last 30 days',
+        value: statistics.publicRacksUpdatedLast30Days,
+        icon: 'space_dashboard'
+      },
+      {
+        name: 'Shared patches updated last 30 days',
+        value: statistics.publicPatchesUpdatedLast30Days,
+        icon: 'cable'
+      }
+    ];
     const patchNetwork = [
       ...(statistics.publicPatchConnections > 0
         ? [{
@@ -183,6 +201,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'cable'
         }
       ],
+      freshness,
       catalogueHealth,
       sharing: [
         {
@@ -233,7 +252,7 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Normalized coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Freshness counts, normalized coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
       methodology: [
         {
@@ -270,6 +289,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'share',
           title: 'Patch-network signals stay aggregate',
           description: 'Patch-network blocks count saved cable connections only in aggregate across public patches from public profiles. They describe density, not any specific patch graph.'
+        },
+        {
+          icon: 'schedule',
+          title: 'Freshness uses recent updates',
+          description: 'Freshness counts use trailing 30-day `updated` activity on public modules, racks, and connected patches. They describe recent movement, not publication order or long-term trends.'
         }
       ]
     };
