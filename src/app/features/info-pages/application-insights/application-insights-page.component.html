@@ -64,23 +64,66 @@
           icon="category"
           description="A focused look at format standards in the public module library, separated from size so the format story can stand on its own."
         >
-          <div class="metric-bars">
-            @for (bar of page.standardMixBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
+          <div class="rankings-grid rankings-grid--three-up">
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Format footprint</h4>
+              @for (bar of page.standardMixBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              @for (bar of page.standardActivityBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <p>{{ bar.detail }}</p>
-              </div>
-            }
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Average width by format</h4>
+              @for (bar of page.standardWidthBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="section-highlights">
@@ -101,23 +144,46 @@
           icon="straighten"
           description="A separate exploration of module width, showing how the public catalogue clusters across compact, utility, feature, and large formats."
         >
-          <div class="metric-bars">
-            @for (bar of page.hpBandBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
+          <div class="rankings-grid">
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Library footprint</h4>
+              @for (bar of page.hpBandBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              @for (bar of page.hpBandActivityBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <p>{{ bar.detail }}</p>
-              </div>
-            }
+              }
+            </div>
           </div>
 
           <div class="section-highlights">
@@ -215,6 +281,19 @@
                 <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + legendItem.toneClass"></span>
                 <span>{{ legendItem.label }}</span>
                 <strong>{{ legendItem.valueLabel }}</strong>
+              </div>
+            }
+          </div>
+
+          <div class="trend-momentum-grid">
+            @for (momentum of page.activityChart.momentum; track momentum.label) {
+              <div class="trend-momentum-card">
+                <div class="trend-momentum-card__header">
+                  <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + momentum.toneClass"></span>
+                  <strong>{{ momentum.label }}</strong>
+                </div>
+                <span>{{ momentum.valueLabel }}</span>
+                <small>{{ momentum.deltaLabel }}</small>
               </div>
             }
           </div>

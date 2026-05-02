@@ -88,7 +88,10 @@ export interface PublicApplicationModuleInsights {
   widestManufacturers: PublicApplicationModuleInsightBucket[];
   oneUManufacturers: PublicApplicationModuleInsightBucket[];
   standardMix: PublicApplicationModuleInsightBucket[];
+  standardActivity: PublicApplicationModuleInsightBucket[];
+  standardWidthAverages: PublicApplicationModuleInsightBucket[];
   hpBands: PublicApplicationModuleInsightBucket[];
+  hpBandActivity: PublicApplicationModuleInsightBucket[];
   freshnessWindows: PublicApplicationModuleInsightBucket[];
   topFiveManufacturerShare: number;
   soloManufacturerCount: number;
@@ -351,7 +354,10 @@ export class SupabaseQueriesService {
     const activeManufacturerCounts = new Map<string, number>();
     const manufacturerStats = new Map<string, ManufacturerInsightStats>();
     const standardCounts = new Map<string, number>();
+    const standardActivityCounts = new Map<string, number>();
+    const standardWidthStats = new Map<string, {totalHp: number; totalModules: number}>();
     const hpBandCounts = new Map<string, number>();
+    const hpBandActivityCounts = new Map<string, number>();
     const lastThirtyDaysIso = this.getLastThirtyDaysIso();
     const lastSevenDaysIso = this.getLastNDaysStartDate(7).toISOString();
     const lastNinetyDaysIso = this.getLastNDaysStartDate(90).toISOString();
@@ -371,12 +377,16 @@ export class SupabaseQueriesService {
         totalModules: (manufacturerStats.get(row.manufacturerName)?.totalModules ?? 0) + 1,
         totalHp: (manufacturerStats.get(row.manufacturerName)?.totalHp ?? 0) + row.hp,
         oneUModules: (manufacturerStats.get(row.manufacturerName)?.oneUModules ?? 0)
-          + (row.standardName === '3U' ? 0 : 1)
+          + (this.isOneUStandard(row.standardName) ? 1 : 0)
       });
       standardCounts.set(
         row.standardName,
         (standardCounts.get(row.standardName) ?? 0) + 1
       );
+      standardWidthStats.set(row.standardName, {
+        totalHp: (standardWidthStats.get(row.standardName)?.totalHp ?? 0) + row.hp,
+        totalModules: (standardWidthStats.get(row.standardName)?.totalModules ?? 0) + 1
+      });
       hpBandCounts.set(
         this.getHpBandLabel(row.hp),
         (hpBandCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
@@ -386,6 +396,14 @@ export class SupabaseQueriesService {
         activeManufacturerCounts.set(
           row.manufacturerName,
           (activeManufacturerCounts.get(row.manufacturerName) ?? 0) + 1
+        );
+        standardActivityCounts.set(
+          row.standardName,
+          (standardActivityCounts.get(row.standardName) ?? 0) + 1
+        );
+        hpBandActivityCounts.set(
+          this.getHpBandLabel(row.hp),
+          (hpBandActivityCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
         );
         updatedLast30Days += 1;
       }
@@ -451,10 +469,30 @@ export class SupabaseQueriesService {
         standardCounts.size,
         (count) => `${ count } public modules in this format`
       ),
+      standardActivity: this.rankBuckets(
+        standardActivityCounts,
+        Math.min(5, standardActivityCounts.size),
+        (count) => `${ count } modules updated in the last 30 days`
+      ),
+      standardWidthAverages: this.rankBuckets(
+        new Map(
+          [...standardWidthStats.entries()].map(([label, stats]) => [
+            label,
+            stats.totalModules > 0 ? Math.round(stats.totalHp / stats.totalModules) : 0
+          ])
+        ),
+        Math.min(5, standardWidthStats.size),
+        (count) => `${ count } HP average width`
+      ),
       hpBands: this.rankBuckets(
         hpBandCounts,
         4,
         (count) => `${ count } modules in this size band`
+      ),
+      hpBandActivity: this.rankBuckets(
+        hpBandActivityCounts,
+        Math.min(4, hpBandActivityCounts.size),
+        (count) => `${ count } modules updated in the last 30 days`
       ),
       freshnessWindows: [
         {label: 'Updated in 7 days', count: updatedLast7Days, detail: `${ updatedLast7Days } public modules updated in the last week`},
@@ -469,6 +507,10 @@ export class SupabaseQueriesService {
       averageHp,
       medianHp
     };
+  }
+
+  private isOneUStandard(standardName: string): boolean {
+    return standardName.toLowerCase().includes('1u');
   }
 
   private stripPublicAuthorGate<T>(response: any) {
