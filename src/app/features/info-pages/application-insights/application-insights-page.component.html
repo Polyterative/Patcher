@@ -4,7 +4,7 @@
       <lib-hero-content-card
         titleBig="Insights"
         icon="insights"
-        description="See where the public library is growing, how active it has been over the last 30 days, and how people are sharing work right now."
+        description="A chart-led read on the public library: its scale, current momentum, format mix, and how people are actually sharing work."
       >
         <div class="hero-highlights">
           @for (highlight of page.heroHighlights; track highlight.label) {
@@ -21,7 +21,6 @@
         <div class="hero-actions">
           <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
           <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
-          <app-brand-primary-button routerLink="/patches/browser" icon="cable">Browse patches</app-brand-primary-button>
         </div>
       </lib-hero-content-card>
 
@@ -62,9 +61,9 @@
         <lib-hero-content-card
           titleNormal="Module standards"
           icon="category"
-          description="A focused look at format standards in the public module library, separated from size so the format story can stand on its own."
+          description="A format-level read on the public module library, showing not just footprint and activity, but how many different makers are actually competing inside each standard."
         >
-          <div class="rankings-grid rankings-grid--three-up">
+          <div class="rankings-grid rankings-grid--four-up">
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Format footprint</h4>
               @for (bar of page.standardMixBars; track bar.label) {
@@ -108,6 +107,26 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Average width by format</h4>
               @for (bar of page.standardWidthBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Makers per format</h4>
+              @for (bar of page.standardManufacturerBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
                     <span>{{ bar.label }}</span>
@@ -222,7 +241,7 @@
         <lib-hero-content-card
           titleNormal="Module freshness"
           icon="schedule"
-          description="A lifespan view of the public module catalogue, showing how much of it has moved recently versus how much has gone quiet."
+          description="A lifespan view of the public catalogue, separating recent motion from the slower maintenance layer and the deeper long-tail."
         >
           <div class="metric-bars">
             @for (bar of page.moduleFreshnessBars; track bar.label) {
@@ -434,7 +453,7 @@
         <lib-hero-content-card
           titleNormal="How people share"
           icon="pie_chart"
-          description="The public sharing layer is still small enough to read in one glance, so the page shows both the rack/patch mix and participation rates."
+          description="The public sharing layer is still readable in one glance, so this section focuses on mix, participation, and how recently those shared works have actually moved."
         >
           <div class="mix">
             <div class="mix__bar">

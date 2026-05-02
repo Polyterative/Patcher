@@ -49,6 +49,11 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Intellijel 1U', count: 12, detail: '12 HP average width'},
         {label: 'Pulp Logic 1U', count: 6, detail: '6 HP average width'}
       ],
+      standardManufacturerCounts: [
+        {label: '3U', count: 80, detail: '80 makers represented in this format'},
+        {label: 'Intellijel 1U', count: 14, detail: '14 makers represented in this format'},
+        {label: 'Pulp Logic 1U', count: 5, detail: '5 makers represented in this format'}
+      ],
       hpBands: [
         {label: '0-2 HP', count: 60, detail: '60 modules in this size band'},
         {label: '3-5 HP', count: 110, detail: '110 modules in this size band'},
@@ -154,9 +159,9 @@ describe('ApplicationStatisticsService', () => {
       expect(backend.GET.applicationActivitySeries).toHaveBeenCalledWith(30);
       expect(backend.GET.applicationModuleInsights).toHaveBeenCalled();
       expect(page.heroHighlights).toEqual([
-        {label: 'Shared works', value: '126', icon: 'layers'},
-        {label: '30-day updates', value: '15', icon: 'timeline'},
-        {label: 'Rack sharers + patch sharers', value: '49', icon: 'groups'}
+        {label: 'Public modules', value: '1,280', icon: 'view_module'},
+        {label: 'Library momentum', value: '5%', icon: 'timeline'},
+        {label: 'Represented makers', value: '96', icon: 'precision_manufacturing'}
       ]);
       expect(page.footprintSnapshot.map((metric) => ({label: metric.label, valueLabel: metric.valueLabel, icon: metric.icon}))).toEqual([
         {label: 'Public modules', valueLabel: '1,280', icon: 'view_module'},
@@ -194,11 +199,16 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Intellijel 1U', valueLabel: '12 HP'},
         {label: 'Pulp Logic 1U', valueLabel: '6 HP'}
       ]);
+      expect(page.standardManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: '3U', valueLabel: '80'},
+        {label: 'Intellijel 1U', valueLabel: '14'},
+        {label: 'Pulp Logic 1U', valueLabel: '5'}
+      ]);
       expect(page.standardMixHighlights).toEqual([
         {label: 'Formats represented', value: '3', icon: 'category'},
         {label: 'Dominant standard share', value: '78%', icon: 'emoji_events'},
         {label: 'Most active format', value: '3U (58)', icon: 'bolt'},
-        {label: 'Overall 1U share', value: '16%', icon: 'view_week'}
+        {label: 'Most competitive format', value: '3U (80 makers)', icon: 'groups'}
       ]);
       expect(page.hpBandBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: '0-2 HP', valueLabel: '60'},
@@ -233,13 +243,13 @@ describe('ApplicationStatisticsService', () => {
       expect(page.moduleFreshnessBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Fresh (0-7 days)', valueLabel: '40'},
         {label: 'Recent (8-30 days)', valueLabel: '24'},
-        {label: 'Settled (31-90 days)', valueLabel: '86'},
-        {label: 'Stable (91-365 days)', valueLabel: '460'},
+        {label: 'Deceleration zone (31-90 days)', valueLabel: '86'},
+        {label: 'Long-tail maintenance (91-365 days)', valueLabel: '460'},
         {label: 'Older than a year', valueLabel: '670'}
       ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
-        {label: 'Stable in 91-365 days', value: '36%', icon: 'event_repeat'},
+        {label: 'Last-7 share of 30d activity', value: '63%', icon: 'moving'},
         {label: 'Older than a year', value: '670 (52%)', icon: 'history'}
       ]);
       expect(page.topManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
@@ -280,11 +290,11 @@ describe('ApplicationStatisticsService', () => {
       expect(page.sharingHighlights).toEqual([
         {label: 'Rack sharers / 100 profiles', value: '13 / 100', icon: 'dashboard_customize'},
         {label: 'Patch sharers / 100 profiles', value: '8 / 100', icon: 'hub'},
-        {label: 'Shared works updated in 30 days', value: '30', icon: 'schedule'},
+        {label: 'Recent sharing momentum', value: 'R 25% · P 21%', icon: 'trending_up'},
         {label: 'Connections per shared patch', value: '4', icon: 'share'}
       ]);
       expect(page.patchDepthBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
-        {label: 'Patches updated / 100 shared patches', valueLabel: '21 / 100'},
+        {label: 'Active patches / 100 shared patches (30d)', valueLabel: '21 / 100'},
         {label: 'Connections per shared patch', valueLabel: '4'},
         {label: 'Connections per 100 patch authors', valueLabel: '933 / 100'},
         {label: 'Shared patches / 100 represented makers', valueLabel: '44 / 100'}
@@ -339,6 +349,10 @@ describe('ApplicationStatisticsService', () => {
           {label: '3U', count: 12, detail: '12 HP average width'},
           {label: 'Intellijel 1U', count: 8, detail: '8 HP average width'}
         ],
+        standardManufacturerCounts: [
+          {label: '3U', count: 2, detail: '2 makers represented in this format'},
+          {label: 'Intellijel 1U', count: 1, detail: '1 makers represented in this format'}
+        ],
         hpBands: [
           {label: '0-2 HP', count: 2, detail: '2 modules in this size band'},
           {label: '3-5 HP', count: 4, detail: '4 modules in this size band'},
@@ -377,9 +391,9 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.heroHighlights).toEqual([
-        {label: 'Shared works', value: '9', icon: 'layers'},
-        {label: '30-day updates', value: '3', icon: 'timeline'},
-        {label: 'Rack sharers + patch sharers', value: '3', icon: 'groups'}
+        {label: 'Public modules', value: '20', icon: 'view_module'},
+        {label: 'Library momentum', value: '5%', icon: 'timeline'},
+        {label: 'Represented makers', value: '2', icon: 'precision_manufacturing'}
       ]);
       expect(page.sharingRateBars).toEqual([]);
       expect(page.patchDepthBars).toEqual([]);
@@ -403,7 +417,7 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Formats represented', value: '2', icon: 'category'},
         {label: 'Dominant standard share', value: '90%', icon: 'emoji_events'},
         {label: 'Most active format', value: '3U (1)', icon: 'bolt'},
-        {label: 'Overall 1U share', value: '10%', icon: 'view_week'}
+        {label: 'Most competitive format', value: '3U (2 makers)', icon: 'groups'}
       ]);
       expect(page.hpBandHighlights).toEqual([
         {label: 'Median width', value: '10 HP', icon: 'straighten'},
@@ -413,7 +427,7 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
-        {label: 'Stable in 91-365 days', value: '25%', icon: 'event_repeat'},
+        {label: 'Last-7 share of 30d activity', value: '100%', icon: 'moving'},
         {label: 'Older than a year', value: '11 (55%)', icon: 'history'}
       ]);
       expect(page.makerHighlights).toEqual([
