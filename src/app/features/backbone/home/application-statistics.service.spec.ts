@@ -73,8 +73,13 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Profiles sharing racks', value: 31, icon: 'dashboard_customize'},
         {name: 'Profiles sharing patches', value: 18, icon: 'hub'}
       ]);
-      expect(page.methodology.length).toBe(3);
-      expect(page.interpretation).toContain('lightweight public intelligence layer');
+      expect(page.derived).toEqual([
+        {name: 'Modules per represented maker', value: 13, icon: 'rule'},
+        {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
+        {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
+      ]);
+      expect(page.methodology.length).toBe(4);
+      expect(page.interpretation).toContain('Rounded ratios');
       done();
     });
   });

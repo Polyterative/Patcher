@@ -34,6 +34,14 @@
           emptyMessage="Public-profile sharing is still early, so this section stays intentionally sparse until more people publish work."
         ></app-statistics>
 
+        <app-statistics
+          title="Derived signals"
+          icon="functions"
+          cardClass="home-insights-card"
+          [statistics]="page.derived"
+          emptyMessage="Derived signals appear once there is enough public breadth and sharing activity to round them responsibly."
+        ></app-statistics>
+
         <lib-hero-content-card
           titleNormal="What these numbers suggest"
           description="Interpretation stays advisory rather than prescriptive."
