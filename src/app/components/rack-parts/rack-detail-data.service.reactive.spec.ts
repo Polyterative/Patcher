@@ -168,6 +168,8 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.isCurrentRackPrivate$.value).toBeTrue();
     expect(service.isCurrentRackEditable$.value).toBeFalse();
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeTrue();
+    expect(service.isRackDataLoading$.value).toBeFalse();
+    expect(service.rowedRackedModules$.value).toEqual([[], []]);
   });
 
   it('uses public rack reads when public detail mode is enabled', () => {
@@ -178,6 +180,32 @@ describe('RackDetailDataService reactive flows', () => {
 
     expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(33);
     expect(backend.GET.rackWithId).not.toHaveBeenCalledWith(33);
+  });
+
+  it('clears the loading state when rack detail loading fails', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    backend.GET.rackWithId.and.returnValue(throwError(() => new Error('load fail')));
+
+    service.updateSingleRackData$.next(99);
+
+    expect(service.isRackDataLoading$.value).toBeFalse();
+    expect(service.rowedRackedModules$.value).toEqual([]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+  });
+
+  it('clears the loading state when rack modules fail to load', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    const {service, backend} = build();
+    backend.get.rackedModules.and.returnValue(throwError(() => new Error('module load fail')));
+
+    service.updateSingleRackData$.next(55);
+
+    expect(service.isRackDataLoading$.value).toBeFalse();
+    expect(service.rowedRackedModules$.value).toEqual([]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
   
   it('handles rack order changes for disallowed and allowed moves', () => {

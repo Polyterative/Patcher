@@ -1,5 +1,6 @@
 @if ({
   rowedRackedModules:((dataService.rowedRackedModules$|async)),
+  isRackDataLoading:(dataService.isRackDataLoading$|async),
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
   userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
@@ -8,9 +9,8 @@
 }; as bag) {
   <div class="col gap1"
   >
-    @if (bag.rowedRackedModules == null) {
+    @if (bag.isRackDataLoading) {
       <lib-auto-content-loading-indicator
-        [skipFirstData]="true"
         [loadingLines]="5"
       >
       </lib-auto-content-loading-indicator>
