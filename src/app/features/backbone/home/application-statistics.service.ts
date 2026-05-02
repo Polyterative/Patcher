@@ -10,6 +10,7 @@ import {
 import { SupabaseService } from '../../backend/supabase.service';
 import {
   PublicApplicationActivityPoint,
+  PublicApplicationModuleInsights,
   PublicApplicationStatistics
 } from '../../backend/supabase-queries';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
@@ -78,6 +79,10 @@ export interface ApplicationInsightsPage {
   heroHighlights: ApplicationInsightsHighlight[];
   footprintSnapshot: ApplicationInsightsSnapshotMetric[];
   footprintHighlights: ApplicationInsightsHighlight[];
+  moduleMixBars: ApplicationInsightsBar[];
+  moduleMixHighlights: ApplicationInsightsHighlight[];
+  topManufacturerBars: ApplicationInsightsBar[];
+  activeManufacturerBars: ApplicationInsightsBar[];
   activityChart: {
     days: ApplicationInsightsTrendDay[];
     legend: ApplicationInsightsTrendLegendItem[];
@@ -109,9 +114,10 @@ export class ApplicationStatisticsService extends SubManager {
   readonly page$ = this.refreshRequest$.pipe(
     switchMap(() => forkJoin({
       statistics: this.backend.GET.applicationStatistics(),
-      activitySeries: this.backend.GET.applicationActivitySeries(30)
+      activitySeries: this.backend.GET.applicationActivitySeries(30),
+      moduleInsights: this.backend.GET.applicationModuleInsights()
     })),
-    map(({statistics, activitySeries}) => this.mapPage(statistics, activitySeries))
+    map(({statistics, activitySeries, moduleInsights}) => this.mapPage(statistics, activitySeries, moduleInsights))
   );
 
   constructor(
@@ -156,7 +162,8 @@ export class ApplicationStatisticsService extends SubManager {
 
   private mapPage(
     statistics: PublicApplicationStatistics,
-    activitySeries: PublicApplicationActivityPoint[]
+    activitySeries: PublicApplicationActivityPoint[],
+    moduleInsights: PublicApplicationModuleInsights
   ): ApplicationInsightsPage {
     const sharedWorks = statistics.publicRacks + statistics.publicPatches;
     const recentSharedWorks = statistics.publicRacksUpdatedLast30Days + statistics.publicPatchesUpdatedLast30Days;
@@ -311,6 +318,57 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'schedule'
         }
       ],
+      moduleMixBars: this.mapBarWidths([
+        ...moduleInsights.standardMix.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index)
+        })),
+        ...moduleInsights.hpBands.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 2)
+        }))
+      ]),
+      moduleMixHighlights: [
+        {
+          label: 'Average width',
+          value: `${ this.formatCount(moduleInsights.averageHp) } HP`,
+          icon: 'straighten'
+        },
+        {
+          label: 'Median width',
+          value: `${ this.formatCount(moduleInsights.medianHp) } HP`,
+          icon: 'swap_horiz'
+        },
+        {
+          label: 'Recent module updates',
+          value: this.formatCount(statistics.publicModulesUpdatedLast30Days),
+          icon: 'schedule'
+        }
+      ],
+      topManufacturerBars: this.mapBarWidths(
+        moduleInsights.topManufacturers.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index)
+        }))
+      ),
+      activeManufacturerBars: this.mapBarWidths(
+        moduleInsights.activeManufacturers.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 1)
+        }))
+      ),
       activityChart: {
         days: this.mapTrendDays(activitySeries),
         legend: [
@@ -473,6 +531,11 @@ export class ApplicationStatisticsService extends SubManager {
     ];
 
     return segments.filter((segment) => segment.widthPercent > 0);
+  }
+
+  private getToneByIndex(index: number): MetricTone {
+    const tones: MetricTone[] = ['brand', 'emerald', 'violet', 'amber'];
+    return tones[index % tones.length];
   }
 
   private mapTrendDays(activitySeries: PublicApplicationActivityPoint[]): ApplicationInsightsTrendDay[] {
