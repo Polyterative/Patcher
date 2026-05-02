@@ -295,13 +295,20 @@ stable, and there is enough public volume for the aggregates to be credible.
 
 - the dedicated insights surface should stay **fully public** while it remains aggregate-only and privacy-safe; its public
   discoverability is part of the product value
-- the smallest reusable vocabulary is still the current **stat-card + interpretation/methodology card** approach; do not add
-  a heavier chart dependency until there is sustained signal that genuinely benefits from time-series or distribution views
+- the current best UI vocabulary is **lightweight custom charts + strong summary chips**, not a flat stat wall and not a
+  heavy chart dependency; keep the page fast and bespoke until there is enough richer analytical depth to justify a charting
+  library
+- the first honest chart layer should focus on **current-state composition and real trailing-window activity**, using public-safe
+  aggregate data that already exists today
+- do **not** fake long-range trend lines from single-snapshot counts; longer-horizon trend visuals require stored historical
+  snapshots or another explicit time-series source
 - the next worthwhile deeper-analysis directions, once volume and trust justify them, are:
-  1. **co-occurrence patterns** that help discovery ("often seen together")
-  2. **trend lines** only when public activity is dense enough for stable time windows
-  3. **balance / archetype summaries** built on trusted tag coverage
-  4. **rare-module discovery** later, once rarity can be distinguished from thin public participation
+  1. **distinct sharing-profile counts** across racks and patches so the page can move beyond summed participation signals
+  2. **richer grouped comparisons** such as top recent makers, module families, or other public-safe slices that improve discovery
+  3. **co-occurrence patterns** that help discovery ("often seen together")
+  4. **trend lines** only when public activity is dense enough for stable time windows and stored history exists
+  5. **balance / archetype summaries** built on trusted tag coverage
+  6. **rare-module discovery** later, once rarity can be distinguished from thin public participation
 
 #### Patch Tags / Genre / Technique Labels
 

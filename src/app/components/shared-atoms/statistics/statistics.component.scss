@@ -9,8 +9,19 @@
   }
 }
 
+.statistics-card-content {
+  width: 100%;
+}
+
+.statistics-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .stat-item {
   animation: stat-fade-in 220ms ease-out both;
+  min-width: 8rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,106 +1,62 @@
 @if (page$ | async; as page) {
   <lib-screen-wrapper maxSize="110rem">
     <div class="insights-page">
-      <lib-clean-card class="insights-hero">
-        <div class="insights-hero__copy">
-          <p class="insights-kicker">public-safe application insights</p>
-          <h1>See how the public library is taking shape</h1>
-          <p class="insights-intro">
-            This is the first dedicated insights surface for Patcher: broad enough to show that the catalogue is alive,
-            strict enough to keep privacy and methodology obvious.
-          </p>
+      <lib-hero-content-card
+        titleBig="Insights"
+        icon="insights"
+        description="See where the public library is growing, how active it has been over the last 30 days, and how people are sharing work right now."
+      >
+        <div class="hero-highlights">
+          @for (highlight of page.heroHighlights; track highlight.label) {
+            <div class="insight-chip">
+              <mat-icon>{{ highlight.icon }}</mat-icon>
+              <div>
+                <span class="insight-chip__label">{{ highlight.label }}</span>
+                <strong>{{ highlight.value }}</strong>
+              </div>
+            </div>
+          }
         </div>
 
-        <div class="insights-hero__actions">
+        <div class="hero-actions">
           <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
           <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
           <app-brand-primary-button routerLink="/patches/browser" icon="cable">Browse patches</app-brand-primary-button>
         </div>
-      </lib-clean-card>
+      </lib-hero-content-card>
 
       <div class="insights-grid">
-        <app-statistics
-          title="Catalogue footprint"
+        <lib-hero-content-card
+          titleNormal="Library now"
           icon="analytics"
-          cardClass="home-insights-card"
-          [statistics]="page.overview"
-        ></app-statistics>
-
-        <app-statistics
-          title="Freshness"
-          icon="schedule"
-          cardClass="home-insights-card"
-          [statistics]="page.freshness"
-        ></app-statistics>
-
-        <app-statistics
-          title="Catalogue health"
-          icon="monitoring"
-          cardClass="home-insights-card"
-          [statistics]="page.catalogueHealth"
-          emptyMessage="Coverage signals appear once there is enough public catalogue breadth and sharing activity to normalize them responsibly."
-        ></app-statistics>
-
-        <app-statistics
-          title="Public sharing footprint"
-          icon="groups"
-          cardClass="home-insights-card"
-          [statistics]="page.sharing"
-          emptyMessage="Public-profile sharing is still early, so this section stays intentionally sparse until more people publish work."
-        ></app-statistics>
-
-        <app-statistics
-          title="Sharing participation"
-          icon="person_search"
-          cardClass="home-insights-card"
-          [statistics]="page.participation"
-          emptyMessage="Participation rates appear once the public profile base and the sharing-author sample are both large enough to read as adoption rather than anecdote."
-        ></app-statistics>
-
-        <app-statistics
-          title="Patch network patterns"
-          icon="share"
-          cardClass="home-insights-card"
-          [statistics]="page.patchNetwork"
-          emptyMessage="Patch-network signals appear once enough public patches with saved connections exist to describe connection density without over-reading a tiny graph sample."
-        ></app-statistics>
-
-        <app-statistics
-          title="Sharing mix"
-          icon="pie_chart"
-          cardClass="home-insights-card"
-          [statistics]="page.sharingMix"
-          emptyMessage="Mix signals appear once there is enough public shared work to describe the rack/patch split without over-reading a tiny sample."
-        ></app-statistics>
-
-        <app-statistics
-          title="Derived signals"
-          icon="functions"
-          cardClass="home-insights-card"
-          [statistics]="page.derived"
-          emptyMessage="Derived signals appear once there is enough public breadth and sharing activity to round them responsibly."
-        ></app-statistics>
-
-        <lib-hero-content-card
-          titleNormal="What these numbers suggest"
-          description="Interpretation stays advisory rather than prescriptive."
-          icon="tips_and_updates"
+          description="A quick read on the current public footprint, normalized into a single comparison view."
         >
-          <p class="insights-body">{{ page.interpretation }}</p>
-        </lib-hero-content-card>
+          <div class="metric-bars">
+            @for (bar of page.footprintBars; track bar.label) {
+              <div class="metric-bar">
+                <div class="metric-bar__heading">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.valueLabel }}</strong>
+                </div>
+                <div class="metric-bar__track">
+                  <div
+                    class="metric-bar__fill"
+                    [ngClass]="'metric-bar__fill--' + bar.tone"
+                    [style.width.%]="bar.widthPercent"
+                  ></div>
+                </div>
+                <p>{{ bar.detail }}</p>
+              </div>
+            }
+          </div>
 
-        <lib-hero-content-card
-          titleNormal="Methodology"
-          description="Every block on this page is aggregate-only and public-safe."
-          icon="shield"
-        >
-          <div class="methodology-list">
-            @for (item of page.methodology; track item.title) {
-              <div class="methodology-item">
-                <mat-icon>{{ item.icon }}</mat-icon>
+          <div class="section-highlights">
+            @for (highlight of page.footprintHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
                 <div>
-                  <h3>{{ item.title }}</h3>
-                  <p>{{ item.description }}</p>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
                 </div>
               </div>
             }
@@ -108,17 +64,157 @@
         </lib-hero-content-card>
 
         <lib-hero-content-card
-          titleNormal="Coverage and suppression"
-          description="The page explains when it chooses to show less."
-          icon="rule"
+          titleNormal="30-day activity"
+          icon="show_chart"
+          description="This chart is built from daily public-safe update counts, so it shows actual recent movement rather than a dressed-up snapshot."
         >
-          <div class="methodology-list">
-            @for (item of page.coverage; track item.title) {
-              <div class="methodology-item">
-                <mat-icon>analytics</mat-icon>
+          <div class="trend-chart">
+            @for (day of page.activityChart.days; track day.date) {
+              <div class="trend-day">
+                <div
+                  class="trend-day__bar"
+                  [style.height.%]="day.heightPercent"
+                  [attr.aria-label]="day.label + ': ' + day.total + ' updates'"
+                >
+                  @if (day.modules > 0) {
+                    <span
+                      class="trend-day__segment trend-day__segment--modules"
+                      [style.flexGrow]="day.modules"
+                    ></span>
+                  }
+                  @if (day.racks > 0) {
+                    <span
+                      class="trend-day__segment trend-day__segment--racks"
+                      [style.flexGrow]="day.racks"
+                    ></span>
+                  }
+                  @if (day.patches > 0) {
+                    <span
+                      class="trend-day__segment trend-day__segment--patches"
+                      [style.flexGrow]="day.patches"
+                    ></span>
+                  }
+                </div>
+                <span class="trend-day__label" [class.trend-day__label--hidden]="!day.showLabel">
+                  {{ day.label }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="trend-legend">
+            @for (legendItem of page.activityChart.legend; track legendItem.label) {
+              <div class="trend-legend__item">
+                <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + legendItem.toneClass"></span>
+                <span>{{ legendItem.label }}</span>
+                <strong>{{ legendItem.valueLabel }}</strong>
+              </div>
+            }
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.activityChart.highlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
                 <div>
-                  <h3>{{ item.title }}</h3>
-                  <p>{{ item.description }}</p>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
+          titleNormal="How people share"
+          icon="pie_chart"
+          description="The public sharing layer is still small enough to read in one glance, so the page shows both the rack/patch mix and participation rates."
+        >
+          <div class="mix">
+            <div class="mix__bar">
+              @for (segment of page.sharingMix; track segment.label) {
+                <div
+                  class="mix__segment"
+                  [ngClass]="'mix__segment--' + segment.tone"
+                  [style.width.%]="segment.widthPercent"
+                ></div>
+              }
+            </div>
+
+            <div class="mix__legend">
+              @for (segment of page.sharingMix; track segment.label) {
+                <div class="mix__legend-item">
+                  <span class="trend-legend__dot" [ngClass]="'trend-legend__dot--' + (segment.tone === 'brand' ? 'patches' : 'racks')"></span>
+                  <span>{{ segment.label }}</span>
+                  <strong>{{ segment.valueLabel }}</strong>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="metric-bars">
+            @for (bar of page.sharingRateBars; track bar.label) {
+              <div class="metric-bar">
+                <div class="metric-bar__heading">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.valueLabel }}</strong>
+                </div>
+                <div class="metric-bar__track">
+                  <div
+                    class="metric-bar__fill"
+                    [ngClass]="'metric-bar__fill--' + bar.tone"
+                    [style.width.%]="bar.widthPercent"
+                  ></div>
+                </div>
+                <p>{{ bar.detail }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.sharingHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
+          titleNormal="Patch depth"
+          icon="share"
+          description="These signals stay focused on aggregate density: how much connected structure exists in the public patch layer, and how much work is accumulating around it."
+        >
+          <div class="metric-bars">
+            @for (bar of page.patchDepthBars; track bar.label) {
+              <div class="metric-bar">
+                <div class="metric-bar__heading">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.valueLabel }}</strong>
+                </div>
+                <div class="metric-bar__track">
+                  <div
+                    class="metric-bar__fill"
+                    [ngClass]="'metric-bar__fill--' + bar.tone"
+                    [style.width.%]="bar.widthPercent"
+                  ></div>
+                </div>
+                <p>{{ bar.detail }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.patchHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
                 </div>
               </div>
             }
