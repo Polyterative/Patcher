@@ -110,13 +110,14 @@ describe('SupabaseService - get complex queries', () => {
   });
 
   describe('GET.applicationStatistics', () => {
-    it('should return public-safe aggregate counts for modules, manufacturers, public profiles, shared racks/patches, and public authors', (done) => {
+    it('should return public-safe aggregate counts for modules, manufacturers, public profiles, shared racks/patches, public connections, and public authors', (done) => {
       const modulesQuery = chainable({data: [], count: 150, error: null});
       const manufacturersQuery = chainable({data: [], count: 28, error: null});
       const publicProfilesQuery = chainable({data: [], count: 80, error: null});
       const racksQuery = chainable({data: [], count: 24, error: null});
       const rackAuthorsQuery = chainable({data: [], count: 12, error: null});
       const patchesQuery = chainable({data: [], count: 11, error: null});
+      const patchConnectionsQuery = chainable({data: [], count: 48, error: null});
       const patchAuthorsQuery = chainable({data: [], count: 7, error: null});
 
       const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
@@ -125,10 +126,12 @@ describe('SupabaseService - get complex queries', () => {
       const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
       const rackAuthorsFilterSpy = spyOn(rackAuthorsQuery, 'filter').and.callThrough();
       const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
+      const patchConnectionsFilterSpy = spyOn(patchConnectionsQuery, 'filter').and.callThrough();
       const patchAuthorsFilterSpy = spyOn(patchAuthorsQuery, 'filter').and.callThrough();
       const manufacturersSelectSpy = spyOn(manufacturersQuery, 'select').and.callThrough();
       const rackAuthorsSelectSpy = spyOn(rackAuthorsQuery, 'select').and.callThrough();
       const patchesSelectSpy = spyOn(patchesQuery, 'select').and.callThrough();
+      const patchConnectionsSelectSpy = spyOn(patchConnectionsQuery, 'select').and.callThrough();
       const patchAuthorsSelectSpy = spyOn(patchAuthorsQuery, 'select').and.callThrough();
       let profilesCallCount = 0;
 
@@ -143,6 +146,7 @@ describe('SupabaseService - get complex queries', () => {
           return profilesCallCount++ === 1 ? rackAuthorsQuery : patchAuthorsQuery;
         }
         if (table === 'racks') return racksQuery;
+        if (table === 'patch_connections') return patchConnectionsQuery;
         return patchesQuery;
       });
 
@@ -155,6 +159,7 @@ describe('SupabaseService - get complex queries', () => {
             publicRacks: 24,
             publicRackAuthors: 12,
             publicPatches: 11,
+            publicPatchConnections: 48,
             publicPatchAuthors: 7
           });
           expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
@@ -163,6 +168,8 @@ describe('SupabaseService - get complex queries', () => {
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           expect(rackAuthorsFilterSpy).toHaveBeenCalledWith('public_racks.public', 'eq', true);
           expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.public', 'eq', true);
+          expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.author_profile_gate.public', 'eq', true);
           expect(patchAuthorsFilterSpy).toHaveBeenCalledWith('public_patches.public', 'eq', true);
           expect(manufacturersSelectSpy).toHaveBeenCalledWith(
             jasmine.stringMatching(/public_modules:modules!inner/),
@@ -174,6 +181,10 @@ describe('SupabaseService - get complex queries', () => {
           );
           expect(patchesSelectSpy).toHaveBeenCalledWith(
             jasmine.stringMatching(/patch_connections!inner/),
+            {count: 'exact', head: true}
+          );
+          expect(patchConnectionsSelectSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/patch:patches!patch_connections_patchid_fkey!inner/),
             {count: 'exact', head: true}
           );
           expect(patchAuthorsSelectSpy).toHaveBeenCalledWith(
