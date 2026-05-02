@@ -25,6 +25,7 @@ export interface ApplicationInsightStatistic {
 export interface ApplicationInsightsPage {
   interpretation: string;
   overview: ApplicationInsightStatistic[];
+  catalogueHealth: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
   derived: ApplicationInsightStatistic[];
   methodology: {
@@ -89,20 +90,24 @@ export class ApplicationStatisticsService extends SubManager {
 
   private mapPage(statistics: PublicApplicationStatistics): ApplicationInsightsPage {
     const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
+    const sharedWorks = statistics.publicRacks + statistics.publicPatches;
     const roundRatio = (numerator: number, denominator: number): number =>
       denominator > 0 ? Math.round(numerator / denominator) : 0;
-    const buildDerivedStatistic = (
+    const buildSignalStatistic = (
       name: string,
       numerator: number,
       denominator: number,
-      icon: string
+      icon: string,
+      scale = 1,
+      minimumNumerator = 3,
+      minimumDenominator = 3
     ): ApplicationInsightStatistic | null => {
-      if (numerator < 3 || denominator < 3) {
+      if (numerator < minimumNumerator || denominator < minimumDenominator) {
         return null;
       }
       return {
         name,
-        value: roundRatio(numerator, denominator),
+        value: roundRatio(numerator * scale, denominator),
         icon
       };
     };
@@ -130,6 +135,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'cable'
         }
       ],
+      catalogueHealth: [
+        buildSignalStatistic('Shared racks per 100 modules', statistics.publicRacks, statistics.publicModules, 'monitoring', 100, 5, 25),
+        buildSignalStatistic('Shared patches per 100 modules', statistics.publicPatches, statistics.publicModules, 'insights', 100, 5, 25),
+        buildSignalStatistic('Shared works per represented maker', sharedWorks, statistics.publicManufacturers, 'hub', 1, 5, 3)
+      ].filter((value): value is ApplicationInsightStatistic => !!value),
       sharing: [
         {
           name: 'Profiles sharing racks',
@@ -143,12 +153,12 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       derived: [
-        buildDerivedStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
-        buildDerivedStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
-        buildDerivedStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
+        buildSignalStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
+        buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
+        buildSignalStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
       ].filter((value): value is ApplicationInsightStatistic => !!value),
       interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Rounded ratios help show shape without pretending to be exact analytics.'
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Normalized coverage rates and rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
       methodology: [
         {
@@ -165,6 +175,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'visibility',
           title: 'Profile visibility still gates sharing',
           description: 'Rack and patch sharing metrics only include content from profiles that are themselves public, so profile privacy remains the top-level boundary.'
+        },
+        {
+          icon: 'monitoring',
+          title: 'Coverage rates are normalized',
+          description: 'Where a tiny raw ratio would read poorly, this page scales the signal to a clearer baseline such as shared racks or patches per 100 public modules.'
         },
         {
           icon: 'functions',
