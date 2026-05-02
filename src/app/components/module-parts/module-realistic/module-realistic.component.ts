@@ -23,8 +23,6 @@ export class ModuleRealisticComponent implements OnInit {
   @Input() selectedPanelId: number | null = null;
   @Input() powerAnalysisMode = false;
   @Input() powerAnalysisClass = '';
-  @Input() powerAnalysisSummary = '';
-  @Input() powerAnalysisDetails = '';
   
   constructor(
     public rackDetailDataService: RackDetailDataService,
@@ -58,13 +56,5 @@ export class ModuleRealisticComponent implements OnInit {
 
   shouldRenderTextSurface(): boolean {
     return !this.showPanelImages;
-  }
-
-  powerAnalysisTooltip(): string {
-    const base = `${ this.data.name } (${ this.data.manufacturer.name })`;
-    if (!this.powerAnalysisMode) {
-      return this.buildPanelTooltip(this.data, this.selectedPanelId);
-    }
-    return `${ base } · ${ this.data.hp }HP · ${ this.powerAnalysisSummary } · ${ this.powerAnalysisDetails }`;
   }
 }

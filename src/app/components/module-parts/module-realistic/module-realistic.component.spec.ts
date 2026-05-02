@@ -57,20 +57,4 @@ describe('ModuleRealisticComponent', () => {
     expect(component.shouldRenderTextSurface()).toBeTrue();
   });
 
-  it('adds power details to the tooltip in analysis mode', () => {
-    const component = build();
-    component.powerAnalysisMode = true;
-    component.powerAnalysisSummary = '175mA total';
-    component.powerAnalysisDetails = '+12 120 mA · -12 45 mA · +5 10 mA';
-    component.data = {
-      name: 'Belgrad',
-      hp: 14,
-      manufacturer: {name: 'Xaoc Devices'},
-      standard: {name: 'Eurorack'},
-      panels: []
-    } as any;
-
-    expect(component.powerAnalysisTooltip()).toContain('Belgrad (Xaoc Devices) · 14HP · 175mA total');
-    expect(component.powerAnalysisTooltip()).toContain('+12 120 mA');
-  });
 });

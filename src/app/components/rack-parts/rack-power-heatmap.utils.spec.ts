@@ -46,7 +46,7 @@ describe('rackPowerHeatmapUtils', () => {
       [row0Cool, row0Hot],
       [row1Cool, row1Warm]
     ], {
-      hoveredRowId: 1
+      hoveredRowIndex: 1
     });
 
     expect(visuals.get(rackPowerHeatmapKey(row1Warm))?.className).toBe('powerAnalysisModule--peak');
@@ -73,5 +73,31 @@ describe('rackPowerHeatmapUtils', () => {
       className: 'powerAnalysisModule--blank',
       railsLabel: 'Spacer'
     }));
+  });
+
+  it('uses the documented threshold bands for powered modules', () => {
+    const shadow = makeRackedModule(101, 0, 0, 0, 0, 0);
+    const smoke = makeRackedModule(202, 0, 1, 45, 0, 0);
+    const signal = makeRackedModule(303, 0, 2, 46, 0, 0);
+    const glow = makeRackedModule(404, 0, 3, 72, 0, 0);
+    const peak = makeRackedModule(505, 0, 4, 95, 0, 0);
+    const visuals = buildRackPowerHeatmapVisuals([[shadow, smoke, signal, glow, peak, makeRackedModule(606, 0, 5, 100, 0, 0)]]);
+
+    expect(visuals.get(rackPowerHeatmapKey(shadow))?.className).toBe('powerAnalysisModule--shadow');
+    expect(visuals.get(rackPowerHeatmapKey(smoke))?.className).toBe('powerAnalysisModule--smoke');
+    expect(visuals.get(rackPowerHeatmapKey(signal))?.className).toBe('powerAnalysisModule--signal');
+    expect(visuals.get(rackPowerHeatmapKey(glow))?.className).toBe('powerAnalysisModule--glow');
+    expect(visuals.get(rackPowerHeatmapKey(peak))?.className).toBe('powerAnalysisModule--peak');
+  });
+
+  it('keeps a hovered row with one complete module at peak while muting incomplete rows elsewhere', () => {
+    const solo = makeRackedModule(101, 0, 0, 60, -15, 0);
+    const missing = makeRackedModule(202, 1, 0, 20, null, 0);
+    const visuals = buildRackPowerHeatmapVisuals([[solo], [missing]], {
+      hoveredRowIndex: 0
+    });
+
+    expect(visuals.get(rackPowerHeatmapKey(solo))?.className).toBe('powerAnalysisModule--peak');
+    expect(visuals.get(rackPowerHeatmapKey(missing))?.className).toBe('powerAnalysisModule--inactive');
   });
 });

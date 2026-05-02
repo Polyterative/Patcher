@@ -21,9 +21,6 @@
                   <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
                   <span class="rowPowerPanel__title">{{ rowPower.moduleCount }} module{{ rowPower.moduleCount === 1 ? '' : 's' }}</span>
                 </div>
-                <span class="rowPowerPanel__badge">
-                  {{ row.length }} placed
-                </span>
               </div>
               <div class="rowPowerPanel__rails">
                 <div class="rowPowerPanel__rail">
@@ -56,8 +53,6 @@
                                   [data]="rackedModule|mapToModule"
                                   [powerAnalysisMode]="(rackDetailDataService.showPowerAnalysisMode$ | async) ?? false"
                                   [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
-                                  [powerAnalysisSummary]="powerAnalysisVisual(rackedModule).totalLabel"
-                                  [powerAnalysisDetails]="powerAnalysisVisual(rackedModule).railsLabel"
                                   [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
                                   [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
                                   class="module"
@@ -75,34 +70,36 @@
                   {{ effectiveHp(rackedModule) }}HP
                 </div>
               }
-              <div class="moduleHoverStats"
-                   [class.moduleHoverStats--visible]="isHoveredModule(rackedModule)"
-                   (mousedown)="$event.stopPropagation()"
-              >
-                <div class="moduleHoverStats__row">
-                  <span class="moduleHoverStats__label">HP</span>
-                  <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
+              @if (((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
+                <div class="moduleHoverStats"
+                     [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, ((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false))"
+                     (mousedown)="$event.stopPropagation()"
+                >
+                  <div class="moduleHoverStats__row">
+                    <span class="moduleHoverStats__label">HP</span>
+                    <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
+                  </div>
+                  @if (hasCompletePowerData(rackedModule)) {
+                    <div class="moduleHoverStats__row">
+                      <span class="moduleHoverStats__label">+12</span>
+                      <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
+                    </div>
+                    <div class="moduleHoverStats__row">
+                      <span class="moduleHoverStats__label">-12</span>
+                      <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
+                    </div>
+                    <div class="moduleHoverStats__row">
+                      <span class="moduleHoverStats__label">+5</span>
+                      <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
+                    </div>
+                  } @else {
+                    <div class="moduleHoverStats__row">
+                      <span class="moduleHoverStats__label">PWR</span>
+                      <span class="moduleHoverStats__value">n/a</span>
+                    </div>
+                  }
                 </div>
-                @if (hasCompletePowerData(rackedModule)) {
-                  <div class="moduleHoverStats__row">
-                    <span class="moduleHoverStats__label">+12</span>
-                    <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
-                  </div>
-                  <div class="moduleHoverStats__row">
-                    <span class="moduleHoverStats__label">-12</span>
-                    <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
-                  </div>
-                  <div class="moduleHoverStats__row">
-                    <span class="moduleHoverStats__label">+5</span>
-                    <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
-                  </div>
-                } @else {
-                  <div class="moduleHoverStats__row">
-                    <span class="moduleHoverStats__label">PWR</span>
-                    <span class="moduleHoverStats__value">n/a</span>
-                  </div>
-                }
-              </div>
+              }
             </app-module-realistic>
           }
         </div>
