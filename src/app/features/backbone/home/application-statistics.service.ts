@@ -85,6 +85,8 @@ export interface ApplicationInsightsPage {
   hpBandHighlights: ApplicationInsightsHighlight[];
   topManufacturerBars: ApplicationInsightsBar[];
   activeManufacturerBars: ApplicationInsightsBar[];
+  widestManufacturerBars: ApplicationInsightsBar[];
+  oneUManufacturerBars: ApplicationInsightsBar[];
   activityChart: {
     days: ApplicationInsightsTrendDay[];
     legend: ApplicationInsightsTrendLegendItem[];
@@ -394,6 +396,24 @@ export class ApplicationStatisticsService extends SubManager {
           valueLabel: this.formatCount(bucket.count),
           detail: bucket.detail ?? '',
           tone: this.getToneByIndex(index + 1)
+        }))
+      ),
+      widestManufacturerBars: this.mapBarWidths(
+        moduleInsights.widestManufacturers.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: `${ this.formatCount(bucket.count) } HP`,
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 2)
+        }))
+      ),
+      oneUManufacturerBars: this.mapBarWidths(
+        moduleInsights.oneUManufacturers.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: `${ this.formatCount(bucket.count) }%`,
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 3)
         }))
       ),
       activityChart: {
