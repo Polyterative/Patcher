@@ -78,12 +78,17 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Profiles sharing racks', value: 31, icon: 'dashboard_customize'},
         {name: 'Profiles sharing patches', value: 18, icon: 'hub'}
       ]);
+      expect(page.sharingMix).toEqual([
+        {name: 'Shared works total', value: 126, icon: 'layers'},
+        {name: 'Racks share of shared works', value: 67, icon: 'space_dashboard'},
+        {name: 'Patches share of shared works', value: 33, icon: 'cable'}
+      ]);
       expect(page.derived).toEqual([
         {name: 'Modules per represented maker', value: 13, icon: 'rule'},
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
         {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
       ]);
-      expect(page.methodology.length).toBe(5);
+      expect(page.methodology.length).toBe(6);
       expect(page.interpretation).toContain('Normalized coverage rates');
       done();
     });
@@ -101,8 +106,9 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.catalogueHealth).toEqual([]);
+      expect(page.sharingMix).toEqual([]);
       expect(page.derived).toEqual([]);
-      expect(page.methodology[4].description).toContain('rounded to whole numbers');
+      expect(page.methodology[5].description).toContain('rounded to whole numbers');
       done();
     });
   });
