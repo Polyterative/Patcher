@@ -27,6 +27,7 @@ export interface ApplicationInsightsPage {
   overview: ApplicationInsightStatistic[];
   catalogueHealth: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
+  sharingMix: ApplicationInsightStatistic[];
   derived: ApplicationInsightStatistic[];
   methodology: {
     icon: string;
@@ -152,6 +153,17 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'hub'
         }
       ],
+      sharingMix: sharedWorks >= 10
+        ? [
+          {
+            name: 'Shared works total',
+            value: sharedWorks,
+            icon: 'layers'
+          },
+          buildSignalStatistic('Racks share of shared works', statistics.publicRacks, sharedWorks, 'space_dashboard', 100, 3, 6),
+          buildSignalStatistic('Patches share of shared works', statistics.publicPatches, sharedWorks, 'cable', 100, 3, 6)
+        ].filter((value): value is ApplicationInsightStatistic => !!value)
+        : [],
       derived: [
         buildSignalStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
         buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
@@ -180,6 +192,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'monitoring',
           title: 'Coverage rates are normalized',
           description: 'Where a tiny raw ratio would read poorly, this page scales the signal to a clearer baseline such as shared racks or patches per 100 public modules.'
+        },
+        {
+          icon: 'pie_chart',
+          title: 'Mix signals describe composition',
+          description: 'Where this page shows split percentages, they describe how the current public work is divided between racks and patches. They are composition signals, not popularity rankings.'
         },
         {
           icon: 'functions',
