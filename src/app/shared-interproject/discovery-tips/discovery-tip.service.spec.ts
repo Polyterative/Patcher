@@ -224,16 +224,15 @@ describe('DiscoveryTipService', () => {
   });
 
   it('does not auto-advance to the next eligible tip while the current tip is still active', () => {
-    const service = build();
-    const profileAnchor = document.createElement('section');
+    const service = build('user-auto-advance');
     const modulesAddAnchor = document.createElement('button');
+    const profileAnchor = document.createElement('section');
     let activeTip: any = null;
 
     service.activeTip$.subscribe((value) => {
       activeTip = value;
     });
 
-    service.registerAnchor('user-area-profile-card', profileAnchor);
     service.registerAnchor('user-area-modules-add', modulesAddAnchor);
     service.updateUserAreaSnapshot({
       modulesLoaded: true,
@@ -248,7 +247,9 @@ describe('DiscoveryTipService', () => {
 
     jasmine.clock().tick(1300);
     const firstTipId = activeTip?.definition.id;
-    expect(firstTipId).toBeDefined();
+    expect(firstTipId).toBe('user-area-modules-add');
+
+    service.registerAnchor('user-area-profile-card', profileAnchor);
 
     jasmine.clock().tick(3000);
     expect(activeTip?.definition.id).toBe(firstTipId);
