@@ -83,6 +83,7 @@ export interface ApplicationInsightsTrendMomentumItem {
 }
 
 export interface ApplicationInsightsPage {
+  heroSummary: string;
   heroHighlights: ApplicationInsightsHighlight[];
   footprintSnapshot: ApplicationInsightsSnapshotMetric[];
   footprintHighlights: ApplicationInsightsHighlight[];
@@ -94,6 +95,7 @@ export interface ApplicationInsightsPage {
   hpBandBars: ApplicationInsightsBar[];
   hpBandActivityBars: ApplicationInsightsBar[];
   hpExactBars: ApplicationInsightsBar[];
+  hpBandVelocityBars: ApplicationInsightsBar[];
   hpBandHighlights: ApplicationInsightsHighlight[];
   moduleFreshnessBars: ApplicationInsightsBar[];
   moduleFreshnessHighlights: ApplicationInsightsHighlight[];
@@ -249,6 +251,23 @@ export class ApplicationStatisticsService extends SubManager {
       + this.getBucketCount(orderedHpBands, '3-5 HP');
     const largerFormatShare = this.getBucketCount(orderedHpBands, '17-28 HP')
       + this.getBucketCount(orderedHpBands, '29+ HP');
+    const standardActivityCounts = new Map(moduleInsights.standardActivity.map((bucket) => [bucket.label, bucket.count]));
+    const standardMomentumLeader = moduleInsights.standardMix
+      .map((bucket) => {
+        const recentCount = standardActivityCounts.get(bucket.label) ?? 0;
+        const allTimeShare = statistics.publicModules > 0
+          ? (bucket.count / statistics.publicModules) * 100
+          : 0;
+        const recentShare = updatedLast30Days > 0
+          ? (recentCount / updatedLast30Days) * 100
+          : 0;
+        return {
+          label: bucket.label,
+          delta: recentShare - allTimeShare
+        };
+      })
+      .filter((bucket) => bucket.delta > 0.5)
+      .sort((a, b) => b.delta - a.delta)[0];
     const rackRecentRefreshRate = statistics.publicRacks > 0
       ? Math.round((statistics.publicRacksUpdatedLast30Days / statistics.publicRacks) * 100)
       : 0;
@@ -309,7 +328,7 @@ export class ApplicationStatisticsService extends SubManager {
       this.createSnapshotMetric(
         'Shared works',
         sharedWorks,
-        `${ this.formatCount(statistics.publicRacks) } racks + ${ this.formatCount(statistics.publicPatches) } patches`,
+        'Racks and patches from public profiles with saved connections',
         'layers',
         'amber'
       )
@@ -400,6 +419,9 @@ export class ApplicationStatisticsService extends SubManager {
     ].filter((metric): metric is ReturnType<typeof this.createRateDatum> => !!metric);
 
     return {
+      heroSummary: statistics.publicModules > 0
+        ? `Today, the public library spans ${ this.formatCount(statistics.publicModules) } modules from ${ this.formatCount(statistics.publicManufacturers) } makers.`
+        : 'The public catalogue is live and ready to reveal its first patterns.',
       heroHighlights: [
         {
           label: 'Public modules',
@@ -485,18 +507,20 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'emoji_events'
         },
         {
-          label: 'Most active format',
+          label: 'Leading format by updates',
           value: mostActiveStandard
-            ? `${ mostActiveStandard.label } (${ this.formatCount(mostActiveStandard.count) })`
+            ? `${ mostActiveStandard.label } (${ this.formatCount(mostActiveStandard.count) } in 30d)`
             : 'N/A',
           icon: 'bolt'
         },
         {
-          label: 'Most competitive format',
-          value: mostCompetitiveStandard
-            ? `${ mostCompetitiveStandard.label } (${ this.formatCount(mostCompetitiveStandard.count) } makers)`
-            : 'N/A',
-          icon: 'groups'
+          label: 'Momentum leader (30d shift)',
+          value: standardMomentumLeader
+            ? `${ standardMomentumLeader.label } (+${ standardMomentumLeader.delta.toFixed(1) }%)`
+            : mostCompetitiveStandard
+              ? `${ mostCompetitiveStandard.label } (${ this.formatCount(mostCompetitiveStandard.count) } makers)`
+              : 'Stable',
+          icon: standardMomentumLeader ? 'trending_up' : 'groups'
         }
       ],
       hpBandBars: this.mapBarWidths(
@@ -526,6 +550,17 @@ export class ApplicationStatisticsService extends SubManager {
           valueLabel: this.formatCount(bucket.count),
           detail: `${ this.formatPercentValue(bucket.count, statistics.publicModules) } of public modules`,
           tone: this.getToneByIndex(index + 1)
+        }))
+      ),
+      hpBandVelocityBars: this.mapBarWidths(
+        hpBandVelocity.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.rawValue,
+          valueLabel: `${ this.formatCount(Math.round(bucket.rawValue)) }%`,
+          detail: bucket.recentUpdates > 0
+            ? `${ this.formatCount(bucket.recentUpdates) } updates / ${ this.formatCount(bucket.totalModules) } modules`
+            : 'No recent updates',
+          tone: this.getToneByIndex(index + 4)
         }))
       ),
       hpBandHighlights: [
@@ -568,7 +603,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'bolt'
         },
         {
-          label: 'Last-7 share of 30d activity',
+          label: 'This week / 30d activity',
           value: this.formatPercent(updatedLast7Days, Math.max(updatedLast30Days, 1)),
           icon: 'moving'
         },
@@ -621,7 +656,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'pie_chart'
         },
         {
-          label: 'Solo makers',
+          label: 'Single-module makers',
           value: this.formatCount(moduleInsights.soloManufacturerCount),
           icon: 'filter_1'
         },
@@ -682,12 +717,12 @@ export class ApplicationStatisticsService extends SubManager {
             icon: 'date_range'
           },
           {
-            label: 'Vs previous 7',
+            label: 'vs previous 7',
             value: this.formatSignedCount(lastSevenDaysTotal - previousSevenDaysTotal),
             icon: 'trending_up'
           },
           {
-            label: 'Fastest-moving layer',
+            label: 'Leading activity type',
             value: fastestActivityTrack?.label ?? 'N/A',
             icon: 'stacked_line_chart'
           },
@@ -697,7 +732,7 @@ export class ApplicationStatisticsService extends SubManager {
             icon: 'whatshot'
           },
           {
-            label: 'Peak day',
+            label: 'Peak day total',
             value: this.formatCount(this.getMaxDailyTotal(activitySeries)),
             icon: 'bolt'
           }
@@ -717,8 +752,8 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'hub'
         },
         {
-          label: 'Recent sharing momentum',
-          value: `R ${ rackRecentRefreshRate }% · P ${ patchRecentRefreshRate }%`,
+          label: '30-day update rate',
+          value: `Racks ${ rackRecentRefreshRate }% · Patches ${ patchRecentRefreshRate }%`,
           icon: 'trending_up'
         },
         {
@@ -732,12 +767,12 @@ export class ApplicationStatisticsService extends SubManager {
       patchDepthBars: this.mapBarWidths(patchDepthMetrics),
       patchHighlights: [
         {
-          label: 'Saved connections',
+          label: 'Connections in public patches',
           value: this.formatCount(statistics.publicPatchConnections),
           icon: 'linear_scale'
         },
         {
-          label: 'Patch authors',
+          label: 'Profiles sharing patches',
           value: this.formatCount(statistics.publicPatchAuthors),
           icon: 'hub'
         },
