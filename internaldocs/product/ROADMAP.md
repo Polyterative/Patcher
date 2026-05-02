@@ -291,9 +291,17 @@ stable, and there is enough public volume for the aggregates to be credible.
 - avoid drill-downs or overlapping filter combinations that let viewers infer individuals or tiny cohorts
 - link interesting findings back to real product surfaces so the insights deepen discovery rather than become dead-end charts
 
-**Open questions:** Which first aggregates are compelling enough for the home teaser? Should the first dedicated insights
-surface be fully public for SEO, or partly authenticated? Which chart vocabulary can be built from existing UI patterns
-before adding a heavier charting dependency?
+**Current decisions after the first shipped iterations:**
+
+- the dedicated insights surface should stay **fully public** while it remains aggregate-only and privacy-safe; its public
+  discoverability is part of the product value
+- the smallest reusable vocabulary is still the current **stat-card + interpretation/methodology card** approach; do not add
+  a heavier chart dependency until there is sustained signal that genuinely benefits from time-series or distribution views
+- the next worthwhile deeper-analysis directions, once volume and trust justify them, are:
+  1. **co-occurrence patterns** that help discovery ("often seen together")
+  2. **trend lines** only when public activity is dense enough for stable time windows
+  3. **balance / archetype summaries** built on trusted tag coverage
+  4. **rare-module discovery** later, once rarity can be distinguished from thin public participation
 
 #### Patch Tags / Genre / Technique Labels
 
