@@ -6,6 +6,7 @@ describe('ApplicationStatisticsService', () => {
   function build(counts = {
     publicModules: 1280,
     publicManufacturers: 96,
+    publicProfiles: 240,
     publicRacks: 84,
     publicRackAuthors: 31,
     publicPatches: 42,
@@ -46,6 +47,7 @@ describe('ApplicationStatisticsService', () => {
     const {service} = build({
       publicModules: 250,
       publicManufacturers: 40,
+      publicProfiles: 18,
       publicRacks: 0,
       publicRackAuthors: 0,
       publicPatches: 0,
@@ -78,6 +80,11 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Profiles sharing racks', value: 31, icon: 'dashboard_customize'},
         {name: 'Profiles sharing patches', value: 18, icon: 'hub'}
       ]);
+      expect(page.participation).toEqual([
+        {name: 'Public profiles', value: 240, icon: 'person_search'},
+        {name: 'Rack-sharing profiles per 100 public profiles', value: 13, icon: 'dashboard_customize'},
+        {name: 'Patch-sharing profiles per 100 public profiles', value: 8, icon: 'hub'}
+      ]);
       expect(page.sharingMix).toEqual([
         {name: 'Shared works total', value: 126, icon: 'layers'},
         {name: 'Racks share of shared works', value: 67, icon: 'space_dashboard'},
@@ -85,6 +92,7 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.coverage[0].title).toContain('live');
       expect(page.coverage[1].description).toContain('at least 10 public shared works');
+      expect(page.coverage[3].title).toContain('Participation rates are live');
       expect(page.derived).toEqual([
         {name: 'Modules per represented maker', value: 13, icon: 'rule'},
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
@@ -100,6 +108,7 @@ describe('ApplicationStatisticsService', () => {
     const {service} = build({
       publicModules: 20,
       publicManufacturers: 2,
+      publicProfiles: 8,
       publicRacks: 5,
       publicRackAuthors: 2,
       publicPatches: 4,
@@ -108,10 +117,14 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(page.catalogueHealth).toEqual([]);
+      expect(page.participation).toEqual([
+        {name: 'Public profiles', value: 8, icon: 'person_search'}
+      ]);
       expect(page.sharingMix).toEqual([]);
       expect(page.derived).toEqual([]);
       expect(page.coverage[1].title).toContain('currently suppressed');
       expect(page.coverage[2].description).toContain('fake KPI');
+      expect(page.coverage[3].description).toContain('adoption as a rate');
       expect(page.methodology[5].description).toContain('rounded to whole numbers');
       done();
     });

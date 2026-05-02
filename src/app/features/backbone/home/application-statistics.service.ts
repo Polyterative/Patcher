@@ -27,6 +27,7 @@ export interface ApplicationInsightsPage {
   overview: ApplicationInsightStatistic[];
   catalogueHealth: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
+  participation: ApplicationInsightStatistic[];
   sharingMix: ApplicationInsightStatistic[];
   derived: ApplicationInsightStatistic[];
   coverage: {
@@ -137,6 +138,15 @@ export class ApplicationStatisticsService extends SubManager {
       buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
       buildSignalStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
     ].filter((value): value is ApplicationInsightStatistic => !!value);
+    const participation = [
+      {
+        name: 'Public profiles',
+        value: statistics.publicProfiles,
+        icon: 'person_search'
+      },
+      buildSignalStatistic('Rack-sharing profiles per 100 public profiles', statistics.publicRackAuthors, statistics.publicProfiles, 'dashboard_customize', 100, 3, 10),
+      buildSignalStatistic('Patch-sharing profiles per 100 public profiles', statistics.publicPatchAuthors, statistics.publicProfiles, 'hub', 100, 3, 10)
+    ].filter((value): value is ApplicationInsightStatistic => !!value);
 
     return {
       overview: [
@@ -174,6 +184,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'hub'
         }
       ],
+      participation,
       sharingMix,
       derived,
       coverage: [
@@ -194,6 +205,12 @@ export class ApplicationStatisticsService extends SubManager {
           description: derived.length > 0
             ? 'Rounded derived ratios are visible because both sides of each comparison clear the minimum counts needed to read them directionally.'
             : 'Derived ratios stay hidden whenever either side of a comparison is too sparse, so the page does not imply a fake KPI from only a handful of public items.'
+        },
+        {
+          title: participation.length > 1 ? 'Participation rates are live' : 'Participation rates are currently suppressed',
+          description: participation.length > 1
+            ? 'The page can show rack- and patch-sharing participation per 100 public profiles because the public profile base is large enough to support a meaningful rate.'
+            : 'Participation rates stay hidden until there are enough public profiles and enough sharing authors to describe adoption as a rate instead of a tiny-sample anecdote.'
         }
       ],
       interpretation: creatorFootprint > 0

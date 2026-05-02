@@ -58,6 +58,7 @@ export interface PublicUserContributorStats {
 export interface PublicApplicationStatistics {
   publicModules: number;
   publicManufacturers: number;
+  publicProfiles: number;
   publicRacks: number;
   publicRackAuthors: number;
   publicPatches: number;
@@ -568,6 +569,12 @@ export class SupabaseQueriesService {
         query => query
           .select('id, public_modules:modules!inner(id)', {count: 'exact', head: true})
           .filter('public_modules.public', 'eq', true)
+      ),
+      publicProfiles: this.countRows(
+        DbPaths.profiles,
+        query => query
+          .select('id', {count: 'exact', head: true})
+          .filter('public', 'eq', true)
       ),
       publicRacks: this.countRows(
         DbPaths.racks,
