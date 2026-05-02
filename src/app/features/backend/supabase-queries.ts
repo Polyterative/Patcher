@@ -85,6 +85,8 @@ export interface PublicApplicationModuleInsightBucket {
 export interface PublicApplicationModuleInsights {
   topManufacturers: PublicApplicationModuleInsightBucket[];
   activeManufacturers: PublicApplicationModuleInsightBucket[];
+  widestManufacturers: PublicApplicationModuleInsightBucket[];
+  oneUManufacturers: PublicApplicationModuleInsightBucket[];
   standardMix: PublicApplicationModuleInsightBucket[];
   hpBands: PublicApplicationModuleInsightBucket[];
   averageHp: number;
@@ -102,6 +104,12 @@ type PublicModuleInsightRow = {
   hp: number;
   standardName: string;
   updated: string;
+};
+
+type ManufacturerInsightStats = {
+  totalModules: number;
+  totalHp: number;
+  oneUModules: number;
 };
 
 
@@ -304,9 +312,39 @@ export class SupabaseQueriesService {
     return 'Large (29+ HP)';
   }
 
+  private rankManufacturerScores(
+    statsByManufacturer: Map<string, ManufacturerInsightStats>,
+    scorer: (stats: ManufacturerInsightStats) => number | null,
+    detailBuilder: (stats: ManufacturerInsightStats, score: number) => string,
+    limit = 5
+  ): PublicApplicationModuleInsightBucket[] {
+    return [...statsByManufacturer.entries()]
+      .map(([label, stats]) => ({
+        label,
+        score: scorer(stats),
+        stats
+      }))
+      .filter((entry): entry is {label: string; score: number; stats: ManufacturerInsightStats} =>
+        entry.score !== null
+      )
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return a.label.localeCompare(b.label);
+      })
+      .slice(0, limit)
+      .map(({label, score, stats}) => ({
+        label,
+        count: score,
+        detail: detailBuilder(stats, score)
+      }));
+  }
+
   private buildModuleInsights(rows: PublicModuleInsightRow[]): PublicApplicationModuleInsights {
     const manufacturerCounts = new Map<string, number>();
     const activeManufacturerCounts = new Map<string, number>();
+    const manufacturerStats = new Map<string, ManufacturerInsightStats>();
     const standardCounts = new Map<string, number>();
     const hpBandCounts = new Map<string, number>();
     const lastThirtyDaysIso = this.getLastThirtyDaysIso();
@@ -317,6 +355,12 @@ export class SupabaseQueriesService {
         row.manufacturerName,
         (manufacturerCounts.get(row.manufacturerName) ?? 0) + 1
       );
+      manufacturerStats.set(row.manufacturerName, {
+        totalModules: (manufacturerStats.get(row.manufacturerName)?.totalModules ?? 0) + 1,
+        totalHp: (manufacturerStats.get(row.manufacturerName)?.totalHp ?? 0) + row.hp,
+        oneUModules: (manufacturerStats.get(row.manufacturerName)?.oneUModules ?? 0)
+          + (row.standardName === '3U' ? 0 : 1)
+      });
       standardCounts.set(
         row.standardName,
         (standardCounts.get(row.standardName) ?? 0) + 1
@@ -356,6 +400,18 @@ export class SupabaseQueriesService {
         activeManufacturerCounts,
         5,
         (count) => `${ count } modules updated in the last 30 days`
+      ),
+      widestManufacturers: this.rankManufacturerScores(
+        manufacturerStats,
+        (stats) => stats.totalModules >= 5 ? Math.round(stats.totalHp / stats.totalModules) : null,
+        (stats, score) => `${ score } HP average across ${ stats.totalModules } public modules`
+      ),
+      oneUManufacturers: this.rankManufacturerScores(
+        manufacturerStats,
+        (stats) => stats.totalModules >= 5 && stats.oneUModules >= 2
+          ? Math.round((stats.oneUModules / stats.totalModules) * 100)
+          : null,
+        (stats, score) => `${ score }% 1U share across ${ stats.totalModules } public modules`
       ),
       standardMix: this.rankBuckets(
         standardCounts,
