@@ -351,6 +351,8 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Make Noise', count: 2, detail: '2 modules updated in the last 30 days'},
             {label: 'Noise Engineering', count: 1, detail: '1 modules updated in the last 30 days'}
           ]);
+          expect(result.widestManufacturers).toEqual([]);
+          expect(result.oneUManufacturers).toEqual([]);
           expect(result.standardMix).toEqual([
             {label: '3U', count: 2, detail: '2 public modules in this format'},
             {label: 'Intellijel 1U', count: 1, detail: '1 public modules in this format'},
