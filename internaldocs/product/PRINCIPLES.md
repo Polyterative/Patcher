@@ -150,6 +150,34 @@ fields — not as unlimited power over the entire public representation of the b
 
 ---
 
+## Public Insights & Curiosity Surfaces
+
+Patcher should eventually surface interesting aggregate patterns from its catalogue and public community activity, but the
+goal is **useful curiosity**, not vanity analytics. The right feeling is "I learned something real about modules, racks,
+patches, or contributor activity" — not "I was ranked."
+
+This creates four rules:
+
+1. **Aggregate-only by default.** Insight surfaces may use public-safe community data and catalogue data, but must not expose
+   private entities, person-level behavioral exports, or "who owns what" views. Public insight surfaces should only use
+   catalogue data plus explicitly public entities.
+2. **Confidence over theater.** If tag coverage, sample size, or public volume is weak, show that clearly or hide the
+   insight. Do not render precise-looking charts from weak signal.
+3. **Interpretation beats raw dashboards.** Visuals should be paired with plain-language explanation and, where useful, a
+   route back to the underlying browse surface.
+4. **No gamified status loops.** No leaderboards, streaks, or popularity mechanics. Contributor or community stats can exist
+   as trust/context signals without becoming competitive scoring.
+
+This is the same product instinct behind advisory surfaces such as rack balance analysis: visually compelling, grounded in
+real data, explicit about uncertainty, and helpful without pretending the system has perfect knowledge.
+
+For this to stay trustworthy, each future insight should carry a small methodology contract: what population it covers, the
+relevant sample size / coverage, the time window or freshness, and the rule that suppresses the metric when the cohort is
+too small or incomplete. Avoid drill-downs, overlapping filters, or side-by-side slices that let people infer an individual
+or tiny cohort by subtraction.
+
+---
+
 ## Community Catalogue Sovereignty
 
 The shared module catalogue is a community asset, not a manufacturer-controlled mirror and not a generic advertising
