@@ -55,6 +55,12 @@ export interface PublicUserContributorStats {
   approvedPublicModules: number;
 }
 
+export interface PublicApplicationStatistics {
+  publicModules: number;
+  publicRacks: number;
+  publicPatches: number;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
@@ -88,7 +94,12 @@ export class SupabaseQueriesService {
   }
 
   private countRows(
-    table: typeof DbPaths.modules | typeof DbPaths.comments | typeof DbPaths.module_flags,
+    table:
+      | typeof DbPaths.modules
+      | typeof DbPaths.comments
+      | typeof DbPaths.module_flags
+      | typeof DbPaths.racks
+      | typeof DbPaths.patches,
     applyFilters: (query: any) => any
   ): Observable<number> {
     return rxFrom(
@@ -474,6 +485,44 @@ export class SupabaseQueriesService {
     ).pipe(
       map((approvedPublicModules) => ({approvedPublicModules}))
     );
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x =>
+      x.includes('modules')
+      || x.includes('patches')
+      || x.includes('rackWithId')
+      || x.includes('racksMinimal')
+    )),
+    maxCacheCount: 20,
+  })
+  getApplicationStatistics(): Observable<PublicApplicationStatistics> {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
+    const connectedPatchJoin = 'patch_connections!inner(patchid)';
+
+    return forkJoin({
+      publicModules: this.countRows(
+        DbPaths.modules,
+        query => query
+          .select('id', {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+      ),
+      publicRacks: this.countRows(
+        DbPaths.racks,
+        query => query
+          .select(`id, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+      ),
+      publicPatches: this.countRows(
+        DbPaths.patches,
+        query => query
+          .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .filter('public', 'eq', true)
+          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+      )
+    });
   }
   
   @Cacheable({

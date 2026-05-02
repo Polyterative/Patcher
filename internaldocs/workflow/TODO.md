@@ -24,7 +24,7 @@
 
 ## Active
 
-- [~] Manufacturer accounts & verification — objective verification rules, field ownership, dormancy/revocation, and first-pass claim-flow implementation tasks now live in `CURRENT_FEATURE.md`; code work that needs `manufacturer_accounts` insert/select policy decisions remains blocked until explicit Supabase/RLS approval.
+- _None selected. Move one backlog item here before implementation._
 
 ---
 
@@ -138,6 +138,19 @@ yet.
 
 ---
 
+#### HIGH: Manufacturer Accounts & Verification
+
+**Why:** Manufacturer pages need a trustable ownership model before official-field editing, updates, analytics, or B2B surfaces can ship.
+**Blocked on:** Explicit user approval for any required Supabase/RLS policy work around `manufacturer_accounts`.
+
+- [ ] Add the minimal `manufacturer_accounts` table shape and generated types once policy work is approved
+- [ ] Add claim read/create methods scoped to manufacturer detail surfaces
+- [ ] Add CTA states for claim, pending review, and ownership-review request
+- [ ] Limit first verified edits to official profile fields, MSRP, and official links
+- [ ] Keep shared catalogue edits audited or review-gated
+
+---
+
 ---
 
 #### LOW: Manufacturer Updates / Featured Surface
@@ -184,17 +197,16 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
-#### LOW: Application Statistics & Data Insights
+#### LOW: Application Statistics & Data Insights — Dedicated Surface
 
-**Why:** Patcher now has enough structured data to justify a future insight layer that makes the product feel alive, data-rich,
-and worth exploring beyond raw entity pages.
-**Depends on:** Public profiles and enough public-content volume for the first aggregates to be meaningful.
+**Why:** The home teaser now ships a public-safe snapshot, but there is still room for a fuller insight surface once public-profile volume is high enough to support more exploration without thin-sample noise.
 
-- [ ] MVP: define the first metric catalog before UI work (numerator, denominator, eligibility, coverage, freshness, suppression rule, confidence tier)
-- [ ] MVP: create a dedicated `ApplicationStatisticsService` and cache strategy for aggregate queries / confidence modeling
-- [ ] MVP: add a small home teaser card after the proof sections (max three stats, one interpretation sentence, one CTA)
-- [ ] Structural: decide the smallest reusable chart/stat vocabulary needed beyond the existing shared statistics surfaces
-- [ ] Structural: create a dedicated insights surface for catalogue health, community activity, rack composition, contributor activity, and other public-safe patterns
+- [ ] Decide the smallest reusable chart/stat vocabulary needed beyond the shared statistics card
+- [ ] Add a dedicated insights surface for catalogue health, community activity, rack composition, and other public-safe patterns
+- [ ] Define freshness / coverage / suppression rules for multi-metric public insight blocks
+
+---
+
 - [ ] Structural: carry forward Balance Analysis rules — advisory tone, plain-language interpretation, visible methodology, and confidence/coverage messaging when signal is partial
 - [ ] Structural: ensure the public surface avoids ranking people, drill-down leakage, or overlapping filters that expose tiny cohorts
 - [ ] Polish: decide which deeper analysis directions are worth later investment (co-occurrence, trend lines, rare-module discovery, archetype clustering) and require baseline comparators / thresholds before launch
