@@ -62,6 +62,7 @@ export interface PublicApplicationStatistics {
   publicRacks: number;
   publicRackAuthors: number;
   publicPatches: number;
+  publicPatchConnections: number;
   publicPatchAuthors: number;
 }
 
@@ -103,6 +104,7 @@ export class SupabaseQueriesService {
       | typeof DbPaths.comments
       | typeof DbPaths.module_flags
       | typeof DbPaths.manufacturers
+      | typeof DbPaths.patch_connections
       | typeof DbPaths.profiles
       | typeof DbPaths.racks
       | typeof DbPaths.patches,
@@ -556,6 +558,7 @@ export class SupabaseQueriesService {
   getApplicationStatistics(): Observable<PublicApplicationStatistics> {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connectedPatchJoin = 'patch_connections!inner(patchid)';
+    const publicPatchJoin = `patch:patches!patch_connections_patchid_fkey!inner(id, ${ publicAuthorGateJoin })`;
 
     return forkJoin({
       publicModules: this.countRows(
@@ -596,6 +599,13 @@ export class SupabaseQueriesService {
           .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
           .filter('public', 'eq', true)
           .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+      ),
+      publicPatchConnections: this.countRows(
+        DbPaths.patch_connections,
+        query => query
+          .select(`patchid, ${ publicPatchJoin }`, {count: 'exact', head: true})
+          .filter('patch.public', 'eq', true)
+          .filter(`patch.${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       ),
       publicPatchAuthors: this.countRows(
         DbPaths.profiles,

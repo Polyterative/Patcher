@@ -28,6 +28,7 @@ export interface ApplicationInsightsPage {
   catalogueHealth: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
   participation: ApplicationInsightStatistic[];
+  patchNetwork: ApplicationInsightStatistic[];
   sharingMix: ApplicationInsightStatistic[];
   derived: ApplicationInsightStatistic[];
   coverage: {
@@ -147,6 +148,17 @@ export class ApplicationStatisticsService extends SubManager {
       buildSignalStatistic('Rack-sharing profiles per 100 public profiles', statistics.publicRackAuthors, statistics.publicProfiles, 'dashboard_customize', 100, 3, 10),
       buildSignalStatistic('Patch-sharing profiles per 100 public profiles', statistics.publicPatchAuthors, statistics.publicProfiles, 'hub', 100, 3, 10)
     ].filter((value): value is ApplicationInsightStatistic => !!value);
+    const patchNetwork = [
+      ...(statistics.publicPatchConnections > 0
+        ? [{
+          name: 'Saved connections total',
+          value: statistics.publicPatchConnections,
+          icon: 'linear_scale'
+        }]
+        : []),
+      buildSignalStatistic('Saved connections per shared patch', statistics.publicPatchConnections, statistics.publicPatches, 'share', 1, 12, 5),
+      buildSignalStatistic('Saved connections per patch-sharing profile', statistics.publicPatchConnections, statistics.publicPatchAuthors, 'hub', 1, 12, 3)
+    ].filter((value): value is ApplicationInsightStatistic => !!value);
 
     return {
       overview: [
@@ -185,6 +197,7 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       participation,
+      patchNetwork,
       sharingMix,
       derived,
       coverage: [
@@ -211,10 +224,16 @@ export class ApplicationStatisticsService extends SubManager {
           description: participation.length > 1
             ? 'The page can show rack- and patch-sharing participation per 100 public profiles because the public profile base is large enough to support a meaningful rate.'
             : 'Participation rates stay hidden until there are enough public profiles and enough sharing authors to describe adoption as a rate instead of a tiny-sample anecdote.'
+        },
+        {
+          title: patchNetwork.length > 1 ? 'Patch-network rates are live' : 'Patch-network rates are currently suppressed',
+          description: patchNetwork.length > 1
+            ? 'Patch-network density signals are visible because there are enough saved public connections to describe how interconnected shared patches are without over-reading only a few cables.'
+            : 'Patch-network rates stay hidden until there are enough saved public connections and connected public patches to read the average as a directional pattern instead of a tiny-sample curiosity.'
         }
       ],
       interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Normalized coverage rates and rounded ratios help show shape without pretending to be exact analytics.'
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Normalized coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
       methodology: [
         {
@@ -246,6 +265,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'functions',
           title: 'Derived signals stay rounded',
           description: 'Any ratio-style numbers on this page are rounded to whole numbers, and low-volume ratios stay hidden until the public sample is large enough to read as a directional signal instead of a fake KPI.'
+        },
+        {
+          icon: 'share',
+          title: 'Patch-network signals stay aggregate',
+          description: 'Patch-network blocks count saved cable connections only in aggregate across public patches from public profiles. They describe density, not any specific patch graph.'
         }
       ]
     };
