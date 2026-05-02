@@ -58,6 +58,7 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     service.GET.patches(0, 9).subscribe({
       next: () => {
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
         done();
       },
       error: (err) => {
@@ -75,6 +76,26 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     service.GET.patches(0, 9, 'drum').subscribe({
       next: () => {
         expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('drum'));
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should inner-join the author visibility gate for public patch listings', (done) => {
+    const mock = chainableWithIlike({data: [], count: 0, error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.patches(0, 9).subscribe({
+      next: () => {
+        expect(selectSpy).toHaveBeenCalledWith(
+          jasmine.stringMatching(/author_profile_gate:authorid!inner\(public\)/),
+          {count: 'exact'}
+        );
         done();
       },
       error: (err) => {
