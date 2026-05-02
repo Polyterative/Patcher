@@ -171,29 +171,31 @@
   overflow: visible;
 }
 
+$rack-balance-accent: rgba(71, 170, 156, 1);
+
 .rackBalancePanel__radarRing {
-  fill: rgba(52, 123, 193, 0.03);
-  stroke: rgba(34, 75, 117, 0.13);
+  fill: rgba(71, 170, 156, 0.03);
+  stroke: rgba(71, 170, 156, 0.13);
   stroke-width: 1;
   animation: rack-balance-fade-in 260ms ease-out both;
 }
 
 .rackBalancePanel__radarAxisLine {
-  stroke: rgba(34, 75, 117, 0.12);
+  stroke: rgba(71, 170, 156, 0.12);
   stroke-width: 1;
   animation: rack-balance-fade-in 260ms ease-out both;
 }
 
 .rackBalancePanel__radarShape {
-  fill: rgba(52, 123, 193, 0.18);
-  stroke: rgba(52, 123, 193, 0.9);
+  fill: rgba(71, 170, 156, 0.18);
+  stroke: rgba(71, 170, 156, 0.9);
   stroke-width: 2;
   transform-origin: center;
   animation: rack-balance-chart-enter 320ms ease-out both 40ms;
 }
 
 .rackBalancePanel__radarPoint {
-  fill: rgba(71, 170, 156, 0.95);
+  fill: $rack-balance-accent;
   stroke: white;
   stroke-width: 1.5;
   transform-origin: center;
