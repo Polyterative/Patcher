@@ -304,33 +304,33 @@ describe('SupabaseService - get complex queries', () => {
             id: 1,
             manufacturerId: 1,
             hp: 6,
-            standard: 0,
             updated: '2026-05-01T10:00:00.000Z',
-            manufacturer: {id: 1, name: 'Make Noise'}
+            manufacturer: {id: 1, name: 'Make Noise'},
+            standardMeta: {id: 1, name: '3U'}
           },
           {
             id: 2,
             manufacturerId: 1,
             hp: 14,
-            standard: 0,
             updated: '2026-05-01T11:00:00.000Z',
-            manufacturer: {id: 1, name: 'Make Noise'}
+            manufacturer: {id: 1, name: 'Make Noise'},
+            standardMeta: {id: 1, name: '3U'}
           },
           {
             id: 3,
             manufacturerId: 2,
             hp: 22,
-            standard: 1,
             updated: '2026-03-15T09:00:00.000Z',
-            manufacturer: {id: 2, name: 'Intellijel'}
+            manufacturer: {id: 2, name: 'Intellijel'},
+            standardMeta: {id: 2, name: 'Intellijel 1U'}
           },
           {
             id: 4,
             manufacturerId: 3,
             hp: 34,
-            standard: 2,
             updated: '2026-05-02T12:00:00.000Z',
-            manufacturer: {id: 3, name: 'Noise Engineering'}
+            manufacturer: {id: 3, name: 'Noise Engineering'},
+            standardMeta: {id: 3, name: 'Pulp Logic 1U'}
           }
         ],
         error: null
@@ -364,7 +364,7 @@ describe('SupabaseService - get complex queries', () => {
           ]);
           expect(result.averageHp).toBe(19);
           expect(result.medianHp).toBe(22);
-          expect(selectSpy).toHaveBeenCalledWith('id,hp,standard,updated,manufacturer:manufacturerId(id,name)');
+          expect(selectSpy).toHaveBeenCalledWith('id,hp,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)');
           expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
           done();
         },

@@ -28,7 +28,8 @@ describe('ApplicationStatisticsService', () => {
       ],
       standardMix: [
         {label: '3U', count: 1000, detail: '1000 public modules in this format'},
-        {label: 'Intellijel 1U', count: 180, detail: '180 public modules in this format'}
+        {label: 'Intellijel 1U', count: 180, detail: '180 public modules in this format'},
+        {label: 'Pulp Logic 1U', count: 20, detail: '20 public modules in this format'}
       ],
       hpBands: [
         {label: 'Compact (0-8 HP)', count: 340, detail: '340 modules in this size band'},
@@ -129,12 +130,13 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.standardMixBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: '3U', valueLabel: '1,000'},
-        {label: 'Intellijel 1U', valueLabel: '180'}
+        {label: 'Intellijel 1U', valueLabel: '180'},
+        {label: 'Pulp Logic 1U', valueLabel: '20'}
       ]);
       expect(page.standardMixHighlights).toEqual([
-        {label: 'Formats represented', value: '2', icon: 'category'},
+        {label: 'Formats represented', value: '3', icon: 'category'},
         {label: 'Dominant standard', value: '3U (1,000)', icon: 'emoji_events'},
-        {label: '1U footprint', value: '14%', icon: 'view_week'}
+        {label: '1U footprint', value: '16%', icon: 'view_week'}
       ]);
       expect(page.hpBandBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Compact (0-8 HP)', valueLabel: '340'},
