@@ -328,7 +328,9 @@ describe('SupabaseService - get complex queries', () => {
       
       service.get.racksWithModule(99).subscribe({
         next: () => {
-          expect(filterSpy).toHaveBeenCalledWith('moduleid', 'eq', 99);
+          expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(filterSpy).toHaveBeenCalledWith('rack_modules.moduleid', 'eq', 99);
           done();
         },
         error: (err) => {

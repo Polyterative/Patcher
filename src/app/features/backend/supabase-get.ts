@@ -22,6 +22,21 @@ import { SimpleUserModel } from './supabase.types';
 import { SupabaseQueriesService } from './supabase-queries';
 
 
+const PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
+
+function stripPublicAuthorGate<T>(response: any) {
+  const data = Array.isArray(response?.data)
+    ? response.data.map(({[PUBLIC_AUTHOR_GATE_ALIAS]: _gate, ...rest}: any) => rest)
+    : response?.data && typeof response.data === 'object'
+      ? (({[PUBLIC_AUTHOR_GATE_ALIAS]: _gate, ...rest}: any) => rest)(response.data)
+      : response?.data;
+
+  return {
+    ...response,
+    data
+  } as T;
+}
+
 export interface AdminFlagRow {
   id: number;
   module_id: number;
@@ -76,15 +91,23 @@ export function createGetNamespace(
         })))),
     
     racksWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
-      supabase.from(DbPaths.rack_modules_grouped_by_moduleid)
-        .select(`*,${ QueryJoins.rack }`, {count: 'exact'})
-        .filter('moduleid', 'eq', moduleid)
-        // postgrest show racks only once
+      supabase.from(DbPaths.racks)
+        .select(`*, ${ QueryJoins.author }, ${ QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS) }, rack_modules!inner(rackid,moduleid)`, {count: 'exact'})
+        .filter('public', 'eq', true)
+        .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .filter('rack_modules.moduleid', 'eq', moduleid)
         .range(from, to)
         .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
     )
       .pipe(
         remapErrors(),
+        map((response: any) => {
+          const stripped = stripPublicAuthorGate<{data: Rack[]; count: number | null}>(response);
+          return {
+            ...stripped,
+            data: (stripped.data ?? []).map((rack: Rack) => ({rack}))
+          };
+        }),
       ),
     patchWithId: (id: number, columns = '*') => rxFrom(
       supabase.from(DbPaths.patches)
@@ -95,32 +118,18 @@ export function createGetNamespace(
       .pipe(
         remapErrors()
       ),
-    patchesWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => {
-      const patchIdList$ = rxFrom(
-        supabase.from(DbPaths.patches_for_modules)
-          .select('moduleid,patchid', {count: 'exact'})
-          .filter('moduleid', 'eq', moduleid)
-          .range(from, to)
-      );
-
-      return patchIdList$.pipe(
-        switchMap(x => {
-            const getPatchData$ = forkJoin(
-              x.data.map(resultFromView =>
-                rxFrom(supabase.from(DbPaths.patches)
-                  .select(`id,name,description,${ QueryJoins.author },updated,created `)
-                  .filter('id', 'eq', resultFromView.patchid)
-                  .filter('public', 'eq', true)
-                  .maybeSingle())
-                  .pipe(map(x => x.data))
-              )
-            ).pipe(map(results => results.filter(Boolean)));
-            
-            return x.data.length > 0 ? getPatchData$ : of([]);
-          }
-        )
-      );
-    },
+    patchesWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
+      supabase.from(DbPaths.patches)
+        .select(`id,name,description,${ QueryJoins.author },updated,created, ${ QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS) }, patches_for_modules!inner(moduleid,patchid)`, {count: 'exact'})
+        .filter('public', 'eq', true)
+        .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
+        .filter('patches_for_modules.moduleid', 'eq', moduleid)
+        .range(from, to)
+        .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
+    ).pipe(
+      remapErrors(),
+      map((response: any) => stripPublicAuthorGate<{data: Patch[]; count: number | null}>(response).data ?? [])
+    ),
     modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
       supabase.from(DbPaths.modules)
         .select(`${ columns },

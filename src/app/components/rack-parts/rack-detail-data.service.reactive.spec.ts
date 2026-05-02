@@ -61,7 +61,8 @@ describe('RackDetailDataService reactive flows', () => {
         rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
       },
       GET: {
-        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: rack()}))
+        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: rack()})),
+        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: rack()}))
       },
       storage: {
         uploadRackImage: jasmine.createSpy('storage.uploadRackImage').and.returnValue(of('new-image.jpg')),
@@ -167,6 +168,16 @@ describe('RackDetailDataService reactive flows', () => {
     expect(service.isCurrentRackPrivate$.value).toBeTrue();
     expect(service.isCurrentRackEditable$.value).toBeFalse();
     expect(service.isCurrentRackPropertyOfCurrentUser$.value).toBeTrue();
+  });
+
+  it('uses public rack reads when public detail mode is enabled', () => {
+    const {service, backend} = build();
+
+    service.setPublicDetailMode(true);
+    service.updateSingleRackData$.next(33);
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(33);
+    expect(backend.GET.rackWithId).not.toHaveBeenCalledWith(33);
   });
   
   it('handles rack order changes for disallowed and allowed moves', () => {

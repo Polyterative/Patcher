@@ -61,6 +61,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Patch Details'); }
+    this.dataService.setPublicDetailMode(true);
     
     this.route.params
       .pipe(
@@ -128,6 +129,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
   }
 
   ngOnDestroy(): void {
+    this.dataService.setPublicDetailMode(false);
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singlePatchData$.next(undefined);
     this.dataService.patchEditingPanelOpenState$.next(false);
