@@ -26,6 +26,14 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Intellijel', count: 14, detail: '14 modules updated in the last 30 days'},
         {label: 'ALM Busy Circuits', count: 9, detail: '9 modules updated in the last 30 days'}
       ],
+      widestManufacturers: [
+        {label: 'Frap Tools', count: 22, detail: '22 HP average across 15 public modules'},
+        {label: 'Make Noise', count: 18, detail: '18 HP average across 120 public modules'}
+      ],
+      oneUManufacturers: [
+        {label: 'Intellijel', count: 72, detail: '72% 1U share across 18 public modules'},
+        {label: 'Pulp Logic', count: 64, detail: '64% 1U share across 11 public modules'}
+      ],
       standardMix: [
         {label: '3U', count: 1000, detail: '1000 public modules in this format'},
         {label: 'Intellijel 1U', count: 180, detail: '180 public modules in this format'},
@@ -157,6 +165,14 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Intellijel', valueLabel: '14'},
         {label: 'ALM Busy Circuits', valueLabel: '9'}
       ]);
+      expect(page.widestManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Frap Tools', valueLabel: '22 HP'},
+        {label: 'Make Noise', valueLabel: '18 HP'}
+      ]);
+      expect(page.oneUManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Intellijel', valueLabel: '72%'},
+        {label: 'Pulp Logic', valueLabel: '64%'}
+      ]);
       expect(page.sharingMix).toEqual([
         {label: 'Racks', valueLabel: '84 (67%)', widthPercent: 67, tone: 'emerald'},
         {label: 'Patches', valueLabel: '42 (33%)', widthPercent: 33, tone: 'brand'}
@@ -204,6 +220,13 @@ describe('ApplicationStatisticsService', () => {
         activeManufacturers: [
           {label: 'Mutable Instruments', count: 1, detail: '1 modules updated in the last 30 days'}
         ],
+        widestManufacturers: [
+          {label: 'Mutable Instruments', count: 12, detail: '12 HP average across 11 public modules'},
+          {label: 'Intellijel', count: 10, detail: '10 HP average across 9 public modules'}
+        ],
+        oneUManufacturers: [
+          {label: 'Intellijel', count: 22, detail: '22% 1U share across 9 public modules'}
+        ],
         standardMix: [
           {label: '3U', count: 18, detail: '18 public modules in this format'},
           {label: 'Intellijel 1U', count: 2, detail: '2 public modules in this format'}
@@ -231,6 +254,13 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.sharingRateBars).toEqual([]);
       expect(page.patchDepthBars).toEqual([]);
+      expect(page.widestManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Mutable Instruments', valueLabel: '12 HP'},
+        {label: 'Intellijel', valueLabel: '10 HP'}
+      ]);
+      expect(page.oneUManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Intellijel', valueLabel: '22%'}
+      ]);
       expect(page.sharingMix).toEqual([
         {label: 'Racks', valueLabel: '5 (56%)', widthPercent: 56, tone: 'emerald'},
         {label: 'Patches', valueLabel: '4 (44%)', widthPercent: 44, tone: 'brand'}
