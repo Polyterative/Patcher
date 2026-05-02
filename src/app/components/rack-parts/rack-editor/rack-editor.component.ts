@@ -1,7 +1,7 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -71,6 +71,7 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
   moduleRightClick$ = new Subject<ModuleRightClick>();
 
   autoScale = 1;
+  viewOptionsExpanded = false;
   private rackViewportRef?: ElementRef<HTMLElement>;
 
   @HostListener('window:resize')
@@ -85,7 +86,12 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
     const availableWidth = this.rackViewportRef?.nativeElement.clientWidth ?? window.innerWidth;
     this.autoScale = Math.min(1, availableWidth / rackWidth);
   }
-  
+
+  toggleViewOptions(): void {
+    this.viewOptionsExpanded = !this.viewOptionsExpanded;
+    this.cdr.markForCheck();
+  }
+
   viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideLabels: true,

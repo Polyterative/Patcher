@@ -113,7 +113,25 @@ describe('RackEditorComponent', () => {
 
     const ids = menuItems$.value.map(item => item.id);
       expect(ids).not.toContain('edit-hp');
-      expect(ids).not.toContain('reset-hp');
-      expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
+       expect(ids).not.toContain('reset-hp');
+       expect(menuItems$.value[0].label).toBe('Belgrad (Xaoc Devices, 14 HP)');
+  });
+
+  it('toggles the view options panel', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.viewOptionsExpanded = true;
+    component.toggleViewOptions();
+    expect(component.viewOptionsExpanded).toBeFalse();
+
+    component.toggleViewOptions();
+    expect(component.viewOptionsExpanded).toBeTrue();
   });
 });
