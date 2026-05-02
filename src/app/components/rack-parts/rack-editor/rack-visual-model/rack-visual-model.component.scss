@@ -33,6 +33,10 @@
   align-items: center;
 }
 
+.rackScreen {
+  min-width: 100%;
+}
+
 .row-bg {
   @include mat.elevation(2);
 
@@ -43,16 +47,23 @@
   background-image: linear-gradient(to right, $gridColor $gridWeight, transparent $gridWeight);
   background-size: 1rem;
   min-height: 4rem;
-  min-width: 4rem;
+  width: 100%;
+  min-width: 100%;
 }
 
 .rackRowShell {
   position: relative;
   overflow: visible;
+  width: 100%;
+  min-width: 100%;
 }
 
 .rackRow {
   position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
 }
 
 .rowPowerPanel {

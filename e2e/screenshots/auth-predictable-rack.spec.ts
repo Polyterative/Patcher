@@ -24,7 +24,7 @@ test.describe('Authenticated rack edit flow', () => {
       
       // Try multiple selectors for the confirm button
       const dialog = page.locator('mat-dialog-container').last();
-      await expect(dialog.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
+      await setCreateRackDialogPrivacy(page, dialog, false);
       const confirmByRole = dialog.getByRole('button', {name: /^Create$/i}).first();
       if (await confirmByRole.isVisible({timeout: 5_000}).catch(() => false)) {
         await confirmByRole.click();
@@ -62,3 +62,25 @@ test.describe('Authenticated rack edit flow', () => {
     await expect(page.locator('app-rack-composite').first()).toBeVisible({timeout: 20_000});
   });
 });
+
+async function setCreateRackDialogPrivacy(page: any, dialog: any, shouldBePublic: boolean): Promise<void> {
+  const actions = page.locator('mat-dialog-actions').last();
+  await expect(actions).toBeVisible({timeout: 5_000});
+
+  const toggle = actions.locator('mat-slide-toggle').first();
+  await expect(toggle).toBeVisible({timeout: 5_000});
+
+  const currentIcon = ((await actions.locator('mat-icon').first().textContent()) ?? '').trim();
+  const isCurrentlyPublic = currentIcon === 'public';
+
+  if (isCurrentlyPublic !== shouldBePublic) {
+    const toggleInput = actions.locator('input[type="checkbox"]').first();
+    if (await toggleInput.isVisible().catch(() => false)) {
+      await toggleInput.click({force: true});
+    } else {
+      await toggle.click();
+    }
+  }
+
+  await expect(actions.locator('mat-icon', {hasText: shouldBePublic ? 'public' : 'lock'}).first()).toBeVisible({timeout: 5_000});
+}

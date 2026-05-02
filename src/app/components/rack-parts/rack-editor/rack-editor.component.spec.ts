@@ -134,4 +134,118 @@ describe('RackEditorComponent', () => {
     component.toggleViewOptions();
     expect(component.viewOptionsExpanded).toBeTrue();
   });
+
+  it('scales the rack down when the viewport is narrower than the rack width', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    (component as any).rackViewportRef = {
+      nativeElement: {
+        clientWidth: 520
+      }
+    };
+
+    (component as any).updateAutoScale();
+
+    expect(component.autoScale).toBeCloseTo(0.5, 4);
+  });
+
+  it('caps the rack scale at full size when the viewport is wide enough', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    (component as any).rackViewportRef = {
+      nativeElement: {
+        clientWidth: 1600
+      }
+    };
+
+    (component as any).updateAutoScale();
+
+    expect(component.autoScale).toBe(1);
+  });
+
+  it('falls back to the window width when no rack viewport reference is available', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    spyOnProperty(window, 'innerWidth', 'get').and.returnValue(780);
+
+    (component as any).rackViewportRef = undefined;
+    (component as any).updateAutoScale();
+
+    expect(component.autoScale).toBeCloseTo(0.75, 4);
+  });
+
+  it('recomputes scale when the rack viewport setter receives a new element', async () => {
+    const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      cdr,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+
+    component.rackViewport = {
+      nativeElement: {
+        clientWidth: 624
+      }
+    } as any;
+
+    await Promise.resolve();
+
+    expect(component.autoScale).toBeCloseTo(0.6, 4);
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  });
+
+  it('recomputes scale and marks for check on window resize', () => {
+    const cdr = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      cdr,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    spyOnProperty(window, 'innerWidth', 'get').and.returnValue(832);
+    (component as any).rackViewportRef = undefined;
+
+    component.onWindowResize();
+
+    expect(component.autoScale).toBeCloseTo(0.8, 4);
+    expect(cdr.markForCheck).toHaveBeenCalled();
+  });
 });

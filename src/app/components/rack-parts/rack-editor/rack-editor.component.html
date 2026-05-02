@@ -41,36 +41,12 @@
             Blanks are available in all sizes!
           </app-advice-tooltip>
         }
-        <div class="rackEditorActions">
-            @if ((bag.rowedRackedModules|totalHpOfRack) > 0) {
-              <app-brand-primary-button style="padding: 1rem 0;"
-                                        icon="download"
-                                        (click$)="dataService.downloadRackImageToUserComputer$.next()"
-                                        matTooltip="Will download an image file of the rack to your computer"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="1000"
-              >
-                Download jpeg
-              </app-brand-primary-button>
-            }
-            @if (bag.isCurrentRackPropertyOfCurrentUser && (bag.rowedRackedModules|totalHpOfRack) > 0) {
-              <app-brand-primary-button style="padding: 1rem 0;"
-                                        icon="image"
-                                        (click$)="dataService.updateRackImagePreview$.next()"
-                                        matTooltip="Will update the rack preview image to help you identify it in the lists"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="1000"
-              >
-                Update preview
-              </app-brand-primary-button>
-            }
-        </div>
         <div #rackViewport
              class="col scroll custom-scrollbar transition-all"
-              [ngClass]="{
-                'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)
+               [ngClass]="{
+                 'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)
               }"
-        >
+         >
           <app-rack-visual-model [rackData]="data"
                                  [rowedRackedModules]="bag.rowedRackedModules"
                                  [rackViewportElement]="rackViewport"
@@ -81,11 +57,76 @@
                                  [style.zoom]="autoScale"
                                  class="transition-all-long"
                                  [ngClass]="{'smallerScale':bag.userRequestedSmallerScale}"
-           ></app-rack-visual-model>
-        </div>
-        <div class="rackEditorFloatingOptions">
-          <div class="rackEditorFloatingOptions__quickToggle">
-            <mat-slide-toggle [checked]="bag.showPowerAnalysisMode"
+            ></app-rack-visual-model>
+          </div>
+          <div class="rackEditorMobileToolbar">
+            <button mat-stroked-button
+                    type="button"
+                    class="rackEditorMobileToolbar__button"
+                    [class.rackEditorMobileToolbar__button--open]="viewOptionsExpanded"
+                    (click)="toggleViewOptions()"
+            >
+              <mat-icon>{{ viewOptionsExpanded ? 'close' : 'tune' }}</mat-icon>
+              {{ viewOptionsExpanded ? 'Close' : 'Options' }}
+            </button>
+            @if (bag.isCurrentRackPropertyOfCurrentUser) {
+              <button mat-stroked-button
+                      type="button"
+                      class="rackEditorMobileToolbar__button"
+                      (click)="dataService.requestRackEditableStatusChange$.next()"
+              >
+                <mat-icon>{{ bag.isCurrentRackEditable ? 'lock' : 'edit' }}</mat-icon>
+                {{ bag.isCurrentRackEditable ? 'Lock rack' : 'Edit rack' }}
+              </button>
+            }
+          </div>
+          @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+            <div class="rowwrap rackEditorInlineActions">
+              <button mat-stroked-button
+                      type="button"
+                      class="rackEditorInlineActions__button"
+                      (click)="dataService.downloadRackImageToUserComputer$.next()"
+              >
+                <mat-icon>download</mat-icon>
+                Download jpeg
+              </button>
+              @if (bag.isCurrentRackPropertyOfCurrentUser) {
+                <button mat-stroked-button
+                        type="button"
+                        class="rackEditorInlineActions__button"
+                        (click)="dataService.updateRackImagePreview$.next()"
+                >
+                  <mat-icon>image</mat-icon>
+                  Update preview
+                </button>
+              }
+            </div>
+          }
+          <div class="rackEditorFloatingOptions">
+           @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+             <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">
+              <button mat-stroked-button
+                      type="button"
+                      class="rackEditorFloatingOptions__actionButton"
+                      (click)="dataService.downloadRackImageToUserComputer$.next()"
+              >
+                <mat-icon>download</mat-icon>
+                Download jpeg
+              </button>
+              @if (bag.isCurrentRackPropertyOfCurrentUser) {
+                <button mat-stroked-button
+                        type="button"
+                        class="rackEditorFloatingOptions__actionButton"
+                        (click)="dataService.updateRackImagePreview$.next()"
+                >
+                  <mat-icon>image</mat-icon>
+                  Update preview
+                </button>
+              }
+            </div>
+           }
+           <div class="rackEditorFloatingOptions__quickToggle">
+             <mat-slide-toggle [checked]="bag.showPowerAnalysisMode"
                               (change)="dataService.showPowerAnalysisMode$.next($event.checked)"
                               matTooltip="Adds a power overlay and row analysis view while keeping the rack layout visible"
                               matTooltipPosition="above"
