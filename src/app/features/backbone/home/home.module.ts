@@ -6,6 +6,7 @@ import { PatchModule } from 'src/app/components/patch-parts/patch.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
 import { PatchBrowserModule } from 'src/app/features/patch-browser/patch-browser.module';
 import { RackBrowserModule } from 'src/app/features/routes/rack/rack-browser.module';
+import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { UserDataHandlerModule } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { DeviceFrameWrapperModule } from 'src/app/shared-interproject/components/@visual/device-frame-wrapper/device-frame-wrapper.module';
@@ -55,6 +56,7 @@ import { HomeComponent } from './home.component';
     DeviceFrameWrapperModule,
     RackBrowserModule,
     PatchBrowserModule,
+    StatisticsModule,
   ]
 })
 export class HomeModule {}

@@ -56,6 +56,33 @@
 
     <section class="section-enter">
       @defer (on viewport) {
+        @if (applicationInsights$ | async; as insights) {
+          <div class="bridge-row">
+            <app-home-curiosity-bridge
+              [title]="insightsTitle"
+              [description]="insightsDescription"
+              [links]="communityLinks"
+            ></app-home-curiosity-bridge>
+
+            <app-statistics
+              title="Current public snapshot"
+              icon="insights"
+              cardClass="home-insights-card"
+              [statistics]="insights.statistics"
+              [emptyMessage]="insights.emptyMessage"
+            ></app-statistics>
+
+            <p class="insights-supporting-copy">{{ insights.interpretation }}</p>
+            <p class="insights-methodology">{{ insights.methodology }}</p>
+          </div>
+        }
+      } @placeholder {
+        <div></div>
+      }
+    </section>
+
+    <section class="section-enter">
+      @defer (on viewport) {
         <app-home-open-principles
           sectionTitle="Why it feels easy to use"
           sectionIntro="Everything is designed to help you stay creative, organized, and get back to great sounds faster."

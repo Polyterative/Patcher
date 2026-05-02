@@ -108,6 +108,47 @@ describe('SupabaseService - get complex queries', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('GET.applicationStatistics', () => {
+    it('should return public-safe aggregate counts for modules, racks, and connected patches', (done) => {
+      const modulesQuery = chainable({data: [], count: 150, error: null});
+      const racksQuery = chainable({data: [], count: 24, error: null});
+      const patchesQuery = chainable({data: [], count: 11, error: null});
+
+      const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
+      const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
+      const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
+      const patchesSelectSpy = spyOn(patchesQuery, 'select').and.callThrough();
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'modules') return modulesQuery;
+        if (table === 'racks') return racksQuery;
+        return patchesQuery;
+      });
+
+      service.GET.applicationStatistics().subscribe({
+        next: (result: any) => {
+          expect(result).toEqual({
+            publicModules: 150,
+            publicRacks: 24,
+            publicPatches: 11
+          });
+          expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(patchesSelectSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/patch_connections!inner/),
+            {count: 'exact', head: true}
+          );
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
   
   describe('get.modulesBySameManufacturer', () => {
     it('should return the data array from the query result', (done) => {

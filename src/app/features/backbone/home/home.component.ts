@@ -1,6 +1,9 @@
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { timer } from 'rxjs';
+import {
+  Observable,
+  timer
+} from 'rxjs';
 import {
   take,
   takeUntil
@@ -24,6 +27,10 @@ import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
 import {
+  ApplicationInsightsTeaser,
+  ApplicationStatisticsService
+} from './application-statistics.service';
+import {
   HomeFounderNote,
   HomeHeroContent,
   HomeLinkPill,
@@ -40,7 +47,8 @@ import {
   providers: [
     PatchDetailDataService,
     RackDetailDataService,
-    ModuleDetailDataService
+    ModuleDetailDataService,
+    ApplicationStatisticsService
   ],
   standalone: false
 })
@@ -151,8 +159,8 @@ export class HomeComponent extends SubManager {
   
   readonly communityLinks: HomeLinkPill[] = [
     {
-      icon: 'menu_book',
-      label: 'Patch browser',
+      icon: 'insights',
+      label: 'Public patch browser',
       href: '/patches/browser'
     },
     {
@@ -161,11 +169,15 @@ export class HomeComponent extends SubManager {
       href: '/modules/browser'
     },
     {
-      icon: 'person',
+      icon: 'dashboard_customize',
       label: 'Rack browser',
       href: '/racks/browser'
-    }
+    },
   ];
+  readonly applicationInsights$!: Observable<ApplicationInsightsTeaser>;
+  readonly insightsTitle = 'See what the public library already holds';
+  readonly insightsDescription =
+    'Patcher is growing into a browsable map of real modular work, so the homepage can now show a small public-safe snapshot without turning into dashboard theater.';
   
   readonly userStories: HomeFounderNote[] = [
     {
@@ -196,10 +208,12 @@ export class HomeComponent extends SubManager {
     readonly patchDetailDataService: PatchDetailDataService,
     readonly rackDetailDataService: RackDetailDataService,
     readonly moduleDetailDataService: ModuleDetailDataService,
+    readonly applicationStatisticsService: ApplicationStatisticsService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     @Inject(PLATFORM_ID) private platformId: object
   ) {
     super();
+    this.applicationInsights$ = this.applicationStatisticsService.teaser$;
 
     const seoData: SeoSocialShareData = {
       title: 'Patcher home',

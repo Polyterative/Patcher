@@ -37,6 +37,7 @@ describe('SupabaseService - API Surface', () => {
         'comments',
         'tags',
         'moduleWithId',
+        'applicationStatistics',
         'patchConnections',
         'currentUserComments',
         'patches',
