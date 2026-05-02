@@ -92,6 +92,23 @@ section {
   min-width: 0;
 }
 
+.insights-supporting-copy,
+.insights-methodology {
+  margin: 0;
+  padding-inline: 0.2rem;
+  line-height: 1.5;
+}
+
+.insights-supporting-copy {
+  color: var(--home-ink-strong);
+  font-weight: 600;
+}
+
+.insights-methodology {
+  color: rgba(26, 42, 65, 0.82);
+  font-size: 0.92rem;
+}
+
 .frame-host > lib-device-frame-wrapper {
   display: block;
   width: 100%;
