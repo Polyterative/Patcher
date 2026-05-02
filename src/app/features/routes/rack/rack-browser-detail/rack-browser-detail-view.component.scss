@@ -1,3 +1,7 @@
+:host {
+  --rack-editor-mobile-fab-clearance: 0rem;
+}
+
 .rackBrowserDetailView__summaryLayout {
   display: flex;
   flex-wrap: wrap;
@@ -107,5 +111,15 @@
 
   .rackBrowserDetailView__mobileAnalysis {
     display: block;
+  }
+}
+
+@media (max-width: 48rem) {
+  :host ::ng-deep app-rack-composite app-edit-fab {
+    display: none;
+  }
+
+  .rackBrowserDetailView__editHint {
+    display: none;
   }
 }
