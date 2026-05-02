@@ -259,6 +259,42 @@ active) and [Patch Tags / Genre / Technique Labels](#patch-tags--genre--techniqu
 **Open questions:** How to handle near-matches ("you're missing 1 module")? Filter on patch browser or dedicated
 discovery page?
 
+#### Application Statistics & Data Insights
+
+A public-facing insight layer that turns Patcher's growing catalogue and community data into interesting, confidence-aware
+visual summaries. This should start small on the home page to signal that the system contains rich data, then expand into a
+dedicated insights surface once public-content volume is high enough for the aggregates to be genuinely meaningful.
+
+**Shape of the feature:**
+
+1. **Home teaser first** — a small section that shows a few headline numbers or curiosity hooks so visitors immediately feel
+   that Patcher is more than a static catalogue.
+2. **Dedicated insights surface** — aggregate views across catalogue health, community activity, rack composition,
+   contributor activity, and other patterns that help people explore the ecosystem more intelligently.
+3. **Deeper curiosity work later** — trend lines, co-occurrence patterns, balance archetypes, rare-module discovery, and
+   other more serious data-science-style analysis once the data volume and trust are there.
+
+**Design lean:** follow the spirit of [Rack Analysis / Balance Radar](#rack-analysis--balance-radar) — visually strong,
+advisory rather than prescriptive, and paired with plain-language interpretation instead of raw dashboard theater.
+The first home pass should stay secondary: a compact teaser card after the core proof sections, not a hero/dashboard takeover.
+
+**Activation gate:** do not expand beyond the teaser until public profiles are live, contributor/public activity surfaces are
+stable, and there is enough public volume for the aggregates to be credible.
+
+**Boundaries:**
+
+- aggregate / anonymised / public-safe only
+- no user-level behavioral exports or private-entity leakage
+- no leaderboards, streaks, or social-status gamification
+- show coverage / confidence when the signal is partial; hide low-volume metrics instead of implying false precision
+- give every insight a visible methodology hint: sample / coverage / freshness where needed
+- avoid drill-downs or overlapping filter combinations that let viewers infer individuals or tiny cohorts
+- link interesting findings back to real product surfaces so the insights deepen discovery rather than become dead-end charts
+
+**Open questions:** Which first aggregates are compelling enough for the home teaser? Should the first dedicated insights
+surface be fully public for SEO, or partly authenticated? Which chart vocabulary can be built from existing UI patterns
+before adding a heavier charting dependency?
+
 #### Patch Tags / Genre / Technique Labels
 
 Solo organisation value is in [Tier 0](#tier-0--immediate-value-no-external-dependencies-ships-independently). At

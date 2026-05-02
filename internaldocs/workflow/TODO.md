@@ -230,6 +230,27 @@ important notices without turning Patcher into a blog platform.
 
 ---
 
+### PRODUCT — Tier 3 (valuable once community layer is active)
+
+---
+
+#### LOW: Application Statistics & Data Insights
+
+**Why:** Patcher now has enough structured data to justify a future insight layer that makes the product feel alive, data-rich,
+and worth exploring beyond raw entity pages.
+**Depends on:** Public profiles and enough public-content volume for the first aggregates to be meaningful.
+
+- [ ] MVP: define the first metric catalog before UI work (numerator, denominator, eligibility, coverage, freshness, suppression rule, confidence tier)
+- [ ] MVP: create a dedicated `ApplicationStatisticsService` and cache strategy for aggregate queries / confidence modeling
+- [ ] MVP: add a small home teaser card after the proof sections (max three stats, one interpretation sentence, one CTA)
+- [ ] Structural: decide the smallest reusable chart/stat vocabulary needed beyond the existing shared statistics surfaces
+- [ ] Structural: create a dedicated insights surface for catalogue health, community activity, rack composition, contributor activity, and other public-safe patterns
+- [ ] Structural: carry forward Balance Analysis rules — advisory tone, plain-language interpretation, visible methodology, and confidence/coverage messaging when signal is partial
+- [ ] Structural: ensure the public surface avoids ranking people, drill-down leakage, or overlapping filters that expose tiny cohorts
+- [ ] Polish: decide which deeper analysis directions are worth later investment (co-occurrence, trend lines, rare-module discovery, archetype clustering) and require baseline comparators / thresholds before launch
+
+---
+
 ### INFRA (independent; pick any time a product task is blocked)
 
 ---
