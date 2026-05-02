@@ -1,6 +1,7 @@
 import { RackedModule } from 'src/app/models/module';
 import { isBlankModule } from './rack-blank-module.constants';
 import { formatPowerRailValue } from './rack-power-breakdown.utils';
+import { hasMissingPowerData } from './rack-power-data.utils';
 
 export interface RackPowerHeatmapVisual {
   className: string;
@@ -9,7 +10,7 @@ export interface RackPowerHeatmapVisual {
 }
 
 export interface RackPowerHeatmapOptions {
-  hoveredRowId?: number | null;
+  hoveredRowIndex?: number | null;
 }
 
 const BLANK_VISUAL: RackPowerHeatmapVisual = {
@@ -25,6 +26,27 @@ const MISSING_VISUAL: RackPowerHeatmapVisual = {
 };
 
 const INACTIVE_CLASS_NAME = 'powerAnalysisModule--inactive';
+const ZERO_POWER_VISUAL: RackPowerHeatmapVisual = {
+  className: 'powerAnalysisModule--shadow',
+  totalLabel: '0mA total',
+  railsLabel: '+12 0 mA · -12 0 mA · +5 0 mA'
+};
+const HEATMAP_CLASS_BANDS = [
+  {minimumRatio: 0.95, className: 'powerAnalysisModule--peak'},
+  {minimumRatio: 0.72, className: 'powerAnalysisModule--glow'},
+  {minimumRatio: 0.46, className: 'powerAnalysisModule--signal'},
+  {minimumRatio: Number.EPSILON, className: 'powerAnalysisModule--smoke'}
+] as const;
+
+type RackPowerModuleVisualKind = 'blank' | 'missing' | 'powered';
+
+interface RackPowerModuleVisualTarget {
+  key: string;
+  rowIndex: number;
+  totalPower: number;
+  kind: RackPowerModuleVisualKind;
+  rackedModule: RackedModule;
+}
 
 function absoluteTotalPower(rackedModule: RackedModule): number {
   return Math.abs(rackedModule.module.powerPos12 ?? 0)
@@ -33,16 +55,8 @@ function absoluteTotalPower(rackedModule: RackedModule): number {
 }
 
 function heatmapClassName(ratio: number): string {
-  if (ratio >= 0.95) { return 'powerAnalysisModule--peak'; }
-  if (ratio >= 0.72) { return 'powerAnalysisModule--glow'; }
-  if (ratio >= 0.46) { return 'powerAnalysisModule--signal'; }
-  if (ratio > 0) { return 'powerAnalysisModule--smoke'; }
-  return 'powerAnalysisModule--shadow';
-}
-
-function hasMissingPowerData(rackedModule: RackedModule): boolean {
-  return [rackedModule.module.powerPos12, rackedModule.module.powerNeg12, rackedModule.module.powerPos5]
-    .some(value => value == null);
+  const band = HEATMAP_CLASS_BANDS.find(candidate => ratio >= candidate.minimumRatio);
+  return band?.className ?? 'powerAnalysisModule--shadow';
 }
 
 function isCompletePoweredModule(rackedModule: RackedModule): boolean {
@@ -51,6 +65,36 @@ function isCompletePoweredModule(rackedModule: RackedModule): boolean {
 
 function hottestModulePower(modules: RackedModule[]): number {
   return Math.max(...modules.map(absoluteTotalPower), 0);
+}
+
+function classifyModule(rackedModule: RackedModule): RackPowerModuleVisualTarget {
+  if (isBlankModule(rackedModule.module.id)) {
+    return {
+      key: rackPowerHeatmapKey(rackedModule),
+      rowIndex: rackedModule.rackingData.row,
+      totalPower: 0,
+      kind: 'blank',
+      rackedModule
+    };
+  }
+
+  if (hasMissingPowerData(rackedModule)) {
+    return {
+      key: rackPowerHeatmapKey(rackedModule),
+      rowIndex: rackedModule.rackingData.row,
+      totalPower: 0,
+      kind: 'missing',
+      rackedModule
+    };
+  }
+
+  return {
+    key: rackPowerHeatmapKey(rackedModule),
+    rowIndex: rackedModule.rackingData.row,
+    totalPower: absoluteTotalPower(rackedModule),
+    kind: 'powered',
+    rackedModule
+  };
 }
 
 function poweredVisual(rackedModule: RackedModule, className: string): RackPowerHeatmapVisual {
@@ -92,45 +136,51 @@ export function buildRackPowerHeatmapVisuals(
   options: RackPowerHeatmapOptions = {}
 ): Map<string, RackPowerHeatmapVisual> {
   const visualMap = new Map<string, RackPowerHeatmapVisual>();
-  const completeModules = rowedRackedModules.flat().filter(isCompletePoweredModule);
+  const allModules = rowedRackedModules.flat();
+  const completeModules = allModules.filter(isCompletePoweredModule);
   const rackWideMaxPower = hottestModulePower(completeModules);
-  const hoveredRowModules = options.hoveredRowId == null
+  const hoveredRowModules = options.hoveredRowIndex == null
     ? []
-    : (rowedRackedModules[options.hoveredRowId] ?? []).filter(isCompletePoweredModule);
+    : (rowedRackedModules[options.hoveredRowIndex] ?? []).filter(isCompletePoweredModule);
   const hoveredRowMaxPower = hottestModulePower(hoveredRowModules);
 
-  rowedRackedModules
-    .flat()
-    .forEach(rackedModule => {
-      const key = rackPowerHeatmapKey(rackedModule);
-      const isNonHoveredRow = options.hoveredRowId != null
-        && rackedModule.rackingData.row !== options.hoveredRowId;
+  allModules
+    .map(classifyModule)
+    .forEach(moduleVisualTarget => {
+      const isNonHoveredRow = options.hoveredRowIndex != null
+        && moduleVisualTarget.rowIndex !== options.hoveredRowIndex;
 
       if (isNonHoveredRow) {
-        visualMap.set(key, inactiveVisual(rackedModule));
+        visualMap.set(moduleVisualTarget.key, inactiveVisual(moduleVisualTarget.rackedModule));
         return;
       }
 
-      if (isBlankModule(rackedModule.module.id)) {
-        visualMap.set(key, BLANK_VISUAL);
+      if (moduleVisualTarget.kind === 'blank') {
+        visualMap.set(moduleVisualTarget.key, BLANK_VISUAL);
         return;
       }
 
-      if (hasMissingPowerData(rackedModule)) {
-        visualMap.set(key, MISSING_VISUAL);
+      if (moduleVisualTarget.kind === 'missing') {
+        visualMap.set(moduleVisualTarget.key, MISSING_VISUAL);
         return;
       }
 
-      const totalPower = absoluteTotalPower(rackedModule);
-      const scaleMaxPower = options.hoveredRowId != null
-        && rackedModule.rackingData.row === options.hoveredRowId
+      const scaleMaxPower = options.hoveredRowIndex != null
+        && moduleVisualTarget.rowIndex === options.hoveredRowIndex
         && hoveredRowMaxPower > 0
         ? hoveredRowMaxPower
         : rackWideMaxPower;
-      const ratio = scaleMaxPower === 0 ? 0 : totalPower / scaleMaxPower;
+      const ratio = scaleMaxPower === 0 ? 0 : moduleVisualTarget.totalPower / scaleMaxPower;
 
-      visualMap.set(key, poweredVisual(rackedModule, heatmapClassName(ratio)));
+      visualMap.set(
+        moduleVisualTarget.key,
+        poweredVisual(moduleVisualTarget.rackedModule, heatmapClassName(ratio))
+      );
     });
 
   return visualMap;
+}
+
+export function defaultRackPowerHeatmapVisual(): RackPowerHeatmapVisual {
+  return ZERO_POWER_VISUAL;
 }
