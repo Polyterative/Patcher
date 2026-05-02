@@ -64,8 +64,8 @@ export class HomeComponent extends SubManager {
   
   readonly heroContent: HomeHeroContent = {
     eyebrow: '',
-    title: 'Never forget a great patch again.',
-    subtitle: 'Track every setup in clear detail so you can rebuild the exact sound for the next gig without losing time.',
+    title: 'Your operating system for everything modular.',
+    subtitle: 'Track every setup in clear detail\nSave modules to your library and plan racks before moving hardware\nReturn to past patches ready to recreate, refine, and share your sound',
     mainVisual: {
       src: '/assets/screenshots/major-area-screenshots/04-patches.jpg',
       alt: 'Patcher patch detail interface with patch notes and controls',
