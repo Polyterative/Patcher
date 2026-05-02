@@ -17,6 +17,28 @@ describe('ApplicationStatisticsService', () => {
       publicPatchAuthors: 18,
       publicPatchesUpdatedLast30Days: 9
     },
+    moduleInsights = {
+      topManufacturers: [
+        {label: 'Make Noise', count: 120, detail: '120 public modules'},
+        {label: 'Mutable Instruments', count: 96, detail: '96 public modules'}
+      ],
+      activeManufacturers: [
+        {label: 'Intellijel', count: 14, detail: '14 modules updated in the last 30 days'},
+        {label: 'ALM Busy Circuits', count: 9, detail: '9 modules updated in the last 30 days'}
+      ],
+      standardMix: [
+        {label: '3U', count: 1000, detail: '1000 public modules in this format'},
+        {label: 'Intellijel 1U', count: 180, detail: '180 public modules in this format'}
+      ],
+      hpBands: [
+        {label: 'Compact (0-8 HP)', count: 340, detail: '340 modules in this size band'},
+        {label: 'Utility (9-16 HP)', count: 510, detail: '510 modules in this size band'},
+        {label: 'Feature (17-28 HP)', count: 320, detail: '320 modules in this size band'},
+        {label: 'Large (29+ HP)', count: 110, detail: '110 modules in this size band'}
+      ],
+      averageHp: 14,
+      medianHp: 12
+    },
     activitySeries = [
       {date: '2026-05-01', modules: 4, racks: 1, patches: 0},
       {date: '2026-05-02', modules: 0, racks: 2, patches: 1},
@@ -26,7 +48,8 @@ describe('ApplicationStatisticsService', () => {
     const backend = {
       GET: {
         applicationStatistics: jasmine.createSpy('GET.applicationStatistics').and.returnValue(of(counts)),
-        applicationActivitySeries: jasmine.createSpy('GET.applicationActivitySeries').and.returnValue(of(activitySeries))
+        applicationActivitySeries: jasmine.createSpy('GET.applicationActivitySeries').and.returnValue(of(activitySeries)),
+        applicationModuleInsights: jasmine.createSpy('GET.applicationModuleInsights').and.returnValue(of(moduleInsights))
       }
     };
 
@@ -82,6 +105,7 @@ describe('ApplicationStatisticsService', () => {
 
     service.page$.subscribe((page) => {
       expect(backend.GET.applicationActivitySeries).toHaveBeenCalledWith(30);
+      expect(backend.GET.applicationModuleInsights).toHaveBeenCalled();
       expect(page.heroHighlights).toEqual([
         {label: 'Shared works', value: '126', icon: 'layers'},
         {label: '30-day updates', value: '15', icon: 'timeline'},
@@ -102,6 +126,27 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Modules', valueLabel: '9', toneClass: 'modules'},
         {label: 'Racks', valueLabel: '3', toneClass: 'racks'},
         {label: 'Patches', valueLabel: '3', toneClass: 'patches'}
+      ]);
+      expect(page.moduleMixBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: '3U', valueLabel: '1,000'},
+        {label: 'Intellijel 1U', valueLabel: '180'},
+        {label: 'Compact (0-8 HP)', valueLabel: '340'},
+        {label: 'Utility (9-16 HP)', valueLabel: '510'},
+        {label: 'Feature (17-28 HP)', valueLabel: '320'},
+        {label: 'Large (29+ HP)', valueLabel: '110'}
+      ]);
+      expect(page.moduleMixHighlights).toEqual([
+        {label: 'Average width', value: '14 HP', icon: 'straighten'},
+        {label: 'Median width', value: '12 HP', icon: 'swap_horiz'},
+        {label: 'Recent module updates', value: '64', icon: 'schedule'}
+      ]);
+      expect(page.topManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Make Noise', valueLabel: '120'},
+        {label: 'Mutable Instruments', valueLabel: '96'}
+      ]);
+      expect(page.activeManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Intellijel', valueLabel: '14'},
+        {label: 'ALM Busy Circuits', valueLabel: '9'}
       ]);
       expect(page.sharingMix).toEqual([
         {label: 'Racks', valueLabel: '84 (67%)', widthPercent: 67, tone: 'emerald'},
@@ -142,6 +187,26 @@ describe('ApplicationStatisticsService', () => {
         publicPatchAuthors: 1,
         publicPatchesUpdatedLast30Days: 1
       },
+      {
+        topManufacturers: [
+          {label: 'Mutable Instruments', count: 11, detail: '11 public modules'},
+          {label: 'Intellijel', count: 9, detail: '9 public modules'}
+        ],
+        activeManufacturers: [
+          {label: 'Mutable Instruments', count: 1, detail: '1 modules updated in the last 30 days'}
+        ],
+        standardMix: [
+          {label: '3U', count: 18, detail: '18 public modules in this format'},
+          {label: 'Intellijel 1U', count: 2, detail: '2 public modules in this format'}
+        ],
+        hpBands: [
+          {label: 'Compact (0-8 HP)', count: 6, detail: '6 modules in this size band'},
+          {label: 'Utility (9-16 HP)', count: 10, detail: '10 modules in this size band'},
+          {label: 'Feature (17-28 HP)', count: 4, detail: '4 modules in this size band'}
+        ],
+        averageHp: 12,
+        medianHp: 10
+      },
       [
         {date: '2026-05-01', modules: 1, racks: 0, patches: 0},
         {date: '2026-05-02', modules: 0, racks: 1, patches: 0},
@@ -166,6 +231,11 @@ describe('ApplicationStatisticsService', () => {
         value: '1',
         icon: 'schedule'
       });
+      expect(page.moduleMixHighlights).toEqual([
+        {label: 'Average width', value: '12 HP', icon: 'straighten'},
+        {label: 'Median width', value: '10 HP', icon: 'swap_horiz'},
+        {label: 'Recent module updates', value: '1', icon: 'schedule'}
+      ]);
       expect(page.activityChart.highlights).toEqual([
         {label: 'Active days', value: '3 / 30', icon: 'calendar_view_month'},
         {label: 'Busiest day', value: '1', icon: 'bolt'},
