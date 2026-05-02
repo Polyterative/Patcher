@@ -186,7 +186,7 @@ export class SupabaseQueriesService {
       | typeof DbPaths.patches,
     buildQuery: (query: any) => any
   ): Promise<{data: {updated: string}[]; error: any}> {
-    const pageSize = 1000;
+    const pageSize = SupabaseQueriesService.MAX_QUERY_ROWS;
     const rows: {updated: string}[] = [];
     let offset = 0;
 
@@ -255,7 +255,7 @@ export class SupabaseQueriesService {
     data: PublicModuleInsightRow[];
     error: any;
   }> {
-    const pageSize = 1000;
+    const pageSize = SupabaseQueriesService.MAX_QUERY_ROWS;
     const rows: PublicModuleInsightRow[] = [];
     let offset = 0;
 
@@ -1430,7 +1430,7 @@ export class SupabaseQueriesService {
     }[];
     error: any
   }> {
-    const pageSize = 1000;
+    const pageSize = SupabaseQueriesService.MAX_QUERY_ROWS;
     const rows: {
       manufacturerId: number;
       updated: string
