@@ -262,25 +262,48 @@
         <lib-hero-content-card
           titleNormal="Module freshness"
           icon="schedule"
-          description="Update windows: modules grouped by how recently they were touched, from weekly moves to year-old stasis."
+          description="Update windows and catalogue age: how recently modules moved, and how long this public archive has been accumulating."
         >
-          <div class="metric-bars">
-            @for (bar of page.moduleFreshnessBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
+          <div class="rankings-grid">
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Updated by recency</h4>
+              @for (bar of page.moduleFreshnessBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Catalogue age</h4>
+              @for (bar of page.moduleCatalogueAgeBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
                 </div>
-                <p>{{ bar.detail }}</p>
-              </div>
-            }
+              }
+            </div>
           </div>
 
           <div class="section-highlights">

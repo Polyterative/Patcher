@@ -98,6 +98,7 @@ export interface ApplicationInsightsPage {
   hpBandVelocityBars: ApplicationInsightsBar[];
   hpBandHighlights: ApplicationInsightsHighlight[];
   moduleFreshnessBars: ApplicationInsightsBar[];
+  moduleCatalogueAgeBars: ApplicationInsightsBar[];
   moduleFreshnessHighlights: ApplicationInsightsHighlight[];
   topManufacturerBars: ApplicationInsightsBar[];
   activeManufacturerBars: ApplicationInsightsBar[];
@@ -596,6 +597,15 @@ export class ApplicationStatisticsService extends SubManager {
           tone: this.getToneByIndex(index)
         }))
       ),
+      moduleCatalogueAgeBars: this.mapBarWidths(
+        (moduleInsights.createdWindows ?? []).map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 1)
+        }))
+      ),
       moduleFreshnessHighlights: [
         {
           label: 'Active in 30 days',
@@ -611,6 +621,11 @@ export class ApplicationStatisticsService extends SubManager {
           label: 'Older than a year',
           value: `${ this.formatCount(moduleInsights.staleModules) } (${ this.formatPercentValue(moduleInsights.staleModules, statistics.publicModules) })`,
           icon: 'history'
+        },
+        {
+          label: 'Median catalogue age',
+          value: `${ this.formatCount(moduleInsights.medianCatalogueAgeYears) } years`,
+          icon: 'inventory_2'
         }
       ],
       topManufacturerBars: this.mapBarWidths(
