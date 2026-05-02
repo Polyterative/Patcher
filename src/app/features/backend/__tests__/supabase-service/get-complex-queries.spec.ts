@@ -110,22 +110,28 @@ describe('SupabaseService - get complex queries', () => {
   });
 
   describe('GET.applicationStatistics', () => {
-    it('should return public-safe aggregate counts for modules, manufacturers, public profiles, shared racks/patches, public connections, and public authors', (done) => {
+    it('should return public-safe aggregate counts for modules, manufacturers, public profiles, freshness, shared racks/patches, public connections, and public authors', (done) => {
       const modulesQuery = chainable({data: [], count: 150, error: null});
+      const recentModulesQuery = chainable({data: [], count: 63, error: null});
       const manufacturersQuery = chainable({data: [], count: 28, error: null});
       const publicProfilesQuery = chainable({data: [], count: 80, error: null});
       const racksQuery = chainable({data: [], count: 24, error: null});
+      const recentRacksQuery = chainable({data: [], count: 9, error: null});
       const rackAuthorsQuery = chainable({data: [], count: 12, error: null});
       const patchesQuery = chainable({data: [], count: 11, error: null});
+      const recentPatchesQuery = chainable({data: [], count: 5, error: null});
       const patchConnectionsQuery = chainable({data: [], count: 48, error: null});
       const patchAuthorsQuery = chainable({data: [], count: 7, error: null});
 
       const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
+      const recentModulesFilterSpy = spyOn(recentModulesQuery, 'filter').and.callThrough();
       const manufacturersFilterSpy = spyOn(manufacturersQuery, 'filter').and.callThrough();
       const publicProfilesFilterSpy = spyOn(publicProfilesQuery, 'filter').and.callThrough();
       const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
+      const recentRacksFilterSpy = spyOn(recentRacksQuery, 'filter').and.callThrough();
       const rackAuthorsFilterSpy = spyOn(rackAuthorsQuery, 'filter').and.callThrough();
       const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
+      const recentPatchesFilterSpy = spyOn(recentPatchesQuery, 'filter').and.callThrough();
       const patchConnectionsFilterSpy = spyOn(patchConnectionsQuery, 'filter').and.callThrough();
       const patchAuthorsFilterSpy = spyOn(patchAuthorsQuery, 'filter').and.callThrough();
       const manufacturersSelectSpy = spyOn(manufacturersQuery, 'select').and.callThrough();
@@ -133,10 +139,13 @@ describe('SupabaseService - get complex queries', () => {
       const patchesSelectSpy = spyOn(patchesQuery, 'select').and.callThrough();
       const patchConnectionsSelectSpy = spyOn(patchConnectionsQuery, 'select').and.callThrough();
       const patchAuthorsSelectSpy = spyOn(patchAuthorsQuery, 'select').and.callThrough();
+      let modulesCallCount = 0;
       let profilesCallCount = 0;
+      let racksCallCount = 0;
+      let patchesCallCount = 0;
 
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
-        if (table === 'modules') return modulesQuery;
+        if (table === 'modules') return modulesCallCount++ === 0 ? modulesQuery : recentModulesQuery;
         if (table === 'manufacturers') return manufacturersQuery;
         if (table === 'profiles') {
           if (profilesCallCount === 0) {
@@ -145,29 +154,35 @@ describe('SupabaseService - get complex queries', () => {
           }
           return profilesCallCount++ === 1 ? rackAuthorsQuery : patchAuthorsQuery;
         }
-        if (table === 'racks') return racksQuery;
+        if (table === 'racks') return racksCallCount++ === 0 ? racksQuery : recentRacksQuery;
         if (table === 'patch_connections') return patchConnectionsQuery;
-        return patchesQuery;
+        return patchesCallCount++ === 0 ? patchesQuery : recentPatchesQuery;
       });
 
       service.GET.applicationStatistics().subscribe({
         next: (result: any) => {
           expect(result).toEqual({
             publicModules: 150,
+            publicModulesUpdatedLast30Days: 63,
             publicManufacturers: 28,
             publicProfiles: 80,
             publicRacks: 24,
             publicRackAuthors: 12,
+            publicRacksUpdatedLast30Days: 9,
             publicPatches: 11,
             publicPatchConnections: 48,
-            publicPatchAuthors: 7
+            publicPatchAuthors: 7,
+            publicPatchesUpdatedLast30Days: 5
           });
           expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(recentModulesFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
           expect(manufacturersFilterSpy).toHaveBeenCalledWith('public_modules.public', 'eq', true);
           expect(publicProfilesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(recentRacksFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
           expect(rackAuthorsFilterSpy).toHaveBeenCalledWith('public_racks.public', 'eq', true);
           expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(recentPatchesFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
           expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.public', 'eq', true);
           expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.author_profile_gate.public', 'eq', true);
           expect(patchAuthorsFilterSpy).toHaveBeenCalledWith('public_patches.public', 'eq', true);

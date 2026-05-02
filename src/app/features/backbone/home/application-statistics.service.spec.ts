@@ -7,11 +7,14 @@ describe('ApplicationStatisticsService', () => {
     publicModules: 1280,
     publicManufacturers: 96,
     publicProfiles: 240,
+    publicModulesUpdatedLast30Days: 64,
     publicRacks: 84,
     publicRackAuthors: 31,
+    publicRacksUpdatedLast30Days: 21,
     publicPatches: 42,
     publicPatchConnections: 168,
-    publicPatchAuthors: 18
+    publicPatchAuthors: 18,
+    publicPatchesUpdatedLast30Days: 9
   }) {
     const backend = {
       GET: {
@@ -49,11 +52,14 @@ describe('ApplicationStatisticsService', () => {
       publicModules: 250,
       publicManufacturers: 40,
       publicProfiles: 18,
+      publicModulesUpdatedLast30Days: 2,
       publicRacks: 0,
       publicRackAuthors: 0,
+      publicRacksUpdatedLast30Days: 0,
       publicPatches: 0,
       publicPatchConnections: 0,
-      publicPatchAuthors: 0
+      publicPatchAuthors: 0,
+      publicPatchesUpdatedLast30Days: 0
     });
 
     service.teaser$.subscribe((teaser) => {
@@ -72,6 +78,11 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Manufacturers represented', value: 96, icon: 'precision_manufacturing'},
         {name: 'Shared racks', value: 84, icon: 'space_dashboard'},
         {name: 'Shared patches', value: 42, icon: 'cable'}
+      ]);
+      expect(page.freshness).toEqual([
+        {name: 'Public modules updated last 30 days', value: 64, icon: 'schedule'},
+        {name: 'Shared racks updated last 30 days', value: 21, icon: 'space_dashboard'},
+        {name: 'Shared patches updated last 30 days', value: 9, icon: 'cable'}
       ]);
       expect(page.catalogueHealth).toEqual([
         {name: 'Shared racks per 100 modules', value: 7, icon: 'monitoring'},
@@ -106,8 +117,8 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
         {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
       ]);
-      expect(page.methodology.length).toBe(7);
-      expect(page.interpretation).toContain('patch-network density');
+      expect(page.methodology.length).toBe(8);
+      expect(page.interpretation).toContain('Freshness counts');
       done();
     });
   });
@@ -117,14 +128,22 @@ describe('ApplicationStatisticsService', () => {
       publicModules: 20,
       publicManufacturers: 2,
       publicProfiles: 8,
+      publicModulesUpdatedLast30Days: 1,
       publicRacks: 5,
       publicRackAuthors: 2,
+      publicRacksUpdatedLast30Days: 1,
       publicPatches: 4,
       publicPatchConnections: 8,
-      publicPatchAuthors: 1
+      publicPatchAuthors: 1,
+      publicPatchesUpdatedLast30Days: 1
     });
 
     service.page$.subscribe((page) => {
+      expect(page.freshness).toEqual([
+        {name: 'Public modules updated last 30 days', value: 1, icon: 'schedule'},
+        {name: 'Shared racks updated last 30 days', value: 1, icon: 'space_dashboard'},
+        {name: 'Shared patches updated last 30 days', value: 1, icon: 'cable'}
+      ]);
       expect(page.catalogueHealth).toEqual([]);
       expect(page.participation).toEqual([
         {name: 'Public profiles', value: 8, icon: 'person_search'}
@@ -138,7 +157,7 @@ describe('ApplicationStatisticsService', () => {
       expect(page.coverage[2].description).toContain('fake KPI');
       expect(page.coverage[3].description).toContain('adoption as a rate');
       expect(page.coverage[4].description).toContain('tiny-sample curiosity');
-      expect(page.methodology[6].description).toContain('specific patch graph');
+      expect(page.methodology[7].description).toContain('recent movement');
       done();
     });
   });
