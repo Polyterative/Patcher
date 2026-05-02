@@ -11,7 +11,12 @@
   gap: 1rem;
 }
 
-.hero-highlights,
+.hero-highlights {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
 .section-highlights {
   display: grid;
   gap: 0.75rem;
@@ -46,6 +51,10 @@
   padding: 0.7rem 0.85rem;
 }
 
+.insight-chip--featured {
+  padding: 1rem 1.2rem;
+}
+
 .insight-chip mat-icon {
   color: #4063d8;
 }
@@ -55,6 +64,25 @@
   margin-bottom: 0.15rem;
   font-size: 0.82rem;
   color: rgba(24, 37, 53, 0.7);
+}
+
+.insight-chip--featured strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+}
+
+.insight-chip--featured .insight-chip__label {
+  font-size: 0.85rem;
+  color: rgba(24, 37, 53, 0.8);
+}
+
+.hero-summary {
+  margin: 0 0 1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgba(24, 37, 53, 0.8);
+  font-weight: 500;
 }
 
 .metric-bars {
@@ -374,7 +402,10 @@
 }
 
 @media (max-width: 36rem) {
-  .hero-highlights,
+  :host {
+    padding: 0.6rem 0 1.2rem;
+  }
+
   .section-highlights,
   .snapshot-grid,
   .trend-legend,
@@ -382,8 +413,28 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .hero-highlights {
+    gap: 0.6rem;
+  }
+
+  .insight-chip {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .insight-chip--compact {
+    padding: 0.6rem 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .insight-chip__label {
+    font-size: 0.75rem;
+    margin-bottom: 0.08rem;
+  }
+
   .hero-actions {
     flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
   }
 
   .trend-chart {
@@ -398,7 +449,7 @@
   }
 
   .snapshot-card {
-    padding: 0.85rem;
+    padding: 0.75rem;
   }
 
   .snapshot-card p,
@@ -408,5 +459,43 @@
 
   .trend-momentum-card {
     padding: 0.75rem 0.8rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  .hero-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insight-chip--featured {
+    grid-column: 1 / 3;
+  }
+}
+
+@media (max-width: 24rem) {
+  .trend-chart {
+    min-height: 8rem;
+    gap: 0.12rem;
+    padding: 0.65rem 0.15rem 0.1rem;
+  }
+
+  .trend-day__label {
+    min-height: 1.2rem;
+    font-size: 0.56rem;
+    line-height: 1;
+  }
+
+  .metric-bar__heading {
+    gap: 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  .metric-bar p {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .metric-bar__track {
+    height: 0.6rem;
   }
 }

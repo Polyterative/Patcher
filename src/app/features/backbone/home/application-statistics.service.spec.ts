@@ -207,8 +207,8 @@ describe('ApplicationStatisticsService', () => {
       expect(page.standardMixHighlights).toEqual([
         {label: 'Formats represented', value: '3', icon: 'category'},
         {label: 'Dominant standard share', value: '78%', icon: 'emoji_events'},
-        {label: 'Most active format', value: '3U (58)', icon: 'bolt'},
-        {label: 'Most competitive format', value: '3U (80 makers)', icon: 'groups'}
+        {label: 'Leading format by updates', value: '3U (58 in 30d)', icon: 'bolt'},
+        {label: 'Momentum leader (30d shift)', value: '3U (+12.5%)', icon: 'trending_up'}
       ]);
       expect(page.hpBandBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: '0-2 HP', valueLabel: '60'},
@@ -234,6 +234,14 @@ describe('ApplicationStatisticsService', () => {
         {label: '4 HP', valueLabel: '95'},
         {label: '14 HP', valueLabel: '90'}
       ]);
+      expect(page.hpBandVelocityBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: '0-2 HP', valueLabel: '7%'},
+        {label: '3-5 HP', valueLabel: '5%'},
+        {label: '6-8 HP', valueLabel: '5%'},
+        {label: '9-16 HP', valueLabel: '5%'},
+        {label: '17-28 HP', valueLabel: '4%'},
+        {label: '29+ HP', valueLabel: '5%'}
+      ]);
       expect(page.hpBandHighlights).toEqual([
         {label: 'Median width', value: '12 HP', icon: 'straighten'},
         {label: '0-5 HP share', value: '13%', icon: 'view_column'},
@@ -249,7 +257,7 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
-        {label: 'Last-7 share of 30d activity', value: '63%', icon: 'moving'},
+        {label: 'This week / 30d activity', value: '63%', icon: 'moving'},
         {label: 'Older than a year', value: '670 (52%)', icon: 'history'}
       ]);
       expect(page.topManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
@@ -270,7 +278,7 @@ describe('ApplicationStatisticsService', () => {
       ]);
       expect(page.makerHighlights).toEqual([
         {label: 'Top 5 maker share', value: '44%', icon: 'pie_chart'},
-        {label: 'Solo makers', value: '21', icon: 'filter_1'},
+        {label: 'Single-module makers', value: '21', icon: 'filter_1'},
         {label: 'Median maker catalogue', value: '8 modules', icon: 'balance'}
       ]);
       expect(page.sharingMix).toEqual([
@@ -290,7 +298,7 @@ describe('ApplicationStatisticsService', () => {
       expect(page.sharingHighlights).toEqual([
         {label: 'Rack sharers / 100 profiles', value: '13 / 100', icon: 'dashboard_customize'},
         {label: 'Patch sharers / 100 profiles', value: '8 / 100', icon: 'hub'},
-        {label: 'Recent sharing momentum', value: 'R 25% · P 21%', icon: 'trending_up'},
+        {label: '30-day update rate', value: 'Racks 25% · Patches 21%', icon: 'trending_up'},
         {label: 'Connections per shared patch', value: '4', icon: 'share'}
       ]);
       expect(page.patchDepthBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
@@ -300,8 +308,8 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Shared patches / 100 represented makers', valueLabel: '44 / 100'}
       ]);
       expect(page.patchHighlights).toEqual([
-        {label: 'Saved connections', value: '168', icon: 'linear_scale'},
-        {label: 'Patch authors', value: '18', icon: 'hub'},
+        {label: 'Connections in public patches', value: '168', icon: 'linear_scale'},
+        {label: 'Profiles sharing patches', value: '18', icon: 'hub'},
         {label: 'Recent patch updates', value: '9', icon: 'timelapse'}
       ]);
       done();
@@ -416,8 +424,8 @@ describe('ApplicationStatisticsService', () => {
       expect(page.standardMixHighlights).toEqual([
         {label: 'Formats represented', value: '2', icon: 'category'},
         {label: 'Dominant standard share', value: '90%', icon: 'emoji_events'},
-        {label: 'Most active format', value: '3U (1)', icon: 'bolt'},
-        {label: 'Most competitive format', value: '3U (2 makers)', icon: 'groups'}
+        {label: 'Leading format by updates', value: '3U (1 in 30d)', icon: 'bolt'},
+        {label: 'Momentum leader (30d shift)', value: '3U (+10.0%)', icon: 'trending_up'}
       ]);
       expect(page.hpBandHighlights).toEqual([
         {label: 'Median width', value: '10 HP', icon: 'straighten'},
@@ -425,23 +433,29 @@ describe('ApplicationStatisticsService', () => {
         {label: '17+ HP share', value: '20%', icon: 'splitscreen'},
         {label: 'Fastest-moving width', value: '3-5 HP (25 / 100)', icon: 'bolt'}
       ]);
+      expect(page.hpBandVelocityBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: '0-2 HP', valueLabel: '0%'},
+        {label: '3-5 HP', valueLabel: '25%'},
+        {label: '9-16 HP', valueLabel: '0%'},
+        {label: '17-28 HP', valueLabel: '0%'}
+      ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
-        {label: 'Last-7 share of 30d activity', value: '100%', icon: 'moving'},
+        {label: 'This week / 30d activity', value: '100%', icon: 'moving'},
         {label: 'Older than a year', value: '11 (55%)', icon: 'history'}
       ]);
       expect(page.makerHighlights).toEqual([
         {label: 'Top 5 maker share', value: '100%', icon: 'pie_chart'},
-        {label: 'Solo makers', value: '0', icon: 'filter_1'},
+        {label: 'Single-module makers', value: '0', icon: 'filter_1'},
         {label: 'Median maker catalogue', value: '10 modules', icon: 'balance'}
       ]);
       expect(page.activityChart.highlights).toEqual([
         {label: 'Active days', value: '3 / 30', icon: 'calendar_view_month'},
         {label: 'Last 7 days', value: '3', icon: 'date_range'},
-        {label: 'Vs previous 7', value: '+3', icon: 'trending_up'},
-        {label: 'Fastest-moving layer', value: 'Modules', icon: 'stacked_line_chart'},
+        {label: 'vs previous 7', value: '+3', icon: 'trending_up'},
+        {label: 'Leading activity type', value: 'Modules', icon: 'stacked_line_chart'},
         {label: 'Busiest 7-day stretch', value: '3', icon: 'whatshot'},
-        {label: 'Peak day', value: '1', icon: 'bolt'}
+        {label: 'Peak day total', value: '1', icon: 'bolt'}
       ]);
       done();
     });
