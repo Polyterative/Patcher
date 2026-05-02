@@ -358,11 +358,25 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Intellijel 1U', count: 1, detail: '1 public modules in this format'},
             {label: 'Pulp Logic 1U', count: 1, detail: '1 public modules in this format'}
           ]);
+          expect(result.standardActivity).toEqual([
+            {label: '3U', count: 2, detail: '2 modules updated in the last 30 days'},
+            {label: 'Pulp Logic 1U', count: 1, detail: '1 modules updated in the last 30 days'}
+          ]);
+          expect(result.standardWidthAverages).toEqual([
+            {label: 'Pulp Logic 1U', count: 34, detail: '34 HP average width'},
+            {label: 'Intellijel 1U', count: 22, detail: '22 HP average width'},
+            {label: '3U', count: 10, detail: '10 HP average width'}
+          ]);
           expect(result.hpBands).toEqual([
             {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules in this size band'},
             {label: 'Feature (17-28 HP)', count: 1, detail: '1 modules in this size band'},
             {label: 'Large (29+ HP)', count: 1, detail: '1 modules in this size band'},
             {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules in this size band'}
+          ]);
+          expect(result.hpBandActivity).toEqual([
+            {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules updated in the last 30 days'},
+            {label: 'Large (29+ HP)', count: 1, detail: '1 modules updated in the last 30 days'},
+            {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules updated in the last 30 days'}
           ]);
           expect(result.freshnessWindows).toEqual([
             {label: 'Updated in 7 days', count: 3, detail: '3 public modules updated in the last week'},
@@ -442,6 +456,39 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Updated in 365 days', count: 501, detail: '501 public modules updated in the last year'}
           ]);
           expect(lastRangeStart).toBe(500);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should only count formats containing 1U in the oneU maker ranking', (done) => {
+      const modulesQuery = chainable({
+        data: [
+          {id: 1, manufacturerId: 1, hp: 8, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 1, name: 'Intellijel 1U'}},
+          {id: 2, manufacturerId: 1, hp: 8, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 1, name: 'Intellijel 1U'}},
+          {id: 3, manufacturerId: 1, hp: 20, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 3, name: 'Frac'}},
+          {id: 4, manufacturerId: 1, hp: 20, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 3, name: 'Frac'}},
+          {id: 5, manufacturerId: 1, hp: 20, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 1, name: 'Intellijel'}, standardMeta: {id: 3, name: 'Frac'}},
+          {id: 6, manufacturerId: 2, hp: 18, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 2, name: 'Serge Co'}, standardMeta: {id: 4, name: 'Serge'}},
+          {id: 7, manufacturerId: 2, hp: 18, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 2, name: 'Serge Co'}, standardMeta: {id: 4, name: 'Serge'}},
+          {id: 8, manufacturerId: 2, hp: 18, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 2, name: 'Serge Co'}, standardMeta: {id: 4, name: 'Serge'}},
+          {id: 9, manufacturerId: 2, hp: 18, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 2, name: 'Serge Co'}, standardMeta: {id: 4, name: 'Serge'}},
+          {id: 10, manufacturerId: 2, hp: 18, updated: '2026-05-01T10:00:00.000Z', manufacturer: {id: 2, name: 'Serge Co'}, standardMeta: {id: 4, name: 'Serge'}}
+        ],
+        error: null
+      });
+
+      spyOn(supabaseClient, 'from').and.returnValue(modulesQuery);
+
+      service.GET.applicationModuleInsights().subscribe({
+        next: (result: any) => {
+          expect(result.oneUManufacturers).toEqual([
+            {label: 'Intellijel', count: 40, detail: '40% 1U share across 5 public modules'}
+          ]);
           done();
         },
         error: (err) => {
