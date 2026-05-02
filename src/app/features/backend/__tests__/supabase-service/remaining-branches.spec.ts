@@ -40,10 +40,10 @@ describe('SupabaseService - Remaining Branches', () => {
   
   it('get.patchesWithModule resolves patch details and handles empty patch lists', (done) => {
     spyOn(supabaseClient, 'from').and.callFake((table: string) => {
-      if (table === 'patches_for_modules') {
-        return chainable({data: [{moduleid: 1, patchid: 7}], count: 1, error: null});
+      if (table === 'patches') {
+        return chainable({data: [{id: 7, name: 'Patch7'}], count: 1, error: null});
       }
-      return chainable({data: {id: 7, name: 'Patch7'}, error: null});
+      return chainable({data: null, error: null});
     });
     
     service.get.patchesWithModule(1).subscribe({
@@ -51,7 +51,7 @@ describe('SupabaseService - Remaining Branches', () => {
         expect(result[0].id).toBe(7);
         
         (supabaseClient.from as jasmine.Spy).and.callFake((table: string) => {
-          if (table === 'patches_for_modules') {
+          if (table === 'patches') {
             return chainable({data: [], count: 0, error: null});
           }
           return chainable({data: null, error: null});
@@ -64,6 +64,22 @@ describe('SupabaseService - Remaining Branches', () => {
           },
           error: done.fail
         });
+      },
+      error: done.fail
+    });
+  }, TEST_TIMEOUT);
+
+  it('get.patchesWithModule filters to public patches from public profiles', (done) => {
+    const query = chainable({data: [], count: 0, error: null});
+    const filterSpy = spyOn(query, 'filter').and.returnValue(query);
+    spyOn(supabaseClient, 'from').and.returnValue(query);
+
+    service.get.patchesWithModule(1).subscribe({
+      next: () => {
+        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith('patches_for_modules.moduleid', 'eq', 1);
+        done();
       },
       error: done.fail
     });

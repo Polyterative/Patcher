@@ -67,6 +67,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
 
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Rack Details'); }
+    this.dataService.setPublicDetailMode(true);
 
     this.route.params
       .pipe(
@@ -126,6 +127,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
   }
   
   override ngOnDestroy(): void {
+    this.dataService.setPublicDetailMode(false);
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleRackData$.next(undefined);
     super.ngOnDestroy();
