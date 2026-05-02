@@ -84,9 +84,16 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Updated in 90 days', count: 150, detail: '150 public modules updated in the last quarter'},
         {label: 'Updated in 365 days', count: 610, detail: '610 public modules updated in the last year'}
       ],
+      createdWindows: [
+        {label: 'Added in last year', count: 320, detail: '320 public modules were added in the last year'},
+        {label: 'Added 1-2 years ago', count: 410, detail: '410 public modules were added one to two years ago'},
+        {label: 'Added 2-3 years ago', count: 290, detail: '290 public modules were added two to three years ago'},
+        {label: 'Added over 3 years ago', count: 260, detail: '260 public modules were added over three years ago'}
+      ],
       topFiveManufacturerShare: 44,
       soloManufacturerCount: 21,
       medianModulesPerManufacturer: 8,
+      medianCatalogueAgeYears: 2,
       staleModules: 670,
       averageHp: 14,
       medianHp: 12
@@ -255,10 +262,17 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Long-tail maintenance (91-365 days)', valueLabel: '460'},
         {label: 'Older than a year', valueLabel: '670'}
       ]);
+      expect(page.moduleCatalogueAgeBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Added in last year', valueLabel: '320'},
+        {label: 'Added 1-2 years ago', valueLabel: '410'},
+        {label: 'Added 2-3 years ago', valueLabel: '290'},
+        {label: 'Added over 3 years ago', valueLabel: '260'}
+      ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
         {label: 'This week / 30d activity', value: '63%', icon: 'moving'},
-        {label: 'Older than a year', value: '670 (52%)', icon: 'history'}
+        {label: 'Older than a year', value: '670 (52%)', icon: 'history'},
+        {label: 'Median catalogue age', value: '2 years', icon: 'inventory_2'}
       ]);
       expect(page.topManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Make Noise', valueLabel: '120'},
@@ -383,9 +397,16 @@ describe('ApplicationStatisticsService', () => {
           {label: 'Updated in 90 days', count: 4, detail: '4 public modules updated in the last quarter'},
           {label: 'Updated in 365 days', count: 9, detail: '9 public modules updated in the last year'}
         ],
+        createdWindows: [
+          {label: 'Added in last year', count: 2, detail: '2 public modules were added in the last year'},
+          {label: 'Added 1-2 years ago', count: 5, detail: '5 public modules were added one to two years ago'},
+          {label: 'Added 2-3 years ago', count: 7, detail: '7 public modules were added two to three years ago'},
+          {label: 'Added over 3 years ago', count: 6, detail: '6 public modules were added over three years ago'}
+        ],
         topFiveManufacturerShare: 100,
         soloManufacturerCount: 0,
         medianModulesPerManufacturer: 10,
+        medianCatalogueAgeYears: 3,
         staleModules: 11,
         averageHp: 12,
         medianHp: 10
@@ -439,10 +460,17 @@ describe('ApplicationStatisticsService', () => {
         {label: '9-16 HP', valueLabel: '0%'},
         {label: '17-28 HP', valueLabel: '0%'}
       ]);
+      expect(page.moduleCatalogueAgeBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Added in last year', valueLabel: '2'},
+        {label: 'Added 1-2 years ago', valueLabel: '5'},
+        {label: 'Added 2-3 years ago', valueLabel: '7'},
+        {label: 'Added over 3 years ago', valueLabel: '6'}
+      ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
         {label: 'This week / 30d activity', value: '100%', icon: 'moving'},
-        {label: 'Older than a year', value: '11 (55%)', icon: 'history'}
+        {label: 'Older than a year', value: '11 (55%)', icon: 'history'},
+        {label: 'Median catalogue age', value: '3 years', icon: 'inventory_2'}
       ]);
       expect(page.makerHighlights).toEqual([
         {label: 'Top 5 maker share', value: '100%', icon: 'pie_chart'},

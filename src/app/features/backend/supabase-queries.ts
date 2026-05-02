@@ -95,9 +95,11 @@ export interface PublicApplicationModuleInsights {
   hpBandActivity: PublicApplicationModuleInsightBucket[];
   hpExact: PublicApplicationModuleInsightBucket[];
   freshnessWindows: PublicApplicationModuleInsightBucket[];
+  createdWindows: PublicApplicationModuleInsightBucket[];
   topFiveManufacturerShare: number;
   soloManufacturerCount: number;
   medianModulesPerManufacturer: number;
+  medianCatalogueAgeYears: number;
   staleModules: number;
   averageHp: number;
   medianHp: number;
@@ -113,6 +115,7 @@ type PublicModuleInsightRow = {
   manufacturerName: string;
   hp: number;
   standardName: string;
+  created: string;
   updated: string;
 };
 
@@ -268,7 +271,7 @@ export class SupabaseQueriesService {
     while (true) {
       const response = await this.supabase
         .from(DbPaths.modules)
-        .select('id,hp,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)')
+        .select('id,hp,created,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)')
         .filter('public', 'eq', true)
         .order('id', {ascending: true})
         .range(offset, offset + pageSize - 1);
@@ -282,6 +285,7 @@ export class SupabaseQueriesService {
         manufacturerName: row.manufacturer?.name ?? 'Unknown maker',
         hp: typeof row.hp === 'number' ? row.hp : 0,
         standardName: row.standardMeta?.name ?? 'Unknown standard',
+        created: row.created ?? row.updated ?? '',
         updated: row.updated
       }));
 
@@ -403,11 +407,17 @@ export class SupabaseQueriesService {
     const lastSevenDaysIso = this.getLastNDaysStartDate(7).toISOString();
     const lastNinetyDaysIso = this.getLastNDaysStartDate(90).toISOString();
     const lastThreeSixtyFiveDaysIso = this.getLastNDaysStartDate(365).toISOString();
+    const lastTwoYearsIso = this.getLastNDaysStartDate(365 * 2).toISOString();
+    const lastThreeYearsIso = this.getLastNDaysStartDate(365 * 3).toISOString();
     const hpValues: number[] = [];
+    const catalogueAgeYears: number[] = [];
     let updatedLast7Days = 0;
     let updatedLast30Days = 0;
     let updatedLast90Days = 0;
     let updatedLast365Days = 0;
+    let createdLast365Days = 0;
+    let createdLastTwoYears = 0;
+    let createdLastThreeYears = 0;
 
     rows.forEach((row) => {
       manufacturerCounts.set(
@@ -464,6 +474,23 @@ export class SupabaseQueriesService {
         updatedLast365Days += 1;
       }
 
+      if (row.created) {
+        const createdDate = new Date(row.created);
+        if (!Number.isNaN(createdDate.getTime())) {
+          catalogueAgeYears.push(
+            Math.max(0, (this.getNow().getTime() - createdDate.getTime()) / (365 * 24 * 60 * 60 * 1000))
+          );
+        }
+      }
+
+      if (row.created >= lastThreeSixtyFiveDaysIso) {
+        createdLast365Days += 1;
+      } else if (row.created >= lastTwoYearsIso) {
+        createdLastTwoYears += 1;
+      } else if (row.created >= lastThreeYearsIso) {
+        createdLastThreeYears += 1;
+      }
+
       if (row.hp > 0) {
         hpValues.push(row.hp);
         hpExactCounts.set(row.hp, (hpExactCounts.get(row.hp) ?? 0) + 1);
@@ -484,6 +511,10 @@ export class SupabaseQueriesService {
     const soloManufacturerCount = manufacturerModuleCounts.filter((count) => count === 1).length;
     const medianModulesPerManufacturer = manufacturerModuleCounts.length > 0
       ? manufacturerModuleCounts[Math.floor(manufacturerModuleCounts.length / 2)]
+      : 0;
+    const sortedCatalogueAgeYears = [...catalogueAgeYears].sort((a, b) => a - b);
+    const medianCatalogueAgeYears = sortedCatalogueAgeYears.length > 0
+      ? Math.round(sortedCatalogueAgeYears[Math.floor(sortedCatalogueAgeYears.length / 2)])
       : 0;
 
     return {
@@ -560,9 +591,16 @@ export class SupabaseQueriesService {
         {label: 'Updated in 90 days', count: updatedLast90Days, detail: `${ updatedLast90Days } public modules updated in the last quarter`},
         {label: 'Updated in 365 days', count: updatedLast365Days, detail: `${ updatedLast365Days } public modules updated in the last year`}
       ],
+      createdWindows: [
+        {label: 'Added in last year', count: createdLast365Days, detail: `${ createdLast365Days } public modules were added in the last year`},
+        {label: 'Added 1-2 years ago', count: createdLastTwoYears, detail: `${ createdLastTwoYears } public modules were added one to two years ago`},
+        {label: 'Added 2-3 years ago', count: createdLastThreeYears, detail: `${ createdLastThreeYears } public modules were added two to three years ago`},
+        {label: 'Added over 3 years ago', count: Math.max(rows.length - createdLast365Days - createdLastTwoYears - createdLastThreeYears, 0), detail: `${ Math.max(rows.length - createdLast365Days - createdLastTwoYears - createdLastThreeYears, 0) } public modules were added over three years ago`}
+      ],
       topFiveManufacturerShare,
       soloManufacturerCount,
       medianModulesPerManufacturer,
+      medianCatalogueAgeYears,
       staleModules: Math.max(rows.length - updatedLast365Days, 0),
       averageHp,
       medianHp
