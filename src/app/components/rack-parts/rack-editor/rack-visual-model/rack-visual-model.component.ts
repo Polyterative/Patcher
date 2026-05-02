@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   Input,
+  SimpleChanges,
   OnChanges,
   OnInit,
   ViewChild
@@ -18,9 +19,11 @@ import {
 } from '../../rack-power-breakdown.utils';
 import {
   buildRackPowerHeatmapVisuals,
+  defaultRackPowerHeatmapVisual,
   RackPowerHeatmapVisual,
   rackPowerHeatmapKey
 } from '../../rack-power-heatmap.utils';
+import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { ModuleRightClick } from '../rack-editor.component';
 
@@ -43,7 +46,7 @@ import { ModuleRightClick } from '../rack-editor.component';
 export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit {
   private static readonly rowPowerPanelHeightPx = 112;
   private hoveredRackedModule: RackedModule | null = null;
-  private hoveredRowId: number | null = null;
+  private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
@@ -78,8 +81,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     });
   }
 
-  ngOnChanges(): void {
-    this.updateRowPowerBreakdown();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rowedRackedModules']) {
+      this.updateRowPowerBreakdown();
+    }
   }
   
   isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
@@ -104,9 +109,12 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.hoveredRackedModule === rackedModule;
   }
 
+  shouldShowModuleHoverStats(rackedModule: RackedModule, powerAnalysisMode: boolean): boolean {
+    return powerAnalysisMode && this.isHoveredModule(rackedModule);
+  }
+
   hasCompletePowerData(rackedModule: RackedModule): boolean {
-    return [rackedModule.module.powerPos12, rackedModule.module.powerNeg12, rackedModule.module.powerPos5]
-      .every(value => value != null);
+    return hasCompletePowerData(rackedModule);
   }
 
   absolutePower(value: number | null | undefined): number {
@@ -114,14 +122,14 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   setHoveredRow(rowId: number, rowElement?: HTMLElement | null): void {
-    this.hoveredRowId = rowId;
+    this.hoveredRowIndex = rowId;
     this.hoveredRowPowerPanelPlacement = this.resolveRowPowerPanelPlacement(rowElement ?? null);
     this.updateModulePowerHeatmap();
   }
 
   clearHoveredRow(rowId: number): void {
-    if (this.hoveredRowId === rowId) {
-      this.hoveredRowId = null;
+    if (this.hoveredRowIndex === rowId) {
+      this.hoveredRowIndex = null;
       this.updateModulePowerHeatmap();
     }
   }
@@ -131,7 +139,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   isRowPowerPanelVisible(rowId: number): boolean {
-    return this.hoveredRowId === rowId && (this.rowPowerBreakdown[rowId]?.moduleCount ?? 0) > 0;
+    return this.hoveredRowIndex === rowId && (this.rowPowerBreakdown[rowId]?.moduleCount ?? 0) > 0;
   }
 
   shouldShowRowPowerPanel(rowId: number, powerAnalysisMode: boolean): boolean {
@@ -139,7 +147,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   isRowPowerPanelBelow(rowId: number): boolean {
-    return this.hoveredRowId === rowId && this.hoveredRowPowerPanelPlacement === 'below';
+    return this.hoveredRowIndex === rowId && this.hoveredRowPowerPanelPlacement === 'below';
   }
 
   rowPowerMissingLabel(rowId: number): string {
@@ -155,21 +163,20 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
-    return this.modulePowerHeatmap.get(rackPowerHeatmapKey(rackedModule)) ?? {
-      className: 'powerAnalysisModule--shadow',
-      totalLabel: '0mA total',
-      railsLabel: '+12 0 mA · -12 0 mA · +5 0 mA'
-    };
+    return this.modulePowerHeatmap.get(rackPowerHeatmapKey(rackedModule)) ?? defaultRackPowerHeatmapVisual();
   }
 
   private updateRowPowerBreakdown(): void {
     this.rowPowerBreakdown = buildRackPowerBreakdown(this.rowedRackedModules ?? []).rows;
+    if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
+      this.hoveredRowIndex = null;
+    }
     this.updateModulePowerHeatmap();
   }
 
   private updateModulePowerHeatmap(): void {
     this.modulePowerHeatmap = buildRackPowerHeatmapVisuals(this.rowedRackedModules ?? [], {
-      hoveredRowId: this.hoveredRowId
+      hoveredRowIndex: this.hoveredRowIndex
     });
   }
 

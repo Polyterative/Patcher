@@ -1,5 +1,6 @@
 import { RackedModule } from 'src/app/models/module';
 import { isBlankModule } from './rack-blank-module.constants';
+import { hasMissingPowerData } from './rack-power-data.utils';
 
 export interface RackPowerRowBreakdown {
   rowIndex: number;
@@ -16,11 +17,6 @@ export interface RackPowerBreakdown {
   powerPos12: number;
   powerNeg12: number;
   powerPos5: number;
-}
-
-function hasMissingPowerData(rackedModule: RackedModule): boolean {
-  return [rackedModule.module.powerPos12, rackedModule.module.powerNeg12, rackedModule.module.powerPos5]
-    .some(value => value == null);
 }
 
 export function buildRackPowerBreakdown(rowedRackedModules: RackedModule[][]): RackPowerBreakdown {

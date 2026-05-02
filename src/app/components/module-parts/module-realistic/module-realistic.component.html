@@ -3,8 +3,6 @@
       class="col root"
       [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
       [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
-      [matTooltip]="powerAnalysisMode ? powerAnalysisTooltip() : ''"
-      [matTooltipDisabled]="!powerAnalysisMode"
 >
   <div class="overlayActions">
     <ng-content></ng-content>

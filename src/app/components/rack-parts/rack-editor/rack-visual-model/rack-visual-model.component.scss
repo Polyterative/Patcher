@@ -89,7 +89,7 @@
 }
 
 .rowPowerPanel__header {
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .rowPowerPanel__titleGroup {
@@ -111,17 +111,10 @@
   font-weight: 700;
 }
 
-.rowPowerPanel__badge,
 .rowPowerPanel__rail {
   border-radius: 999px;
   border: 1px solid rgba(34, 75, 117, 0.12);
   background: rgba(34, 75, 117, 0.06);
-}
-
-.rowPowerPanel__badge {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 700;
 }
 
 .rowPowerPanel__rail {
