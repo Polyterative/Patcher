@@ -87,11 +87,11 @@ describe('ApplicationStatisticsService', () => {
         {label: '30-day updates', value: '15', icon: 'timeline'},
         {label: 'Rack + patch sharers', value: '49', icon: 'groups'}
       ]);
-      expect(page.footprintBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
-        {label: 'Public modules', valueLabel: '1,280'},
-        {label: 'Represented makers', valueLabel: '96'},
-        {label: 'Public profiles', valueLabel: '240'},
-        {label: 'Shared works', valueLabel: '126'}
+      expect(page.footprintSnapshot.map((metric) => ({label: metric.label, valueLabel: metric.valueLabel, icon: metric.icon}))).toEqual([
+        {label: 'Public modules', valueLabel: '1,280', icon: 'view_module'},
+        {label: 'Represented makers', valueLabel: '96', icon: 'precision_manufacturing'},
+        {label: 'Public profiles', valueLabel: '240', icon: 'person_search'},
+        {label: 'Shared works', valueLabel: '126', icon: 'layers'}
       ]);
       expect(page.activityChart.days).toEqual([
         jasmine.objectContaining({date: '2026-05-01', total: 5, modules: 4, racks: 1, patches: 0}),

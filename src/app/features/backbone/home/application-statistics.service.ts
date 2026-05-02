@@ -34,6 +34,14 @@ export interface ApplicationInsightsHighlight {
   icon: string;
 }
 
+export interface ApplicationInsightsSnapshotMetric {
+  label: string;
+  valueLabel: string;
+  detail: string;
+  icon: string;
+  tone: 'brand' | 'emerald' | 'violet' | 'amber';
+}
+
 export interface ApplicationInsightsBar {
   label: string;
   valueLabel: string;
@@ -68,7 +76,7 @@ export interface ApplicationInsightsTrendLegendItem {
 
 export interface ApplicationInsightsPage {
   heroHighlights: ApplicationInsightsHighlight[];
-  footprintBars: ApplicationInsightsBar[];
+  footprintSnapshot: ApplicationInsightsSnapshotMetric[];
   footprintHighlights: ApplicationInsightsHighlight[];
   activityChart: {
     days: ApplicationInsightsTrendDay[];
@@ -159,28 +167,32 @@ export class ApplicationStatisticsService extends SubManager {
     const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
 
     const footprintMetrics = [
-      this.createMetricDatum(
+      this.createSnapshotMetric(
         'Public modules',
         statistics.publicModules,
         'Visible module catalogue',
+        'view_module',
         'brand'
       ),
-      this.createMetricDatum(
+      this.createSnapshotMetric(
         'Represented makers',
         statistics.publicManufacturers,
         'Manufacturers with public modules',
+        'precision_manufacturing',
         'violet'
       ),
-      this.createMetricDatum(
+      this.createSnapshotMetric(
         'Public profiles',
         statistics.publicProfiles,
         'Profiles visible on the public web',
+        'person_search',
         'emerald'
       ),
-      this.createMetricDatum(
+      this.createSnapshotMetric(
         'Shared works',
         sharedWorks,
         `${ this.formatCount(statistics.publicRacks) } racks + ${ this.formatCount(statistics.publicPatches) } patches`,
+        'layers',
         'amber'
       )
     ];
@@ -281,7 +293,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'groups'
         }
       ],
-      footprintBars: this.mapBarWidths(footprintMetrics),
+      footprintSnapshot: footprintMetrics,
       footprintHighlights: [
         {
           label: 'Public racks',
@@ -376,17 +388,18 @@ export class ApplicationStatisticsService extends SubManager {
     };
   }
 
-  private createMetricDatum(
+  private createSnapshotMetric(
     label: string,
     value: number,
     detail: string,
+    icon: string,
     tone: MetricTone
-  ) {
+  ): ApplicationInsightsSnapshotMetric {
     return {
       label,
-      rawValue: value,
       valueLabel: this.formatCount(value),
       detail,
+      icon,
       tone
     };
   }
