@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.insights-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.insights-hero {
+  display: grid;
+  gap: 1rem;
+}
+
+.insights-kicker {
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1766b2;
+}
+
+.insights-hero h1 {
+  margin: 0;
+}
+
+.insights-intro,
+.insights-body {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.insights-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.insights-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.methodology-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.methodology-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.methodology-item h3,
+.methodology-item p {
+  margin: 0;
+}
+
+.methodology-item p {
+  margin-top: 0.2rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 60rem) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}

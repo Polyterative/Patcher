@@ -13,10 +13,23 @@ export interface ApplicationInsightsTeaser {
   interpretation: string;
   methodology: string;
   emptyMessage: string;
-  statistics: {
-    name: string;
-    value: number;
+  statistics: ApplicationInsightStatistic[];
+}
+
+export interface ApplicationInsightStatistic {
+  name: string;
+  value: number;
+  icon: string;
+}
+
+export interface ApplicationInsightsPage {
+  interpretation: string;
+  overview: ApplicationInsightStatistic[];
+  sharing: ApplicationInsightStatistic[];
+  methodology: {
     icon: string;
+    title: string;
+    description: string;
   }[];
 }
 
@@ -27,6 +40,10 @@ export class ApplicationStatisticsService extends SubManager {
   readonly teaser$ = this.refreshRequest$.pipe(
     switchMap(() => this.backend.GET.applicationStatistics()),
     map((statistics) => this.mapTeaser(statistics))
+  );
+  readonly page$ = this.refreshRequest$.pipe(
+    switchMap(() => this.backend.GET.applicationStatistics()),
+    map((statistics) => this.mapPage(statistics))
   );
 
   constructor(
@@ -66,6 +83,67 @@ export class ApplicationStatisticsService extends SubManager {
         : 'The public catalogue is live, and this teaser will deepen as more people publish racks and patches from public profiles.',
       methodology: 'Aggregate only. Rack and patch counts include only public items from public profiles, and patch totals follow the public patch browser by counting shared patches with saved cable connections.',
       emptyMessage: 'Public insight snapshots will appear here once enough public catalogue activity is available.'
+    };
+  }
+
+  private mapPage(statistics: PublicApplicationStatistics): ApplicationInsightsPage {
+    const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
+
+    return {
+      overview: [
+        {
+          name: 'Public modules',
+          value: statistics.publicModules,
+          icon: 'view_module'
+        },
+        {
+          name: 'Manufacturers represented',
+          value: statistics.publicManufacturers,
+          icon: 'precision_manufacturing'
+        },
+        {
+          name: 'Shared racks',
+          value: statistics.publicRacks,
+          icon: 'space_dashboard'
+        },
+        {
+          name: 'Shared patches',
+          value: statistics.publicPatches,
+          icon: 'cable'
+        }
+      ],
+      sharing: [
+        {
+          name: 'Profiles sharing racks',
+          value: statistics.publicRackAuthors,
+          icon: 'dashboard_customize'
+        },
+        {
+          name: 'Profiles sharing patches',
+          value: statistics.publicPatchAuthors,
+          icon: 'hub'
+        }
+      ],
+      interpretation: creatorFootprint > 0
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it.'
+        : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
+      methodology: [
+        {
+          icon: 'shield',
+          title: 'Public-safe only',
+          description: 'Everything on this page is aggregate-only. No private racks, private patches, or hidden profiles are counted.'
+        },
+        {
+          icon: 'cable',
+          title: 'Patch counts stay strict',
+          description: 'Patch totals follow the public patch browser and count only public patches with saved cable connections from public profiles.'
+        },
+        {
+          icon: 'visibility',
+          title: 'Profile visibility still gates sharing',
+          description: 'Rack and patch sharing metrics only include content from profiles that are themselves public, so profile privacy remains the top-level boundary.'
+        }
+      ]
     };
   }
 }
