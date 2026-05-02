@@ -127,15 +127,22 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Racks', valueLabel: '3', toneClass: 'racks'},
         {label: 'Patches', valueLabel: '3', toneClass: 'patches'}
       ]);
-      expect(page.moduleMixBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+      expect(page.standardMixBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: '3U', valueLabel: '1,000'},
-        {label: 'Intellijel 1U', valueLabel: '180'},
+        {label: 'Intellijel 1U', valueLabel: '180'}
+      ]);
+      expect(page.standardMixHighlights).toEqual([
+        {label: 'Formats represented', value: '2', icon: 'category'},
+        {label: 'Dominant standard', value: '3U (1,000)', icon: 'emoji_events'},
+        {label: '1U footprint', value: '14%', icon: 'view_week'}
+      ]);
+      expect(page.hpBandBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Compact (0-8 HP)', valueLabel: '340'},
         {label: 'Utility (9-16 HP)', valueLabel: '510'},
         {label: 'Feature (17-28 HP)', valueLabel: '320'},
         {label: 'Large (29+ HP)', valueLabel: '110'}
       ]);
-      expect(page.moduleMixHighlights).toEqual([
+      expect(page.hpBandHighlights).toEqual([
         {label: 'Average width', value: '14 HP', icon: 'straighten'},
         {label: 'Median width', value: '12 HP', icon: 'swap_horiz'},
         {label: 'Recent module updates', value: '64', icon: 'schedule'}
@@ -231,7 +238,12 @@ describe('ApplicationStatisticsService', () => {
         value: '1',
         icon: 'schedule'
       });
-      expect(page.moduleMixHighlights).toEqual([
+      expect(page.standardMixHighlights).toEqual([
+        {label: 'Formats represented', value: '2', icon: 'category'},
+        {label: 'Dominant standard', value: '3U (18)', icon: 'emoji_events'},
+        {label: '1U footprint', value: '10%', icon: 'view_week'}
+      ]);
+      expect(page.hpBandHighlights).toEqual([
         {label: 'Average width', value: '12 HP', icon: 'straighten'},
         {label: 'Median width', value: '10 HP', icon: 'swap_horiz'},
         {label: 'Recent module updates', value: '1', icon: 'schedule'}
