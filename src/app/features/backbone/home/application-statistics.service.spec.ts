@@ -45,6 +45,16 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Feature (17-28 HP)', count: 320, detail: '320 modules in this size band'},
         {label: 'Large (29+ HP)', count: 110, detail: '110 modules in this size band'}
       ],
+      freshnessWindows: [
+        {label: 'Updated in 7 days', count: 40, detail: '40 public modules updated in the last week'},
+        {label: 'Updated in 30 days', count: 64, detail: '64 public modules updated in the last month'},
+        {label: 'Updated in 90 days', count: 150, detail: '150 public modules updated in the last quarter'},
+        {label: 'Updated in 365 days', count: 610, detail: '610 public modules updated in the last year'}
+      ],
+      topFiveManufacturerShare: 44,
+      soloManufacturerCount: 21,
+      medianModulesPerManufacturer: 8,
+      staleModules: 670,
       averageHp: 14,
       medianHp: 12
     },
@@ -118,7 +128,7 @@ describe('ApplicationStatisticsService', () => {
       expect(page.heroHighlights).toEqual([
         {label: 'Shared works', value: '126', icon: 'layers'},
         {label: '30-day updates', value: '15', icon: 'timeline'},
-        {label: 'Rack + patch sharers', value: '49', icon: 'groups'}
+        {label: 'Rack sharers + patch sharers', value: '49', icon: 'groups'}
       ]);
       expect(page.footprintSnapshot.map((metric) => ({label: metric.label, valueLabel: metric.valueLabel, icon: metric.icon}))).toEqual([
         {label: 'Public modules', valueLabel: '1,280', icon: 'view_module'},
@@ -157,6 +167,17 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Median width', value: '12 HP', icon: 'swap_horiz'},
         {label: 'Recent module updates', value: '64', icon: 'schedule'}
       ]);
+      expect(page.moduleFreshnessBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Updated in 7 days', valueLabel: '40'},
+        {label: 'Updated in 30 days', valueLabel: '64'},
+        {label: 'Updated in 90 days', valueLabel: '150'},
+        {label: 'Updated in 365 days', valueLabel: '610'}
+      ]);
+      expect(page.moduleFreshnessHighlights).toEqual([
+        {label: 'Updated this week', value: '3%', icon: 'bolt'},
+        {label: 'Updated this year', value: '48%', icon: 'event_repeat'},
+        {label: 'Older than a year', value: '670', icon: 'history'}
+      ]);
       expect(page.topManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Make Noise', valueLabel: '120'},
         {label: 'Mutable Instruments', valueLabel: '96'}
@@ -172,6 +193,11 @@ describe('ApplicationStatisticsService', () => {
       expect(page.oneUManufacturerBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Intellijel', valueLabel: '72%'},
         {label: 'Pulp Logic', valueLabel: '64%'}
+      ]);
+      expect(page.makerHighlights).toEqual([
+        {label: 'Top 5 maker share', value: '44%', icon: 'pie_chart'},
+        {label: 'Solo makers', value: '21', icon: 'filter_1'},
+        {label: 'Median maker catalogue', value: '8 modules', icon: 'balance'}
       ]);
       expect(page.sharingMix).toEqual([
         {label: 'Racks', valueLabel: '84 (67%)', widthPercent: 67, tone: 'emerald'},
@@ -236,6 +262,16 @@ describe('ApplicationStatisticsService', () => {
           {label: 'Utility (9-16 HP)', count: 10, detail: '10 modules in this size band'},
           {label: 'Feature (17-28 HP)', count: 4, detail: '4 modules in this size band'}
         ],
+        freshnessWindows: [
+          {label: 'Updated in 7 days', count: 1, detail: '1 public modules updated in the last week'},
+          {label: 'Updated in 30 days', count: 1, detail: '1 public modules updated in the last month'},
+          {label: 'Updated in 90 days', count: 4, detail: '4 public modules updated in the last quarter'},
+          {label: 'Updated in 365 days', count: 9, detail: '9 public modules updated in the last year'}
+        ],
+        topFiveManufacturerShare: 100,
+        soloManufacturerCount: 0,
+        medianModulesPerManufacturer: 10,
+        staleModules: 11,
         averageHp: 12,
         medianHp: 10
       },
@@ -250,7 +286,7 @@ describe('ApplicationStatisticsService', () => {
       expect(page.heroHighlights).toEqual([
         {label: 'Shared works', value: '9', icon: 'layers'},
         {label: '30-day updates', value: '3', icon: 'timeline'},
-        {label: 'Rack + patch sharers', value: '3', icon: 'groups'}
+        {label: 'Rack sharers + patch sharers', value: '3', icon: 'groups'}
       ]);
       expect(page.sharingRateBars).toEqual([]);
       expect(page.patchDepthBars).toEqual([]);
@@ -280,10 +316,48 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Median width', value: '10 HP', icon: 'swap_horiz'},
         {label: 'Recent module updates', value: '1', icon: 'schedule'}
       ]);
+      expect(page.moduleFreshnessHighlights).toEqual([
+        {label: 'Updated this week', value: '5%', icon: 'bolt'},
+        {label: 'Updated this year', value: '45%', icon: 'event_repeat'},
+        {label: 'Older than a year', value: '11', icon: 'history'}
+      ]);
+      expect(page.makerHighlights).toEqual([
+        {label: 'Top 5 maker share', value: '100%', icon: 'pie_chart'},
+        {label: 'Solo makers', value: '0', icon: 'filter_1'},
+        {label: 'Median maker catalogue', value: '10 modules', icon: 'balance'}
+      ]);
       expect(page.activityChart.highlights).toEqual([
         {label: 'Active days', value: '3 / 30', icon: 'calendar_view_month'},
-        {label: 'Busiest day', value: '1', icon: 'bolt'},
-        {label: 'Total 30-day updates', value: '3', icon: 'show_chart'}
+        {label: 'Last 7 days', value: '3', icon: 'date_range'},
+        {label: 'Vs previous 7', value: '+3', icon: 'trending_up'},
+        {label: 'Fastest-moving layer', value: 'Modules', icon: 'stacked_line_chart'},
+        {label: 'Busiest day', value: '1', icon: 'bolt'}
+      ]);
+      done();
+    });
+  });
+
+  it('keeps sharing mix widths within 100 percent when one segment is tiny', (done) => {
+    const {service} = build(
+      {
+        publicModules: 250,
+        publicManufacturers: 40,
+        publicProfiles: 18,
+        publicModulesUpdatedLast30Days: 2,
+        publicRacks: 95,
+        publicRackAuthors: 9,
+        publicRacksUpdatedLast30Days: 4,
+        publicPatches: 5,
+        publicPatchConnections: 10,
+        publicPatchAuthors: 3,
+        publicPatchesUpdatedLast30Days: 1
+      }
+    );
+
+    service.page$.subscribe((page) => {
+      expect(page.sharingMix).toEqual([
+        {label: 'Racks', valueLabel: '95 (95%)', widthPercent: 88, tone: 'emerald'},
+        {label: 'Patches', valueLabel: '5 (5%)', widthPercent: 12, tone: 'brand'}
       ]);
       done();
     });
