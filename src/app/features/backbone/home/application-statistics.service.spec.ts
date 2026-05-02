@@ -83,6 +83,8 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Racks share of shared works', value: 67, icon: 'space_dashboard'},
         {name: 'Patches share of shared works', value: 33, icon: 'cable'}
       ]);
+      expect(page.coverage[0].title).toContain('live');
+      expect(page.coverage[1].description).toContain('at least 10 public shared works');
       expect(page.derived).toEqual([
         {name: 'Modules per represented maker', value: 13, icon: 'rule'},
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
@@ -108,6 +110,8 @@ describe('ApplicationStatisticsService', () => {
       expect(page.catalogueHealth).toEqual([]);
       expect(page.sharingMix).toEqual([]);
       expect(page.derived).toEqual([]);
+      expect(page.coverage[1].title).toContain('currently suppressed');
+      expect(page.coverage[2].description).toContain('fake KPI');
       expect(page.methodology[5].description).toContain('rounded to whole numbers');
       done();
     });
