@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterModule } from '@angular/router';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
@@ -19,6 +20,7 @@ import { ChangelogComponent } from './changelog/changelog.component';
   imports:      [
     CommonModule,
     MatIconModule,
+    MatProgressBarModule,
     BrandPrimaryButtonModule,
     CleanCardModule,
     HeroContentCardModule,

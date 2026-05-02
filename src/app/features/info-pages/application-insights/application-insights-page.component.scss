@@ -11,6 +11,28 @@
   gap: 1rem;
 }
 
+.insights-loader {
+  display: grid;
+}
+
+.insights-loader__body {
+  display: grid;
+  gap: 1rem;
+}
+
+.insights-loader__label {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgba(24, 37, 53, 0.78);
+}
+
+.insights-loader__chips {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
 .hero-highlights {
   display: grid;
   gap: 0.75rem;
@@ -459,6 +481,10 @@
 
   .trend-momentum-card {
     padding: 0.75rem 0.8rem;
+  }
+
+  .insights-loader__chips {
+    grid-template-columns: 1fr;
   }
 }
 
