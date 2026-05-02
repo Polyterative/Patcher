@@ -1,4 +1,13 @@
 :host {
+  --insights-blue-050: #eef4ff;
+  --insights-blue-100: #dce9ff;
+  --insights-blue-200: #bdd5ff;
+  --insights-blue-300: #96b9ff;
+  --insights-blue-400: #6f9cff;
+  --insights-blue-500: #4765ff;
+  --insights-blue-600: #3552e6;
+  --insights-blue-700: #2841b8;
+  --insights-blue-800: #20358f;
   display: block;
   padding: 1rem 0 2rem;
   background:
@@ -182,22 +191,22 @@
 
 .snapshot-card--brand .snapshot-card__icon,
 .snapshot-card--brand .snapshot-card__value {
-  color: #4765ff;
+  color: var(--insights-blue-500);
 }
 
 .snapshot-card--emerald .snapshot-card__icon,
 .snapshot-card--emerald .snapshot-card__value {
-  color: #1f9a73;
+  color: var(--insights-blue-400);
 }
 
 .snapshot-card--violet .snapshot-card__icon,
 .snapshot-card--violet .snapshot-card__value {
-  color: #7a4dff;
+  color: var(--insights-blue-600);
 }
 
 .snapshot-card--amber .snapshot-card__icon,
 .snapshot-card--amber .snapshot-card__value {
-  color: #c27b11;
+  color: var(--insights-blue-700);
 }
 
 .metric-bar {
@@ -233,19 +242,19 @@
 }
 
 .metric-bar__fill--brand {
-  background: linear-gradient(90deg, #4765ff, #6f88ff);
+  background: linear-gradient(90deg, var(--insights-blue-500), var(--insights-blue-400));
 }
 
 .metric-bar__fill--emerald {
-  background: linear-gradient(90deg, #1f9a73, #34c48e);
+  background: linear-gradient(90deg, var(--insights-blue-300), var(--insights-blue-200));
 }
 
 .metric-bar__fill--violet {
-  background: linear-gradient(90deg, #7a4dff, #a178ff);
+  background: linear-gradient(90deg, var(--insights-blue-600), var(--insights-blue-400));
 }
 
 .metric-bar__fill--amber {
-  background: linear-gradient(90deg, #c27b11, #f2aa39);
+  background: linear-gradient(90deg, var(--insights-blue-700), var(--insights-blue-500));
 }
 
 .trend-chart {
@@ -283,15 +292,15 @@
 }
 
 .trend-day__segment--modules {
-  background: #34c48e;
+  background: linear-gradient(180deg, var(--insights-blue-200), var(--insights-blue-300));
 }
 
 .trend-day__segment--racks {
-  background: #7a4dff;
+  background: linear-gradient(180deg, var(--insights-blue-400), var(--insights-blue-500));
 }
 
 .trend-day__segment--patches {
-  background: #4765ff;
+  background: linear-gradient(180deg, var(--insights-blue-600), var(--insights-blue-700));
 }
 
 .trend-day__label {
@@ -330,15 +339,15 @@
 }
 
 .trend-legend__dot--modules {
-  background: #34c48e;
+  background: var(--insights-blue-300);
 }
 
 .trend-legend__dot--racks {
-  background: #7a4dff;
+  background: var(--insights-blue-500);
 }
 
 .trend-legend__dot--patches {
-  background: #4765ff;
+  background: var(--insights-blue-700);
 }
 
 .trend-momentum-grid {
@@ -382,11 +391,11 @@
 }
 
 .mix__segment--brand {
-  background: linear-gradient(90deg, #4765ff, #6f88ff);
+  background: linear-gradient(90deg, var(--insights-blue-500), var(--insights-blue-400));
 }
 
 .mix__segment--emerald {
-  background: linear-gradient(90deg, #1f9a73, #34c48e);
+  background: linear-gradient(90deg, var(--insights-blue-300), var(--insights-blue-200));
 }
 
 @media (max-width: 64rem) {
