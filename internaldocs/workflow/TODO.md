@@ -24,7 +24,7 @@
 
 ## Active
 
-- [~] Security — verify current public-profile privacy model — inspect existing Supabase RLS and query-layer behavior for `profiles`, `racks`, and `patches` without applying policy changes.
+- _None selected. Move one backlog item here before implementation._
 
 ---
 
@@ -213,7 +213,7 @@ queries.
 **Constraint:** Any RLS/policy change in this task requires manual user approval before implementation; agents may investigate
 and propose but must not apply such changes autonomously.
 
-- [ ] Verify current Supabase RLS behavior for `profiles`, `patches`, and `racks` against the public-profile privacy model
+- [x] Verify current Supabase RLS behavior for `profiles`, `patches`, and `racks` against the public-profile privacy model
 - [x] Enforce profile-level visibility on public rack/patch reads server-side (policy and/or query-layer hardening)
 - [x] Add regression coverage for private-profile API access paths so the privacy boundary is not UI-only
 

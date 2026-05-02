@@ -29,12 +29,14 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
   beforeEach(() => {
     // Create minimal mocks to allow service initialization
     mockSupabaseService = {
+      cacheResetter$: new Subject<string[]>(),
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null})),
         currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([]))
       },
       GET: {
-        patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([]))
+        patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([])),
+        publicPatchWithId: jasmine.createSpy('publicPatchWithId').and.returnValue(of({data: null, error: null}))
       },
       update: {
         patch: jasmine.createSpy('patch').and.returnValue(of({data: null, error: null})),
@@ -96,5 +98,14 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
   
   it('should initialize isCurrentPatchPrivate$ as false', () => {
     expect(service.isCurrentPatchPrivate$.value).toBe(false);
+  });
+
+  it('uses public patch reads when public detail mode is enabled', () => {
+    service.setPublicDetailMode(true);
+
+    service.updateSinglePatchData$.next(42);
+
+    expect(mockSupabaseService.GET.publicPatchWithId).toHaveBeenCalledWith(42);
+    expect(mockSupabaseService.get.patchWithId).not.toHaveBeenCalledWith(42);
   });
 });

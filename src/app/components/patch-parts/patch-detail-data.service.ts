@@ -70,6 +70,7 @@ export interface MultiInstanceModuleSummary {
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
+  private usePublicDetailReads = false;
   updateSinglePatchData$ = new ReplaySubject<number>();
   singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
@@ -154,7 +155,9 @@ export class PatchDetailDataService implements OnDestroy {
         tap(_ => this.editorConnections$.next(null)),
         tap(() => this.patchModuleInstances$.next([])),
         tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
-        switchMap(x => this.backend.get.patchWithId(x)),
+        switchMap(x => this.usePublicDetailReads
+          ? this.backend.GET.publicPatchWithId(x)
+          : this.backend.get.patchWithId(x)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
@@ -763,6 +766,10 @@ export class PatchDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe();
+  }
+
+  setPublicDetailMode(enabled: boolean) {
+    this.usePublicDetailReads = enabled;
   }
 
   addPatchTag(tag: string): void {
