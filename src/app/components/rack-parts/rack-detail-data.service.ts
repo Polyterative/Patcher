@@ -76,7 +76,7 @@ export class RackDetailDataService extends SubManager {
   
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
-  showModuleCounters$ = new BehaviorSubject<boolean>(true);
+  showPowerAnalysisMode$ = new BehaviorSubject<boolean>(false);
   formData = {
     name: {
       control: new FormControl('', [
@@ -299,13 +299,11 @@ export class RackDetailDataService extends SubManager {
     // when user requests to update rack image preview, generate it, and upload to backend
     this.updateRackImagePreview$.pipe(
       tap(() => this.snackBar.open('⏲️ Generating image: please wait, this can take a few moments...', undefined, {duration: 20000})),
-      tap(() => this.showModuleCounters$.next(false)),
       delay(50), // wait for the screen to be ready
       withLatestFrom(this.currentDownloadElementRef$),
       // generate the image, and convert it to a Blob
       switchMap(([_, references]) => {
         return this.generateRackJpeg$(references.screen.nativeElement).pipe(
-          tap(() => this.showModuleCounters$.next(true)),
           // Convert the image data to a Blob
           map(imageData => {
             const byteCharacters = atob(imageData.split(',')[1]);

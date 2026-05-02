@@ -2,7 +2,8 @@
   rowedRackedModules:((dataService.rowedRackedModules$|async)),
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
-  userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async)
+  userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
+  showPowerAnalysisMode:(dataService.showPowerAnalysisMode$|async)
 }; as bag) {
   <div class="col gap1"
   >
@@ -49,12 +50,14 @@
                 Use images
               </div>
             </mat-slide-toggle>
-            <mat-slide-toggle [checked]="dataService.showModuleCounters$|async"
-                              (change)="dataService.showModuleCounters$.next(!dataService.showModuleCounters$.value)"
+            <mat-slide-toggle [checked]="dataService.showPowerAnalysisMode$|async"
+                              (change)="dataService.showPowerAnalysisMode$.next(!dataService.showPowerAnalysisMode$.value)"
+                              matTooltip="Adds a light power tint over modules while keeping the normal panel view visible"
+                              matTooltipPosition="above"
                               style="align-self: center;"
             >
               <div style="cursor: pointer;">
-                Count modules
+                Power analysis
               </div>
             </mat-slide-toggle>
             <mat-slide-toggle [checked]="dataService.userRequestedSmallerScale$|async"
@@ -95,10 +98,13 @@
         </div>
         <div #rackViewport
              class="col scroll custom-scrollbar transition-all"
-             [ngClass]="{'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)}"
+              [ngClass]="{
+                'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)
+              }"
         >
           <app-rack-visual-model [rackData]="data"
                                  [rowedRackedModules]="bag.rowedRackedModules"
+                                 [rackViewportElement]="rackViewport"
                                  [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
                                  [isCurrentRackEditable]="bag.isCurrentRackEditable"
                                  [rackDetailDataService]="dataService"

@@ -174,6 +174,13 @@ describe('TotalPowerOfRackPipe', () => {
     const modules: RackedModule[][] = [[makeRackedModule(BLANK_3U_ID)]];
     expect(pipe.transform(modules)).toEqual([0, 0, 0]);
   });
+
+  it('should treat missing power data as zero draw', () => {
+    const modules: RackedModule[][] = [[
+      makeRackedModule(REAL_MODULE_ID, { powerPos12: null as any, powerNeg12: null as any, powerPos5: null as any })
+    ]];
+    expect(pipe.transform(modules)).toEqual([0, 0, 0]);
+  });
 });
 
 describe('TotalWeightOfRackPipe', () => {
