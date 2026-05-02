@@ -89,6 +89,7 @@ export interface ApplicationInsightsPage {
   standardMixBars: ApplicationInsightsBar[];
   standardActivityBars: ApplicationInsightsBar[];
   standardWidthBars: ApplicationInsightsBar[];
+  standardManufacturerBars: ApplicationInsightsBar[];
   standardMixHighlights: ApplicationInsightsHighlight[];
   hpBandBars: ApplicationInsightsBar[];
   hpBandActivityBars: ApplicationInsightsBar[];
@@ -185,17 +186,13 @@ export class ApplicationStatisticsService extends SubManager {
     moduleInsights: PublicApplicationModuleInsights
   ): ApplicationInsightsPage {
     const sharedWorks = statistics.publicRacks + statistics.publicPatches;
-    const recentSharedWorks = statistics.publicRacksUpdatedLast30Days + statistics.publicPatchesUpdatedLast30Days;
-    const totalActivity = activitySeries.reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
     const activeDays = activitySeries.filter((point) => point.modules + point.racks + point.patches > 0).length;
     const moduleActivityTotal = activitySeries.reduce((sum, point) => sum + point.modules, 0);
     const rackActivityTotal = activitySeries.reduce((sum, point) => sum + point.racks, 0);
     const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
     const dominantStandard = this.getTopBucket(moduleInsights.standardMix);
-    const oneUCount = moduleInsights.standardMix
-      .filter((bucket) => bucket.label.includes('1U'))
-      .reduce((sum, bucket) => sum + bucket.count, 0);
     const mostActiveStandard = this.getTopBucket(moduleInsights.standardActivity);
+    const mostCompetitiveStandard = this.getTopBucket(moduleInsights.standardManufacturerCounts ?? []);
     const updatedLast7Days = moduleInsights.freshnessWindows[0]?.count ?? 0;
     const updatedLast30Days = moduleInsights.freshnessWindows[1]?.count ?? 0;
     const updatedLast90Days = moduleInsights.freshnessWindows[2]?.count ?? 0;
@@ -230,7 +227,7 @@ export class ApplicationStatisticsService extends SubManager {
     const hpBandVelocity = orderedHpBands.map((bucket) => {
       const recentUpdates = hpBandActivityCounts.get(bucket.label) ?? 0;
       const rawValue = bucket.count > 0
-        ? Math.round((recentUpdates * 100) / bucket.count)
+        ? (recentUpdates * 100) / bucket.count
         : 0;
 
       return {
@@ -252,6 +249,12 @@ export class ApplicationStatisticsService extends SubManager {
       + this.getBucketCount(orderedHpBands, '3-5 HP');
     const largerFormatShare = this.getBucketCount(orderedHpBands, '17-28 HP')
       + this.getBucketCount(orderedHpBands, '29+ HP');
+    const rackRecentRefreshRate = statistics.publicRacks > 0
+      ? Math.round((statistics.publicRacksUpdatedLast30Days / statistics.publicRacks) * 100)
+      : 0;
+    const patchRecentRefreshRate = statistics.publicPatches > 0
+      ? Math.round((statistics.publicPatchesUpdatedLast30Days / statistics.publicPatches) * 100)
+      : 0;
     const freshnessCohorts = [
       {
         label: 'Fresh (0-7 days)',
@@ -264,14 +267,14 @@ export class ApplicationStatisticsService extends SubManager {
         detail: `${ this.formatCount(Math.max(updatedLast30Days - updatedLast7Days, 0)) } public modules moved earlier this month`
       },
       {
-        label: 'Settled (31-90 days)',
+        label: 'Deceleration zone (31-90 days)',
         count: Math.max(updatedLast90Days - updatedLast30Days, 0),
-        detail: `${ this.formatCount(Math.max(updatedLast90Days - updatedLast30Days, 0)) } public modules moved in the last quarter`
+        detail: `${ this.formatCount(Math.max(updatedLast90Days - updatedLast30Days, 0)) } public modules were active this quarter but not in the last 30 days`
       },
       {
-        label: 'Stable (91-365 days)',
+        label: 'Long-tail maintenance (91-365 days)',
         count: Math.max(updatedLast365Days - updatedLast90Days, 0),
-        detail: `${ this.formatCount(Math.max(updatedLast365Days - updatedLast90Days, 0)) } public modules were updated within the last year`
+        detail: `${ this.formatCount(Math.max(updatedLast365Days - updatedLast90Days, 0)) } public modules were maintained this year without recent churn`
       },
       {
         label: 'Older than a year',
@@ -321,7 +324,7 @@ export class ApplicationStatisticsService extends SubManager {
         {
           scale: 100,
           valueSuffix: '/ 100',
-          detail: `${ this.formatCount(statistics.publicRackAuthors) } public profiles sharing racks`,
+          detail: `${ this.formatCount(statistics.publicRackAuthors) } public profiles sharing racks · ${ rackRecentRefreshRate }% of shared racks updated in 30 days`,
           minimumNumerator: 3,
           minimumDenominator: 10
         }
@@ -334,16 +337,18 @@ export class ApplicationStatisticsService extends SubManager {
         {
           scale: 100,
           valueSuffix: '/ 100',
-          detail: `${ this.formatCount(statistics.publicPatchAuthors) } public profiles sharing patches`,
+          detail: `${ this.formatCount(statistics.publicPatchAuthors) } public profiles sharing patches · ${ patchRecentRefreshRate }% of shared patches updated in 30 days`,
           minimumNumerator: 3,
           minimumDenominator: 10
         }
       )
     ].filter((metric): metric is ReturnType<typeof this.createRateDatum> => !!metric);
+    const rackSharingRateMetric = sharingRateMetrics.find((metric) => metric.label.startsWith('Rack-sharing'));
+    const patchSharingRateMetric = sharingRateMetrics.find((metric) => metric.label.startsWith('Patch-sharing'));
 
     const patchDepthMetrics = [
-      this.createRateDatum(
-        'Patches updated / 100 shared patches',
+        this.createRateDatum(
+        'Active patches / 100 shared patches (30d)',
         statistics.publicPatchesUpdatedLast30Days,
         statistics.publicPatches,
         'emerald',
@@ -397,19 +402,19 @@ export class ApplicationStatisticsService extends SubManager {
     return {
       heroHighlights: [
         {
-          label: 'Shared works',
-          value: this.formatCount(sharedWorks),
-          icon: 'layers'
+          label: 'Public modules',
+          value: this.formatCount(statistics.publicModules),
+          icon: 'view_module'
         },
         {
-          label: '30-day updates',
-          value: this.formatCount(totalActivity),
+          label: 'Library momentum',
+          value: this.formatPercent(statistics.publicModulesUpdatedLast30Days, statistics.publicModules),
           icon: 'timeline'
         },
         {
-          label: 'Rack sharers + patch sharers',
-          value: this.formatCount(statistics.publicRackAuthors + statistics.publicPatchAuthors),
-          icon: 'groups'
+          label: 'Represented makers',
+          value: this.formatCount(statistics.publicManufacturers),
+          icon: 'precision_manufacturing'
         }
       ],
       footprintSnapshot: footprintMetrics,
@@ -457,6 +462,15 @@ export class ApplicationStatisticsService extends SubManager {
           tone: this.getToneByIndex(index + 2)
         }))
       ),
+      standardManufacturerBars: this.mapBarWidths(
+        (moduleInsights.standardManufacturerCounts ?? []).map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index + 3)
+        }))
+      ),
       standardMixHighlights: [
         {
           label: 'Formats represented',
@@ -478,9 +492,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'bolt'
         },
         {
-          label: 'Overall 1U share',
-          value: this.formatPercent(oneUCount, statistics.publicModules),
-          icon: 'view_week'
+          label: 'Most competitive format',
+          value: mostCompetitiveStandard
+            ? `${ mostCompetitiveStandard.label } (${ this.formatCount(mostCompetitiveStandard.count) } makers)`
+            : 'N/A',
+          icon: 'groups'
         }
       ],
       hpBandBars: this.mapBarWidths(
@@ -531,7 +547,7 @@ export class ApplicationStatisticsService extends SubManager {
         {
           label: 'Fastest-moving width',
           value: fastestMovingHpBand
-            ? `${ fastestMovingHpBand.label } (${ fastestMovingHpBand.rawValue } / 100)`
+            ? `${ fastestMovingHpBand.label } (${ this.formatCount(Math.round(fastestMovingHpBand.rawValue)) } / 100)`
             : 'N/A',
           icon: 'bolt'
         }
@@ -552,9 +568,9 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'bolt'
         },
         {
-          label: 'Stable in 91-365 days',
-          value: this.formatPercent(Math.max(updatedLast365Days - updatedLast90Days, 0), statistics.publicModules),
-          icon: 'event_repeat'
+          label: 'Last-7 share of 30d activity',
+          value: this.formatPercent(updatedLast7Days, Math.max(updatedLast30Days, 1)),
+          icon: 'moving'
         },
         {
           label: 'Older than a year',
@@ -585,7 +601,7 @@ export class ApplicationStatisticsService extends SubManager {
           label: bucket.label,
           rawValue: bucket.count,
           valueLabel: `${ this.formatCount(bucket.count) } HP`,
-          detail: bucket.detail ?? '',
+          detail: bucket.detail ?? `${ this.formatCount(bucket.count) } HP average width`,
           tone: this.getToneByIndex(index + 2)
         }))
       ),
@@ -692,24 +708,24 @@ export class ApplicationStatisticsService extends SubManager {
       sharingHighlights: [
         {
           label: 'Rack sharers / 100 profiles',
-          value: `${ Math.round((statistics.publicRackAuthors / Math.max(statistics.publicProfiles, 1)) * 100) } / 100`,
+          value: rackSharingRateMetric?.valueLabel ?? 'N/A',
           icon: 'dashboard_customize'
         },
         {
           label: 'Patch sharers / 100 profiles',
-          value: `${ Math.round((statistics.publicPatchAuthors / Math.max(statistics.publicProfiles, 1)) * 100) } / 100`,
+          value: patchSharingRateMetric?.valueLabel ?? 'N/A',
           icon: 'hub'
         },
         {
-          label: 'Shared works updated in 30 days',
-          value: this.formatCount(recentSharedWorks),
-          icon: 'schedule'
+          label: 'Recent sharing momentum',
+          value: `R ${ rackRecentRefreshRate }% · P ${ patchRecentRefreshRate }%`,
+          icon: 'trending_up'
         },
         {
           label: 'Connections per shared patch',
-          value: statistics.publicPatches > 0
+          value: statistics.publicPatches >= 5
             ? this.formatCount(Math.round(statistics.publicPatchConnections / statistics.publicPatches))
-            : '0',
+            : 'N/A',
           icon: 'share'
         }
       ],

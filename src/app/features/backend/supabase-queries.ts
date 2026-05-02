@@ -90,6 +90,7 @@ export interface PublicApplicationModuleInsights {
   standardMix: PublicApplicationModuleInsightBucket[];
   standardActivity: PublicApplicationModuleInsightBucket[];
   standardWidthAverages: PublicApplicationModuleInsightBucket[];
+  standardManufacturerCounts: PublicApplicationModuleInsightBucket[];
   hpBands: PublicApplicationModuleInsightBucket[];
   hpBandActivity: PublicApplicationModuleInsightBucket[];
   hpExact: PublicApplicationModuleInsightBucket[];
@@ -394,6 +395,7 @@ export class SupabaseQueriesService {
     const standardCounts = new Map<string, number>();
     const standardActivityCounts = new Map<string, number>();
     const standardWidthStats = new Map<string, {totalHp: number; totalModules: number}>();
+    const standardManufacturers = new Map<string, Set<string>>();
     const hpBandCounts = new Map<string, number>();
     const hpBandActivityCounts = new Map<string, number>();
     const hpExactCounts = new Map<number, number>();
@@ -426,6 +428,9 @@ export class SupabaseQueriesService {
         totalHp: (standardWidthStats.get(row.standardName)?.totalHp ?? 0) + row.hp,
         totalModules: (standardWidthStats.get(row.standardName)?.totalModules ?? 0) + 1
       });
+      const makersForStandard = standardManufacturers.get(row.standardName) ?? new Set<string>();
+      makersForStandard.add(row.manufacturerName);
+      standardManufacturers.set(row.standardName, makersForStandard);
       hpBandCounts.set(
         this.getHpBandLabel(row.hp),
         (hpBandCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
@@ -523,6 +528,16 @@ export class SupabaseQueriesService {
         ),
         Math.min(5, standardWidthStats.size),
         (count) => `${ count } HP average width`
+      ),
+      standardManufacturerCounts: this.rankBuckets(
+        new Map(
+          [...standardManufacturers.entries()].map(([label, makers]) => [
+            label,
+            makers.size
+          ])
+        ),
+        Math.min(5, standardManufacturers.size),
+        (count) => `${ count } makers represented in this format`
       ),
       hpBands: this.rankOrderedBuckets(
         hpBandCounts,

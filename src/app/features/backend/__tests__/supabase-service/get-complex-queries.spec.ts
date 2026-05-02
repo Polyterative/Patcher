@@ -367,6 +367,11 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Intellijel 1U', count: 22, detail: '22 HP average width'},
             {label: '3U', count: 10, detail: '10 HP average width'}
           ]);
+          expect(result.standardManufacturerCounts).toEqual([
+            {label: '3U', count: 1, detail: '1 makers represented in this format'},
+            {label: 'Intellijel 1U', count: 1, detail: '1 makers represented in this format'},
+            {label: 'Pulp Logic 1U', count: 1, detail: '1 makers represented in this format'}
+          ]);
           expect(result.hpBands).toEqual([
             {label: '6-8 HP', count: 1, detail: '1 modules in this size band'},
             {label: '9-16 HP', count: 1, detail: '1 modules in this size band'},
