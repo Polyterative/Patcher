@@ -27,6 +27,14 @@
         ></app-statistics>
 
         <app-statistics
+          title="Catalogue health"
+          icon="monitoring"
+          cardClass="home-insights-card"
+          [statistics]="page.catalogueHealth"
+          emptyMessage="Coverage signals appear once there is enough public catalogue breadth and sharing activity to normalize them responsibly."
+        ></app-statistics>
+
+        <app-statistics
           title="Public sharing footprint"
           icon="groups"
           cardClass="home-insights-card"
