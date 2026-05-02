@@ -1,0 +1,65 @@
+@if (page$ | async; as page) {
+  <lib-screen-wrapper maxSize="110rem">
+    <div class="insights-page">
+      <lib-clean-card class="insights-hero">
+        <div class="insights-hero__copy">
+          <p class="insights-kicker">public-safe application insights</p>
+          <h1>See how the public library is taking shape</h1>
+          <p class="insights-intro">
+            This is the first dedicated insights surface for Patcher: broad enough to show that the catalogue is alive,
+            strict enough to keep privacy and methodology obvious.
+          </p>
+        </div>
+
+        <div class="insights-hero__actions">
+          <app-brand-primary-button routerLink="/modules/browser" icon="view_module">Browse modules</app-brand-primary-button>
+          <app-brand-primary-button routerLink="/racks/browser" icon="dashboard_customize">Browse racks</app-brand-primary-button>
+          <app-brand-primary-button routerLink="/patches/browser" icon="cable">Browse patches</app-brand-primary-button>
+        </div>
+      </lib-clean-card>
+
+      <div class="insights-grid">
+        <app-statistics
+          title="Catalogue footprint"
+          icon="analytics"
+          cardClass="home-insights-card"
+          [statistics]="page.overview"
+        ></app-statistics>
+
+        <app-statistics
+          title="Public sharing footprint"
+          icon="groups"
+          cardClass="home-insights-card"
+          [statistics]="page.sharing"
+          emptyMessage="Public-profile sharing is still early, so this section stays intentionally sparse until more people publish work."
+        ></app-statistics>
+
+        <lib-hero-content-card
+          titleNormal="What these numbers suggest"
+          description="Interpretation stays advisory rather than prescriptive."
+          icon="tips_and_updates"
+        >
+          <p class="insights-body">{{ page.interpretation }}</p>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
+          titleNormal="Methodology"
+          description="Every block on this page is aggregate-only and public-safe."
+          icon="shield"
+        >
+          <div class="methodology-list">
+            @for (item of page.methodology; track item.title) {
+              <div class="methodology-item">
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+      </div>
+    </div>
+  </lib-screen-wrapper>
+}

@@ -5,8 +5,11 @@ import { ApplicationStatisticsService } from './application-statistics.service';
 describe('ApplicationStatisticsService', () => {
   function build(counts = {
     publicModules: 1280,
+    publicManufacturers: 96,
     publicRacks: 84,
-    publicPatches: 42
+    publicRackAuthors: 31,
+    publicPatches: 42,
+    publicPatchAuthors: 18
   }) {
     const backend = {
       GET: {
@@ -42,13 +45,36 @@ describe('ApplicationStatisticsService', () => {
   it('uses softer interpretation copy while shared public work is still absent', (done) => {
     const {service} = build({
       publicModules: 250,
+      publicManufacturers: 40,
       publicRacks: 0,
-      publicPatches: 0
+      publicRackAuthors: 0,
+      publicPatches: 0,
+      publicPatchAuthors: 0
     });
 
     service.teaser$.subscribe((teaser) => {
       expect(teaser.interpretation).toContain('public catalogue is live');
       expect(teaser.emptyMessage).toContain('Public insight snapshots');
+      done();
+    });
+  });
+
+  it('maps a dedicated insights page model from richer aggregate counts', (done) => {
+    const {service} = build();
+
+    service.page$.subscribe((page) => {
+      expect(page.overview).toEqual([
+        {name: 'Public modules', value: 1280, icon: 'view_module'},
+        {name: 'Manufacturers represented', value: 96, icon: 'precision_manufacturing'},
+        {name: 'Shared racks', value: 84, icon: 'space_dashboard'},
+        {name: 'Shared patches', value: 42, icon: 'cable'}
+      ]);
+      expect(page.sharing).toEqual([
+        {name: 'Profiles sharing racks', value: 31, icon: 'dashboard_customize'},
+        {name: 'Profiles sharing patches', value: 18, icon: 'hub'}
+      ]);
+      expect(page.methodology.length).toBe(3);
+      expect(page.interpretation).toContain('lightweight public intelligence layer');
       done();
     });
   });
