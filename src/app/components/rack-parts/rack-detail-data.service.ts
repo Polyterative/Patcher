@@ -93,6 +93,7 @@ export class RackDetailDataService extends SubManager {
     name: string,
     value: string
   }[] | null>(null);
+  isRackDataLoading$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
   
@@ -395,13 +396,33 @@ export class RackDetailDataService extends SubManager {
     
     this.updateSingleRackData$
       .pipe(
-        // tap(x => this.singleRackData$.next(undefined)),
+        tap(() => {
+          this.isRackDataLoading$.next(true);
+          this.rowedRackedModules$.next(null);
+        }),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicRackWithId(x)
           : this.backend.GET.rackWithId(x)),
+        catchError((err) => {
+          console.error('Failed to load rack details:', err);
+          this.singleRackData$.next(undefined);
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+          SharedConstants.errorCustom(this.snackBar, 'Failed to load this rack. Refresh the page and try again.');
+          return EMPTY;
+        }),
         takeUntil(this.destroy$),
       )
-      .subscribe(x => this.singleRackData$.next(x.data));
+      .subscribe(x => {
+        if (!x?.data) {
+          this.singleRackData$.next(undefined);
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+          return;
+        }
+
+        this.singleRackData$.next(x.data);
+      });
     
     // sync editable, privacy and form state whenever rack data changes
     this.singleRackData$
@@ -417,16 +438,33 @@ export class RackDetailDataService extends SubManager {
     
     // when updated rack data is received, update rowedRackedModules$
     this.singleRackData$.pipe(
-      tap(() => this.rowedRackedModules$.next(null)),
+      tap((rack) => {
+        if (!rack) {
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+        }
+      }),
       filter(x => !!x),
-      switchMap(x => x ? this.backend.get.rackedModules(x.id) : of([])),
-      withLatestFrom(this.singleRackData$),
+      switchMap((rack) => this.backend.get.rackedModules(rack.id).pipe(
+        map((rackedModules) => ({
+          rackedModules,
+          rack
+        })),
+        catchError((err) => {
+          console.error('Failed to load rack modules:', err);
+          this.rowedRackedModules$.next([]);
+          this.isRackDataLoading$.next(false);
+          SharedConstants.errorCustom(this.snackBar, 'Failed to load rack modules. Refresh the page and try again.');
+          return EMPTY;
+        })
+      )),
       takeUntil(this.destroy$),
     )
-      .subscribe(([rackedModules, rack]: [RackedModule[], Rack]) => {
+      .subscribe(({rackedModules, rack}: {rackedModules: RackedModule[]; rack: Rack}) => {
         // create a 2d array of racked modules and sort them by row
         const rowedRackedModules = this.buildRowedModulesArray(rackedModules, rack);
         this.rowedRackedModules$.next(rowedRackedModules);
+        this.isRackDataLoading$.next(false);
       });
     
     // on order change, update local rack data and backend
