@@ -83,4 +83,21 @@ describe('ApplicationStatisticsService', () => {
       done();
     });
   });
+
+  it('suppresses derived metrics when the underlying public sample is too small', (done) => {
+    const {service} = build({
+      publicModules: 20,
+      publicManufacturers: 2,
+      publicRacks: 5,
+      publicRackAuthors: 2,
+      publicPatches: 4,
+      publicPatchAuthors: 1
+    });
+
+    service.page$.subscribe((page) => {
+      expect(page.derived).toEqual([]);
+      expect(page.methodology[3].description).toContain('rounded to whole numbers');
+      done();
+    });
+  });
 });
