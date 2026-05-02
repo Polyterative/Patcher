@@ -229,20 +229,6 @@ and propose but must not apply such changes autonomously.
 
 ---
 
-#### MEDIUM: Module Format Geometry — Canonicalize Rack and Crop Ratios
-
-**Why:** Module rendering and panel-image cropping already share one helper, but the current constants are only approximate
-for 3U and incorrectly collapse **Intellijel 1U** and **Pulp Logic 1U** into one visual height. This keeps the UI
-internally consistent while still being wrong against published format dimensions.
-
-- [ ] Create one canonical format-geometry source for visual dimensions instead of pipe-level magic constants
-- [ ] Encode explicit geometry for **3U Eurorack**, **Intellijel 1U**, and **Pulp Logic 1U**
-- [ ] Update rack/module rendering and image-crop aspect-ratio logic to consume only that shared source
-- [ ] Decide whether initial implementation should model only nominal format geometry or also front-panel face tolerances
-- [ ] Add targeted tests proving render ratios and crop ratios stay aligned for each supported standard
-
----
-
 #### HIGH: E2E — Dedicated Test Account Cleanup
 
 **Why:** E2E credentials are coupled to a personal Supabase account — should use a dedicated test account.
@@ -268,18 +254,6 @@ internally consistent while still being wrong against published format dimension
 - [ ] Confirm deletion → instance removed, connections scrubbed, remaining renumbered
 - [ ] Save + reload → connections and instances survive roundtrip
 - [ ] Legacy patch (pre-instance) → loads and displays correctly
-
----
-
-#### HIGH: Rack Details — Resolve Known Layout Expected Failure
-
-**Why:** `e2e/rack-details-layout.spec.ts` intentionally carries an expected failure for `/racks/details/464` because the rack
-canvas is offset outside the visible editor area on FHD screens. This should be fixed in the UI and then converted from an
-expected failure into a normal passing regression test.
-
-- [ ] Investigate rack editor autoscaling / viewport sizing in `rack-editor.component.ts` and `rack-editor.component.html`
-- [ ] Fix the left-side cutoff for wide racks on desktop without regressing the good desktop/mobile cases already covered for rack `265`
-- [ ] Remove the `test.fail(...)` expectation from the rack `464` E2E once the layout bug is fixed and keep all rack layout tests passing
 
 ---
 
