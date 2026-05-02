@@ -1,4 +1,13 @@
 <app-toolbar></app-toolbar>
+@if (routeLoading$ | async) {
+  <div class="app-route-loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="app-route-loading__label">
+      <mat-icon>hourglass_top</mat-icon>
+      <span>Loading page</span>
+    </div>
+  </div>
+}
 <div class="main">
   <div class="col"
   >

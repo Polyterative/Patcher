@@ -2,6 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router
+} from '@angular/router';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith
+} from 'rxjs/operators';
 
 
 @Component({
@@ -12,11 +25,19 @@ import {
   standalone: false
 })
 export class AppComponent {
-    
-    // @Select(CounterState)
-    // count$: Observable<CounterStateModel>;
-    //
-    // @Emitter(CounterState.setValue)
-    // counterValue: Emittable<number>;
-    
+  readonly routeLoading$;
+
+  constructor(private router: Router) {
+    this.routeLoading$ = this.router.events.pipe(
+      filter((event) =>
+        event instanceof NavigationStart
+        || event instanceof NavigationEnd
+        || event instanceof NavigationCancel
+        || event instanceof NavigationError
+      ),
+      map((event) => event instanceof NavigationStart),
+      startWith(false),
+      distinctUntilChanged()
+    );
+  }
 }

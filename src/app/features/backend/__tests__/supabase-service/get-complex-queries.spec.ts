@@ -368,15 +368,21 @@ describe('SupabaseService - get complex queries', () => {
             {label: '3U', count: 10, detail: '10 HP average width'}
           ]);
           expect(result.hpBands).toEqual([
-            {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules in this size band'},
-            {label: 'Feature (17-28 HP)', count: 1, detail: '1 modules in this size band'},
-            {label: 'Large (29+ HP)', count: 1, detail: '1 modules in this size band'},
-            {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules in this size band'}
+            {label: '6-8 HP', count: 1, detail: '1 modules in this size band'},
+            {label: '9-16 HP', count: 1, detail: '1 modules in this size band'},
+            {label: '17-28 HP', count: 1, detail: '1 modules in this size band'},
+            {label: '29+ HP', count: 1, detail: '1 modules in this size band'}
           ]);
           expect(result.hpBandActivity).toEqual([
-            {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules updated in the last 30 days'},
-            {label: 'Large (29+ HP)', count: 1, detail: '1 modules updated in the last 30 days'},
-            {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules updated in the last 30 days'}
+            {label: '6-8 HP', count: 1, detail: '1 modules updated in the last 30 days'},
+            {label: '9-16 HP', count: 1, detail: '1 modules updated in the last 30 days'},
+            {label: '29+ HP', count: 1, detail: '1 modules updated in the last 30 days'}
+          ]);
+          expect(result.hpExact).toEqual([
+            {label: '6 HP', count: 1, detail: '1 modules at this exact width'},
+            {label: '14 HP', count: 1, detail: '1 modules at this exact width'},
+            {label: '22 HP', count: 1, detail: '1 modules at this exact width'},
+            {label: '34 HP', count: 1, detail: '1 modules at this exact width'}
           ]);
           expect(result.freshnessWindows).toEqual([
             {label: 'Updated in 7 days', count: 3, detail: '3 public modules updated in the last week'},
