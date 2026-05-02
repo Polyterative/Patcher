@@ -262,21 +262,25 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
   
   it('should apply public=true filter when fetching patches for the browser', (done) => {
     const supabaseClient = (service as any).supabase;
-    const filterSpy = jasmine.createSpy('filter').and.returnValue({
+    const query: any = {
+      filter: jasmine.createSpy('filter').and.callFake(() => query),
       order: () => ({
         range: () => Promise.resolve({data: [], count: 0, error: null})
       })
-    });
+    };
     
     spyOn(supabaseClient, 'from').and.returnValue({
-      select: () => ({filter: filterSpy})
+      select: () => query
     });
     
     (service as any).queries.getPatches(0, 19).subscribe({
       next: () => {
-        expect(filterSpy).withContext(
+        expect(query.filter).withContext(
           'GET.patches must filter by public=true to exclude private patches from the browser'
         ).toHaveBeenCalledWith('public', 'eq', true);
+        expect(query.filter).withContext(
+          'GET.patches must also filter by author_profile_gate.public=true to exclude patches from private profiles'
+        ).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
         done();
       },
       error: (err: any) => {
@@ -292,29 +296,35 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
     const mockPublicOnly = [{id: 1, name: 'Public Patch', public: true}];
     
     // If the public filter is missing, the mock leaks private patches through
-    spyOn(supabaseClient, 'from').and.returnValue({
-      select: () => ({
-        filter: (col: string, op: string, val: any) => {
-          if (col !== 'public' || op !== 'eq' || val !== true) {
-            return {
-              order: () => ({
-                range: () => Promise.resolve({
-                  data: [
-                    {id: 1, name: 'Public Patch', public: true},
-                    {id: 2, name: 'Private Patch', public: false}
-                  ],
-                  count: 2, error: null
-                })
-              })
-            };
-          }
-          return {
-            order: () => ({
-              range: () => Promise.resolve({data: mockPublicOnly, count: 1, error: null})
-            })
-          };
+    let hasPublicFilter = false;
+    let hasPublicProfileFilter = false;
+    const query: any = {
+      filter: (col: string, op: string, val: any) => {
+        if (col === 'public' && op === 'eq' && val === true) {
+          hasPublicFilter = true;
         }
+        if (col === 'author_profile_gate.public' && op === 'eq' && val === true) {
+          hasPublicProfileFilter = true;
+        }
+        return query;
+      },
+      order: () => ({
+        range: () => Promise.resolve(
+          hasPublicFilter && hasPublicProfileFilter
+            ? {data: mockPublicOnly, count: 1, error: null}
+            : {
+              data: [
+                {id: 1, name: 'Public Patch', public: true},
+                {id: 2, name: 'Private Patch', public: false}
+              ],
+              count: 2,
+              error: null
+            }
+        )
       })
+    };
+    spyOn(supabaseClient, 'from').and.returnValue({
+      select: () => query
     });
     
     (service as any).queries.getPatches(0, 19).subscribe({
