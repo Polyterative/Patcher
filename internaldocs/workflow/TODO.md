@@ -24,7 +24,7 @@
 
 ## Active
 
-- _None selected. Move one backlog item here before implementation._
+- [~] Security — verify current public-profile privacy model — inspect existing Supabase RLS and query-layer behavior for `profiles`, `racks`, and `patches` without applying policy changes.
 
 ---
 
