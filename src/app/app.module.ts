@@ -18,6 +18,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
@@ -98,6 +99,7 @@ const matDatepickerLocaleIT = {
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
+    MatProgressBarModule,
 //keep as last (for routes)
   ],
   providers:    [

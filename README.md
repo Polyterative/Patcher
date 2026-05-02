@@ -17,10 +17,13 @@
 
 <br>
 
-## 🎉 What's New in v5.1.0
+## New since v5.0
 
-**Patcher v5.1.0 is live** — the patch editor is now everything it was meant to be, with auto-save, instance-aware
-patching, a redesigned connection flow, and the deepest UX overhaul we've ever shipped.
+- **Instance-aware patching** for repeated modules.
+- **Auto-save** for patch state and edits.
+- **Power analysis** and **balance analysis** in rack detail.
+- **Multi-panel module support** with panel gallery improvements.
+- **Public profiles**, contributor stats, and better discovery tooling.
 
 See the full [CHANGELOG](CHANGELOG.md) for details.
 
@@ -75,18 +78,12 @@ Patcher is built for the full modular workflow, not just patch notes.
 - Move fast with streamlined connection flow and app-wide auto-save.
 - Read complexity quickly with live stats for cables, modules, and multiples.
 
-### Practical benefits
+### Why it stays useful
 
 - Works on desktop and mobile with the same workflow.
 - Public/private controls for patches and racks.
-- Free, publicly accessible Eurorack module database with detailed, community-curated specs.
-- Clean, modern UX designed for daily use instead of legacy inventory-style tooling.
-
-### Recent improvements (v5.1.0)
-
-- Instance-aware patching for repeated modules in patches.
-- Auto-save for patch state and edits.
-- Redesigned connection flow and clearer patch statistics.
+- Free, publicly accessible Eurorack module database with community-curated specs.
+- Modern UX built for everyday use, not just collection storage.
 
 ## **User Guide**
 
