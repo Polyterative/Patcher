@@ -110,9 +110,10 @@ describe('SupabaseService - get complex queries', () => {
   });
 
   describe('GET.applicationStatistics', () => {
-    it('should return public-safe aggregate counts for modules, manufacturers, shared racks/patches, and public authors', (done) => {
+    it('should return public-safe aggregate counts for modules, manufacturers, public profiles, shared racks/patches, and public authors', (done) => {
       const modulesQuery = chainable({data: [], count: 150, error: null});
       const manufacturersQuery = chainable({data: [], count: 28, error: null});
+      const publicProfilesQuery = chainable({data: [], count: 80, error: null});
       const racksQuery = chainable({data: [], count: 24, error: null});
       const rackAuthorsQuery = chainable({data: [], count: 12, error: null});
       const patchesQuery = chainable({data: [], count: 11, error: null});
@@ -120,6 +121,7 @@ describe('SupabaseService - get complex queries', () => {
 
       const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
       const manufacturersFilterSpy = spyOn(manufacturersQuery, 'filter').and.callThrough();
+      const publicProfilesFilterSpy = spyOn(publicProfilesQuery, 'filter').and.callThrough();
       const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
       const rackAuthorsFilterSpy = spyOn(rackAuthorsQuery, 'filter').and.callThrough();
       const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
@@ -133,8 +135,14 @@ describe('SupabaseService - get complex queries', () => {
       spyOn(supabaseClient, 'from').and.callFake((table: string) => {
         if (table === 'modules') return modulesQuery;
         if (table === 'manufacturers') return manufacturersQuery;
+        if (table === 'profiles') {
+          if (profilesCallCount === 0) {
+            profilesCallCount++;
+            return publicProfilesQuery;
+          }
+          return profilesCallCount++ === 1 ? rackAuthorsQuery : patchAuthorsQuery;
+        }
         if (table === 'racks') return racksQuery;
-        if (table === 'profiles') return profilesCallCount++ === 0 ? rackAuthorsQuery : patchAuthorsQuery;
         return patchesQuery;
       });
 
@@ -143,6 +151,7 @@ describe('SupabaseService - get complex queries', () => {
           expect(result).toEqual({
             publicModules: 150,
             publicManufacturers: 28,
+            publicProfiles: 80,
             publicRacks: 24,
             publicRackAuthors: 12,
             publicPatches: 11,
@@ -150,6 +159,7 @@ describe('SupabaseService - get complex queries', () => {
           });
           expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
           expect(manufacturersFilterSpy).toHaveBeenCalledWith('public_modules.public', 'eq', true);
+          expect(publicProfilesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           expect(rackAuthorsFilterSpy).toHaveBeenCalledWith('public_racks.public', 'eq', true);
           expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);

@@ -43,6 +43,14 @@
         ></app-statistics>
 
         <app-statistics
+          title="Sharing participation"
+          icon="person_search"
+          cardClass="home-insights-card"
+          [statistics]="page.participation"
+          emptyMessage="Participation rates appear once the public profile base and the sharing-author sample are both large enough to read as adoption rather than anecdote."
+        ></app-statistics>
+
+        <app-statistics
           title="Sharing mix"
           icon="pie_chart"
           cardClass="home-insights-card"
