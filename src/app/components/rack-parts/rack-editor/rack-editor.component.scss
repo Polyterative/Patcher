@@ -27,13 +27,51 @@ $floatingSurfaceRestOpacity: 0.78;
   transform: scale(0.65);
 }
 
-.rackEditorActions {
-  display: flex;
-  flex-wrap: wrap;
+.rackEditorMobileToolbar {
+  display: none;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
 }
 
+.rackEditorMobileToolbar__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 0;
+  padding-inline: 0.9rem;
+  border-radius: 999px;
+  border-color: rgba(62, 99, 138, 0.35);
+  color: #224b75;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.rackEditorMobileToolbar__button--open {
+  background: rgba(34, 75, 117, 0.92);
+  border-color: rgba(34, 75, 117, 0.92);
+  color: #ffffff;
+}
+
+.rackEditorInlineActions {
+  display: none;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.rackEditorInlineActions__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.8rem;
+  border-color: rgba(62, 99, 138, 0.28);
+  color: #224b75;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+// Keep Rack Editor controls on the left so they never compete with the shared right-side edit/save FAB stack.
 .rackEditorFloatingOptions {
   position: fixed;
   left: calc(#{$floatingInsetDesktop} + env(safe-area-inset-left));
@@ -43,6 +81,8 @@ $floatingSurfaceRestOpacity: 0.78;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.65rem;
+  max-height: calc(100vh - (#{$floatingInsetDesktop} * 2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
 }
 
 .rackEditorFloatingOptions__panel,
@@ -79,8 +119,28 @@ $floatingSurfaceRestOpacity: 0.78;
   gap: 0.5rem;
 }
 
+.rackEditorFloatingOptions__panel--actions {
+  gap: 0.4rem;
+}
+
 .rackEditorFloatingOptions__quickToggle {
   padding: 0.65rem 0.8rem;
+}
+
+.rackEditorFloatingOptions__actionButton {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  border-radius: 0.7rem;
+  border-color: rgba(62, 99, 138, 0.35);
+  color: #224b75;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.rackEditorFloatingOptions__actionButton:hover,
+.rackEditorFloatingOptions__actionButton:focus-visible {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(62, 99, 138, 0.55);
 }
 
 .rackEditorFloatingOptions__toggle {
@@ -106,26 +166,38 @@ $floatingSurfaceRestOpacity: 0.78;
 }
 
 @media (max-width: 48rem) {
-  .rackEditorActions {
-    gap: 0.5rem;
+  .rackEditorMobileToolbar {
+    display: flex;
+    flex-wrap: wrap;
   }
 
-  .rackEditorActions > * {
-    width: 100%;
-    gap: 0.5rem;
+  .rackEditorMobileToolbar__button {
+    flex: 0 1 auto;
+  }
+
+  .rackEditorInlineActions {
+    display: flex;
+  }
+
+  .rackEditorInlineActions__button {
+    flex: 1 1 12rem;
   }
 
   .rackEditorFloatingOptions {
-    left: calc(#{$floatingInsetMobile} + env(safe-area-inset-left));
-    bottom: calc(#{$floatingInsetMobile} + env(safe-area-inset-bottom));
-    align-items: stretch;
+    position: static;
+    left: auto;
+    bottom: auto;
+    align-items: flex-start;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
   }
 
   .rackEditorFloatingOptions__panel,
   .rackEditorFloatingOptions__quickToggle,
   .rackEditorFloatingOptions__toggle {
-    width: auto;
-    max-width: none;
+    width: fit-content;
+    max-width: 100%;
     opacity: 1;
     transform: none;
   }
@@ -134,13 +206,27 @@ $floatingSurfaceRestOpacity: 0.78;
     padding: 0.65rem 0.75rem;
   }
 
+  .rackEditorFloatingOptions__panel--actions {
+    display: none;
+  }
+
   .rackEditorFloatingOptions__quickToggle {
     padding: 0.65rem 0.75rem;
   }
 
-  .rackEditorFloatingOptions__quickToggle mat-slide-toggle,
-  .rackEditorFloatingOptions__panel mat-slide-toggle,
   .rackEditorFloatingOptions__toggle {
-    width: 100%;
+    display: none;
+  }
+
+  .rackEditorFloatingOptions__actionButton {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rackEditorFloatingOptions__quickToggle mat-slide-toggle,
+  .rackEditorFloatingOptions__panel mat-slide-toggle {
+    width: auto;
+    max-width: 100%;
   }
 }

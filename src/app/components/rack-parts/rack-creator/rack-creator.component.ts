@@ -154,7 +154,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
       },
       public: {
         code: 'public',
-        control: new FormControl<boolean>(false, { nonNullable: true })
+        control: new FormControl<boolean>(true, { nonNullable: true })
       }
     };
     

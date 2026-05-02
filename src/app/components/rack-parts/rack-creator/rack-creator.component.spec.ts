@@ -72,10 +72,16 @@ describe('RackCreatorComponent', () => {
       name: 'My Rack',
       hp: 84,
       rows: 3,
-      public: false,
+      public: true,
       locked: false
     });
     expect(dialogRef.close).toHaveBeenCalled();
+  });
+
+  it('defaults new racks to public visibility', () => {
+    const {component} = build({id: 'u1'}, []);
+
+    expect(component.fields.public.control.value).toBeTrue();
   });
   
   it('does not create rack when user is not logged in', () => {
