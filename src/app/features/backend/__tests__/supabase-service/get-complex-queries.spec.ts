@@ -215,6 +215,86 @@ describe('SupabaseService - get complex queries', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('GET.applicationActivitySeries', () => {
+    it('should return daily public-safe activity counts for modules, racks, and connected patches', (done) => {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      const twoDaysAgo = new Date(today);
+      twoDaysAgo.setUTCDate(today.getUTCDate() - 2);
+      const yesterday = new Date(today);
+      yesterday.setUTCDate(today.getUTCDate() - 1);
+
+      const modulesQuery = chainable({
+        data: [
+          {id: 1, updated: `${ twoDaysAgo.toISOString().slice(0, 10) }T10:00:00.000Z`},
+          {id: 2, updated: `${ twoDaysAgo.toISOString().slice(0, 10) }T16:00:00.000Z`},
+          {id: 3, updated: `${ yesterday.toISOString().slice(0, 10) }T09:00:00.000Z`}
+        ],
+        error: null
+      });
+      const racksQuery = chainable({
+        data: [
+          {id: 9, updated: `${ yesterday.toISOString().slice(0, 10) }T08:00:00.000Z`}
+        ],
+        error: null
+      });
+      const patchesQuery = chainable({
+        data: [
+          {id: 12, updated: `${ today.toISOString().slice(0, 10) }T12:30:00.000Z`}
+        ],
+        error: null
+      });
+
+      const modulesFilterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
+      const racksFilterSpy = spyOn(racksQuery, 'filter').and.callThrough();
+      const patchesFilterSpy = spyOn(patchesQuery, 'filter').and.callThrough();
+
+      spyOn(supabaseClient, 'from').and.callFake((table: string) => {
+        if (table === 'modules') { return modulesQuery; }
+        if (table === 'racks') { return racksQuery; }
+        if (table === 'patches') { return patchesQuery; }
+        fail(`Unexpected table ${ table }`);
+        return chainable();
+      });
+
+      service.GET.applicationActivitySeries(3).subscribe({
+        next: (result: any[]) => {
+          expect(result).toEqual([
+            {
+              date: twoDaysAgo.toISOString().slice(0, 10),
+              modules: 2,
+              racks: 0,
+              patches: 0
+            },
+            {
+              date: yesterday.toISOString().slice(0, 10),
+              modules: 1,
+              racks: 1,
+              patches: 0
+            },
+            {
+              date: today.toISOString().slice(0, 10),
+              modules: 0,
+              racks: 0,
+              patches: 1
+            }
+          ]);
+          expect(modulesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(modulesFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
+          expect(racksFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          expect(patchesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
   
   describe('get.modulesBySameManufacturer', () => {
     it('should return the data array from the query result', (done) => {

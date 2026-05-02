@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
-import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/clean-card/clean-card.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
@@ -20,7 +19,6 @@ import { ChangelogComponent } from './changelog/changelog.component';
   imports:      [
     CommonModule,
     MatIconModule,
-    StatisticsModule,
     BrandPrimaryButtonModule,
     CleanCardModule,
     HeroContentCardModule,

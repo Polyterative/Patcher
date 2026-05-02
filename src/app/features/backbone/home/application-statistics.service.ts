@@ -1,11 +1,17 @@
 import { Injectable } from '@angular/core';
-import { ReplaySubject } from 'rxjs';
+import {
+  forkJoin,
+  ReplaySubject
+} from 'rxjs';
 import {
   map,
   switchMap
 } from 'rxjs/operators';
 import { SupabaseService } from '../../backend/supabase.service';
-import { PublicApplicationStatistics } from '../../backend/supabase-queries';
+import {
+  PublicApplicationActivityPoint,
+  PublicApplicationStatistics
+} from '../../backend/supabase-queries';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
@@ -22,38 +28,82 @@ export interface ApplicationInsightStatistic {
   icon: string;
 }
 
-export interface ApplicationInsightsPage {
-  interpretation: string;
-  overview: ApplicationInsightStatistic[];
-  freshness: ApplicationInsightStatistic[];
-  catalogueHealth: ApplicationInsightStatistic[];
-  sharing: ApplicationInsightStatistic[];
-  participation: ApplicationInsightStatistic[];
-  patchNetwork: ApplicationInsightStatistic[];
-  sharingMix: ApplicationInsightStatistic[];
-  derived: ApplicationInsightStatistic[];
-  coverage: {
-    title: string;
-    description: string;
-  }[];
-  methodology: {
-    icon: string;
-    title: string;
-    description: string;
-  }[];
+export interface ApplicationInsightsHighlight {
+  label: string;
+  value: string;
+  icon: string;
 }
+
+export interface ApplicationInsightsBar {
+  label: string;
+  valueLabel: string;
+  detail: string;
+  widthPercent: number;
+  tone: 'brand' | 'emerald' | 'violet' | 'amber';
+}
+
+export interface ApplicationInsightsMixSegment {
+  label: string;
+  valueLabel: string;
+  widthPercent: number;
+  tone: 'brand' | 'emerald';
+}
+
+export interface ApplicationInsightsTrendDay {
+  date: string;
+  label: string;
+  showLabel: boolean;
+  total: number;
+  heightPercent: number;
+  modules: number;
+  racks: number;
+  patches: number;
+}
+
+export interface ApplicationInsightsTrendLegendItem {
+  label: string;
+  valueLabel: string;
+  toneClass: 'modules' | 'racks' | 'patches';
+}
+
+export interface ApplicationInsightsPage {
+  heroHighlights: ApplicationInsightsHighlight[];
+  footprintBars: ApplicationInsightsBar[];
+  footprintHighlights: ApplicationInsightsHighlight[];
+  activityChart: {
+    days: ApplicationInsightsTrendDay[];
+    legend: ApplicationInsightsTrendLegendItem[];
+    highlights: ApplicationInsightsHighlight[];
+  };
+  sharingMix: ApplicationInsightsMixSegment[];
+  sharingRateBars: ApplicationInsightsBar[];
+  sharingHighlights: ApplicationInsightsHighlight[];
+  patchDepthBars: ApplicationInsightsBar[];
+  patchHighlights: ApplicationInsightsHighlight[];
+}
+
+type MetricTone = ApplicationInsightsBar['tone'];
 
 @Injectable()
 export class ApplicationStatisticsService extends SubManager {
   private readonly refreshRequest$ = new ReplaySubject<void>(1);
+  private readonly numberFormatter = new Intl.NumberFormat('en-US');
+  private readonly shortDateFormatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC'
+  });
 
   readonly teaser$ = this.refreshRequest$.pipe(
     switchMap(() => this.backend.GET.applicationStatistics()),
     map((statistics) => this.mapTeaser(statistics))
   );
   readonly page$ = this.refreshRequest$.pipe(
-    switchMap(() => this.backend.GET.applicationStatistics()),
-    map((statistics) => this.mapPage(statistics))
+    switchMap(() => forkJoin({
+      statistics: this.backend.GET.applicationStatistics(),
+      activitySeries: this.backend.GET.applicationActivitySeries(30)
+    })),
+    map(({statistics, activitySeries}) => this.mapPage(statistics, activitySeries))
   );
 
   constructor(
@@ -96,220 +146,348 @@ export class ApplicationStatisticsService extends SubManager {
     };
   }
 
-  private mapPage(statistics: PublicApplicationStatistics): ApplicationInsightsPage {
-    const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
+  private mapPage(
+    statistics: PublicApplicationStatistics,
+    activitySeries: PublicApplicationActivityPoint[]
+  ): ApplicationInsightsPage {
     const sharedWorks = statistics.publicRacks + statistics.publicPatches;
     const recentSharedWorks = statistics.publicRacksUpdatedLast30Days + statistics.publicPatchesUpdatedLast30Days;
-    const roundRatio = (numerator: number, denominator: number): number =>
-      denominator > 0 ? Math.round(numerator / denominator) : 0;
-    const buildSignalStatistic = (
-      name: string,
-      numerator: number,
-      denominator: number,
-      icon: string,
-      scale = 1,
-      minimumNumerator = 3,
-      minimumDenominator = 3
-    ): ApplicationInsightStatistic | null => {
-      if (numerator < minimumNumerator || denominator < minimumDenominator) {
-        return null;
-      }
-      return {
-        name,
-        value: roundRatio(numerator * scale, denominator),
-        icon
-      };
-    };
-    const catalogueHealth = [
-      buildSignalStatistic('Shared racks per 100 modules', statistics.publicRacks, statistics.publicModules, 'monitoring', 100, 5, 25),
-      buildSignalStatistic('Shared patches per 100 modules', statistics.publicPatches, statistics.publicModules, 'insights', 100, 5, 25),
-      buildSignalStatistic('Shared works per represented maker', sharedWorks, statistics.publicManufacturers, 'hub', 1, 5, 3)
-    ].filter((value): value is ApplicationInsightStatistic => !!value);
-    const sharingMix = sharedWorks >= 10
-      ? [
+    const totalActivity = activitySeries.reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
+    const activeDays = activitySeries.filter((point) => point.modules + point.racks + point.patches > 0).length;
+    const moduleActivityTotal = activitySeries.reduce((sum, point) => sum + point.modules, 0);
+    const rackActivityTotal = activitySeries.reduce((sum, point) => sum + point.racks, 0);
+    const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
+
+    const footprintMetrics = [
+      this.createMetricDatum(
+        'Public modules',
+        statistics.publicModules,
+        'Visible module catalogue',
+        'brand'
+      ),
+      this.createMetricDatum(
+        'Represented makers',
+        statistics.publicManufacturers,
+        'Manufacturers with public modules',
+        'violet'
+      ),
+      this.createMetricDatum(
+        'Public profiles',
+        statistics.publicProfiles,
+        'Profiles visible on the public web',
+        'emerald'
+      ),
+      this.createMetricDatum(
+        'Shared works',
+        sharedWorks,
+        `${ this.formatCount(statistics.publicRacks) } racks + ${ this.formatCount(statistics.publicPatches) } patches`,
+        'amber'
+      )
+    ];
+
+    const sharingRateMetrics = [
+      this.createRateDatum(
+        'Rack-sharing profiles / 100 public profiles',
+        statistics.publicRackAuthors,
+        statistics.publicProfiles,
+        'emerald',
         {
-          name: 'Shared works total',
-          value: sharedWorks,
-          icon: 'layers'
-        },
-        buildSignalStatistic('Racks share of shared works', statistics.publicRacks, sharedWorks, 'space_dashboard', 100, 3, 6),
-        buildSignalStatistic('Patches share of shared works', statistics.publicPatches, sharedWorks, 'cable', 100, 3, 6)
-      ].filter((value): value is ApplicationInsightStatistic => !!value)
-      : [];
-    const derived = [
-      buildSignalStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
-      buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
-      buildSignalStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
-    ].filter((value): value is ApplicationInsightStatistic => !!value);
-    const participation = [
-      {
-        name: 'Public profiles',
-        value: statistics.publicProfiles,
-        icon: 'person_search'
-      },
-      buildSignalStatistic('Rack-sharing profiles per 100 public profiles', statistics.publicRackAuthors, statistics.publicProfiles, 'dashboard_customize', 100, 3, 10),
-      buildSignalStatistic('Patch-sharing profiles per 100 public profiles', statistics.publicPatchAuthors, statistics.publicProfiles, 'hub', 100, 3, 10)
-    ].filter((value): value is ApplicationInsightStatistic => !!value);
-    const freshness = [
-      {
-        name: 'Public modules updated last 30 days',
-        value: statistics.publicModulesUpdatedLast30Days,
-        icon: 'schedule'
-      },
-      {
-        name: 'Shared racks updated last 30 days',
-        value: statistics.publicRacksUpdatedLast30Days,
-        icon: 'space_dashboard'
-      },
-      {
-        name: 'Shared patches updated last 30 days',
-        value: statistics.publicPatchesUpdatedLast30Days,
-        icon: 'cable'
-      },
-      buildSignalStatistic('Modules updated last 30 days per 100 public modules', statistics.publicModulesUpdatedLast30Days, statistics.publicModules, 'monitoring', 100, 5, 25),
-      buildSignalStatistic('Shared works updated last 30 days per 100 shared works', recentSharedWorks, sharedWorks, 'timelapse', 100, 5, 10)
-    ].filter((value): value is ApplicationInsightStatistic => !!value);
-    const patchNetwork = [
-      ...(statistics.publicPatchConnections > 0
-        ? [{
-          name: 'Saved connections total',
-          value: statistics.publicPatchConnections,
-          icon: 'linear_scale'
-        }]
-        : []),
-      buildSignalStatistic('Saved connections per shared patch', statistics.publicPatchConnections, statistics.publicPatches, 'share', 1, 12, 5),
-      buildSignalStatistic('Saved connections per patch-sharing profile', statistics.publicPatchConnections, statistics.publicPatchAuthors, 'hub', 1, 12, 3)
-    ].filter((value): value is ApplicationInsightStatistic => !!value);
+          scale: 100,
+          valueSuffix: '/ 100',
+          detail: `${ this.formatCount(statistics.publicRackAuthors) } public profiles sharing racks`,
+          minimumNumerator: 3,
+          minimumDenominator: 10
+        }
+      ),
+      this.createRateDatum(
+        'Patch-sharing profiles / 100 public profiles',
+        statistics.publicPatchAuthors,
+        statistics.publicProfiles,
+        'brand',
+        {
+          scale: 100,
+          valueSuffix: '/ 100',
+          detail: `${ this.formatCount(statistics.publicPatchAuthors) } public profiles sharing patches`,
+          minimumNumerator: 3,
+          minimumDenominator: 10
+        }
+      )
+    ].filter((metric): metric is ReturnType<typeof this.createRateDatum> => !!metric);
+
+    const patchDepthMetrics = [
+      this.createRateDatum(
+        'Connections per shared patch',
+        statistics.publicPatchConnections,
+        statistics.publicPatches,
+        'brand',
+        {
+          detail: `${ this.formatCount(statistics.publicPatchConnections) } saved public connections`,
+          minimumNumerator: 12,
+          minimumDenominator: 5
+        }
+      ),
+      this.createRateDatum(
+        'Connections per patch-sharing profile',
+        statistics.publicPatchConnections,
+        statistics.publicPatchAuthors,
+        'violet',
+        {
+          detail: `${ this.formatCount(statistics.publicPatchAuthors) } public patch-sharing profiles`,
+          minimumNumerator: 12,
+          minimumDenominator: 3
+        }
+      ),
+      this.createRateDatum(
+        'Shared works per represented maker',
+        sharedWorks,
+        statistics.publicManufacturers,
+        'amber',
+        {
+          detail: `${ this.formatCount(sharedWorks) } public racks and connected patches`,
+          minimumNumerator: 5,
+          minimumDenominator: 3
+        }
+      ),
+      this.createRateDatum(
+        'Shared works updated / 100 shared works',
+        recentSharedWorks,
+        sharedWorks,
+        'emerald',
+        {
+          scale: 100,
+          valueSuffix: '/ 100',
+          detail: `${ this.formatCount(recentSharedWorks) } shared works updated in the last 30 days`,
+          minimumNumerator: 5,
+          minimumDenominator: 10
+        }
+      )
+    ].filter((metric): metric is ReturnType<typeof this.createRateDatum> => !!metric);
 
     return {
-      overview: [
+      heroHighlights: [
         {
-          name: 'Public modules',
-          value: statistics.publicModules,
-          icon: 'view_module'
+          label: 'Shared works',
+          value: this.formatCount(sharedWorks),
+          icon: 'layers'
         },
         {
-          name: 'Manufacturers represented',
-          value: statistics.publicManufacturers,
-          icon: 'precision_manufacturing'
+          label: '30-day updates',
+          value: this.formatCount(totalActivity),
+          icon: 'timeline'
         },
         {
-          name: 'Shared racks',
-          value: statistics.publicRacks,
+          label: 'Rack + patch sharers',
+          value: this.formatCount(statistics.publicRackAuthors + statistics.publicPatchAuthors),
+          icon: 'groups'
+        }
+      ],
+      footprintBars: this.mapBarWidths(footprintMetrics),
+      footprintHighlights: [
+        {
+          label: 'Public racks',
+          value: this.formatCount(statistics.publicRacks),
           icon: 'space_dashboard'
         },
         {
-          name: 'Shared patches',
-          value: statistics.publicPatches,
+          label: 'Connected patches',
+          value: this.formatCount(statistics.publicPatches),
           icon: 'cable'
+        },
+        {
+          label: 'Modules updated in 30 days',
+          value: this.formatCount(statistics.publicModulesUpdatedLast30Days),
+          icon: 'schedule'
         }
       ],
-      freshness,
-      catalogueHealth,
-      sharing: [
+      activityChart: {
+        days: this.mapTrendDays(activitySeries),
+        legend: [
+          {
+            label: 'Modules',
+            valueLabel: this.formatCount(moduleActivityTotal),
+            toneClass: 'modules'
+          },
+          {
+            label: 'Racks',
+            valueLabel: this.formatCount(rackActivityTotal),
+            toneClass: 'racks'
+          },
+          {
+            label: 'Patches',
+            valueLabel: this.formatCount(patchActivityTotal),
+            toneClass: 'patches'
+          }
+        ],
+        highlights: [
+          {
+            label: 'Active days',
+            value: `${ activeDays } / 30`,
+            icon: 'calendar_view_month'
+          },
+          {
+            label: 'Busiest day',
+            value: this.formatCount(this.getMaxDailyTotal(activitySeries)),
+            icon: 'bolt'
+          },
+          {
+            label: 'Total 30-day updates',
+            value: this.formatCount(totalActivity),
+            icon: 'show_chart'
+          }
+        ]
+      },
+      sharingMix: this.mapSharingMix(statistics.publicRacks, statistics.publicPatches),
+      sharingRateBars: this.mapBarWidths(sharingRateMetrics),
+      sharingHighlights: [
         {
-          name: 'Profiles sharing racks',
-          value: statistics.publicRackAuthors,
+          label: 'Profiles sharing racks',
+          value: this.formatCount(statistics.publicRackAuthors),
           icon: 'dashboard_customize'
         },
         {
-          name: 'Profiles sharing patches',
-          value: statistics.publicPatchAuthors,
+          label: 'Profiles sharing patches',
+          value: this.formatCount(statistics.publicPatchAuthors),
           icon: 'hub'
+        },
+        {
+          label: 'Public profiles',
+          value: this.formatCount(statistics.publicProfiles),
+          icon: 'person_search'
         }
       ],
-      participation,
-      patchNetwork,
-      sharingMix,
-      derived,
-      coverage: [
+      patchDepthBars: this.mapBarWidths(patchDepthMetrics),
+      patchHighlights: [
         {
-          title: catalogueHealth.length > 0 ? 'Catalogue health is live' : 'Catalogue health is currently suppressed',
-          description: catalogueHealth.length > 0
-            ? 'Normalized catalogue-health signals are visible because the public library has at least 25 public modules and enough shared work to scale those ratios responsibly.'
-            : 'Catalogue-health ratios stay hidden until the public library reaches at least 25 public modules plus enough shared work to normalize the signal without over-reading a tiny sample.'
+          label: 'Saved connections',
+          value: this.formatCount(statistics.publicPatchConnections),
+          icon: 'linear_scale'
         },
         {
-          title: sharingMix.length > 0 ? 'Sharing mix is live' : 'Sharing mix is currently suppressed',
-          description: sharingMix.length > 0
-            ? 'The rack/patch composition card is visible because there are at least 10 public shared works to describe as a meaningful split.'
-            : 'The rack/patch composition card stays hidden until there are at least 10 public shared works to describe as more than a tiny-sample split.'
+          label: 'Recent shared-work updates',
+          value: this.formatCount(recentSharedWorks),
+          icon: 'timelapse'
         },
         {
-          title: derived.length > 0 ? 'Derived ratios are live' : 'Derived ratios are currently suppressed',
-          description: derived.length > 0
-            ? 'Rounded derived ratios are visible because both sides of each comparison clear the minimum counts needed to read them directionally.'
-            : 'Derived ratios stay hidden whenever either side of a comparison is too sparse, so the page does not imply a fake KPI from only a handful of public items.'
-        },
-        {
-          title: participation.length > 1 ? 'Participation rates are live' : 'Participation rates are currently suppressed',
-          description: participation.length > 1
-            ? 'The page can show rack- and patch-sharing participation per 100 public profiles because the public profile base is large enough to support a meaningful rate.'
-            : 'Participation rates stay hidden until there are enough public profiles and enough sharing authors to describe adoption as a rate instead of a tiny-sample anecdote.'
-        },
-        {
-          title: freshness.length > 3 ? 'Freshness rates are live' : 'Freshness rates are currently suppressed',
-          description: freshness.length > 3
-            ? 'Recent-activity rates are visible because there is enough public footprint and enough last-30-day movement to normalize freshness instead of leaving it as raw counts alone.'
-            : 'Freshness rates stay hidden until there is enough public footprint and enough recent movement to read 30-day activity as a directional rate instead of a tiny-sample burst.'
-        },
-        {
-          title: patchNetwork.length > 1 ? 'Patch-network rates are live' : 'Patch-network rates are currently suppressed',
-          description: patchNetwork.length > 1
-            ? 'Patch-network density signals are visible because there are enough saved public connections to describe how interconnected shared patches are without over-reading only a few cables.'
-            : 'Patch-network rates stay hidden until there are enough saved public connections and connected public patches to read the average as a directional pattern instead of a tiny-sample curiosity.'
-        }
-      ],
-      interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Freshness counts, normalized freshness rates, coverage rates, patch-network density, and rounded ratios help show shape without pretending to be exact analytics.'
-        : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
-      methodology: [
-        {
-          icon: 'shield',
-          title: 'Public-safe only',
-          description: 'Everything on this page is aggregate-only. No private racks, private patches, or hidden profiles are counted.'
-        },
-        {
-          icon: 'cable',
-          title: 'Patch counts stay strict',
-          description: 'Patch totals follow the public patch browser and count only public patches with saved cable connections from public profiles.'
-        },
-        {
-          icon: 'visibility',
-          title: 'Profile visibility still gates sharing',
-          description: 'Rack and patch sharing metrics only include content from profiles that are themselves public, so profile privacy remains the top-level boundary.'
-        },
-        {
-          icon: 'monitoring',
-          title: 'Coverage rates are normalized',
-          description: 'Where a tiny raw ratio would read poorly, this page scales the signal to a clearer baseline such as shared racks or patches per 100 public modules.'
-        },
-        {
-          icon: 'pie_chart',
-          title: 'Mix signals describe composition',
-          description: 'Where this page shows split percentages, they describe how the current public work is divided between racks and patches. They are composition signals, not popularity rankings.'
-        },
-        {
-          icon: 'functions',
-          title: 'Derived signals stay rounded',
-          description: 'Any ratio-style numbers on this page are rounded to whole numbers, and low-volume ratios stay hidden until the public sample is large enough to read as a directional signal instead of a fake KPI.'
-        },
-        {
-          icon: 'share',
-          title: 'Patch-network signals stay aggregate',
-          description: 'Patch-network blocks count saved cable connections only in aggregate across public patches from public profiles. They describe density, not any specific patch graph.'
-        },
-        {
-          icon: 'schedule',
-          title: 'Freshness uses recent updates',
-          description: 'Freshness counts use trailing 30-day `updated` activity on public modules, racks, and connected patches. They describe recent movement, not publication order or long-term trends.'
-        },
-        {
-          icon: 'timelapse',
-          title: 'Freshness rates are normalized',
-          description: 'Where recent-update counts would be hard to compare across a growing library, this page can scale them per 100 public modules or shared works once the sample is large enough to support a directional rate.'
+          label: 'Represented makers',
+          value: this.formatCount(statistics.publicManufacturers),
+          icon: 'precision_manufacturing'
         }
       ]
     };
+  }
+
+  private createMetricDatum(
+    label: string,
+    value: number,
+    detail: string,
+    tone: MetricTone
+  ) {
+    return {
+      label,
+      rawValue: value,
+      valueLabel: this.formatCount(value),
+      detail,
+      tone
+    };
+  }
+
+  private createRateDatum(
+    label: string,
+    numerator: number,
+    denominator: number,
+    tone: MetricTone,
+    options?: {
+      scale?: number;
+      valueSuffix?: string;
+      detail: string;
+      minimumNumerator?: number;
+      minimumDenominator?: number;
+    }
+  ) {
+    const scale = options?.scale ?? 1;
+    const minimumNumerator = options?.minimumNumerator ?? 3;
+    const minimumDenominator = options?.minimumDenominator ?? 3;
+
+    if (numerator < minimumNumerator || denominator < minimumDenominator) {
+      return null;
+    }
+
+    const rawValue = Math.round((numerator * scale) / denominator);
+    return {
+      label,
+      rawValue,
+      valueLabel: `${ rawValue }${ options?.valueSuffix ? ` ${ options.valueSuffix }` : '' }`.trim(),
+      detail: options?.detail ?? '',
+      tone
+    };
+  }
+
+  private mapBarWidths(
+    metrics: {
+      label: string;
+      rawValue: number;
+      valueLabel: string;
+      detail: string;
+      tone: MetricTone;
+    }[]
+  ): ApplicationInsightsBar[] {
+    const maxValue = Math.max(1, ...metrics.map((metric) => metric.rawValue));
+
+    return metrics.map((metric) => ({
+      label: metric.label,
+      valueLabel: metric.valueLabel,
+      detail: metric.detail,
+      widthPercent: Math.max(14, Math.round((metric.rawValue / maxValue) * 100)),
+      tone: metric.tone
+    }));
+  }
+
+  private mapSharingMix(racks: number, patches: number): ApplicationInsightsMixSegment[] {
+    const sharedWorks = Math.max(racks + patches, 1);
+    const segments: ApplicationInsightsMixSegment[] = [
+      {
+        label: 'Racks',
+        valueLabel: `${ this.formatCount(racks) } (${ Math.round((racks / sharedWorks) * 100) }%)`,
+        widthPercent: Math.max(racks > 0 ? 12 : 0, Math.round((racks / sharedWorks) * 100)),
+        tone: 'emerald'
+      },
+      {
+        label: 'Patches',
+        valueLabel: `${ this.formatCount(patches) } (${ Math.round((patches / sharedWorks) * 100) }%)`,
+        widthPercent: Math.max(patches > 0 ? 12 : 0, Math.round((patches / sharedWorks) * 100)),
+        tone: 'brand'
+      }
+    ];
+
+    return segments.filter((segment) => segment.widthPercent > 0);
+  }
+
+  private mapTrendDays(activitySeries: PublicApplicationActivityPoint[]): ApplicationInsightsTrendDay[] {
+    const maxDailyTotal = this.getMaxDailyTotal(activitySeries);
+
+    return activitySeries.map((point, index) => {
+      const total = point.modules + point.racks + point.patches;
+      return {
+        date: point.date,
+        label: this.shortDateFormatter.format(new Date(`${ point.date }T00:00:00.000Z`)),
+        showLabel: index === 0 || index === activitySeries.length - 1 || index % 7 === 0,
+        total,
+        heightPercent: total > 0 ? Math.max(10, Math.round((total / maxDailyTotal) * 100)) : 0,
+        modules: point.modules,
+        racks: point.racks,
+        patches: point.patches
+      };
+    });
+  }
+
+  private getMaxDailyTotal(activitySeries: PublicApplicationActivityPoint[]): number {
+    return Math.max(
+      1,
+      ...activitySeries.map((point) => point.modules + point.racks + point.patches)
+    );
+  }
+
+  private formatCount(value: number): string {
+    return this.numberFormatter.format(value);
   }
 }
