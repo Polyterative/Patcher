@@ -134,6 +134,43 @@
         </lib-hero-content-card>
 
         <lib-hero-content-card
+          titleNormal="Module freshness"
+          icon="schedule"
+          description="A lifespan view of the public module catalogue, showing how much of it has moved recently versus how much has gone quiet."
+        >
+          <div class="metric-bars">
+            @for (bar of page.moduleFreshnessBars; track bar.label) {
+              <div class="metric-bar">
+                <div class="metric-bar__heading">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.valueLabel }}</strong>
+                </div>
+                <div class="metric-bar__track">
+                  <div
+                    class="metric-bar__fill"
+                    [ngClass]="'metric-bar__fill--' + bar.tone"
+                    [style.width.%]="bar.widthPercent"
+                  ></div>
+                </div>
+                <p>{{ bar.detail }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.moduleFreshnessHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
           titleNormal="30-day activity"
           icon="show_chart"
           description="This chart is built from daily public-safe update counts, so it shows actual recent movement rather than a dressed-up snapshot."
@@ -280,6 +317,18 @@
                 </div>
               }
             </div>
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.makerHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
           </div>
         </lib-hero-content-card>
 

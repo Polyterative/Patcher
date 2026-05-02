@@ -364,6 +364,16 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Large (29+ HP)', count: 1, detail: '1 modules in this size band'},
             {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules in this size band'}
           ]);
+          expect(result.freshnessWindows).toEqual([
+            {label: 'Updated in 7 days', count: 3, detail: '3 public modules updated in the last week'},
+            {label: 'Updated in 30 days', count: 3, detail: '3 public modules updated in the last month'},
+            {label: 'Updated in 90 days', count: 4, detail: '4 public modules updated in the last quarter'},
+            {label: 'Updated in 365 days', count: 4, detail: '4 public modules updated in the last year'}
+          ]);
+          expect(result.topFiveManufacturerShare).toBe(100);
+          expect(result.soloManufacturerCount).toBe(2);
+          expect(result.medianModulesPerManufacturer).toBe(1);
+          expect(result.staleModules).toBe(0);
           expect(result.averageHp).toBe(19);
           expect(result.medianHp).toBe(22);
           expect(selectSpy).toHaveBeenCalledWith('id,hp,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)');

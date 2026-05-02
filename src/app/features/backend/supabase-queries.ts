@@ -89,6 +89,11 @@ export interface PublicApplicationModuleInsights {
   oneUManufacturers: PublicApplicationModuleInsightBucket[];
   standardMix: PublicApplicationModuleInsightBucket[];
   hpBands: PublicApplicationModuleInsightBucket[];
+  freshnessWindows: PublicApplicationModuleInsightBucket[];
+  topFiveManufacturerShare: number;
+  soloManufacturerCount: number;
+  medianModulesPerManufacturer: number;
+  staleModules: number;
   averageHp: number;
   medianHp: number;
 }
@@ -348,7 +353,14 @@ export class SupabaseQueriesService {
     const standardCounts = new Map<string, number>();
     const hpBandCounts = new Map<string, number>();
     const lastThirtyDaysIso = this.getLastThirtyDaysIso();
+    const lastSevenDaysIso = this.getLastNDaysStartDate(7).toISOString();
+    const lastNinetyDaysIso = this.getLastNDaysStartDate(90).toISOString();
+    const lastThreeSixtyFiveDaysIso = this.getLastNDaysStartDate(365).toISOString();
     const hpValues: number[] = [];
+    let updatedLast7Days = 0;
+    let updatedLast30Days = 0;
+    let updatedLast90Days = 0;
+    let updatedLast365Days = 0;
 
     rows.forEach((row) => {
       manufacturerCounts.set(
@@ -375,6 +387,19 @@ export class SupabaseQueriesService {
           row.manufacturerName,
           (activeManufacturerCounts.get(row.manufacturerName) ?? 0) + 1
         );
+        updatedLast30Days += 1;
+      }
+
+      if (row.updated >= lastSevenDaysIso) {
+        updatedLast7Days += 1;
+      }
+
+      if (row.updated >= lastNinetyDaysIso) {
+        updatedLast90Days += 1;
+      }
+
+      if (row.updated >= lastThreeSixtyFiveDaysIso) {
+        updatedLast365Days += 1;
       }
 
       if (row.hp > 0) {
@@ -388,6 +413,14 @@ export class SupabaseQueriesService {
       : 0;
     const medianHp = sortedHpValues.length > 0
       ? sortedHpValues[Math.floor(sortedHpValues.length / 2)]
+      : 0;
+    const manufacturerModuleCounts = [...manufacturerCounts.values()].sort((a, b) => a - b);
+    const topFiveManufacturerShare = rows.length > 0
+      ? Math.round((manufacturerModuleCounts.slice(-5).reduce((sum, count) => sum + count, 0) / rows.length) * 100)
+      : 0;
+    const soloManufacturerCount = manufacturerModuleCounts.filter((count) => count === 1).length;
+    const medianModulesPerManufacturer = manufacturerModuleCounts.length > 0
+      ? manufacturerModuleCounts[Math.floor(manufacturerModuleCounts.length / 2)]
       : 0;
 
     return {
@@ -423,6 +456,16 @@ export class SupabaseQueriesService {
         4,
         (count) => `${ count } modules in this size band`
       ),
+      freshnessWindows: [
+        {label: 'Updated in 7 days', count: updatedLast7Days, detail: `${ updatedLast7Days } public modules updated in the last week`},
+        {label: 'Updated in 30 days', count: updatedLast30Days, detail: `${ updatedLast30Days } public modules updated in the last month`},
+        {label: 'Updated in 90 days', count: updatedLast90Days, detail: `${ updatedLast90Days } public modules updated in the last quarter`},
+        {label: 'Updated in 365 days', count: updatedLast365Days, detail: `${ updatedLast365Days } public modules updated in the last year`}
+      ],
+      topFiveManufacturerShare,
+      soloManufacturerCount,
+      medianModulesPerManufacturer,
+      staleModules: Math.max(rows.length - updatedLast365Days, 0),
       averageHp,
       medianHp
     };
