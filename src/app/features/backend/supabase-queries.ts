@@ -100,7 +100,7 @@ type PublicModuleInsightRow = {
   manufacturerId: number;
   manufacturerName: string;
   hp: number;
-  standard: number;
+  standardName: string;
   updated: string;
 };
 
@@ -249,7 +249,7 @@ export class SupabaseQueriesService {
     while (true) {
       const response = await this.supabase
         .from(DbPaths.modules)
-        .select('id,hp,standard,updated,manufacturer:manufacturerId(id,name)')
+        .select('id,hp,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)')
         .filter('public', 'eq', true)
         .order('id', {ascending: true})
         .range(offset, offset + pageSize - 1);
@@ -262,7 +262,7 @@ export class SupabaseQueriesService {
         manufacturerId: row.manufacturerId,
         manufacturerName: row.manufacturer?.name ?? 'Unknown maker',
         hp: typeof row.hp === 'number' ? row.hp : 0,
-        standard: typeof row.standard === 'number' ? row.standard : 0,
+        standardName: row.standardMeta?.name ?? 'Unknown standard',
         updated: row.updated
       }));
 
@@ -297,12 +297,6 @@ export class SupabaseQueriesService {
       }));
   }
 
-  private getStandardLabel(standard: number): string {
-    if (standard === 1) { return 'Intellijel 1U'; }
-    if (standard === 2) { return 'Pulp Logic 1U'; }
-    return '3U';
-  }
-
   private getHpBandLabel(hp: number): string {
     if (hp <= 8) { return 'Compact (0-8 HP)'; }
     if (hp <= 16) { return 'Utility (9-16 HP)'; }
@@ -324,8 +318,8 @@ export class SupabaseQueriesService {
         (manufacturerCounts.get(row.manufacturerName) ?? 0) + 1
       );
       standardCounts.set(
-        this.getStandardLabel(row.standard),
-        (standardCounts.get(this.getStandardLabel(row.standard)) ?? 0) + 1
+        row.standardName,
+        (standardCounts.get(row.standardName) ?? 0) + 1
       );
       hpBandCounts.set(
         this.getHpBandLabel(row.hp),
@@ -365,7 +359,7 @@ export class SupabaseQueriesService {
       ),
       standardMix: this.rankBuckets(
         standardCounts,
-        4,
+        standardCounts.size,
         (count) => `${ count } public modules in this format`
       ),
       hpBands: this.rankBuckets(
