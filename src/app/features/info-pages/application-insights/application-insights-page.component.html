@@ -4,11 +4,12 @@
       <lib-hero-content-card
         titleBig="Insights"
         icon="insights"
-        description="A chart-led read on the public library: its scale, current momentum, format mix, and how people are actually sharing work."
+        description="Public catalogue composition, update velocity, format mix, and sharing activity across the last 30 days."
       >
+        <p class="hero-summary">{{ page.heroSummary }}</p>
         <div class="hero-highlights">
-          @for (highlight of page.heroHighlights; track highlight.label) {
-            <div class="insight-chip">
+          @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
+            <div class="insight-chip" [class.insight-chip--featured]="i === 0">
               <mat-icon>{{ highlight.icon }}</mat-icon>
               <div>
                 <span class="insight-chip__label">{{ highlight.label }}</span>
@@ -28,7 +29,7 @@
         <lib-hero-content-card
           titleNormal="Library now"
           icon="analytics"
-          description="A quick read on the current public footprint, shown as a clean snapshot instead of fake relative progress."
+          description="Point-in-time footprint: absolute counts, not progress bars."
         >
           <div class="snapshot-grid">
             @for (metric of page.footprintSnapshot; track metric.label) {
@@ -61,11 +62,11 @@
         <lib-hero-content-card
           titleNormal="Module standards"
           icon="category"
-          description="A format-level read on the public module library, showing not just footprint and activity, but how many different makers are actually competing inside each standard."
+          description="Format distribution: footprint, 30-day activity, average width, and maker count per standard."
         >
           <div class="rankings-grid rankings-grid--four-up">
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Format footprint</h4>
+              <h4 class="rankings-grid__title">Modules by format</h4>
               @for (bar of page.standardMixBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -85,7 +86,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              <h4 class="rankings-grid__title">30-day updates by format</h4>
               @for (bar of page.standardActivityBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -105,7 +106,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Average width by format</h4>
+              <h4 class="rankings-grid__title">Avg. width per format</h4>
               @for (bar of page.standardWidthBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -125,7 +126,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Makers per format</h4>
+              <h4 class="rankings-grid__title">Active makers per format</h4>
               @for (bar of page.standardManufacturerBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -161,11 +162,11 @@
         <lib-hero-content-card
           titleNormal="Module sizes"
           icon="straighten"
-          description="A width map of the public catalogue, now splitting the old compact bucket into 0-2, 3-5, and 6-8 HP so smaller modules stop disappearing inside one broad band."
+          description="Module width distribution: footprint, 30-day activity, churn rate, and most common exact widths."
         >
-          <div class="rankings-grid rankings-grid--three-up">
+          <div class="rankings-grid rankings-grid--four-up">
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Library footprint</h4>
+              <h4 class="rankings-grid__title">Modules by width band</h4>
               @for (bar of page.hpBandBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -185,7 +186,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              <h4 class="rankings-grid__title">30-day updates by width band</h4>
               @for (bar of page.hpBandActivityBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -205,7 +206,27 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Most common exact widths</h4>
+              <h4 class="rankings-grid__title">Churn rate (30d)</h4>
+              @for (bar of page.hpBandVelocityBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Exact widths (most common)</h4>
               @for (bar of page.hpExactBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -241,7 +262,7 @@
         <lib-hero-content-card
           titleNormal="Module freshness"
           icon="schedule"
-          description="A lifespan view of the public catalogue, separating recent motion from the slower maintenance layer and the deeper long-tail."
+          description="Update windows: modules grouped by how recently they were touched, from weekly moves to year-old stasis."
         >
           <div class="metric-bars">
             @for (bar of page.moduleFreshnessBars; track bar.label) {
@@ -278,7 +299,7 @@
         <lib-hero-content-card
           titleNormal="30-day activity"
           icon="show_chart"
-          description="This chart is built from daily public-safe update counts, so it shows actual recent movement rather than a dressed-up snapshot."
+          description="30 days of module, rack, and patch updates: daily totals of public-profile changes."
         >
           <div class="trend-chart">
             @for (day of page.activityChart.days; track day.date) {
@@ -353,11 +374,11 @@
         <lib-hero-content-card
           titleNormal="Makers leading the library"
           icon="precision_manufacturing"
-          description="These rankings show who has the broadest public module footprint right now and who has been moving fastest over the last 30 days."
+          description="Maker rankings: catalogue size, 30-day updates, average width, and 1U prevalence."
         >
           <div class="rankings-grid">
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Largest public catalogues</h4>
+              <h4 class="rankings-grid__title">Modules per maker</h4>
               @for (bar of page.topManufacturerBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -377,7 +398,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              <h4 class="rankings-grid__title">30-day updates per maker</h4>
               @for (bar of page.activeManufacturerBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -397,7 +418,7 @@
             </div>
 
             <div class="metric-bars">
-              <h4 class="rankings-grid__title">Widest average modules</h4>
+              <h4 class="rankings-grid__title">Avg. width per maker</h4>
               @for (bar of page.widestManufacturerBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
@@ -453,7 +474,7 @@
         <lib-hero-content-card
           titleNormal="How people share"
           icon="pie_chart"
-          description="The public sharing layer is still readable in one glance, so this section focuses on mix, participation, and how recently those shared works have actually moved."
+          description="Sharing mix and participation: racks vs. patches, sharing rate per profile, and 30-day update frequency."
         >
           <div class="mix">
             <div class="mix__bar">
@@ -512,7 +533,7 @@
         <lib-hero-content-card
           titleNormal="Patch depth"
           icon="share"
-          description="These signals stay focused on aggregate density: how much connected structure exists in the public patch layer, and how much work is accumulating around it."
+          description="Patch layer density: participation rates, connection depth, and update activity."
         >
           <div class="metric-bars">
             @for (bar of page.patchDepthBars; track bar.label) {
