@@ -83,10 +83,13 @@ export interface ApplicationInsightsPage {
   standardMixHighlights: ApplicationInsightsHighlight[];
   hpBandBars: ApplicationInsightsBar[];
   hpBandHighlights: ApplicationInsightsHighlight[];
+  moduleFreshnessBars: ApplicationInsightsBar[];
+  moduleFreshnessHighlights: ApplicationInsightsHighlight[];
   topManufacturerBars: ApplicationInsightsBar[];
   activeManufacturerBars: ApplicationInsightsBar[];
   widestManufacturerBars: ApplicationInsightsBar[];
   oneUManufacturerBars: ApplicationInsightsBar[];
+  makerHighlights: ApplicationInsightsHighlight[];
   activityChart: {
     days: ApplicationInsightsTrendDay[];
     legend: ApplicationInsightsTrendLegendItem[];
@@ -178,8 +181,17 @@ export class ApplicationStatisticsService extends SubManager {
     const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
     const dominantStandard = moduleInsights.standardMix[0];
     const oneUCount = moduleInsights.standardMix
-      .filter((bucket) => bucket.label !== '3U')
+      .filter((bucket) => bucket.label.includes('1U'))
       .reduce((sum, bucket) => sum + bucket.count, 0);
+    const lastSevenDaysTotal = activitySeries.slice(-7)
+      .reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
+    const previousSevenDaysTotal = activitySeries.slice(-14, -7)
+      .reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
+    const fastestActivityTrack = [
+      {label: 'Modules', count: moduleActivityTotal},
+      {label: 'Racks', count: rackActivityTotal},
+      {label: 'Patches', count: patchActivityTotal}
+    ].sort((a, b) => b.count - a.count)[0];
 
     const footprintMetrics = [
       this.createSnapshotMetric(
@@ -303,7 +315,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'timeline'
         },
         {
-          label: 'Rack + patch sharers',
+          label: 'Rack sharers + patch sharers',
           value: this.formatCount(statistics.publicRackAuthors + statistics.publicPatchAuthors),
           icon: 'groups'
         }
@@ -380,6 +392,32 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'schedule'
         }
       ],
+      moduleFreshnessBars: this.mapBarWidths(
+        moduleInsights.freshnessWindows.map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: bucket.detail ?? '',
+          tone: this.getToneByIndex(index)
+        }))
+      ),
+      moduleFreshnessHighlights: [
+        {
+          label: 'Updated this week',
+          value: `${ Math.round((moduleInsights.freshnessWindows[0]?.count ?? 0) / Math.max(statistics.publicModules, 1) * 100) }%`,
+          icon: 'bolt'
+        },
+        {
+          label: 'Updated this year',
+          value: `${ Math.round((moduleInsights.freshnessWindows[3]?.count ?? 0) / Math.max(statistics.publicModules, 1) * 100) }%`,
+          icon: 'event_repeat'
+        },
+        {
+          label: 'Older than a year',
+          value: this.formatCount(moduleInsights.staleModules),
+          icon: 'history'
+        }
+      ],
       topManufacturerBars: this.mapBarWidths(
         moduleInsights.topManufacturers.map((bucket, index) => ({
           label: bucket.label,
@@ -416,6 +454,23 @@ export class ApplicationStatisticsService extends SubManager {
           tone: this.getToneByIndex(index + 3)
         }))
       ),
+      makerHighlights: [
+        {
+          label: 'Top 5 maker share',
+          value: `${ this.formatCount(moduleInsights.topFiveManufacturerShare) }%`,
+          icon: 'pie_chart'
+        },
+        {
+          label: 'Solo makers',
+          value: this.formatCount(moduleInsights.soloManufacturerCount),
+          icon: 'filter_1'
+        },
+        {
+          label: 'Median maker catalogue',
+          value: `${ this.formatCount(moduleInsights.medianModulesPerManufacturer) } modules`,
+          icon: 'balance'
+        }
+      ],
       activityChart: {
         days: this.mapTrendDays(activitySeries),
         legend: [
@@ -442,14 +497,24 @@ export class ApplicationStatisticsService extends SubManager {
             icon: 'calendar_view_month'
           },
           {
+            label: 'Last 7 days',
+            value: this.formatCount(lastSevenDaysTotal),
+            icon: 'date_range'
+          },
+          {
+            label: 'Vs previous 7',
+            value: this.formatSignedCount(lastSevenDaysTotal - previousSevenDaysTotal),
+            icon: 'trending_up'
+          },
+          {
+            label: 'Fastest-moving layer',
+            value: fastestActivityTrack?.label ?? 'N/A',
+            icon: 'stacked_line_chart'
+          },
+          {
             label: 'Busiest day',
             value: this.formatCount(this.getMaxDailyTotal(activitySeries)),
             icon: 'bolt'
-          },
-          {
-            label: 'Total 30-day updates',
-            value: this.formatCount(totalActivity),
-            icon: 'show_chart'
           }
         ]
       },
@@ -562,17 +627,32 @@ export class ApplicationStatisticsService extends SubManager {
 
   private mapSharingMix(racks: number, patches: number): ApplicationInsightsMixSegment[] {
     const sharedWorks = Math.max(racks + patches, 1);
+    const rackPercent = Math.round((racks / sharedWorks) * 100);
+    const patchPercent = Math.max(0, 100 - rackPercent);
+    let rackWidth = racks > 0 ? rackPercent : 0;
+    let patchWidth = patches > 0 ? patchPercent : 0;
+
+    if (racks > 0 && patches > 0) {
+      if (rackWidth < 12) {
+        rackWidth = 12;
+        patchWidth = 88;
+      } else if (patchWidth < 12) {
+        patchWidth = 12;
+        rackWidth = 88;
+      }
+    }
+
     const segments: ApplicationInsightsMixSegment[] = [
       {
         label: 'Racks',
-        valueLabel: `${ this.formatCount(racks) } (${ Math.round((racks / sharedWorks) * 100) }%)`,
-        widthPercent: Math.max(racks > 0 ? 12 : 0, Math.round((racks / sharedWorks) * 100)),
+        valueLabel: `${ this.formatCount(racks) } (${ rackPercent }%)`,
+        widthPercent: rackWidth,
         tone: 'emerald'
       },
       {
         label: 'Patches',
-        valueLabel: `${ this.formatCount(patches) } (${ Math.round((patches / sharedWorks) * 100) }%)`,
-        widthPercent: Math.max(patches > 0 ? 12 : 0, Math.round((patches / sharedWorks) * 100)),
+        valueLabel: `${ this.formatCount(patches) } (${ patchPercent }%)`,
+        widthPercent: patchWidth,
         tone: 'brand'
       }
     ];
@@ -612,5 +692,12 @@ export class ApplicationStatisticsService extends SubManager {
 
   private formatCount(value: number): string {
     return this.numberFormatter.format(value);
+  }
+
+  private formatSignedCount(value: number): string {
+    if (value > 0) {
+      return `+${ this.formatCount(value) }`;
+    }
+    return value < 0 ? `-${ this.formatCount(Math.abs(value)) }` : '0';
   }
 }
