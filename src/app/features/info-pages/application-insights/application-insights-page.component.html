@@ -83,6 +83,24 @@
             }
           </div>
         </lib-hero-content-card>
+
+        <lib-hero-content-card
+          titleNormal="Coverage and suppression"
+          description="The page explains when it chooses to show less."
+          icon="rule"
+        >
+          <div class="methodology-list">
+            @for (item of page.coverage; track item.title) {
+              <div class="methodology-item">
+                <mat-icon>analytics</mat-icon>
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.description }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
       </div>
     </div>
   </lib-screen-wrapper>

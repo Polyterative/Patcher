@@ -196,7 +196,7 @@ important notices without turning Patcher into a blog platform.
 
 - [ ] Decide the smallest reusable chart/stat vocabulary worth adding beyond the current stat-card page
 - [ ] Add deeper public-safe blocks for catalogue health, rack composition, and patch/network patterns only where the sample is credible
-- [ ] Define stronger freshness / coverage / suppression language for any richer multi-metric insight sections
+- [x] Define stronger freshness / coverage / suppression language for any richer multi-metric insight sections
 - [ ] Decide which deeper analysis directions are worth later investment (co-occurrence, trends, rare-module discovery, archetypes)
 
 ---
