@@ -29,23 +29,19 @@
         <lib-hero-content-card
           titleNormal="Library now"
           icon="analytics"
-          description="A quick read on the current public footprint, normalized into a single comparison view."
+          description="A quick read on the current public footprint, shown as a clean snapshot instead of fake relative progress."
         >
-          <div class="metric-bars">
-            @for (bar of page.footprintBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
+          <div class="snapshot-grid">
+            @for (metric of page.footprintSnapshot; track metric.label) {
+              <div class="snapshot-card" [ngClass]="'snapshot-card--' + metric.tone">
+                <div class="snapshot-card__header">
+                  <span class="snapshot-card__icon">
+                    <mat-icon>{{ metric.icon }}</mat-icon>
+                  </span>
+                  <span class="snapshot-card__label">{{ metric.label }}</span>
                 </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
-                </div>
-                <p>{{ bar.detail }}</p>
+                <strong class="snapshot-card__value">{{ metric.valueLabel }}</strong>
+                <p>{{ metric.detail }}</p>
               </div>
             }
           </div>
