@@ -2,7 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import {
+  map,
+  Observable,
+  startWith
+} from 'rxjs';
 import {
   ApplicationInsightsPage,
   ApplicationStatisticsService
@@ -19,13 +23,25 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
   standalone: false
 })
 export class ApplicationInsightsPageComponent {
-  readonly page$!: Observable<ApplicationInsightsPage>;
+  readonly vm$!: Observable<{
+    page: ApplicationInsightsPage | null;
+    isLoading: boolean;
+  }>;
 
   constructor(
     private readonly applicationStatisticsService: ApplicationStatisticsService,
     private readonly seoAndUtilsService: SeoAndUtilsService
   ) {
-    this.page$ = this.applicationStatisticsService.page$;
+    this.vm$ = this.applicationStatisticsService.page$.pipe(
+      map((page) => ({
+        page,
+        isLoading: false
+      })),
+      startWith({
+        page: null,
+        isLoading: true
+      })
+    );
     this.seoAndUtilsService.updateSeo(
       {
         title: 'Application insights',
