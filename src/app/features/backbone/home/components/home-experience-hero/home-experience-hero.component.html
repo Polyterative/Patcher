@@ -2,15 +2,19 @@
   <div class="hero-copy">
     <p class="eyebrow">{{ content.eyebrow }}</p>
     <h1 id="home-hero-title">{{ content.title }}</h1>
-    <p class="subtitle">
-      @for (segment of getSubtitleSegments(); track $index) {
-        @if (segment.highlighted) {
-          <strong>{{ segment.text }}</strong>
-        } @else {
-          {{ segment.text }}
-        }
+    <ul class="subtitle">
+      @for (line of getSubtitleLines(); track line) {
+        <li>
+          @for (segment of getSubtitleSegments(line); track $index) {
+            @if (segment.highlighted) {
+              <strong>{{ segment.text }}</strong>
+            } @else {
+              {{ segment.text }}
+            }
+          }
+        </li>
       }
-    </p>
+    </ul>
     
     <div class="hero-actions">
       <ng-content select="[hero-actions]"></ng-content>
