@@ -29,6 +29,10 @@ export interface ApplicationInsightsPage {
   sharing: ApplicationInsightStatistic[];
   sharingMix: ApplicationInsightStatistic[];
   derived: ApplicationInsightStatistic[];
+  coverage: {
+    title: string;
+    description: string;
+  }[];
   methodology: {
     icon: string;
     title: string;
@@ -112,6 +116,27 @@ export class ApplicationStatisticsService extends SubManager {
         icon
       };
     };
+    const catalogueHealth = [
+      buildSignalStatistic('Shared racks per 100 modules', statistics.publicRacks, statistics.publicModules, 'monitoring', 100, 5, 25),
+      buildSignalStatistic('Shared patches per 100 modules', statistics.publicPatches, statistics.publicModules, 'insights', 100, 5, 25),
+      buildSignalStatistic('Shared works per represented maker', sharedWorks, statistics.publicManufacturers, 'hub', 1, 5, 3)
+    ].filter((value): value is ApplicationInsightStatistic => !!value);
+    const sharingMix = sharedWorks >= 10
+      ? [
+        {
+          name: 'Shared works total',
+          value: sharedWorks,
+          icon: 'layers'
+        },
+        buildSignalStatistic('Racks share of shared works', statistics.publicRacks, sharedWorks, 'space_dashboard', 100, 3, 6),
+        buildSignalStatistic('Patches share of shared works', statistics.publicPatches, sharedWorks, 'cable', 100, 3, 6)
+      ].filter((value): value is ApplicationInsightStatistic => !!value)
+      : [];
+    const derived = [
+      buildSignalStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
+      buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
+      buildSignalStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
+    ].filter((value): value is ApplicationInsightStatistic => !!value);
 
     return {
       overview: [
@@ -136,11 +161,7 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'cable'
         }
       ],
-      catalogueHealth: [
-        buildSignalStatistic('Shared racks per 100 modules', statistics.publicRacks, statistics.publicModules, 'monitoring', 100, 5, 25),
-        buildSignalStatistic('Shared patches per 100 modules', statistics.publicPatches, statistics.publicModules, 'insights', 100, 5, 25),
-        buildSignalStatistic('Shared works per represented maker', sharedWorks, statistics.publicManufacturers, 'hub', 1, 5, 3)
-      ].filter((value): value is ApplicationInsightStatistic => !!value),
+      catalogueHealth,
       sharing: [
         {
           name: 'Profiles sharing racks',
@@ -153,22 +174,28 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'hub'
         }
       ],
-      sharingMix: sharedWorks >= 10
-        ? [
-          {
-            name: 'Shared works total',
-            value: sharedWorks,
-            icon: 'layers'
-          },
-          buildSignalStatistic('Racks share of shared works', statistics.publicRacks, sharedWorks, 'space_dashboard', 100, 3, 6),
-          buildSignalStatistic('Patches share of shared works', statistics.publicPatches, sharedWorks, 'cable', 100, 3, 6)
-        ].filter((value): value is ApplicationInsightStatistic => !!value)
-        : [],
-      derived: [
-        buildSignalStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
-        buildSignalStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
-        buildSignalStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
-      ].filter((value): value is ApplicationInsightStatistic => !!value),
+      sharingMix,
+      derived,
+      coverage: [
+        {
+          title: catalogueHealth.length > 0 ? 'Catalogue health is live' : 'Catalogue health is currently suppressed',
+          description: catalogueHealth.length > 0
+            ? 'Normalized catalogue-health signals are visible because the public library has at least 25 public modules and enough shared work to scale those ratios responsibly.'
+            : 'Catalogue-health ratios stay hidden until the public library reaches at least 25 public modules plus enough shared work to normalize the signal without over-reading a tiny sample.'
+        },
+        {
+          title: sharingMix.length > 0 ? 'Sharing mix is live' : 'Sharing mix is currently suppressed',
+          description: sharingMix.length > 0
+            ? 'The rack/patch composition card is visible because there are at least 10 public shared works to describe as a meaningful split.'
+            : 'The rack/patch composition card stays hidden until there are at least 10 public shared works to describe as more than a tiny-sample split.'
+        },
+        {
+          title: derived.length > 0 ? 'Derived ratios are live' : 'Derived ratios are currently suppressed',
+          description: derived.length > 0
+            ? 'Rounded derived ratios are visible because both sides of each comparison clear the minimum counts needed to read them directionally.'
+            : 'Derived ratios stay hidden whenever either side of a comparison is too sparse, so the page does not imply a fake KPI from only a handful of public items.'
+        }
+      ],
       interpretation: creatorFootprint > 0
         ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Normalized coverage rates and rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
