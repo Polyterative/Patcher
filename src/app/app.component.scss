@@ -6,6 +6,30 @@
   background-color: rgba(72, 90, 124, 0.05);
 }
 
+.app-route-loading {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(248, 251, 255, 0.96);
+  backdrop-filter: blur(0.375rem);
+}
+
+.app-route-loading__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem 0.55rem;
+  font-size: 0.84rem;
+  color: rgba(24, 37, 53, 0.72);
+}
+
+.app-route-loading__label mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
 //mat-card-subtitle{
 //    margin-bottom: 0!important;
 //}

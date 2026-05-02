@@ -92,6 +92,7 @@ export interface PublicApplicationModuleInsights {
   standardWidthAverages: PublicApplicationModuleInsightBucket[];
   hpBands: PublicApplicationModuleInsightBucket[];
   hpBandActivity: PublicApplicationModuleInsightBucket[];
+  hpExact: PublicApplicationModuleInsightBucket[];
   freshnessWindows: PublicApplicationModuleInsightBucket[];
   topFiveManufacturerShare: number;
   soloManufacturerCount: number;
@@ -124,6 +125,7 @@ type ManufacturerInsightStats = {
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
   private static readonly MAX_QUERY_ROWS = 500;
+  private static readonly HP_BAND_ORDER = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -313,11 +315,47 @@ export class SupabaseQueriesService {
       }));
   }
 
+  private rankOrderedBuckets(
+    counts: Map<string, number>,
+    orderedLabels: string[],
+    detailBuilder?: (count: number) => string
+  ): PublicApplicationModuleInsightBucket[] {
+    return orderedLabels
+      .filter((label) => (counts.get(label) ?? 0) > 0)
+      .map((label) => ({
+        label,
+        count: counts.get(label) ?? 0,
+        ...(detailBuilder ? {detail: detailBuilder(counts.get(label) ?? 0)} : {})
+      }));
+  }
+
+  private rankNumberBuckets(
+    counts: Map<number, number>,
+    limit: number,
+    detailBuilder?: (count: number) => string
+  ): PublicApplicationModuleInsightBucket[] {
+    return [...counts.entries()]
+      .sort((a, b) => {
+        if (b[1] !== a[1]) {
+          return b[1] - a[1];
+        }
+        return a[0] - b[0];
+      })
+      .slice(0, limit)
+      .map(([value, count]) => ({
+        label: `${ value } HP`,
+        count,
+        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
+      }));
+  }
+
   private getHpBandLabel(hp: number): string {
-    if (hp <= 8) { return 'Compact (0-8 HP)'; }
-    if (hp <= 16) { return 'Utility (9-16 HP)'; }
-    if (hp <= 28) { return 'Feature (17-28 HP)'; }
-    return 'Large (29+ HP)';
+    if (hp <= 2) { return '0-2 HP'; }
+    if (hp <= 5) { return '3-5 HP'; }
+    if (hp <= 8) { return '6-8 HP'; }
+    if (hp <= 16) { return '9-16 HP'; }
+    if (hp <= 28) { return '17-28 HP'; }
+    return '29+ HP';
   }
 
   private rankManufacturerScores(
@@ -358,6 +396,7 @@ export class SupabaseQueriesService {
     const standardWidthStats = new Map<string, {totalHp: number; totalModules: number}>();
     const hpBandCounts = new Map<string, number>();
     const hpBandActivityCounts = new Map<string, number>();
+    const hpExactCounts = new Map<number, number>();
     const lastThirtyDaysIso = this.getLastThirtyDaysIso();
     const lastSevenDaysIso = this.getLastNDaysStartDate(7).toISOString();
     const lastNinetyDaysIso = this.getLastNDaysStartDate(90).toISOString();
@@ -422,6 +461,7 @@ export class SupabaseQueriesService {
 
       if (row.hp > 0) {
         hpValues.push(row.hp);
+        hpExactCounts.set(row.hp, (hpExactCounts.get(row.hp) ?? 0) + 1);
       }
     });
 
@@ -484,15 +524,20 @@ export class SupabaseQueriesService {
         Math.min(5, standardWidthStats.size),
         (count) => `${ count } HP average width`
       ),
-      hpBands: this.rankBuckets(
+      hpBands: this.rankOrderedBuckets(
         hpBandCounts,
-        4,
+        SupabaseQueriesService.HP_BAND_ORDER,
         (count) => `${ count } modules in this size band`
       ),
-      hpBandActivity: this.rankBuckets(
+      hpBandActivity: this.rankOrderedBuckets(
         hpBandActivityCounts,
-        Math.min(4, hpBandActivityCounts.size),
+        SupabaseQueriesService.HP_BAND_ORDER,
         (count) => `${ count } modules updated in the last 30 days`
+      ),
+      hpExact: this.rankNumberBuckets(
+        hpExactCounts,
+        8,
+        (count) => `${ count } modules at this exact width`
       ),
       freshnessWindows: [
         {label: 'Updated in 7 days', count: updatedLast7Days, detail: `${ updatedLast7Days } public modules updated in the last week`},

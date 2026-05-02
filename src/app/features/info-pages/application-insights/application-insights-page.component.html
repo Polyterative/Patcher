@@ -142,9 +142,9 @@
         <lib-hero-content-card
           titleNormal="Module sizes"
           icon="straighten"
-          description="A separate exploration of module width, showing how the public catalogue clusters across compact, utility, feature, and large formats."
+          description="A width map of the public catalogue, now splitting the old compact bucket into 0-2, 3-5, and 6-8 HP so smaller modules stop disappearing inside one broad band."
         >
-          <div class="rankings-grid">
+          <div class="rankings-grid rankings-grid--three-up">
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Library footprint</h4>
               @for (bar of page.hpBandBars; track bar.label) {
@@ -168,6 +168,26 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Most active in 30 days</h4>
               @for (bar of page.hpBandActivityBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Most common exact widths</h4>
+              @for (bar of page.hpExactBars; track bar.label) {
                 <div class="metric-bar">
                   <div class="metric-bar__heading">
                     <span>{{ bar.label }}</span>

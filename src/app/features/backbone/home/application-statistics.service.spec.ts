@@ -50,16 +50,28 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Pulp Logic 1U', count: 6, detail: '6 HP average width'}
       ],
       hpBands: [
-        {label: 'Compact (0-8 HP)', count: 340, detail: '340 modules in this size band'},
-        {label: 'Utility (9-16 HP)', count: 510, detail: '510 modules in this size band'},
-        {label: 'Feature (17-28 HP)', count: 320, detail: '320 modules in this size band'},
-        {label: 'Large (29+ HP)', count: 110, detail: '110 modules in this size band'}
+        {label: '0-2 HP', count: 60, detail: '60 modules in this size band'},
+        {label: '3-5 HP', count: 110, detail: '110 modules in this size band'},
+        {label: '6-8 HP', count: 170, detail: '170 modules in this size band'},
+        {label: '9-16 HP', count: 510, detail: '510 modules in this size band'},
+        {label: '17-28 HP', count: 320, detail: '320 modules in this size band'},
+        {label: '29+ HP', count: 110, detail: '110 modules in this size band'}
       ],
       hpBandActivity: [
-        {label: 'Utility (9-16 HP)', count: 28, detail: '28 modules updated in the last 30 days'},
-        {label: 'Compact (0-8 HP)', count: 18, detail: '18 modules updated in the last 30 days'},
-        {label: 'Feature (17-28 HP)', count: 12, detail: '12 modules updated in the last 30 days'},
-        {label: 'Large (29+ HP)', count: 6, detail: '6 modules updated in the last 30 days'}
+        {label: '0-2 HP', count: 4, detail: '4 modules updated in the last 30 days'},
+        {label: '3-5 HP', count: 6, detail: '6 modules updated in the last 30 days'},
+        {label: '6-8 HP', count: 8, detail: '8 modules updated in the last 30 days'},
+        {label: '9-16 HP', count: 28, detail: '28 modules updated in the last 30 days'},
+        {label: '17-28 HP', count: 12, detail: '12 modules updated in the last 30 days'},
+        {label: '29+ HP', count: 6, detail: '6 modules updated in the last 30 days'}
+      ],
+      hpExact: [
+        {label: '8 HP', count: 180, detail: '180 modules at this exact width'},
+        {label: '6 HP', count: 140, detail: '140 modules at this exact width'},
+        {label: '10 HP', count: 120, detail: '120 modules at this exact width'},
+        {label: '12 HP', count: 115, detail: '115 modules at this exact width'},
+        {label: '4 HP', count: 95, detail: '95 modules at this exact width'},
+        {label: '14 HP', count: 90, detail: '90 modules at this exact width'}
       ],
       freshnessWindows: [
         {label: 'Updated in 7 days', count: 40, detail: '40 public modules updated in the last week'},
@@ -189,21 +201,34 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Overall 1U share', value: '16%', icon: 'view_week'}
       ]);
       expect(page.hpBandBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
-        {label: 'Compact (0-8 HP)', valueLabel: '340'},
-        {label: 'Utility (9-16 HP)', valueLabel: '510'},
-        {label: 'Feature (17-28 HP)', valueLabel: '320'},
-        {label: 'Large (29+ HP)', valueLabel: '110'}
+        {label: '0-2 HP', valueLabel: '60'},
+        {label: '3-5 HP', valueLabel: '110'},
+        {label: '6-8 HP', valueLabel: '170'},
+        {label: '9-16 HP', valueLabel: '510'},
+        {label: '17-28 HP', valueLabel: '320'},
+        {label: '29+ HP', valueLabel: '110'}
       ]);
       expect(page.hpBandActivityBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
-        {label: 'Utility (9-16 HP)', valueLabel: '28'},
-        {label: 'Compact (0-8 HP)', valueLabel: '18'},
-        {label: 'Feature (17-28 HP)', valueLabel: '12'},
-        {label: 'Large (29+ HP)', valueLabel: '6'}
+        {label: '0-2 HP', valueLabel: '4'},
+        {label: '3-5 HP', valueLabel: '6'},
+        {label: '6-8 HP', valueLabel: '8'},
+        {label: '9-16 HP', valueLabel: '28'},
+        {label: '17-28 HP', valueLabel: '12'},
+        {label: '29+ HP', valueLabel: '6'}
+      ]);
+      expect(page.hpExactBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: '8 HP', valueLabel: '180'},
+        {label: '6 HP', valueLabel: '140'},
+        {label: '10 HP', valueLabel: '120'},
+        {label: '12 HP', valueLabel: '115'},
+        {label: '4 HP', valueLabel: '95'},
+        {label: '14 HP', valueLabel: '90'}
       ]);
       expect(page.hpBandHighlights).toEqual([
-        {label: 'Average width', value: '14 HP', icon: 'straighten'},
-        {label: 'Most common band', value: 'Utility (9-16 HP) (510)', icon: 'stacked_bar_chart'},
-        {label: 'Compact + utility share', value: '66%', icon: 'swap_horiz'}
+        {label: 'Median width', value: '12 HP', icon: 'straighten'},
+        {label: '0-5 HP share', value: '13%', icon: 'view_column'},
+        {label: '17+ HP share', value: '34%', icon: 'splitscreen'},
+        {label: 'Fastest-moving width', value: '0-2 HP (7 / 100)', icon: 'bolt'}
       ]);
       expect(page.moduleFreshnessBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
         {label: 'Fresh (0-7 days)', valueLabel: '40'},
@@ -315,12 +340,20 @@ describe('ApplicationStatisticsService', () => {
           {label: 'Intellijel 1U', count: 8, detail: '8 HP average width'}
         ],
         hpBands: [
-          {label: 'Compact (0-8 HP)', count: 6, detail: '6 modules in this size band'},
-          {label: 'Utility (9-16 HP)', count: 10, detail: '10 modules in this size band'},
-          {label: 'Feature (17-28 HP)', count: 4, detail: '4 modules in this size band'}
+          {label: '0-2 HP', count: 2, detail: '2 modules in this size band'},
+          {label: '3-5 HP', count: 4, detail: '4 modules in this size band'},
+          {label: '9-16 HP', count: 10, detail: '10 modules in this size band'},
+          {label: '17-28 HP', count: 4, detail: '4 modules in this size band'}
         ],
         hpBandActivity: [
-          {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules updated in the last 30 days'}
+          {label: '3-5 HP', count: 1, detail: '1 modules updated in the last 30 days'}
+        ],
+        hpExact: [
+          {label: '2 HP', count: 2, detail: '2 modules at this exact width'},
+          {label: '4 HP', count: 4, detail: '4 modules at this exact width'},
+          {label: '10 HP', count: 6, detail: '6 modules at this exact width'},
+          {label: '12 HP', count: 4, detail: '4 modules at this exact width'},
+          {label: '18 HP', count: 4, detail: '4 modules at this exact width'}
         ],
         freshnessWindows: [
           {label: 'Updated in 7 days', count: 1, detail: '1 public modules updated in the last week'},
@@ -373,9 +406,10 @@ describe('ApplicationStatisticsService', () => {
         {label: 'Overall 1U share', value: '10%', icon: 'view_week'}
       ]);
       expect(page.hpBandHighlights).toEqual([
-        {label: 'Average width', value: '12 HP', icon: 'straighten'},
-        {label: 'Most common band', value: 'Utility (9-16 HP) (10)', icon: 'stacked_bar_chart'},
-        {label: 'Compact + utility share', value: '80%', icon: 'swap_horiz'}
+        {label: 'Median width', value: '10 HP', icon: 'straighten'},
+        {label: '0-5 HP share', value: '30%', icon: 'view_column'},
+        {label: '17+ HP share', value: '20%', icon: 'splitscreen'},
+        {label: 'Fastest-moving width', value: '3-5 HP (25 / 100)', icon: 'bolt'}
       ]);
       expect(page.moduleFreshnessHighlights).toEqual([
         {label: 'Active in 30 days', value: '5%', icon: 'bolt'},
