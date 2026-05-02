@@ -194,10 +194,10 @@ important notices without turning Patcher into a blog platform.
 
 **Why:** The insights page now covers headline counts and rounded derived signals, but there is still room for richer public-safe exploration once there is enough signal to support more specific patterns without thin-sample noise.
 
-- [ ] Decide the smallest reusable chart/stat vocabulary worth adding beyond the current stat-card page
-- [ ] Add deeper public-safe blocks for catalogue health, rack composition, and patch/network patterns only where the sample is credible
+- [x] Decide the smallest reusable chart/stat vocabulary worth adding beyond the current stat-card page
+- [x] Add deeper public-safe blocks for catalogue health, rack composition, and patch/network patterns only where the sample is credible
 - [x] Define stronger freshness / coverage / suppression language for any richer multi-metric insight sections
-- [ ] Decide which deeper analysis directions are worth later investment (co-occurrence, trends, rare-module discovery, archetypes)
+- [x] Decide which deeper analysis directions are worth later investment (co-occurrence, trends, rare-module discovery, archetypes)
 
 ---
 
