@@ -304,6 +304,7 @@ describe('SupabaseService - get complex queries', () => {
             id: 1,
             manufacturerId: 1,
             hp: 6,
+            created: '2026-04-01T10:00:00.000Z',
             updated: '2026-05-01T10:00:00.000Z',
             manufacturer: {id: 1, name: 'Make Noise'},
             standardMeta: {id: 1, name: '3U'}
@@ -312,6 +313,7 @@ describe('SupabaseService - get complex queries', () => {
             id: 2,
             manufacturerId: 1,
             hp: 14,
+            created: '2024-06-01T11:00:00.000Z',
             updated: '2026-05-01T11:00:00.000Z',
             manufacturer: {id: 1, name: 'Make Noise'},
             standardMeta: {id: 1, name: '3U'}
@@ -320,6 +322,7 @@ describe('SupabaseService - get complex queries', () => {
             id: 3,
             manufacturerId: 2,
             hp: 22,
+            created: '2023-03-15T09:00:00.000Z',
             updated: '2026-03-15T09:00:00.000Z',
             manufacturer: {id: 2, name: 'Intellijel'},
             standardMeta: {id: 2, name: 'Intellijel 1U'}
@@ -328,6 +331,7 @@ describe('SupabaseService - get complex queries', () => {
             id: 4,
             manufacturerId: 3,
             hp: 34,
+            created: '2021-05-02T12:00:00.000Z',
             updated: '2026-05-02T12:00:00.000Z',
             manufacturer: {id: 3, name: 'Noise Engineering'},
             standardMeta: {id: 3, name: 'Pulp Logic 1U'}
@@ -395,13 +399,20 @@ describe('SupabaseService - get complex queries', () => {
             {label: 'Updated in 90 days', count: 4, detail: '4 public modules updated in the last quarter'},
             {label: 'Updated in 365 days', count: 4, detail: '4 public modules updated in the last year'}
           ]);
+          expect(result.createdWindows).toEqual([
+            {label: 'Added in last year', count: 1, detail: '1 public modules were added in the last year'},
+            {label: 'Added 1-2 years ago', count: 1, detail: '1 public modules were added one to two years ago'},
+            {label: 'Added 2-3 years ago', count: 0, detail: '0 public modules were added two to three years ago'},
+            {label: 'Added over 3 years ago', count: 2, detail: '2 public modules were added over three years ago'}
+          ]);
           expect(result.topFiveManufacturerShare).toBe(100);
           expect(result.soloManufacturerCount).toBe(2);
           expect(result.medianModulesPerManufacturer).toBe(1);
+          expect(result.medianCatalogueAgeYears).toBe(3);
           expect(result.staleModules).toBe(0);
           expect(result.averageHp).toBe(19);
           expect(result.medianHp).toBe(22);
-          expect(selectSpy).toHaveBeenCalledWith('id,hp,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)');
+          expect(selectSpy).toHaveBeenCalledWith('id,hp,created,updated,manufacturer:manufacturerId(id,name),standardMeta:standards!modules_standard_fkey(id,name)');
           expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
           done();
         },
