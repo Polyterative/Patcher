@@ -3,16 +3,14 @@
                          [icon]="icon"
                          [class]="cardClass"
   >
-    <div style="width: 100%">
+    <div class="statistics-card-content">
       @if (visibleStatistics.length > 0) {
-        <div class="rowwrap gap2">
+        <div class="statistics-grid">
           @for (statistic of visibleStatistics; track statistic; let i = $index) {
             <div class="stat-item" [style.animation-delay]="(i * 40) + 'ms'">
-              <div style="min-width: 8rem">
-                <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
-                  {{ statistic.value }}
-                </app-label-value-showcase>
-              </div>
+              <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
+                {{ statistic.value }}
+              </app-label-value-showcase>
             </div>
           }
         </div>

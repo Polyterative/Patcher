@@ -29,7 +29,7 @@ export class ApplicationInsightsPageComponent {
     this.seoAndUtilsService.updateSeo(
       {
         title: 'Application insights',
-        description: 'Public-safe aggregate insights about Patcher catalogue coverage and shared modular work.',
+        description: 'Chart-led insights about catalogue growth, recent activity, and public sharing in Patcher.',
         url: 'https://patcher.xyz/insights',
       },
       'Application insights'

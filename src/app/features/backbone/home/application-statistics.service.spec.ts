@@ -3,22 +3,30 @@ import { ApplicationStatisticsService } from './application-statistics.service';
 
 
 describe('ApplicationStatisticsService', () => {
-  function build(counts = {
-    publicModules: 1280,
-    publicManufacturers: 96,
-    publicProfiles: 240,
-    publicModulesUpdatedLast30Days: 64,
-    publicRacks: 84,
-    publicRackAuthors: 31,
-    publicRacksUpdatedLast30Days: 21,
-    publicPatches: 42,
-    publicPatchConnections: 168,
-    publicPatchAuthors: 18,
-    publicPatchesUpdatedLast30Days: 9
-  }) {
+  function build(
+    counts = {
+      publicModules: 1280,
+      publicManufacturers: 96,
+      publicProfiles: 240,
+      publicModulesUpdatedLast30Days: 64,
+      publicRacks: 84,
+      publicRackAuthors: 31,
+      publicRacksUpdatedLast30Days: 21,
+      publicPatches: 42,
+      publicPatchConnections: 168,
+      publicPatchAuthors: 18,
+      publicPatchesUpdatedLast30Days: 9
+    },
+    activitySeries = [
+      {date: '2026-05-01', modules: 4, racks: 1, patches: 0},
+      {date: '2026-05-02', modules: 0, racks: 2, patches: 1},
+      {date: '2026-05-03', modules: 5, racks: 0, patches: 2}
+    ]
+  ) {
     const backend = {
       GET: {
-        applicationStatistics: jasmine.createSpy('GET.applicationStatistics').and.returnValue(of(counts))
+        applicationStatistics: jasmine.createSpy('GET.applicationStatistics').and.returnValue(of(counts)),
+        applicationActivitySeries: jasmine.createSpy('GET.applicationActivitySeries').and.returnValue(of(activitySeries))
       }
     };
 
@@ -69,99 +77,100 @@ describe('ApplicationStatisticsService', () => {
     });
   });
 
-  it('maps a dedicated insights page model from richer aggregate counts', (done) => {
-    const {service} = build();
+  it('maps a chart-led insights page from aggregate counts and daily activity', (done) => {
+    const {backend, service} = build();
 
     service.page$.subscribe((page) => {
-      expect(page.overview).toEqual([
-        {name: 'Public modules', value: 1280, icon: 'view_module'},
-        {name: 'Manufacturers represented', value: 96, icon: 'precision_manufacturing'},
-        {name: 'Shared racks', value: 84, icon: 'space_dashboard'},
-        {name: 'Shared patches', value: 42, icon: 'cable'}
+      expect(backend.GET.applicationActivitySeries).toHaveBeenCalledWith(30);
+      expect(page.heroHighlights).toEqual([
+        {label: 'Shared works', value: '126', icon: 'layers'},
+        {label: '30-day updates', value: '15', icon: 'timeline'},
+        {label: 'Rack + patch sharers', value: '49', icon: 'groups'}
       ]);
-      expect(page.freshness).toEqual([
-        {name: 'Public modules updated last 30 days', value: 64, icon: 'schedule'},
-        {name: 'Shared racks updated last 30 days', value: 21, icon: 'space_dashboard'},
-        {name: 'Shared patches updated last 30 days', value: 9, icon: 'cable'},
-        {name: 'Modules updated last 30 days per 100 public modules', value: 5, icon: 'monitoring'},
-        {name: 'Shared works updated last 30 days per 100 shared works', value: 24, icon: 'timelapse'}
+      expect(page.footprintBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Public modules', valueLabel: '1,280'},
+        {label: 'Represented makers', valueLabel: '96'},
+        {label: 'Public profiles', valueLabel: '240'},
+        {label: 'Shared works', valueLabel: '126'}
       ]);
-      expect(page.catalogueHealth).toEqual([
-        {name: 'Shared racks per 100 modules', value: 7, icon: 'monitoring'},
-        {name: 'Shared patches per 100 modules', value: 3, icon: 'insights'},
-        {name: 'Shared works per represented maker', value: 1, icon: 'hub'}
+      expect(page.activityChart.days).toEqual([
+        jasmine.objectContaining({date: '2026-05-01', total: 5, modules: 4, racks: 1, patches: 0}),
+        jasmine.objectContaining({date: '2026-05-02', total: 3, modules: 0, racks: 2, patches: 1}),
+        jasmine.objectContaining({date: '2026-05-03', total: 7, modules: 5, racks: 0, patches: 2})
       ]);
-      expect(page.sharing).toEqual([
-        {name: 'Profiles sharing racks', value: 31, icon: 'dashboard_customize'},
-        {name: 'Profiles sharing patches', value: 18, icon: 'hub'}
-      ]);
-      expect(page.participation).toEqual([
-        {name: 'Public profiles', value: 240, icon: 'person_search'},
-        {name: 'Rack-sharing profiles per 100 public profiles', value: 13, icon: 'dashboard_customize'},
-        {name: 'Patch-sharing profiles per 100 public profiles', value: 8, icon: 'hub'}
-      ]);
-      expect(page.patchNetwork).toEqual([
-        {name: 'Saved connections total', value: 168, icon: 'linear_scale'},
-        {name: 'Saved connections per shared patch', value: 4, icon: 'share'},
-        {name: 'Saved connections per patch-sharing profile', value: 9, icon: 'hub'}
+      expect(page.activityChart.legend).toEqual([
+        {label: 'Modules', valueLabel: '9', toneClass: 'modules'},
+        {label: 'Racks', valueLabel: '3', toneClass: 'racks'},
+        {label: 'Patches', valueLabel: '3', toneClass: 'patches'}
       ]);
       expect(page.sharingMix).toEqual([
-        {name: 'Shared works total', value: 126, icon: 'layers'},
-        {name: 'Racks share of shared works', value: 67, icon: 'space_dashboard'},
-        {name: 'Patches share of shared works', value: 33, icon: 'cable'}
+        {label: 'Racks', valueLabel: '84 (67%)', widthPercent: 67, tone: 'emerald'},
+        {label: 'Patches', valueLabel: '42 (33%)', widthPercent: 33, tone: 'brand'}
       ]);
-      expect(page.coverage[0].title).toContain('live');
-      expect(page.coverage[1].description).toContain('at least 10 public shared works');
-      expect(page.coverage[3].title).toContain('Participation rates are live');
-      expect(page.coverage[4].title).toContain('Freshness rates are live');
-      expect(page.coverage[5].title).toContain('Patch-network rates are live');
-      expect(page.derived).toEqual([
-        {name: 'Modules per represented maker', value: 13, icon: 'rule'},
-        {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
-        {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
+      expect(page.sharingRateBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {
+          label: 'Rack-sharing profiles / 100 public profiles',
+          valueLabel: '13 / 100'
+        },
+        {
+          label: 'Patch-sharing profiles / 100 public profiles',
+          valueLabel: '8 / 100'
+        }
       ]);
-      expect(page.methodology.length).toBe(9);
-      expect(page.interpretation).toContain('normalized freshness rates');
+      expect(page.patchDepthBars.map((bar) => ({label: bar.label, valueLabel: bar.valueLabel}))).toEqual([
+        {label: 'Connections per shared patch', valueLabel: '4'},
+        {label: 'Connections per patch-sharing profile', valueLabel: '9'},
+        {label: 'Shared works per represented maker', valueLabel: '1'},
+        {label: 'Shared works updated / 100 shared works', valueLabel: '24 / 100'}
+      ]);
       done();
     });
   });
 
-  it('suppresses derived metrics when the underlying public sample is too small', (done) => {
-    const {service} = build({
-      publicModules: 20,
-      publicManufacturers: 2,
-      publicProfiles: 8,
-      publicModulesUpdatedLast30Days: 1,
-      publicRacks: 5,
-      publicRackAuthors: 2,
-      publicRacksUpdatedLast30Days: 1,
-      publicPatches: 4,
-      publicPatchConnections: 8,
-      publicPatchAuthors: 1,
-      publicPatchesUpdatedLast30Days: 1
-    });
+  it('suppresses low-volume rate bars while preserving headline counts', (done) => {
+    const {service} = build(
+      {
+        publicModules: 20,
+        publicManufacturers: 2,
+        publicProfiles: 8,
+        publicModulesUpdatedLast30Days: 1,
+        publicRacks: 5,
+        publicRackAuthors: 2,
+        publicRacksUpdatedLast30Days: 1,
+        publicPatches: 4,
+        publicPatchConnections: 8,
+        publicPatchAuthors: 1,
+        publicPatchesUpdatedLast30Days: 1
+      },
+      [
+        {date: '2026-05-01', modules: 1, racks: 0, patches: 0},
+        {date: '2026-05-02', modules: 0, racks: 1, patches: 0},
+        {date: '2026-05-03', modules: 0, racks: 0, patches: 1}
+      ]
+    );
 
     service.page$.subscribe((page) => {
-      expect(page.freshness).toEqual([
-        {name: 'Public modules updated last 30 days', value: 1, icon: 'schedule'},
-        {name: 'Shared racks updated last 30 days', value: 1, icon: 'space_dashboard'},
-        {name: 'Shared patches updated last 30 days', value: 1, icon: 'cable'}
+      expect(page.heroHighlights).toEqual([
+        {label: 'Shared works', value: '9', icon: 'layers'},
+        {label: '30-day updates', value: '3', icon: 'timeline'},
+        {label: 'Rack + patch sharers', value: '3', icon: 'groups'}
       ]);
-      expect(page.catalogueHealth).toEqual([]);
-      expect(page.participation).toEqual([
-        {name: 'Public profiles', value: 8, icon: 'person_search'}
+      expect(page.sharingRateBars).toEqual([]);
+      expect(page.patchDepthBars).toEqual([]);
+      expect(page.sharingMix).toEqual([
+        {label: 'Racks', valueLabel: '5 (56%)', widthPercent: 56, tone: 'emerald'},
+        {label: 'Patches', valueLabel: '4 (44%)', widthPercent: 44, tone: 'brand'}
       ]);
-      expect(page.patchNetwork).toEqual([
-        {name: 'Saved connections total', value: 8, icon: 'linear_scale'}
+      expect(page.footprintHighlights[2]).toEqual({
+        label: 'Modules updated in 30 days',
+        value: '1',
+        icon: 'schedule'
+      });
+      expect(page.activityChart.highlights).toEqual([
+        {label: 'Active days', value: '3 / 30', icon: 'calendar_view_month'},
+        {label: 'Busiest day', value: '1', icon: 'bolt'},
+        {label: 'Total 30-day updates', value: '3', icon: 'show_chart'}
       ]);
-      expect(page.sharingMix).toEqual([]);
-      expect(page.derived).toEqual([]);
-      expect(page.coverage[1].title).toContain('currently suppressed');
-      expect(page.coverage[2].description).toContain('fake KPI');
-      expect(page.coverage[3].description).toContain('adoption as a rate');
-      expect(page.coverage[4].description).toContain('tiny-sample burst');
-      expect(page.coverage[5].description).toContain('tiny-sample curiosity');
-      expect(page.methodology[8].description).toContain('per 100 public modules');
       done();
     });
   });
