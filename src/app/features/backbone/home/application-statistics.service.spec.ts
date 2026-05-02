@@ -82,7 +82,9 @@ describe('ApplicationStatisticsService', () => {
       expect(page.freshness).toEqual([
         {name: 'Public modules updated last 30 days', value: 64, icon: 'schedule'},
         {name: 'Shared racks updated last 30 days', value: 21, icon: 'space_dashboard'},
-        {name: 'Shared patches updated last 30 days', value: 9, icon: 'cable'}
+        {name: 'Shared patches updated last 30 days', value: 9, icon: 'cable'},
+        {name: 'Modules updated last 30 days per 100 public modules', value: 5, icon: 'monitoring'},
+        {name: 'Shared works updated last 30 days per 100 shared works', value: 24, icon: 'timelapse'}
       ]);
       expect(page.catalogueHealth).toEqual([
         {name: 'Shared racks per 100 modules', value: 7, icon: 'monitoring'},
@@ -111,14 +113,15 @@ describe('ApplicationStatisticsService', () => {
       expect(page.coverage[0].title).toContain('live');
       expect(page.coverage[1].description).toContain('at least 10 public shared works');
       expect(page.coverage[3].title).toContain('Participation rates are live');
-      expect(page.coverage[4].title).toContain('Patch-network rates are live');
+      expect(page.coverage[4].title).toContain('Freshness rates are live');
+      expect(page.coverage[5].title).toContain('Patch-network rates are live');
       expect(page.derived).toEqual([
         {name: 'Modules per represented maker', value: 13, icon: 'rule'},
         {name: 'Racks per sharing profile', value: 3, icon: 'splitscreen'},
         {name: 'Patches per sharing profile', value: 2, icon: 'linear_scale'}
       ]);
-      expect(page.methodology.length).toBe(8);
-      expect(page.interpretation).toContain('Freshness counts');
+      expect(page.methodology.length).toBe(9);
+      expect(page.interpretation).toContain('normalized freshness rates');
       done();
     });
   });
@@ -156,8 +159,9 @@ describe('ApplicationStatisticsService', () => {
       expect(page.coverage[1].title).toContain('currently suppressed');
       expect(page.coverage[2].description).toContain('fake KPI');
       expect(page.coverage[3].description).toContain('adoption as a rate');
-      expect(page.coverage[4].description).toContain('tiny-sample curiosity');
-      expect(page.methodology[7].description).toContain('recent movement');
+      expect(page.coverage[4].description).toContain('tiny-sample burst');
+      expect(page.coverage[5].description).toContain('tiny-sample curiosity');
+      expect(page.methodology[8].description).toContain('per 100 public modules');
       done();
     });
   });
