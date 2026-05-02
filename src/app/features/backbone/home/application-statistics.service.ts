@@ -91,6 +91,21 @@ export class ApplicationStatisticsService extends SubManager {
     const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
     const roundRatio = (numerator: number, denominator: number): number =>
       denominator > 0 ? Math.round(numerator / denominator) : 0;
+    const buildDerivedStatistic = (
+      name: string,
+      numerator: number,
+      denominator: number,
+      icon: string
+    ): ApplicationInsightStatistic | null => {
+      if (numerator < 3 || denominator < 3) {
+        return null;
+      }
+      return {
+        name,
+        value: roundRatio(numerator, denominator),
+        icon
+      };
+    };
 
     return {
       overview: [
@@ -128,22 +143,10 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       derived: [
-        {
-          name: 'Modules per represented maker',
-          value: roundRatio(statistics.publicModules, statistics.publicManufacturers),
-          icon: 'rule'
-        },
-        {
-          name: 'Racks per sharing profile',
-          value: roundRatio(statistics.publicRacks, statistics.publicRackAuthors),
-          icon: 'splitscreen'
-        },
-        {
-          name: 'Patches per sharing profile',
-          value: roundRatio(statistics.publicPatches, statistics.publicPatchAuthors),
-          icon: 'linear_scale'
-        }
-      ],
+        buildDerivedStatistic('Modules per represented maker', statistics.publicModules, statistics.publicManufacturers, 'rule'),
+        buildDerivedStatistic('Racks per sharing profile', statistics.publicRacks, statistics.publicRackAuthors, 'splitscreen'),
+        buildDerivedStatistic('Patches per sharing profile', statistics.publicPatches, statistics.publicPatchAuthors, 'linear_scale')
+      ].filter((value): value is ApplicationInsightStatistic => !!value),
       interpretation: creatorFootprint > 0
         ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
@@ -166,7 +169,7 @@ export class ApplicationStatisticsService extends SubManager {
         {
           icon: 'functions',
           title: 'Derived signals stay rounded',
-          description: 'Any ratio-style numbers on this page are rounded to whole numbers and meant as directional signals, not precise operational KPIs.'
+          description: 'Any ratio-style numbers on this page are rounded to whole numbers, and low-volume ratios stay hidden until the public sample is large enough to read as a directional signal instead of a fake KPI.'
         }
       ]
     };
