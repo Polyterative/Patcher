@@ -79,8 +79,10 @@ export interface ApplicationInsightsPage {
   heroHighlights: ApplicationInsightsHighlight[];
   footprintSnapshot: ApplicationInsightsSnapshotMetric[];
   footprintHighlights: ApplicationInsightsHighlight[];
-  moduleMixBars: ApplicationInsightsBar[];
-  moduleMixHighlights: ApplicationInsightsHighlight[];
+  standardMixBars: ApplicationInsightsBar[];
+  standardMixHighlights: ApplicationInsightsHighlight[];
+  hpBandBars: ApplicationInsightsBar[];
+  hpBandHighlights: ApplicationInsightsHighlight[];
   topManufacturerBars: ApplicationInsightsBar[];
   activeManufacturerBars: ApplicationInsightsBar[];
   activityChart: {
@@ -172,6 +174,10 @@ export class ApplicationStatisticsService extends SubManager {
     const moduleActivityTotal = activitySeries.reduce((sum, point) => sum + point.modules, 0);
     const rackActivityTotal = activitySeries.reduce((sum, point) => sum + point.racks, 0);
     const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
+    const dominantStandard = moduleInsights.standardMix[0];
+    const oneUCount = moduleInsights.standardMix
+      .filter((bucket) => bucket.label !== '3U')
+      .reduce((sum, bucket) => sum + bucket.count, 0);
 
     const footprintMetrics = [
       this.createSnapshotMetric(
@@ -318,23 +324,44 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'schedule'
         }
       ],
-      moduleMixBars: this.mapBarWidths([
-        ...moduleInsights.standardMix.map((bucket, index) => ({
+      standardMixBars: this.mapBarWidths(
+        moduleInsights.standardMix.map((bucket, index) => ({
           label: bucket.label,
           rawValue: bucket.count,
           valueLabel: this.formatCount(bucket.count),
           detail: bucket.detail ?? '',
           tone: this.getToneByIndex(index)
-        })),
-        ...moduleInsights.hpBands.map((bucket, index) => ({
+        }))
+      ),
+      standardMixHighlights: [
+        {
+          label: 'Formats represented',
+          value: this.formatCount(moduleInsights.standardMix.length),
+          icon: 'category'
+        },
+        {
+          label: 'Dominant standard',
+          value: dominantStandard
+            ? `${ dominantStandard.label } (${ this.formatCount(dominantStandard.count) })`
+            : 'N/A',
+          icon: 'emoji_events'
+        },
+        {
+          label: '1U footprint',
+          value: `${ Math.round((oneUCount / Math.max(statistics.publicModules, 1)) * 100) }%`,
+          icon: 'view_week'
+        }
+      ],
+      hpBandBars: this.mapBarWidths(
+        moduleInsights.hpBands.map((bucket, index) => ({
           label: bucket.label,
           rawValue: bucket.count,
           valueLabel: this.formatCount(bucket.count),
           detail: bucket.detail ?? '',
           tone: this.getToneByIndex(index + 2)
         }))
-      ]),
-      moduleMixHighlights: [
+      ),
+      hpBandHighlights: [
         {
           label: 'Average width',
           value: `${ this.formatCount(moduleInsights.averageHp) } HP`,
