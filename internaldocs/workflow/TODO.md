@@ -24,7 +24,7 @@
 
 ## Active
 
-- [~] Contributor stats — show public-safe contributor stats on public profiles, fold the contribution slice into the existing shared statistics surface instead of a detached block, keep implementation detail in `CURRENT_FEATURE.md`, and separate contributor metrics from collection/profile stats.
+- [~] Manufacturer accounts & verification — objective verification rules, field ownership, dormancy/revocation, and first-pass claim-flow implementation tasks now live in `CURRENT_FEATURE.md`; code work that needs `manufacturer_accounts` insert/select policy decisions remains blocked until explicit Supabase/RLS approval.
 
 ---
 
@@ -127,22 +127,6 @@ yet.
 
 ---
 
-#### MEDIUM: Rack Analysis — Balance Radar
-
-**Why:** Raw rack stats explain capacity but not system balance. A guided analysis layer can turn tags and rack composition
-into useful advice such as "voice-heavy", "low on utilities", or "light on modulation", helping users shape better systems
-without pretending there is one correct answer.
-
-- [ ] Define the first rack-balance axes from existing module tags and keep the heuristics explicitly advisory
-- [ ] Build a reusable rack-analysis aggregation layer from the modules already loaded in rack detail flows
-- [ ] Add an analysis surface that expands rack stats with plain-language guidance and a visual summary (radar chart only if it stays legible on mobile)
-- [ ] Define the fallback when tags are sparse or missing so the UI communicates partial confidence instead of fake precision
-- [ ] Add targeted tests for heuristic scoring, empty-data states, and low-tag-coverage behavior
-
----
-
-
-
 **Rack-local HP override status:** UI intentionally removed. Do not treat this as approved product scope.
 
 - [ ] Figure out why rack-local HP override was added and whether any underlying plumbing should remain at all
@@ -150,43 +134,9 @@ without pretending there is one correct answer.
 
 ---
 
-#### LOW: Multi-Instance — Guard Against Ambiguous Collection-Card Wiring
-
-**Why:** CVs clicked from collection cards when instances exist produce ambiguous connections ("mystery node" in graph).
-**Decision needed first:** Prompt to pick an instance, or block collection-card wiring entirely when instances exist?
-
-- [ ] Decide guardrail approach (prompt vs block)
-- [ ] Implement guard in patch editor CV click handler
-- [ ] Write targeted unit test
-
----
-
 ### PRODUCT — Tier 1 (requires Manufacturer Page Phase 2 to be live)
 
 ---
-
-#### MEDIUM: Manufacturer Accounts & Verification
-
-**Why:** Manufacturers claim their page, manage official brand data, surface contact/support info, and submit official MSRP.
-**Depends on:** Manufacturer Page Phase 2 live.
-**Scope:** Auth-gated edit surface. New `manufacturer_accounts` table links `user_id` → `manufacturer` entity. Profile
-fields (name, logo, website, bio, support/contact links) are manufacturer-owned; module data edits go through UGC review
-queue.
-
-- [ ] Document objective verification criteria, dormancy rules, and revocation path before launch
-- [ ] Define manufacturer-controlled fields vs shared catalogue fields before edit access exists
-- [ ] Add `manufacturer_accounts` table (user_id, manufacturer_id, verified, created_at) to `database.types.ts`
-- [ ] Add `manufacturer_accounts` to `DbPaths` in `DatabaseStrings.ts`
-- [ ] Add `add.manufacturerAccountClaim()` and `get.manufacturerAccountForUser()` to `supabase.service.ts`
-- [ ] "Claim this page" button on manufacturer detail (auth-gated; one pending claim per manufacturer; manual admin
-  approval via Supabase dashboard)
-- [ ] Verified: unlock edit controls (name, logo URL, website, bio, social links)
-- [ ] Add support/contact fields and issue-routing links to verified manufacturer profile
-- [ ] Add `update.manufacturerProfile()` with `cacheBust(['manufacturerWithId'])`
-- [ ] Verified badge on manufacturer page and on module cards from that manufacturer
-- [ ] MSRP field per module (visible to verified account only; feeds Price Hub label hierarchy)
-- [ ] Add auditability for manufacturer-edited fields and a user reporting path for abuse/disputes
-- [ ] Write tests for claim flow and profile update
 
 ---
 
