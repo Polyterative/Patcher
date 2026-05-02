@@ -60,6 +60,43 @@
         </lib-hero-content-card>
 
         <lib-hero-content-card
+          titleNormal="Module landscape"
+          icon="tune"
+          description="A deeper read on the public module library: which formats dominate, how wide modules tend to be, and what shape the catalogue is taking."
+        >
+          <div class="metric-bars">
+            @for (bar of page.moduleMixBars; track bar.label) {
+              <div class="metric-bar">
+                <div class="metric-bar__heading">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.valueLabel }}</strong>
+                </div>
+                <div class="metric-bar__track">
+                  <div
+                    class="metric-bar__fill"
+                    [ngClass]="'metric-bar__fill--' + bar.tone"
+                    [style.width.%]="bar.widthPercent"
+                  ></div>
+                </div>
+                <p>{{ bar.detail }}</p>
+              </div>
+            }
+          </div>
+
+          <div class="section-highlights">
+            @for (highlight of page.moduleMixHighlights; track highlight.label) {
+              <div class="insight-chip insight-chip--compact">
+                <mat-icon>{{ highlight.icon }}</mat-icon>
+                <div>
+                  <span class="insight-chip__label">{{ highlight.label }}</span>
+                  <strong>{{ highlight.value }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
           titleNormal="30-day activity"
           icon="show_chart"
           description="This chart is built from daily public-safe update counts, so it shows actual recent movement rather than a dressed-up snapshot."
@@ -118,6 +155,54 @@
                 </div>
               </div>
             }
+          </div>
+        </lib-hero-content-card>
+
+        <lib-hero-content-card
+          titleNormal="Makers leading the library"
+          icon="precision_manufacturing"
+          description="These rankings show who has the broadest public module footprint right now and who has been moving fastest over the last 30 days."
+        >
+          <div class="rankings-grid">
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Largest public catalogues</h4>
+              @for (bar of page.topManufacturerBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="metric-bars">
+              <h4 class="rankings-grid__title">Most active in 30 days</h4>
+              @for (bar of page.activeManufacturerBars; track bar.label) {
+                <div class="metric-bar">
+                  <div class="metric-bar__heading">
+                    <span>{{ bar.label }}</span>
+                    <strong>{{ bar.valueLabel }}</strong>
+                  </div>
+                  <div class="metric-bar__track">
+                    <div
+                      class="metric-bar__fill"
+                      [ngClass]="'metric-bar__fill--' + bar.tone"
+                      [style.width.%]="bar.widthPercent"
+                    ></div>
+                  </div>
+                  <p>{{ bar.detail }}</p>
+                </div>
+              }
+            </div>
           </div>
         </lib-hero-content-card>
 

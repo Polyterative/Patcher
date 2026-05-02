@@ -76,9 +76,32 @@ export interface PublicApplicationActivityPoint {
   patches: number;
 }
 
+export interface PublicApplicationModuleInsightBucket {
+  label: string;
+  count: number;
+  detail?: string;
+}
+
+export interface PublicApplicationModuleInsights {
+  topManufacturers: PublicApplicationModuleInsightBucket[];
+  activeManufacturers: PublicApplicationModuleInsightBucket[];
+  standardMix: PublicApplicationModuleInsightBucket[];
+  hpBands: PublicApplicationModuleInsightBucket[];
+  averageHp: number;
+  medianHp: number;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
+};
+
+type PublicModuleInsightRow = {
+  manufacturerId: number;
+  manufacturerName: string;
+  hp: number;
+  standard: number;
+  updated: string;
 };
 
 
@@ -213,6 +236,146 @@ export class SupabaseQueriesService {
     increment(patches, 'patches');
 
     return points;
+  }
+
+  private async fetchAllPublicModuleInsightRows(): Promise<{
+    data: PublicModuleInsightRow[];
+    error: any;
+  }> {
+    const pageSize = 1000;
+    const rows: PublicModuleInsightRow[] = [];
+    let offset = 0;
+
+    while (true) {
+      const response = await this.supabase
+        .from(DbPaths.modules)
+        .select('id,hp,standard,updated,manufacturer:manufacturerId(id,name)')
+        .filter('public', 'eq', true)
+        .order('id', {ascending: true})
+        .range(offset, offset + pageSize - 1);
+
+      if (response.error) {
+        return {data: [], error: response.error};
+      }
+
+      const pageRows = (response.data ?? []).map((row: any) => ({
+        manufacturerId: row.manufacturerId,
+        manufacturerName: row.manufacturer?.name ?? 'Unknown maker',
+        hp: typeof row.hp === 'number' ? row.hp : 0,
+        standard: typeof row.standard === 'number' ? row.standard : 0,
+        updated: row.updated
+      }));
+
+      rows.push(...pageRows);
+
+      if (pageRows.length < pageSize) {
+        break;
+      }
+      offset += pageSize;
+    }
+
+    return {data: rows, error: null};
+  }
+
+  private rankBuckets(
+    counts: Map<string, number>,
+    limit: number,
+    detailBuilder?: (count: number) => string
+  ): PublicApplicationModuleInsightBucket[] {
+    return [...counts.entries()]
+      .sort((a, b) => {
+        if (b[1] !== a[1]) {
+          return b[1] - a[1];
+        }
+        return a[0].localeCompare(b[0]);
+      })
+      .slice(0, limit)
+      .map(([label, count]) => ({
+        label,
+        count,
+        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
+      }));
+  }
+
+  private getStandardLabel(standard: number): string {
+    if (standard === 1) { return 'Intellijel 1U'; }
+    if (standard === 2) { return 'Pulp Logic 1U'; }
+    return '3U';
+  }
+
+  private getHpBandLabel(hp: number): string {
+    if (hp <= 8) { return 'Compact (0-8 HP)'; }
+    if (hp <= 16) { return 'Utility (9-16 HP)'; }
+    if (hp <= 28) { return 'Feature (17-28 HP)'; }
+    return 'Large (29+ HP)';
+  }
+
+  private buildModuleInsights(rows: PublicModuleInsightRow[]): PublicApplicationModuleInsights {
+    const manufacturerCounts = new Map<string, number>();
+    const activeManufacturerCounts = new Map<string, number>();
+    const standardCounts = new Map<string, number>();
+    const hpBandCounts = new Map<string, number>();
+    const lastThirtyDaysIso = this.getLastThirtyDaysIso();
+    const hpValues: number[] = [];
+
+    rows.forEach((row) => {
+      manufacturerCounts.set(
+        row.manufacturerName,
+        (manufacturerCounts.get(row.manufacturerName) ?? 0) + 1
+      );
+      standardCounts.set(
+        this.getStandardLabel(row.standard),
+        (standardCounts.get(this.getStandardLabel(row.standard)) ?? 0) + 1
+      );
+      hpBandCounts.set(
+        this.getHpBandLabel(row.hp),
+        (hpBandCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
+      );
+
+      if (row.updated >= lastThirtyDaysIso) {
+        activeManufacturerCounts.set(
+          row.manufacturerName,
+          (activeManufacturerCounts.get(row.manufacturerName) ?? 0) + 1
+        );
+      }
+
+      if (row.hp > 0) {
+        hpValues.push(row.hp);
+      }
+    });
+
+    const sortedHpValues = [...hpValues].sort((a, b) => a - b);
+    const averageHp = sortedHpValues.length > 0
+      ? Math.round(sortedHpValues.reduce((sum, value) => sum + value, 0) / sortedHpValues.length)
+      : 0;
+    const medianHp = sortedHpValues.length > 0
+      ? sortedHpValues[Math.floor(sortedHpValues.length / 2)]
+      : 0;
+
+    return {
+      topManufacturers: this.rankBuckets(
+        manufacturerCounts,
+        5,
+        (count) => `${ count } public modules`
+      ),
+      activeManufacturers: this.rankBuckets(
+        activeManufacturerCounts,
+        5,
+        (count) => `${ count } modules updated in the last 30 days`
+      ),
+      standardMix: this.rankBuckets(
+        standardCounts,
+        4,
+        (count) => `${ count } public modules in this format`
+      ),
+      hpBands: this.rankBuckets(
+        hpBandCounts,
+        4,
+        (count) => `${ count } modules in this size band`
+      ),
+      averageHp,
+      medianHp
+    };
   }
 
   private stripPublicAuthorGate<T>(response: any) {
@@ -792,6 +955,21 @@ export class SupabaseQueriesService {
         racksResponse.data,
         patchesResponse.data
       );
+    })());
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules'))),
+    maxCacheCount: 20,
+  })
+  getApplicationModuleInsights(): Observable<PublicApplicationModuleInsights> {
+    return rxFrom((async () => {
+      const response = await this.fetchAllPublicModuleInsightRows();
+      if (response.error) {
+        throw response.error;
+      }
+      return this.buildModuleInsights(response.data);
     })());
   }
   

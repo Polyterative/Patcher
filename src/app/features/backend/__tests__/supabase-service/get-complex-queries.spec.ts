@@ -295,6 +295,86 @@ describe('SupabaseService - get complex queries', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('GET.applicationModuleInsights', () => {
+    it('should derive public module insight buckets from public module rows', (done) => {
+      const modulesQuery = chainable({
+        data: [
+          {
+            id: 1,
+            manufacturerId: 1,
+            hp: 6,
+            standard: 0,
+            updated: '2026-05-01T10:00:00.000Z',
+            manufacturer: {id: 1, name: 'Make Noise'}
+          },
+          {
+            id: 2,
+            manufacturerId: 1,
+            hp: 14,
+            standard: 0,
+            updated: '2026-05-01T11:00:00.000Z',
+            manufacturer: {id: 1, name: 'Make Noise'}
+          },
+          {
+            id: 3,
+            manufacturerId: 2,
+            hp: 22,
+            standard: 1,
+            updated: '2026-03-15T09:00:00.000Z',
+            manufacturer: {id: 2, name: 'Intellijel'}
+          },
+          {
+            id: 4,
+            manufacturerId: 3,
+            hp: 34,
+            standard: 2,
+            updated: '2026-05-02T12:00:00.000Z',
+            manufacturer: {id: 3, name: 'Noise Engineering'}
+          }
+        ],
+        error: null
+      });
+
+      const selectSpy = spyOn(modulesQuery, 'select').and.callThrough();
+      const filterSpy = spyOn(modulesQuery, 'filter').and.callThrough();
+      spyOn(supabaseClient, 'from').and.returnValue(modulesQuery);
+
+      service.GET.applicationModuleInsights().subscribe({
+        next: (result: any) => {
+          expect(result.topManufacturers).toEqual([
+            {label: 'Make Noise', count: 2, detail: '2 public modules'},
+            {label: 'Intellijel', count: 1, detail: '1 public modules'},
+            {label: 'Noise Engineering', count: 1, detail: '1 public modules'}
+          ]);
+          expect(result.activeManufacturers).toEqual([
+            {label: 'Make Noise', count: 2, detail: '2 modules updated in the last 30 days'},
+            {label: 'Noise Engineering', count: 1, detail: '1 modules updated in the last 30 days'}
+          ]);
+          expect(result.standardMix).toEqual([
+            {label: '3U', count: 2, detail: '2 public modules in this format'},
+            {label: 'Intellijel 1U', count: 1, detail: '1 public modules in this format'},
+            {label: 'Pulp Logic 1U', count: 1, detail: '1 public modules in this format'}
+          ]);
+          expect(result.hpBands).toEqual([
+            {label: 'Compact (0-8 HP)', count: 1, detail: '1 modules in this size band'},
+            {label: 'Feature (17-28 HP)', count: 1, detail: '1 modules in this size band'},
+            {label: 'Large (29+ HP)', count: 1, detail: '1 modules in this size band'},
+            {label: 'Utility (9-16 HP)', count: 1, detail: '1 modules in this size band'}
+          ]);
+          expect(result.averageHp).toBe(19);
+          expect(result.medianHp).toBe(22);
+          expect(selectSpy).toHaveBeenCalledWith('id,hp,standard,updated,manufacturer:manufacturerId(id,name)');
+          expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
   
   describe('get.modulesBySameManufacturer', () => {
     it('should return the data array from the query result', (done) => {
