@@ -364,6 +364,7 @@ export class SupabaseQueriesService {
     orderBy?: string,
     orderDirection?: string
   ) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const effectiveTo = to ?? this.defaultPag;
     const normalizedName = normalizeForSearch((name ?? '').trim());
     
@@ -377,12 +378,14 @@ export class SupabaseQueriesService {
       "updated",
       "authorid",
       QueryJoins.author,
+      publicAuthorGateJoin,
       "image"
     ].join(",");
     
     let query = this.supabase.from(DbPaths.racks)
       .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
       .filter("public", "eq", true)
+      .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       .range(from, effectiveTo)
       .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"});
     
@@ -393,6 +396,7 @@ export class SupabaseQueriesService {
     return rxFrom(query)
       .pipe(
         remapErrors(),
+        map(response => this.stripPublicAuthorGate<Rack>(response))
       );
   }
   
@@ -566,12 +570,14 @@ export class SupabaseQueriesService {
     orderDirection?: string,
     columns: string = `id,name,description,${ QueryJoins.author },updated,created`
   ) {
+    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
     
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
-      .select(columns + connections, {count: 'exact'})
+      .select(`${ columns + connections }, ${ publicAuthorGateJoin }`, {count: 'exact'})
       .filter("public", "eq", true)
+      .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
 
     if (name) {
@@ -581,6 +587,7 @@ export class SupabaseQueriesService {
     return rxFrom(queryBuilder.range(from, to))
       .pipe(
         remapErrors(),
+        map(response => this.stripPublicAuthorGate<Patch>(response))
       );
   }
   

@@ -383,6 +383,7 @@ describe('SupabaseService - GET.racksMinimal', () => {
     service.GET.racksMinimal(0, 19).subscribe({
       next: () => {
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
         done();
       },
       error: (err) => {
@@ -401,6 +402,27 @@ describe('SupabaseService - GET.racksMinimal', () => {
     service.GET.racksMinimal(0, 19, 'Drum').subscribe({
       next: () => {
         expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('drum'));
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should inner-join the author visibility gate for public rack listings', (done) => {
+    const mock = chainable({data: [], count: 0, error: null});
+    mock.ilike = () => mock;
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.racksMinimal(0, 19).subscribe({
+      next: () => {
+        expect(selectSpy).toHaveBeenCalledWith(
+          jasmine.stringMatching(/author_profile_gate:authorid!inner\(public\)/),
+          {count: 'exact'}
+        );
         done();
       },
       error: (err) => {
