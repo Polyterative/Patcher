@@ -54,18 +54,7 @@ describe('RackVisualModelComponent', () => {
 
     fixture = TestBed.createComponent(RackVisualModelComponent);
     component = fixture.componentInstance;
-    moduleRef = {
-      module: {
-        hp: 14,
-        panels: [],
-        powerPos12: null,
-        powerNeg12: null,
-        powerPos5: null,
-      },
-      rackingData: {
-        selectedPanelId: null,
-      }
-    } as any;
+    moduleRef = makeRackedModule(10, 0, 0);
     component.rackData = {hp: 104} as any;
     component.rowedRackedModules = [[moduleRef]];
     component.isCurrentRackEditable = true;
@@ -73,6 +62,32 @@ describe('RackVisualModelComponent', () => {
     component.rackDetailDataService = rackDetailDataService as any;
     component.moduleRightClick$ = new Subject<any>();
   });
+
+  function makeRackedModule(
+    id: number,
+    row: number,
+    column: number,
+    powerPos12: number | null = null,
+    powerNeg12: number | null = null,
+    powerPos5: number | null = null
+  ): any {
+    return {
+      module: {
+        id,
+        hp: 14,
+        panels: [],
+        powerPos12,
+        powerNeg12,
+        powerPos5,
+      },
+      rackingData: {
+        id,
+        row,
+        column,
+        selectedPanelId: null,
+      }
+    } as any;
+  }
 
   it('shows the per-module HP badge in edit mode', () => {
     fixture.detectChanges();
@@ -96,13 +111,19 @@ describe('RackVisualModelComponent', () => {
     expect(rackRowShell).not.toBeNull();
   });
 
-  it('renders module hover stats and reveals them on hover', () => {
+  it('shows module hover stats only in power analysis mode', () => {
+    fixture.detectChanges();
+
+    let host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.moduleHoverStats')).toBeNull();
+
+    rackDetailDataService.showPowerAnalysisMode$.next(true);
     fixture.detectChanges();
 
     component.setHoveredModule(moduleRef);
     fixture.detectChanges();
 
-    const host = fixture.nativeElement as HTMLElement;
+    host = fixture.nativeElement as HTMLElement;
     const hoverStats = host.querySelector('.moduleHoverStats');
     expect(hoverStats).not.toBeNull();
     expect(component.isHoveredModule(moduleRef)).toBeTrue();
@@ -116,7 +137,7 @@ describe('RackVisualModelComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.hpIndicator')).toBeNull();
-    expect(host.querySelector('.moduleHoverStats')).not.toBeNull();
+    expect(host.querySelector('.moduleHoverStats')).toBeNull();
   });
 
   it('shows the custom row power panel for hovered rows with modules in power analysis mode', () => {
@@ -190,54 +211,9 @@ describe('RackVisualModelComponent', () => {
   });
 
   it('rescales hovered row heatmaps against the hovered row maximum', () => {
-    const row0Hot = {
-      module: {
-        id: 11,
-        hp: 14,
-        panels: [],
-        powerPos12: 120,
-        powerNeg12: -45,
-        powerPos5: 10,
-      },
-      rackingData: {
-        id: 1,
-        row: 0,
-        column: 0,
-        selectedPanelId: null,
-      }
-    } as any;
-    const row1Warm = {
-      module: {
-        id: 22,
-        hp: 10,
-        panels: [],
-        powerPos12: 60,
-        powerNeg12: -15,
-        powerPos5: 0,
-      },
-      rackingData: {
-        id: 2,
-        row: 1,
-        column: 0,
-        selectedPanelId: null,
-      }
-    } as any;
-    const row1Cool = {
-      module: {
-        id: 33,
-        hp: 8,
-        panels: [],
-        powerPos12: 24,
-        powerNeg12: -6,
-        powerPos5: 0,
-      },
-      rackingData: {
-        id: 3,
-        row: 1,
-        column: 1,
-        selectedPanelId: null,
-      }
-    } as any;
+    const row0Hot = makeRackedModule(11, 0, 0, 120, -45, 10);
+    const row1Warm = makeRackedModule(22, 1, 0, 60, -15, 0);
+    const row1Cool = makeRackedModule(33, 1, 1, 24, -6, 0);
 
     component.rowedRackedModules = [[row0Hot], [row1Warm, row1Cool]];
     fixture.detectChanges();
@@ -253,6 +229,30 @@ describe('RackVisualModelComponent', () => {
     component.clearHoveredRow(1);
 
     expect(component.powerAnalysisVisual(row1Warm).className).toBe('powerAnalysisModule--smoke');
+  });
+
+  it('clears stale hovered rows when rack rows shrink', () => {
+    component.rowedRackedModules = [
+      [makeRackedModule(11, 0, 0, 90, -30, 0)],
+      [makeRackedModule(22, 1, 0, 40, -10, 0)]
+    ];
+    fixture.detectChanges();
+
+    component.setHoveredRow(1);
+    expect(component.isRowPowerPanelVisible(1)).toBeTrue();
+
+    component.rowedRackedModules = [[makeRackedModule(11, 0, 0, 90, -30, 0)]];
+    component.ngOnChanges({
+      rowedRackedModules: {
+        currentValue: component.rowedRackedModules,
+        previousValue: null,
+        firstChange: false,
+        isFirstChange: () => false
+      }
+    });
+
+    expect(component.isRowPowerPanelVisible(1)).toBeFalse();
+    expect(component.powerAnalysisVisual(component.rowedRackedModules[0][0]).className).toBe('powerAnalysisModule--peak');
   });
 
   it('marks modules with missing power data in heatmap mode', () => {
