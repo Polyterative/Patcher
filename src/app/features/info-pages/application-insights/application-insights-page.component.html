@@ -43,6 +43,14 @@
         ></app-statistics>
 
         <app-statistics
+          title="Sharing mix"
+          icon="pie_chart"
+          cardClass="home-insights-card"
+          [statistics]="page.sharingMix"
+          emptyMessage="Mix signals appear once there is enough public shared work to describe the rack/patch split without over-reading a tiny sample."
+        ></app-statistics>
+
+        <app-statistics
           title="Derived signals"
           icon="functions"
           cardClass="home-insights-card"
