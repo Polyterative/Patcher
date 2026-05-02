@@ -5,7 +5,8 @@ import { BehaviorSubject } from 'rxjs';
   selector:        'app-icon-toggler-boolean',
   templateUrl:     './icon-toggler-boolean.component.html',
   styleUrls:       ['./icon-toggler-boolean.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false
 })
 export class IconTogglerBooleanComponent implements OnInit {
   @Input() icon?: string;

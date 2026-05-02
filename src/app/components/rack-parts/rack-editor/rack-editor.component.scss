@@ -2,6 +2,10 @@
 
 $bgOpacity: 0.8;
 $bgGradientBG: rgb(223, 223, 223);
+$floatingInsetDesktop: 1rem;
+$floatingInsetMobile: 0.75rem;
+$floatingSurfaceMaxWidth: 16.5rem;
+$floatingSurfaceRestOpacity: 0.78;
 
 .readOnlyBG {
   //background: $bgGradientBG;
@@ -21,4 +25,122 @@ $bgGradientBG: rgb(223, 223, 223);
 
 .smallerScale {
   transform: scale(0.65);
+}
+
+.rackEditorActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rackEditorFloatingOptions {
+  position: fixed;
+  left: calc(#{$floatingInsetDesktop} + env(safe-area-inset-left));
+  bottom: calc(#{$floatingInsetDesktop} + env(safe-area-inset-bottom));
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.rackEditorFloatingOptions__panel,
+.rackEditorFloatingOptions__quickToggle {
+  width: fit-content;
+  max-width: min(
+    #{$floatingSurfaceMaxWidth},
+    calc(
+      100vw - (#{$floatingInsetDesktop} * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)
+    )
+  );
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(0.375rem);
+  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
+  opacity: $floatingSurfaceRestOpacity;
+  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.rackEditorFloatingOptions__panel:hover,
+.rackEditorFloatingOptions__panel:focus-within,
+.rackEditorFloatingOptions__quickToggle:hover,
+.rackEditorFloatingOptions__quickToggle:focus-within {
+  opacity: 1;
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.45rem 1.25rem rgba(0, 0, 0, 0.2);
+}
+
+.rackEditorFloatingOptions__panel {
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.rackEditorFloatingOptions__quickToggle {
+  padding: 0.65rem 0.8rem;
+}
+
+.rackEditorFloatingOptions__toggle {
+  border: 0.125rem solid #3e638a;
+  box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.28);
+  background: #ffffff;
+  color: #224b75;
+  opacity: $floatingSurfaceRestOpacity;
+  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.rackEditorFloatingOptions__toggle:hover,
+.rackEditorFloatingOptions__toggle:focus-visible {
+  opacity: 1;
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.45rem 1.25rem rgba(38, 76, 116, 0.32);
+}
+
+.rackEditorFloatingOptions__toggle--open {
+  background: rgba(34, 75, 117, 0.92);
+  color: #ffffff;
+  border-color: rgba(34, 75, 117, 0.92);
+}
+
+@media (max-width: 48rem) {
+  .rackEditorActions {
+    gap: 0.5rem;
+  }
+
+  .rackEditorActions > * {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .rackEditorFloatingOptions {
+    left: calc(#{$floatingInsetMobile} + env(safe-area-inset-left));
+    bottom: calc(#{$floatingInsetMobile} + env(safe-area-inset-bottom));
+    align-items: stretch;
+  }
+
+  .rackEditorFloatingOptions__panel,
+  .rackEditorFloatingOptions__quickToggle,
+  .rackEditorFloatingOptions__toggle {
+    width: auto;
+    max-width: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .rackEditorFloatingOptions__panel {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .rackEditorFloatingOptions__quickToggle {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .rackEditorFloatingOptions__quickToggle mat-slide-toggle,
+  .rackEditorFloatingOptions__panel mat-slide-toggle,
+  .rackEditorFloatingOptions__toggle {
+    width: 100%;
+  }
 }
