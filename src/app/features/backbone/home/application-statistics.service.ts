@@ -26,6 +26,7 @@ export interface ApplicationInsightsPage {
   interpretation: string;
   overview: ApplicationInsightStatistic[];
   sharing: ApplicationInsightStatistic[];
+  derived: ApplicationInsightStatistic[];
   methodology: {
     icon: string;
     title: string;
@@ -88,6 +89,8 @@ export class ApplicationStatisticsService extends SubManager {
 
   private mapPage(statistics: PublicApplicationStatistics): ApplicationInsightsPage {
     const creatorFootprint = statistics.publicRackAuthors + statistics.publicPatchAuthors;
+    const roundRatio = (numerator: number, denominator: number): number =>
+      denominator > 0 ? Math.round(numerator / denominator) : 0;
 
     return {
       overview: [
@@ -124,8 +127,25 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'hub'
         }
       ],
+      derived: [
+        {
+          name: 'Modules per represented maker',
+          value: roundRatio(statistics.publicModules, statistics.publicManufacturers),
+          icon: 'rule'
+        },
+        {
+          name: 'Racks per sharing profile',
+          value: roundRatio(statistics.publicRacks, statistics.publicRackAuthors),
+          icon: 'splitscreen'
+        },
+        {
+          name: 'Patches per sharing profile',
+          value: roundRatio(statistics.publicPatches, statistics.publicPatchAuthors),
+          icon: 'linear_scale'
+        }
+      ],
       interpretation: creatorFootprint > 0
-        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it.'
+        ? 'The catalogue is now broad enough to support a lightweight public intelligence layer: not just what exists, but how much real shared work is accumulating around it. Rounded ratios help show shape without pretending to be exact analytics.'
         : 'The catalogue footprint is already meaningful, while the public sharing layer is still early enough that methodology matters more than dashboard density.',
       methodology: [
         {
@@ -142,6 +162,11 @@ export class ApplicationStatisticsService extends SubManager {
           icon: 'visibility',
           title: 'Profile visibility still gates sharing',
           description: 'Rack and patch sharing metrics only include content from profiles that are themselves public, so profile privacy remains the top-level boundary.'
+        },
+        {
+          icon: 'functions',
+          title: 'Derived signals stay rounded',
+          description: 'Any ratio-style numbers on this page are rounded to whole numbers and meant as directional signals, not precise operational KPIs.'
         }
       ]
     };
