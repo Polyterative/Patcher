@@ -92,6 +92,7 @@ export interface ApplicationInsightsPage {
   standardMixHighlights: ApplicationInsightsHighlight[];
   hpBandBars: ApplicationInsightsBar[];
   hpBandActivityBars: ApplicationInsightsBar[];
+  hpExactBars: ApplicationInsightsBar[];
   hpBandHighlights: ApplicationInsightsHighlight[];
   moduleFreshnessBars: ApplicationInsightsBar[];
   moduleFreshnessHighlights: ApplicationInsightsHighlight[];
@@ -194,7 +195,6 @@ export class ApplicationStatisticsService extends SubManager {
     const oneUCount = moduleInsights.standardMix
       .filter((bucket) => bucket.label.includes('1U'))
       .reduce((sum, bucket) => sum + bucket.count, 0);
-    const dominantHpBand = this.getTopBucket(moduleInsights.hpBands);
     const mostActiveStandard = this.getTopBucket(moduleInsights.standardActivity);
     const updatedLast7Days = moduleInsights.freshnessWindows[0]?.count ?? 0;
     const updatedLast30Days = moduleInsights.freshnessWindows[1]?.count ?? 0;
@@ -221,8 +221,37 @@ export class ApplicationStatisticsService extends SubManager {
       {label: 'Racks', count: rackActivityTotal},
       {label: 'Patches', count: patchActivityTotal}
     ].sort((a, b) => b.count - a.count)[0];
-    const compactAndUtilityShare = this.getBucketCount(moduleInsights.hpBands, 'Compact (0-8 HP)')
-      + this.getBucketCount(moduleInsights.hpBands, 'Utility (9-16 HP)');
+    const orderedHpBands = this.sortHpBuckets(moduleInsights.hpBands);
+    const hpBandActivityCounts = new Map(moduleInsights.hpBandActivity.map((bucket) => [bucket.label, bucket.count]));
+    const orderedHpBandActivity = orderedHpBands.map((bucket) => ({
+      label: bucket.label,
+      count: hpBandActivityCounts.get(bucket.label) ?? 0
+    }));
+    const hpBandVelocity = orderedHpBands.map((bucket) => {
+      const recentUpdates = hpBandActivityCounts.get(bucket.label) ?? 0;
+      const rawValue = bucket.count > 0
+        ? Math.round((recentUpdates * 100) / bucket.count)
+        : 0;
+
+      return {
+        label: bucket.label,
+        rawValue,
+        recentUpdates,
+        totalModules: bucket.count
+      };
+    });
+    const fastestMovingHpBand = [...hpBandVelocity]
+      .filter((bucket) => bucket.recentUpdates > 0)
+      .sort((a, b) => {
+        if (b.rawValue !== a.rawValue) {
+          return b.rawValue - a.rawValue;
+        }
+        return this.getHpBandOrder(a.label) - this.getHpBandOrder(b.label);
+      })[0];
+    const foundationHpShare = this.getBucketCount(orderedHpBands, '0-2 HP')
+      + this.getBucketCount(orderedHpBands, '3-5 HP');
+    const largerFormatShare = this.getBucketCount(orderedHpBands, '17-28 HP')
+      + this.getBucketCount(orderedHpBands, '29+ HP');
     const freshnessCohorts = [
       {
         label: 'Fresh (0-7 days)',
@@ -455,40 +484,56 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       hpBandBars: this.mapBarWidths(
-        moduleInsights.hpBands.map((bucket, index) => ({
+        orderedHpBands.map((bucket, index) => ({
           label: bucket.label,
           rawValue: bucket.count,
           valueLabel: this.formatCount(bucket.count),
-          detail: bucket.detail ?? '',
+          detail: `${ this.formatPercentValue(bucket.count, statistics.publicModules) } of public modules`,
           tone: this.getToneByIndex(index + 2)
         }))
       ),
       hpBandActivityBars: this.mapBarWidths(
-        moduleInsights.hpBandActivity.map((bucket, index) => ({
+        orderedHpBandActivity.map((bucket, index) => ({
           label: bucket.label,
           rawValue: bucket.count,
           valueLabel: this.formatCount(bucket.count),
-          detail: bucket.detail ?? '',
+          detail: updatedLast30Days > 0
+            ? `${ this.formatPercentValue(bucket.count, updatedLast30Days) } of modules updated in 30 days`
+            : 'No public modules were updated in the last 30 days',
           tone: this.getToneByIndex(index + 3)
+        }))
+      ),
+      hpExactBars: this.mapBarWidths(
+        (moduleInsights.hpExact ?? []).map((bucket, index) => ({
+          label: bucket.label,
+          rawValue: bucket.count,
+          valueLabel: this.formatCount(bucket.count),
+          detail: `${ this.formatPercentValue(bucket.count, statistics.publicModules) } of public modules`,
+          tone: this.getToneByIndex(index + 1)
         }))
       ),
       hpBandHighlights: [
         {
-          label: 'Average width',
-          value: `${ this.formatCount(moduleInsights.averageHp) } HP`,
+          label: 'Median width',
+          value: `${ this.formatCount(moduleInsights.medianHp) } HP`,
           icon: 'straighten'
         },
         {
-          label: 'Most common band',
-          value: dominantHpBand
-            ? `${ dominantHpBand.label } (${ this.formatCount(dominantHpBand.count) })`
-            : 'N/A',
-          icon: 'stacked_bar_chart'
+          label: '0-5 HP share',
+          value: this.formatPercent(foundationHpShare, statistics.publicModules),
+          icon: 'view_column'
         },
         {
-          label: 'Compact + utility share',
-          value: this.formatPercent(compactAndUtilityShare, statistics.publicModules),
-          icon: 'swap_horiz'
+          label: '17+ HP share',
+          value: this.formatPercent(largerFormatShare, statistics.publicModules),
+          icon: 'splitscreen'
+        },
+        {
+          label: 'Fastest-moving width',
+          value: fastestMovingHpBand
+            ? `${ fastestMovingHpBand.label } (${ fastestMovingHpBand.rawValue } / 100)`
+            : 'N/A',
+          icon: 'bolt'
         }
       ],
       moduleFreshnessBars: this.mapBarWidths(
@@ -751,7 +796,9 @@ export class ApplicationStatisticsService extends SubManager {
       label: metric.label,
       valueLabel: metric.valueLabel,
       detail: metric.detail,
-      widthPercent: Math.max(14, Math.round((metric.rawValue / maxValue) * 100)),
+      widthPercent: metric.rawValue > 0
+        ? Math.max(14, Math.round((metric.rawValue / maxValue) * 100))
+        : 0,
       tone: metric.tone
     }));
   }
@@ -851,6 +898,16 @@ export class ApplicationStatisticsService extends SubManager {
       }
       return a.label.localeCompare(b.label);
     })[0];
+  }
+
+  private sortHpBuckets<T extends {label: string}>(buckets: T[]): T[] {
+    return [...buckets].sort((a, b) => this.getHpBandOrder(a.label) - this.getHpBandOrder(b.label));
+  }
+
+  private getHpBandOrder(label: string): number {
+    const orderedLabels = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
+    const index = orderedLabels.indexOf(label);
+    return index === -1 ? orderedLabels.length : index;
   }
 
   private getMaxRollingWindowTotal(activitySeries: PublicApplicationActivityPoint[], windowSize: number): number {
