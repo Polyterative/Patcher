@@ -111,6 +111,64 @@ describe('RackVisualModelComponent', () => {
     expect(rackRowShell).not.toBeNull();
   });
 
+  it('keeps blank rack rows pinned to the full rack template width', () => {
+    component.rowedRackedModules = [[]];
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const screen = host.querySelector('#screen') as HTMLElement | null;
+    const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
+
+    expect(screen?.style.width).toBe('104rem');
+    expect(screen?.style.minWidth).toBe('104rem');
+    expect(screen?.style.maxWidth).toBe('104rem');
+    expect(rackRow?.classList.contains('row-bg')).toBeTrue();
+  });
+
+  it('keeps populated rows on the full rack template background', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
+
+    expect(rackRow?.classList.contains('row-bg')).toBeTrue();
+  });
+
+  it('keeps the rack template capped to the configured HP width when rows overflow', () => {
+    component.rackData = {hp: 100} as any;
+    component.rowedRackedModules = [[
+      makeRackedModule(10, 0, 0),
+      makeRackedModule(11, 0, 14),
+      makeRackedModule(12, 0, 28),
+      makeRackedModule(13, 0, 42),
+      makeRackedModule(14, 0, 56),
+      makeRackedModule(15, 0, 70),
+      makeRackedModule(16, 0, 84),
+      makeRackedModule(17, 0, 98),
+    ]];
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const screen = host.querySelector('#screen') as HTMLElement | null;
+    const rackRowShell = host.querySelector('.rackRowShell') as HTMLElement | null;
+    const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
+
+    expect(screen?.style.width).toBe('100rem');
+    expect(screen?.style.maxWidth).toBe('100rem');
+    expect(rackRowShell).not.toBeNull();
+    expect(rackRow?.classList.contains('row-bg')).toBeTrue();
+  });
+
+  it('removes the row template background when the row contains unracked modules', () => {
+    component.rowedRackedModules = [[makeRackedModule(10, null as any, null as any)]];
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const rackRow = host.querySelector('.rackRow') as HTMLElement | null;
+
+    expect(rackRow?.classList.contains('row-bg')).toBeFalse();
+  });
+
   it('shows module hover stats only in power analysis mode', () => {
     fixture.detectChanges();
 

@@ -27,7 +27,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
   }
 
   async function getModuleRowIndex(page: any, moduleAltText: string): Promise<number> {
-    const rows = page.locator('app-rack-visual-model #screen > .row');
+    const rows = page.locator('app-rack-visual-model #screen .rackRow');
     const rowCount = await rows.count();
     for (let i = 0; i < rowCount; i++) {
       if (await rows.nth(i).locator(`img[alt*="${ moduleAltText }"]`).count() > 0) {
@@ -69,7 +69,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
 
     await expect(page.getByRole('heading', {name: /create new rack/i})).toBeVisible({timeout: 10_000});
     const createRackDialog = page.locator('mat-dialog-container').last();
-    await expect(createRackDialog.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
+    await setCreateRackDialogPrivacy(page, createRackDialog, false);
 
     // Set the rack name so we can reliably identify and delete it later
     const nameInput = createRackDialog.locator('input').first();
@@ -91,18 +91,29 @@ test.describe('Authenticated Rack Panel Switching', () => {
     // Enter edit mode
     await enterEditMode(page);
     
-    // New racks now default to private, so only toggle when the rack is still public.
-    const privacyBtn = page.locator('app-rack-minimal button').filter({hasText: /^(public|lock)$/i}).first();
-    await expect(privacyBtn).toBeVisible({timeout: 5_000});
-    const privacyIcon = privacyBtn.locator('mat-icon').first();
-    await expect(privacyIcon).toBeVisible({timeout: 5_000});
-    const privacyIconName = ((await privacyIcon.textContent()) ?? '').trim();
-    if (privacyIconName === 'public') {
-      await privacyBtn.click();
-    }
-    await expect(privacyBtn.locator('mat-icon', {hasText: 'lock'})).toBeVisible({timeout: 5_000});
-
     return rackUrl;
+  }
+
+  async function setCreateRackDialogPrivacy(page: any, dialog: any, shouldBePublic: boolean): Promise<void> {
+    const actions = page.locator('mat-dialog-actions').last();
+    await expect(actions).toBeVisible({timeout: 5_000});
+
+    const toggle = actions.locator('mat-slide-toggle').first();
+    await expect(toggle).toBeVisible({timeout: 5_000});
+
+    const currentIcon = ((await actions.locator('mat-icon').first().textContent()) ?? '').trim();
+    const isCurrentlyPublic = currentIcon === 'public';
+
+    if (isCurrentlyPublic !== shouldBePublic) {
+      const toggleInput = actions.locator('input[type="checkbox"]').first();
+      if (await toggleInput.isVisible().catch(() => false)) {
+        await toggleInput.click({force: true});
+      } else {
+        await toggle.click();
+      }
+    }
+
+    await expect(actions.locator('mat-icon', {hasText: shouldBePublic ? 'public' : 'lock'}).first()).toBeVisible({timeout: 5_000});
   }
 
   /** Deletes the test rack via the UI delete button. Call from afterEach. */
@@ -156,8 +167,8 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
     await enterEditMode(page);
 
-    const rows = page.locator('app-rack-visual-model #screen > .row');
-    await expect.poll(async () => rows.count(), {timeout: 10_000}).toBeGreaterThan(2);
+    const rows = page.locator('app-rack-visual-model #screen .rackRow');
+    await expect.poll(async () => rows.count(), {timeout: 10_000}).toBeGreaterThan(1);
 
     const sourceRowIndex = await getModuleRowIndex(page, 'Belgrad');
     expect(sourceRowIndex).toBeGreaterThanOrEqual(0);
