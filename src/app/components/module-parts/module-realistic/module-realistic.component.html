@@ -1,8 +1,6 @@
-<div [fxFlex]="data.hp+'rem'"
-     [ngStyle]="{height:((data.standard|getModuleHeightForStandard)+'rem')}"
-      class="col root"
-      [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
-      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
+<div class="col root"
+     [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
+     [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
     <ng-content></ng-content>

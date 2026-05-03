@@ -54,6 +54,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private static readonly rowPowerPanelHeightPx = 112;
   private hoveredRackedModule: RackedModule | null = null;
   private dragImageAnimationSuppressedModule: RackedModule | null = null;
+  private dropRevealSuppressedModule: RackedModule | null = null;
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
@@ -183,6 +184,9 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.rackDetailDataService.rackOrderChange$.next({event, newRow: rowId, module});
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        if (this.dropRevealSuppressedModule === module) {
+          this.dropRevealSuppressedModule = null;
+        }
         this.suppressPostDropReorder = false;
         this.cdr.markForCheck();
       });
@@ -194,23 +198,44 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.cdr.markForCheck();
   }
 
+  onDragReleased(_event: unknown, module: RackedModule): void {
+    this.dropRevealSuppressedModule = module;
+    this.cdr.markForCheck();
+  }
+
   onDragEnded(_event: CdkDragEnd<RackedModule>, module: RackedModule): void {
-    if (this.dragImageAnimationSuppressedModule !== module) {
+    const shouldClearDragImageSuppression = this.dragImageAnimationSuppressedModule === module;
+    const shouldClearDropRevealSuppression = this.dropRevealSuppressedModule === module;
+
+    if (!shouldClearDragImageSuppression && !shouldClearDropRevealSuppression) {
       return;
     }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (this.dragImageAnimationSuppressedModule === module) {
+        if (shouldClearDragImageSuppression && this.dragImageAnimationSuppressedModule === module) {
           this.dragImageAnimationSuppressedModule = null;
-          this.cdr.markForCheck();
         }
+
+        if (
+          shouldClearDropRevealSuppression
+          && this.dropRevealSuppressedModule === module
+          && !this.suppressPostDropReorder
+        ) {
+          this.dropRevealSuppressedModule = null;
+        }
+
+        this.cdr.markForCheck();
       });
     });
   }
 
   isDragImageAnimationSuppressed(module: RackedModule): boolean {
     return this.dragImageAnimationSuppressedModule === module;
+  }
+
+  isDropRevealSuppressed(module: RackedModule): boolean {
+    return this.dropRevealSuppressedModule === module;
   }
 
   private updateRowPowerBreakdown(): void {
