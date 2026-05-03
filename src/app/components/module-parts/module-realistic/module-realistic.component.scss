@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use 'sass:color';
 
 :host {
   display: block;
@@ -18,6 +19,10 @@
   position: relative;
   isolation: isolate;
   transition: background-color 140ms ease, box-shadow 180ms ease;
+}
+
+.root--powerAnalysisMode {
+  transition: background-color 180ms ease, box-shadow 220ms ease, filter 220ms ease;
 }
 
 .root--panelSurface {
@@ -44,10 +49,40 @@
 .powerAnalysisOverlay {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   pointer-events: none;
   z-index: 1;
+  opacity: 0;
+  transform: scale(0.985);
+  filter: saturate(0.9) blur(0.02rem);
+  transition:
+    opacity 220ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 260ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease;
+}
+
+.powerAnalysisOverlay--visible {
   opacity: 1;
-  transition: opacity 160ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  transform: scale(1);
+  filter: saturate(1) blur(0);
+}
+
+.powerAnalysisOverlay::after {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 32%,
+    transparent 64%
+  );
+  transform: translate3d(-8%, 6%, 0) scale(0.92);
+  transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .powerAnalysisModule--inactive .powerAnalysisOverlay {
@@ -65,44 +100,58 @@
   }
 }
 
-.powerAnalysisModule--shadow .powerAnalysisOverlay {
+$power-analysis-cold-color: #3d7de4;
+$power-analysis-hot-color: #dc3434;
+
+@mixin power-analysis-overlay-heat($heat-ratio, $top-alpha, $bottom-alpha, $border-alpha) {
+  $base-color: color.mix($power-analysis-hot-color, $power-analysis-cold-color, $weight: $heat-ratio);
+  $top-color: color.scale($base-color, $lightness: 8%);
+  $bottom-color: color.scale($base-color, $lightness: -10%);
+  $border-color: color.scale($base-color, $lightness: -22%);
+
   @include power-analysis-overlay-tone(
-    rgba(92, 126, 170, 0.14),
-    rgba(74, 108, 150, 0.22),
-    rgba(55, 81, 110, 0.12)
+    color.change($top-color, $alpha: $top-alpha),
+    color.change($bottom-color, $alpha: $bottom-alpha),
+    color.change($border-color, $alpha: $border-alpha)
   );
+}
+
+.powerAnalysisModule--shadow .powerAnalysisOverlay {
+  @include power-analysis-overlay-heat(0%, 0.18, 0.3, 0.16);
 }
 
 .powerAnalysisModule--smoke .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(
-    rgba(91, 129, 178, 0.18),
-    rgba(76, 117, 165, 0.3),
-    rgba(58, 91, 129, 0.16)
-  );
+  @include power-analysis-overlay-heat(25%, 0.22, 0.34, 0.18);
 }
 
 .powerAnalysisModule--signal .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(
-    rgba(83, 137, 196, 0.24),
-    rgba(67, 120, 183, 0.38),
-    rgba(48, 96, 149, 0.18)
-  );
+  @include power-analysis-overlay-heat(50%, 0.26, 0.4, 0.2);
 }
 
 .powerAnalysisModule--glow .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(
-    rgba(79, 145, 214, 0.3),
-    rgba(63, 128, 201, 0.46),
-    rgba(52, 103, 166, 0.24)
-  );
+  @include power-analysis-overlay-heat(75%, 0.32, 0.5, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(178, 70, 56, 0.24),
+    0 0 0.85rem rgba(220, 86, 52, 0.16),
+    0 0 1.35rem rgba(220, 86, 52, 0.08);
 }
 
 .powerAnalysisModule--peak .powerAnalysisOverlay {
-  @include power-analysis-overlay-tone(
-    rgba(72, 150, 226, 0.38),
-    rgba(56, 133, 214, 0.58),
-    rgba(43, 96, 166, 0.3)
-  );
+  @include power-analysis-overlay-heat(100%, 0.4, 0.64, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(164, 27, 27, 0.28),
+    0 0 1rem rgba(220, 52, 52, 0.26),
+    0 0 1.8rem rgba(220, 52, 52, 0.14);
+}
+
+.powerAnalysisModule--glow .powerAnalysisOverlay::after {
+  opacity: 0.16;
+  transform: translate3d(-4%, -2%, 0) scale(1);
+}
+
+.powerAnalysisModule--peak .powerAnalysisOverlay::after {
+  opacity: 0.24;
+  transform: translate3d(0, -4%, 0) scale(1.04);
 }
 
 .powerAnalysisModule--missing .powerAnalysisOverlay {

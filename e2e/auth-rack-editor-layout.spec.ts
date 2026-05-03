@@ -34,61 +34,61 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     await deleteTestRack(page, rackUrl);
   });
 
-  test('mobile keeps Options and Edit rack together in one toolbar row while locked', async ({page}) => {
+  test('mobile keeps Options and Edit rack together in one action row while locked', async ({page}) => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
     await lockRack(page);
 
-    const toolbar = page.locator('app-rack-editor .rackEditorMobileToolbar');
-    const optionsButton = toolbar.getByRole('button', {name: /^Options$/i});
-    const editButton = toolbar.getByRole('button', {name: /^Edit rack$/i});
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    const optionsButton = actions.getByRole('button', {name: /^Options$/i});
+    const editButton = actions.getByRole('button', {name: /^Edit rack$/i});
 
-    const toolbarBox = await readBox(toolbar);
+    const actionsBox = await readBox(actions);
     const optionsBox = await readBox(optionsButton);
     const editBox = await readBox(editButton);
 
     expect(Math.abs(optionsBox.y - editBox.y)).toBeLessThanOrEqual(6);
-    expect(optionsBox.width).toBeLessThan(toolbarBox.width);
-    expect(editBox.width).toBeLessThan(toolbarBox.width);
+    expect(optionsBox.width).toBeLessThan(actionsBox.width);
+    expect(editBox.width).toBeLessThan(actionsBox.width);
   });
 
-  test('mobile keeps Options in the same toolbar slot after entering edit mode', async ({page}) => {
+  test('mobile keeps Options in the same action slot after entering edit mode', async ({page}) => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
 
-    const toolbar = page.locator('app-rack-editor .rackEditorMobileToolbar');
-    await toolbar.getByRole('button', {name: /^Edit rack$/i}).click();
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    await actions.getByRole('button', {name: /^Edit rack$/i}).click();
 
-    const optionsBox = await readBox(toolbar.getByRole('button', {name: /^Options$/i}));
-    const lockBox = await readBox(toolbar.getByRole('button', {name: /^Lock rack$/i}));
+    const optionsBox = await readBox(actions.getByRole('button', {name: /^Options$/i}));
+    const lockBox = await readBox(actions.getByRole('button', {name: /^Lock rack$/i}));
 
     expect(Math.abs(optionsBox.y - lockBox.y)).toBeLessThanOrEqual(6);
   });
 
-  test('mobile opens the options panel below the toolbar without overlap', async ({page}) => {
+  test('mobile opens the options panel below the action strip without overlap', async ({page}) => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
     await lockRack(page);
 
-    const toolbar = page.locator('app-rack-editor .rackEditorMobileToolbar');
-    await toolbar.getByRole('button', {name: /^Options$/i}).click();
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    await actions.getByRole('button', {name: /^Options$/i}).click();
 
-    const toolbarBox = await readBox(toolbar);
+    const actionsBox = await readBox(actions);
     const optionsPanel = page.locator('app-rack-editor .rackEditorFloatingOptions__panel').filter({
       has: page.getByText(/Use images/i)
     }).first();
     const panelBox = await readBox(optionsPanel);
 
-    expect(panelBox.y).toBeGreaterThanOrEqual(toolbarBox.y + toolbarBox.height - 1);
-    expect(overlaps(toolbarBox, panelBox)).toBe(false);
+    expect(panelBox.y).toBeGreaterThanOrEqual(actionsBox.y + actionsBox.height - 1);
+    expect(overlaps(actionsBox, panelBox)).toBe(false);
   });
 
-  test('narrow mobile keeps toolbar and options panel within the viewport width', async ({page}) => {
+  test('narrow mobile keeps action strip and options panel within the viewport width', async ({page}) => {
     await openRackAtViewport(page, rackUrl, NARROW_MOBILE_VIEWPORT);
     await lockRack(page);
 
-    const toolbar = page.locator('app-rack-editor .rackEditorMobileToolbar');
-    await toolbar.getByRole('button', {name: /^Options$/i}).click();
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    await actions.getByRole('button', {name: /^Options$/i}).click();
 
-    const optionsBox = await readBox(toolbar.getByRole('button', {name: /^Close$/i}));
-    const lockBox = await readBox(toolbar.getByRole('button', {name: /^Edit rack$/i}));
+    const optionsBox = await readBox(actions.getByRole('button', {name: /^Close$/i}));
+    const lockBox = await readBox(actions.getByRole('button', {name: /^Edit rack$/i}));
     const panelBox = await readBox(page.locator('app-rack-editor .rackEditorFloatingOptions__panel').filter({
       has: page.getByText(/Use images/i)
     }).first());
@@ -103,9 +103,9 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     await lockRack(page);
 
     const viewport = page.locator('app-rack-editor .scroll').first();
-    const actionRow = page.locator('app-rack-editor .rackEditorInlineActions');
-    const downloadButton = actionRow.getByRole('button', {name: /download jpeg/i});
-    const updateButton = actionRow.getByRole('button', {name: /update preview/i});
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    const downloadButton = actions.getByRole('button', {name: /download jpeg/i});
+    const updateButton = actions.getByRole('button', {name: /update preview/i});
 
     const viewportBox = await readBox(viewport);
     const downloadBox = await readBox(downloadButton);
@@ -115,6 +115,27 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     expect(updateBox.y).toBeGreaterThan(viewportBox.y + viewportBox.height - 1);
     assertFitsViewport(downloadBox, MOBILE_VIEWPORT.width);
     assertFitsViewport(updateBox, MOBILE_VIEWPORT.width);
+  });
+
+  test('mobile uses dense control rows with evenly sized buttons and a full-width power toggle', async ({page}) => {
+    await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
+    await lockRack(page);
+
+    const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
+    const quickToggle = page.locator('app-rack-editor .rackEditorFloatingOptions__quickToggle');
+
+    const actionsBox = await readBox(actions);
+    const optionsBox = await readBox(actions.getByRole('button', {name: /^Options$/i}));
+    const editBox = await readBox(actions.getByRole('button', {name: /^Edit rack$/i}));
+    const downloadBox = await readBox(actions.getByRole('button', {name: /download jpeg/i}));
+    const updateBox = await readBox(actions.getByRole('button', {name: /update preview/i}));
+    const quickToggleBox = await readBox(quickToggle);
+
+    expect(optionsBox.width).toBeGreaterThanOrEqual(actionsBox.width * 0.45);
+    expect(editBox.width).toBeGreaterThanOrEqual(actionsBox.width * 0.45);
+    expect(downloadBox.width).toBeGreaterThanOrEqual(actionsBox.width * 0.45);
+    expect(updateBox.width).toBeGreaterThanOrEqual(actionsBox.width * 0.45);
+    expect(quickToggleBox.width).toBeGreaterThanOrEqual(actionsBox.width - 2);
   });
 
   test('mobile hides the desktop floating action panel and composite edit FAB', async ({page}) => {
@@ -149,15 +170,15 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     expect(overlaps(panelBox, lockFabBox)).toBe(false);
   });
 
-  test('tablet uses docked image actions instead of the mobile inline action row', async ({page}) => {
+  test('tablet keeps the compact action strip visible while hiding the docked image actions', async ({page}) => {
     await openRackAtViewport(page, rackUrl, TABLET_LANDSCAPE_VIEWPORT);
     await lockRack(page);
 
-    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeVisible();
-    await expect(page.locator('app-rack-editor .rackEditorInlineActions')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorResponsiveActions')).toBeVisible();
+    await expect(page.locator('app-rack-editor .rackEditorFloatingOptions__panel--actions')).toBeHidden();
   });
 
-  test('desktop keeps floating action controls and the edit FAB separated while hiding the mobile toolbar', async ({page}) => {
+  test('desktop keeps floating action controls and the edit FAB separated while hiding the compact action strip', async ({page}) => {
     await openRackAtViewport(page, rackUrl, DESKTOP_VIEWPORT);
     await lockRack(page);
 
@@ -165,7 +186,7 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
     const editFabBox = await readBox(page.getByRole('button', {name: /^Edit rack$/i}).first());
 
     expect(overlaps(actionsBox, editFabBox)).toBe(false);
-    await expect(page.locator('app-rack-editor .rackEditorMobileToolbar')).toBeHidden();
+    await expect(page.locator('app-rack-editor .rackEditorResponsiveActions')).toBeHidden();
   });
 
   test('desktop keeps the rack template capped to the rack HP when a row overflows', async ({page}) => {
@@ -249,8 +270,8 @@ async function addBelgradToRack(page: Page, count = 1): Promise<void> {
 }
 
 async function enterEditMode(page: Page): Promise<void> {
-  const mobileLockButton = page.locator('app-rack-editor .rackEditorMobileToolbar__button', {hasText: /^Lock rack$/i}).first();
-  const mobileEditButton = page.locator('app-rack-editor .rackEditorMobileToolbar__button', {hasText: /^Edit rack$/i}).first();
+  const mobileLockButton = page.locator('app-rack-editor .rackEditorResponsiveActions button', {hasText: /^Lock rack$/i}).first();
+  const mobileEditButton = page.locator('app-rack-editor .rackEditorResponsiveActions button', {hasText: /^Edit rack$/i}).first();
   const desktopLockButton = page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first();
   const desktopEditButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
 
@@ -269,7 +290,7 @@ async function enterEditMode(page: Page): Promise<void> {
 
 async function lockRack(page: Page): Promise<void> {
   const generalEditButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
-  const mobileLockButton = page.locator('app-rack-editor .rackEditorMobileToolbar__button', {hasText: /^Lock rack$/i}).first();
+  const mobileLockButton = page.locator('app-rack-editor .rackEditorResponsiveActions button', {hasText: /^Lock rack$/i}).first();
   const desktopLockButton = page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first();
 
   if (await generalEditButton.isVisible().catch(() => false)) {
@@ -278,7 +299,7 @@ async function lockRack(page: Page): Promise<void> {
 
   if (await mobileLockButton.isVisible().catch(() => false)) {
     await mobileLockButton.click();
-    await expect(page.locator('app-rack-editor .rackEditorMobileToolbar__button', {hasText: /^Edit rack$/i}).first()).toBeVisible({timeout: 10_000});
+    await expect(page.locator('app-rack-editor .rackEditorResponsiveActions button', {hasText: /^Edit rack$/i}).first()).toBeVisible({timeout: 10_000});
     return;
   }
 
