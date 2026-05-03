@@ -214,6 +214,26 @@ describe('RackEditorComponent', () => {
     expect(component.rackSurfaceTransform(true)).toBe('scale(0.325)');
   });
 
+  it('disables drop animations whenever the rendered rack is scaled down', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.autoScale = 1;
+    expect(component.shouldDisableDropAnimations(false)).toBeFalse();
+
+    component.autoScale = 0.92;
+    expect(component.shouldDisableDropAnimations(false)).toBeTrue();
+
+    component.autoScale = 1;
+    expect(component.shouldDisableDropAnimations(true)).toBeTrue();
+  });
+
   it('caps the rack scale at full size when the viewport is wide enough', () => {
     const component = new RackEditorComponent(
       {} as MatSnackBar,

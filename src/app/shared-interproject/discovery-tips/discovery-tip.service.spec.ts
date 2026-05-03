@@ -1,3 +1,4 @@
+import { NavigationEnd } from '@angular/router';
 import { ReplaySubject, Subject } from 'rxjs';
 import {
   DISCOVERY_TIP_STORAGE_KEY,
@@ -294,6 +295,34 @@ describe('DiscoveryTipService', () => {
       hasSearchQuery: false
     });
     jasmine.clock().tick(1300);
+
+    expect(activeTip).toBeNull();
+  });
+
+  it('cancels queued tips when navigation changes before the delay completes', () => {
+    const service = build('user-route-change');
+    const anchor = document.createElement('button');
+    let activeTip: any = null;
+
+    service.activeTip$.subscribe((value) => {
+      activeTip = value;
+    });
+
+    service.registerAnchor('user-area-modules-add', anchor);
+    service.updateUserAreaSnapshot({
+      modulesLoaded: true,
+      racksLoaded: true,
+      patchesLoaded: true,
+      modulesCount: 0,
+      racksCount: 0,
+      patchesCount: 0,
+      totalCount: 0,
+      hasSearchQuery: false
+    });
+
+    jasmine.clock().tick(600);
+    routerEvents$.next(new NavigationEnd(1, '/user/area', '/user/profile'));
+    jasmine.clock().tick(1000);
 
     expect(activeTip).toBeNull();
   });

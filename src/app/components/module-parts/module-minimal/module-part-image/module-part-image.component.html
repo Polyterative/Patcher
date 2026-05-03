@@ -1,6 +1,8 @@
 <div fxLayoutAlign="center center"
      [routerLink]="['/modules/details',data.id]"
      class="clickable"
+     [class.modulePartImageHost]="true"
+     [class.modulePartImageHost--surface]="!containImage"
 >
   @if ({
     height: data.standard|getModuleHeightForStandard
@@ -35,11 +37,11 @@
     @if (!containImage) {
       @if (filename) {
         <img
+          class="image-transition modulePartImageHost__surfaceImage"
           [class.img--fixed-height]="fixedHeight"
           [ngStyle]="fixedHeight ? {} : {maxHeight:((bag.height)+'rem')}"
           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
           [@enter]
-          class="image-transition"
           loading="lazy"
           [alt]="'Panel image for '+data.name"
         >
