@@ -54,6 +54,7 @@ import {
 } from "@angular/forms";
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
+import { RackAnalysisMode, RACK_ANALYSIS_MODES } from './rack-analysis-mode';
 
 
 function cloneRackData<T>(value: T): T {
@@ -77,7 +78,7 @@ export class RackDetailDataService extends SubManager {
   
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
-  showPowerAnalysisMode$ = new BehaviorSubject<boolean>(false);
+  analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
   formData = {
     name: {
       control: new FormControl('', [

@@ -21,7 +21,7 @@
   transition: background-color 140ms ease, box-shadow 180ms ease;
 }
 
-.root--powerAnalysisMode {
+.root--analysisMode {
   transition: background-color 180ms ease, box-shadow 220ms ease, filter 220ms ease;
 }
 
@@ -46,7 +46,7 @@
   }
 }
 
-.powerAnalysisOverlay {
+.analysisOverlay {
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -63,13 +63,13 @@
     box-shadow 220ms ease;
 }
 
-.powerAnalysisOverlay--visible {
+.analysisOverlay--visible {
   opacity: 1;
   transform: scale(1);
   filter: saturate(1) blur(0);
 }
 
-.powerAnalysisOverlay::after {
+.analysisOverlay::after {
   content: '';
   position: absolute;
   inset: -35%;
@@ -85,7 +85,7 @@
   transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.powerAnalysisModule--inactive .powerAnalysisOverlay {
+.powerAnalysisModule--inactive .analysisOverlay {
   opacity: 0;
   box-shadow: none;
 }
@@ -116,19 +116,19 @@ $power-analysis-hot-color: #dc3434;
   );
 }
 
-.powerAnalysisModule--shadow .powerAnalysisOverlay {
+.powerAnalysisModule--shadow .analysisOverlay {
   @include power-analysis-overlay-heat(0%, 0.18, 0.3, 0.16);
 }
 
-.powerAnalysisModule--smoke .powerAnalysisOverlay {
+.powerAnalysisModule--smoke .analysisOverlay {
   @include power-analysis-overlay-heat(25%, 0.22, 0.34, 0.18);
 }
 
-.powerAnalysisModule--signal .powerAnalysisOverlay {
+.powerAnalysisModule--signal .analysisOverlay {
   @include power-analysis-overlay-heat(50%, 0.26, 0.4, 0.2);
 }
 
-.powerAnalysisModule--glow .powerAnalysisOverlay {
+.powerAnalysisModule--glow .analysisOverlay {
   @include power-analysis-overlay-heat(75%, 0.32, 0.5, 0.24);
   box-shadow:
     inset 0 0 0 1px rgba(178, 70, 56, 0.24),
@@ -136,7 +136,7 @@ $power-analysis-hot-color: #dc3434;
     0 0 1.35rem rgba(220, 86, 52, 0.08);
 }
 
-.powerAnalysisModule--peak .powerAnalysisOverlay {
+.powerAnalysisModule--peak .analysisOverlay {
   @include power-analysis-overlay-heat(100%, 0.4, 0.64, 0.3);
   box-shadow:
     inset 0 0 0 1px rgba(164, 27, 27, 0.28),
@@ -144,17 +144,17 @@ $power-analysis-hot-color: #dc3434;
     0 0 1.8rem rgba(220, 52, 52, 0.14);
 }
 
-.powerAnalysisModule--glow .powerAnalysisOverlay::after {
+.powerAnalysisModule--glow .analysisOverlay::after {
   opacity: 0.16;
   transform: translate3d(-4%, -2%, 0) scale(1);
 }
 
-.powerAnalysisModule--peak .powerAnalysisOverlay::after {
+.powerAnalysisModule--peak .analysisOverlay::after {
   opacity: 0.24;
   transform: translate3d(0, -4%, 0) scale(1.04);
 }
 
-.powerAnalysisModule--missing .powerAnalysisOverlay {
+.powerAnalysisModule--missing .analysisOverlay {
   background: repeating-linear-gradient(
     135deg,
     rgba(144, 154, 166, 0.32),
@@ -165,11 +165,59 @@ $power-analysis-hot-color: #dc3434;
   box-shadow: inset 0 0 0 1px rgba(96, 107, 120, 0.24);
 }
 
-.powerAnalysisModule--blank .powerAnalysisOverlay {
+.powerAnalysisModule--blank .analysisOverlay {
   @include power-analysis-overlay-tone(
     rgba(143, 161, 181, 0.18),
     rgba(118, 138, 163, 0.28),
     rgba(104, 122, 145, 0.24)
+  );
+}
+
+@mixin function-analysis-overlay($base-color, $top-alpha, $bottom-alpha, $border-alpha) {
+  $top-color: color.scale($base-color, $lightness: 10%);
+  $bottom-color: color.scale($base-color, $lightness: -8%);
+  $border-color: color.scale($base-color, $lightness: -18%);
+
+  @include power-analysis-overlay-tone(
+    color.change($top-color, $alpha: $top-alpha),
+    color.change($bottom-color, $alpha: $bottom-alpha),
+    color.change($border-color, $alpha: $border-alpha)
+  );
+}
+
+.functionAnalysisModule--voices .analysisOverlay {
+  @include function-analysis-overlay(#3d7de4, 0.28, 0.42, 0.2);
+}
+
+.functionAnalysisModule--modulation .analysisOverlay {
+  @include function-analysis-overlay(#7c56cf, 0.3, 0.45, 0.22);
+}
+
+.functionAnalysisModule--utilities .analysisOverlay {
+  @include function-analysis-overlay(#2f9b63, 0.28, 0.42, 0.2);
+}
+
+.functionAnalysisModule--timing .analysisOverlay {
+  @include function-analysis-overlay(#d18a2f, 0.32, 0.48, 0.22);
+}
+
+.functionAnalysisModule--tone .analysisOverlay {
+  @include function-analysis-overlay(#d45a67, 0.32, 0.5, 0.22);
+}
+
+.functionAnalysisModule--unclassified .analysisOverlay {
+  @include power-analysis-overlay-tone(
+    rgba(119, 131, 146, 0.2),
+    rgba(96, 108, 122, 0.32),
+    rgba(84, 95, 109, 0.22)
+  );
+}
+
+.functionAnalysisModule--blank .analysisOverlay {
+  @include power-analysis-overlay-tone(
+    rgba(160, 172, 186, 0.16),
+    rgba(132, 145, 160, 0.24),
+    rgba(112, 126, 141, 0.18)
   );
 }
 
