@@ -9,6 +9,7 @@ import {
 } from 'rxjs';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { RackDetailDataService } from './rack-detail-data.service';
+import { RACK_ANALYSIS_MODES } from './rack-analysis-mode';
 
 
 describe('RackDetailDataService media, rename, and duplication', () => {
@@ -80,11 +81,15 @@ describe('RackDetailDataService media, rename, and duplication', () => {
   
   it('downloads rack image and sanitizes generated filename', fakeAsync(() => {
     const {service, snackBar} = build();
-    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const generateRackJpegSpy = spyOn<any>(service, 'generateRackJpeg$').and.callFake(() => {
+      expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
+      return of('data:image/jpeg;base64,YQ==');
+    });
     service.singleRackData$.next(rack({name: 'My/Rack', author: {username: 'u*ser'}}));
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 10, scrollHeight: 20}} as any
     });
+    service.analysisMode$.next(RACK_ANALYSIS_MODES.power);
     
     const link = document.createElement('a');
     spyOn(link, 'click');
@@ -98,46 +103,60 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     });
     
     service.downloadRackImageToUserComputer$.next();
-    tick();
+    expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
+    tick(359);
+    expect(generateRackJpegSpy).not.toHaveBeenCalled();
+    tick(1);
     
     expect(link.download).toContain('.jpeg');
     expect(link.download).not.toContain('/');
     expect(link.click).toHaveBeenCalled();
     expect(link.remove).toHaveBeenCalled();
     expect(snackBar.open).toHaveBeenCalled();
+    expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.power);
   }));
   
   it('updates rack preview image, deletes previous image, and refreshes rack', fakeAsync(() => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend} = build();
-    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const generateRackJpegSpy = spyOn<any>(service, 'generateRackJpeg$').and.callFake(() => {
+      expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
+      return of('data:image/jpeg;base64,YQ==');
+    });
     const refreshSpy = spyOn(service.updateSingleRackData$, 'next').and.callThrough();
     service.singleRackData$.next(rack({id: 7, image: 'old.jpeg'}));
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 20, scrollHeight: 30}} as any
     });
+    service.analysisMode$.next(RACK_ANALYSIS_MODES.function);
     
     service.updateRackImagePreview$.next();
-    tick(100);
+    expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
+    tick(359);
+    expect(generateRackJpegSpy).not.toHaveBeenCalled();
+    tick(1);
     
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.storage.deleteRackImage).toHaveBeenCalledWith('old.jpeg');
     expect(backend.update.rack).toHaveBeenCalled();
     expect(refreshSpy).toHaveBeenCalledWith(7);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
+    expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.function);
   }));
   
   it('updates rack preview image without deleting when no previous image exists', fakeAsync(() => {
     const {service, backend} = build();
-    spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
+    const generateRackJpegSpy = spyOn<any>(service, 'generateRackJpeg$').and.returnValue(of('data:image/jpeg;base64,YQ=='));
     service.singleRackData$.next(rack({id: 9, image: undefined}));
     service.currentDownloadElementRef$.next({
       screen: {nativeElement: {scrollWidth: 40, scrollHeight: 50}} as any
     });
     
     service.updateRackImagePreview$.next();
-    tick(100);
+    tick(359);
+    expect(generateRackJpegSpy).not.toHaveBeenCalled();
+    tick(1);
     
     expect(backend.storage.uploadRackImage).toHaveBeenCalled();
     expect(backend.storage.deleteRackImage).not.toHaveBeenCalled();

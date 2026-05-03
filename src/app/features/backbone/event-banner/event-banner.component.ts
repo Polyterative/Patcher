@@ -30,6 +30,8 @@ import {
 })
 export class EventBannerComponent extends SubManager {
 
+  private static readonly DISMISSED_STORAGE_KEY_PREFIX = 'event-banner-dismissed:';
+
   readonly config: EventBannerConfig | null;
 
   private readonly dismissed$: BehaviorSubject<boolean>;
@@ -44,7 +46,7 @@ export class EventBannerComponent extends SubManager {
   ) {
     super();
     this.config     = config;
-    this.dismissed$ = new BehaviorSubject<boolean>(false);
+    this.dismissed$ = new BehaviorSubject<boolean>(this.readDismissedState());
     this.isVisible$ = combineLatest([
       of(this.computeDateVisible()),
       this.dismissed$,
@@ -60,6 +62,7 @@ export class EventBannerComponent extends SubManager {
   }
 
   dismiss(): void {
+    this.persistDismissedState(true);
     this.dismissed$.next(true);
   }
 
@@ -87,5 +90,28 @@ export class EventBannerComponent extends SubManager {
     const start = new Date(this.config.marquee.startDate ?? this.config.startDate).getTime();
     const end   = new Date(`${this.config.marquee.endDate ?? this.config.endDate}T23:59:59`).getTime();
     return now >= start && now <= end;
+  }
+
+  private readDismissedState(): boolean {
+    const storageKey = this.getDismissedStorageKey();
+    if (!storageKey || !isPlatformBrowser(this.platformId)) {
+      return false;
+    }
+    return window.localStorage.getItem(storageKey) === 'true';
+  }
+
+  private persistDismissedState(dismissed: boolean): void {
+    const storageKey = this.getDismissedStorageKey();
+    if (!storageKey || !isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    window.localStorage.setItem(storageKey, String(dismissed));
+  }
+
+  private getDismissedStorageKey(): string | null {
+    if (!this.config?.id) {
+      return null;
+    }
+    return `${EventBannerComponent.DISMISSED_STORAGE_KEY_PREFIX}${this.config.id}`;
   }
 }

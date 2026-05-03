@@ -16,10 +16,9 @@
       <div class="module-detail-layout"
            [class.module-detail-layout--editing]="!!bag.editing"
       >
-        <lib-screen-wrapper maxSize="36rem" class="module-detail-column module-detail-column--left"
-        >
+        <div class="module-detail-column module-detail-column--left">
           <div class="col gap2 module-detail-mainStack">
-            <lib-clean-card>
+            <lib-clean-card class="module-detail-primary-card">
               @if (bag.data == null) {
                 <lib-auto-content-loading-indicator
                   [loadingLines]="5"
@@ -29,15 +28,12 @@
               } @else {
                 <app-module-composite [data]="(bag.data)"
                                       [viewConfig]="viewConfig"
-                                      [preferredPanelColor]="appState.preferredPanelColor$ | async"
+                                       [preferredPanelColor]="appState.preferredPanelColor$ | async"
                 ></app-module-composite>
               }
             </lib-clean-card>
           </div>
-          @if (!bag.editing) {
-            <app-comments-root></app-comments-root>
-          }
-        </lib-screen-wrapper>
+        </div>
         <div class="col gap2 module-detail-column module-detail-column--middle">
           <div class="module-detail-supportRail">
             @if (bag.data && ((showManualButton && bag.data.isComplete && bag.data.manualURL) || bag.data.store_url)) {
@@ -89,74 +85,69 @@
                 (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
               ></app-edit-fab>
             }
+            <div class="module-detail-supportRailCards">
           @if (bag.data) {
             <lib-hero-content-card
               titleNormal="Data"
               [sidesPadding]="false"
             >
-              @if (bag.data) {
-                <div class="col gap1">
-                  <!-- Information Card -->
-                  <lib-clean-card [@enter]>
-                    <div class="col gap1">
-                      <mat-card-title>Information</mat-card-title>
-                  <app-lib-showcase-grid [data]="[
+              <div class="col gap1">
+                <!-- Information Card -->
+                <lib-clean-card [@enter]>
+                  <div class="col gap1">
+                    <mat-card-title>Information</mat-card-title>
+                    <app-lib-showcase-grid [data]="[
         { label: 'Manufacturer', value: bag.data.manufacturer.name, icon: 'handyman', size: 'auto', routerLink: (bag.data.manufacturer.id && bag.data.manufacturer.id !== 10000) ? ['/manufacturers/details', bag.data.manufacturer.id] : undefined },
         { label: 'Standard', value: bag.data.standard.name, icon: 'verified',  },
         { label: 'Panels', value: bag.data.panels.length.toString(), icon: 'view_module',  }
       ]">
-                  </app-lib-showcase-grid>
-                    </div>
-                  </lib-clean-card>
-                  <!-- Physical Characteristics Card -->
-                  <lib-clean-card [@enter]>
-                    <div class="col gap1">
-                      <mat-card-title>Physical Characteristics</mat-card-title>
-                  <app-lib-showcase-grid [data]="[
+                    </app-lib-showcase-grid>
+                  </div>
+                </lib-clean-card>
+                <!-- Physical Characteristics Card -->
+                <lib-clean-card [@enter]>
+                  <div class="col gap1">
+                    <mat-card-title>Physical Characteristics</mat-card-title>
+                    <app-lib-showcase-grid [data]="[
         { label: 'HP', value: bag.data.hp.toString(), icon: 'straighten', size: 'auto' },
         { label: 'Depth', value: bag.data.depth ? bag.data.depth.toString() + ' mm' : 'N/A', icon: 'vertical_align_bottom', size: 'auto', hidden: !bag.data.depth },
         { label: 'Weight', value: bag.data.weight ? bag.data.weight.toString() + ' g' : 'N/A', icon: 'fitness_center', size: 'auto', hidden: !bag.data.weight }
       ]">
-                  </app-lib-showcase-grid>
-                    </div>
-                  </lib-clean-card>
-                  <!-- Power Consumption Card -->
-                  @if (bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5) {
-                    <lib-clean-card [@enter]>
-                      <div class="col gap1">
-                        <mat-card-title>Power Consumption</mat-card-title>
-                        @if (bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5) {
-                          <app-lib-showcase-grid
-                    [data]="[
+                    </app-lib-showcase-grid>
+                  </div>
+                </lib-clean-card>
+                <!-- Power Consumption Card -->
+                @if (bag.data.powerPos12 || bag.data.powerNeg12 || bag.data.powerPos5) {
+                  <lib-clean-card [@enter]>
+                    <div class="col gap1">
+                      <mat-card-title>Power Consumption</mat-card-title>
+                      <app-lib-showcase-grid
+                        [data]="[
           { label: '+12V', value: bag.data.powerPos12!==null?bag.data.powerPos12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
           { label: '-12V', value: bag.data.powerNeg12!==null?bag.data.powerNeg12.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' },
           { label: '+5V', value: bag.data.powerPos5!==null?bag.data.powerPos5.toString() + ' mA':'N/A', icon: 'bolt', size: 'auto' }
         ]">
-                          </app-lib-showcase-grid>
-                        }
-                      </div>
-                    </lib-clean-card>
-                  }
-                  <!-- Connectivity Card -->
-                  @if ((bag.data.outs.length + bag.data.ins.length) > 0) {
-                    <lib-clean-card [@enter]>
-                      <div class="col gap1">
-                        <mat-card-title>Connectivity</mat-card-title>
-                        @if ((bag.data.outs.length + bag.data.ins.length) > 0) {
-                          <app-lib-showcase-grid
-                    [data]="[
+                      </app-lib-showcase-grid>
+                    </div>
+                  </lib-clean-card>
+                }
+                <!-- Connectivity Card -->
+                @if ((bag.data.outs.length + bag.data.ins.length) > 0) {
+                  <lib-clean-card [@enter]>
+                    <div class="col gap1">
+                      <mat-card-title>Connectivity</mat-card-title>
+                      <app-lib-showcase-grid
+                        [data]="[
           { label: 'Inputs', value: bag.data.ins.length.toString(), icon: 'input', hidden: bag.data.ins.length === 0, size: 'auto' },
           { label: 'Outputs', value: bag.data.outs.length.toString(), icon: 'output', hidden: bag.data.outs.length === 0, size: 'auto' },
           { label: 'Total Jacks', value: (bag.data.outs.length + bag.data.ins.length).toString(), icon: 'settings_input_composite', hidden: (bag.data.outs.length + bag.data.ins.length) === 0, size: 'auto' },
           { label: 'Density (in+out/hp)', value: ((bag.data.outs.length + bag.data.ins.length) / bag.data.hp).toPrecision(3), icon: 'bar_chart', size: 'auto' }
         ]">
-                          </app-lib-showcase-grid>
-                        }
-                      </div>
-                    </lib-clean-card>
-                  }
-                </div>
-              }
+                      </app-lib-showcase-grid>
+                    </div>
+                  </lib-clean-card>
+                }
+              </div>
             </lib-hero-content-card>
           }
           @if (bag.data && !bag.editing) {
@@ -174,9 +165,10 @@
                 }
               </mat-chip-set>
             </lib-hero-content-card>
+            <app-comments-root></app-comments-root>
           }
           @if (bag.data && bag.editing && !bag.data.isComplete) {
-            <lib-clean-card class="editing-focus-note">
+            <lib-clean-card class="module-detail-supportRailCard module-detail-supportRailCard--primary editing-focus-note">
               <mat-card-subtitle>
                 Focus mode enabled: comments, discovery links, and related module lists are hidden while editing.
               </mat-card-subtitle>
@@ -345,6 +337,7 @@
               </div>
             </lib-hero-content-card>
           }
+            </div>
           </div>
         </div>
         <div class="col gap2 module-detail-column module-detail-column--right">
