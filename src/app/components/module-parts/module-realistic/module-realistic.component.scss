@@ -20,6 +20,10 @@
   transition: background-color 140ms ease, box-shadow 180ms ease;
 }
 
+.root--panelSurface {
+  background-color: transparent;
+}
+
 
 .rotated {
   transform: rotate(-90deg);

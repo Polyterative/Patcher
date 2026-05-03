@@ -119,4 +119,20 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.disableEnterAnimation).toBeFalse();
   });
 
+  it('loads surface panel images eagerly', () => {
+    const c = buildComponent();
+    c.containImage = false;
+
+    expect(c.imageLoadingMode).toBe('eager');
+    expect(c.imageDecodingMode).toBe('sync');
+  });
+
+  it('keeps contained panel images lazy-loaded', () => {
+    const c = buildComponent();
+    c.containImage = true;
+
+    expect(c.imageLoadingMode).toBe('lazy');
+    expect(c.imageDecodingMode).toBe('async');
+  });
+
 });
