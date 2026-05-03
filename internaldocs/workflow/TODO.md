@@ -24,7 +24,7 @@
 
 ## Active
 
-- _None selected. Move one backlog item here before implementation._
+_(none)_
 
 ---
 
@@ -101,6 +101,21 @@ delete confirmation, and the character counter is hidden until users have alread
 - [x] Slow down auto-cycle interval — 8s cooldown after acknowledge/snooze; displayDelayMs bumped to 3s
 - [x] Review tip overlay positioning — pinned to bottom-right safe zone to avoid obscuring key areas
 - [x] Consider a dismiss/pause gesture so tips don't block normal use
+
+---
+
+#### MEDIUM: Rack Balance Analysis — Exclude Blank Modules From Coverage
+
+**Why:** User feedback surfaced a mismatch in the rack balance coverage stat: a rack with 39 modules reports only 38
+modules in coverage when one slot is a blank spacer. The likely root cause is that `rack-balance-analysis.service.ts`
+counts blanks in `totalModules` / confidence math even though blanks never contribute balance tags. Older rack stats
+already exclude `BLANK_MODULE_IDS`, so this newer analysis surface should follow the same rule.
+
+- [ ] Filter blank spacer modules out before computing `modules.length`, `confidence`, and low-data thresholds in
+  `rack-balance-analysis.service.ts`
+- [ ] Make blank-only racks behave like an empty rack for the balance panel instead of a low-confidence tagged rack
+- [ ] Keep coverage copy aligned with the filtered denominator so the UI and tooltip both report non-blank module counts
+- [ ] Add focused tests for mixed real+blank racks and blank-only racks
 
 ---
 
@@ -202,6 +217,18 @@ important notices without turning Patcher into a blog platform.
 ---
 
 ### INFRA (independent; pick any time a product task is blocked)
+
+---
+
+#### HIGH: Insights — Backend Aggregation and Cached Snapshot
+
+**Why:** `/insights` currently builds the page from many count queries plus paged scans of public rows. That is acceptable
+for a dev-only rollout, but a public launch should move the heavy work server-side and return a compact cached payload.
+
+- [ ] Decide the first production shape: summary tables / materialized views vs a server function returning one payload
+- [ ] Pre-aggregate the public insights inputs so the page stops scanning full public module / rack / patch datasets on cold load
+- [ ] Add an explicit cache / refresh strategy for the public insights snapshot
+- [ ] Switch the page to the compact backend response and keep methodology copy aligned with the new aggregation model
 
 ---
 
