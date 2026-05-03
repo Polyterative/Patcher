@@ -1,4 +1,5 @@
 import { ModuleRealisticComponent } from './module-realistic.component';
+import { RACK_ANALYSIS_MODES } from '../../rack-parts/rack-analysis-mode';
 
 
 describe('ModuleRealisticComponent', () => {
@@ -39,18 +40,18 @@ describe('ModuleRealisticComponent', () => {
     expect(tooltip).not.toContain('panel variants');
   });
 
-  it('keeps the panel image surface available in power analysis mode', () => {
+  it('keeps the panel image surface available in analysis mode', () => {
     const component = build();
-    component.powerAnalysisMode = true;
+    component.analysisMode = RACK_ANALYSIS_MODES.power;
     component.showPanelImages = true;
 
     expect(component.shouldRenderPanelImageSurface()).toBeTrue();
     expect(component.shouldRenderTextSurface()).toBeFalse();
   });
 
-  it('keeps the text surface available in power analysis mode when images are off', () => {
+  it('keeps the text surface available in analysis mode when images are off', () => {
     const component = build();
-    component.powerAnalysisMode = true;
+    component.analysisMode = RACK_ANALYSIS_MODES.function;
     component.showPanelImages = false;
 
     expect(component.shouldRenderPanelImageSurface()).toBeFalse();

@@ -38,6 +38,8 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
+import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
+import { buildRackFunctionVisual } from '../rack-function-visuals.utils';
 
 
 export interface ModuleRightClick {
@@ -71,6 +73,14 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   @Input() data: RackMinimal;
   
   private static readonly reducedScaleMultiplier = 0.65;
+  readonly analysisModes = RACK_ANALYSIS_MODES;
+  readonly functionAnalysisLegend = [
+    {label: 'Voices', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--voices'},
+    {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--modulation'},
+    {label: 'Utilities', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--utilities'},
+    {label: 'Timing', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--timing'},
+    {label: 'Tone shaping', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--tone'},
+  ];
 
   moduleRightClick$ = new Subject<ModuleRightClick>();
 
@@ -134,6 +144,81 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   toggleViewOptions(): void {
     this.viewOptionsExpanded = !this.viewOptionsExpanded;
     this.cdr.markForCheck();
+  }
+
+  functionAnalysisLegendItems(rowedRackedModules: RackedModule[][] | null | undefined): Array<{
+    label: string;
+    swatchClass: string;
+    count: number;
+    hp: number;
+  }> {
+    const counts = new Map(this.functionAnalysisLegend.map(item => [item.label, {
+      count: 0,
+      hp: 0
+    }]));
+
+    for (const rackedModule of (rowedRackedModules ?? []).flat()) {
+      const hp = rackedModule.module.hp ?? 0;
+      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
+      if (!counts.has(roleLabel)) {
+        continue;
+      }
+      const current = counts.get(roleLabel) ?? {
+        count: 0,
+        hp: 0
+      };
+      current.count += 1;
+      current.hp += hp;
+      counts.set(roleLabel, current);
+    }
+
+    return this.functionAnalysisLegend.map(item => ({
+      ...item,
+      count: counts.get(item.label)?.count ?? 0,
+      hp: counts.get(item.label)?.hp ?? 0
+    }));
+  }
+
+  functionAnalysisResidualLabel(rowedRackedModules: RackedModule[][] | null | undefined): string | null {
+    let residualCount = 0;
+    let residualHp = 0;
+
+    for (const rackedModule of (rowedRackedModules ?? []).flat()) {
+      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
+      if (this.functionAnalysisLegend.some(item => item.label === roleLabel)) {
+        continue;
+      }
+      residualCount += 1;
+      residualHp += rackedModule.module.hp ?? 0;
+    }
+
+    return residualCount > 0 ? `${ residualCount } blank or unclassified (${ residualHp }HP)` : null;
+  }
+
+  functionAnalysisCoverageSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
+    const modules = (rowedRackedModules ?? []).flat();
+    if (modules.length === 0) {
+      return 'No modules to classify yet.';
+    }
+
+    let totalHp = 0;
+    let classifiedCount = 0;
+    let classifiedHp = 0;
+
+    for (const rackedModule of modules) {
+      const hp = rackedModule.module.hp ?? 0;
+      totalHp += hp;
+
+      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
+      if (!this.functionAnalysisLegend.some(item => item.label === roleLabel)) {
+        continue;
+      }
+
+      classifiedCount += 1;
+      classifiedHp += hp;
+    }
+
+    return `Tracked ${ classifiedCount }/${ modules.length } modules · ${ classifiedHp }/${ totalHp }HP`;
   }
 
   viewConfig: ModuleMinimalViewConfig = {

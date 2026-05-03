@@ -43,7 +43,7 @@
 }
 
 .cdk-drop-list-dragging .module .root,
-.cdk-drop-list-dragging .module .powerAnalysisOverlay {
+.cdk-drop-list-dragging .module .analysisOverlay {
   transition: none;
 }
 
@@ -57,7 +57,7 @@
 :host(.rackVisualModel--suppressPostDropReorder) {
   .module:not(.cdk-drag-placeholder):not(.cdk-drag-animating),
   .module .root,
-  .module .powerAnalysisOverlay {
+  .module .analysisOverlay {
     transition: none !important;
   }
 }
@@ -197,6 +197,42 @@
   opacity: 0.76;
 }
 
+.rowPowerPanel__rails--function {
+  gap: 0.4rem;
+}
+
+.rowPowerPanel__rail--function {
+  align-items: center;
+}
+
+.rowPowerPanel__functionSwatch {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 0.0625rem rgba(31, 57, 82, 0.18);
+  flex: 0 0 auto;
+}
+
+.rowPowerPanel__functionSwatch.functionAnalysisModule--voices {
+  background: linear-gradient(180deg, rgba(79, 138, 234, 0.92), rgba(43, 98, 194, 0.9));
+}
+
+.rowPowerPanel__functionSwatch.functionAnalysisModule--modulation {
+  background: linear-gradient(180deg, rgba(142, 105, 220, 0.92), rgba(106, 71, 193, 0.9));
+}
+
+.rowPowerPanel__functionSwatch.functionAnalysisModule--utilities {
+  background: linear-gradient(180deg, rgba(66, 176, 115, 0.92), rgba(39, 134, 84, 0.9));
+}
+
+.rowPowerPanel__functionSwatch.functionAnalysisModule--timing {
+  background: linear-gradient(180deg, rgba(225, 163, 74, 0.94), rgba(198, 130, 38, 0.92));
+}
+
+.rowPowerPanel__functionSwatch.functionAnalysisModule--tone {
+  background: linear-gradient(180deg, rgba(225, 105, 125, 0.94), rgba(196, 74, 96, 0.92));
+}
+
 .watermark {
 
   opacity: 0.75;
@@ -250,6 +286,12 @@
   transform: translateY(0) scale(1);
 }
 
+.moduleHoverStats--function {
+  min-width: 6.75rem;
+  max-width: 8.25rem;
+  align-items: stretch;
+}
+
 .moduleHoverStats__row {
   display: flex;
   justify-content: space-between;
@@ -269,6 +311,16 @@
   font-size: 0.58rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.moduleHoverStats--function .moduleHoverStats__row {
+  align-items: flex-start;
+}
+
+.moduleHoverStats--function .moduleHoverStats__value {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 4.9rem;
 }
 
 @media (max-width: 70.5625rem) {

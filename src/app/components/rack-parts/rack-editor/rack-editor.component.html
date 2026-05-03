@@ -4,7 +4,7 @@
   isCurrentRackPropertyOfCurrentUser:(dataService.isCurrentRackPropertyOfCurrentUser$|async),
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
   userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
-  showPowerAnalysisMode:(dataService.showPowerAnalysisMode$|async),
+  analysisMode:(dataService.analysisMode$|async),
   shouldShowPanelImages:(dataService.shouldShowPanelImages$|async)
 }; as bag) {
   <div class="col gap1"
@@ -133,19 +133,92 @@
               }
             </div>
            }
-           <div class="rackEditorFloatingOptions__quickToggle">
-             <mat-slide-toggle [checked]="bag.showPowerAnalysisMode"
-                              (change)="dataService.showPowerAnalysisMode$.next($event.checked)"
-                              matTooltip="Adds a power overlay and row analysis view while keeping the rack layout visible"
-                              matTooltipPosition="above"
-            >
-              Power analysis
-            </mat-slide-toggle>
-          </div>
-          @if (viewOptionsExpanded) {
-            <div class="rackEditorFloatingOptions__panel">
-              <mat-slide-toggle [checked]="bag.shouldShowPanelImages"
-                                (change)="dataService.shouldShowPanelImages$.next($event.checked)"
+             <div class="rackEditorFloatingOptions__quickToggle">
+              <div class="rackEditorFloatingOptions__eyebrow">Analysis</div>
+                @if (bag.analysisMode === analysisModes.power) {
+                  <div class="rackEditorFloatingOptions__analysisHint">
+                    Hover a row for rail totals, or hover a module for its HP and power draw.
+                  </div>
+                  <div class="rackEditorFloatingOptions__analysisScale" aria-hidden="true">
+                    <span>Colder</span>
+                    <span class="rackEditorFloatingOptions__analysisScaleBar rackEditorFloatingOptions__analysisScaleBar--power"></span>
+                    <span>Hotter</span>
+                  </div>
+                 <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
+                   Heat colors are relative to the rack, and tighten to the hovered row when you focus one.
+                  </div>
+                }
+               @if (bag.analysisMode === analysisModes.function) {
+                @let functionLegendItems = functionAnalysisLegendItems(bag.rowedRackedModules);
+                @let functionResidualLabel = functionAnalysisResidualLabel(bag.rowedRackedModules);
+                @let functionCoverageSummary = functionAnalysisCoverageSummary(bag.rowedRackedModules);
+                 <div class="rackEditorFloatingOptions__analysisHint">
+                   Colors show each module's primary role so you can read the rack's functional spread by both count and HP.
+                 </div>
+                 <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--coverage">
+                   {{ functionCoverageSummary }}
+                  </div>
+                  <div class="rackEditorFloatingOptions__analysisLegend">
+                   @for (item of functionLegendItems; track item.label) {
+                     <div class="rackEditorFloatingOptions__analysisLegendItem">
+                       <span class="rackEditorFloatingOptions__analysisSwatch"
+                            [class]="item.swatchClass"
+                            aria-hidden="true"
+                       ></span>
+                       <span>{{ item.label }}</span>
+                       <span class="rackEditorFloatingOptions__analysisCount">{{ item.count }}</span>
+                       <span class="rackEditorFloatingOptions__analysisHp">{{ item.hp }}HP</span>
+                      </div>
+                   }
+                  </div>
+                  <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
+                   @if (functionResidualLabel) {
+                     Grey modules are {{ functionResidualLabel }}.
+                  } @else {
+                    All current modules map to a tracked function role.
+                   }
+                  </div>
+                }
+               <div class="rackEditorFloatingOptions__analysisModes"
+                    role="group"
+                    aria-label="Rack analysis mode"
+               >
+                <button type="button"
+                        class="rackEditorFloatingOptions__analysisModeButton"
+                        [class.rackEditorFloatingOptions__analysisModeButton--active]="(bag.analysisMode ?? analysisModes.off) === analysisModes.off"
+                        [attr.aria-pressed]="(bag.analysisMode ?? analysisModes.off) === analysisModes.off"
+                        (click)="dataService.analysisMode$.next(analysisModes.off)"
+                        matTooltip="Keep the rack view clear with no analysis overlay"
+                        matTooltipPosition="above"
+                >
+                  Off
+                </button>
+                <button type="button"
+                        class="rackEditorFloatingOptions__analysisModeButton"
+                        [class.rackEditorFloatingOptions__analysisModeButton--active]="bag.analysisMode === analysisModes.power"
+                        [attr.aria-pressed]="bag.analysisMode === analysisModes.power"
+                        (click)="dataService.analysisMode$.next(analysisModes.power)"
+                        matTooltip="Color modules by relative power draw and show row power summaries"
+                        matTooltipPosition="above"
+                >
+                  Power
+                </button>
+                <button type="button"
+                        class="rackEditorFloatingOptions__analysisModeButton"
+                        [class.rackEditorFloatingOptions__analysisModeButton--active]="bag.analysisMode === analysisModes.function"
+                        [attr.aria-pressed]="bag.analysisMode === analysisModes.function"
+                        (click)="dataService.analysisMode$.next(analysisModes.function)"
+                        matTooltip="Color modules by their primary function so distribution stays visible across the rack"
+                        matTooltipPosition="above"
+                >
+                  Function
+                </button>
+               </div>
+              </div>
+            @if (viewOptionsExpanded) {
+             <div class="rackEditorFloatingOptions__panel">
+               <mat-slide-toggle [checked]="bag.shouldShowPanelImages"
+                                 (change)="dataService.shouldShowPanelImages$.next($event.checked)"
               >
                 Use images
               </mat-slide-toggle>

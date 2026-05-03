@@ -1,7 +1,7 @@
 <div class="col root"
-     [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
+     [ngClass]="isAnalysisModeActive() ? analysisClass : ''"
      [class.root--panelSurface]="shouldRenderPanelImageSurface()"
-     [class.root--powerAnalysisMode]="powerAnalysisMode"
+     [class.root--analysisMode]="isAnalysisModeActive()"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
@@ -49,13 +49,13 @@
                            [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
                            [disableEnterAnimation]="disablePanelImageEnterAnimation"
-                           [matTooltip]="powerAnalysisMode ? '' : buildPanelTooltip(data, selectedPanelId)"
-                           [matTooltipDisabled]="powerAnalysisMode"
+                           [matTooltip]="isAnalysisModeActive() ? '' : buildPanelTooltip(data, selectedPanelId)"
+                           [matTooltipDisabled]="isAnalysisModeActive()"
                            matTooltipClass="module-panel-tooltip"
     ></app-module-part-image>
   }
-  <div class="powerAnalysisOverlay"
-       [class.powerAnalysisOverlay--visible]="powerAnalysisMode"
+  <div class="analysisOverlay"
+       [class.analysisOverlay--visible]="isAnalysisModeActive()"
        aria-hidden="true"
   ></div>
 </div>
