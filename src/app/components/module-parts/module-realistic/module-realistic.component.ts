@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostBinding,
   Input,
   OnInit
 } from '@angular/core';
 import { MinimalModule } from 'src/app/models/module';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
+import { getModuleHeightForStandard } from '../get-module-height-for-standard.pipe';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 import { derivePanelLabel } from '../panel.constants';
 
@@ -24,6 +26,16 @@ export class ModuleRealisticComponent implements OnInit {
   @Input() powerAnalysisMode = false;
   @Input() powerAnalysisClass = '';
   @Input() disablePanelImageEnterAnimation = false;
+
+  @HostBinding('style.width.rem')
+  get hostWidthRem(): number {
+    return this.data?.hp ?? 0;
+  }
+
+  @HostBinding('style.height.rem')
+  get hostHeightRem(): number {
+    return getModuleHeightForStandard(this.data?.standard);
+  }
   
   constructor(
     public rackDetailDataService: RackDetailDataService,

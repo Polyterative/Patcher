@@ -2,9 +2,9 @@
 
 .cdk-drag-preview {
   @include mat.elevation(8);
+  will-change: transform;
 }
 
-.module--dragPreviewSurface .root,
 .cdk-drag-preview .root,
 .module.cdk-drag-dragging .root {
   transition: none;
@@ -12,7 +12,12 @@
 }
 
 .cdk-drag-placeholder {
-  opacity: .5;
+  opacity: 0;
+}
+
+.module--dropRevealSuppressed {
+  opacity: 0 !important;
+  transition: none !important;
 }
 
 .cdk-drag-animating {

@@ -57,4 +57,24 @@ describe('ModuleRealisticComponent', () => {
     expect(component.shouldRenderTextSurface()).toBeTrue();
   });
 
+  it('binds the host width to module hp', () => {
+    const component = build();
+    component.data = {
+      hp: 14,
+      standard: {id: 0}
+    } as any;
+
+    expect(component.hostWidthRem).toBe(14);
+  });
+
+  it('binds the host height to module format geometry', () => {
+    const component = build();
+    component.data = {
+      hp: 14,
+      standard: {id: 0}
+    } as any;
+
+    expect(component.hostHeightRem).toBeGreaterThan(0);
+  });
+
 });
