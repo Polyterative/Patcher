@@ -4,6 +4,7 @@ import {
   OnInit
 } from '@angular/core';
 import build from "../../../../build";
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -18,7 +19,9 @@ export class FooterComponent implements OnInit {
   readonly instagramUrl = 'https://www.instagram.com/patcher.xyz/';
   readonly instagramHandle = '@patcher.xyz';
   
-  constructor() {
+  constructor(
+    public readonly appState: AppStateService
+  ) {
   }
   
   ngOnInit(): void {
