@@ -24,6 +24,7 @@ describe('RackVisualModelComponent', () => {
     shouldShowPanelImages$: Subject<boolean>;
     showPowerAnalysisMode$: BehaviorSubject<boolean>;
     currentDownloadElementRef$: {next: jasmine.Spy};
+    rackOrderChange$: {next: jasmine.Spy};
   };
 
   beforeEach(async () => {
@@ -31,6 +32,7 @@ describe('RackVisualModelComponent', () => {
       shouldShowPanelImages$: new Subject<boolean>(),
       showPowerAnalysisMode$: new BehaviorSubject<boolean>(false),
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
+      rackOrderChange$: {next: jasmine.createSpy('next')},
     };
 
     await TestBed.configureTestingModule({
@@ -272,6 +274,44 @@ describe('RackVisualModelComponent', () => {
     component.onDragEnded({} as any, moduleRef);
 
     expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeFalse();
+  });
+
+  it('arms drop reveal suppression on drag release before drop cleanup', () => {
+    component.onDragReleased({} as any, moduleRef);
+
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
+  });
+
+  it('clears drop reveal suppression after drag end when no drop cleanup runs', () => {
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      callback(0);
+      return 0;
+    });
+
+    component.onDragReleased({} as any, moduleRef);
+    component.onDragEnded({} as any, moduleRef);
+
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
+  });
+
+  it('suppresses the dropped module reveal until post-drop cleanup finishes', () => {
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+
+    component.onDragReleased({} as any, moduleRef);
+    component.onDropListDropped({} as any, 0, moduleRef);
+
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
+    expect(rackDetailDataService.rackOrderChange$.next).toHaveBeenCalled();
+
+    animationFrames.shift()?.(0);
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
+
+    animationFrames.shift()?.(0);
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
   });
 
   it('builds module heatmap visuals for powered modules', () => {
