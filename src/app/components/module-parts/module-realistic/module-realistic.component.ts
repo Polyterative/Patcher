@@ -23,6 +23,7 @@ export class ModuleRealisticComponent implements OnInit {
   @Input() selectedPanelId: number | null = null;
   @Input() powerAnalysisMode = false;
   @Input() powerAnalysisClass = '';
+  @Input() disablePanelImageEnterAnimation = false;
   
   constructor(
     public rackDetailDataService: RackDetailDataService,

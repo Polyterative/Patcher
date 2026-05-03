@@ -256,6 +256,24 @@ describe('RackVisualModelComponent', () => {
     expect(component.rowPowerMissingLabel(0)).toContain('1 module missing power data');
   });
 
+  it('suppresses panel image enter animation for the actively dragged module', () => {
+    component.onDragStarted({} as any, moduleRef);
+
+    expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeTrue();
+  });
+
+  it('clears panel image enter animation suppression after drag end settles', () => {
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      callback(0);
+      return 0;
+    });
+
+    component.onDragStarted({} as any, moduleRef);
+    component.onDragEnded({} as any, moduleRef);
+
+    expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeFalse();
+  });
+
   it('builds module heatmap visuals for powered modules', () => {
     moduleRef.module.powerPos12 = 120;
     moduleRef.module.powerNeg12 = -45;
