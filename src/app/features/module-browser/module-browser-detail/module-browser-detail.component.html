@@ -13,11 +13,12 @@
                            titleBig="Module details"
                            [titleSub]="bag.data?.name"
     >
-      <div class="rowwrap gap1 module-detail-layout"
+      <div class="module-detail-layout"
+           [class.module-detail-layout--editing]="!!bag.editing"
       >
         <lib-screen-wrapper maxSize="36rem" class="module-detail-column module-detail-column--left"
         >
-          <div class="col gap2 ">
+          <div class="col gap2 module-detail-mainStack">
             <lib-clean-card>
               @if (bag.data == null) {
                 <lib-auto-content-loading-indicator
@@ -38,6 +39,56 @@
           }
         </lib-screen-wrapper>
         <div class="col gap2 module-detail-column module-detail-column--middle">
+          <div class="module-detail-supportRail">
+            @if (bag.data && ((showManualButton && bag.data.isComplete && bag.data.manualURL) || bag.data.store_url)) {
+              <lib-hero-content-card titleNormal="Actions"
+                                     [sidesPadding]="false">
+                <div class="col gap1">
+                  @if (showManualButton && bag.data.isComplete && bag.data.manualURL) {
+                    <app-brand-primary-button
+                      theme="light"
+                      class="module-detail-action-button"
+                      (click$)="openManual(bag.data)"
+                      icon="menu_book"
+                    >
+                      Open manual
+                    </app-brand-primary-button>
+                  }
+                  @if (bag.data.store_url) {
+                    <a [href]="bag.data.store_url"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       mat-flat-button
+                       color="accent"
+                       class="module-detail-action-button"
+                    >
+                      <mat-icon>shopping_cart</mat-icon>
+                      Buy new
+                    </a>
+                  }
+                </div>
+              </lib-hero-content-card>
+            }
+            @if (bag.data && bag.user) {
+              <button
+                mat-fab
+                extended
+                class="module-submit-similar-fab"
+                (click)="submitSimilar(bag.data)"
+                matTooltip="Open the prefilled module submission form in a new tab"
+                matTooltipPosition="above"
+              >
+                <mat-icon>open_in_new</mat-icon>
+                Submit similar
+              </button>
+            }
+            @if (bag.data && bag.user && !bag.data.isComplete) {
+              <app-edit-fab
+                [editMode$]="dataService.moduleEditingPanelOpenState$"
+                [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
+                (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
+              ></app-edit-fab>
+            }
           @if (bag.data) {
             <lib-hero-content-card
               titleNormal="Data"
@@ -103,50 +154,6 @@
                         }
                       </div>
                     </lib-clean-card>
-                  }
-                  @if (showManualButton && bag.data && bag.data.isComplete && bag.data.manualURL) {
-                    <app-brand-primary-button
-                      theme="light"
-                      class="module-detail-action-button"
-                      (click$)="openManual(bag.data)"
-                      icon="menu_book"
-                    >
-                      Open manual
-                    </app-brand-primary-button>
-                  }
-                  @if (bag.data && bag.data.store_url) {
-                    <a [href]="bag.data.store_url"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       mat-flat-button
-                       color="accent"
-                       class="module-detail-action-button"
-                    >
-                      <mat-icon>shopping_cart</mat-icon>
-                      Buy new
-                    </a>
-                  }
-
-                  @if (bag.data && bag.user) {
-                    <button
-                      mat-fab
-                      extended
-                      class="module-submit-similar-fab"
-                      (click)="submitSimilar(bag.data)"
-                      matTooltip="Open the prefilled module submission form in a new tab"
-                      matTooltipPosition="above"
-                    >
-                      <mat-icon>open_in_new</mat-icon>
-                      Submit similar
-                    </button>
-                  }
-
-                  @if (bag.data && bag.user && !bag.data.isComplete) {
-                    <app-edit-fab
-                      [editMode$]="dataService.moduleEditingPanelOpenState$"
-                      [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
-                      (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
-                    ></app-edit-fab>
                   }
                 </div>
               }
@@ -338,6 +345,7 @@
               </div>
             </lib-hero-content-card>
           }
+          </div>
         </div>
         <div class="col gap2 module-detail-column module-detail-column--right">
           @if (bag.data && bag.editing && !bag.data.isComplete) {
@@ -350,8 +358,7 @@
             </lib-hero-content-card>
           }
           @if (!bag.editing) {
-            <div class="rowwrap gap1"
-            >
+            <div class="module-detail-usageGrid">
               @if (viewConfig.hideRackedIn === false) {
                 <lib-hero-content-card [sidesPadding]="false"
                                        class="module-detail-usage-card"
