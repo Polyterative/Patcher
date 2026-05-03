@@ -31,11 +31,6 @@
   object-fit: fill;
 }
 
-:host-context(.module--dragPreviewSurface) .modulePartImageHost__surfaceImage {
-  object-fit: cover;
-  object-position: center;
-}
-
 img {
   max-width: 100% !important;
 }
