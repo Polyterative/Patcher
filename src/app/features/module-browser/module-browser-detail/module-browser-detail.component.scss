@@ -110,6 +110,20 @@
   }
 }
 
+@media (max-width: 70rem) {
+  .module-submit-similar-fab {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    width: 100%;
+    margin-top: 0.25rem;
+    justify-content: center;
+    white-space: normal;
+  }
+}
+
 .module-search-chip {
   cursor: pointer;
 }

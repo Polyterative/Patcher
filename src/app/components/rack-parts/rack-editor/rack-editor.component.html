@@ -41,24 +41,33 @@
             Blanks are available in all sizes!
           </app-advice-tooltip>
         }
-        <div #rackViewport
-             class="col scroll custom-scrollbar transition-all"
-               [ngClass]="{
-                 'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)
-              }"
-         >
-          <app-rack-visual-model [rackData]="data"
-                                 [rowedRackedModules]="bag.rowedRackedModules"
-                                 [rackViewportElement]="rackViewport"
-                                 [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
-                                 [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                 [rackDetailDataService]="dataService"
-                                 [moduleRightClick$]="moduleRightClick$"
-                                 [style.zoom]="autoScale"
-                                 class="transition-all-long"
-                                 [ngClass]="{'smallerScale':bag.userRequestedSmallerScale}"
-            ></app-rack-visual-model>
-          </div>
+         <div #rackViewport
+              class="col scroll custom-scrollbar transition-all"
+                [ngClass]="{
+                  'rackLocked':!(bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)
+               }"
+          >
+           <div class="rackEditorCanvasContainer">
+             <div class="rackEditorCanvasFrame"
+                  [style.width.px]="scaledRackWidthPx(bag.userRequestedSmallerScale)"
+                  [style.height.px]="scaledRackHeightPx(bag.userRequestedSmallerScale)"
+             >
+               <app-rack-visual-model #rackScaleSurface
+                                      [rackData]="data"
+                                      [rowedRackedModules]="bag.rowedRackedModules"
+                                      [rackViewportElement]="rackViewport"
+                                      [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
+                                      [isCurrentRackEditable]="bag.isCurrentRackEditable"
+                                      [rackDetailDataService]="dataService"
+                                      [moduleRightClick$]="moduleRightClick$"
+                                      [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
+                                      [style.width.rem]="rackWidthRem()"
+                                      [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
+                                      class="rackEditorCanvasSurface"
+               ></app-rack-visual-model>
+             </div>
+           </div>
+           </div>
           <div class="rackEditorMobileToolbar">
             <button mat-stroked-button
                     type="button"

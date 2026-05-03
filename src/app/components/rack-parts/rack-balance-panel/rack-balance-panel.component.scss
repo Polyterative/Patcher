@@ -349,9 +349,10 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
   height: 100%;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 70.5625rem) {
   .rackBalancePanel__header {
     flex-direction: column;
+    gap: 0.5rem;
   }
 
   .rackBalancePanel__headerCopy {
@@ -364,6 +365,7 @@ $rack-balance-accent: rgba(71, 170, 156, 1);
     width: 100%;
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
   }
 
   .rackBalancePanel__toggleButton {

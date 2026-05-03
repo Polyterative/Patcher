@@ -41,4 +41,10 @@ describe('RackBrowserDetailViewComponent', () => {
 
     expect(powerGroup.items.map(item => item.label)).toEqual(['+12V', '-12V', '+5V']);
   });
+
+  it('shows the compact edit prompt only for read-only owners', () => {
+    expect(component.shouldShowCompactEditPrompt(true, false)).toBeTrue();
+    expect(component.shouldShowCompactEditPrompt(true, true)).toBeFalse();
+    expect(component.shouldShowCompactEditPrompt(false, false)).toBeFalse();
+  });
 });
