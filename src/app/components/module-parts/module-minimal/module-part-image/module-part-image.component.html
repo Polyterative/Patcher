@@ -2,6 +2,7 @@
   <div fxLayoutAlign="center center"
        [routerLink]="['/modules/details',data.id]"
        class="clickable modulePartImageHost"
+       [@.disabled]="disableEnterAnimation"
   >
     @if ({
       height: data.standard|getModuleHeightForStandard
@@ -36,6 +37,7 @@
 } @else {
   <div [routerLink]="['/modules/details',data.id]"
        class="clickable modulePartImageHost modulePartImageHost--surface"
+       [@.disabled]="disableEnterAnimation"
   >
     @if ({
       height: data.standard|getModuleHeightForStandard
