@@ -14,11 +14,11 @@
         <lib-auto-update-loading-indicator [data$]="dataService.singleRackData$"
                                            [updateData$]="dataService.updateSingleRackData$">
           <div class="col gap1">
-            <div class="rackBrowserDetailView__summaryLayout">
-              <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--left">
-                <app-rack-composite [data]="(bag.data)"
-                ></app-rack-composite>
-              </div>
+             <div class="rackBrowserDetailView__summaryLayout">
+               <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--left">
+                 <app-rack-composite [data]="(bag.data)"
+                 ></app-rack-composite>
+               </div>
               <div class="col gap1 rackBrowserDetailView__summaryColumn rackBrowserDetailView__summaryColumn--right">
                 <div class="rackBrowserDetailView__summaryInsights">
                   @if (bag.rowedRackedModules) {
@@ -37,14 +37,30 @@
                       ></app-rack-balance-panel>
                     </div>
                   }
-                </div>
-              </div>
-            </div>
-            <lib-clean-card>
-              <app-rack-editor
-                [data]="(bag.data)"
-              ></app-rack-editor>
-            </lib-clean-card>
+                 </div>
+               </div>
+             </div>
+             @if (shouldShowCompactEditPrompt(bag.isCurrentRackPropertyOfCurrentUser, bag.isCurrentRackEditable)) {
+               <div class="rackBrowserDetailView__compactEditPrompt">
+                 <div class="col gap0 rackBrowserDetailView__compactEditPromptCopy">
+                   <span class="rackBrowserDetailView__compactEditPromptTitle">Ready to make changes?</span>
+                   <span class="rackBrowserDetailView__compactEditPromptBody">
+                     Switch to edit mode to add modules, reorder rows, and update this rack.
+                   </span>
+                 </div>
+                 <app-brand-primary-button
+                   icon="edit"
+                   (click$)="dataService.requestRackEditableStatusChange$.next()"
+                 >
+                   Edit rack
+                 </app-brand-primary-button>
+               </div>
+             }
+             <lib-clean-card>
+               <app-rack-editor
+                 [data]="(bag.data)"
+               ></app-rack-editor>
+             </lib-clean-card>
             @if (bag.rowedRackedModules) {
               <div class="rackBrowserDetailView__mobileAnalysis">
                 <app-rack-balance-panel
@@ -65,18 +81,15 @@
       @if ((dataService.isCurrentRackEditable$|async)) {
         <app-module-browser-root
           [showSubmitFab]="false"
+          [compactSidebarAtTablet]="true"
           [viewConfig]="viewConfig"
         ></app-module-browser-root>
-      } @else {
-        <div class="col gap4 center rackBrowserDetailView__editHint"
-       style="
-      font-size: 1.5em;
-      padding: 3em;
-"
-        >
-          <mat-label
-          >
-            Press Edit to add modules or make changes
+       } @else {
+         <div class="col gap4 center rackBrowserDetailView__editHint"
+         >
+           <mat-label
+           >
+             Press Edit to add modules or make changes
           </mat-label>
           <app-brand-primary-button (click$)="dataService.requestRackEditableStatusChange$.next()"
                                     icon="edit"

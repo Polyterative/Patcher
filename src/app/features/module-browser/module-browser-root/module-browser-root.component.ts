@@ -38,6 +38,7 @@ export class ModuleBrowserRootComponent extends SubManager {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   private readonly document = inject(DOCUMENT);
   @Input() showSubmitFab = true;
+  @Input() compactSidebarAtTablet = false;
   mobileFiltersExpanded = false;
   readonly recentActivityItems$: Observable<RecentActivityItem[]>;
 

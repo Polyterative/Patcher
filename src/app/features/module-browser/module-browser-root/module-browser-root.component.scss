@@ -78,3 +78,26 @@
     align-self: flex-start;
   }
 }
+
+@media (max-width: 70.5625rem) {
+  .module-browser-root--compact-tablet {
+    .module-filter-control--optional {
+      display: none;
+    }
+
+    .module-recent-activity {
+      display: none;
+    }
+
+    .module-filter-sidebar--expanded .module-filter-control--optional {
+      display: block;
+    }
+
+    .module-filter-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      align-self: flex-start;
+    }
+  }
+}
