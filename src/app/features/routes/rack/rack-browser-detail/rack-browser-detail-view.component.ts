@@ -142,6 +142,13 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     return `${ ((usedHp / totalAvailableHp) * 100).toFixed(1) }%`;
   }
 
+  shouldShowCompactEditPrompt(
+    isCurrentRackPropertyOfCurrentUser: boolean | null | undefined,
+    isCurrentRackEditable: boolean | null | undefined
+  ): boolean {
+    return !!isCurrentRackPropertyOfCurrentUser && !isCurrentRackEditable;
+  }
+
   rackSummaryStatRows(data: RackMinimal, rowedRackedModules: RackedModule[][]): EntityStatGroup[][] {
     const rackModules = rowedRackedModules.flat().filter(module => !isBlankModule(module.module.id));
     const totalModules = rackModules.length;

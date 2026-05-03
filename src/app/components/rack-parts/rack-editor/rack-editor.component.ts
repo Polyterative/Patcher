@@ -6,7 +6,9 @@ import {
   ElementRef,
   HostListener,
   Input,
+  OnChanges,
   OnInit,
+  SimpleChanges,
   ViewChild
 } from '@angular/core';
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -65,14 +67,19 @@ const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/ob
   ],
   standalone: false
 })
-export class RackEditorComponent extends SubManager implements OnInit, AfterViewInit {
+export class RackEditorComponent extends SubManager implements OnInit, OnChanges, AfterViewInit {
   @Input() data: RackMinimal;
   
+  private static readonly reducedScaleMultiplier = 0.65;
+
   moduleRightClick$ = new Subject<ModuleRightClick>();
 
   autoScale = 1;
   viewOptionsExpanded = false;
   private rackViewportRef?: ElementRef<HTMLElement>;
+  private rackScaleSurfaceRef?: ElementRef<HTMLElement>;
+  private rackScaleSurfaceResizeObserver?: ResizeObserver;
+  private rackSurfaceBaseHeightPx = 0;
 
   @HostListener('window:resize')
   onWindowResize(): void {
@@ -80,11 +87,44 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
     this.cdr.markForCheck();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data']) {
+      this.updateAutoScale();
+      queueMicrotask(() => {
+        this.updateRackSurfaceFrame();
+        this.cdr.markForCheck();
+      });
+    }
+  }
+
   private updateAutoScale(): void {
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const rackWidth = this.data.hp * rem;
+    const rackWidth = this.rackWidthPx;
     const availableWidth = this.rackViewportRef?.nativeElement.clientWidth ?? window.innerWidth;
-    this.autoScale = Math.min(1, availableWidth / rackWidth);
+    this.autoScale = rackWidth > 0
+      ? Math.min(1, availableWidth / rackWidth)
+      : 1;
+    this.updateRackSurfaceFrame();
+  }
+
+  rackWidthRem(): number {
+    return this.data?.hp ?? 0;
+  }
+
+  effectiveScale(userRequestedSmallerScale: boolean | null | undefined): number {
+    return this.autoScale * (userRequestedSmallerScale ? RackEditorComponent.reducedScaleMultiplier : 1);
+  }
+
+  scaledRackWidthPx(userRequestedSmallerScale: boolean | null | undefined): number {
+    return this.rackWidthPx * this.effectiveScale(userRequestedSmallerScale);
+  }
+
+  scaledRackHeightPx(userRequestedSmallerScale: boolean | null | undefined): number {
+    const baseHeight = this.rackSurfaceBaseHeightPx || this.rackScaleSurfaceRef?.nativeElement.offsetHeight || 0;
+    return baseHeight * this.effectiveScale(userRequestedSmallerScale);
+  }
+
+  rackSurfaceTransform(userRequestedSmallerScale: boolean | null | undefined): string {
+    return `scale(${ this.effectiveScale(userRequestedSmallerScale) })`;
   }
 
   toggleViewOptions(): void {
@@ -109,6 +149,16 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
     if (reference) {
       queueMicrotask(() => {
         this.updateAutoScale();
+        this.cdr.markForCheck();
+      });
+    }
+  }
+  @ViewChild('rackScaleSurface', {read: ElementRef}) set rackScaleSurface(reference: ElementRef<HTMLElement> | undefined) {
+    this.rackScaleSurfaceRef = reference;
+    this.observeRackScaleSurface(reference?.nativeElement);
+    if (reference) {
+      queueMicrotask(() => {
+        this.updateRackSurfaceFrame();
         this.cdr.markForCheck();
       });
     }
@@ -313,6 +363,11 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
     this.updateAutoScale();
     this.cdr.markForCheck();
   }
+
+  override ngOnDestroy(): void {
+    this.rackScaleSurfaceResizeObserver?.disconnect();
+    super.ngOnDestroy();
+  }
   
   calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
     const totalCapacity = Number(totalHp) * Number(rows);
@@ -342,6 +397,38 @@ export class RackEditorComponent extends SubManager implements OnInit, AfterView
         label: derivePanelLabel(activePanel.filename, activePanel.description, panelIndex)
       }
     });
+  }
+
+  private get rackWidthPx(): number {
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const rem = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 16;
+    return (this.data?.hp ?? 0) * rem;
+  }
+
+  private observeRackScaleSurface(element: HTMLElement | undefined): void {
+    this.rackScaleSurfaceResizeObserver?.disconnect();
+    this.rackScaleSurfaceResizeObserver = undefined;
+
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.rackScaleSurfaceResizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) {
+        return;
+      }
+
+      this.updateRackSurfaceFrame(entry.contentRect.height);
+      this.cdr.markForCheck();
+    });
+
+    this.rackScaleSurfaceResizeObserver.observe(element);
+  }
+
+  private updateRackSurfaceFrame(surfaceHeightPx?: number): void {
+    const measuredHeight = surfaceHeightPx ?? this.rackScaleSurfaceRef?.nativeElement.offsetHeight ?? 0;
+    this.rackSurfaceBaseHeightPx = measuredHeight;
   }
 
 }

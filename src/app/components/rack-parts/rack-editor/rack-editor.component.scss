@@ -23,8 +23,27 @@ $floatingSurfaceRestOpacity: 0.78;
   transform: scale(0.98);
 }
 
-.smallerScale {
-  transform: scale(0.65);
+.rackEditorCanvasContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.rackEditorCanvasFrame {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rackEditorCanvasSurface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  transform-origin: top left;
+  will-change: transform;
 }
 
 .rackEditorMobileToolbar {
@@ -165,7 +184,7 @@ $floatingSurfaceRestOpacity: 0.78;
   border-color: rgba(34, 75, 117, 0.92);
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 70.5625rem) {
   .rackEditorMobileToolbar {
     display: flex;
     flex-wrap: wrap;

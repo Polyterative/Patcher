@@ -158,6 +158,62 @@ describe('RackEditorComponent', () => {
     expect(component.autoScale).toBeCloseTo(0.5, 4);
   });
 
+  it('combines auto scale and reduced scale into the drag surface scale', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    (component as any).rackViewportRef = {
+      nativeElement: {
+        clientWidth: 520
+      }
+    };
+
+    (component as any).updateAutoScale();
+
+    expect(component.effectiveScale(false)).toBeCloseTo(0.5, 4);
+    expect(component.effectiveScale(true)).toBeCloseTo(0.325, 4);
+  });
+
+  it('returns compensated rack frame dimensions for transform scaling', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    component.data = {hp: 104} as any;
+    spyOn(window, 'getComputedStyle').and.returnValue({fontSize: '10'} as CSSStyleDeclaration);
+    (component as any).rackViewportRef = {
+      nativeElement: {
+        clientWidth: 520
+      }
+    };
+    (component as any).rackScaleSurfaceRef = {
+      nativeElement: {
+        offsetHeight: 400
+      }
+    };
+
+    (component as any).updateAutoScale();
+
+    expect(component.scaledRackWidthPx(false)).toBeCloseTo(520, 4);
+    expect(component.scaledRackHeightPx(false)).toBeCloseTo(200, 4);
+    expect(component.scaledRackWidthPx(true)).toBeCloseTo(338, 4);
+    expect(component.scaledRackHeightPx(true)).toBeCloseTo(130, 4);
+    expect(component.rackSurfaceTransform(true)).toBe('scale(0.325)');
+  });
+
   it('caps the rack scale at full size when the viewport is wide enough', () => {
     const component = new RackEditorComponent(
       {} as MatSnackBar,
