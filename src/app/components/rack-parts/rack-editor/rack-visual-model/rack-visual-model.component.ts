@@ -1,5 +1,7 @@
 import {
+  CdkDragEnd,
   CdkDragDrop,
+  CdkDragStart,
 } from '@angular/cdk/drag-drop';
 import {
   AfterViewInit,
@@ -51,6 +53,7 @@ import { ModuleRightClick } from '../rack-editor.component';
 export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit {
   private static readonly rowPowerPanelHeightPx = 112;
   private hoveredRackedModule: RackedModule | null = null;
+  private dragImageAnimationSuppressedModule: RackedModule | null = null;
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
@@ -184,6 +187,30 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
         this.cdr.markForCheck();
       });
     });
+  }
+
+  onDragStarted(_event: CdkDragStart<RackedModule>, module: RackedModule): void {
+    this.dragImageAnimationSuppressedModule = module;
+    this.cdr.markForCheck();
+  }
+
+  onDragEnded(_event: CdkDragEnd<RackedModule>, module: RackedModule): void {
+    if (this.dragImageAnimationSuppressedModule !== module) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (this.dragImageAnimationSuppressedModule === module) {
+          this.dragImageAnimationSuppressedModule = null;
+          this.cdr.markForCheck();
+        }
+      });
+    });
+  }
+
+  isDragImageAnimationSuppressed(module: RackedModule): boolean {
+    return this.dragImageAnimationSuppressedModule === module;
   }
 
   private updateRowPowerBreakdown(): void {
