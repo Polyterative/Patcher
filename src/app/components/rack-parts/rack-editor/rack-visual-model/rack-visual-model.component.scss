@@ -1,13 +1,14 @@
 @use '@angular/material' as mat;
 
 .cdk-drag-preview {
-  //box-sizing:    border-box;
   @include mat.elevation(8);
 }
 
 .module--dragPreviewSurface .root,
-.cdk-drag-preview .root {
+.cdk-drag-preview .root,
+.module.cdk-drag-dragging .root {
   transition: none;
+  box-shadow: none !important;
 }
 
 .cdk-drag-placeholder {
