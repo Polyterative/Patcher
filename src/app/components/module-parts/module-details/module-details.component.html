@@ -11,7 +11,7 @@
         <mat-icon>contrast</mat-icon>
         <span>Panel variants ({{data.panels.length}})</span>
       </div>
-      <div class="rowwrap gap1">
+      <div class="rowwrap gap1 panel-preview-list">
         @for (item of data.panels; track item; let idx = $index) {
           <div class="col gap1 panel-preview-item"
                (click)="openPanelZoom(item.id, item.filename, item.description, idx)"
