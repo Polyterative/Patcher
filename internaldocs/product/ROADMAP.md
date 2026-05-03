@@ -88,6 +88,25 @@ Report bad data (wrong HP, missing image, duplicate) from the module detail page
 no community layer needed. **Upgrades when:** UGC Trust Model tiers are implemented → flag submissions count toward a
 user's trust tier, creating a quality incentive. Already scoped in [../workflow/TODO.md](../workflow/TODO.md).
 
+#### Site-ops Event / Announcement Banner *(frontend-only)*
+
+A lightweight timed-visibility banner that lets the site operator announce real-world events, meetups, or short-lived
+notices to visitors without any backend changes. Config is a static TypeScript file checked into the repo; the banner
+reads a date range and auto-shows/hides. Entirely frontend. Zero database work.
+
+**Scope constraints:** title + description + optional CTA link; no persistence, no per-user dismissal stored, no
+relationship to backend manufacturer updates or Patcher news features. This is a site-ops surface — an ops escape hatch
+for time-boxed announcements.
+
+**Distinct from:** the planned _Manufacturer Updates / Featured Surface_ (Tier 1, backend, manufacturer-owned content)
+and _Contextual Activity_ (community event feed). This banner is not a product news feature; it is a static, version-
+controlled announcement slot controlled purely by the operator committing a config change.
+
+**Upgrades when:** if announcement volume grows, the static config can be replaced with a JSON asset under `src/assets/`
+or a CMS-backed endpoint without changing the component contract.
+
+---
+
 #### Rack-local HP override *(disabled pending review)*
 
 This is **not an approved product feature right now**. The rack-editor UI entry points have been removed and the current

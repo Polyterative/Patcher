@@ -12,39 +12,24 @@
 
 ## Active
 
-### _(empty)_
+_(none — pick the next task from [TODO.md](./TODO.md) and paste its implementation plan here)_
 
-- No active feature selected yet.
-- Pick the next task from `TODO.md`, move it to **Active**, then replace this template with that feature's details.
+---
 
-### Empty template for the next feature
+## Empty template
 
-**Goal:** _One-sentence outcome._
+```markdown
+### Feature Name
 
-### Product boundaries
+**Goal:** one sentence.
 
-- _Boundary 1_
-- _Boundary 2_
+#### Layer 1 — MVP
+- [ ] step
 
-### Layer 1 — MVP
+#### Layer 2 — Structural
+- [ ] step
 
-- [ ] _Step 1_
-- [ ] _Step 2_
+#### Layer 3 — Polish
+- [ ] step
+```
 
-### Layer 2 — Structural
-
-- [ ] _Step 1_
-- [ ] _Step 2_
-
-### Layer 3 — Polish
-
-- [ ] _Step 1_
-- [ ] _Step 2_
-
-### Likely implementation touchpoints
-
-- `_path/to/file.ts_`
-
-### Notes
-
-- _Important constraint or discovery._

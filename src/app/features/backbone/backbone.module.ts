@@ -5,6 +5,8 @@ import {
   withInterceptorsFromDi
 }                                    from '@angular/common/http';
 import { NgModule }                  from '@angular/core';
+import { MatButtonModule }           from '@angular/material/button';
+import { MatIconModule }             from '@angular/material/icon';
 import { FlexLayoutModule }          from '@angular/flex-layout';
 import { MatCardModule }             from "@angular/material/card";
 import { MatDividerModule }          from '@angular/material/divider';
@@ -21,6 +23,7 @@ import { ScreenWrapperModule }       from '../../shared-interproject/components/
 import { BuildInfoComponent }        from './build-info/build-info.component';
 import { CommonSidebarComponent }    from './common-sidebar/common-sidebar.component';
 import { DiscordWidgetComponent }    from './discord-widget/discord-widget.component';
+import { EventBannerComponent }      from './event-banner/event-banner.component';
 import { FeedbackBoxModule }         from './feedback-box/feedback-box.module';
 import { FooterComponent }           from './footer/footer.component';
 import { ProducthuntBadgeComponent } from './footer/producthunt-badge/producthunt-badge.component';
@@ -36,14 +39,16 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     FooterComponent,
     BuildInfoComponent,
     DiscordWidgetComponent,
-    ProducthuntBadgeComponent
+    ProducthuntBadgeComponent,
+    EventBannerComponent,
   ],
   exports:      [
     CommonSidebarComponent,
     FooterComponent,
     BuildInfoComponent,
     DiscordWidgetComponent,
-    ProducthuntBadgeComponent
+    ProducthuntBadgeComponent,
+    EventBannerComponent,
   ], imports:   [SentryIntegrationModule,
     HomeModule,
     ToolbarModule,
@@ -59,7 +64,9 @@ import { ToolbarModule }             from './toolbar/toolbar.module';
     LabelValueShowcaseModule,
     MatDividerModule,
     ScreenWrapperModule,
-    LottieContainerModule
+    LottieContainerModule,
+    MatButtonModule,
+    MatIconModule,
     // NotFoundModule//keep as last (for routes)
   ], providers: [
     AppStateService,
