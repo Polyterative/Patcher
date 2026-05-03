@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
+  defer,
   delay,
   EMPTY,
   forkJoin,
@@ -24,6 +25,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   filter,
+  finalize,
   map,
   switchMap,
   take,
@@ -63,6 +65,7 @@ function cloneRackData<T>(value: T): T {
 
 @Injectable()
 export class RackDetailDataService extends SubManager {
+  private static readonly imageCaptureOverlayResetDelayMs = 360;
   private usePublicDetailReads = false;
   updateSingleRackData$ = new ReplaySubject<number>();
   singleRackData$ = new BehaviorSubject<Rack | undefined>(undefined);
@@ -278,7 +281,7 @@ export class RackDetailDataService extends SubManager {
       tap(() => this.snackBar.open('⏲️ Generating image...', undefined, {duration: 4000})),
       withLatestFrom(this.currentDownloadElementRef$),
       switchMap(([_, references]) => {
-        return this.generateRackJpeg$(references.screen.nativeElement);
+        return this.generateRackJpegWithoutAnalysisOverlays$(references.screen.nativeElement);
       }),
       withLatestFrom(this.singleRackData$),
       takeUntil(this.destroyEvent$)
@@ -302,11 +305,10 @@ export class RackDetailDataService extends SubManager {
     // when user requests to update rack image preview, generate it, and upload to backend
     this.updateRackImagePreview$.pipe(
       tap(() => this.snackBar.open('⏲️ Generating image: please wait, this can take a few moments...', undefined, {duration: 20000})),
-      delay(50), // wait for the screen to be ready
       withLatestFrom(this.currentDownloadElementRef$),
       // generate the image, and convert it to a Blob
       switchMap(([_, references]) => {
-        return this.generateRackJpeg$(references.screen.nativeElement).pipe(
+        return this.generateRackJpegWithoutAnalysisOverlays$(references.screen.nativeElement).pipe(
           // Convert the image data to a Blob
           map(imageData => {
             const byteCharacters = atob(imageData.split(',')[1]);
@@ -846,6 +848,24 @@ export class RackDetailDataService extends SubManager {
       width: el.scrollWidth,
       height: el.scrollHeight,
     }));
+  }
+
+  private generateRackJpegWithoutAnalysisOverlays$(el: HTMLElement) {
+    return defer(() => {
+      const previousAnalysisMode = this.analysisMode$.value ?? RACK_ANALYSIS_MODES.off;
+      this.analysisMode$.next(RACK_ANALYSIS_MODES.off);
+
+      return of(undefined).pipe(
+        // Rack analysis overlays animate out over ~320ms, so wait for the rendered UI to settle before capture.
+        delay(RackDetailDataService.imageCaptureOverlayResetDelayMs),
+        switchMap(() => this.generateRackJpeg$(el)),
+        finalize(() => {
+          if (this.analysisMode$.value === RACK_ANALYSIS_MODES.off) {
+            this.analysisMode$.next(previousAnalysisMode);
+          }
+        })
+      );
+    });
   }
   
   private transferInRow(rackedModules: RackedModule[][], row: number, event: CdkDragDrop<ElementRef>): void {

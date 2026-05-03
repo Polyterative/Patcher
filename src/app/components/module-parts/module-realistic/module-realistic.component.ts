@@ -78,4 +78,12 @@ export class ModuleRealisticComponent implements OnInit {
   isAnalysisModeActive(): boolean {
     return this.analysisMode !== this.analysisModes.off;
   }
+
+  isPowerAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.power;
+  }
+
+  isFunctionAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.function;
+  }
 }

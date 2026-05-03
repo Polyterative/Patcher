@@ -11,6 +11,17 @@
   z-index: 1;
 }
 
+:host ::ng-deep .account-card h1.title {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .account-card h1.title .title-main {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .account-subtitle {
   margin: 0;
   padding: 0.1rem 0 0.2rem;

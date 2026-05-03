@@ -49,7 +49,10 @@ describe('EventBannerComponent', () => {
     fixture.detectChanges();
   }
 
+  beforeEach(() => localStorage.clear());
+
   afterEach(() => TestBed.resetTestingModule());
+  afterEach(() => localStorage.clear());
 
   it('should be visible when now is inside date range', (done) => {
     setup(configWithDates(-1, 1));
@@ -116,6 +119,37 @@ describe('EventBannerComponent', () => {
     component.dismiss();
     component.isVisible$.subscribe(visible => {
       expect(visible).toBeFalse();
+      done();
+    });
+  });
+
+  it('should persist dismissal across component instances for the same event id', (done) => {
+    const config = configWithDates(-1, 1);
+
+    setup(config);
+    component.dismiss();
+    fixture.destroy();
+    TestBed.resetTestingModule();
+
+    setup(config);
+    component.isVisible$.subscribe(visible => {
+      expect(visible).toBeFalse();
+      done();
+    });
+  });
+
+  it('should keep dismissal scoped to the active event id', (done) => {
+    setup(configWithDates(-1, 1));
+    component.dismiss();
+    fixture.destroy();
+    TestBed.resetTestingModule();
+
+    setup({
+      ...configWithDates(-1, 1),
+      id: 'different-event',
+    });
+    component.isVisible$.subscribe(visible => {
+      expect(visible).toBeTrue();
       done();
     });
   });
