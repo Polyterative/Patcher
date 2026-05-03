@@ -1,8 +1,13 @@
 import {
+  CdkDragDrop,
+} from '@angular/cdk/drag-drop';
+import {
   AfterViewInit,
+  ChangeDetectorRef,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  HostBinding,
   Input,
   SimpleChanges,
   OnChanges,
@@ -50,6 +55,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
+  @HostBinding('class.rackVisualModel--suppressPostDropReorder') suppressPostDropReorder = false;
   
   @Input() rackData: RackMinimal;
   
@@ -68,6 +74,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   
   constructor(
     public dataService: RackDetailDataService,
+    private readonly cdr: ChangeDetectorRef,
   ) {
   }
   
@@ -165,6 +172,18 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
     return this.modulePowerHeatmap.get(rackPowerHeatmapKey(rackedModule)) ?? defaultRackPowerHeatmapVisual();
+  }
+
+  onDropListDropped(event: CdkDragDrop<ElementRef>, rowId: number, module: RackedModule): void {
+    this.suppressPostDropReorder = true;
+    this.cdr.markForCheck();
+    this.rackDetailDataService.rackOrderChange$.next({event, newRow: rowId, module});
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.suppressPostDropReorder = false;
+        this.cdr.markForCheck();
+      });
+    });
   }
 
   private updateRowPowerBreakdown(): void {

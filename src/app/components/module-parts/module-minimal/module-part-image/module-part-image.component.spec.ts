@@ -99,4 +99,18 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.filename).toBe('light.png');
   });
 
+  it('marks the host as a surface image when containImage is false', () => {
+    const c = buildComponent();
+    c.containImage = false;
+
+    expect(c.isSurfaceImage).toBeTrue();
+  });
+
+  it('does not mark the host as a surface image when containImage is true', () => {
+    const c = buildComponent();
+    c.containImage = true;
+
+    expect(c.isSurfaceImage).toBeFalse();
+  });
+
 });

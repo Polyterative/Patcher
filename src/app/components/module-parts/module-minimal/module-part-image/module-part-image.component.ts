@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostBinding,
   Input,
   OnChanges
 } from '@angular/core';
@@ -40,6 +41,11 @@ export class ModulePartImageComponent implements OnChanges {
   
   get sizeDivider(): number {
     return this.big ? 1 : 2.7;
+  }
+
+  @HostBinding('class.modulePartImage--surface')
+  get isSurfaceImage(): boolean {
+    return !this.containImage;
   }
   
   constructor(

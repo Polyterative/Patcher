@@ -1,60 +1,32 @@
-@if ({
-  layoutFlexWidth: (appState.layoutFlexWidth$|async)
-}; as bag) {
-  @if (bag.layoutFlexWidth) {
-    @if (bag.layoutFlexWidth.ltlg) {
-      <div
-      >
-        <div class="col gap1"
-        >
-          <div>
-            <lib-clean-card>
-              <app-patch-minimal [data]="data"
-                                 [viewConfig]="viewConfig"
-              >
-              </app-patch-minimal>
-            </lib-clean-card>
-          </div>
-          <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
-          <app-patch-details [data]="data" [isEditing]="isEditing"></app-patch-details>
-          @if (isEditing) {
-            <app-patch-editor [data]="data"></app-patch-editor>
-          }
-          <app-comments-root></app-comments-root>
-        </div>
+<div class="patch-composite-shell">
+  <div class="patch-composite-layout">
+    <div class="col gap1 patch-composite-sidebar">
+      <div>
+        <lib-clean-card>
+          <app-patch-minimal [data]="data"
+                             [viewConfig]="viewConfig"
+          >
+          </app-patch-minimal>
+        </lib-clean-card>
       </div>
-    }
-    @if (bag.layoutFlexWidth.gtmd) {
-      <div class="row gap2"
-      >
-        <div class="col gap1"
-             fxFlex="30rem"
-        >
-          <lib-clean-card>
-            <app-patch-minimal [data]="data"
-                               [viewConfig]="viewConfig"
-            >
-            </app-patch-minimal>
-          </lib-clean-card>
-          <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-          <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
-          <app-comments-root></app-comments-root>
-        </div>
-        <div class="col gap1 right-col"
-             fxFlex="grow"
-        >
-          <app-patch-details fxFlex="grow"
-                             [data]="data"
-                             [isEditing]="isEditing"
-          ></app-patch-details>
-          @if (isEditing) {
-            <app-patch-editor [data]="data"></app-patch-editor>
-          }
-        </div>
-      </div>
-    }
-  }
+      <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+      <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
+    </div>
+
+    <div class="col gap1 right-col patch-composite-main">
+      <app-patch-details [data]="data"
+                         [isEditing]="isEditing"
+      ></app-patch-details>
+      @if (isEditing) {
+        <app-patch-editor [data]="data"></app-patch-editor>
+      }
+    </div>
+  </div>
+
+  <div class="patch-composite-comments">
+    <app-comments-root></app-comments-root>
+  </div>
+
   <ng-template #statsCard>
     @if ({
       connections: (dataService.editorConnections$|async)
@@ -74,6 +46,7 @@
       }
     }
   </ng-template>
+
   <ng-template #uniqueModulesSummary>
     @if ((dataService.editorConnections$|async); as connections) {
       @if (connections | patchConnectionUniqueModules; as modules) {
@@ -100,4 +73,4 @@
       }
     }
   </ng-template>
-}
+</div>

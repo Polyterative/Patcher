@@ -13,7 +13,6 @@ import {
   PatchMinimalViewConfig
 } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import { Patch } from 'src/app/models/patch';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 
 
 @Component({
@@ -33,7 +32,6 @@ export class PatchCompositeComponent {
   @Input() readonly viewConfig: PatchMinimalViewConfig = defaultPatchMinimalViewConfig;
 
   constructor(
-    public appState: AppStateService,
     public dataService: PatchDetailDataService
   ) {}
 }

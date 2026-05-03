@@ -239,12 +239,54 @@ h3 {
   cursor:       help;
 }
 
+.title-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.title-text--with-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35em;
+  min-width: 0;
+}
+
+.title-main,
 .title-sub {
-  //font-size: 0.46em;
-  //font-weight: 400;
-  color: rgba(0, 0, 0, 0.38);
-  //margin-left: 0.55em;
-  //vertical-align: middle;
-  //letter-spacing: 0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.title-sub {
+  color: rgba(0, 0, 0, 0.52);
+}
+
+@media (max-width: 64rem) {
+  .title-text--with-sub {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .title-separator {
+    display: none;
+  }
+
+  .title-text--with-sub .title-main {
+    font-size: 0.45em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.42);
+  }
+
+  .title-text--with-sub .title-sub {
+    color: rgba(0, 0, 0, 0.72);
+  }
+}
+
+@media (max-width: 36rem) {
+  .title-text--with-sub .title-main {
+    display: none;
+  }
 }

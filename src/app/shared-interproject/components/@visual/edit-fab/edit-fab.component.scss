@@ -25,6 +25,7 @@
   display: block;
 
   button {
+    min-height: var(--module-editor-close-fab-height, 3.5rem);
     padding-left: 2rem;
     padding-right: 2rem;
     border: 0.125rem solid #3e638a;
@@ -35,6 +36,7 @@
 
   button.edit-fab-editing {
     width: var(--module-editor-close-fab-width, auto);
+    min-height: var(--module-editor-close-fab-height, 3.5rem);
     justify-content: center;
   }
 
