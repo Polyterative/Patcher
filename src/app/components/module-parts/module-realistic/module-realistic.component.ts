@@ -11,6 +11,7 @@ import { getModuleHeightForStandard } from '../get-module-height-for-standard.pi
 import { ModuleDetailDataService } from '../module-detail-data.service';
 import { derivePanelLabel } from '../panel.constants';
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-parts/rack-analysis-mode';
+import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 
 
 @Component({
@@ -22,6 +23,7 @@ import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-parts/rack-ana
 })
 export class ModuleRealisticComponent implements OnInit {
   readonly analysisModes = RACK_ANALYSIS_MODES;
+  readonly touchInteractionMode = prefersTouchInteraction();
   @Input() data: MinimalModule;
   @Input() showPanelImages: boolean = false;
   @Input() selectedPanelId: number | null = null;
