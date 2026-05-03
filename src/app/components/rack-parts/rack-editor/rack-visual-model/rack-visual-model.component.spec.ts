@@ -12,6 +12,7 @@ import {
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { RackPowerHeatmapVisual } from '../../rack-power-heatmap.utils';
 import { MapToModulePipe } from '../../map-to-module.pipe';
+import { RACK_ANALYSIS_MODES, RackAnalysisMode } from '../../rack-analysis-mode';
 import { HasUnrackedModulesPipe } from './has-unracked-modules.pipe';
 import { RackVisualModelComponent } from './rack-visual-model.component';
 
@@ -22,7 +23,7 @@ describe('RackVisualModelComponent', () => {
   let moduleRef: any;
   let rackDetailDataService: {
     shouldShowPanelImages$: Subject<boolean>;
-    showPowerAnalysisMode$: BehaviorSubject<boolean>;
+    analysisMode$: BehaviorSubject<RackAnalysisMode>;
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
   };
@@ -30,7 +31,7 @@ describe('RackVisualModelComponent', () => {
   beforeEach(async () => {
     rackDetailDataService = {
       shouldShowPanelImages$: new Subject<boolean>(),
-      showPowerAnalysisMode$: new BehaviorSubject<boolean>(false),
+      analysisMode$: new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off),
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
       rackOrderChange$: {next: jasmine.createSpy('next')},
     };
@@ -177,7 +178,7 @@ describe('RackVisualModelComponent', () => {
     let host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.moduleHoverStats')).toBeNull();
 
-    rackDetailDataService.showPowerAnalysisMode$.next(true);
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.power);
     fixture.detectChanges();
 
     component.setHoveredModule(moduleRef);
@@ -189,6 +190,27 @@ describe('RackVisualModelComponent', () => {
     expect(component.isHoveredModule(moduleRef)).toBeTrue();
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('HP14HP');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('PWRn/a');
+  });
+
+  it('shows function hover stats in function analysis mode', () => {
+    moduleRef.module.tags = [{
+      tag: {
+        name: 'VCO',
+        type: 0
+      }
+    }];
+    fixture.detectChanges();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.function);
+    fixture.detectChanges();
+
+    component.setHoveredModule(moduleRef);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const hoverStats = host.querySelector('.moduleHoverStats');
+    expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('RoleVoices');
+    expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('TagPrimarytag:VCO');
   });
 
   it('hides the per-module HP badge outside edit mode', () => {
@@ -208,8 +230,8 @@ describe('RackVisualModelComponent', () => {
 
     component.setHoveredRow(0);
 
-    expect(component.isRowPowerPanelVisible(0)).toBeTrue();
-    expect(component.shouldShowRowPowerPanel(0, true)).toBeTrue();
+    expect(component.isRowAnalysisPanelVisible(0)).toBeTrue();
+    expect(component.shouldShowRowPowerPanel(0, RACK_ANALYSIS_MODES.power)).toBeTrue();
     expect(component.rowPowerBreakdownAt(0)).toEqual(jasmine.objectContaining({
       rowIndex: 0,
       moduleCount: 1,
@@ -227,8 +249,29 @@ describe('RackVisualModelComponent', () => {
 
     component.setHoveredRow(0);
 
-    expect(component.isRowPowerPanelVisible(0)).toBeTrue();
-    expect(component.shouldShowRowPowerPanel(0, false)).toBeFalse();
+    expect(component.isRowAnalysisPanelVisible(0)).toBeTrue();
+    expect(component.shouldShowRowPowerPanel(0, RACK_ANALYSIS_MODES.off)).toBeFalse();
+  });
+
+  it('shows row function analysis for hovered rows in function mode', () => {
+    component.rowedRackedModules = [[
+      makeRackedModule(10, 0, 0),
+      makeRackedModule(11, 0, 14),
+      makeRackedModule(4647, 0, 22)
+    ]];
+    component.rowedRackedModules[0][0].module.tags = [{id: 1, tag: {id: 1, name: 'VCO', type: 0}, voteCount: []}];
+    component.rowedRackedModules[0][1].module.tags = [{id: 2, tag: {id: 2, name: 'Envelope Gen.', type: 0}, voteCount: []}];
+    fixture.detectChanges();
+
+    component.setHoveredRow(0);
+
+    expect(component.shouldShowRowFunctionPanel(0, RACK_ANALYSIS_MODES.function)).toBeTrue();
+    expect(component.rowFunctionBreakdownAt(0)).toEqual(jasmine.objectContaining({
+      moduleCount: 3,
+      residualCount: 1,
+      residualHp: 14
+    }));
+    expect(component.rowFunctionResidualLabel(0)).toContain('1 module blank or unclassified');
   });
 
   it('places the row power panel below when there is not enough visible space above', () => {
@@ -425,7 +468,7 @@ describe('RackVisualModelComponent', () => {
     fixture.detectChanges();
 
     component.setHoveredRow(1);
-    expect(component.isRowPowerPanelVisible(1)).toBeTrue();
+    expect(component.isRowAnalysisPanelVisible(1)).toBeTrue();
 
     component.rowedRackedModules = [[makeRackedModule(11, 0, 0, 90, -30, 0)]];
     component.ngOnChanges({
@@ -437,7 +480,7 @@ describe('RackVisualModelComponent', () => {
       }
     });
 
-    expect(component.isRowPowerPanelVisible(1)).toBeFalse();
+    expect(component.isRowAnalysisPanelVisible(1)).toBeFalse();
     expect(component.powerAnalysisVisual(component.rowedRackedModules[0][0]).className).toBe('powerAnalysisModule--peak');
   });
 

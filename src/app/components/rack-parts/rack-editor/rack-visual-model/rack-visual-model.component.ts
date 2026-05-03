@@ -30,9 +30,25 @@ import {
   RackPowerHeatmapVisual,
   rackPowerHeatmapKey
 } from '../../rack-power-heatmap.utils';
+import { buildRackFunctionVisual, RackFunctionVisual } from '../../rack-function-visuals.utils';
 import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { ModuleRightClick } from '../rack-editor.component';
+import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-analysis-mode';
+
+interface RowFunctionRoleBreakdown {
+  label: string;
+  className: string;
+  moduleCount: number;
+  hp: number;
+}
+
+interface RowFunctionBreakdown {
+  moduleCount: number;
+  roles: RowFunctionRoleBreakdown[];
+  residualCount: number;
+  residualHp: number;
+}
 
 
 @Component({
@@ -51,7 +67,8 @@ import { ModuleRightClick } from '../rack-editor.component';
   standalone: false
 })
 export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit {
-  private static readonly rowPowerPanelHeightPx = 112;
+  readonly analysisModes = RACK_ANALYSIS_MODES;
+  private static readonly rowAnalysisPanelHeightPx = 136;
   private static readonly dropRevealAnimationDurationMs = 225;
   private hoveredRackedModule: RackedModule | null = null;
   private dragImageAnimationSuppressedModule: RackedModule | null = null;
@@ -123,8 +140,8 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.hoveredRackedModule === rackedModule;
   }
 
-  shouldShowModuleHoverStats(rackedModule: RackedModule, powerAnalysisMode: boolean): boolean {
-    return powerAnalysisMode && this.isHoveredModule(rackedModule);
+  shouldShowModuleHoverStats(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
+    return analysisMode !== this.analysisModes.off && this.isHoveredModule(rackedModule);
   }
 
   hasCompletePowerData(rackedModule: RackedModule): boolean {
@@ -152,12 +169,16 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return this.rowPowerBreakdown[rowId] ?? null;
   }
 
-  isRowPowerPanelVisible(rowId: number): boolean {
-    return this.hoveredRowIndex === rowId && (this.rowPowerBreakdown[rowId]?.moduleCount ?? 0) > 0;
+  isRowAnalysisPanelVisible(rowId: number): boolean {
+    return this.hoveredRowIndex === rowId && ((this.rowedRackedModules?.[rowId]?.length ?? 0) > 0);
   }
 
-  shouldShowRowPowerPanel(rowId: number, powerAnalysisMode: boolean): boolean {
-    return powerAnalysisMode && this.isRowPowerPanelVisible(rowId);
+  shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
+    return analysisMode === this.analysisModes.power && this.isRowAnalysisPanelVisible(rowId);
+  }
+
+  shouldShowRowFunctionPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
+    return analysisMode === this.analysisModes.function && this.isRowAnalysisPanelVisible(rowId);
   }
 
   isRowPowerPanelBelow(rowId: number): boolean {
@@ -176,8 +197,82 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       : 'All module power data available';
   }
 
+  rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null {
+    const rowModules = this.rowedRackedModules?.[rowId] ?? [];
+
+    if (rowModules.length === 0) {
+      return null;
+    }
+
+    const roleMap = new Map<string, RowFunctionRoleBreakdown>();
+    let residualCount = 0;
+    let residualHp = 0;
+
+    for (const rackedModule of rowModules) {
+      const functionVisual = this.functionAnalysisVisual(rackedModule);
+      const hp = this.effectiveHp(rackedModule);
+
+      if (!this.isTrackedFunctionRole(functionVisual.className)) {
+        residualCount += 1;
+        residualHp += hp;
+        continue;
+      }
+
+      const current = roleMap.get(functionVisual.roleLabel) ?? {
+        label: functionVisual.roleLabel,
+        className: functionVisual.className,
+        moduleCount: 0,
+        hp: 0
+      };
+
+      current.moduleCount += 1;
+      current.hp += hp;
+      roleMap.set(functionVisual.roleLabel, current);
+    }
+
+    return {
+      moduleCount: rowModules.length,
+      roles: [...roleMap.values()].sort((a, b) => b.hp - a.hp || b.moduleCount - a.moduleCount || a.label.localeCompare(b.label)),
+      residualCount,
+      residualHp
+    };
+  }
+
+  rowFunctionResidualLabel(rowId: number): string {
+    const rowFunction = this.rowFunctionBreakdownAt(rowId);
+    if (!rowFunction) {
+      return '';
+    }
+
+    if (rowFunction.roles.length === 0) {
+      return rowFunction.residualCount > 0
+        ? `${ rowFunction.residualCount } module${ rowFunction.residualCount === 1 ? '' : 's' } blank or unclassified in this row`
+        : 'No tracked function roles recognized in this row yet.';
+    }
+
+    return rowFunction.residualCount > 0
+      ? `${ rowFunction.residualCount } module${ rowFunction.residualCount === 1 ? '' : 's' } blank or unclassified (${ rowFunction.residualHp }HP)`
+      : 'All modules in this row map to tracked function roles.';
+  }
+
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
     return this.modulePowerHeatmap.get(rackPowerHeatmapKey(rackedModule)) ?? defaultRackPowerHeatmapVisual();
+  }
+
+  functionAnalysisVisual(rackedModule: RackedModule): RackFunctionVisual {
+    return buildRackFunctionVisual(rackedModule);
+  }
+
+  analysisVisualClass(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string {
+    if (analysisMode === this.analysisModes.power) {
+      return this.powerAnalysisVisual(rackedModule).className;
+    }
+
+    if (analysisMode === this.analysisModes.function) {
+      return this.functionAnalysisVisual(rackedModule).className;
+    }
+
+    return '';
   }
 
   onDropListDropped(event: CdkDragDrop<ElementRef>, rowId: number, module: RackedModule): void {
@@ -292,14 +387,22 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     const availableAbove = rowRect.top - viewportRect.top;
     const availableBelow = viewportRect.bottom - rowRect.bottom;
 
-    if (availableAbove < RackVisualModelComponent.rowPowerPanelHeightPx && availableBelow > availableAbove) {
+    if (availableAbove < RackVisualModelComponent.rowAnalysisPanelHeightPx && availableBelow > availableAbove) {
       return 'below';
     }
 
-    if (availableBelow < RackVisualModelComponent.rowPowerPanelHeightPx && availableAbove > availableBelow) {
+    if (availableBelow < RackVisualModelComponent.rowAnalysisPanelHeightPx && availableAbove > availableBelow) {
       return 'above';
     }
 
     return availableAbove >= availableBelow ? 'above' : 'below';
+  }
+
+  private isTrackedFunctionRole(className: string): boolean {
+    return className === 'functionAnalysisModule--voices'
+      || className === 'functionAnalysisModule--modulation'
+      || className === 'functionAnalysisModule--utilities'
+      || className === 'functionAnalysisModule--timing'
+      || className === 'functionAnalysisModule--tone';
   }
 }

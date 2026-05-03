@@ -1,6 +1,7 @@
 <div class="col gap1 transition-all innerEditor"
      cdkDropListGroup
 >
+  @let analysisMode = (rackDetailDataService.analysisMode$ | async) ?? analysisModes.off;
   <mat-card-subtitle [ngStyle]="{width: rackData.hp+'rem'}"
                      fxLayoutAlign="center center"
                      class="widthRuler"
@@ -17,7 +18,7 @@
            #rowSurface
            (mouseenter)="setHoveredRow(rowId, rowSurface)"
            (mouseleave)="clearHoveredRow(rowId)">
-        @if (shouldShowRowPowerPanel(rowId, ((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false))) {
+        @if (shouldShowRowPowerPanel(rowId, analysisMode)) {
           @if (rowPowerBreakdownAt(rowId); as rowPower) {
             <div class="rowPowerPanel"
                  [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
@@ -47,6 +48,36 @@
             </div>
           }
         }
+        @if (shouldShowRowFunctionPanel(rowId, analysisMode)) {
+          @if (rowFunctionBreakdownAt(rowId); as rowFunction) {
+            <div class="rowPowerPanel rowPowerPanel--function"
+                 [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
+              <div class="rowPowerPanel__header">
+                <div class="rowPowerPanel__titleGroup">
+                  <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
+                  <span class="rowPowerPanel__title">{{ rowFunction.moduleCount }} module{{ rowFunction.moduleCount === 1 ? '' : 's' }}</span>
+                </div>
+              </div>
+              @if (rowFunction.roles.length > 0) {
+                <div class="rowPowerPanel__rails rowPowerPanel__rails--function">
+                  @for (role of rowFunction.roles; track role.label) {
+                    <div class="rowPowerPanel__rail rowPowerPanel__rail--function">
+                      <span class="rowPowerPanel__functionSwatch"
+                            [class]="role.className"
+                            aria-hidden="true"
+                      ></span>
+                      <span class="rowPowerPanel__railLabel">{{ role.label }}</span>
+                      <span class="rowPowerPanel__railValue">{{ role.moduleCount }} · {{ role.hp }}HP</span>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="rowPowerPanel__footer">
+                {{ rowFunctionResidualLabel(rowId) }}
+              </div>
+            </div>
+          }
+        }
         <div class="row rackRow"
              [class.row-bg]="!(row|hasUnrackedModules)"
               cdkDropList
@@ -54,13 +85,13 @@
               (cdkDropListDropped)="onDropListDropped($event, rowId, $event.item.data)"
              >
           @for (rackedModule of row; track rackedModule; let i = $index) {
-            <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
-                                  [data]="rackedModule|mapToModule"
-                                  [powerAnalysisMode]="(rackDetailDataService.showPowerAnalysisMode$ | async) ?? false"
-                                  [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
-                                    [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
-                                    [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                    [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
+             <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+                                   [data]="rackedModule|mapToModule"
+                                   [analysisMode]="analysisMode"
+                                   [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
+                                     [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
+                                     [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                     [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
                                     [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
                                     [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
                                      class="module"
@@ -72,21 +103,21 @@
                                      (cdkDragReleased)="onDragReleased($event, rackedModule)"
                                      (cdkDragEnded)="onDragEnded($event, rackedModule)"
                                      (mouseenter)="setHoveredModule(rackedModule)"
-                                   (mouseleave)="clearHoveredModule(rackedModule)"
-                                   (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-             >
-               @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
-                 <div class="hpIndicator"
+                                    (mouseleave)="clearHoveredModule(rackedModule)"
+                                    (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+              >
+                @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off) {
+                  <div class="hpIndicator"
+                       (mousedown)="$event.stopPropagation()"
+                  >
+                   {{ effectiveHp(rackedModule) }}HP
+                 </div>
+               }
+               @if (analysisMode === analysisModes.power) {
+                 <div class="moduleHoverStats"
+                      [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, analysisMode)"
                       (mousedown)="$event.stopPropagation()"
                  >
-                  {{ effectiveHp(rackedModule) }}HP
-                </div>
-              }
-              @if (((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
-                <div class="moduleHoverStats"
-                     [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, ((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false))"
-                     (mousedown)="$event.stopPropagation()"
-                >
                   <div class="moduleHoverStats__row">
                     <span class="moduleHoverStats__label">HP</span>
                     <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
@@ -110,11 +141,32 @@
                       <span class="moduleHoverStats__value">n/a</span>
                     </div>
                    }
-                 </div>
+                  </div>
+                }
+               @if (analysisMode === analysisModes.function) {
+                  @if (functionAnalysisVisual(rackedModule); as functionVisual) {
+                    <div class="moduleHoverStats moduleHoverStats--function"
+                         [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, analysisMode)"
+                         (mousedown)="$event.stopPropagation()"
+                    >
+                     <div class="moduleHoverStats__row">
+                       <span class="moduleHoverStats__label">HP</span>
+                       <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
+                     </div>
+                     <div class="moduleHoverStats__row">
+                       <span class="moduleHoverStats__label">Role</span>
+                       <span class="moduleHoverStats__value">{{ functionVisual.roleLabel }}</span>
+                     </div>
+                     <div class="moduleHoverStats__row">
+                       <span class="moduleHoverStats__label">Tag</span>
+                       <span class="moduleHoverStats__value">{{ functionVisual.tagLabel }}</span>
+                     </div>
+                   </div>
+                 }
                }
-             </app-module-realistic>
-           }
-         </div>
+              </app-module-realistic>
+            }
+          </div>
        </div>
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
