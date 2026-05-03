@@ -68,12 +68,12 @@
                 ></app-rack-visual-model>
              </div>
            </div>
-           </div>
-          <div class="rackEditorMobileToolbar">
+          </div>
+          <div class="rackEditorResponsiveActions">
             <button mat-stroked-button
                     type="button"
-                    class="rackEditorMobileToolbar__button"
-                    [class.rackEditorMobileToolbar__button--open]="viewOptionsExpanded"
+                    class="rackEditorResponsiveActions__button"
+                    [class.rackEditorResponsiveActions__button--open]="viewOptionsExpanded"
                     (click)="toggleViewOptions()"
             >
               <mat-icon>{{ viewOptionsExpanded ? 'close' : 'tune' }}</mat-icon>
@@ -82,19 +82,17 @@
             @if (bag.isCurrentRackPropertyOfCurrentUser) {
               <button mat-stroked-button
                       type="button"
-                      class="rackEditorMobileToolbar__button"
+                      class="rackEditorResponsiveActions__button"
                       (click)="dataService.requestRackEditableStatusChange$.next()"
               >
                 <mat-icon>{{ bag.isCurrentRackEditable ? 'lock' : 'edit' }}</mat-icon>
                 {{ bag.isCurrentRackEditable ? 'Lock rack' : 'Edit rack' }}
               </button>
             }
-          </div>
-          @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
-            <div class="rowwrap rackEditorInlineActions">
+            @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
               <button mat-stroked-button
                       type="button"
-                      class="rackEditorInlineActions__button"
+                      class="rackEditorResponsiveActions__button"
                       (click)="dataService.downloadRackImageToUserComputer$.next()"
               >
                 <mat-icon>download</mat-icon>
@@ -103,15 +101,15 @@
               @if (bag.isCurrentRackPropertyOfCurrentUser) {
                 <button mat-stroked-button
                         type="button"
-                        class="rackEditorInlineActions__button"
+                        class="rackEditorResponsiveActions__button"
                         (click)="dataService.updateRackImagePreview$.next()"
                 >
                   <mat-icon>image</mat-icon>
                   Update preview
                 </button>
               }
-            </div>
-          }
+            }
+          </div>
           <div class="rackEditorFloatingOptions">
            @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
              <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">

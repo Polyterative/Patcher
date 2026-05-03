@@ -30,7 +30,7 @@ export interface EventBannerConfig {
 export const ACTIVE_EVENT_BANNER: EventBannerConfig | null = {
   id:          'superbooth-2026',
   title:       '🎛 Heading to Superbooth 2026',
-  description: 'I\'ll be at Superbooth in Berlin (7–10 May) as a personal attendee — no booth, just roaming the show floor. I\'ll have a tablet with a live Patcher demo if you\'d like to see it in action. Reach out on Instagram and let\'s meet up!',
+  description: 'Hey there, it\'s Vlady, the author of Patcher. I\'ll be at Superbooth in Berlin (7–10 May) as a personal attendee — no booth, just roaming the show floor. I\'ll have a tablet with a live Patcher demo if you\'d like to see it in action and share some feedback. Reach out on Instagram and let\'s meet up!',
   startDate:   '2026-05-03',
   endDate:     '2026-05-10',
   ctaLabel:    'Say hi on Instagram',

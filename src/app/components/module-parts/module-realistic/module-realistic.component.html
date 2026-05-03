@@ -1,6 +1,7 @@
 <div class="col root"
      [ngClass]="powerAnalysisMode ? powerAnalysisClass : ''"
      [class.root--panelSurface]="shouldRenderPanelImageSurface()"
+     [class.root--powerAnalysisMode]="powerAnalysisMode"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
@@ -53,9 +54,8 @@
                            matTooltipClass="module-panel-tooltip"
     ></app-module-part-image>
   }
-  @if (powerAnalysisMode) {
-    <div class="powerAnalysisOverlay"
-         aria-hidden="true"
-    ></div>
-  }
+  <div class="powerAnalysisOverlay"
+       [class.powerAnalysisOverlay--visible]="powerAnalysisMode"
+       aria-hidden="true"
+  ></div>
 </div>
