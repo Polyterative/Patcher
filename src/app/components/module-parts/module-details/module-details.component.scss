@@ -44,10 +44,15 @@
   white-space: nowrap;
 }
 
+.panel-preview-list {
+  align-items: flex-start;
+}
+
 .panel-preview-item {
   align-items: center;
   cursor: zoom-in;
-  width: 100%;
+  flex: 0 1 14rem;
+  width: min(100%, 18rem);
   max-width: 28rem;
 }
 
