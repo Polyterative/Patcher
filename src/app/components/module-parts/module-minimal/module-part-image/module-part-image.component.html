@@ -14,7 +14,8 @@
           [ngStyle]="fixedHeight ? {} : {maxHeight:32/sizeDivider+'rem'}"
           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
           [@enter]
-          loading="lazy"
+          [attr.loading]="imageLoadingMode"
+          [attr.decoding]="imageDecodingMode"
           [alt]="'Panel image for '+data.name"
         >
       }
@@ -49,7 +50,8 @@
           [ngStyle]="fixedHeight ? {} : {maxHeight:((bag.height)+'rem')}"
           [src]="'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/'+filename"
           [@enter]
-          loading="lazy"
+          [attr.loading]="imageLoadingMode"
+          [attr.decoding]="imageDecodingMode"
           [alt]="'Panel image for '+data.name"
         >
       }

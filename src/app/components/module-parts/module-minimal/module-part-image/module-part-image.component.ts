@@ -48,6 +48,14 @@ export class ModulePartImageComponent implements OnChanges {
   get isSurfaceImage(): boolean {
     return !this.containImage;
   }
+
+  get imageLoadingMode(): 'lazy' | 'eager' {
+    return this.isSurfaceImage ? 'eager' : 'lazy';
+  }
+
+  get imageDecodingMode(): 'async' | 'sync' {
+    return this.isSurfaceImage ? 'sync' : 'async';
+  }
   
   constructor(
     public changeDetection: ChangeDetectorRef
