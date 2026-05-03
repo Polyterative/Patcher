@@ -14,8 +14,19 @@
 }
 
 .cdk-drop-list-dragging .module:not(.cdk-drag-placeholder) {
-  background-color: #E33636 !important;
   transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .module .root,
+.cdk-drop-list-dragging .module .powerAnalysisOverlay {
+  transition: none;
+}
+
+:host(.rackVisualModel--disableDropAnimations) {
+  .cdk-drag-animating,
+  .cdk-drop-list-dragging .module:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
 }
 
 .widthRuler {
