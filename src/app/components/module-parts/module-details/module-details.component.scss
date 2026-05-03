@@ -47,10 +47,13 @@
 .panel-preview-item {
   align-items: center;
   cursor: zoom-in;
+  width: 100%;
+  max-width: 28rem;
 }
 
 // Constrain panel gallery images to parent width so large images don't overflow
 .panel-gallery-img {
+  width: 100%;
   max-width: 100%;
   max-height: 10rem;
   height: auto;
