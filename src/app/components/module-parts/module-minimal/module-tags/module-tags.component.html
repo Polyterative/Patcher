@@ -3,7 +3,7 @@
   @let myVotes = (tagVoteService.myVotes$ | async);
   @let isLoggedIn = (tagVoteService.isLoggedIn$ | async);
   @let proposerOpen = (proposerOpen$ | async);
-  @let availableTags = (availableTags$ | async);
+  @let availableTagGroups = (availableTagGroups$ | async);
   @let visibleTags = (visibleTags$ | async);
   <div class="col gap0">
     @if (visibleTags && visibleTags.length > 0) {
@@ -41,16 +41,23 @@
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          @if (availableTags && availableTags.length > 0) {
-            <mat-chip-listbox class="padT0 padB0" [multiple]="false">
-              @for (tag of availableTags; track tag.id) {
-                <mat-chip-option
-                  (click)="proposeTag(tag)"
-                  [matTooltip]="'Add \'' + tag.name + '\' to this module'"
-                >{{ tag.name }}
-                </mat-chip-option>
+          @if (availableTagGroups && availableTagGroups.length > 0) {
+            <div class="col gap1 proposer-groups">
+              @for (group of availableTagGroups; track group.label) {
+                <div class="col gap0_5 proposer-group">
+                  <span class="proposer-group__label">{{ group.label }}</span>
+                  <mat-chip-listbox class="padT0 padB0" [multiple]="false">
+                    @for (tag of group.tags; track tag.id) {
+                      <mat-chip-option
+                        (click)="proposeTag(tag)"
+                        [matTooltip]="'Add \'' + tag.name + '\' to this module'"
+                      >{{ tag.name }}
+                      </mat-chip-option>
+                    }
+                  </mat-chip-listbox>
+                </div>
               }
-            </mat-chip-listbox>
+            </div>
           } @else {
             <span class="mat-caption muted">All tags are already on this module.</span>
           }

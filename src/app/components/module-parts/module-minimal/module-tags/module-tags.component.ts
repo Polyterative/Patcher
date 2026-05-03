@@ -20,7 +20,21 @@ import {
 } from 'angular-animations';
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
-import { Tag } from 'src/app/models/tag';
+import {
+  Tag,
+  TagType
+} from 'src/app/models/tag';
+
+interface TagSuggestionGroup {
+  label: string;
+  tags: Tag[];
+}
+
+const TAG_TYPE_LABELS: Record<TagType, string> = {
+  [TagType.Purpose]: 'Purpose',
+  [TagType.Nature]: 'Nature',
+  [TagType.Character]: 'Character'
+};
 
 
 @Component({
@@ -56,6 +70,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
   
   /** Tags not yet linked to this module — filters out both server tags and locally proposed ones */
   availableTags$: Observable<Tag[]>;
+  availableTagGroups$: Observable<TagSuggestionGroup[]>;
 
   constructor(public tagVoteService: TagVoteDataService) {
     super();
@@ -88,6 +103,22 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
         const serverTagIds = new Set((this.data?.tags ?? []).map(t => t.tag.id));
         const proposedTagIds = new Set(proposed.map(p => p.tag.id));
         return allTags.filter(t => !serverTagIds.has(t.id) && !proposedTagIds.has(t.id));
+      })
+    );
+
+    this.availableTagGroups$ = this.availableTags$.pipe(
+      map(tags => {
+        const grouped = new Map<string, Tag[]>();
+
+        for (const tag of tags) {
+          const label = TAG_TYPE_LABELS[tag.type] ?? 'Other';
+          grouped.set(label, [...(grouped.get(label) ?? []), tag]);
+        }
+
+        return Array.from(grouped.entries()).map(([label, groupedTags]) => ({
+          label,
+          tags: groupedTags
+        }));
       })
     );
   }
