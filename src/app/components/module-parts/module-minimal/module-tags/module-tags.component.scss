@@ -33,6 +33,26 @@ mat-chip-option {
   background: rgba(0, 0, 0, 0.04);
 }
 
+.proposer-groups {
+  margin-top: 0.25rem;
+}
+
+.proposer-group {
+  gap: 0.35rem;
+}
+
+.proposer-group__label {
+  align-self: flex-start;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(84, 103, 122, 0.12);
+  color: rgba(63, 78, 94, 0.9);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
 .muted {
   opacity: 0.55;
 }
