@@ -60,11 +60,12 @@
                                   [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
                                   [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
                                   [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                  class="module"
-                                  cdkDrag
-                                  [cdkDragData]="rackedModule"
-                                  [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
-                                  (mouseenter)="setHoveredModule(rackedModule)"
+                                   class="module"
+                                   cdkDrag
+                                   [cdkDragData]="rackedModule"
+                                   [cdkDragScale]="dragScale"
+                                   [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                   (mouseenter)="setHoveredModule(rackedModule)"
                                   (mouseleave)="clearHoveredModule(rackedModule)"
                                   (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
             >
