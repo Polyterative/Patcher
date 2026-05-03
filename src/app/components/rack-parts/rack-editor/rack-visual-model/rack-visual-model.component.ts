@@ -11,9 +11,10 @@ import {
   ElementRef,
   HostBinding,
   Input,
-  SimpleChanges,
   OnChanges,
+  OnDestroy,
   OnInit,
+  SimpleChanges,
   ViewChild
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
@@ -35,6 +36,7 @@ import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { ModuleRightClick } from '../rack-editor.component';
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-analysis-mode';
+import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 
 interface RowFunctionRoleBreakdown {
   label: string;
@@ -66,14 +68,21 @@ interface RowFunctionBreakdown {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit {
+export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   readonly analysisModes = RACK_ANALYSIS_MODES;
   private static readonly rowAnalysisPanelHeightPx = 136;
   private static readonly dropRevealAnimationDurationMs = 225;
+  private static readonly touchContextMenuDelayMs = 550;
+  private static readonly touchLongPressMoveTolerancePx = 12;
+  readonly touchInteractionMode = prefersTouchInteraction();
   private hoveredRackedModule: RackedModule | null = null;
   private dragImageAnimationSuppressedModule: RackedModule | null = null;
   private dropRevealSuppressedModule: RackedModule | null = null;
   private dropRevealAnimatingModule: RackedModule | null = null;
+  private touchLongPressTimerId: number | null = null;
+  private touchLongPressModule: RackedModule | null = null;
+  private touchLongPressStartPoint: {x: number; y: number} | null = null;
+  private touchContextMenuBlockedModule: RackedModule | null = null;
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
@@ -116,6 +125,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     if (changes['rowedRackedModules']) {
       this.updateRowPowerBreakdown();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.clearTouchInteractionState();
   }
   
   isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
@@ -275,6 +288,61 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return '';
   }
 
+  isModuleDragDisabled(rackedModule: RackedModule): boolean {
+    return !(this.isCurrentRackEditable && this.isCurrentRackPropertyOfCurrentUser)
+      || this.touchContextMenuBlockedModule === rackedModule;
+  }
+
+  onModulePointerDown(event: PointerEvent, rackedModule: RackedModule): void {
+    if (!this.shouldTrackTouchLongPress(event)) {
+      return;
+    }
+
+    this.clearTouchInteractionState();
+    this.touchLongPressModule = rackedModule;
+    this.touchLongPressStartPoint = {
+      x: event.clientX,
+      y: event.clientY
+    };
+    this.touchLongPressTimerId = window.setTimeout(() => {
+      if (this.touchLongPressModule !== rackedModule || !this.touchLongPressStartPoint) {
+        return;
+      }
+
+      this.touchLongPressTimerId = null;
+      this.touchContextMenuBlockedModule = rackedModule;
+      this.emitTouchContextMenu(rackedModule, this.touchLongPressStartPoint.x, this.touchLongPressStartPoint.y);
+      this.cdr.markForCheck();
+    }, RackVisualModelComponent.touchContextMenuDelayMs);
+  }
+
+  onModulePointerMove(event: PointerEvent, rackedModule: RackedModule): void {
+    if (
+      !this.touchInteractionMode
+      || event.pointerType !== 'touch'
+      || this.touchLongPressModule !== rackedModule
+      || !this.touchLongPressStartPoint
+    ) {
+      return;
+    }
+
+    const distanceX = event.clientX - this.touchLongPressStartPoint.x;
+    const distanceY = event.clientY - this.touchLongPressStartPoint.y;
+    const distanceSquared = (distanceX ** 2) + (distanceY ** 2);
+
+    if (distanceSquared > RackVisualModelComponent.touchLongPressMoveTolerancePx ** 2) {
+      this.cancelPendingTouchLongPress(rackedModule);
+    }
+  }
+
+  onModulePointerUp(rackedModule: RackedModule): void {
+    this.clearTouchInteractionState(rackedModule);
+  }
+
+  onModulePointerCancel(rackedModule: RackedModule): void {
+    this.clearTouchInteractionState(rackedModule);
+  }
+
   onDropListDropped(event: CdkDragDrop<ElementRef>, rowId: number, module: RackedModule): void {
     const shouldAnimateDropReveal = event.previousContainer === event.container;
     this.suppressPostDropReorder = true;
@@ -306,6 +374,8 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   onDragStarted(_event: CdkDragStart<RackedModule>, module: RackedModule): void {
+    this.cancelPendingTouchLongPress(module);
+    this.touchContextMenuBlockedModule = null;
     this.dragImageAnimationSuppressedModule = module;
     if (this.dropRevealAnimatingModule === module) {
       this.dropRevealAnimatingModule = null;
@@ -314,11 +384,13 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   onDragReleased(_event: unknown, module: RackedModule): void {
+    this.clearTouchInteractionState(module);
     this.dropRevealSuppressedModule = module;
     this.cdr.markForCheck();
   }
 
   onDragEnded(_event: CdkDragEnd<RackedModule>, module: RackedModule): void {
+    this.clearTouchInteractionState(module);
     const shouldClearDragImageSuppression = this.dragImageAnimationSuppressedModule === module;
     const shouldClearDropRevealSuppression = this.dropRevealSuppressedModule === module;
 
@@ -404,5 +476,48 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       || className === 'functionAnalysisModule--utilities'
       || className === 'functionAnalysisModule--timing'
       || className === 'functionAnalysisModule--tone';
+  }
+
+  private shouldTrackTouchLongPress(event: PointerEvent): boolean {
+    return this.touchInteractionMode
+      && event.pointerType === 'touch'
+      && this.isCurrentRackEditable
+      && this.isCurrentRackPropertyOfCurrentUser;
+  }
+
+  private emitTouchContextMenu(rackedModule: RackedModule, clientX: number, clientY: number): void {
+    this.moduleRightClick$.next({
+      $event: new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        clientX,
+        clientY
+      }),
+      rackedModule
+    });
+  }
+
+  private cancelPendingTouchLongPress(rackedModule?: RackedModule): void {
+    if (rackedModule && this.touchLongPressModule !== rackedModule) {
+      return;
+    }
+
+    if (this.touchLongPressTimerId != null) {
+      clearTimeout(this.touchLongPressTimerId);
+      this.touchLongPressTimerId = null;
+    }
+
+    if (!rackedModule || this.touchLongPressModule === rackedModule) {
+      this.touchLongPressModule = null;
+      this.touchLongPressStartPoint = null;
+    }
+  }
+
+  private clearTouchInteractionState(rackedModule?: RackedModule): void {
+    this.cancelPendingTouchLongPress(rackedModule);
+
+    if (!rackedModule || this.touchContextMenuBlockedModule === rackedModule) {
+      this.touchContextMenuBlockedModule = null;
+    }
   }
 }

@@ -213,6 +213,60 @@ describe('RackVisualModelComponent', () => {
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('TagPrimarytag:VCO');
   });
 
+  it('opens the module context menu on a deliberate touch long press', () => {
+    jasmine.clock().install();
+    try {
+      (component as any).touchInteractionMode = true;
+      const nextSpy = spyOn(component.moduleRightClick$, 'next');
+
+      component.onModulePointerDown({
+        pointerType: 'touch',
+        clientX: 48,
+        clientY: 96
+      } as PointerEvent, moduleRef);
+
+      jasmine.clock().tick(550);
+
+      expect(nextSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+        rackedModule: moduleRef,
+        $event: jasmine.any(MouseEvent)
+      }));
+      expect(component.isModuleDragDisabled(moduleRef)).toBeTrue();
+
+      component.onModulePointerUp(moduleRef);
+      expect(component.isModuleDragDisabled(moduleRef)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('cancels the touch long press when the finger starts moving', () => {
+    jasmine.clock().install();
+    try {
+      (component as any).touchInteractionMode = true;
+      const nextSpy = spyOn(component.moduleRightClick$, 'next');
+
+      component.onModulePointerDown({
+        pointerType: 'touch',
+        clientX: 20,
+        clientY: 20
+      } as PointerEvent, moduleRef);
+
+      component.onModulePointerMove({
+        pointerType: 'touch',
+        clientX: 48,
+        clientY: 52
+      } as PointerEvent, moduleRef);
+
+      jasmine.clock().tick(550);
+
+      expect(nextSpy).not.toHaveBeenCalled();
+      expect(component.isModuleDragDisabled(moduleRef)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
   it('hides the per-module HP badge outside edit mode', () => {
     component.isCurrentRackEditable = false;
     fixture.detectChanges();

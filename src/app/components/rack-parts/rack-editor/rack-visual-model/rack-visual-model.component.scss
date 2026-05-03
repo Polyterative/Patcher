@@ -79,6 +79,8 @@
 
 .rackScreen {
   min-width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .row-bg {
@@ -108,6 +110,17 @@
   width: 100%;
   min-width: 100%;
   box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.module {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-drag: none;
+  touch-action: none;
 }
 
 .rowPowerPanel {

@@ -94,18 +94,22 @@
                                      [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
                                     [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
                                     [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
-                                     class="module"
-                                     cdkDrag
-                                     [cdkDragData]="rackedModule"
-                                     [cdkDragScale]="dragScale"
-                                     [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
-                                     (cdkDragStarted)="onDragStarted($event, rackedModule)"
-                                     (cdkDragReleased)="onDragReleased($event, rackedModule)"
-                                     (cdkDragEnded)="onDragEnded($event, rackedModule)"
-                                     (mouseenter)="setHoveredModule(rackedModule)"
-                                    (mouseleave)="clearHoveredModule(rackedModule)"
-                                    (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-              >
+                                      class="module"
+                                      cdkDrag
+                                      [cdkDragData]="rackedModule"
+                                      [cdkDragScale]="dragScale"
+                                      [cdkDragDisabled]="isModuleDragDisabled(rackedModule)"
+                                      (cdkDragStarted)="onDragStarted($event, rackedModule)"
+                                      (cdkDragReleased)="onDragReleased($event, rackedModule)"
+                                      (cdkDragEnded)="onDragEnded($event, rackedModule)"
+                                      (pointerdown)="onModulePointerDown($event, rackedModule)"
+                                      (pointermove)="onModulePointerMove($event, rackedModule)"
+                                      (pointerup)="onModulePointerUp(rackedModule)"
+                                      (pointercancel)="onModulePointerCancel(rackedModule)"
+                                      (mouseenter)="setHoveredModule(rackedModule)"
+                                     (mouseleave)="clearHoveredModule(rackedModule)"
+                                     (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+               >
                 @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
@@ -177,7 +181,7 @@
     @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && rowedRackedModules.length > 1) {
       <div [@enter]="{ value: '', params: { delay: (1 * 25)+500}}"
            matTooltip="Please remove all modules from the last row to remove it"
-           [matTooltipDisabled]="isLastRowEmpty(rowedRackedModules)">
+           [matTooltipDisabled]="touchInteractionMode || isLastRowEmpty(rowedRackedModules)">
         <app-brand-primary-button
           theme="negative"
           icon="remove"
