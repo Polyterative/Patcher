@@ -124,6 +124,177 @@ $floatingSurfaceRestOpacity: 0.78;
 
 .rackEditorFloatingOptions__quickToggle {
   padding: 0.65rem 0.8rem;
+  width: min(
+    20.5rem,
+    calc(
+      100vw - (#{$floatingInsetDesktop} * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)
+    )
+  );
+}
+
+.rackEditorFloatingOptions__eyebrow {
+  margin-bottom: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(34, 75, 117, 0.82);
+}
+
+.rackEditorFloatingOptions__analysisModes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.rackEditorFloatingOptions__analysisModeButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.0625rem solid rgba(62, 99, 138, 0.25);
+  border-radius: 999px;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(21, 46, 70, 0.92);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.1;
+  padding: 0.62rem 0.55rem;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, color 140ms ease;
+}
+
+.rackEditorFloatingOptions__analysisModeButton:hover {
+  border-color: rgba(34, 75, 117, 0.48);
+  background: rgba(238, 244, 251, 0.96);
+  box-shadow: inset 0 0 0 0.0625rem rgba(34, 75, 117, 0.08);
+}
+
+.rackEditorFloatingOptions__analysisModeButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.125rem rgba(34, 75, 117, 0.18);
+}
+
+.rackEditorFloatingOptions__analysisModeButton--active {
+  background: rgba(34, 75, 117, 0.12);
+  border-color: rgba(34, 75, 117, 0.44);
+  color: rgba(29, 57, 84, 0.96);
+}
+
+.rackEditorFloatingOptions__analysisModeButton--active:hover {
+  background: rgba(34, 75, 117, 0.2);
+  border-color: rgba(34, 75, 117, 0.58);
+  box-shadow: inset 0 0 0 0.0625rem rgba(34, 75, 117, 0.12);
+}
+
+.rackEditorFloatingOptions__analysisHint {
+  margin-top: 0.6rem;
+  max-width: 15rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: rgba(29, 63, 94, 0.86);
+}
+
+.rackEditorFloatingOptions__analysisHint--subtle {
+  margin-top: 0.45rem;
+  color: rgba(47, 67, 88, 0.72);
+}
+
+.rackEditorFloatingOptions__analysisHint--coverage {
+  margin-top: 0.35rem;
+  color: rgba(25, 60, 91, 0.76);
+}
+
+.rackEditorFloatingOptions__analysisLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.7rem;
+  margin-top: 0.65rem;
+}
+
+.rackEditorFloatingOptions__analysisLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: rgba(25, 58, 89, 0.92);
+}
+
+.rackEditorFloatingOptions__analysisCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(34, 75, 117, 0.1);
+  color: rgba(24, 56, 87, 0.9);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.rackEditorFloatingOptions__analysisHp {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(38, 72, 103, 0.78);
+}
+
+.rackEditorFloatingOptions__analysisSwatch {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 0.0625rem rgba(31, 57, 82, 0.18);
+  flex: 0 0 auto;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--voices {
+  background: linear-gradient(180deg, rgba(79, 138, 234, 0.92), rgba(43, 98, 194, 0.9));
+}
+
+.rackEditorFloatingOptions__analysisSwatch--modulation {
+  background: linear-gradient(180deg, rgba(142, 105, 220, 0.92), rgba(106, 71, 193, 0.9));
+}
+
+.rackEditorFloatingOptions__analysisSwatch--utilities {
+  background: linear-gradient(180deg, rgba(66, 176, 115, 0.92), rgba(39, 134, 84, 0.9));
+}
+
+.rackEditorFloatingOptions__analysisSwatch--timing {
+  background: linear-gradient(180deg, rgba(225, 163, 74, 0.94), rgba(198, 130, 38, 0.92));
+}
+
+.rackEditorFloatingOptions__analysisSwatch--tone {
+  background: linear-gradient(180deg, rgba(225, 105, 125, 0.94), rgba(196, 74, 96, 0.92));
+}
+
+.rackEditorFloatingOptions__analysisScale {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  width: 100%;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: rgba(29, 63, 94, 0.82);
+}
+
+.rackEditorFloatingOptions__analysisScaleBar {
+  flex: 1 1 auto;
+  min-width: 3.5rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 0.0625rem rgba(31, 57, 82, 0.16);
+}
+
+.rackEditorFloatingOptions__analysisScaleBar--power {
+  background: linear-gradient(90deg, rgba(84, 149, 245, 0.96), rgba(233, 97, 97, 0.96));
 }
 
 .rackEditorFloatingOptions__actionButton {
@@ -202,6 +373,7 @@ $floatingSurfaceRestOpacity: 0.78;
 
   .rackEditorFloatingOptions__quickToggle {
     padding: 0.65rem 0.75rem;
+    width: min(100%, 20.5rem);
   }
 
   .rackEditorFloatingOptions__quickToggle,
@@ -223,6 +395,14 @@ $floatingSurfaceRestOpacity: 0.78;
   .rackEditorFloatingOptions__quickToggle mat-slide-toggle,
   .rackEditorFloatingOptions__panel mat-slide-toggle {
     width: auto;
+    max-width: 100%;
+  }
+
+  .rackEditorFloatingOptions__analysisModes {
+    width: 100%;
+  }
+
+  .rackEditorFloatingOptions__analysisHint {
     max-width: 100%;
   }
 

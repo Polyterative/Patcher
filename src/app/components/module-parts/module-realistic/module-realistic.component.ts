@@ -10,6 +10,7 @@ import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service
 import { getModuleHeightForStandard } from '../get-module-height-for-standard.pipe';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 import { derivePanelLabel } from '../panel.constants';
+import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-parts/rack-analysis-mode';
 
 
 @Component({
@@ -20,11 +21,12 @@ import { derivePanelLabel } from '../panel.constants';
   standalone: false
 })
 export class ModuleRealisticComponent implements OnInit {
+  readonly analysisModes = RACK_ANALYSIS_MODES;
   @Input() data: MinimalModule;
   @Input() showPanelImages: boolean = false;
   @Input() selectedPanelId: number | null = null;
-  @Input() powerAnalysisMode = false;
-  @Input() powerAnalysisClass = '';
+  @Input() analysisMode: RackAnalysisMode = RACK_ANALYSIS_MODES.off;
+  @Input() analysisClass = '';
   @Input() disablePanelImageEnterAnimation = false;
 
   @HostBinding('style.width.rem')
@@ -69,5 +71,9 @@ export class ModuleRealisticComponent implements OnInit {
 
   shouldRenderTextSurface(): boolean {
     return !this.showPanelImages;
+  }
+
+  isAnalysisModeActive(): boolean {
+    return this.analysisMode !== this.analysisModes.off;
   }
 }
