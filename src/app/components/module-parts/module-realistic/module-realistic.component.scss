@@ -1,5 +1,22 @@
 @use '@angular/material' as mat;
 
+:host {
+  display: block;
+}
+
+:host(.module--dragPreviewSurface) {
+  display: block;
+  overflow: hidden;
+}
+
+:host(.module--dragPreviewSurface) .root {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: none !important;
+}
+
 
 .rotated {
   transform: rotate(-90deg);
