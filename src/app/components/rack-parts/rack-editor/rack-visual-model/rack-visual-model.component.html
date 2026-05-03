@@ -58,16 +58,19 @@
                                   [data]="rackedModule|mapToModule"
                                   [powerAnalysisMode]="(rackDetailDataService.showPowerAnalysisMode$ | async) ?? false"
                                   [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
-                                  [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
-                                  [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                   class="module"
-                                   cdkDrag
-                                   [cdkDragData]="rackedModule"
-                                   [cdkDragScale]="dragScale"
-                                   [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
-                                   (mouseenter)="setHoveredModule(rackedModule)"
-                                  (mouseleave)="clearHoveredModule(rackedModule)"
-                                  (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+                                   [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
+                                   [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                   [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
+                                    class="module"
+                                    cdkDrag
+                                    [cdkDragData]="rackedModule"
+                                    [cdkDragScale]="dragScale"
+                                    [cdkDragDisabled]="!(isCurrentRackEditable&&isCurrentRackPropertyOfCurrentUser)"
+                                    (cdkDragStarted)="onDragStarted($event, rackedModule)"
+                                    (cdkDragEnded)="onDragEnded($event, rackedModule)"
+                                    (mouseenter)="setHoveredModule(rackedModule)"
+                                   (mouseleave)="clearHoveredModule(rackedModule)"
+                                   (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
              >
                @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
                  <div class="hpIndicator"
@@ -113,6 +116,7 @@
                                         [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
                                         [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
                                         [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                        [disablePanelImageEnterAnimation]="true"
                                         class="module module--dragPreviewSurface">
                   </app-module-realistic>
                 </ng-template>

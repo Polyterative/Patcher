@@ -113,4 +113,10 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.isSurfaceImage).toBeFalse();
   });
 
+  it('keeps enter animations enabled by default', () => {
+    const c = buildComponent();
+
+    expect(c.disableEnterAnimation).toBeFalse();
+  });
+
 });
