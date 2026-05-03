@@ -26,6 +26,7 @@ import {
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SeoAndUtilsService } from '../seo-and-utils.service';
+import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import {
   ApplicationInsightsTeaser,
   ApplicationStatisticsService
@@ -157,12 +158,9 @@ export class HomeComponent extends SubManager {
     }
   ];
   
-  readonly communityLinks: HomeLinkPill[] = [
-    {
-      icon: 'insights',
-      label: 'Open insights',
-      href: '/insights'
-    },
+  readonly communityLinks: HomeLinkPill[];
+  readonly showInsightsPageEntry: boolean;
+  private readonly browseLinks: HomeLinkPill[] = [
     {
       icon: 'view_module',
       label: 'Module browser',
@@ -214,10 +212,22 @@ export class HomeComponent extends SubManager {
     readonly rackDetailDataService: RackDetailDataService,
     readonly moduleDetailDataService: ModuleDetailDataService,
     readonly applicationStatisticsService: ApplicationStatisticsService,
+    public readonly appState: AppStateService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     @Inject(PLATFORM_ID) private platformId: object
   ) {
     super();
+    this.showInsightsPageEntry = this.appState.isDev;
+    this.communityLinks = this.showInsightsPageEntry
+      ? [
+        {
+          icon: 'insights',
+          label: 'Open insights',
+          href: '/insights'
+        },
+        ...this.browseLinks
+      ]
+      : [...this.browseLinks];
     this.applicationInsights$ = this.applicationStatisticsService.teaser$;
 
     const seoData: SeoSocialShareData = {
