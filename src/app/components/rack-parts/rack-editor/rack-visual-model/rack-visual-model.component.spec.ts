@@ -302,7 +302,7 @@ describe('RackVisualModelComponent', () => {
     });
 
     component.onDragReleased({} as any, moduleRef);
-    component.onDropListDropped({} as any, 0, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as any, 0, moduleRef);
 
     expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
     expect(rackDetailDataService.rackOrderChange$.next).toHaveBeenCalled();
@@ -312,6 +312,76 @@ describe('RackVisualModelComponent', () => {
 
     animationFrames.shift()?.(0);
     expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
+  });
+
+  it('keeps panel image suppression active until the dropped module reveal cleanup finishes', () => {
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+
+    component.onDragStarted({} as any, moduleRef);
+    component.onDragReleased({} as any, moduleRef);
+    component.onDragEnded({} as any, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as any, 0, moduleRef);
+
+    expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeTrue();
+
+    animationFrames.shift()?.(0);
+    animationFrames.shift()?.(0);
+    animationFrames.shift()?.(0);
+
+    expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeTrue();
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeTrue();
+
+    animationFrames.shift()?.(0);
+
+    expect(component.isDragImageAnimationSuppressed(moduleRef)).toBeFalse();
+    expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
+  });
+
+  it('animates same-row drop reveals after suppression clears', () => {
+    jasmine.clock().install();
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+
+    try {
+      const sameContainer = {};
+      component.onDragReleased({} as any, moduleRef);
+      component.onDropListDropped({previousContainer: sameContainer, container: sameContainer} as any, 0, moduleRef);
+
+      animationFrames.shift()?.(0);
+      animationFrames.shift()?.(0);
+
+      expect(component.isDropRevealSuppressed(moduleRef)).toBeFalse();
+      expect(component.isDropRevealAnimating(moduleRef)).toBeTrue();
+
+      jasmine.clock().tick(225);
+
+      expect(component.isDropRevealAnimating(moduleRef)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('does not add the reveal animation for cross-row drops', () => {
+    const animationFrames: FrameRequestCallback[] = [];
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback: FrameRequestCallback): number => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+
+    component.onDragReleased({} as any, moduleRef);
+    component.onDropListDropped({previousContainer: {}, container: {}} as any, 1, moduleRef);
+
+    animationFrames.shift()?.(0);
+    animationFrames.shift()?.(0);
+
+    expect(component.isDropRevealAnimating(moduleRef)).toBeFalse();
   });
 
   it('builds module heatmap visuals for powered modules', () => {
