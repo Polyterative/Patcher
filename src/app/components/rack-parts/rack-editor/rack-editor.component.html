@@ -189,6 +189,7 @@
                         [attr.aria-pressed]="(bag.analysisMode ?? analysisModes.off) === analysisModes.off"
                         (click)="dataService.analysisMode$.next(analysisModes.off)"
                         matTooltip="Keep the rack view clear with no analysis overlay"
+                        [matTooltipDisabled]="touchInteractionMode"
                         matTooltipPosition="above"
                 >
                   Off
@@ -199,6 +200,7 @@
                         [attr.aria-pressed]="bag.analysisMode === analysisModes.power"
                         (click)="dataService.analysisMode$.next(analysisModes.power)"
                         matTooltip="Color modules by relative power draw and show row power summaries"
+                        [matTooltipDisabled]="touchInteractionMode"
                         matTooltipPosition="above"
                 >
                   Power
@@ -209,6 +211,7 @@
                         [attr.aria-pressed]="bag.analysisMode === analysisModes.function"
                         (click)="dataService.analysisMode$.next(analysisModes.function)"
                         matTooltip="Color modules by their primary function so distribution stays visible across the rack"
+                        [matTooltipDisabled]="touchInteractionMode"
                         matTooltipPosition="above"
                 >
                   Function

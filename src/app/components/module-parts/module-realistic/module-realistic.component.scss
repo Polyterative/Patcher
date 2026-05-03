@@ -5,6 +5,10 @@
   display: block;
   flex: 0 0 auto;
   min-width: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .root {
@@ -19,6 +23,10 @@
   position: relative;
   isolation: isolate;
   transition: background-color 140ms ease, box-shadow 180ms ease;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
 }
 
 .root--analysisMode {

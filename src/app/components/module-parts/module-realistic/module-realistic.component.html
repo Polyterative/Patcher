@@ -50,7 +50,7 @@
                            [containImage]="false"
                            [disableEnterAnimation]="disablePanelImageEnterAnimation"
                            [matTooltip]="isAnalysisModeActive() ? '' : buildPanelTooltip(data, selectedPanelId)"
-                           [matTooltipDisabled]="isAnalysisModeActive()"
+                           [matTooltipDisabled]="isAnalysisModeActive() || touchInteractionMode"
                            matTooltipClass="module-panel-tooltip"
     ></app-module-part-image>
   }
