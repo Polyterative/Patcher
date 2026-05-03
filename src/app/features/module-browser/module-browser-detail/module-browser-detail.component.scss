@@ -9,9 +9,9 @@
 
 .module-detail-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(15.5rem, 0.72fr) minmax(24rem, 1.28fr);
+  grid-template-columns: minmax(0, 1.16fr) minmax(15.5rem, 0.7fr) minmax(24rem, 1.24fr);
   grid-template-areas: 'main rail secondary';
-  gap: 1rem;
+  gap: clamp(0.85rem, 0.95vw, 1rem);
   width: 100%;
   min-width: 0;
   align-items: start;
@@ -59,9 +59,25 @@
   align-self: start;
 }
 
+.module-detail-supportRailCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.85rem, 0.95vw, 1rem);
+  width: 100%;
+  min-width: 0;
+}
+
+.module-detail-supportRailCards > * {
+  min-width: 0;
+}
+
+.module-detail-supportRailCard {
+  min-width: 0;
+}
+
 .module-detail-layout:not(.module-detail-layout--editing) .module-detail-column--middle {
   position: sticky;
-  top: 1rem;
+  top: calc(4.5rem + env(safe-area-inset-top));
 }
 
 .module-detail-layout--editing {
@@ -77,8 +93,8 @@
 
 .module-detail-usageGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20.5rem), 1fr));
+  gap: clamp(0.85rem, 0.95vw, 1rem);
 }
 
 .module-detail-usage-card {
@@ -87,6 +103,11 @@
 
 .module-detail-empty-state-copy {
   padding: 1rem;
+}
+
+.module-detail-primary-card {
+  width: 100%;
+  min-width: 0;
 }
 
 .module-submit-similar-fab {
@@ -147,59 +168,121 @@
 
 @media (max-width: 97.5rem) {
   .module-detail-layout {
-    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.9fr);
+    grid-template-columns: minmax(0, 1.08fr) minmax(17rem, 0.92fr);
     grid-template-areas:
       'main rail'
       'secondary secondary';
   }
 
   .module-detail-layout--editing {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
     grid-template-areas:
       'main secondary'
       'rail rail';
   }
 }
 
-@media (max-width: 80rem) {
-  .module-detail-layout--editing {
-    grid-template-columns: 1fr;
+@media (max-width: 88rem) {
+  .module-detail-layout {
+    grid-template-columns: minmax(0, 1.02fr) minmax(17rem, 0.98fr);
     grid-template-areas:
-      'main'
-      'secondary'
-      'rail';
-  }
-}
-
-@media (max-width: 70rem) {
-  .module-detail-layout,
-  .module-detail-layout--editing {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'main'
-      'secondary'
-      'rail';
+      'main rail'
+      'secondary secondary';
   }
 
   .module-detail-layout:not(.module-detail-layout--editing) .module-detail-column--middle {
     position: static;
   }
 
-  .module-submit-similar-fab {
+  .module-detail-layout--editing {
+    grid-template-columns: minmax(0, 1.02fr) minmax(17rem, 0.98fr);
+    grid-template-areas:
+      'main rail'
+      'secondary secondary';
+  }
+}
+
+@media (max-width: 80rem) {
+  .module-detail-layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(16.5rem, 0.92fr);
+    grid-template-areas:
+      'main rail'
+      'secondary secondary';
+  }
+
+  .module-detail-layout--editing {
+    grid-template-columns: minmax(0, 1.08fr) minmax(16.5rem, 0.92fr);
+    grid-template-areas:
+      'main rail'
+      'secondary secondary';
+  }
+}
+
+@media (max-width: 37.5rem) {
+  .module-detail-layout,
+  .module-detail-layout--editing {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'main'
+      'rail'
+      'secondary';
+  }
+
+  .module-detail-layout:not(.module-detail-layout--editing) .module-detail-column--middle {
     position: static;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    z-index: auto;
-    width: 100%;
-    margin-top: 0.25rem;
-    justify-content: center;
-    white-space: normal;
+  }
+
+  .module-detail-supportRailCards {
+    grid-template-columns: 1fr;
+  }
+
+  .editing-focus-note.module-detail-supportRailCard--primary {
+    grid-column: auto;
   }
 }
 
 @media (max-width: 59.9375rem) {
+  .module-detail-layout,
+  .module-detail-usageGrid {
+    gap: 0.85rem;
+  }
+
   .module-detail-usageGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 42rem) {
+  .module-detail-layout {
+    gap: 0.75rem;
+  }
+
+  .module-detail-usageGrid {
+    gap: 0.75rem;
+  }
+
+  .module-detail-empty-state-copy {
+    padding: 0.85rem;
+  }
+
+  .module-submit-similar-fab {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 23.4375rem) {
+  .module-detail-layout {
+    gap: 0.6rem;
+  }
+
+  .module-detail-empty-state-copy {
+    padding: 0.7rem;
+  }
+
+  .module-submit-similar-fab {
+    font-size: 0.78rem;
+    border-radius: 1.2rem;
   }
 }

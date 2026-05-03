@@ -51,15 +51,15 @@
 .panel-preview-item {
   align-items: center;
   cursor: zoom-in;
-  flex: 0 1 14rem;
-  width: min(100%, 18rem);
-  max-width: 28rem;
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: min(100%, 22rem);
 }
 
 // Constrain panel gallery images to parent width so large images don't overflow
 .panel-gallery-img {
-  width: 100%;
-  max-width: 100%;
+  width: auto;
+  max-width: min(100%, 22rem);
   max-height: 10rem;
   height: auto;
   display: block;

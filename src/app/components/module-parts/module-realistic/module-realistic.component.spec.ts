@@ -58,6 +58,24 @@ describe('ModuleRealisticComponent', () => {
     expect(component.shouldRenderTextSurface()).toBeTrue();
   });
 
+  it('identifies power analysis mode separately from function mode', () => {
+    const component = build();
+    component.analysisMode = RACK_ANALYSIS_MODES.power;
+
+    expect(component.isAnalysisModeActive()).toBeTrue();
+    expect(component.isPowerAnalysisMode()).toBeTrue();
+    expect(component.isFunctionAnalysisMode()).toBeFalse();
+  });
+
+  it('identifies function analysis mode separately from power mode', () => {
+    const component = build();
+    component.analysisMode = RACK_ANALYSIS_MODES.function;
+
+    expect(component.isAnalysisModeActive()).toBeTrue();
+    expect(component.isPowerAnalysisMode()).toBeFalse();
+    expect(component.isFunctionAnalysisMode()).toBeTrue();
+  });
+
   it('binds the host width to module hp', () => {
     const component = build();
     component.data = {
