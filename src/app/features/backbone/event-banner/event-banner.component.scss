@@ -1,0 +1,146 @@
+:host {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+// ─── Main announcement strip ───────────────────────────────────────────────
+
+.event-banner {
+  display:          flex;
+  flex-direction:   row;
+  align-items:      flex-start;
+  justify-content:  space-between;
+  padding:          0.5rem 0.5rem 0.5rem 1rem;
+  background-color: var(--mat-sys-surface-variant, #e2e0e7);
+  color:            var(--mat-sys-on-surface-variant, #45464e);
+  gap:              0.5rem;
+  box-sizing:       border-box;
+  width:            100%;
+  overflow-wrap:    break-word;
+  word-break:       break-word;
+
+  &--accent {
+    background-color: var(--mat-sys-tertiary-container, #ffd8e4);
+    color:            var(--mat-sys-on-tertiary-container, #31111d);
+  }
+
+  &__body {
+    display:     flex;
+    flex-wrap:   wrap;
+    align-items: center;
+    gap:         0.2rem 0.6rem;
+    flex:        1;
+    min-width:   0;
+    padding-top: 0.2rem;
+  }
+
+  &__title {
+    font-size:     0.875rem;
+    font-weight:   700;
+    line-height:   1.4;
+    white-space:   nowrap;
+    flex-shrink:   0;
+  }
+
+  &__description {
+    flex:          1 1 180px;
+    min-width:     0;
+    font-size:     0.8125rem;
+    line-height:   1.45;
+    overflow-wrap: break-word;
+    word-break:    break-word;
+    opacity:       0.9;
+  }
+
+  &__cta {
+    flex-shrink:   0;
+    font-size:     0.8125rem;
+    margin-top:    0.125rem;
+  }
+
+  &__dismiss {
+    flex-shrink:   0;
+    margin-top:    -4px;
+  }
+
+  // Narrow screens: stack title + description + CTA vertically
+  @media (max-width: 520px) {
+    padding:        0.625rem 0.375rem 0.625rem 0.75rem;
+    align-items:    flex-start;
+
+    &__body {
+      flex-direction: column;
+      align-items:    flex-start;
+      gap:            0.3rem 0;
+      padding-top:    0.1rem;
+    }
+
+    &__title {
+      white-space: normal;
+    }
+
+    &__description {
+      flex-basis: 100%;
+    }
+
+    &__cta {
+      margin-top: 0.25rem;
+      // Full-width on tiny screens for easier tap target
+      width:      100%;
+      text-align: center;
+    }
+  }
+}
+
+// ─── Festive marquee strip ─────────────────────────────────────────────────
+
+@keyframes event-marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+.event-marquee {
+  width:            100%;
+  overflow:         hidden;
+  background-color: var(--mat-sys-tertiary, #7d5260);
+  color:            var(--mat-sys-on-tertiary, #fff);
+  box-sizing:       border-box;
+  height:           26px;
+  display:          flex;
+  align-items:      center;
+
+  // Respect prefers-reduced-motion
+  @media (prefers-reduced-motion: reduce) {
+    overflow-x: auto;
+    height:     auto;
+    padding:    0.25rem 0.75rem;
+
+    .event-marquee__track {
+      animation: none;
+      width:     auto;
+    }
+
+    .event-marquee__content {
+      white-space: normal;
+    }
+  }
+
+  &__track {
+    display:   inline-flex;
+    width:     max-content;
+    animation: event-marquee-scroll 22s linear infinite;
+    will-change: transform;
+  }
+
+  &__content {
+    font-size:      0.7rem;
+    font-weight:    500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space:    nowrap;
+    padding-right:  0; // gap handled by repeated text
+    opacity:        0.92;
+  }
+}

@@ -1,0 +1,38 @@
+@if (config && (isVisible$ | async)) {
+  <div
+    class="event-banner"
+    [class.event-banner--accent]="config.theme === 'accent'"
+    role="region"
+    aria-label="Site announcement"
+  >
+    <div class="event-banner__body">
+      <span class="event-banner__title">{{ config.title }}</span>
+      <span class="event-banner__description">{{ config.description }}</span>
+      @if (config.ctaUrl && config.ctaLabel) {
+        <a
+          class="event-banner__cta"
+          [href]="config.ctaUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          mat-stroked-button
+        >{{ config.ctaLabel }}</a>
+      }
+    </div>
+    <button
+      class="event-banner__dismiss"
+      mat-icon-button
+      aria-label="Dismiss announcement"
+      (click)="dismiss()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+}
+
+@if (config?.marquee && (isMarqueeVisible$ | async)) {
+  <div class="event-marquee" aria-hidden="true">
+    <div class="event-marquee__track">
+      <span class="event-marquee__content">{{ config!.marquee!.text }}{{ config!.marquee!.text }}{{ config!.marquee!.text }}</span>
+    </div>
+  </div>
+}
