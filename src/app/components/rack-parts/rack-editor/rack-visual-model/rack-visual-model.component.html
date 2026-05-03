@@ -62,6 +62,7 @@
                                     [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
                                     [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
                                     [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
+                                    [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
                                      class="module"
                                      cdkDrag
                                      [cdkDragData]="rackedModule"

@@ -55,37 +55,6 @@
   min-width: 0;
 }
 
-.rackBrowserDetailView__compactEditPrompt {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.9rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(23, 102, 178, 0.09), rgba(23, 145, 111, 0.08));
-  border: 1px solid rgba(34, 75, 117, 0.14);
-}
-
-.rackBrowserDetailView__compactEditPromptCopy {
-  min-width: 0;
-}
-
-.rackBrowserDetailView__compactEditPromptTitle {
-  font-size: 0.98rem;
-  font-weight: 700;
-  color: rgba(19, 54, 89, 0.96);
-}
-
-.rackBrowserDetailView__compactEditPromptBody {
-  color: rgba(19, 54, 89, 0.76);
-  line-height: 1.4;
-}
-
-.rackBrowserDetailView__editHint {
-  font-size: 1.5em;
-  padding: 3em;
-}
-
 .rackBrowserDetailView__summaryInsights {
   display: grid;
   grid-template-columns: 1fr;
@@ -134,11 +103,6 @@
     display: none;
   }
 
-  .rackBrowserDetailView__compactEditPrompt {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
   .rackBrowserDetailView__summaryColumn--left,
   .rackBrowserDetailView__summaryColumn--right {
     flex: 1 0 100%;
@@ -153,19 +117,5 @@
 @media (max-width: 70.5625rem) {
   :host ::ng-deep app-rack-composite app-edit-fab {
     display: none;
-  }
-
-  .rackBrowserDetailView__editHint {
-    display: none;
-  }
-}
-
-@media (max-width: 48rem) {
-  .rackBrowserDetailView__compactEditPrompt {
-    padding: 0.85rem 0.9rem;
-  }
-
-  .rackBrowserDetailView__compactEditPrompt app-brand-primary-button {
-    width: 100%;
   }
 }

@@ -40,27 +40,11 @@
                  </div>
                </div>
              </div>
-             @if (shouldShowCompactEditPrompt(bag.isCurrentRackPropertyOfCurrentUser, bag.isCurrentRackEditable)) {
-               <div class="rackBrowserDetailView__compactEditPrompt">
-                 <div class="col gap0 rackBrowserDetailView__compactEditPromptCopy">
-                   <span class="rackBrowserDetailView__compactEditPromptTitle">Ready to make changes?</span>
-                   <span class="rackBrowserDetailView__compactEditPromptBody">
-                     Switch to edit mode to add modules, reorder rows, and update this rack.
-                   </span>
-                 </div>
-                 <app-brand-primary-button
-                   icon="edit"
-                   (click$)="dataService.requestRackEditableStatusChange$.next()"
-                 >
-                   Edit rack
-                 </app-brand-primary-button>
-               </div>
-             }
-             <lib-clean-card>
-               <app-rack-editor
-                 [data]="(bag.data)"
-               ></app-rack-editor>
-             </lib-clean-card>
+              <lib-clean-card>
+                <app-rack-editor
+                  [data]="(bag.data)"
+                ></app-rack-editor>
+              </lib-clean-card>
             @if (bag.rowedRackedModules) {
               <div class="rackBrowserDetailView__mobileAnalysis">
                 <app-rack-balance-panel
@@ -84,20 +68,7 @@
           [compactSidebarAtTablet]="true"
           [viewConfig]="viewConfig"
         ></app-module-browser-root>
-       } @else {
-         <div class="col gap4 center rackBrowserDetailView__editHint"
-         >
-           <mat-label
-           >
-             Press Edit to add modules or make changes
-          </mat-label>
-          <app-brand-primary-button (click$)="dataService.requestRackEditableStatusChange$.next()"
-                                    icon="edit"
-          >
-            Edit rack
-          </app-brand-primary-button>
-        </div>
-      }
+        }
     }
   </div>
 }
