@@ -49,10 +49,10 @@
         }
         <div class="row rackRow"
              [class.row-bg]="!(row|hasUnrackedModules)"
-             cdkDropList
-             cdkDropListOrientation="horizontal"
-             (cdkDropListDropped)="rackDetailDataService.rackOrderChange$.next({event:$event, newRow:rowId,module:$event.item.data})"
-            >
+              cdkDropList
+              cdkDropListOrientation="horizontal"
+              (cdkDropListDropped)="onDropListDropped($event, rowId, $event.item.data)"
+             >
           @for (rackedModule of row; track rackedModule; let i = $index) {
             <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
                                   [data]="rackedModule|mapToModule"
@@ -68,11 +68,11 @@
                                    (mouseenter)="setHoveredModule(rackedModule)"
                                   (mouseleave)="clearHoveredModule(rackedModule)"
                                   (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-            >
-              @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
-                <div class="hpIndicator"
-                     (mousedown)="$event.stopPropagation()"
-                >
+             >
+               @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !((rackDetailDataService.showPowerAnalysisMode$ | async) ?? false)) {
+                 <div class="hpIndicator"
+                      (mousedown)="$event.stopPropagation()"
+                 >
                   {{ effectiveHp(rackedModule) }}HP
                 </div>
               }
@@ -103,13 +103,23 @@
                       <span class="moduleHoverStats__label">PWR</span>
                       <span class="moduleHoverStats__value">n/a</span>
                     </div>
-                  }
-                </div>
-              }
-            </app-module-realistic>
-          }
-        </div>
-      </div>
+                   }
+                 </div>
+               }
+                <ng-template cdkDragPreview
+                             matchSize>
+                  <app-module-realistic [data]="rackedModule|mapToModule"
+                                        [powerAnalysisMode]="(rackDetailDataService.showPowerAnalysisMode$ | async) ?? false"
+                                        [powerAnalysisClass]="powerAnalysisVisual(rackedModule).className"
+                                        [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
+                                        [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                        class="module module--dragPreviewSurface">
+                  </app-module-realistic>
+                </ng-template>
+             </app-module-realistic>
+           }
+         </div>
+       </div>
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
   </div>

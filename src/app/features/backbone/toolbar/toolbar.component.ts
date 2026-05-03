@@ -33,13 +33,6 @@ export class ToolbarComponent extends SubManager {
       route:    '/home',
       icon:     'home',
       disabled: false
-    },
-    {
-      label:      'Docs',
-      href:       'https://docs.patcher.xyz/quick-start/',
-      hrefNewTab: true,
-      icon:       'help_outline',
-      disabled:   false
     }
   ];
   private readonly mainLinks: RouteClickableLink[] = [
