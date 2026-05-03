@@ -127,6 +127,10 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     return `scale(${ this.effectiveScale(userRequestedSmallerScale) })`;
   }
 
+  shouldDisableDropAnimations(userRequestedSmallerScale: boolean | null | undefined): boolean {
+    return this.effectiveScale(userRequestedSmallerScale) < 0.999;
+  }
+
   toggleViewOptions(): void {
     this.viewOptionsExpanded = !this.viewOptionsExpanded;
     this.cdr.markForCheck();

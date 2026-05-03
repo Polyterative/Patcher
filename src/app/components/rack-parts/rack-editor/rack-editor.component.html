@@ -60,11 +60,12 @@
                                       [isCurrentRackEditable]="bag.isCurrentRackEditable"
                                       [rackDetailDataService]="dataService"
                                       [moduleRightClick$]="moduleRightClick$"
-                                      [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
-                                      [style.width.rem]="rackWidthRem()"
-                                      [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
-                                      class="rackEditorCanvasSurface"
-               ></app-rack-visual-model>
+                                       [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
+                                       [style.width.rem]="rackWidthRem()"
+                                       [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
+                                       [class.rackVisualModel--disableDropAnimations]="shouldDisableDropAnimations(bag.userRequestedSmallerScale)"
+                                       class="rackEditorCanvasSurface"
+                ></app-rack-visual-model>
              </div>
            </div>
            </div>

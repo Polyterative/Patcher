@@ -87,6 +87,8 @@ export class DiscoveryTipService extends SubManager {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
     ).subscribe((event) => {
+      this.clearQueuedTip();
+      this._activeTip$.next(null);
       this._route$.next(event.urlAfterRedirects);
     });
 
