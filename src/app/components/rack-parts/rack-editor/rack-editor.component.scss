@@ -49,6 +49,10 @@ $floatingSurfaceRestOpacity: 0.78;
 .rackEditorResponsiveActions {
   display: none;
   width: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .rackEditorResponsiveActions__button {
@@ -82,6 +86,10 @@ $floatingSurfaceRestOpacity: 0.78;
   gap: 0.65rem;
   max-height: calc(100vh - (#{$floatingInsetDesktop} * 2) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow-y: auto;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .rackEditorFloatingOptions__panel,

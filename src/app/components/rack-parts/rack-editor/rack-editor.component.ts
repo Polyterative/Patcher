@@ -40,6 +40,7 @@ import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
 import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
 import { buildRackFunctionVisual } from '../rack-function-visuals.utils';
+import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 
 
 export interface ModuleRightClick {
@@ -74,6 +75,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   
   private static readonly reducedScaleMultiplier = 0.65;
   readonly analysisModes = RACK_ANALYSIS_MODES;
+  readonly touchInteractionMode = prefersTouchInteraction();
   readonly functionAnalysisLegend = [
     {label: 'Voices', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--voices'},
     {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--modulation'},
