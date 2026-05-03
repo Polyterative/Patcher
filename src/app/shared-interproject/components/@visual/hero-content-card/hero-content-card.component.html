@@ -22,11 +22,18 @@
     } @else {
       @if (titleBig) {
         <h1
-          class="row title bgImage vertPadding gap1">
-          <div class="title-text" [@title]>
-            {{ titleBig }}@if (titleSub) {
-            <span class="title-sub"> - {{ titleSub }}</span>
-          }
+          class="row title bgImage vertPadding gap1"
+          [class.title--with-sub]="titleSub">
+          <div class="title-text"
+               [class.title-text--with-sub]="titleSub"
+               [@title]>
+            <span class="title-main">{{ titleBig }}</span>
+            @if (titleSub) {
+              <span class="title-separator"
+                    aria-hidden="true">-</span>
+              <span class="title-sub"
+                    [attr.title]="titleSub">{{ titleSub }}</span>
+            }
           </div>
           @if (icon) {
             <app-hero-content-card-head-icon [icon]="icon"

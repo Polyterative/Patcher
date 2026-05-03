@@ -214,7 +214,7 @@ describe('RackEditorComponent', () => {
     expect(component.rackSurfaceTransform(true)).toBe('scale(0.325)');
   });
 
-  it('disables drop animations whenever the rendered rack is scaled down', () => {
+  it('disables drop animations only for the explicit reduced-scale mode', () => {
     const component = new RackEditorComponent(
       {} as MatSnackBar,
       {} as SupabaseService,
@@ -228,7 +228,7 @@ describe('RackEditorComponent', () => {
     expect(component.shouldDisableDropAnimations(false)).toBeFalse();
 
     component.autoScale = 0.92;
-    expect(component.shouldDisableDropAnimations(false)).toBeTrue();
+    expect(component.shouldDisableDropAnimations(false)).toBeFalse();
 
     component.autoScale = 1;
     expect(component.shouldDisableDropAnimations(true)).toBeTrue();

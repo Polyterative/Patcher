@@ -1,17 +1,59 @@
 
 .parent {
   > .opacizeOnHover {
-    opacity: 0.2;
-
+    opacity: 1;
   }
-
 }
 
-.parent:hover > .opacizeOnHover {
-  opacity:            1;
-  -webkit-transition: opacity 125ms ease-in-out;
-  -moz-transition:    opacity 125ms ease-in-out;
-  -ms-transition:     opacity 125ms ease-in-out;
-  -o-transition:      opacity 125ms ease-in-out;
-  transition:         opacity 125ms ease-in-out;
+:host {
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+}
+
+.patch-edit-meta-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 0.4rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.patch-tags-field {
+  width: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .parent > .opacizeOnHover {
+    opacity: 0.2;
+  }
+
+  .parent:hover > .opacizeOnHover {
+    opacity:            1;
+    -webkit-transition: opacity 125ms ease-in-out;
+    -moz-transition:    opacity 125ms ease-in-out;
+    -ms-transition:     opacity 125ms ease-in-out;
+    -o-transition:      opacity 125ms ease-in-out;
+    transition:         opacity 125ms ease-in-out;
+  }
+}
+
+@container (min-width: 34rem) {
+  .patch-edit-meta-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.95fr);
+    align-items: start;
+  }
+
+  .patch-edit-meta-grid__name {
+    grid-column: 1 / -1;
+  }
+
+  .patch-edit-meta-grid__description {
+    grid-column: 1;
+  }
+
+  .patch-edit-meta-grid__tags {
+    grid-column: 2;
+  }
 }
