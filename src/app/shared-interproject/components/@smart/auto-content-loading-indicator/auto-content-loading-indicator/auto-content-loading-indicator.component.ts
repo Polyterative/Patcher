@@ -28,7 +28,8 @@ import {
   animations: [
     fadeInOnEnterAnimation({
       anchor: 'enter',
-      duration: 500
+      duration: 500,
+      animateChildren: 'after'
     })
   ],
   encapsulation: ViewEncapsulation.None,
