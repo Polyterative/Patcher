@@ -1,7 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
+  Output,
   OnInit
 } from '@angular/core';
 import {
@@ -18,6 +20,12 @@ import {
   fadeInOnEnterAnimation,
   fadeOutOnLeaveAnimation
 } from 'angular-animations';
+import {
+  animate,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
 import { MinimalModule } from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import {
@@ -50,7 +58,37 @@ const TAG_TYPE_LABELS: Record<TagType, string> = {
     fadeOutOnLeaveAnimation({
       anchor: 'leave',
       duration: 1
-    })
+    }),
+    trigger('tagChooserPanel', [
+      transition(':enter', [
+        style({
+          height: 0,
+          opacity: 0,
+          marginTop: 0,
+          transform: 'translateY(-0.35rem)'
+        }),
+        animate('220ms cubic-bezier(0.2, 0, 0, 1)', style({
+          height: '*',
+          opacity: 1,
+          marginTop: '*',
+          transform: 'translateY(0)'
+        }))
+      ]),
+      transition(':leave', [
+        style({
+          height: '*',
+          opacity: 1,
+          marginTop: '*',
+          transform: 'translateY(0)'
+        }),
+        animate('180ms cubic-bezier(0.4, 0, 1, 1)', style({
+          height: 0,
+          opacity: 0,
+          marginTop: 0,
+          transform: 'translateY(-0.25rem)'
+        }))
+      ])
+    ])
   ],
   providers: [TagVoteDataService],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,6 +100,7 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
   @Input() showCounts = true;
   @Input() readOnly = false;
   @Input() maxTags: number | null = null;
+  @Output() proposerOpenChange = new EventEmitter<boolean>();
 
   proposerOpen$ = new BehaviorSubject<boolean>(false);
   
@@ -131,8 +170,18 @@ export class ModuleTagsComponent extends SubManager implements OnInit {
     this.tagVoteService.loadVotes$.next(preloadedCounts);
   }
   
+  openProposer(): void {
+    this.proposerOpen$.next(true);
+    this.proposerOpenChange.emit(true);
+  }
+
+  closeProposer(): void {
+    this.proposerOpen$.next(false);
+    this.proposerOpenChange.emit(false);
+  }
+
   proposeTag(tag: Tag): void {
     this.tagVoteService.proposeTag$.next({moduleId: this.data.id, tagId: tag.id});
-    this.proposerOpen$.next(false);
+    this.closeProposer();
   }
 }
