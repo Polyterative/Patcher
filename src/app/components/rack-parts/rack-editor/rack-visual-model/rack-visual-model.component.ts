@@ -31,26 +31,18 @@ import {
   RackPowerHeatmapVisual,
   rackPowerHeatmapKey
 } from '../../rack-power-heatmap.utils';
-import { buildRackFunctionVisual, RackFunctionVisual } from '../../rack-function-visuals.utils';
+import {
+  buildRackFunctionVisual,
+  buildRowFunctionBreakdowns,
+  buildRowFunctionResidualLabel,
+  RackFunctionVisual,
+  RowFunctionBreakdown
+} from '../../rack-function-visuals.utils';
 import { hasCompletePowerData } from '../../rack-power-data.utils';
 import { RackDetailDataService } from '../../rack-detail-data.service';
 import { ModuleRightClick } from '../rack-editor.component';
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from '../../rack-analysis-mode';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
-
-interface RowFunctionRoleBreakdown {
-  label: string;
-  className: string;
-  moduleCount: number;
-  hp: number;
-}
-
-interface RowFunctionBreakdown {
-  moduleCount: number;
-  roles: RowFunctionRoleBreakdown[];
-  residualCount: number;
-  residualHp: number;
-}
 
 
 @Component({
@@ -86,6 +78,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   private hoveredRowIndex: number | null = null;
   private hoveredRowPowerPanelPlacement: 'above' | 'below' = 'above';
   private rowPowerBreakdown: RackPowerRowBreakdown[] = [];
+  private rowFunctionBreakdowns = new Map<number, RowFunctionBreakdown>();
   private modulePowerHeatmap = new Map<string, RackPowerHeatmapVisual>();
   @HostBinding('class.rackVisualModel--suppressPostDropReorder') suppressPostDropReorder = false;
   
@@ -131,7 +124,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     this.clearTouchInteractionState();
   }
   
-  isLastRowEmpty(rowedRackedModules: RackedModule[][]) {
+  isLastRowEmpty(rowedRackedModules: RackedModule[][]): boolean {
     return rowedRackedModules[rowedRackedModules.length - 1].length === 0;
   }
 
@@ -187,11 +180,11 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   shouldShowRowPowerPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.power && this.isRowAnalysisPanelVisible(rowId);
+    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.power);
   }
 
   shouldShowRowFunctionPanel(rowId: number, analysisMode: RackAnalysisMode): boolean {
-    return analysisMode === this.analysisModes.function && this.isRowAnalysisPanelVisible(rowId);
+    return this.shouldShowRowAnalysisPanel(rowId, analysisMode, this.analysisModes.function);
   }
 
   isRowPowerPanelBelow(rowId: number): boolean {
@@ -211,61 +204,11 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   rowFunctionBreakdownAt(rowId: number): RowFunctionBreakdown | null {
-    const rowModules = this.rowedRackedModules?.[rowId] ?? [];
-
-    if (rowModules.length === 0) {
-      return null;
-    }
-
-    const roleMap = new Map<string, RowFunctionRoleBreakdown>();
-    let residualCount = 0;
-    let residualHp = 0;
-
-    for (const rackedModule of rowModules) {
-      const functionVisual = this.functionAnalysisVisual(rackedModule);
-      const hp = this.effectiveHp(rackedModule);
-
-      if (!this.isTrackedFunctionRole(functionVisual.className)) {
-        residualCount += 1;
-        residualHp += hp;
-        continue;
-      }
-
-      const current = roleMap.get(functionVisual.roleLabel) ?? {
-        label: functionVisual.roleLabel,
-        className: functionVisual.className,
-        moduleCount: 0,
-        hp: 0
-      };
-
-      current.moduleCount += 1;
-      current.hp += hp;
-      roleMap.set(functionVisual.roleLabel, current);
-    }
-
-    return {
-      moduleCount: rowModules.length,
-      roles: [...roleMap.values()].sort((a, b) => b.hp - a.hp || b.moduleCount - a.moduleCount || a.label.localeCompare(b.label)),
-      residualCount,
-      residualHp
-    };
+    return this.rowFunctionBreakdowns.get(rowId) ?? null;
   }
 
   rowFunctionResidualLabel(rowId: number): string {
-    const rowFunction = this.rowFunctionBreakdownAt(rowId);
-    if (!rowFunction) {
-      return '';
-    }
-
-    if (rowFunction.roles.length === 0) {
-      return rowFunction.residualCount > 0
-        ? `${ rowFunction.residualCount } module${ rowFunction.residualCount === 1 ? '' : 's' } blank or unclassified in this row`
-        : 'No tracked function roles recognized in this row yet.';
-    }
-
-    return rowFunction.residualCount > 0
-      ? `${ rowFunction.residualCount } module${ rowFunction.residualCount === 1 ? '' : 's' } blank or unclassified (${ rowFunction.residualHp }HP)`
-      : 'All modules in this row map to tracked function roles.';
+    return buildRowFunctionResidualLabel(this.rowFunctionBreakdownAt(rowId));
   }
 
   powerAnalysisVisual(rackedModule: RackedModule): RackPowerHeatmapVisual {
@@ -436,6 +379,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   private updateRowPowerBreakdown(): void {
     this.rowPowerBreakdown = buildRackPowerBreakdown(this.rowedRackedModules ?? []).rows;
+    this.rowFunctionBreakdowns = buildRowFunctionBreakdowns(this.rowedRackedModules);
     if (this.hoveredRowIndex != null && this.hoveredRowIndex >= this.rowPowerBreakdown.length) {
       this.hoveredRowIndex = null;
     }
@@ -470,12 +414,12 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     return availableAbove >= availableBelow ? 'above' : 'below';
   }
 
-  private isTrackedFunctionRole(className: string): boolean {
-    return className === 'functionAnalysisModule--voices'
-      || className === 'functionAnalysisModule--modulation'
-      || className === 'functionAnalysisModule--utilities'
-      || className === 'functionAnalysisModule--timing'
-      || className === 'functionAnalysisModule--tone';
+  private shouldShowRowAnalysisPanel(
+    rowId: number,
+    analysisMode: RackAnalysisMode,
+    targetMode: RackAnalysisMode
+  ): boolean {
+    return analysisMode === targetMode && this.isRowAnalysisPanelVisible(rowId);
   }
 
   private shouldTrackTouchLongPress(event: PointerEvent): boolean {
