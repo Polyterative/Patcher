@@ -10,7 +10,10 @@
     <lib-mat-form-entity [label]="data.label"
                          [type]="data.type"
                          [control]="data.control"
+                         [autofocus]="true"
+                         [enterkeyhint]="'done'"
                          [errorProvider]="appState.globalUtils.errorProvider"
+                         (enterPressed)="confirm()"
                          formFieldAppearanceType="outline"
                          style="margin-top: 2rem;"
     ></lib-mat-form-entity>
@@ -22,7 +25,7 @@
     <!--                                theme="negative"-->
     <!--      >Cancel-->
     <!--      </app-brand-primary-button>-->
-    <app-brand-primary-button (click$)="dialogRef.close({result: data.control.value})"
+    <app-brand-primary-button (click$)="confirm()"
                               [disabled]="!(isValid$ | async)"
                               theme="positive"
                               icon="check"

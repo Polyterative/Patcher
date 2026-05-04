@@ -32,6 +32,14 @@
   }
 }
 
+@media (max-width: 72.5rem) {
+  .slot-deselect {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    opacity: 0.8;
+  }
+}
+
 .root {
   min-width: 20rem;
 }

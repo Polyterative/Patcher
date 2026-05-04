@@ -50,4 +50,28 @@ describe('InputDialogComponent', () => {
     
     expect(component.isValid$.value).toBeTrue();
   });
+
+  it('confirms only when the control is valid', () => {
+    const control = new FormControl('', [Validators.required]);
+    const closeSpy = jasmine.createSpy('close');
+    const component = new InputDialogComponent(
+      {
+        close: closeSpy
+      } as any,
+      {
+        title: 'Rename',
+        control,
+        type: FormTypes.TEXT,
+        label: 'Name'
+      } as any,
+      {} as any
+    );
+
+    component.confirm();
+    expect(closeSpy).not.toHaveBeenCalled();
+
+    control.setValue('valid');
+    component.confirm();
+    expect(closeSpy).toHaveBeenCalledWith({result: 'valid'});
+  });
 });

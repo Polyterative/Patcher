@@ -85,6 +85,12 @@
     grid-template-columns: var(--cv-row-grid-tablet, 3rem minmax(8rem, 1fr) minmax(6.25rem, 7.5rem) minmax(6.25rem, 7.5rem));
     width: min(100%, var(--cv-row-max-width-tablet, 34rem));
   }
+
+  .cv-row-action {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.35rem;
+  }
 }
 
 @media (max-width: 47.5rem) {

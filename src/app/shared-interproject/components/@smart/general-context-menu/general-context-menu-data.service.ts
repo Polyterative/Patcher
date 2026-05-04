@@ -32,5 +32,31 @@ export class GeneralContextMenuDataService extends SubManager {
   });
   
   open$ = new Subject<MouseEvent>();
-  
+
+  clampPosition(event: MouseEvent, itemCount = this.menuItems$.value.length): {x: string; y: string} {
+    const visualViewport = typeof window !== 'undefined' ? window.visualViewport : null;
+    const viewportWidth = visualViewport?.width ?? (typeof window !== 'undefined' ? window.innerWidth : 0);
+    const viewportHeight = visualViewport?.height ?? (typeof window !== 'undefined' ? window.innerHeight : 0);
+    const viewportLeft = visualViewport?.offsetLeft ?? 0;
+    const viewportTop = visualViewport?.offsetTop ?? 0;
+    const menuWidth = 18;
+    const estimatedMenuWidthPx = menuWidth * 16;
+    const estimatedMenuHeightPx = Math.min(Math.max(itemCount, 1), 8) * 48;
+    const marginPx = 12;
+
+    const clampedX = Math.max(
+      viewportLeft + marginPx,
+      Math.min(event.clientX, viewportLeft + viewportWidth - estimatedMenuWidthPx - marginPx)
+    );
+    const clampedY = Math.max(
+      viewportTop + marginPx,
+      Math.min(event.clientY, viewportTop + viewportHeight - estimatedMenuHeightPx - marginPx)
+    );
+
+    return {
+      x: `${ clampedX }px`,
+      y: `${ clampedY }px`
+    };
+  }
+   
 }

@@ -109,6 +109,14 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 72.5rem) {
+  .flag-step-number {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.92rem;
+  }
+}
+
 .flag-step-title {
   font-size: 0.92rem;
   font-weight: 600;

@@ -17,7 +17,7 @@
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 0.35rem;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 624.9375rem;
     backdrop-filter: blur(0.25rem) brightness(1.7);
@@ -101,12 +101,12 @@ $palette: (
 
 .patch-editor-floating-search {
   position: fixed;
-  right: calc(1rem + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, 0.8rem));
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem)));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   z-index: 99;
   display: flex;
   align-items: center;
-  width: min(var(--patch-editor-search-width), calc(100vw - 2rem - env(safe-area-inset-left) - env(safe-area-inset-right) - var(--module-editor-close-fab-width, 12.6rem) - var(--module-editor-fab-gap, 0.8rem)));
+  width: min(var(--patch-editor-search-width), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right) - var(--module-editor-close-fab-width, 12.6rem) - var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem))));
   min-height: var(--module-editor-close-fab-height, 3.5rem);
   padding: 0.2rem 0.55rem;
   border-radius: 0.8rem;
@@ -148,9 +148,27 @@ $palette: (
   }
 
   .patch-editor-floating-search {
-    right: calc(0.75rem + env(safe-area-inset-right));
-    left: calc(0.75rem + env(safe-area-inset-left));
+    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
+    left: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-left));
     width: auto;
-    bottom: calc(1rem + env(safe-area-inset-bottom) + 3.8rem);
+    bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + 3.8rem);
+  }
+}
+
+@media (max-width: 72.5rem) {
+  .module-card-body .module-card-actions {
+    gap: 0.65rem;
+    opacity: 1;
+    backdrop-filter: none;
+  }
+
+  .patch-editor-floating-search {
+    backdrop-filter: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .module-card-body .module-card-actions {
+    opacity: 1;
   }
 }
