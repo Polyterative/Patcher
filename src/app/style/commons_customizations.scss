@@ -436,6 +436,16 @@ $snack-toolbar-offset: 5em;
   }
 }
 
+@media (max-width: 72.5rem) {
+  .mat-mdc-icon-button.mat-mdc-button-base {
+    --mdc-icon-button-state-layer-size: 3rem;
+    --mat-icon-button-state-layer-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.75rem;
+  }
+}
+
 // ─── Menu-item icon + label vertical alignment ───────────────────────────────
 // Angular Material MDC wraps all menu-item content inside
 // .mat-mdc-menu-item-text (a <span>), which is inline by default.

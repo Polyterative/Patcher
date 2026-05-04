@@ -1,6 +1,8 @@
 <div class="col"
 >
   <lib-mat-form-entity [dataPack]="dataService.fields.username"
+                       [autofocus]="true"
+                       [enterkeyhint]="'next'"
                        hint="Visible by other users"
                        formFieldAppearanceType="fill"
                        iconL1="person"
@@ -9,6 +11,7 @@
   <lib-mat-form-entity [type]="dataService.fields.email.type"
                        [control]="dataService.fields.email.control"
                        [label]="dataService.fields.email.label"
+                       [enterkeyhint]="'next'"
                        hint="NOT visible by other users"
                        formFieldAppearanceType="fill"
                        iconL1="email"
@@ -18,6 +21,7 @@
   <lib-mat-form-entity [type]="dataService.fields.password.type"
                        [control]="dataService.fields.password.control"
                        [label]="dataService.fields.password.label"
+                       [enterkeyhint]="'next'"
                        formFieldAppearanceType="fill"
                        iconL1="lock"
   >
@@ -25,6 +29,8 @@
   <lib-mat-form-entity [type]="dataService.fields.passwordAgain.type"
                        [control]="dataService.fields.passwordAgain.control"
                        [label]="dataService.fields.passwordAgain.label"
+                       [enterkeyhint]="'done'"
+                       (enterPressed)="dataService.mailSignClick$.next()"
                        formFieldAppearanceType="fill"
                        iconL1="lock"
   >

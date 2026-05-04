@@ -15,6 +15,7 @@ import {
   map,
   startWith
 } from 'rxjs/operators';
+import { AppViewportService } from './shared-interproject/app-viewport.service';
 
 
 @Component({
@@ -27,7 +28,11 @@ import {
 export class AppComponent {
   readonly routeLoading$;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private readonly appViewportService: AppViewportService
+  ) {
+    this.appViewportService.initialize();
     this.routeLoading$ = this.router.events.pipe(
       filter((event) =>
         event instanceof NavigationStart

@@ -3,12 +3,17 @@ import {
   ENTER
 } from '@angular/cdk/keycodes';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
+  EventEmitter,
   Input,
+  Output,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import {
   AbstractControl,
@@ -47,8 +52,11 @@ import {
 import {
   findOptionForId,
   flatOptionGroupToArray,
+  AppEnterKeyHint,
+  AppInputMode,
   FormTypes,
   ISelectable,
+  MatFormErgonomicsConfig,
   isOption
 } from './form-element-models';
 import {
@@ -85,6 +93,7 @@ export interface IMatFormEntityConfig {
   options$?: Observable<ISelectable[]>;
   hint?: string;
   iconL1?: string;
+  ergonomics?: MatFormErgonomicsConfig;
 }
 
 @Component({
@@ -111,7 +120,7 @@ export interface IMatFormEntityConfig {
     MatDialogModule
   ]
 })
-export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy {
+export class MatFormEntityComponent extends SubManager implements OnInit, OnDestroy, AfterViewInit {
   
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -205,6 +214,11 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   @Input() type: FormTypes = FormTypes.TEXT;
   @Input() default = false;
   @Input() iconL1?: string;
+  @Input() inputmode?: AppInputMode;
+  @Input() enterkeyhint?: AppEnterKeyHint;
+  @Input() autofocus = false;
+  @Output() enterPressed = new EventEmitter<KeyboardEvent>();
+  @ViewChild('primaryInput', {read: ElementRef}) primaryInput?: ElementRef<HTMLElement>;
   
   //
   readonly autocompleteSeparatorKeysCodes: Array<number> = [ENTER, COMMA];
@@ -212,9 +226,39 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   private errorObjectNotInOptions = {[ErrorCodes.form.errorCode.custom.notInOptions]: true};
   
   hidePassword = true;
+
+  get resolvedInputMode(): AppInputMode | null {
+    if (this.inputmode) {
+      return this.inputmode;
+    }
+
+    switch (this.type) {
+      case FormTypes.EMAIL:
+        return 'email';
+      case FormTypes.NUMBER:
+        return 'numeric';
+      case FormTypes.AUTOCOMPLETE:
+      case FormTypes.AUTOCOMPLETE_GROUPED:
+        return 'search';
+      case FormTypes.TIME:
+        return 'numeric';
+      default:
+        return 'text';
+    }
+  }
   
   ngOnDestroy(): void {
     this.control.setAsyncValidators([]);
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.autofocus) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      this.primaryInput?.nativeElement.focus();
+    });
   }
   
   @Input() errorProvider: (formControl: UntypedFormControl) => string = (x: UntypedFormControl) => AppFormUtils.getErrors(x);
@@ -243,6 +287,15 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       }
       if (this.dataPack.iconL1) {
         this.iconL1 = this.dataPack.iconL1;
+      }
+      if (this.dataPack.ergonomics?.inputmode) {
+        this.inputmode = this.dataPack.ergonomics.inputmode;
+      }
+      if (this.dataPack.ergonomics?.enterkeyhint) {
+        this.enterkeyhint = this.dataPack.ergonomics.enterkeyhint;
+      }
+      if (typeof this.dataPack.ergonomics?.autofocus === 'boolean') {
+        this.autofocus = this.dataPack.ergonomics.autofocus;
       }
     }
     
@@ -469,6 +522,19 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   cleanMultiComplete($event: MatChipInputEvent): void {
     $event.input.value = ''; // enough for self-cleanig of the internalForm
   }
+
+  onInputEnterPressed(event: KeyboardEvent): void {
+    if (this.control.disabled) {
+      return;
+    }
+
+    if (this.enterkeyhint === 'next' && this.focusNextField(event.target)) {
+      event.preventDefault();
+      return;
+    }
+
+    this.enterPressed.emit(event);
+  }
   
   private safelyAddValidator(newValidator: ValidatorFn): void {
     const hostValidator: ValidatorFn | null = this.control.validator;
@@ -563,5 +629,25 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       console.error('Options is not observable! I\'m a selector, give me the options!');
       console.error(this.options$);
     }
+  }
+
+  private focusNextField(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    const ownerDocument = target.ownerDocument;
+    const focusableFields = Array.from(
+      ownerDocument.querySelectorAll<HTMLElement>('input:not([type="hidden"]):not([disabled]), textarea:not([disabled])')
+    ).filter(element => !element.hasAttribute('readonly') && (element.offsetParent !== null || ownerDocument.activeElement === element));
+    const currentIndex = focusableFields.indexOf(target);
+    const nextField = currentIndex >= 0 ? focusableFields[currentIndex + 1] : null;
+
+    if (!nextField) {
+      return false;
+    }
+
+    nextField.focus();
+    return true;
   }
 }
