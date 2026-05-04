@@ -140,3 +140,43 @@ private _isDeletingId$ = new BehaviorSubject<number | null>(null);
   {{ (isDeletingId$ | async) === item.id ? 'Deleting...' : 'Delete' }}
 </button>
 ```
+
+---
+
+## Tablet / Touch Guardrails
+
+Use these as default rules when building or refactoring UI that should work well on iPad-class devices.
+
+### 1. Prefer visible primary actions over hover reveal
+
+- Do not hide core actions behind `:hover`, `mouseenter`/`mouseleave`, or opacity tricks on touch-relevant surfaces.
+- If desktop needs quieter chrome, use a touch-specific fallback such as always-visible actions or tap-to-expand state.
+
+### 2. Avoid right-click-only workflows
+
+- Context menus may exist as a secondary affordance, but important actions must have a visible tap path.
+- Nested menu structures are especially poor fits for touch. Flatten tablet-critical actions where possible.
+
+### 3. Treat floating surfaces as a coordinated system
+
+- Do not independently pin multiple controls to bottom corners without considering the whole stack.
+- Fixed FABs, floating search, selection surfaces, and teaching overlays must share safe-area and keyboard strategy.
+- Prefer shared viewport logic over per-component `window.innerHeight` / `100vh` assumptions.
+
+### 4. Make shared forms tablet-aware by default
+
+- Add the right `inputmode` and `enterkeyhint` for common field types.
+- Default important entry points to sensible first focus.
+- Respect enter-key progression for multi-field flows instead of forcing repeated tap-to-submit patterns.
+
+### 5. Be generous with repeated touch targets
+
+- Repeated action controls should aim for comfort, not bare-minimum compliance.
+- Small icon-only actions, dense chip rows, CV pins, and utility toggles need extra care because users hit them often and
+  under time pressure.
+
+### 6. Keep scroll and motion work calm
+
+- Avoid scroll-bound recalculation unless it is throttled or otherwise bounded.
+- Use backdrop blur sparingly on fixed surfaces.
+- Prefer short, intentional motion over long-running decorative animation on work surfaces.
