@@ -6,63 +6,65 @@
   @let availableTagGroups = (availableTagGroups$ | async);
   @let visibleTags = (visibleTags$ | async);
   <div class="col gap0">
-    @if (visibleTags && visibleTags.length > 0) {
-      <mat-chip-listbox class="padT0 padB0" [multiple]="true">
-        @for (item of visibleTags; track item.id; let i = $index) {
-          <mat-chip-option
-            [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
-            [@leave]="{ value: '', params: { delay: 5 }}"
-            [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
-            [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
-            [selected]="showCounts && myVotes?.has(item.id)"
-            (click)="!readOnly && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
-          >{{ item.tag.name }}@if (showCounts) {
-            · {{ tagVotes?.get(item.id) ?? 0 }}
+    <div class="module-tags-toolbar">
+      @if (visibleTags && visibleTags.length > 0) {
+        <mat-chip-listbox class="padT0 padB0 module-tags-toolbar__chips" [multiple]="true">
+          @for (item of visibleTags; track item.id; let i = $index) {
+            <mat-chip-option
+              [@enter]="{ value: '', params: { delay: (i * 25)+100}}"
+              [@leave]="{ value: '', params: { delay: 5 }}"
+              [class.zero-votes]="showCounts && !myVotes?.has(item.id) && (tagVotes?.get(item.id) ?? 0) === 0"
+              [matTooltip]="showCounts ? (readOnly ? '' : (isLoggedIn ? (myVotes?.has(item.id) ? 'Remove your vote' : 'Vote for this tag') : 'Log in to vote on tags')) : ''"
+              [selected]="showCounts && myVotes?.has(item.id)"
+              (click)="!readOnly && isLoggedIn && showCounts && tagVoteService.toggleVote$.next(item.id)"
+            >{{ item.tag.name }}@if (showCounts) {
+              · {{ tagVotes?.get(item.id) ?? 0 }}
+            }
+            </mat-chip-option>
           }
-          </mat-chip-option>
-        }
-      </mat-chip-listbox>
-    }
-    @if (showCounts && isLoggedIn && !readOnly) {
-      @if (!proposerOpen) {
+        </mat-chip-listbox>
+      }
+      @if (showCounts && isLoggedIn && !readOnly && !proposerOpen) {
         <button mat-button
                 class="add-perspective-btn"
-                (click)="proposerOpen$.next(true)"
+                (click)="openProposer()"
                 [matTooltip]="'Suggest a tag for this module'"
         >
           <mat-icon>add</mat-icon>
           Add tag
         </button>
-      } @else {
-        <div class="col gap1 proposer-panel">
-          <div class="row gap1" style="align-items: center">
-            <span class="mat-body-2">Pick a tag to suggest:</span>
-            <button mat-icon-button (click)="proposerOpen$.next(false)" matTooltip="Cancel">
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-          @if (availableTagGroups && availableTagGroups.length > 0) {
-            <div class="col gap1 proposer-groups">
-              @for (group of availableTagGroups; track group.label) {
-                <div class="col gap0_5 proposer-group">
-                  <span class="proposer-group__label">{{ group.label }}</span>
-                  <mat-chip-listbox class="padT0 padB0" [multiple]="false">
-                    @for (tag of group.tags; track tag.id) {
-                      <mat-chip-option
-                        (click)="proposeTag(tag)"
-                        [matTooltip]="'Add \'' + tag.name + '\' to this module'"
-                      >{{ tag.name }}
-                      </mat-chip-option>
-                    }
-                  </mat-chip-listbox>
-                </div>
-              }
-            </div>
-          } @else {
-            <span class="mat-caption muted">All tags are already on this module.</span>
-          }
-        </div>
       }
+    </div>
+    @if (showCounts && isLoggedIn && !readOnly && proposerOpen) {
+      <div class="col gap1 proposer-panel"
+           [@tagChooserPanel]>
+        <div class="row gap1" style="align-items: center">
+          <span class="mat-body-2">Pick a tag to suggest:</span>
+          <button mat-icon-button (click)="closeProposer()" matTooltip="Cancel">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        @if (availableTagGroups && availableTagGroups.length > 0) {
+          <div class="col gap1 proposer-groups">
+            @for (group of availableTagGroups; track group.label) {
+              <div class="col gap0_5 proposer-group">
+                <span class="proposer-group__label">{{ group.label }}</span>
+                <mat-chip-listbox class="padT0 padB0" [multiple]="false">
+                  @for (tag of group.tags; track tag.id) {
+                    <mat-chip-option
+                      (click)="proposeTag(tag)"
+                      [matTooltip]="'Add \'' + tag.name + '\' to this module'"
+                    >{{ tag.name }}
+                    </mat-chip-option>
+                  }
+                </mat-chip-listbox>
+              </div>
+            }
+          </div>
+        } @else {
+          <span class="mat-caption muted">All tags are already on this module.</span>
+        }
+      </div>
     }
   </div>
 }

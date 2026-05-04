@@ -31,6 +31,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
   @Input() nameSuffix: string | undefined = undefined;
   @Input() preferredPanelColor: number | null = null;
+  isTagChooserOpen = false;
 
   isInCollection$: Observable<boolean>;
   
@@ -66,6 +67,10 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
     
+  }
+
+  onTagChooserOpenChange(isOpen: boolean): void {
+    this.isTagChooserOpen = isOpen;
   }
 }
 
