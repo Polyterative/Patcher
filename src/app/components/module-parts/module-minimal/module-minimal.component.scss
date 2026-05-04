@@ -26,6 +26,95 @@
   margin-bottom: .5rem;
 }
 
+.module-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.module-meta-row__manufacturer {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.module-meta-row__stats {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.74;
+}
+
+.module-io-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.module-io-counts__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  white-space: nowrap;
+}
+
+.module-io-counts__item mat-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  min-width: 0.875rem;
+  font-size: 0.875rem;
+  line-height: 0.875rem;
+}
+
+.module-meta-row__hp {
+  white-space: nowrap;
+}
+
+.module-minimal__focus-hide {
+  opacity: 1;
+  max-height: 48rem;
+  overflow: hidden;
+  transform: translateY(0);
+  transition:
+    opacity 180ms ease,
+    max-height 220ms ease,
+    transform 220ms ease,
+    margin 220ms ease;
+}
+
+.module-minimal__focus-hide--compact {
+  max-height: 4rem;
+}
+
+.module-minimal__focus-hide--copy {
+  max-height: 14rem;
+}
+
+.module-minimal__focus-hide--extended {
+  max-height: 96rem;
+}
+
+.module-minimal__focus-hide--actions {
+  max-height: 9rem;
+}
+
+.parent--tagPickerOpen {
+  .module-minimal__focus-hide {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-0.35rem);
+    margin-top: 0 !important;
+    pointer-events: none;
+  }
+}
+
 .panel-variants-badge {
   position: absolute;
   top: 4px;

@@ -2,6 +2,24 @@ mat-chip-option:not([disabled]) {
   cursor: pointer;
 }
 
+:host ::ng-deep mat-chip-option .mdc-evolution-chip__action,
+:host ::ng-deep mat-chip-option .mdc-evolution-chip__cell {
+  padding-inline: 0.15rem;
+}
+
+.module-tags-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.5rem;
+  flex-wrap: wrap;
+}
+
+.module-tags-toolbar__chips {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 
 mat-chip-option {
   transition: opacity 0.2s ease;
@@ -16,10 +34,13 @@ mat-chip-option {
 }
 
 .add-perspective-btn {
-  align-self: flex-start;
+  align-self: center;
+  flex: 0 0 auto;
   opacity: 0.65;
   font-size: 0.8rem;
-  margin-top: 0.25rem;
+  margin: 0;
+  padding-inline: 0.35rem;
+  min-width: auto;
 
   &:hover {
     opacity: 1;
@@ -31,6 +52,8 @@ mat-chip-option {
   padding: 0.5rem;
   border-radius: 0.25rem;
   background: rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transform-origin: top;
 }
 
 .proposer-groups {
@@ -55,4 +78,10 @@ mat-chip-option {
 
 .muted {
   opacity: 0.55;
+}
+
+@media (max-width: 42rem) {
+  .module-tags-toolbar {
+    align-items: flex-start;
+  }
 }
