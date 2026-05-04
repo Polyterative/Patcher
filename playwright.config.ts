@@ -83,6 +83,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     headless: true,
+    reducedMotion: 'reduce',
   },
   
   projects: [
