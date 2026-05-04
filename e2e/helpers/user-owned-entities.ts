@@ -100,23 +100,30 @@ export async function openOwnedRackDetailsInEditMode(page: Page): Promise<void> 
 
   await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 20_000});
   await expect(page.getByRole('heading', {name: /Rack (Details|Editing)/i}).first()).toBeVisible({timeout: 20_000});
-  await page.waitForTimeout(3_000);
   await expect(page.locator('app-rack-composite').first()).toBeVisible({timeout: 20_000});
 
   const editingHeading = page.getByRole('heading', {name: /Rack Editing/i}).first();
+  const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
+  const editFabRackButton = page.locator('app-edit-fab button', {hasText: /^Edit rack$/i}).first();
+  const genericEditFabButton = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
+
+  await Promise.any([
+    editingHeading.waitFor({state: 'visible', timeout: 10_000}),
+    editRackButton.waitFor({state: 'visible', timeout: 10_000}),
+    editFabRackButton.waitFor({state: 'visible', timeout: 10_000}),
+    genericEditFabButton.waitFor({state: 'visible', timeout: 10_000})
+  ]).catch(() => undefined);
+
   if (await editingHeading.isVisible().catch(() => false)) {
     return;
   }
 
-  const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
   if (await editRackButton.isVisible().catch(() => false)) {
     await editRackButton.click();
   } else {
-    const editFabRackButton = page.locator('app-edit-fab button', {hasText: /^Edit rack$/i}).first();
     if (await editFabRackButton.isVisible().catch(() => false)) {
       await editFabRackButton.click();
     } else {
-      const genericEditFabButton = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
       await expect(genericEditFabButton).toBeVisible({timeout: 10_000});
       await genericEditFabButton.click();
     }
