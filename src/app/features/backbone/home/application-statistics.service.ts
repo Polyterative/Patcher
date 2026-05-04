@@ -176,9 +176,9 @@ export class ApplicationStatisticsService extends SubManager {
         }
       ],
       interpretation: sharedWorkExists
-        ? 'The public library already includes enough real racks and patches to explore patterns, not just static catalogue pages.'
-        : 'The public catalogue is live, and this teaser will deepen as more people publish racks and patches from public profiles.',
-      methodology: 'Aggregate only. Rack and patch counts include only public items from public profiles, and patch totals follow the public patch browser by counting shared patches with saved cable connections.',
+        ? 'Explore public racks and patches to see how people combine modules, discover ideas, and get oriented before building your own.'
+        : 'The public catalogue is live, and this preview will grow as more people share racks and patches from public profiles.',
+      methodology: 'These totals are aggregated from public profiles only. Rack counts include shared racks, and patch counts match the public patch browser by counting shared patches with saved cable connections.',
       emptyMessage: 'Public insight snapshots will appear here once enough public catalogue activity is available.'
     };
   }
