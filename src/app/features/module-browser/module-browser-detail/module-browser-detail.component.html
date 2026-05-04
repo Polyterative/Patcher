@@ -12,10 +12,11 @@
     <lib-hero-content-card class="modulesBG"
                            titleBig="Module details"
                            [titleSub]="bag.data?.name"
-    >
-      <div class="module-detail-layout"
-           [class.module-detail-layout--editing]="!!bag.editing"
       >
+        <div class="module-detail-layout"
+             [@moduleDetailModeTransition]="!!bag.editing"
+             [class.module-detail-layout--editing]="!!bag.editing"
+        >
         <div class="module-detail-column module-detail-column--left">
           <div class="col gap2 module-detail-mainStack">
             <lib-clean-card class="module-detail-primary-card"
@@ -165,33 +166,41 @@
             </lib-hero-content-card>
           }
           @if (bag.data && !bag.editing) {
-             <lib-hero-content-card titleNormal="Search on"
-                                     [@moduleDetailSupportEnter]="{ value: '', params: { delay: 388, duration: 185 } }"
-                                    [sidesPadding]="false">
-              <mat-chip-set class="rowwrap gap1">
-                @for (link of searchLinks; track link) {
-                  <mat-chip
-                    class="module-search-chip"
-                    [matTooltip]="link.tooltip"
-                    (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
-                  >
-                    <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
-                    {{ link.label }}
-                  </mat-chip>
-                }
-              </mat-chip-set>
-            </lib-hero-content-card>
-             <div [@moduleDetailSupportEnter]="{ value: '', params: { delay: 412, duration: 190 } }">
-               <app-comments-root></app-comments-root>
-             </div>
+            <div class="module-detail-swap-pane"
+                 [@moduleDetailPaneSwap]
+            >
+               <lib-hero-content-card titleNormal="Search on"
+                                       [@moduleDetailSupportEnter]="{ value: '', params: { delay: 388, duration: 185 } }"
+                                      [sidesPadding]="false">
+                <mat-chip-set class="rowwrap gap1">
+                  @for (link of searchLinks; track link) {
+                    <mat-chip
+                      class="module-search-chip"
+                      [matTooltip]="link.tooltip"
+                      (click)="openExternalLink(link.url(bag.data.name, bag.data.manufacturer.name))"
+                    >
+                      <mat-icon matChipAvatar>{{ link.icon }}</mat-icon>
+                      {{ link.label }}
+                    </mat-chip>
+                  }
+                </mat-chip-set>
+              </lib-hero-content-card>
+               <div [@moduleDetailSupportEnter]="{ value: '', params: { delay: 412, duration: 190 } }">
+                 <app-comments-root></app-comments-root>
+               </div>
+            </div>
           }
           @if (bag.data && bag.editing && !bag.data.isComplete) {
-             <lib-clean-card class="module-detail-supportRailCard module-detail-supportRailCard--primary editing-focus-note"
-                             [@moduleDetailSupportEnter]="{ value: '', params: { delay: 364, duration: 180 } }">
-              <mat-card-subtitle>
-                Focus mode enabled: comments, discovery links, and related module lists are hidden while editing.
-              </mat-card-subtitle>
-            </lib-clean-card>
+            <div class="module-detail-swap-pane"
+                 [@moduleDetailPaneSwap]
+            >
+               <lib-clean-card class="module-detail-supportRailCard module-detail-supportRailCard--primary editing-focus-note"
+                               [@moduleDetailSupportEnter]="{ value: '', params: { delay: 364, duration: 180 } }">
+                <mat-card-subtitle>
+                  Focus mode enabled: comments, discovery links, and related module lists are hidden while editing.
+                </mat-card-subtitle>
+              </lib-clean-card>
+            </div>
           }
           @if ((appState.isDev || (dataService.isAdmin$ | async)) && bag.data && bag.user && !bag.editing) {
              <lib-hero-content-card titleNormal="Dev utils"
@@ -362,77 +371,93 @@
         </div>
         <div class="col gap2 module-detail-column module-detail-column--right">
           @if (bag.data && bag.editing && !bag.data.isComplete) {
-            <lib-hero-content-card [sidesPadding]="false"
-                                   titleNormal="Module Editor"
-                                   description="Update setup and port data, then use Done and Save."
+            <div class="module-detail-editorShell module-detail-swap-pane"
+                 [@moduleDetailPaneSwap]
             >
-              <app-module-editor [data]="(bag.data)"
-              ></app-module-editor>
-            </lib-hero-content-card>
+              <lib-hero-content-card [sidesPadding]="false"
+                                     titleNormal="Module Editor"
+                                     description="Update setup and port data, then use Done and Save."
+              >
+                <app-module-editor [data]="(bag.data)"
+                ></app-module-editor>
+              </lib-hero-content-card>
+            </div>
           }
           @if (!bag.editing) {
-            <div class="module-detail-usageGrid">
-              @if (viewConfig.hideRackedIn === false) {
-                 <lib-hero-content-card [sidesPadding]="false"
-                                        [@moduleDetailSupportEnter]="{ value: '', params: { delay: 452, duration: 185 } }"
-                                        class="module-detail-usage-card"
-                                       titleNormal="Racked in"
-                >
-                  <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
-                                                      [updateData$]="dataService.updateSingleModuleData$"
+            <div class="module-detail-swap-pane"
+                 [@moduleDetailPaneSwap]
+            >
+              <div class="module-detail-usageGrid">
+                @if (viewConfig.hideRackedIn === false) {
+                   <lib-hero-content-card [sidesPadding]="false"
+                                          [@moduleDetailSupportEnter]="{ value: '', params: { delay: 452, duration: 185 } }"
+                                          class="module-detail-usage-card"
+                                         titleNormal="Racked in"
                   >
-                    @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
-                      <app-module-racks
-                        [data$]="dataService.racksWithThisModule$"
-                      ></app-module-racks>
-                    } @else {
-                      <div class="col gap1 animate-fadein-slowest"
-                      >
-                        <mat-card-subtitle class="module-detail-empty-state-copy"
-                        >No racks using this module yet. Try adding it to yours!
-                        </mat-card-subtitle>
-                      </div>
-                    }
-                  </lib-auto-content-loading-indicator>
-                </lib-hero-content-card>
-              }
-              @if (viewConfig.hidePatchedIn === false) {
-                 <lib-hero-content-card [sidesPadding]="false"
-                                        [@moduleDetailSupportEnter]="{ value: '', params: { delay: 476, duration: 185 } }"
-                                        class="module-detail-usage-card"
-                                       titleNormal="Patched in"
-                >
-                  <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
-                                                      [updateData$]="dataService.updateSingleModuleData$"
+                    <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
+                                                        [updateData$]="dataService.updateSingleModuleData$"
+                    >
+                      @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
+                        <app-module-racks
+                          [data$]="dataService.racksWithThisModule$"
+                        ></app-module-racks>
+                      } @else {
+                        <div class="col gap1 animate-fadein-slowest"
+                        >
+                          <mat-card-subtitle class="module-detail-empty-state-copy"
+                          >No racks using this module yet. Try adding it to yours!
+                          </mat-card-subtitle>
+                        </div>
+                      }
+                    </lib-auto-content-loading-indicator>
+                  </lib-hero-content-card>
+                }
+                @if (viewConfig.hidePatchedIn === false) {
+                   <lib-hero-content-card [sidesPadding]="false"
+                                          [@moduleDetailSupportEnter]="{ value: '', params: { delay: 476, duration: 185 } }"
+                                          class="module-detail-usage-card"
+                                         titleNormal="Patched in"
                   >
-                    @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
-                      <app-module-patches
-                        [data$]="dataService.patchesWithThisModule$"
-                      ></app-module-patches>
-                    } @else {
-                      <div class="col gap1 animate-fadein-slowest"
-                      >
-                        <mat-card-subtitle class="module-detail-empty-state-copy"
-                        >No patches using this module yet. Try adding it to yours!
-                        </mat-card-subtitle>
-                      </div>
-                    }
-                  </lib-auto-content-loading-indicator>
-                </lib-hero-content-card>
-              }
+                    <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
+                                                        [updateData$]="dataService.updateSingleModuleData$"
+                    >
+                      @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
+                        <app-module-patches
+                          [data$]="dataService.patchesWithThisModule$"
+                        ></app-module-patches>
+                      } @else {
+                        <div class="col gap1 animate-fadein-slowest"
+                        >
+                          <mat-card-subtitle class="module-detail-empty-state-copy"
+                          >No patches using this module yet. Try adding it to yours!
+                          </mat-card-subtitle>
+                        </div>
+                      }
+                    </lib-auto-content-loading-indicator>
+                  </lib-hero-content-card>
+                }
+              </div>
             </div>
           } @else {
-            <lib-clean-card class="editing-focus-note">
-              <mat-card-subtitle>
-                Related usage panels are hidden while editing. Click "Close editor" to return to browse context.
-              </mat-card-subtitle>
-            </lib-clean-card>
+            <div class="module-detail-swap-pane"
+                 [@moduleDetailPaneSwap]
+            >
+              <lib-clean-card class="editing-focus-note">
+                <mat-card-subtitle>
+                  Related usage panels are hidden while editing. Click "Close editor" to return to browse context.
+                </mat-card-subtitle>
+              </lib-clean-card>
+            </div>
           }
         </div>
       </div>
     </lib-hero-content-card>
     @if (bag.data?.manufacturer && viewConfig.hideBySameManufacturer === false && !bag.editing) {
-      <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)" [hideRowLink]="true"></app-manufacturer-row>
+      <div class="module-detail-swap-pane"
+           [@moduleDetailPaneSwap]
+      >
+        <app-manufacturer-row [manufacturer]="$any(bag.data.manufacturer)" [hideRowLink]="true"></app-manufacturer-row>
+      </div>
     }
   </div>
 }
