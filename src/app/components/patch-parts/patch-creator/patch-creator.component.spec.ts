@@ -32,7 +32,7 @@ describe('PatchCreatorComponent', () => {
     
     component.save$.next();
     
-    expect(backend.add.patch).toHaveBeenCalledWith({name: 'My Patch', public: false});
+    expect(backend.add.patch).toHaveBeenCalledWith({name: 'My Patch', public: true});
     expect(snackBar.open).toHaveBeenCalledWith(
       '"My Patch" created and saved to your library.',
       undefined,
@@ -44,11 +44,17 @@ describe('PatchCreatorComponent', () => {
   it('passes the selected privacy value when saving', () => {
     const {component, backend} = build();
     component.fields.name.control.setValue('Private Patch');
-    component.fields.public.control.setValue(true);
+    component.fields.public.control.setValue(false);
     
     component.save$.next();
     
-    expect(backend.add.patch).toHaveBeenCalledWith({name: 'Private Patch', public: true});
+    expect(backend.add.patch).toHaveBeenCalledWith({name: 'Private Patch', public: false});
+  });
+
+  it('defaults new patches to public visibility', () => {
+    const {component} = build();
+
+    expect(component.fields.public.control.value).toBeTrue();
   });
   
   it('stops reacting to save after destroy', () => {
