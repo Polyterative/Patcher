@@ -23,6 +23,7 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { SubManager } from '../../directives/subscription-manager';
+import { AppViewportService } from '../../app-viewport.service';
 import { DiscoveryTipActive } from '../discovery-tip.models';
 import { DiscoveryTipService } from '../discovery-tip.service';
 
@@ -74,6 +75,7 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
 
   constructor(
     readonly discoveryTipService: DiscoveryTipService,
+    private readonly appViewportService: AppViewportService,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     super();
@@ -91,10 +93,15 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       return;
     }
 
+    const visualViewport = window.visualViewport;
     merge(
       of(null),
       fromEvent(window, 'resize'),
-      fromEvent(window, 'scroll', {capture: true})
+      fromEvent(window, 'scroll', {capture: true}),
+      ...(visualViewport ? [
+        fromEvent(visualViewport, 'resize'),
+        fromEvent(visualViewport, 'scroll')
+      ] : [])
     ).pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => {
@@ -112,7 +119,8 @@ export class DiscoveryTipSurfaceComponent extends SubManager implements OnInit {
       return null;
     }
 
-    const position = calculateDiscoveryTipPosition(anchorRect, window.innerWidth, window.innerHeight);
+    const viewport = this.appViewportService.currentViewport();
+    const position = calculateDiscoveryTipPosition(anchorRect, viewport.width, viewport.height);
     return {
       ...position,
       title: activeTip.definition.title,

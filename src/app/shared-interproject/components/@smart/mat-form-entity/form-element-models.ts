@@ -12,6 +12,9 @@ export interface FormLineSetup {
   floatLabel: 'auto' | 'always' | 'never';
 }
 
+export type AppInputMode = 'text' | 'email' | 'numeric' | 'decimal' | 'search' | 'tel' | 'url' | 'none';
+export type AppEnterKeyHint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send';
+
 export enum FormTypes {
   // OKKO                  = 'okko',
   TEXT                  = 'text',
@@ -106,6 +109,12 @@ export interface ISelectable {
   name: string;
   options?: ISelectable[];
   disabled?: boolean;
+}
+
+export interface MatFormErgonomicsConfig {
+  inputmode?: AppInputMode;
+  enterkeyhint?: AppEnterKeyHint;
+  autofocus?: boolean;
 }
 
 export function isOption(value: any): value is ISelectable {

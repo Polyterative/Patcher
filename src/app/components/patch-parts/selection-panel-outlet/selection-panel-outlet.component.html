@@ -43,8 +43,8 @@
           }</mat-icon>
           <strong>{{ (sel.a ? sel.a.cv : sel.b.cv).module.name }}</strong> — {{ (sel.a ? sel.a.cv : sel.b.cv).name }}
           <span class="panel-kind-chip">{{ (sel.a ? sel.a.kind : sel.b.kind) }}</span>
-          <button mat-icon-button class="deselect-btn" matTooltip="Deselect"
-                  (click)="(sel.a ? bridge.resetA$.next() : bridge.resetB$.next())">
+          <button mat-icon-button class="deselect-btn deselect-btn--panel" matTooltip="Deselect"
+                   (click)="(sel.a ? bridge.resetA$.next() : bridge.resetB$.next())">
             <mat-icon>close</mat-icon>
           </button>
         </div>

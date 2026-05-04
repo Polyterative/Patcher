@@ -129,7 +129,8 @@
 }
 
 .module--signalSource,
-.module--signalDestination {
+.module--signalDestination,
+.module--tabletSelected {
   border-radius: 0.7rem;
 }
 
@@ -143,6 +144,13 @@
   box-shadow:
     0 0 0 0.1rem var(--signal-destination-ring-color, rgba(226, 82, 60, 0.12)),
     0 0 0.8rem var(--signal-destination-glow-color, rgba(226, 82, 60, 0.06));
+}
+
+.module--tabletSelected {
+  z-index: 10;
+  box-shadow:
+    0 0 0 0.16rem rgba(34, 75, 117, 0.28),
+    0 0.6rem 1.2rem rgba(34, 75, 117, 0.14);
 }
 
 .module--signalMuted {

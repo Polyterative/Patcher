@@ -20,10 +20,9 @@
       >
       </lib-auto-content-loading-indicator>
     } @else {
-    <lib-hero-content-card [description]="
-                             (bag.isCurrentRackPropertyOfCurrentUser?(((bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable)?'Changes saved automatically / Right click on modules for more options / Add modules from below':'Press Edit to make changes')):'')"
-                           descriptionAlign="alignTextEnd"
-                           class="transition-all-long"
+      <lib-hero-content-card [description]="rackDescription(bag.isCurrentRackPropertyOfCurrentUser, bag.isCurrentRackEditable)"
+                            descriptionAlign="alignTextEnd"
+                            class="transition-all-long"
                            [ngClass]="{
                            'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 
                            'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
@@ -57,24 +56,27 @@
                   [style.width.px]="scaledRackWidthPx(bag.userRequestedSmallerScale)"
                   [style.height.px]="scaledRackHeightPx(bag.userRequestedSmallerScale)"
              >
-               <app-rack-visual-model #rackScaleSurface
-                                      [rackData]="data"
-                                      [rowedRackedModules]="bag.rowedRackedModules"
-                                      [rackViewportElement]="rackViewport"
-                                      [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
-                                      [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                      [rackDetailDataService]="dataService"
-                                      [moduleRightClick$]="moduleRightClick$"
-                                       [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
-                                       [style.width.rem]="rackWidthRem()"
-                                       [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
+                <app-rack-visual-model #rackScaleSurface
+                                       [rackData]="data"
+                                       [rowedRackedModules]="bag.rowedRackedModules"
+                                       [rackViewportElement]="rackViewport"
+                                       [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
+                                       [isCurrentRackEditable]="bag.isCurrentRackEditable"
+                                       [selectedTouchModule]="selectedTouchModule"
+                                       [touchPrimaryActionsEnabled]="touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off"
+                                       [rackDetailDataService]="dataService"
+                                       [moduleRightClick$]="moduleRightClick$"
+                                       (touchModuleSelected)="onTouchModuleSelected($event)"
+                                        [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
+                                        [style.width.rem]="rackWidthRem()"
+                                        [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
                                        [class.rackVisualModel--disableDropAnimations]="shouldDisableDropAnimations(bag.userRequestedSmallerScale)"
                                        class="rackEditorCanvasSurface"
                 ></app-rack-visual-model>
              </div>
            </div>
           </div>
-          <div class="rackEditorResponsiveActions">
+           <div class="rackEditorResponsiveActions">
             <button mat-stroked-button
                     type="button"
                     class="rackEditorResponsiveActions__button"
@@ -94,13 +96,68 @@
                 {{ bag.isCurrentRackEditable ? 'Lock rack' : 'Edit rack' }}
               </button>
             }
-            @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
-              <ng-container *ngTemplateOutlet="rackMediaActions; context: {
-                isOwner: bag.isCurrentRackPropertyOfCurrentUser,
-                buttonClass: 'rackEditorResponsiveActions__button'
-              }"></ng-container>
-            }
-          </div>
+             @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+               <ng-container *ngTemplateOutlet="rackMediaActions; context: {
+                 isOwner: bag.isCurrentRackPropertyOfCurrentUser,
+                 buttonClass: 'rackEditorResponsiveActions__button'
+               }"></ng-container>
+             }
+             @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off && selectedTouchModule; as selectedModule) {
+               <div class="rackEditorResponsiveActions__selection">
+                 <div class="rackEditorResponsiveActions__selectionHeader">
+                   <div class="rackEditorResponsiveActions__selectionCopy">
+                     <div class="rackEditorResponsiveActions__selectionEyebrow">Module actions</div>
+                     <div class="rackEditorResponsiveActions__selectionTitle">{{ selectedModule.module.name }}</div>
+                     <div class="rackEditorResponsiveActions__selectionMeta">
+                       {{ selectedModule.module.manufacturer.name }} · {{ selectedModule.module.hp }}HP
+                     </div>
+                   </div>
+                   <button mat-icon-button
+                           type="button"
+                           class="rackEditorResponsiveActions__selectionDismiss"
+                           aria-label="Close module actions"
+                           (click)="clearSelectedTouchModule()"
+                   >
+                     <mat-icon>close</mat-icon>
+                   </button>
+                 </div>
+                 <div class="rackEditorResponsiveActions__selectionActions">
+                   <button mat-stroked-button
+                           type="button"
+                           class="rackEditorResponsiveActions__button"
+                           (click)="openInspectPanel(selectedModule)"
+                   >
+                     <mat-icon>zoom_in</mat-icon>
+                     Inspect panel
+                   </button>
+                   <button mat-stroked-button
+                           type="button"
+                           class="rackEditorResponsiveActions__button"
+                           (click)="duplicateSelectedTouchModule()"
+                   >
+                     <mat-icon>content_copy</mat-icon>
+                     Duplicate
+                   </button>
+                   <button mat-stroked-button
+                           type="button"
+                           class="rackEditorResponsiveActions__button"
+                           (click)="replaceSelectedTouchModuleWithBlank()"
+                   >
+                     <mat-icon>space_bar</mat-icon>
+                     Replace with blank
+                   </button>
+                   <button mat-stroked-button
+                           type="button"
+                           class="rackEditorResponsiveActions__button rackEditorResponsiveActions__button--danger"
+                           (click)="removeSelectedTouchModule()"
+                   >
+                     <mat-icon>delete</mat-icon>
+                     Delete from rack
+                   </button>
+                 </div>
+               </div>
+             }
+           </div>
           <div class="rackEditorFloatingOptions">
             @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
               <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">

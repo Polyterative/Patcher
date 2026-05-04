@@ -82,6 +82,9 @@
                 [type]="dataService.fields.user.type"
                 [control]="dataService.fields.user.control"
                 [label]="dataService.fields.user.label"
+                [autofocus]="true"
+                [enterkeyhint]="'send'"
+                (enterPressed)="dataService.requestPasswordReset$.next()"
                 formFieldAppearanceType="fill"
                 iconL1="email">
               </lib-mat-form-entity>

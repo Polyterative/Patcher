@@ -115,3 +115,37 @@
     line-height: 1;
   }
 }
+
+@media (max-width: 72.5rem) {
+  .item-cvitem {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.8rem;
+    margin: 0.35rem;
+    border-radius: 0.7rem;
+  }
+
+  .cv-conn-badge {
+    gap: 0.15rem;
+    margin-left: 0.35rem;
+    font-size: 0.74rem;
+    opacity: 0.65;
+  }
+
+  .cv-conn-badge__icon {
+    font-size: 0.78rem;
+    width: 0.78rem;
+    height: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a,
+  .b {
+    animation: none !important;
+  }
+
+  .item-cvitem,
+  .cv-conn-badge {
+    transition: none !important;
+  }
+}

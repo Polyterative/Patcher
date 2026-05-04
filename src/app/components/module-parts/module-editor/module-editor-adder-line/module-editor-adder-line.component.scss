@@ -20,6 +20,13 @@
   }
 }
 
+@media (max-width: 72.5rem) {
+  .cv-adder-button {
+    min-width: 10.5rem;
+    min-height: 3rem;
+  }
+}
+
 .cv-adder-hint {
   margin: 0;
   color: #617489;
