@@ -341,8 +341,8 @@
 
 .save-fab {
   position: fixed;
-  right: calc(1rem + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, 0.8rem));
-  bottom: 1rem;
+  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem)));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   z-index: 99;
   width: var(--module-editor-save-fab-width, 9.25rem);
   opacity: 1;
@@ -454,6 +454,11 @@
 
   .setup-panel-crop-stage image-cropper {
     min-height: 15rem;
+  }
+
+  .setup-panel-nudge {
+    grid-template-columns: repeat(3, minmax(0, 3rem));
+    gap: 0.5rem;
   }
 }
 

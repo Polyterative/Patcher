@@ -49,8 +49,17 @@ export class InputDialogComponent extends DialogBase {
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-      this.isValid$.next(this.data.control.valid);
-    });
+        this.isValid$.next(this.data.control.valid);
+      });
+
+    this.isValid$.next(this.data.control.valid);
   }
 
+  confirm(): void {
+    if (!this.data.control.valid) {
+      return;
+    }
+
+    this.dialogRef.close({result: this.data.control.value});
+  }
 }

@@ -9,12 +9,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  EventEmitter,
   HostBinding,
   HostListener,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   ViewChild
 } from '@angular/core';
@@ -139,11 +141,14 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   @Input() rackViewportElement: HTMLElement | null = null;
   @Input() isCurrentRackPropertyOfCurrentUser: boolean;
   @Input() isCurrentRackEditable: boolean;
+  @Input() selectedTouchModule: RackedModule | null = null;
+  @Input() touchPrimaryActionsEnabled = false;
   @Input() dragScale = 1;
   
   @Input() rackDetailDataService: RackDetailDataService;
   
   @Input() moduleRightClick$: Subject<ModuleRightClick>;
+  @Output() touchModuleSelected = new EventEmitter<RackedModule>();
   
   @ViewChild('screen') screenReference: ElementRef;
   
@@ -220,6 +225,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   isHoveredModule(rackedModule: RackedModule): boolean {
     return this.hoveredRackedModule === rackedModule;
+  }
+
+  isTouchSelectedModule(rackedModule: RackedModule): boolean {
+    return this.selectedTouchModule === rackedModule;
   }
 
   shouldShowModuleHoverStats(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
@@ -426,8 +435,19 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     }
   }
 
-  onModulePointerUp(rackedModule: RackedModule): void {
+  onModulePointerUp(eventOrModule: PointerEvent | RackedModule, maybeRackedModule?: RackedModule): void {
+    const rackedModule = maybeRackedModule ?? eventOrModule as RackedModule;
+    const event = maybeRackedModule ? eventOrModule as PointerEvent : null;
+    const shouldEmitSelection = this.touchPrimaryActionsEnabled
+      && this.touchInteractionMode
+      && event?.pointerType === 'touch'
+      && this.touchLongPressModule === rackedModule
+      && this.touchLongPressStartPoint !== null
+      && this.touchContextMenuBlockedModule !== rackedModule;
     this.clearTouchInteractionState(rackedModule);
+    if (shouldEmitSelection) {
+      this.touchModuleSelected.emit(rackedModule);
+    }
   }
 
   onModulePointerCancel(rackedModule: RackedModule): void {

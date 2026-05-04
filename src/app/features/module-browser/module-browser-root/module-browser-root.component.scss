@@ -39,8 +39,8 @@
 
 .module-browser-submit-fab {
   position: fixed;
-  right: calc(1rem + env(safe-area-inset-right));
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   z-index: 98;
   border: 0.125rem solid #3e638a;
   border-radius: 1.75rem;

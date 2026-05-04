@@ -43,6 +43,7 @@ import {
   RACK_ANALYSIS_MODE_OPTIONS
 } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
+import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
 
 
 export interface ModuleRightClick {
@@ -76,6 +77,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   @Input() data: RackMinimal;
   
   private static readonly reducedScaleMultiplier = 0.65;
+  readonly touchInteractionMode = prefersTouchInteraction();
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
   readonly signalAnalysisLegendItems = [
@@ -94,6 +96,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   ];
 
   moduleRightClick$ = new Subject<ModuleRightClick>();
+  selectedTouchModule: RackedModule | null = null;
 
   autoScale = 1;
   viewOptionsExpanded = false;
@@ -110,6 +113,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
+      this.selectedTouchModule = null;
       this.updateAutoScale();
       queueMicrotask(() => {
         this.updateRackSurfaceFrame();
@@ -155,6 +159,20 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   toggleViewOptions(): void {
     this.viewOptionsExpanded = !this.viewOptionsExpanded;
     this.cdr.markForCheck();
+  }
+
+  rackDescription(isCurrentRackPropertyOfCurrentUser: boolean, isCurrentRackEditable: boolean): string {
+    if (!isCurrentRackPropertyOfCurrentUser) {
+      return '';
+    }
+
+    if (!isCurrentRackEditable) {
+      return 'Press Edit to make changes';
+    }
+
+    return this.touchInteractionMode
+      ? 'Changes saved automatically / Tap a module for actions / Press and hold for more options'
+      : 'Changes saved automatically / Right click on modules for more options / Add modules from below';
   }
 
   viewConfig: ModuleMinimalViewConfig = {
@@ -301,6 +319,41 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
         label: derivePanelLabel(activePanel.filename, activePanel.description, activePanelIndex)
       }
     });
+  }
+
+  onTouchModuleSelected(rackedModule: RackedModule): void {
+    this.selectedTouchModule = this.selectedTouchModule === rackedModule ? null : rackedModule;
+    this.cdr.markForCheck();
+  }
+
+  clearSelectedTouchModule(): void {
+    this.selectedTouchModule = null;
+    this.cdr.markForCheck();
+  }
+
+  duplicateSelectedTouchModule(): void {
+    if (!this.selectedTouchModule) {
+      return;
+    }
+
+    this.dataService.requestRackedModuleDuplication$.next(this.selectedTouchModule);
+  }
+
+  replaceSelectedTouchModuleWithBlank(): void {
+    if (!this.selectedTouchModule) {
+      return;
+    }
+
+    this.dataService.requestRackedModuleReplaceWithBlank$.next(this.selectedTouchModule);
+  }
+
+  removeSelectedTouchModule(): void {
+    if (!this.selectedTouchModule) {
+      return;
+    }
+
+    this.dataService.requestRackedModuleRemoval$.next(this.selectedTouchModule);
+    this.clearSelectedTouchModule();
   }
 
   private get rackWidthPx(): number {

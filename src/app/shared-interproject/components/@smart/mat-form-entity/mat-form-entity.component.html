@@ -37,8 +37,11 @@
       <!--  </ng-container>-->
       @if (type === types.AREA) {
         <!--<mat-label>{{placeholder}}</mat-label>-->
-        <textarea #autosize="cdkTextareaAutosize"
+        <textarea #primaryInput
+                  #autosize="cdkTextareaAutosize"
                   [formControl]="control"
+                  [attr.inputmode]="resolvedInputMode"
+                  [attr.enterkeyhint]="enterkeyhint || null"
                   [placeholder]="placeholder"
                   cdkAutosizeMinRows="1"
                   cdkTextareaAutosize
@@ -46,40 +49,56 @@
         ></textarea>
       }
       @if ((type === types.TEXT) || (type === types.NUMBER) || (type === types.TIME)) {
-        <input [autocomplete]="!disableBrowserAutocomplete"
+        <input #primaryInput
+               [autocomplete]="!disableBrowserAutocomplete"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="type"
+               (keydown.enter)="onInputEnterPressed($event)"
                matInput
                style="height: 15.333px"
         />
       }
       <!--  -->
       @if ((type === types.EMAIL)) {
-        <input [autocomplete]="!disableBrowserAutocomplete"
+        <input #primaryInput
+               [autocomplete]="!disableBrowserAutocomplete"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [formControl]="control"
                [placeholder]="placeholder"
+               (keydown.enter)="onInputEnterPressed($event)"
                type="email"
                matInput
                style="height: 15.333px"
         />
       }
       @if ((type === types.PASSWORD_CURRENT)) {
-        <input [autocomplete]="!disableBrowserAutocomplete"
+        <input #primaryInput
+               [autocomplete]="!disableBrowserAutocomplete"
+               [attr.inputmode]="inputmode || 'text'"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="hidePassword ? 'password' : 'text'"
                autocomplete="current-password"
+               (keydown.enter)="onInputEnterPressed($event)"
                matInput
                style="height: 15.333px"
         />
       }
       @if ((type === types.PASSWORD_NEW)) {
-        <input [autocomplete]="!disableBrowserAutocomplete"
+        <input #primaryInput
+               [autocomplete]="!disableBrowserAutocomplete"
+               [attr.inputmode]="inputmode || 'text'"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="hidePassword ? 'password' : 'text'"
                autocomplete="new-password"
+               (keydown.enter)="onInputEnterPressed($event)"
                matInput
                style="height: 15.333px"
         />
@@ -166,12 +185,14 @@
               }
             </mat-chip>
           }
-          <input (matChipInputTokenEnd)="addToMultiText($event)"
-                 [matChipInputAddOnBlur]="true"
-                 [matChipInputFor]="chipList"
-                 [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
-                 [placeholder]="placeholder"
-          >
+           <input (matChipInputTokenEnd)="addToMultiText($event)"
+                  [matChipInputAddOnBlur]="true"
+                  [matChipInputFor]="chipList"
+                  [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+                  [attr.inputmode]="resolvedInputMode"
+                  [attr.enterkeyhint]="enterkeyhint || null"
+                  [placeholder]="placeholder"
+           >
         </mat-chip-grid>
       }
       @if ((type === types.AUTOCOMPLETE_MULTIPLE)) {
@@ -191,15 +212,19 @@
               }
             </mat-chip>
           }
-          <input (matChipInputTokenEnd)="cleanMultiComplete($event)"
-                 [formControl]="ghostControl"
-                 [matAutocomplete]="autocomplete"
-                 [matChipInputAddOnBlur]="true"
-                 [matChipInputFor]="chipList"
-                 [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
-                 [placeholder]="placeholder"
-                 matInput
-          />
+          <input #primaryInput
+                 (matChipInputTokenEnd)="cleanMultiComplete($event)"
+                  [formControl]="ghostControl"
+                  [attr.inputmode]="resolvedInputMode"
+                  [attr.enterkeyhint]="enterkeyhint || null"
+                  [matAutocomplete]="autocomplete"
+                  [matChipInputAddOnBlur]="true"
+                  [matChipInputFor]="chipList"
+                  [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
+                  [placeholder]="placeholder"
+                  (keydown.enter)="onInputEnterPressed($event)"
+                  matInput
+           />
         </mat-chip-grid>
         <mat-autocomplete #autocomplete="matAutocomplete"
                           (optionSelected)="addToMultiComplete($event)"
@@ -261,9 +286,13 @@
         <!--  </ng-container>-->
       </ng-container>
       @if ((type === types.AUTOCOMPLETE)) {
-        <input [formControl]="control"
+        <input #primaryInput
+               [formControl]="control"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
+               (keydown.enter)="onInputEnterPressed($event)"
                matInput
                type="text"
         />
@@ -283,9 +312,13 @@
         </mat-autocomplete>
       }
       @if ((type === types.AUTOCOMPLETE_GROUPED)) {
-        <input [formControl]="control"
+        <input #primaryInput
+               [formControl]="control"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="enterkeyhint || null"
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
+               (keydown.enter)="onInputEnterPressed($event)"
                matInput
                type="text"
         />
@@ -380,12 +413,15 @@
       }
       {{ label }}
     </mat-label>
-    <input matInput
+    <input #primaryInput
+           matInput
            [formControl]="control"
+           [attr.enterkeyhint]="enterkeyhint || null"
            [matDatepicker]="picker"
            [max]="dateMax"
            [min]="dateMin"
            [placeholder]="placeholder"
+           (keydown.enter)="onInputEnterPressed($event)"
     >
     <mat-datepicker-toggle matSuffix
                            [for]="$any(picker)"

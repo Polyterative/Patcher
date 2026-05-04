@@ -28,4 +28,21 @@ $patcher-theme: mat.define-theme((
 // Emit all component styles for the theme exactly once at the root level.
 :root {
   @include mat.all-component-themes($patcher-theme);
+  --app-viewport-width: 100vw;
+  --app-viewport-height: 100vh;
+  --app-viewport-offset-top: 0px;
+  --app-viewport-offset-left: 0px;
+  --app-keyboard-inset-bottom: 0px;
+  --app-floating-bottom-offset: 0px;
+  --app-floating-inset-inline: 1rem;
+  --app-floating-inset-block: 1rem;
+  --app-floating-surface-gap: 0.8rem;
+}
+
+@media (max-width: 72.5rem) {
+  :root {
+    --app-floating-inset-inline: 0.75rem;
+    --app-floating-inset-block: 0.75rem;
+    --app-floating-surface-gap: 0.65rem;
+  }
 }

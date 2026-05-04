@@ -5,6 +5,8 @@
                        [type]="dataService.fields.user.type"
                        [control]="dataService.fields.user.control"
                        [label]="dataService.fields.user.label"
+                       [autofocus]="true"
+                       [enterkeyhint]="'next'"
                        formFieldAppearanceType="fill"
                        iconL1="email"
   >
@@ -14,6 +16,8 @@
                        [type]="dataService.fields.password.type"
                        [control]="dataService.fields.password.control"
                        [label]="dataService.fields.password.label"
+                       [enterkeyhint]="'send'"
+                       (enterPressed)="dataService.mailLoginClick$.next()"
                        formFieldAppearanceType="fill"
                        iconL1="lock"
   >
