@@ -28,6 +28,7 @@ import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from 'src/app/shared-interproject/json-ld-dom';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 
 
 const JSONLD_SCRIPT_ID = 'patch-jsonld';
@@ -54,25 +55,26 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     public dataService: PatchDetailDataService,
     public route: ActivatedRoute,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    private commentsDataService: CommentsDataService
+    private commentsDataService: CommentsDataService,
+    private userManagementService: UserManagementService
   ) {
     super();
   }
   
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Patch Details'); }
-    this.dataService.setPublicDetailMode(true);
     
-    this.route.params
-      .pipe(
+    combineLatest([
+      this.route.params.pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
         filter(x => x > 0),
         take(1)
-      )
-      .subscribe(data => {
-        // debugger
-        this.dataService.updateSinglePatchData$.next(data);
-      });
+      ),
+      this.userManagementService.loggedUser$.pipe(take(1))
+    ]).subscribe(([patchId, user]) => {
+      this.dataService.setPublicDetailMode(!user);
+      this.dataService.updateSinglePatchData$.next(patchId);
+    });
     
     if (!this.ignoreSeo) {
       combineLatest([
