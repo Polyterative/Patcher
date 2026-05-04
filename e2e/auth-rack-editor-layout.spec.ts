@@ -53,10 +53,9 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
 
   test('mobile keeps Options in the same action slot after entering edit mode', async ({page}) => {
     await openRackAtViewport(page, rackUrl, MOBILE_VIEWPORT);
+    await enterEditMode(page);
 
     const actions = page.locator('app-rack-editor .rackEditorResponsiveActions');
-    await actions.getByRole('button', {name: /^Edit rack$/i}).click();
-
     const optionsBox = await readBox(actions.getByRole('button', {name: /^Options$/i}));
     const lockBox = await readBox(actions.getByRole('button', {name: /^Lock rack$/i}));
 
@@ -274,8 +273,13 @@ async function enterEditMode(page: Page): Promise<void> {
   const mobileEditButton = page.locator('app-rack-editor .rackEditorResponsiveActions button', {hasText: /^Edit rack$/i}).first();
   const desktopLockButton = page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first();
   const desktopEditButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
+  const moduleBrowser = page.locator('app-module-browser-root');
 
-  if (await mobileLockButton.isVisible().catch(() => false) || await desktopLockButton.isVisible().catch(() => false)) {
+  if (
+    await mobileLockButton.isVisible().catch(() => false)
+    || await desktopLockButton.isVisible().catch(() => false)
+    || await moduleBrowser.isVisible().catch(() => false)
+  ) {
     return;
   }
 
@@ -285,7 +289,7 @@ async function enterEditMode(page: Page): Promise<void> {
     await mobileEditButton.click();
   }
 
-  await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+  await expect(moduleBrowser).toBeVisible({timeout: 10_000});
 }
 
 async function lockRack(page: Page): Promise<void> {
