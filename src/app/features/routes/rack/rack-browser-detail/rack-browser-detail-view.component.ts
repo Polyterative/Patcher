@@ -15,6 +15,7 @@ import {
 } from 'rxjs/operators';
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
   CommentableEntityTypes,
   CommentsDataService
@@ -60,24 +61,25 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     public dataService: RackDetailDataService,
     public route: ActivatedRoute,
     readonly seoAndUtilsService: SeoAndUtilsService,
-    private commentsDataService: CommentsDataService
+    private commentsDataService: CommentsDataService,
+    private userManagementService: UserManagementService
   ) {
     super();
   }
 
   ngOnInit(): void {
     if (!this.ignoreSeo) { this.seoAndUtilsService.updateSeo({}, 'Rack Details'); }
-    this.dataService.setPublicDetailMode(true);
-
-    this.route.params
-      .pipe(
+    combineLatest([
+      this.route.params.pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
         filter(x => x > 0),
         take(1)
-      )
-      .subscribe(data => {
-        this.dataService.updateSingleRackData$.next(data);
-      });
+      ),
+      this.userManagementService.loggedUser$.pipe(take(1))
+    ]).subscribe(([rackId, user]) => {
+      this.dataService.setPublicDetailMode(!user);
+      this.dataService.updateSingleRackData$.next(rackId);
+    });
 
     if (!this.ignoreSeo) {
       combineLatest([

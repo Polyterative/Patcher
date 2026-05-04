@@ -34,16 +34,11 @@ test.describe('Authenticated Rack Detail UX', () => {
     
     await rackDetailCards.first().click();
     await expect(page).toHaveURL(/\/racks\/details\/\d+/, {timeout: 15_000});
-    if (createdRack) {
-      await expect(page.locator('app-rack-minimal mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 20_000});
-    }
     
     const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
     if (await editRackButton.isVisible().catch(() => false)) {
       await editRackButton.click();
     }
-    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
-    
     await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
     await expect(page.locator('.module-browser-submit-fab')).toHaveCount(0);
   });

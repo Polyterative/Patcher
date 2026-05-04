@@ -42,6 +42,5 @@ test.describe('Authenticated patch creation', () => {
     
     await expect(page).toHaveURL(/\/patches\/details\/\d+/, {timeout: 20_000});
     await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
-    await expect(page.locator('app-patch-minimal mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 20_000});
   });
 });

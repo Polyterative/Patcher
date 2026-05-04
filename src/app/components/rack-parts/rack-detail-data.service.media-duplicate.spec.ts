@@ -175,7 +175,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(backend.update.rack).toHaveBeenCalledWith(jasmine.objectContaining({id: 123, name: 'Renamed Rack'}));
   }));
   
-  it('duplicates rack and syncs copied module layout to the new rack', () => {
+  it('duplicates rack without reusing the original preview image and syncs copied module layout to the new rack', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {
     });
     const {service, backend, snackBar} = build();
@@ -188,6 +188,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     
     expect(snackBar.open).toHaveBeenCalled();
     expect(backend.add.rack).toHaveBeenCalledWith(jasmine.objectContaining({name: 'Perf Rack V6'}));
+    expect(backend.add.rack.calls.mostRecent().args[0].image).toBeUndefined();
     expect(history.replaceState).toHaveBeenCalled();
     expect(backend.update.rackedModules).toHaveBeenCalled();
     expect(SharedConstants.successCustom).toHaveBeenCalled();
