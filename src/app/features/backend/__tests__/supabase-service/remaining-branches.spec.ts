@@ -39,24 +39,15 @@ describe('SupabaseService - Remaining Branches', () => {
   });
   
   it('get.patchesWithModule resolves patch details and handles empty patch lists', (done) => {
-    spyOn(supabaseClient, 'from').and.callFake((table: string) => {
-      if (table === 'patches') {
-        return chainable({data: [{id: 7, name: 'Patch7'}], count: 1, error: null});
-      }
-      return chainable({data: null, error: null});
-    });
+    spyOn(supabaseClient, 'rpc').and.returnValues(
+      Promise.resolve({data: [{id: 7, name: 'Patch7'}], error: null}),
+      Promise.resolve({data: [], error: null})
+    );
     
     service.get.patchesWithModule(1).subscribe({
       next: (result: any[]) => {
         expect(result[0].id).toBe(7);
-        
-        (supabaseClient.from as jasmine.Spy).and.callFake((table: string) => {
-          if (table === 'patches') {
-            return chainable({data: [], count: 0, error: null});
-          }
-          return chainable({data: null, error: null});
-        });
-        
+
         service.get.patchesWithModule(1).subscribe({
           next: (emptyResult: any[]) => {
             expect(emptyResult).toEqual([]);
@@ -69,16 +60,36 @@ describe('SupabaseService - Remaining Branches', () => {
     });
   }, TEST_TIMEOUT);
 
-  it('get.patchesWithModule filters to public patches from public profiles', (done) => {
-    const query = chainable({data: [], count: 0, error: null});
-    const filterSpy = spyOn(query, 'filter').and.returnValue(query);
-    spyOn(supabaseClient, 'from').and.returnValue(query);
+  it('get.patchesWithModule calls the dedicated RPC with stable defaults', (done) => {
+    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({data: [], error: null}));
 
     service.get.patchesWithModule(1).subscribe({
       next: () => {
-        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith('patches_for_modules.moduleid', 'eq', 1);
+        expect(rpcSpy).toHaveBeenCalledWith('get_public_patches_for_module', {
+          p_module_id: 1,
+          p_from: 0,
+          p_to: 20,
+          p_order_by: 'updated',
+          p_order_direction: 'desc'
+        });
+        done();
+      },
+      error: done.fail
+    });
+  }, TEST_TIMEOUT);
+
+  it('get.patchesWithModule forwards explicit pagination and ordering to the RPC', (done) => {
+    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({data: [], error: null}));
+
+    service.get.patchesWithModule(1, 5, 9, 'created', 'asc').subscribe({
+      next: () => {
+        expect(rpcSpy).toHaveBeenCalledWith('get_public_patches_for_module', {
+          p_module_id: 1,
+          p_from: 5,
+          p_to: 9,
+          p_order_by: 'created',
+          p_order_direction: 'asc'
+        });
         done();
       },
       error: done.fail

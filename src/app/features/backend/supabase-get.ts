@@ -1,5 +1,4 @@
 import {
-  forkJoin,
   from as rxFrom,
   Observable,
   of,
@@ -119,16 +118,16 @@ export function createGetNamespace(
         remapErrors()
       ),
     patchesWithModule: (moduleid: number, from = 0, to: number = defaultPag, orderBy?: string, orderDirection?: 'asc' | 'desc') => rxFrom(
-      supabase.from(DbPaths.patches)
-        .select(`id,name,description,${ QueryJoins.author },updated,created, ${ QueryJoins.publicAuthorGate(PUBLIC_AUTHOR_GATE_ALIAS) }, patches_for_modules!inner(moduleid,patchid)`, {count: 'exact'})
-        .filter('public', 'eq', true)
-        .filter(`${ PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
-        .filter('patches_for_modules.moduleid', 'eq', moduleid)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'updated', {ascending: orderDirection === 'asc'})
+      supabase.rpc('get_public_patches_for_module', {
+        p_module_id: moduleid,
+        p_from: from,
+        p_to: to,
+        p_order_by: orderBy ?? 'updated',
+        p_order_direction: orderDirection ?? 'desc'
+      })
     ).pipe(
       remapErrors(),
-      map((response: any) => stripPublicAuthorGate<{data: Patch[]; count: number | null}>(response).data ?? [])
+      map((response: any) => (response.data ?? []) as Patch[])
     ),
     modulesBySameManufacturer: (manufacturerId: any, from = 0, to: number = defaultPag, columns = '*') => rxFrom(
       supabase.from(DbPaths.modules)
