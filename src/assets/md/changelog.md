@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.7.1](https://github.com/Polyterative/Patcher/compare/v5.7.0...v5.7.1) (2026-05-04)
+
+
+### Features
+
+* **module-details:** adapt portrait module layouts ([fef4c47](https://github.com/Polyterative/Patcher/commit/fef4c47d8039ecbf3d94204f5c6479856233e0e3))
+* **module-details:** streamline module card tagging ([76edef6](https://github.com/Polyterative/Patcher/commit/76edef697bd22a9043ed8c45f77af670ae149396))
+* **rack:** refine and pause signal analysis mode ([849c4ab](https://github.com/Polyterative/Patcher/commit/849c4abdf8d639bf3ed6fc3ff01b25bd3547b7b9))
+* **tablet:** harden ipad pro editing flows ([e2fe133](https://github.com/Polyterative/Patcher/commit/e2fe1335db2132418db931105bf902025ce2826d))
+
+
+### Bug Fixes
+
+* **module-details:** refine animation sequencing ([cd37396](https://github.com/Polyterative/Patcher/commit/cd37396fb53899407e395900c749e81ef84fe131))
+* **patches:** harden module lookups and public defaults ([860ca97](https://github.com/Polyterative/Patcher/commit/860ca97240a06baef3b4ac529c5e92be868a2bd9))
+* **rack-editor:** tighten mobile spacing ([c2f07a1](https://github.com/Polyterative/Patcher/commit/c2f07a13efedf9af449d77682b6245566c1e68dd))
+
 ## [5.7.0](https://github.com/Polyterative/Patcher/compare/v5.6.0...v5.7.0) (2026-05-04)
 
 
