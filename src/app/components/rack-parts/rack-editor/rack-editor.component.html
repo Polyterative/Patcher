@@ -21,12 +21,12 @@
       </lib-auto-content-loading-indicator>
     } @else {
       <lib-hero-content-card [description]="rackDescription(bag.isCurrentRackPropertyOfCurrentUser, bag.isCurrentRackEditable)"
-                            descriptionAlign="alignTextEnd"
-                            class="transition-all-long"
-                           [ngClass]="{
-                           'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 
-                           'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
-                           }"
+                             descriptionAlign="alignTextEnd"
+                             class="rackEditorCard transition-all-long"
+                            [ngClass]="{
+                            'editiableBG':bag.isCurrentRackPropertyOfCurrentUser&&bag.isCurrentRackEditable, 
+                            'readOnlyBG':(bag.isCurrentRackPropertyOfCurrentUser&&(!bag.isCurrentRackEditable))
+                            }"
     >
       <div class="col gap1 transition-all">
         @if (dataService.isCurrentRackPrivate$|async) {
