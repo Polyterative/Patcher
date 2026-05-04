@@ -88,7 +88,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     },
     public: {
       code: 'public',
-      control: new FormControl<boolean>(false, { nonNullable: true })
+      control: new FormControl<boolean>(true, { nonNullable: true })
     }
   };
   protected destroyEvent$ = new Subject<void>();
