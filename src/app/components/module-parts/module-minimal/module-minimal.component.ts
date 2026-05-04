@@ -2,8 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit, OnDestroy
+  OnInit, OnDestroy,
 } from '@angular/core';
+import {
+  animate,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
 import {
   Observable,
   Subject
@@ -22,6 +28,56 @@ import { ModuleDetailDataService } from '../module-detail-data.service';
   selector: 'app-module-minimal',
   templateUrl: './module-minimal.component.html',
   styleUrls: ['./module-minimal.component.scss'],
+  animations: [
+    trigger('moduleDetailFadeEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 180 }
+      })
+    ]),
+    trigger('moduleDetailCopyEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 180 }
+      })
+    ]),
+    trigger('moduleDetailInlineEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 170 }
+      })
+    ]),
+    trigger('moduleDetailActionsEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 185 }
+      })
+    ])
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
