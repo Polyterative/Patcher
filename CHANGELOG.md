@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.7.0](https://github.com/Polyterative/Patcher/compare/v5.6.0...v5.7.0) (2026-05-04)
+
+
+### Features
+
+* **home:** add application insights teaser ([d1266dd](https://github.com/Polyterative/Patcher/commit/d1266dd58d3241b7bd18091ef903dce8c26b2baf))
+* **home:** refresh hero messaging ([a86d998](https://github.com/Polyterative/Patcher/commit/a86d998b04825e34cd1a59945defa9035a8d6719))
+* **insights:** add catalogue age analytics ([fc755a9](https://github.com/Polyterative/Patcher/commit/fc755a92ae4688fd4c9a33c1206bc53e89fa22c2))
+* **insights:** add catalogue health signals ([8dd0233](https://github.com/Polyterative/Patcher/commit/8dd02332e421ea108b4c1cd66c74c51b08ea1ca1))
+* **insights:** add dedicated application surface ([65141f7](https://github.com/Polyterative/Patcher/commit/65141f7c48ef8886ccedc6dd9a938f4652cd9066))
+* **insights:** add derived signals ([eebdcf3](https://github.com/Polyterative/Patcher/commit/eebdcf31a4a135880b6104c8d80f58c14eada45a))
+* **insights:** add freshness signals ([f7d6a84](https://github.com/Polyterative/Patcher/commit/f7d6a84535c8ddd9f2d662b1d32c14197a49240b))
+* **insights:** add maker competition views ([4004df0](https://github.com/Polyterative/Patcher/commit/4004df0c048531f132851bb4102a25bc52a933c7))
+* **insights:** add participation rates ([d399304](https://github.com/Polyterative/Patcher/commit/d3993042c520ec248f15dceb8125e8d423e33061))
+* **insights:** add patch network signals ([210c0bb](https://github.com/Polyterative/Patcher/commit/210c0bb32cf35755a11198b61dd2508f7e336f72))
+* **insights:** add sharing mix signals ([7568898](https://github.com/Polyterative/Patcher/commit/7568898206fdf832244047d6292608b09dc36c96))
+* **insights:** deepen format and sharing signals ([64084e7](https://github.com/Polyterative/Patcher/commit/64084e7c88518b2a5e454cdc3bf6e5c7f1c72041))
+* **insights:** deepen freshness and maker context ([e8f28ef](https://github.com/Polyterative/Patcher/commit/e8f28ef1b2515b2f3181c3a060e6335196a0a98f))
+* **insights:** deepen module analytics ([d595f95](https://github.com/Polyterative/Patcher/commit/d595f95907fc46440f09ce5ab98661bd7153a08c))
+* **insights:** deepen module size analytics ([7f16bf1](https://github.com/Polyterative/Patcher/commit/7f16bf16cdf235cb9c8e92ed4714485a6fb823f2))
+* **insights:** expand comparative analytics ([b4fba92](https://github.com/Polyterative/Patcher/commit/b4fba9221f13674a766a49574004edb588e47277))
+* **insights:** explain coverage suppression ([a5888fa](https://github.com/Polyterative/Patcher/commit/a5888faefb2085a45bc0fc3fe396ff52286c5ddb))
+* **insights:** normalize freshness rates ([572b472](https://github.com/Polyterative/Patcher/commit/572b472b67da71d7b788d1a958b9d0cc30f962da))
+* **insights:** redesign public insights page ([3d30437](https://github.com/Polyterative/Patcher/commit/3d30437073b05eb993b1a6b450ec4e04f6b797e7))
+* **insights:** sharpen hierarchy and velocity signals ([f98be24](https://github.com/Polyterative/Patcher/commit/f98be247e68e411e455caa7f3f0d3404d7426e47))
+* **insights:** suppress low-volume derived signals ([b8c02e6](https://github.com/Polyterative/Patcher/commit/b8c02e61dce2baf178da6e2ccafd9fa7ac743854))
+* **rack-editor:** add function analysis mode ([0ea432d](https://github.com/Polyterative/Patcher/commit/0ea432d341b566eacc681f7c8e614d4579fbd72f))
+* **rack:** refine mobile controls and power analysis ([eb0d858](https://github.com/Polyterative/Patcher/commit/eb0d85814fab106d6c44374396bc2307b301933c))
+* **site:** add timed event banner surface ([9c83338](https://github.com/Polyterative/Patcher/commit/9c833387f83065f2eaacc8b21a3c4cbbcd61f029))
+
+
+### Bug Fixes
+
+* **auth:** prevent clipped narrow-page titles ([f51f4b6](https://github.com/Polyterative/Patcher/commit/f51f4b61cbccaf2952b93efaa95273d45c549c07))
+* **backend:** harden public listing visibility ([9190806](https://github.com/Polyterative/Patcher/commit/9190806aa204d6a145d246757e7f444eb825d36f))
+* **insights:** correct freshness pagination ([d01d8c5](https://github.com/Polyterative/Patcher/commit/d01d8c58e86d20b05c89910111b5e809e8cf2613))
+* **insights:** gate public entry points in production ([d713fbb](https://github.com/Polyterative/Patcher/commit/d713fbb8e882d76443c065c6074f3b0ecdcd4929))
+* **insights:** include all module standards ([c49edad](https://github.com/Polyterative/Patcher/commit/c49edad892f9f9c626d18a6953ee0fbc2569bb4f))
+* **insights:** reduce chart color variety ([c2f10c0](https://github.com/Polyterative/Patcher/commit/c2f10c050516e706586eb54e364728c1324cc3e9))
+* **insights:** replace footprint progress bars ([b5cdb7f](https://github.com/Polyterative/Patcher/commit/b5cdb7fc98d99647b93587fcc1ef8a13a0878b24))
+* **insights:** show in-page loading state ([ad7fabb](https://github.com/Polyterative/Patcher/commit/ad7fabb8f11f1e4c018712376e66259351ca41b1))
+* **insights:** split module explorations ([b01ebb7](https://github.com/Polyterative/Patcher/commit/b01ebb7bcf762965a35b900376c63ac604fd8a81))
+* **module-details:** polish panel previews and tag suggestions ([ced6913](https://github.com/Polyterative/Patcher/commit/ced6913baf5ed8b9278fbc022219b34a79ff856e))
+* **module-details:** refine responsive detail shell ([79fd5b3](https://github.com/Polyterative/Patcher/commit/79fd5b3a346dac9c8a35a5df551573355aebf8f3))
+* **privacy:** harden public profile query paths ([89cf969](https://github.com/Polyterative/Patcher/commit/89cf969be39cc8922e2fc9a04decf8128dda4afb))
+* **rack-editor:** harden tablet touch interactions ([df5c57c](https://github.com/Polyterative/Patcher/commit/df5c57c49fefffa4019f2acc4b5273589c58b4ee))
+* **rack-editor:** polish drag reveal and remove edit prompt ([17a6c0a](https://github.com/Polyterative/Patcher/commit/17a6c0a7ca1c31820936838888e3a683491097cd))
+* **rack-editor:** prevent dragged panel flash ([2ddc147](https://github.com/Polyterative/Patcher/commit/2ddc147f89fa70d92f7d6ee24aede24640aaac62))
+* **rack-editor:** remove analysis mode tooltips ([51b5024](https://github.com/Polyterative/Patcher/commit/51b502425c49eed8cef26098457ff2f26b7b50a6))
+* **rack-editor:** remove mobile quick-toggle shadow ([eafac4b](https://github.com/Polyterative/Patcher/commit/eafac4bc76d23ff6882b4f58a46277b52ece276f))
+* **rack-editor:** smooth drag handoff landing ([8d35837](https://github.com/Polyterative/Patcher/commit/8d3583775513b3eae9abdd89e435a6d6671071f0))
+* **rack-editor:** stabilize drag preview sizing ([af74ff8](https://github.com/Polyterative/Patcher/commit/af74ff8510d6fc4bb7a5a205fcac84239ecc43b9))
+* **rack:** align balance analysis palette ([2d2c723](https://github.com/Polyterative/Patcher/commit/2d2c7233af630bd750ac957754cce7dfe0c82de9))
+* **rack:** resolve inside loader state ([1a1f7b3](https://github.com/Polyterative/Patcher/commit/1a1f7b3f902c1c2ab580ff954cb96e79ed5f14b6))
+* **racks:** restore private detail access and copy previews ([e8808bb](https://github.com/Polyterative/Patcher/commit/e8808bb8810fb6b1614f0beee8e5f122467bf174))
+* **rack:** unify inside power palette ([55561f0](https://github.com/Polyterative/Patcher/commit/55561f0996c429d95d9f8bed607f66a5b3f07443))
+* **responsive:** improve mobile and tablet usability ([d9c368d](https://github.com/Polyterative/Patcher/commit/d9c368dce26dbb94bf7f7a9bdf9dccc92d8705a1))
+* **responsive:** refine tablet drag and patch layouts ([fbc288f](https://github.com/Polyterative/Patcher/commit/fbc288f90c9aab6f69db5cb379e61bfd086c1cb6))
+* **responsive:** stabilize drag feedback and tip routing ([84a362a](https://github.com/Polyterative/Patcher/commit/84a362a5cb7e7b328ff51858f5d92084ef17be27))
+
 ## [5.6.0](https://github.com/Polyterative/Patcher/compare/v5.5.1...v5.6.0) (2026-05-02)
 
 
