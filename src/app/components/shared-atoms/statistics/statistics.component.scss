@@ -19,6 +19,14 @@
   gap: 1rem;
 }
 
+.statistics-empty-message {
+  display: block;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #66788a;
+}
+
 .stat-item {
   animation: stat-fade-in 220ms ease-out both;
   min-width: 8rem;

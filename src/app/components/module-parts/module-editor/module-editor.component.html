@@ -201,8 +201,7 @@
 
           @if (panelTypeAlreadyExists$ | async) {
             <app-advice-tooltip>
-              A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type or remove
-              the existing panel first.
+              A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type.
             </app-advice-tooltip>
           }
         </section>
