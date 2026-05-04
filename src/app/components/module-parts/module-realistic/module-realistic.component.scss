@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use 'sass:color';
+@use '../../rack-parts/function-analysis-theme' as functionTheme;
 
 :host {
   display: block;
@@ -197,36 +198,24 @@ $power-analysis-hot-color: #dc3434;
   );
 }
 
-@mixin function-analysis-overlay($base-color, $top-alpha, $bottom-alpha, $border-alpha) {
-  $top-color: color.scale($base-color, $lightness: 10%);
-  $bottom-color: color.scale($base-color, $lightness: -8%);
-  $border-color: color.scale($base-color, $lightness: -18%);
-
-  @include power-analysis-overlay-tone(
-    color.change($top-color, $alpha: $top-alpha),
-    color.change($bottom-color, $alpha: $bottom-alpha),
-    color.change($border-color, $alpha: $border-alpha)
-  );
-}
-
 .functionAnalysisModule--voices .analysisOverlay__layer--function {
-  @include function-analysis-overlay(#3d7de4, 0.28, 0.42, 0.2);
+  @include functionTheme.function-analysis-overlay('voices', 0.28, 0.42, 0.2);
 }
 
 .functionAnalysisModule--modulation .analysisOverlay__layer--function {
-  @include function-analysis-overlay(#7c56cf, 0.3, 0.45, 0.22);
+  @include functionTheme.function-analysis-overlay('modulation', 0.3, 0.45, 0.22);
 }
 
 .functionAnalysisModule--utilities .analysisOverlay__layer--function {
-  @include function-analysis-overlay(#2f9b63, 0.28, 0.42, 0.2);
+  @include functionTheme.function-analysis-overlay('utilities', 0.28, 0.42, 0.2);
 }
 
 .functionAnalysisModule--timing .analysisOverlay__layer--function {
-  @include function-analysis-overlay(#d18a2f, 0.32, 0.48, 0.22);
+  @include functionTheme.function-analysis-overlay('timing', 0.32, 0.48, 0.22);
 }
 
 .functionAnalysisModule--tone .analysisOverlay__layer--function {
-  @include function-analysis-overlay(#d45a67, 0.32, 0.5, 0.22);
+  @include functionTheme.function-analysis-overlay('tone', 0.32, 0.5, 0.22);
 }
 
 .functionAnalysisModule--unclassified .analysisOverlay__layer--function {
