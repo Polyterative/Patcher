@@ -152,11 +152,45 @@ $floatingSurfaceRestOpacity: 0.78;
 
 .rackEditorFloatingOptions__analysisModes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.3rem;
   margin-top: 0.4rem;
   width: 100%;
   align-items: stretch;
+}
+
+.rackEditorFloatingOptions__analysisFocus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.32rem;
+  margin-top: 0.55rem;
+}
+
+.rackEditorFloatingOptions__analysisFocusButton {
+  appearance: none;
+  border: 0.0625rem solid rgba(62, 99, 138, 0.22);
+  border-radius: 999px;
+  min-width: 0;
+  padding: 0.38rem 0.58rem;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(21, 46, 70, 0.88);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.rackEditorFloatingOptions__analysisFocusButton:hover {
+  border-color: rgba(34, 75, 117, 0.44);
+  background: rgba(238, 244, 251, 0.96);
+}
+
+.rackEditorFloatingOptions__analysisFocusButton--active {
+  border-color: rgba(34, 75, 117, 0.5);
+  background: rgba(34, 75, 117, 0.14);
+  color: rgba(26, 55, 82, 0.96);
 }
 
 .rackEditorFloatingOptions__analysisModeButton {
@@ -281,6 +315,26 @@ $floatingSurfaceRestOpacity: 0.78;
 
 .rackEditorFloatingOptions__analysisSwatch--tone {
   @include functionTheme.function-analysis-swatch('tone');
+}
+
+.rackEditorFloatingOptions__analysisSwatch--signalAudio {
+  background: #e2523c;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--signalPitch {
+  background: #7b61ff;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--signalClock {
+  background: #17a36b;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--signalModulation {
+  background: #2f80ed;
+}
+
+.rackEditorFloatingOptions__analysisSwatch--signalOther {
+  background: #76889b;
 }
 
 .rackEditorFloatingOptions__analysisScale {

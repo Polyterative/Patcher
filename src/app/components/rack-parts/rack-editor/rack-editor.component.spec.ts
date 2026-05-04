@@ -11,6 +11,7 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RackedModule } from 'src/app/models/module';
 import { GeneralContextMenuDataService } from 'src/app/shared-interproject/components/@smart/general-context-menu/general-context-menu-data.service';
 import { RackEditorComponent } from './rack-editor.component';
+import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
 
 
 describe('RackEditorComponent', () => {
@@ -133,6 +134,23 @@ describe('RackEditorComponent', () => {
 
     component.toggleViewOptions();
     expect(component.viewOptionsExpanded).toBeTrue();
+  });
+
+  it('does not expose the paused signal analysis mode in the UI options', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.analysisModeOptions.map(option => option.mode)).toEqual([
+      RACK_ANALYSIS_MODES.off,
+      RACK_ANALYSIS_MODES.power,
+      RACK_ANALYSIS_MODES.function,
+    ]);
   });
 
   it('scales the rack down when the viewport is narrower than the rack width', () => {

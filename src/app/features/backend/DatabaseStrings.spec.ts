@@ -63,6 +63,8 @@ describe('QueryJoins', () => {
   it('rack-module module join includes module tags for downstream rack analysis', () => {
     expect(QueryJoins.module_fk_rackmodules).toContain('tags:module_tags');
     expect(QueryJoins.module_fk_rackmodules).toContain('voteCount:user_module_tags');
+    expect(QueryJoins.module_fk_rackmodules).toContain('ins:module_ins');
+    expect(QueryJoins.module_fk_rackmodules).toContain('outs:module_outs');
   });
   
   it('module_panels join string contains the module_panels table reference', () => {
