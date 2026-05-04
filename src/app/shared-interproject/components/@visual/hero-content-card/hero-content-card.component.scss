@@ -254,6 +254,15 @@ h3 {
 .title-main,
 .title-sub {
   min-width: 0;
+}
+
+.title-main {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.title-text--with-sub .title-main,
+.title-text--with-sub .title-sub {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
