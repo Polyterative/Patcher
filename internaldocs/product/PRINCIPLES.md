@@ -236,6 +236,21 @@ per feature area is the right path — not a separate mobile app, and not a full
 question is no longer purely future-looking: marketplace and price-hub launch readiness depends on it. See
 [PWA Support](./ROADMAP.md#pwa-support) for the horizon item.
 
+**Tablet clarification:** iPad-class tablets are not just "bigger phones" and should not be treated as touch-capable
+desktops either. They are both a near-term demo surface and a realistic browse/build device. The immediate goal is not
+"perfect mobile parity" for every editor. It is **confident tablet use without desktop-only interaction traps**.
+
+This yields four near-term rules:
+
+1. **Browse/detail/profile flows should feel tablet-native first.** Dense desktop sidebars, tooltip-only meaning, and
+   tab-spawning detours are acceptable only when the value clearly outweighs the friction.
+2. **Editing surfaces may remain structurally desktop-biased, but not interaction-hostile.** Hover-only, right-click-only,
+   tiny touch targets, and keyboard-hostile forms are not acceptable on iPad just because the screen is large.
+3. **Shared primitives matter more than per-screen tweaks.** The highest-value tablet wins come from shared form behavior,
+   coordinated floating surfaces, keyboard-aware viewport handling, and touch-friendly action visibility.
+4. **Demo readiness beats theoretical completeness.** Fix the interactions most likely to make a live iPad demo feel broken
+   or awkward before pursuing broad responsive polish everywhere.
+
 **Remaining open question:** Service worker caching strategy for price data (frequently changing) vs catalogue data
 (relatively stable). These need different cache TTLs.
 

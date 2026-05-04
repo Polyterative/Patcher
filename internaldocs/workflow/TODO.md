@@ -40,6 +40,22 @@ _(none)_
 
 ---
 
+#### HIGH: iPad / Tablet Demo Hardening
+
+**Why:** Recent internal audit found that the app is usable on a large tablet in many places but still carries too many
+desktop-only assumptions for confident iPad demos. The biggest risks are not "mobile in general" — they are specific
+touch-hostile interaction patterns in editing flows, floating UI collisions, keyboard/viewport assumptions, and a few
+shared primitives that amplify friction across many screens.
+
+- [ ] Replace desktop-only rack-edit actions with a clear touch-accessible primary path; keep context menu as secondary
+- [ ] Unify floating-surface behavior on tablet so search/FAB/selection/analysis surfaces stop competing for bottom-corner space
+- [ ] Introduce a shared keyboard-aware viewport strategy (single viewport meta source, `dvh`/`svh` fallbacks where needed, evaluate `visualViewport` for overlays)
+- [ ] Upgrade shared form ergonomics for tablet (`inputmode`, `enterkeyhint`, first-focus defaults, and sane enter-key flow)
+- [ ] Enlarge or simplify the highest-frequency touch targets (CV ports, dense icon rows, tiny toggles, crop nudge controls, selection dismiss)
+- [ ] Reduce performance-heavy fixed overlays and other demo-visible motion/scroll pressure on iPad work surfaces
+
+---
+
 #### HIGH: Comments — Bug-fix Pass (entity detail pages)
 
 **Why:** Three bugs in `getComments()` make entity-level comments broken in subtle ways. No sort order means comments
