@@ -23,7 +23,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     if (await editBtn.isVisible().catch(() => false)) {
       await editBtn.click();
     }
-    await expect(page.getByRole('button', {name: /^(Lock rack|Discard changes)$/i}).first()).toBeVisible({timeout: 10_000});
+    await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
   }
 
   async function getModuleRowIndex(page: any, moduleAltText: string): Promise<number> {

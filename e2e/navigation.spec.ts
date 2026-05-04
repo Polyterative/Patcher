@@ -16,7 +16,7 @@ test.describe('Navigation', () => {
     await expect(page).toHaveURL(/\/(?:home)?$/, {timeout: 10_000});
     const heroHeading = page.locator('main.home-page h1').first();
     await expect(heroHeading).toBeVisible({timeout: 10_000});
-    await expect(heroHeading).toContainText(/patch/i);
+    await expect(heroHeading).toContainText(/operating system.*modular/i);
   });
   
   test('navigating to modules/browser lands on the correct page', async ({page}) => {

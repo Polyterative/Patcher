@@ -756,7 +756,6 @@ export class RackDetailDataService extends SubManager {
         name: this.bumpUpVersionInNameOfOfRack(),
         hp: this.singleRackData$.value.hp,
         rows: this.singleRackData$.value.rows,
-        image: this.singleRackData$.value.image,
         public: true,
         locked: false
       }

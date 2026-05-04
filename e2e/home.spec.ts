@@ -23,7 +23,7 @@ test.describe('Home Page', () => {
   test('main hero heading is visible', async ({page}) => {
     const heroHeading = page.locator('main.home-page h1').first();
     await expect(heroHeading).toBeVisible({timeout: 10_000});
-    await expect(heroHeading).toContainText(/patch/i);
+    await expect(heroHeading).toContainText(/operating system.*modular/i);
   });
   
   test('login and sign-up CTA links are visible', async ({page}) => {
