@@ -32,4 +32,3 @@ _(none — pick the next task from [TODO.md](./TODO.md) and paste its implementa
 #### Layer 3 — Polish
 - [ ] step
 ```
-
