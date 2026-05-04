@@ -1,183 +1,187 @@
-@if ({
+  @if ({
   user:(userManagerService.loggedUser$|async),
   isInCollection:(isInCollection$|async),
   singleModuleData:(dataService.singleModuleData$|async)
 }; as bag) {
   <div class="col parent"
        [class.parent--tagPickerOpen]="isTagChooserOpen"
+       [class.parent--portraitDetailSplit]="portraitDetailSplit"
   >
-    <div class="col gap0"
-    >
-      <div class="panel image-container">
-        <app-module-part-image [big]="viewConfig.bigPanelImage"
-                               [data]="data"
-                               [fixedHeight]="!viewConfig.bigPanelImage"
-                               [preferredPanelColor]="preferredPanelColor"
-        ></app-module-part-image>
-        @if (data.panels.length > 1) {
-          <mat-icon class="panel-variants-badge"
-                    [matTooltip]="data.panels.length + ' panel variants available'"
-          >contrast</mat-icon>
-        }
+    <div class="module-minimal__layout">
+      <div class="module-minimal__media">
+        <div class="panel image-container">
+          <app-module-part-image [big]="viewConfig.bigPanelImage"
+                                 [data]="data"
+                                 [fixedHeight]="!viewConfig.bigPanelImage"
+                                 [preferredPanelColor]="preferredPanelColor"
+          ></app-module-part-image>
+          @if (data.panels.length > 1) {
+            <mat-icon class="panel-variants-badge"
+                      [matTooltip]="data.panels.length + ' panel variants available'"
+            >contrast</mat-icon>
+          }
+        </div>
       </div>
-      <app-module-part-name [data]="data" [suffix]="nameSuffix"></app-module-part-name>
-      @if (!viewConfig.hideManufacturer || !viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
-        <div class="module-meta-row">
-          @if (!viewConfig.hideManufacturer) {
-            <app-module-part-manufacturer
-              class="module-meta-row__manufacturer"
+      <div class="col gap0 module-minimal__content">
+        <app-module-part-name [data]="data" [suffix]="nameSuffix"></app-module-part-name>
+        @if (!viewConfig.hideManufacturer || !viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
+          <div class="module-meta-row">
+            @if (!viewConfig.hideManufacturer) {
+              <app-module-part-manufacturer
+                class="module-meta-row__manufacturer"
+                [data]="data"
+              ></app-module-part-manufacturer>
+            }
+            @if (!viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
+              <div class="module-meta-row__stats module-minimal__focus-hide module-minimal__focus-hide--compact">
+                @if (hasIO && !viewConfig.hideIoCounts) {
+                  <div class="module-io-counts"
+                       aria-label="Module connectivity">
+                    @if (insCount > 0) {
+                      <span class="module-io-counts__item"
+                            [attr.aria-label]="insCount + ' inputs'">
+                        <mat-icon>input</mat-icon>
+                        {{ insCount }}
+                      </span>
+                    }
+                    @if (outsCount > 0) {
+                      <span class="module-io-counts__item"
+                            [attr.aria-label]="outsCount + ' outputs'">
+                        <mat-icon>output</mat-icon>
+                        {{ outsCount }}
+                      </span>
+                    }
+                  </div>
+                }
+                @if (!viewConfig.hideHP) {
+                  <app-module-part-hp
+                    class="module-meta-row__hp"
+                    [data]="data"
+                  ></app-module-part-hp>
+                }
+              </div>
+            }
+          </div>
+        }
+        <div class="module-minimal__focus-hide module-minimal__focus-hide--copy">
+          @if (!viewConfig.hideDates) {
+            <app-timestamps-relative
               [data]="data"
-            ></app-module-part-manufacturer>
+            ></app-timestamps-relative>
           }
-          @if (!viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
-            <div class="module-meta-row__stats module-minimal__focus-hide module-minimal__focus-hide--compact">
-              @if (hasIO && !viewConfig.hideIoCounts) {
-                <div class="module-io-counts"
-                     aria-label="Module connectivity">
-                  @if (insCount > 0) {
-                    <span class="module-io-counts__item"
-                          [attr.aria-label]="insCount + ' inputs'">
-                      <mat-icon>input</mat-icon>
-                      {{ insCount }}
-                    </span>
-                  }
-                  @if (outsCount > 0) {
-                    <span class="module-io-counts__item"
-                          [attr.aria-label]="outsCount + ' outputs'">
-                      <mat-icon>output</mat-icon>
-                      {{ outsCount }}
-                    </span>
-                  }
-                </div>
-              }
-              @if (!viewConfig.hideHP) {
-                <app-module-part-hp
-                  class="module-meta-row__hp"
-                  [data]="data"
-                ></app-module-part-hp>
-              }
-            </div>
+          @if (!viewConfig.hideDescription) {
+            <app-module-part-description
+              [data]="data"
+              [viewConfig]="viewConfig"
+            ></app-module-part-description>
           }
         </div>
-      }
-      <div class="module-minimal__focus-hide module-minimal__focus-hide--copy">
-        @if (!viewConfig.hideDates) {
-          <app-timestamps-relative
+        @if (!viewConfig.hideTags) {
+          <app-module-tags
             [data]="data"
-          ></app-timestamps-relative>
+            [showCounts]="viewConfig.tagsShowCounts"
+            [readOnly]="viewConfig.tagsReadOnly"
+            [maxTags]="viewConfig.tagsMaxCount"
+            (proposerOpenChange)="onTagChooserOpenChange($event)"
+          ></app-module-tags>
         }
-        @if (!viewConfig.hideDescription) {
-          <app-module-part-description
-            [data]="data"
-            [viewConfig]="viewConfig"
-          ></app-module-part-description>
-        }
-      </div>
-    </div>
-    @if (!viewConfig.hideTags) {
-      <app-module-tags
-        [data]="data"
-        [showCounts]="viewConfig.tagsShowCounts"
-        [readOnly]="viewConfig.tagsReadOnly"
-        [maxTags]="viewConfig.tagsMaxCount"
-        (proposerOpenChange)="onTagChooserOpenChange($event)"
-      ></app-module-tags>
-    }
-    <div class="module-minimal__focus-hide module-minimal__focus-hide--extended">
-      <ng-content></ng-content>
-    </div>
-    @if (!viewConfig.hideButtons) {
-      <div class="module-minimal__focus-hide module-minimal__focus-hide--actions">
-        <mat-divider [inset]="true"
-                     style="margin-top:.5rem"
-        ></mat-divider>
-        <div class="row gap2 opacizeOnHover"
-             fxLayoutGap.xs="0rem"
-        >
-          <div fxFlex="100"
-               fxLayout="row"
-               fxLayoutGap="1rem"
-          >
-            @if (!bag.isInCollection) {
-              @if ((bag.singleModuleData)) {
-                <button (click)="dataService.addModuleToCollection$.next(data.id)"
-                        [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                        [title]="!bag.user ? 'Login to add to modules your collection':''"
-                        mat-icon-button
-                        matTooltip="Add to your collection"
-                >
-                  <mat-icon>add</mat-icon>
-                </button>
-              }
-            }
-            @if (bag.isInCollection) {
-              @if ((bag.singleModuleData)) {
-                <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
-                        [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
-                        mat-icon-button
-                        matTooltip="Remove from your collection"
-                >
-                  <mat-icon>eject</mat-icon>
-                </button>
-              }
-            }
-            @if ((bag.singleModuleData)) {
-              <button (click)="dataService.requestAddModuleToRack$.next(data)"
-                      [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
-                      [title]="!bag.user ? 'Login to add to modules your rack':''"
+        <div class="module-minimal__focus-hide module-minimal__focus-hide--extended">
+          <ng-content></ng-content>
+        </div>
+        @if (!viewConfig.hideButtons) {
+          <div class="module-minimal__focus-hide module-minimal__focus-hide--actions">
+            <mat-divider [inset]="true"
+                         style="margin-top:.5rem"
+            ></mat-divider>
+            <div class="row gap2 opacizeOnHover"
+                 fxLayoutGap.xs="0rem"
+            >
+              <div fxFlex="100"
+                   fxLayout="row"
+                   fxLayoutGap="1rem"
+              >
+                @if (!bag.isInCollection) {
+                  @if ((bag.singleModuleData)) {
+                    <button (click)="dataService.addModuleToCollection$.next(data.id)"
+                            [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
+                            [title]="!bag.user ? 'Login to add to modules your collection':''"
+                            mat-icon-button
+                            matTooltip="Add to your collection"
+                    >
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  }
+                }
+                @if (bag.isInCollection) {
+                  @if ((bag.singleModuleData)) {
+                    <button (click)="dataService.removeModuleFromCollection$.next(data.id)"
+                            [disabled]="!bag.user||(bag.singleModuleData.manufacturer.id===10000)"
+                            mat-icon-button
+                            matTooltip="Remove from your collection"
+                    >
+                      <mat-icon>eject</mat-icon>
+                    </button>
+                  }
+                }
+                @if ((bag.singleModuleData)) {
+                  <button (click)="dataService.requestAddModuleToRack$.next(data)"
+                          [disabled]="(!bag.user)||(bag.singleModuleData.manufacturer.id===10000)"
+                          [title]="!bag.user ? 'Login to add to modules your rack':''"
+                          mat-icon-button
+                          matTooltip="Add to rack"
+                  >
+                    <mat-icon>playlist_add</mat-icon>
+                  </button>
+                }
+                @if (rackDataService.singleRackData$|async; as rackData) {
+                  @if (rackDataService.isCurrentRackEditable$|async) {
+                    <button (click)="rackDataService.addModuleToRack$.next(data)"
+                            [matTooltip]="'Add to '+rackData.name"
+                            [title]="!bag.user ? 'Login to add to modules your rack':''"
+                            mat-icon-button
+                    >
+                      <mat-icon>playlist_add</mat-icon>
+                    </button>
+                  }
+                }
+              </div>
+              <div fxFlex="grow"></div>
+              <div class="row gap1">
+                @if ((bag.singleModuleData && bag.user)) {
+                }
+                @if (bag.singleModuleData) {
+                  @if (bag.singleModuleData.manualURL) {
+                    <a
+                      [href]="bag.singleModuleData.manualURL"
                       mat-icon-button
-                      matTooltip="Add to rack"
-              >
-                <mat-icon>playlist_add</mat-icon>
-              </button>
-            }
-            @if (rackDataService.singleRackData$|async; as rackData) {
-              @if (rackDataService.isCurrentRackEditable$|async) {
-                <button (click)="rackDataService.addModuleToRack$.next(data)"
-                        [matTooltip]="'Add to '+rackData.name"
-                        [title]="!bag.user ? 'Login to add to modules your rack':''"
-                        mat-icon-button
-                >
-                  <mat-icon>playlist_add</mat-icon>
-                </button>
-              }
-            }
+                      matTooltip="Open manual"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      <mat-icon>menu_book</mat-icon>
+                    </a>
+                  }
+                  <a (click)="dataService.copyModuleNameAndManufacturer$.next()"
+                     mat-icon-button
+                     matTooltip="Copy module name to clipboard"
+                  >
+                    <mat-icon>content_copy</mat-icon>
+                  </a>
+                }
+                <!--          <ng-container *ngIf="!bag.singleModuleData">-->
+                <!--            <a mat-icon-button-->
+                <!--               matTooltip="Show details"-->
+                <!--               [routerLink]="['/modules/details',data.id]"-->
+                <!--            >-->
+                <!--              <mat-icon>info</mat-icon>-->
+                <!--            </a>-->
+                <!--  -->
+                <!--          </ng-container>-->
+              </div>
+            </div>
           </div>
-          <div fxFlex="grow"></div>
-          <div class="row gap1">
-            @if ((bag.singleModuleData && bag.user)) {
-            }
-            @if (bag.singleModuleData) {
-              @if (bag.singleModuleData.manualURL) {
-                <a
-                  [href]="bag.singleModuleData.manualURL"
-                  mat-icon-button
-                  matTooltip="Open manual"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <mat-icon>menu_book</mat-icon>
-                </a>
-              }
-              <a (click)="dataService.copyModuleNameAndManufacturer$.next()"
-                 mat-icon-button
-                 matTooltip="Copy module name to clipboard"
-              >
-                <mat-icon>content_copy</mat-icon>
-              </a>
-            }
-            <!--          <ng-container *ngIf="!bag.singleModuleData">-->
-            <!--            <a mat-icon-button-->
-            <!--               matTooltip="Show details"-->
-            <!--               [routerLink]="['/modules/details',data.id]"-->
-            <!--            >-->
-            <!--              <mat-icon>info</mat-icon>-->
-            <!--            </a>-->
-            <!--  -->
-            <!--          </ng-container>-->
-          </div>
-        </div>
+        }
       </div>
-    }
+    </div>
   </div>
 }

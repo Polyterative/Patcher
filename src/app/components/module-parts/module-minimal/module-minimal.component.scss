@@ -26,6 +26,23 @@
   margin-bottom: .5rem;
 }
 
+.module-minimal__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.module-minimal__media,
+.module-minimal__content {
+  min-width: 0;
+}
+
+.module-minimal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .module-meta-row {
   display: flex;
   align-items: baseline;
@@ -112,6 +129,35 @@
     transform: translateY(-0.35rem);
     margin-top: 0 !important;
     pointer-events: none;
+  }
+}
+
+@media (min-width: 72rem) {
+  .parent--portraitDetailSplit {
+    .module-minimal__layout {
+      grid-template-columns: minmax(13rem, max-content) minmax(0, 1fr);
+      align-items: start;
+      gap: 1rem 1.25rem;
+    }
+
+    .image-container {
+      margin-bottom: 0;
+    }
+
+    .module-minimal__media {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .module-minimal__content {
+      align-self: stretch;
+      min-height: 100%;
+    }
+
+    .module-minimal__focus-hide--actions {
+      margin-top: auto;
+    }
   }
 }
 
