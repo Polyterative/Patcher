@@ -6,6 +6,14 @@ import {
   OnInit
 } from '@angular/core';
 import {
+  animateChild,
+  animate,
+  query,
+  style,
+  transition,
+  trigger
+} from '@angular/animations';
+import {
   ActivatedRoute,
   Router
 } from '@angular/router';
@@ -46,7 +54,56 @@ const JSONLD_SCRIPT_ID = 'module-jsonld';
   styleUrls: ['./module-browser-detail.component.scss'],
   providers: [CommentsDataService],
   animations: [
-    Animations.fadeInOnEnter
+    Animations.fadeInOnEnter,
+    trigger('moduleDetailRailEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 185 }
+      })
+    ]),
+    trigger('moduleDetailSupportEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 190 }
+      })
+    ]),
+    trigger('moduleDetailDataEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.2, 0, 0, 1)', style({
+          opacity: 1,
+        })),
+        query('@moduleDetailSupportEnter', animateChild(), { optional: true })
+      ], {
+        params: { delay: 0, duration: 180 }
+      })
+    ]),
+    trigger('moduleDetailFabEnter', [
+      transition(':enter', [
+        style({
+          opacity: 0,
+        }),
+        animate('{{ duration }}ms {{ delay }}ms cubic-bezier(0.22, 1, 0.36, 1)', style({
+          opacity: 1,
+        }))
+      ], {
+        params: { delay: 0, duration: 175 }
+      })
+    ])
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false

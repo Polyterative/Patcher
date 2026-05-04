@@ -8,7 +8,8 @@
        [class.parent--portraitDetailSplit]="portraitDetailSplit"
   >
     <div class="module-minimal__layout">
-      <div class="module-minimal__media">
+      <div class="module-minimal__media"
+           [@moduleDetailFadeEnter]="{ value: '', params: { delay: 28, duration: 180 } }">
         <div class="panel image-container">
           <app-module-part-image [big]="viewConfig.bigPanelImage"
                                  [data]="data"
@@ -23,9 +24,12 @@
         </div>
       </div>
       <div class="col gap0 module-minimal__content">
-        <app-module-part-name [data]="data" [suffix]="nameSuffix"></app-module-part-name>
+        <div [@moduleDetailFadeEnter]="{ value: '', params: { delay: 68, duration: 150 } }">
+          <app-module-part-name [data]="data" [suffix]="nameSuffix"></app-module-part-name>
+        </div>
         @if (!viewConfig.hideManufacturer || !viewConfig.hideHP || (hasIO && !viewConfig.hideIoCounts)) {
-          <div class="module-meta-row">
+          <div class="module-meta-row"
+               [@moduleDetailInlineEnter]="{ value: '', params: { delay: 96, duration: 160 } }">
             @if (!viewConfig.hideManufacturer) {
               <app-module-part-manufacturer
                 class="module-meta-row__manufacturer"
@@ -63,7 +67,8 @@
             }
           </div>
         }
-        <div class="module-minimal__focus-hide module-minimal__focus-hide--copy">
+        <div class="module-minimal__focus-hide module-minimal__focus-hide--copy"
+             [@moduleDetailCopyEnter]="{ value: '', params: { delay: 124, duration: 180 } }">
           @if (!viewConfig.hideDates) {
             <app-timestamps-relative
               [data]="data"
@@ -77,19 +82,23 @@
           }
         </div>
         @if (!viewConfig.hideTags) {
-          <app-module-tags
-            [data]="data"
-            [showCounts]="viewConfig.tagsShowCounts"
-            [readOnly]="viewConfig.tagsReadOnly"
-            [maxTags]="viewConfig.tagsMaxCount"
-            (proposerOpenChange)="onTagChooserOpenChange($event)"
-          ></app-module-tags>
+          <div [@moduleDetailInlineEnter]="{ value: '', params: { delay: 152, duration: 165 } }">
+            <app-module-tags
+              [data]="data"
+              [showCounts]="viewConfig.tagsShowCounts"
+              [readOnly]="viewConfig.tagsReadOnly"
+              [maxTags]="viewConfig.tagsMaxCount"
+              (proposerOpenChange)="onTagChooserOpenChange($event)"
+            ></app-module-tags>
+          </div>
         }
-        <div class="module-minimal__focus-hide module-minimal__focus-hide--extended">
+        <div class="module-minimal__focus-hide module-minimal__focus-hide--extended"
+             [@moduleDetailCopyEnter]="{ value: '', params: { delay: 184, duration: 185 } }">
           <ng-content></ng-content>
         </div>
         @if (!viewConfig.hideButtons) {
-          <div class="module-minimal__focus-hide module-minimal__focus-hide--actions">
+          <div class="module-minimal__focus-hide module-minimal__focus-hide--actions"
+               [@moduleDetailActionsEnter]="{ value: '', params: { delay: 216, duration: 195 } }">
             <mat-divider [inset]="true"
                          style="margin-top:.5rem"
             ></mat-divider>
