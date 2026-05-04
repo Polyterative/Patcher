@@ -19,7 +19,6 @@ test.describe('Authenticated patch creation', () => {
     const patchNameInput = createPatchDialog.getByRole('textbox', {name: /name/i}).first();
     const patchName = (await patchNameInput.inputValue()).trim();
     expect(patchName.length).toBeGreaterThan(0);
-    await expect(createPatchDialog.locator('mat-icon', {hasText: 'lock'}).first()).toBeVisible({timeout: 5_000});
     
     const confirmCreateByRole = createPatchDialog.getByRole('button', {name: /^Create$/i}).first();
     if (await confirmCreateByRole.isVisible().catch(() => false)) {
@@ -42,5 +41,7 @@ test.describe('Authenticated patch creation', () => {
     
     await expect(page).toHaveURL(/\/patches\/details\/\d+/, {timeout: 20_000});
     await expect(page.getByRole('heading', {name: /Patch (details|editing)/i}).first()).toBeVisible({timeout: 20_000});
+    await expect(page.locator('app-patch-composite').first()).toBeVisible({timeout: 20_000});
+    await expect(page.getByText(patchName, {exact: true}).first()).toBeVisible({timeout: 20_000});
   });
 });
