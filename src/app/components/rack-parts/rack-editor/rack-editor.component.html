@@ -5,8 +5,12 @@
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
   userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
   analysisMode:(dataService.analysisMode$|async),
-  shouldShowPanelImages:(dataService.shouldShowPanelImages$|async)
+  shouldShowPanelImages:(dataService.shouldShowPanelImages$|async),
+  functionAnalysisLegendItems:(dataService.functionAnalysisLegendItems$|async),
+  functionAnalysisResidualLabel:(dataService.functionAnalysisResidualLabel$|async),
+  functionAnalysisCoverageSummary:(dataService.functionAnalysisCoverageSummary$|async)
 }; as bag) {
+  @let currentAnalysisMode = bag.analysisMode ?? analysisModes.off;
   <div class="col gap1"
   >
     @if (bag.isRackDataLoading) {
@@ -90,52 +94,24 @@
               </button>
             }
             @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
-              <button mat-stroked-button
-                      type="button"
-                      class="rackEditorResponsiveActions__button"
-                      (click)="dataService.downloadRackImageToUserComputer$.next()"
-              >
-                <mat-icon>download</mat-icon>
-                Download jpeg
-              </button>
-              @if (bag.isCurrentRackPropertyOfCurrentUser) {
-                <button mat-stroked-button
-                        type="button"
-                        class="rackEditorResponsiveActions__button"
-                        (click)="dataService.updateRackImagePreview$.next()"
-                >
-                  <mat-icon>image</mat-icon>
-                  Update preview
-                </button>
-              }
+              <ng-container *ngTemplateOutlet="rackMediaActions; context: {
+                isOwner: bag.isCurrentRackPropertyOfCurrentUser,
+                buttonClass: 'rackEditorResponsiveActions__button'
+              }"></ng-container>
             }
           </div>
           <div class="rackEditorFloatingOptions">
-           @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
-             <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">
-              <button mat-stroked-button
-                      type="button"
-                      class="rackEditorFloatingOptions__actionButton"
-                      (click)="dataService.downloadRackImageToUserComputer$.next()"
-              >
-                <mat-icon>download</mat-icon>
-                Download jpeg
-              </button>
-              @if (bag.isCurrentRackPropertyOfCurrentUser) {
-                <button mat-stroked-button
-                        type="button"
-                        class="rackEditorFloatingOptions__actionButton"
-                        (click)="dataService.updateRackImagePreview$.next()"
-                >
-                  <mat-icon>image</mat-icon>
-                  Update preview
-                </button>
-              }
-            </div>
-           }
+            @if ((bag.rowedRackedModules | totalHpOfRack) > 0) {
+              <div class="rackEditorFloatingOptions__panel rackEditorFloatingOptions__panel--actions">
+                <ng-container *ngTemplateOutlet="rackMediaActions; context: {
+                  isOwner: bag.isCurrentRackPropertyOfCurrentUser,
+                  buttonClass: 'rackEditorFloatingOptions__actionButton'
+                }"></ng-container>
+             </div>
+            }
              <div class="rackEditorFloatingOptions__quickToggle">
               <div class="rackEditorFloatingOptions__eyebrow">Analysis</div>
-                @if (bag.analysisMode === analysisModes.power) {
+                @if (currentAnalysisMode === analysisModes.power) {
                   <div class="rackEditorFloatingOptions__analysisHint">
                     Hover a row for rail totals, or hover a module for its HP and power draw.
                   </div>
@@ -148,21 +124,18 @@
                    Heat colors are relative to the rack, and tighten to the hovered row when you focus one.
                   </div>
                 }
-               @if (bag.analysisMode === analysisModes.function) {
-                @let functionLegendItems = functionAnalysisLegendItems(bag.rowedRackedModules);
-                @let functionResidualLabel = functionAnalysisResidualLabel(bag.rowedRackedModules);
-                @let functionCoverageSummary = functionAnalysisCoverageSummary(bag.rowedRackedModules);
-                 <div class="rackEditorFloatingOptions__analysisHint">
-                   Colors show each module's primary role so you can read the rack's functional spread by both count and HP.
-                 </div>
-                 <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--coverage">
-                   {{ functionCoverageSummary }}
+                @if (currentAnalysisMode === analysisModes.function) {
+                  <div class="rackEditorFloatingOptions__analysisHint">
+                    Colors show each module's primary role so you can read the rack's functional spread by both count and HP.
                   </div>
-                  <div class="rackEditorFloatingOptions__analysisLegend">
-                   @for (item of functionLegendItems; track item.label) {
-                     <div class="rackEditorFloatingOptions__analysisLegendItem">
-                       <span class="rackEditorFloatingOptions__analysisSwatch"
-                            [class]="item.swatchClass"
+                  <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--coverage">
+                    {{ bag.functionAnalysisCoverageSummary }}
+                   </div>
+                   <div class="rackEditorFloatingOptions__analysisLegend">
+                    @for (item of bag.functionAnalysisLegendItems; track item.label) {
+                      <div class="rackEditorFloatingOptions__analysisLegendItem">
+                        <span class="rackEditorFloatingOptions__analysisSwatch"
+                             [class]="item.swatchClass"
                             aria-hidden="true"
                        ></span>
                        <span>{{ item.label }}</span>
@@ -170,44 +143,30 @@
                        <span class="rackEditorFloatingOptions__analysisHp">{{ item.hp }}HP</span>
                       </div>
                    }
-                  </div>
-                  <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
-                   @if (functionResidualLabel) {
-                     Grey modules are {{ functionResidualLabel }}.
-                  } @else {
-                    All current modules map to a tracked function role.
-                   }
+                   </div>
+                   <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
+                    @if (bag.functionAnalysisResidualLabel) {
+                      Grey modules are {{ bag.functionAnalysisResidualLabel }}.
+                   } @else {
+                     All current modules map to a tracked function role.
+                    }
                   </div>
                 }
-               <div class="rackEditorFloatingOptions__analysisModes"
-                    role="group"
-                    aria-label="Rack analysis mode"
-               >
-                <button type="button"
-                        class="rackEditorFloatingOptions__analysisModeButton"
-                        [class.rackEditorFloatingOptions__analysisModeButton--active]="(bag.analysisMode ?? analysisModes.off) === analysisModes.off"
-                        [attr.aria-pressed]="(bag.analysisMode ?? analysisModes.off) === analysisModes.off"
-                        (click)="dataService.analysisMode$.next(analysisModes.off)"
+                <div class="rackEditorFloatingOptions__analysisModes"
+                     role="group"
+                     aria-label="Rack analysis mode"
                 >
-                  Off
-                </button>
-                <button type="button"
-                        class="rackEditorFloatingOptions__analysisModeButton"
-                        [class.rackEditorFloatingOptions__analysisModeButton--active]="bag.analysisMode === analysisModes.power"
-                        [attr.aria-pressed]="bag.analysisMode === analysisModes.power"
-                        (click)="dataService.analysisMode$.next(analysisModes.power)"
-                >
-                  Power
-                </button>
-                <button type="button"
-                        class="rackEditorFloatingOptions__analysisModeButton"
-                        [class.rackEditorFloatingOptions__analysisModeButton--active]="bag.analysisMode === analysisModes.function"
-                        [attr.aria-pressed]="bag.analysisMode === analysisModes.function"
-                        (click)="dataService.analysisMode$.next(analysisModes.function)"
-                >
-                  Function
-                </button>
-               </div>
+                  @for (option of analysisModeOptions; track option.mode) {
+                    <button type="button"
+                            class="rackEditorFloatingOptions__analysisModeButton"
+                            [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
+                            [attr.aria-pressed]="currentAnalysisMode === option.mode"
+                            (click)="dataService.analysisMode$.next(option.mode)"
+                    >
+                      {{ option.label }}
+                    </button>
+                  }
+                </div>
               </div>
             @if (viewOptionsExpanded) {
              <div class="rackEditorFloatingOptions__panel">
@@ -239,6 +198,28 @@
     <app-general-context-menu></app-general-context-menu>
     }
   </div>
+  <ng-template #rackMediaActions
+               let-isOwner="isOwner"
+               let-buttonClass="buttonClass">
+    <button mat-stroked-button
+            type="button"
+            [class]="buttonClass"
+            (click)="dataService.downloadRackImageToUserComputer$.next()"
+    >
+      <mat-icon>download</mat-icon>
+      Download jpeg
+    </button>
+    @if (isOwner) {
+      <button mat-stroked-button
+              type="button"
+              [class]="buttonClass"
+              (click)="dataService.updateRackImagePreview$.next()"
+      >
+        <mat-icon>image</mat-icon>
+        Update preview
+      </button>
+    }
+  </ng-template>
   <ng-template #noData>
     <div fxFlex="100">
       <div class="col gap1 animate-fadein-slowest"

@@ -27,6 +27,7 @@ import {
   filter,
   finalize,
   map,
+  shareReplay,
   switchMap,
   take,
   takeUntil,
@@ -57,6 +58,11 @@ import {
 import { domToJpeg } from 'modern-screenshot';
 import { MatDialog } from "@angular/material/dialog";
 import { RackAnalysisMode, RACK_ANALYSIS_MODES } from './rack-analysis-mode';
+import {
+  buildFunctionAnalysisCoverageSummary,
+  buildFunctionAnalysisLegendItems,
+  buildFunctionAnalysisResidualLabel
+} from './rack-function-visuals.utils';
 
 
 function cloneRackData<T>(value: T): T {
@@ -100,6 +106,18 @@ export class RackDetailDataService extends SubManager {
   isRackDataLoading$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+  readonly functionAnalysisLegendItems$ = this.rowedRackedModules$.pipe(
+    map(rowedRackedModules => buildFunctionAnalysisLegendItems(rowedRackedModules)),
+    shareReplay(1)
+  );
+  readonly functionAnalysisResidualLabel$ = this.rowedRackedModules$.pipe(
+    map(rowedRackedModules => buildFunctionAnalysisResidualLabel(rowedRackedModules)),
+    shareReplay(1)
+  );
+  readonly functionAnalysisCoverageSummary$ = this.rowedRackedModules$.pipe(
+    map(rowedRackedModules => buildFunctionAnalysisCoverageSummary(rowedRackedModules)),
+    shareReplay(1)
+  );
   
   rackOrderChange$ = new Subject<{
     event: CdkDragDrop<ElementRef>,

@@ -2,6 +2,7 @@
      cdkDropListGroup
 >
   @let analysisMode = (rackDetailDataService.analysisMode$ | async) ?? analysisModes.off;
+  @let shouldShowPanelImages = (rackDetailDataService.shouldShowPanelImages$ | async);
   <mat-card-subtitle [ngStyle]="{width: rackData.hp+'rem'}"
                      fxLayoutAlign="center center"
                      class="widthRuler"
@@ -22,12 +23,7 @@
           @if (rowPowerBreakdownAt(rowId); as rowPower) {
             <div class="rowPowerPanel"
                  [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
-              <div class="rowPowerPanel__header">
-                <div class="rowPowerPanel__titleGroup">
-                  <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
-                  <span class="rowPowerPanel__title">{{ rowPower.moduleCount }} module{{ rowPower.moduleCount === 1 ? '' : 's' }}</span>
-                </div>
-              </div>
+              <ng-container *ngTemplateOutlet="rowAnalysisPanelTitle; context: {rowId: rowId, moduleCount: rowPower.moduleCount}"></ng-container>
               <div class="rowPowerPanel__rails">
                 <div class="rowPowerPanel__rail">
                   <span class="rowPowerPanel__railLabel">+12V</span>
@@ -52,12 +48,7 @@
           @if (rowFunctionBreakdownAt(rowId); as rowFunction) {
             <div class="rowPowerPanel rowPowerPanel--function"
                  [class.rowPowerPanel--below]="isRowPowerPanelBelow(rowId)">
-              <div class="rowPowerPanel__header">
-                <div class="rowPowerPanel__titleGroup">
-                  <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
-                  <span class="rowPowerPanel__title">{{ rowFunction.moduleCount }} module{{ rowFunction.moduleCount === 1 ? '' : 's' }}</span>
-                </div>
-              </div>
+              <ng-container *ngTemplateOutlet="rowAnalysisPanelTitle; context: {rowId: rowId, moduleCount: rowFunction.moduleCount}"></ng-container>
               @if (rowFunction.roles.length > 0) {
                 <div class="rowPowerPanel__rails rowPowerPanel__rails--function">
                   @for (role of rowFunction.roles; track role.label) {
@@ -84,14 +75,16 @@
               cdkDropListOrientation="horizontal"
               (cdkDropListDropped)="onDropListDropped($event, rowId, $event.item.data)"
              >
-          @for (rackedModule of row; track rackedModule; let i = $index) {
-             <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
-                                   [data]="rackedModule|mapToModule"
-                                   [analysisMode]="analysisMode"
-                                   [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
-                                     [showPanelImages]="(rackDetailDataService.shouldShowPanelImages$ | async)&&rackedModule.module.panels.length>0"
-                                     [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                     [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
+           @for (rackedModule of row; track rackedModule; let i = $index) {
+             @let showHoverStats = shouldShowModuleHoverStats(rackedModule, analysisMode);
+             @let moduleHp = effectiveHp(rackedModule);
+              <app-module-realistic [@enter]="{ value: '', params: { delay: (i * 50)}}"
+                                     [data]="rackedModule|mapToModule"
+                                     [analysisMode]="analysisMode"
+                                    [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
+                                      [showPanelImages]="shouldShowPanelImages && rackedModule.module.panels.length>0"
+                                      [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
+                                      [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
                                     [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
                                     [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
                                       class="module"
@@ -114,60 +107,37 @@
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
                   >
-                   {{ effectiveHp(rackedModule) }}HP
-                 </div>
-               }
-               @if (analysisMode === analysisModes.power) {
-                 <div class="moduleHoverStats"
-                      [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, analysisMode)"
-                      (mousedown)="$event.stopPropagation()"
-                 >
-                  <div class="moduleHoverStats__row">
-                    <span class="moduleHoverStats__label">HP</span>
-                    <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
-                  </div>
-                  @if (hasCompletePowerData(rackedModule)) {
-                    <div class="moduleHoverStats__row">
-                      <span class="moduleHoverStats__label">+12</span>
-                      <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos12 }}mA</span>
-                    </div>
-                    <div class="moduleHoverStats__row">
-                      <span class="moduleHoverStats__label">-12</span>
-                      <span class="moduleHoverStats__value">{{ absolutePower(rackedModule.module.powerNeg12) }}mA</span>
-                    </div>
-                    <div class="moduleHoverStats__row">
-                      <span class="moduleHoverStats__label">+5</span>
-                      <span class="moduleHoverStats__value">{{ rackedModule.module.powerPos5 }}mA</span>
-                    </div>
-                  } @else {
-                    <div class="moduleHoverStats__row">
-                      <span class="moduleHoverStats__label">PWR</span>
-                      <span class="moduleHoverStats__value">n/a</span>
-                    </div>
-                   }
+                    {{ moduleHp }}HP
                   </div>
                 }
-               @if (analysisMode === analysisModes.function) {
-                  @if (functionAnalysisVisual(rackedModule); as functionVisual) {
-                    <div class="moduleHoverStats moduleHoverStats--function"
-                         [class.moduleHoverStats--visible]="shouldShowModuleHoverStats(rackedModule, analysisMode)"
-                         (mousedown)="$event.stopPropagation()"
-                    >
-                     <div class="moduleHoverStats__row">
-                       <span class="moduleHoverStats__label">HP</span>
-                       <span class="moduleHoverStats__value">{{ effectiveHp(rackedModule) }}HP</span>
-                     </div>
-                     <div class="moduleHoverStats__row">
-                       <span class="moduleHoverStats__label">Role</span>
-                       <span class="moduleHoverStats__value">{{ functionVisual.roleLabel }}</span>
-                     </div>
-                     <div class="moduleHoverStats__row">
-                       <span class="moduleHoverStats__label">Tag</span>
-                       <span class="moduleHoverStats__value">{{ functionVisual.tagLabel }}</span>
-                     </div>
+                @if (analysisMode === analysisModes.power) {
+                  @let moduleHasCompletePowerData = hasCompletePowerData(rackedModule);
+                  <div class="moduleHoverStats"
+                       [class.moduleHoverStats--visible]="showHoverStats"
+                       (mousedown)="$event.stopPropagation()"
+                  >
+                    <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'HP', value: moduleHp + 'HP'}"></ng-container>
+                   @if (moduleHasCompletePowerData) {
+                     <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: '+12', value: rackedModule.module.powerPos12 + 'mA'}"></ng-container>
+                     <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: '-12', value: absolutePower(rackedModule.module.powerNeg12) + 'mA'}"></ng-container>
+                     <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: '+5', value: rackedModule.module.powerPos5 + 'mA'}"></ng-container>
+                   } @else {
+                     <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'PWR', value: 'n/a'}"></ng-container>
+                    }
                    </div>
                  }
-               }
+                @if (analysisMode === analysisModes.function) {
+                  @if (functionAnalysisVisual(rackedModule); as functionVisual) {
+                    <div class="moduleHoverStats moduleHoverStats--function"
+                         [class.moduleHoverStats--visible]="showHoverStats"
+                         (mousedown)="$event.stopPropagation()"
+                    >
+                      <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'HP', value: moduleHp + 'HP'}"></ng-container>
+                      <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'Role', value: functionVisual.roleLabel}"></ng-container>
+                      <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'Tag', value: functionVisual.tagLabel}"></ng-container>
+                    </div>
+                  }
+                }
               </app-module-realistic>
             }
           </div>
@@ -175,6 +145,26 @@
     }
     <!--    <div class="watermark self-center">Planned on patcher.xyz</div>-->
   </div>
+
+  <ng-template #rowAnalysisPanelTitle
+               let-rowId="rowId"
+               let-moduleCount="moduleCount">
+    <div class="rowPowerPanel__header">
+      <div class="rowPowerPanel__titleGroup">
+        <span class="rowPowerPanel__eyebrow">Row {{ rowId + 1 }}</span>
+        <span class="rowPowerPanel__title">{{ moduleCount }} module{{ moduleCount === 1 ? '' : 's' }}</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #moduleHoverStatsRow
+               let-label="label"
+               let-value="value">
+    <div class="moduleHoverStats__row">
+      <span class="moduleHoverStats__label">{{ label }}</span>
+      <span class="moduleHoverStats__value">{{ value }}</span>
+    </div>
+  </ng-template>
 
   <!--    add new row button-->
   <div class="row gap2 self-center">

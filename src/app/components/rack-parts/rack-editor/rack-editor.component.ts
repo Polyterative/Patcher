@@ -38,8 +38,10 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
-import { RACK_ANALYSIS_MODES } from '../rack-analysis-mode';
-import { buildRackFunctionVisual } from '../rack-function-visuals.utils';
+import {
+  RACK_ANALYSIS_MODES,
+  RACK_ANALYSIS_MODE_OPTIONS
+} from '../rack-analysis-mode';
 
 
 export interface ModuleRightClick {
@@ -74,13 +76,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   
   private static readonly reducedScaleMultiplier = 0.65;
   readonly analysisModes = RACK_ANALYSIS_MODES;
-  readonly functionAnalysisLegend = [
-    {label: 'Voices', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--voices'},
-    {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--modulation'},
-    {label: 'Utilities', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--utilities'},
-    {label: 'Timing', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--timing'},
-    {label: 'Tone shaping', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--tone'},
-  ];
+  readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
 
   moduleRightClick$ = new Subject<ModuleRightClick>();
 
@@ -146,81 +142,6 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     this.cdr.markForCheck();
   }
 
-  functionAnalysisLegendItems(rowedRackedModules: RackedModule[][] | null | undefined): Array<{
-    label: string;
-    swatchClass: string;
-    count: number;
-    hp: number;
-  }> {
-    const counts = new Map(this.functionAnalysisLegend.map(item => [item.label, {
-      count: 0,
-      hp: 0
-    }]));
-
-    for (const rackedModule of (rowedRackedModules ?? []).flat()) {
-      const hp = rackedModule.module.hp ?? 0;
-      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
-      if (!counts.has(roleLabel)) {
-        continue;
-      }
-      const current = counts.get(roleLabel) ?? {
-        count: 0,
-        hp: 0
-      };
-      current.count += 1;
-      current.hp += hp;
-      counts.set(roleLabel, current);
-    }
-
-    return this.functionAnalysisLegend.map(item => ({
-      ...item,
-      count: counts.get(item.label)?.count ?? 0,
-      hp: counts.get(item.label)?.hp ?? 0
-    }));
-  }
-
-  functionAnalysisResidualLabel(rowedRackedModules: RackedModule[][] | null | undefined): string | null {
-    let residualCount = 0;
-    let residualHp = 0;
-
-    for (const rackedModule of (rowedRackedModules ?? []).flat()) {
-      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
-      if (this.functionAnalysisLegend.some(item => item.label === roleLabel)) {
-        continue;
-      }
-      residualCount += 1;
-      residualHp += rackedModule.module.hp ?? 0;
-    }
-
-    return residualCount > 0 ? `${ residualCount } blank or unclassified (${ residualHp }HP)` : null;
-  }
-
-  functionAnalysisCoverageSummary(rowedRackedModules: RackedModule[][] | null | undefined): string {
-    const modules = (rowedRackedModules ?? []).flat();
-    if (modules.length === 0) {
-      return 'No modules to classify yet.';
-    }
-
-    let totalHp = 0;
-    let classifiedCount = 0;
-    let classifiedHp = 0;
-
-    for (const rackedModule of modules) {
-      const hp = rackedModule.module.hp ?? 0;
-      totalHp += hp;
-
-      const roleLabel = buildRackFunctionVisual(rackedModule).roleLabel;
-      if (!this.functionAnalysisLegend.some(item => item.label === roleLabel)) {
-        continue;
-      }
-
-      classifiedCount += 1;
-      classifiedHp += hp;
-    }
-
-    return `Tracked ${ classifiedCount }/${ modules.length } modules · ${ classifiedHp }/${ totalHp }HP`;
-  }
-
   viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     hideLabels: true,
@@ -284,12 +205,10 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
             isCurrentRackPropertyOfCurrentUser && isCurrentRackEditable
           )
         )
-        .subscribe(([
-                      {
-                        $event,
-                        rackedModule
-                      }, and, b
-                    ]) => {
+        .subscribe(([{
+          $event,
+          rackedModule
+        }]) => {
           
           const inspectModule$ = new Subject<ContextMenuItem>();
           const duplicateModule$ = new Subject<ContextMenuItem>();
@@ -300,143 +219,31 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
           const panels = rackedModule.module.panels ?? [];
           const switchPanelSubjects = panels.map(() => new Subject<ContextMenuItem>());
           const effectiveHp = rackedModule.module.hp;
+          const panelSubmenuItem = this.buildPanelSubmenuItem(rackedModule, switchPanelSubjects);
 
-          const switchPanelParentSubject = new Subject<ContextMenuItem>();
-          const panelSubmenuItem: ContextMenuItem | null = panels.length > 1
-            ? {
-                id: 'switch-panel',
-                label: 'Switch panel',
-                icon: 'contrast',
-                disabled: false,
-                data: rackedModule,
-                click$: switchPanelParentSubject,
-                submenu: panels.map((panel, idx) => {
-                  const isActive = panel.id === (rackedModule.rackingData.selectedPanelId ?? panels[0]?.id);
-                  return {
-                    id: `panel-${ panel.id }`,
-                    label: `${ derivePanelLabel(panel.filename, panel.description, idx) }${ isActive ? ' ✓' : '' }`,
-                    icon: 'contrast',
-                    disabled: false,
-                    imageUrl: panel.filename ? PANEL_IMAGE_BASE + panel.filename : undefined,
-                    data: rackedModule,
-                    click$: switchPanelSubjects[idx]
-                  } as ContextMenuItem;
-                })
-              }
-            : null;
-
-          this.contextMenu.menuItems$.next([
+          this.contextMenu.menuItems$.next(this.buildModuleContextMenuItems(
+            rackedModule,
+            effectiveHp,
+            panelSubmenuItem,
             {
-              id: 'name',
-              label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP)`,
-              data: rackedModule,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
-            },
-            {
-              id: 'inspect',
-              label: 'Inspect panel',
-              icon: 'zoom_in',
-              data: rackedModule,
-              disabled: false,
-              click$: inspectModule$
-            },
-            ...(panelSubmenuItem ? [panelSubmenuItem] : []),
-            {
-              id: 'duplicate',
-              label: 'Duplicate',
-              icon: 'content_copy',
-              data: rackedModule,
-              disabled: false,
-              click$: duplicateModule$
-            },
-            {
-              id: 'replace-with-blank',
-              label: 'Replace with blank (add spacing)',
-              icon: 'space_bar',
-              data: rackedModule,
-              disabled: false,
-              click$: replaceWithBlank$
-            },
-            {
-              id: 'delete',
-              label: 'Delete from rack',
-              icon: 'delete',
-              data: rackedModule,
-              disabled: false,
-              danger: true,
-              click$: deleteModule$
-            },
-            {
-              id: 'void-spacer',
-              label: '-',
-              icon: '',
-              data: undefined,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
-            },
-            {
-              id: 'void-spacer',
-              label: '-',
-              icon: '',
-              data: undefined,
-              disabled: true,
-              click$: new Subject<ContextMenuItem>()
-            },
-            
-            {
-              id: 'clear-row',
-              label: 'Delete all in row',
-              icon: 'delete_sweep',
-              data: rackedModule,
-              disabled: false,
-              danger: true,
-              click$: deleteRow$
-            },
-          ]);
+              inspectModule$,
+              duplicateModule$,
+              replaceWithBlank$,
+              deleteModule$,
+              deleteRow$
+            }
+          ));
           
           this.contextMenu.open$.next($event);
 
-          inspectModule$
-            .pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            )
-            .subscribe(_ => this.openInspectPanel(rackedModule));
-          
-          duplicateModule$
-            .pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            )
-            .subscribe(_ => this.dataService.requestRackedModuleDuplication$.next(rackedModule));
-          
-          deleteModule$
-            .pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            )
-            .subscribe(_ => this.dataService.requestRackedModuleRemoval$.next(rackedModule));
-          
-          replaceWithBlank$
-            .pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            )
-            .subscribe(_ => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule));
-          
-          deleteRow$
-            .pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            )
-            .subscribe(_ => this.dataService.requestRackedModuleRowClearing$.next(rackedModule));
+          this.bindContextMenuAction(inspectModule$, () => this.openInspectPanel(rackedModule));
+          this.bindContextMenuAction(duplicateModule$, () => this.dataService.requestRackedModuleDuplication$.next(rackedModule));
+          this.bindContextMenuAction(deleteModule$, () => this.dataService.requestRackedModuleRemoval$.next(rackedModule));
+          this.bindContextMenuAction(replaceWithBlank$, () => this.dataService.requestRackedModuleReplaceWithBlank$.next(rackedModule));
+          this.bindContextMenuAction(deleteRow$, () => this.dataService.requestRackedModuleRowClearing$.next(rackedModule));
           
           switchPanelSubjects.forEach((subject$, idx) => {
-            subject$.pipe(
-              takeUntil(this.contextMenu.open$),
-              takeUntil(this.destroy$)
-            ).subscribe(() => {
+            this.bindContextMenuAction(subject$, () => {
               const panelId = panels[idx]?.id ?? null;
               this.dataService.requestRackedModulePanelSwitch$.next({rackedModule, panelId});
             });
@@ -458,18 +265,11 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
     super.ngOnDestroy();
   }
   
-  calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {
-    const totalCapacity = Number(totalHp) * Number(rows);
-    if (totalCapacity === 0 || isNaN(totalCapacity)) return '0%';
-    return `${((Number(usedHp) / totalCapacity) * 100).toFixed(2)  }%`;
-  }
-
   openInspectPanel(rackedModule: RackedModule): void {
-    const panels = rackedModule.module.panels ?? [];
-    const activePanelId = rackedModule.rackingData.selectedPanelId ?? panels[0]?.id;
-    const activePanelIndex = panels.findIndex((panel) => panel.id === activePanelId);
-    const panelIndex = activePanelIndex >= 0 ? activePanelIndex : 0;
-    const activePanel = panels[panelIndex];
+    const {
+      activePanel,
+      activePanelIndex
+    } = this.resolveActivePanelContext(rackedModule);
 
     if (!activePanel?.filename) {
       return;
@@ -483,7 +283,7 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
       panelClass: 'panel-zoom-dialog-shell',
       data: {
         imageUrl: PANEL_IMAGE_BASE + activePanel.filename,
-        label: derivePanelLabel(activePanel.filename, activePanel.description, panelIndex)
+        label: derivePanelLabel(activePanel.filename, activePanel.description, activePanelIndex)
       }
     });
   }
@@ -518,6 +318,144 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   private updateRackSurfaceFrame(surfaceHeightPx?: number): void {
     const measuredHeight = surfaceHeightPx ?? this.rackScaleSurfaceRef?.nativeElement.offsetHeight ?? 0;
     this.rackSurfaceBaseHeightPx = measuredHeight;
+  }
+
+  private bindContextMenuAction(action$: Subject<ContextMenuItem>, callback: () => void): void {
+    action$.pipe(
+      takeUntil(this.contextMenu.open$),
+      takeUntil(this.destroy$)
+    ).subscribe(() => callback());
+  }
+
+  private buildPanelSubmenuItem(
+    rackedModule: RackedModule,
+    switchPanelSubjects: Subject<ContextMenuItem>[]
+  ): ContextMenuItem | null {
+    const panels = rackedModule.module.panels ?? [];
+
+    if (panels.length <= 1) {
+      return null;
+    }
+
+    const {
+      activePanelId
+    } = this.resolveActivePanelContext(rackedModule);
+
+    return {
+      id: 'switch-panel',
+      label: 'Switch panel',
+      icon: 'contrast',
+      disabled: false,
+      data: rackedModule,
+      click$: new Subject<ContextMenuItem>(),
+      submenu: panels.map((panel, idx) => ({
+        id: `panel-${ panel.id }`,
+        label: `${ derivePanelLabel(panel.filename, panel.description, idx) }${ panel.id === activePanelId ? ' ✓' : '' }`,
+        icon: 'contrast',
+        disabled: false,
+        imageUrl: panel.filename ? PANEL_IMAGE_BASE + panel.filename : undefined,
+        data: rackedModule,
+        click$: switchPanelSubjects[idx]
+      }))
+    };
+  }
+
+  private buildModuleContextMenuItems(
+    rackedModule: RackedModule,
+    effectiveHp: number,
+    panelSubmenuItem: ContextMenuItem | null,
+    actions: {
+      inspectModule$: Subject<ContextMenuItem>;
+      duplicateModule$: Subject<ContextMenuItem>;
+      replaceWithBlank$: Subject<ContextMenuItem>;
+      deleteModule$: Subject<ContextMenuItem>;
+      deleteRow$: Subject<ContextMenuItem>;
+    }
+  ): ContextMenuItem[] {
+    return [
+      {
+        id: 'name',
+        label: `${ rackedModule.module.name } (${ rackedModule.module.manufacturer.name }, ${ effectiveHp } HP)`,
+        data: rackedModule,
+        disabled: true,
+        click$: new Subject<ContextMenuItem>()
+      },
+      {
+        id: 'inspect',
+        label: 'Inspect panel',
+        icon: 'zoom_in',
+        data: rackedModule,
+        disabled: false,
+        click$: actions.inspectModule$
+      },
+      ...(panelSubmenuItem ? [panelSubmenuItem] : []),
+      {
+        id: 'duplicate',
+        label: 'Duplicate',
+        icon: 'content_copy',
+        data: rackedModule,
+        disabled: false,
+        click$: actions.duplicateModule$
+      },
+      {
+        id: 'replace-with-blank',
+        label: 'Replace with blank (add spacing)',
+        icon: 'space_bar',
+        data: rackedModule,
+        disabled: false,
+        click$: actions.replaceWithBlank$
+      },
+      {
+        id: 'delete',
+        label: 'Delete from rack',
+        icon: 'delete',
+        data: rackedModule,
+        disabled: false,
+        danger: true,
+        click$: actions.deleteModule$
+      },
+      this.createContextMenuSpacerItem(1),
+      this.createContextMenuSpacerItem(2),
+      {
+        id: 'clear-row',
+        label: 'Delete all in row',
+        icon: 'delete_sweep',
+        data: rackedModule,
+        disabled: false,
+        danger: true,
+        click$: actions.deleteRow$
+      }
+    ];
+  }
+
+  private createContextMenuSpacerItem(index: number): ContextMenuItem {
+    return {
+      id: `void-spacer-${ index }`,
+      label: '-',
+      icon: '',
+      data: undefined,
+      disabled: true,
+      click$: new Subject<ContextMenuItem>()
+    };
+  }
+
+  private resolveActivePanelContext(rackedModule: RackedModule): {
+    panels: RackedModule['module']['panels'];
+    activePanelId: number | undefined;
+    activePanelIndex: number;
+    activePanel: RackedModule['module']['panels'][number] | undefined;
+  } {
+    const panels = rackedModule.module.panels ?? [];
+    const activePanelId = rackedModule.rackingData?.selectedPanelId ?? panels[0]?.id;
+    const activePanelIndex = panels.findIndex(panel => panel.id === activePanelId);
+    const panelIndex = activePanelIndex >= 0 ? activePanelIndex : 0;
+
+    return {
+      panels,
+      activePanelId,
+      activePanelIndex: panelIndex,
+      activePanel: panels[panelIndex]
+    };
   }
 
 }

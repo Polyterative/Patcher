@@ -1,15 +1,15 @@
 <div class="col root"
-     [ngClass]="isAnalysisModeActive() ? analysisClass : ''"
-     [class.root--panelSurface]="shouldRenderPanelImageSurface()"
-     [class.root--analysisMode]="isAnalysisModeActive()"
-     [class.root--analysisPower]="isPowerAnalysisMode()"
-     [class.root--analysisFunction]="isFunctionAnalysisMode()"
+     [ngClass]="analysisModeActive ? analysisClass : ''"
+     [class.root--panelSurface]="renderPanelImageSurface"
+     [class.root--analysisMode]="analysisModeActive"
+     [class.root--analysisPower]="powerAnalysisMode"
+     [class.root--analysisFunction]="functionAnalysisMode"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
     <ng-content></ng-content>
   </div>
-  @if (shouldRenderTextSurface()) {
+  @if (renderTextSurface) {
     <app-module-realistic-holeline [data]="data"
                                    class="hole-padding"
     >
@@ -46,18 +46,18 @@
     ></app-module-realistic-holeline>
   }
   
-  @if (shouldRenderPanelImageSurface()) {
+  @if (renderPanelImageSurface) {
     <app-module-part-image [data]="data"
                            [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
                            [disableEnterAnimation]="disablePanelImageEnterAnimation"
-                           [matTooltip]="isAnalysisModeActive() ? '' : buildPanelTooltip(data, selectedPanelId)"
-                           [matTooltipDisabled]="isAnalysisModeActive() || touchInteractionMode"
+                           [matTooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
+                           [matTooltipDisabled]="analysisModeActive || touchInteractionMode"
                            matTooltipClass="module-panel-tooltip"
     ></app-module-part-image>
   }
   <div class="analysisOverlay"
-       [class.analysisOverlay--visible]="isAnalysisModeActive()"
+       [class.analysisOverlay--visible]="analysisModeActive"
        aria-hidden="true"
   >
     <div class="analysisOverlay__layer analysisOverlay__layer--power"></div>

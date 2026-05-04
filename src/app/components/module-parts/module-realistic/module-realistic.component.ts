@@ -3,7 +3,6 @@ import {
   Component,
   HostBinding,
   Input,
-  OnInit
 } from '@angular/core';
 import { MinimalModule } from 'src/app/models/module';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
@@ -21,7 +20,7 @@ import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-inter
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class ModuleRealisticComponent implements OnInit {
+export class ModuleRealisticComponent {
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly touchInteractionMode = prefersTouchInteraction();
   @Input() data: MinimalModule;
@@ -40,26 +39,43 @@ export class ModuleRealisticComponent implements OnInit {
   get hostHeightRem(): number {
     return getModuleHeightForStandard(this.data?.standard);
   }
+
+  get renderPanelImageSurface(): boolean {
+    return this.showPanelImages;
+  }
+
+  get renderTextSurface(): boolean {
+    return !this.showPanelImages;
+  }
+
+  get analysisModeActive(): boolean {
+    return this.analysisMode !== this.analysisModes.off;
+  }
+
+  get powerAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.power;
+  }
+
+  get functionAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.function;
+  }
   
   constructor(
     public rackDetailDataService: RackDetailDataService,
     public moduleDetailDataService: ModuleDetailDataService
   ) { }
   
-  ngOnInit(): void {
-    
-  }
-  
-  buildPanelTooltip(data: any, selectedPanelId: number | null): string {
+  buildPanelTooltip(data: MinimalModule, selectedPanelId: number | null): string {
     const base = `${ data.name } (${ data.manufacturer.name }, ${ data.standard.name })`;
     if (!data.panels || data.panels.length <= 1) return base;
-    const active = data.panels.find((p: any) => p.id === (selectedPanelId ?? data.panels[0]?.id));
+
+    const active = this.resolveActivePanel(data, selectedPanelId);
     const label = active?.description?.trim() || derivePanelLabel(active?.filename ?? '', null, 0);
     return `${ base } · panel: ${ label }`;
   }
 
 
-  calculateTextSize(data: MinimalModule) {
+  calculateTextSize(data: MinimalModule): number {
     const nameLength = data.name.length;
     const hp = data.hp;
     const standardId = data.standard.id;
@@ -67,23 +83,10 @@ export class ModuleRealisticComponent implements OnInit {
     return (1 / (nameLength / 12) * (hp / 14)) + (standardId === 0 ? 0.5 : -1);
   }
 
-  shouldRenderPanelImageSurface(): boolean {
-    return this.showPanelImages;
-  }
-
-  shouldRenderTextSurface(): boolean {
-    return !this.showPanelImages;
-  }
-
-  isAnalysisModeActive(): boolean {
-    return this.analysisMode !== this.analysisModes.off;
-  }
-
-  isPowerAnalysisMode(): boolean {
-    return this.analysisMode === this.analysisModes.power;
-  }
-
-  isFunctionAnalysisMode(): boolean {
-    return this.analysisMode === this.analysisModes.function;
+  private resolveActivePanel(
+    data: MinimalModule,
+    selectedPanelId: number | null
+  ): MinimalModule['panels'][number] | undefined {
+    return data.panels?.find(panel => panel.id === (selectedPanelId ?? data.panels?.[0]?.id));
   }
 }
