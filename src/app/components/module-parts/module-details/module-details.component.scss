@@ -1,8 +1,15 @@
 @use "src/app/style/brand-resources.scss" as *;
 @use "src/app/style/commons_customizations.scss" as *;
 
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
 
 .parent {
+  min-height: 100%;
+
   > .opacizeOnHover {
     opacity: 0.2;
 
@@ -75,4 +82,10 @@
   outline: 2px solid var(--mat-sys-primary, #6200ee);
   border-radius: 0.25rem;
   padding: 0.25rem;
+}
+
+app-module-flag {
+  display: block;
+  margin-top: auto;
+  padding-top: 0.5rem;
 }

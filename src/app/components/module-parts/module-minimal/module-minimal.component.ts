@@ -31,6 +31,7 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
   /** Optional suffix shown inline next to the module name (e.g. instance label) */
   @Input() nameSuffix: string | undefined = undefined;
   @Input() preferredPanelColor: number | null = null;
+  @Input() portraitDetailSplit = false;
   isTagChooserOpen = false;
 
   isInCollection$: Observable<boolean>;
