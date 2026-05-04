@@ -5,11 +5,13 @@ import {
   type Page,
   test
 } from '@playwright/test';
+import {
+  openOwnedPatchDetailsInEditMode,
+  openOwnedRackDetailsInEditMode
+} from '../helpers/user-owned-entities';
 
 
 const OUTPUT_DIR = path.resolve(process.cwd(), 'src/assets/screenshots/major-area-screenshots');
-const PREDICTABLE_PATCH_ID = Number(process.env['E2E_PREDICTABLE_PATCH_ID'] ?? '156');
-const PREDICTABLE_RACK_ID = Number(process.env['E2E_PREDICTABLE_RACK_ID'] ?? '644');
 const DESKTOP_VIEWPORT = {
   width: 1920,
   height: 1080
@@ -64,78 +66,32 @@ async function prepareHome(page: Page): Promise<void> {
 async function prepareModuleBrowser(page: Page): Promise<void> {
   await page.goto('/modules/browser');
   await expect(page).toHaveURL(/\/modules\/browser/, {timeout: 20_000});
-  await expect(page.locator('div.card').first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('status').first()).toBeVisible({timeout: 20_000});
 }
 
 async function prepareModuleDetails(page: Page): Promise<void> {
   await page.goto('/modules/details/1025');
   await expect(page).toHaveURL(/\/modules\/details\/1025/, {timeout: 20_000});
   await expect(page.getByRole('heading', {name: /module details/i})).toBeVisible({timeout: 20_000});
-  await expect(page.locator('app-module-tags').first()).toBeVisible({timeout: 20_000});
+  await expect(page.getByRole('heading', {name: /Racked in|Patched in|Data|Search on/i}).first()).toBeVisible({
+    timeout: 20_000
+  });
 }
 
 async function preparePatchBrowser(page: Page): Promise<void> {
   await page.goto('/patches/browser');
   await expect(page).toHaveURL(/\/patches\/browser/, {timeout: 20_000});
-  await expect(page.locator('div.card').first()).toBeVisible({timeout: 20_000});
-}
-
-async function isPatchEditingModeVisible(page: Page): Promise<boolean> {
-  const patchEditingHeading = page.getByRole('heading', {name: /patch editing/i}).first();
-  if (await patchEditingHeading.isVisible().catch(() => false)) {
-    return true;
-  }
-  
-  return page.getByRole('button', {name: /close editor/i}).first().isVisible().catch(() => false);
-}
-
-async function tryEnablePatchEditingMode(page: Page): Promise<boolean> {
-  if (await isPatchEditingModeVisible(page)) {
-    return true;
-  }
-  
-  const editFab = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
-  const canEdit = await editFab.isVisible().catch(() => false);
-  
-  if (!canEdit) {
-    return false;
-  }
-  
-  await editFab.click();
-  await expect(page.getByRole('heading', {name: /patch editing/i}).first()).toBeVisible({timeout: 20_000});
-  return true;
-}
-
-async function openPatchDetails(page: Page, patchId: number): Promise<boolean> {
-  await page.goto(`/patches/details/${ patchId }`);
-  const onExpectedRoute = await page.waitForURL(new RegExp(`/patches/details/${ patchId }`), {timeout: 8_000})
-    .then(() => true)
-    .catch(() => false);
-  if (!onExpectedRoute) {
-    return false;
-  }
-  
-  return page.locator('app-patch-composite').first().waitFor({state: 'visible', timeout: 8_000})
-    .then(() => true)
-    .catch(() => false);
+  await expect(page.getByRole('status').first()).toBeVisible({timeout: 20_000});
 }
 
 async function preparePatchDetailsEditing(page: Page): Promise<void> {
-  const openedPredictablePatch = await openPatchDetails(page, PREDICTABLE_PATCH_ID);
-  if (openedPredictablePatch && (await tryEnablePatchEditingMode(page))) {
-    return;
-  }
-  
-  throw new Error(
-    `Predictable patch #${ PREDICTABLE_PATCH_ID } is not available in editable mode for this account. ` +
-    `Prepare that patch and ensure /patches/details/${ PREDICTABLE_PATCH_ID } supports edit mode.`
-  );
+  await openOwnedPatchDetailsInEditMode(page);
 }
 
 async function prepareRackBrowser(page: Page): Promise<void> {
   await page.goto('/racks/browser');
   await expect(page).toHaveURL(/\/racks\/browser/, {timeout: 20_000});
-  await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 20_000});
+  await expect(page.locator('app-rack-micro, app-empty-state').first()).toBeVisible({timeout: 20_000});
 }
 
 async function prepareUserArea(page: Page): Promise<void> {
@@ -147,67 +103,8 @@ async function prepareUserArea(page: Page): Promise<void> {
   });
 }
 
-async function isRackEditingModeVisible(page: Page): Promise<boolean> {
-  return page.getByRole('heading', {name: /Rack Editing/i}).first().isVisible().catch(() => false);
-}
-
-async function tryEnableRackEditingMode(page: Page): Promise<boolean> {
-  if (await isRackEditingModeVisible(page)) {
-    return true;
-  }
-  
-  const editRackButton = page.getByRole('button', {name: /^Edit rack$/i}).first();
-  if (await editRackButton.isVisible().catch(() => false)) {
-    await editRackButton.click();
-    return page.getByRole('heading', {name: /Rack Editing/i}).first().isVisible().catch(() => false);
-  }
-  
-  const editFabRackButton = page.locator('app-edit-fab button', {hasText: /^Edit rack$/i}).first();
-  if (await editFabRackButton.isVisible().catch(() => false)) {
-    await editFabRackButton.click();
-    return page.getByRole('heading', {name: /Rack Editing/i}).first().isVisible().catch(() => false);
-  }
-  
-  const genericEditFabButton = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
-  if (await genericEditFabButton.isVisible().catch(() => false)) {
-    await genericEditFabButton.click();
-    return page.getByRole('heading', {name: /Rack Editing/i}).first().isVisible().catch(() => false);
-  }
-  
-  return false;
-}
-
-async function openRackDetails(page: Page, rackId: number): Promise<boolean> {
-  await page.goto(`/racks/details/${ rackId }`);
-  const onExpectedRoute = await page.waitForURL(new RegExp(`/racks/details/${ rackId }`), {timeout: 8_000})
-    .then(() => true)
-    .catch(() => false);
-  if (!onExpectedRoute) {
-    return false;
-  }
-  
-  return page.locator('app-rack-composite').first().waitFor({state: 'visible', timeout: 8_000})
-    .then(() => true)
-    .catch(() => false);
-}
-
 async function prepareRackDetailsEditingCentered(page: Page): Promise<void> {
-  const openedPredictableRack = await openRackDetails(page, PREDICTABLE_RACK_ID);
-  if (!openedPredictableRack) {
-    throw new Error(
-      `Predictable rack #${ PREDICTABLE_RACK_ID } is not renderable for screenshots. ` +
-      `Prepare that rack and ensure /racks/details/${ PREDICTABLE_RACK_ID } shows full rack content.`
-    );
-  }
-  
-  const editableRack = await tryEnableRackEditingMode(page);
-  if (!editableRack) {
-    throw new Error(
-      `Predictable rack #${ PREDICTABLE_RACK_ID } is not editable for screenshots. ` +
-      `Prepare that rack and ensure /racks/details/${ PREDICTABLE_RACK_ID } supports edit mode.`
-    );
-  }
-  
+  await openOwnedRackDetailsInEditMode(page);
   await centerElementOnViewport(page, 'app-rack-composite');
 }
 
