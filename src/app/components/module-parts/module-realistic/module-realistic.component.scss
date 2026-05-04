@@ -94,6 +94,16 @@
   opacity: 1;
 }
 
+:host(.module--signalDestination) .root--analysisSignal .analysisOverlay__layer--signal {
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    var(--signal-destination-panel-top-color, rgba(226, 82, 60, 0.18)) 0%,
+    var(--signal-destination-panel-bottom-color, rgba(226, 82, 60, 0.3)) 100%
+  );
+  box-shadow: inset 0 0 0 1px var(--signal-destination-panel-border-color, rgba(226, 82, 60, 0.22));
+}
+
 .analysisOverlay__layer--power::after {
   content: '';
   position: absolute;

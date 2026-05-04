@@ -63,6 +63,7 @@ import {
   buildFunctionAnalysisLegendItems,
   buildFunctionAnalysisResidualLabel
 } from './rack-function-visuals.utils';
+import { SignalFocusArea } from './rack-signal-analysis.utils';
 
 
 function cloneRackData<T>(value: T): T {
@@ -88,6 +89,7 @@ export class RackDetailDataService extends SubManager {
   addModuleToRack$ = new Subject<MinimalModule>();
   shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
+  signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
   formData = {
     name: {
       control: new FormControl('', [

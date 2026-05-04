@@ -68,7 +68,9 @@ export class QueryJoins {
     manufacturer:manufacturerId(name,id),
     standard:standards!modules_standard_fkey(name,id),
     tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid)),
-    panels:module_panels!module_panels_moduleid_fkey(*)
+    panels:module_panels!module_panels_moduleid_fkey(*),
+    ins:${ DbPaths.moduleINs }(*),
+    outs:${ DbPaths.moduleOUTs }(*)
   )`;
 
 // Module Tags
