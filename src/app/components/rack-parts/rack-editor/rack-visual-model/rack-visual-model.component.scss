@@ -79,6 +79,7 @@
 }
 
 .rackScreen {
+  position: relative;
   min-width: 100%;
   -webkit-user-select: none;
   user-select: none;
@@ -116,12 +117,59 @@
 }
 
 .module {
+  position: relative;
+  z-index: 2;
+  transition: opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-drag: none;
   touch-action: none;
+}
+
+.module--signalSource,
+.module--signalDestination {
+  border-radius: 0.7rem;
+}
+
+.module--signalSource {
+  z-index: 16;
+  box-shadow: 0 0 0 0.14rem rgba(226, 82, 60, 0.24), 0 0.55rem 1.15rem rgba(34, 75, 117, 0.16);
+}
+
+.module--signalDestination {
+  z-index: 8;
+  box-shadow:
+    0 0 0 0.1rem var(--signal-destination-ring-color, rgba(226, 82, 60, 0.12)),
+    0 0 0.8rem var(--signal-destination-glow-color, rgba(226, 82, 60, 0.06));
+}
+
+.module--signalMuted {
+  opacity: 0.18;
+  filter: saturate(0.45) brightness(0.92);
+}
+
+.signalOverlayLayer {
+  position: fixed;
+  z-index: 12;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.signalOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.signalOverlay__line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
 
 .rowPowerPanel {
@@ -276,6 +324,8 @@
 }
 
 .moduleHoverStats {
+  position: relative;
+  z-index: 30;
   min-width: 3.5rem;
   padding: 0.35rem 0.45rem;
   border-radius: 0.85rem;
@@ -304,6 +354,29 @@
   min-width: 6.75rem;
   max-width: 8.25rem;
   align-items: stretch;
+}
+
+.moduleHoverStats--signal {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 0.55rem);
+  min-width: 12rem;
+  max-width: 14rem;
+  align-items: stretch;
+  text-align: left;
+  gap: 0.32rem;
+  box-shadow: 0 0.35rem 0.95rem rgba(19, 54, 89, 0.16);
+  transform-origin: left top;
+}
+
+.moduleHoverStats--signalLeft {
+  left: auto;
+  right: calc(100% + 0.55rem);
+  transform-origin: right top;
+}
+
+.moduleHoverStats--signalRight {
+  right: auto;
 }
 
 .moduleHoverStats__row {
@@ -335,6 +408,121 @@
   white-space: normal;
   overflow-wrap: anywhere;
   max-width: 4.9rem;
+}
+
+.moduleHoverStats--signal .moduleHoverStats__row {
+  align-items: flex-start;
+}
+
+.moduleHoverStats__eyebrow {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(177, 72, 53, 0.82);
+}
+
+.moduleHoverStats__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding-top: 0.12rem;
+}
+
+.moduleHoverStats__sectionLabel,
+.moduleHoverStats__signalGroupLabel {
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(31, 64, 95, 0.72);
+}
+
+.moduleHoverStats__signalGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.moduleHoverStats__signalTier {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.moduleHoverStats__signalTierLabel {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(177, 72, 53, 0.78);
+}
+
+.moduleHoverStats__signalGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.moduleHoverStats__chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.moduleHoverStats__signalMatchList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.moduleHoverStats__signalMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+}
+
+.moduleHoverStats__chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.14rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(34, 75, 117, 0.08);
+  color: rgba(21, 50, 78, 0.94);
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.moduleHoverStats__chip--tag {
+  background: rgba(80, 112, 145, 0.12);
+}
+
+.moduleHoverStats__chip--likely {
+  background: rgba(226, 82, 60, 0.14);
+}
+
+.moduleHoverStats__signalReason {
+  font-size: 0.58rem;
+  line-height: 1.2;
+  color: rgba(45, 70, 93, 0.7);
+}
+
+.moduleHoverStats__signalMeta {
+  font-size: 0.58rem;
+  line-height: 1.25;
+  color: rgba(45, 70, 93, 0.66);
+}
+
+.moduleHoverStats__empty {
+  font-size: 0.66rem;
+  line-height: 1.35;
+  color: rgba(43, 69, 93, 0.72);
 }
 
 @media (max-width: 70.5625rem) {

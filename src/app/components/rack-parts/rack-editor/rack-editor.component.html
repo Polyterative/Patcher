@@ -5,6 +5,7 @@
   isCurrentRackEditable:(dataService.isCurrentRackEditable$|async),
   userRequestedSmallerScale:(dataService.userRequestedSmallerScale$|async),
   analysisMode:(dataService.analysisMode$|async),
+  signalFocusArea:(dataService.signalFocusArea$|async),
   shouldShowPanelImages:(dataService.shouldShowPanelImages$|async),
   functionAnalysisLegendItems:(dataService.functionAnalysisLegendItems$|async),
   functionAnalysisResidualLabel:(dataService.functionAnalysisResidualLabel$|async),
@@ -124,7 +125,7 @@
                    Heat colors are relative to the rack, and tighten to the hovered row when you focus one.
                   </div>
                 }
-                @if (currentAnalysisMode === analysisModes.function) {
+                 @if (currentAnalysisMode === analysisModes.function) {
                   <div class="rackEditorFloatingOptions__analysisHint">
                     Colors show each module's primary role so you can read the rack's functional spread by both count and HP.
                   </div>
@@ -148,13 +149,46 @@
                     @if (bag.functionAnalysisResidualLabel) {
                       Grey modules are {{ bag.functionAnalysisResidualLabel }}.
                    } @else {
-                     All current modules map to a tracked function role.
-                    }
-                  </div>
-                }
-                <div class="rackEditorFloatingOptions__analysisModes"
-                     role="group"
-                     aria-label="Rack analysis mode"
+                      All current modules map to a tracked function role.
+                     }
+                   </div>
+                 }
+                  @if (currentAnalysisMode === analysisModes.signal) {
+                     <div class="rackEditorFloatingOptions__analysisHint">
+                       Hover a module to inspect its inputs, outputs, tags, and the most relevant destinations it could plausibly feed.
+                     </div>
+                     <div class="rackEditorFloatingOptions__analysisFocus"
+                          role="group"
+                          aria-label="Signal focus area">
+                       @for (option of signalFocusOptions; track option.value) {
+                         <button type="button"
+                                 class="rackEditorFloatingOptions__analysisFocusButton"
+                                 [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
+                                 [attr.aria-pressed]="bag.signalFocusArea === option.value"
+                                 (click)="dataService.signalFocusArea$.next(option.value)"
+                         >
+                           {{ option.label }}
+                         </button>
+                       }
+                     </div>
+                     <div class="rackEditorFloatingOptions__analysisLegend">
+                       @for (item of signalAnalysisLegendItems; track item.label) {
+                         <div class="rackEditorFloatingOptions__analysisLegendItem">
+                          <span class="rackEditorFloatingOptions__analysisSwatch"
+                                [class]="item.swatchClass"
+                                aria-hidden="true"
+                          ></span>
+                          <span>{{ item.label }}</span>
+                        </div>
+                      }
+                     </div>
+                     <div class="rackEditorFloatingOptions__analysisHint rackEditorFloatingOptions__analysisHint--subtle">
+                       Signal auto-picks a focused destination intent from the hovered module, and you can override it below.
+                     </div>
+                   }
+                 <div class="rackEditorFloatingOptions__analysisModes"
+                      role="group"
+                      aria-label="Rack analysis mode"
                 >
                   @for (option of analysisModeOptions; track option.mode) {
                     <button type="button"

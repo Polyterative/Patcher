@@ -4,6 +4,7 @@
      [class.root--analysisMode]="analysisModeActive"
      [class.root--analysisPower]="powerAnalysisMode"
      [class.root--analysisFunction]="functionAnalysisMode"
+     [class.root--analysisSignal]="signalAnalysisMode"
      [class.clickable]="(rackDetailDataService.isCurrentRackEditable$|async)&&(rackDetailDataService.isCurrentRackPropertyOfCurrentUser$|async)"
 >
   <div class="overlayActions">
@@ -62,5 +63,6 @@
   >
     <div class="analysisOverlay__layer analysisOverlay__layer--power"></div>
     <div class="analysisOverlay__layer analysisOverlay__layer--function"></div>
+    <div class="analysisOverlay__layer analysisOverlay__layer--signal"></div>
   </div>
 </div>

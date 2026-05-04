@@ -210,6 +210,24 @@ describe('SupabaseService - get simple queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('requests module ins and outs in the rack-module join', (done) => {
+      const mock = chainable({data: [], error: null});
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.get.rackedModules(7).subscribe({
+        next: () => {
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('ins:module_ins'));
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.stringContaining('outs:module_outs'));
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
     
     it('should map selected_panel_id from raw row to selectedPanelId', (done) => {
       const rawRow = {id: 1, row: 0, column: 0, moduleid: 10, rackid: 3, selected_panel_id: 5, module: {id: 10}};
