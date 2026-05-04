@@ -16,11 +16,12 @@ const DESKTOP_VIEWPORT = {
   width: 1920,
   height: 1080
 };
-const SCREENSHOT_DELAY_MS = 350;
+const SCREENSHOT_DELAY_MS = 120;
 
 interface ScreenshotTarget {
   fileName: string;
   prepare: (page: Page) => Promise<void>;
+  focusSelector: string;
   settleDelayMs?: number;
 }
 
@@ -28,7 +29,13 @@ function ensureOutputDir(): void {
   fs.mkdirSync(OUTPUT_DIR, {recursive: true});
 }
 
-async function captureViewport(page: Page, fileName: string, settleDelayMs = SCREENSHOT_DELAY_MS): Promise<void> {
+async function captureViewport(
+  page: Page,
+  fileName: string,
+  focusSelector: string,
+  settleDelayMs = SCREENSHOT_DELAY_MS
+): Promise<void> {
+  await waitForScreenshotReady(page, focusSelector);
   await page.waitForTimeout(settleDelayMs);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, fileName),
@@ -55,6 +62,112 @@ async function centerElementOnViewport(page: Page, selector: string): Promise<vo
   }, selector);
   
   expect(centered).toBeTruthy();
+}
+
+async function waitForScreenshotReady(page: Page, focusSelector: string): Promise<void> {
+  await page.waitForLoadState('domcontentloaded');
+  await expect(page.locator(focusSelector).first()).toBeVisible({timeout: 20_000});
+
+  await page.waitForFunction(
+    () => !document.fonts || document.fonts.status === 'loaded',
+    undefined,
+    {timeout: 20_000}
+  );
+
+  await page.waitForFunction(
+    () => {
+      const isVisibleInViewport = (element: Element | null): boolean => {
+        if (!(element instanceof HTMLElement)) {
+          return false;
+        }
+
+        const style = window.getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+          return false;
+        }
+
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          return false;
+        }
+
+        return rect.bottom > 0
+          && rect.right > 0
+          && rect.top < window.innerHeight
+          && rect.left < window.innerWidth;
+      };
+
+      const blockers = [
+        ...document.querySelectorAll('.app-route-loading mat-progress-bar'),
+        ...document.querySelectorAll('lib-auto-content-loading-indicator .skeleton'),
+        ...document.querySelectorAll('lib-auto-update-loading-indicator app-lottie-container')
+      ];
+
+      return blockers.every((element) => !isVisibleInViewport(element));
+    },
+    undefined,
+    {timeout: 20_000}
+  );
+
+  await page.waitForFunction(
+    () => {
+      const isVisibleInViewport = (element: Element | null): boolean => {
+        if (!(element instanceof HTMLElement)) {
+          return false;
+        }
+
+        const style = window.getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+          return false;
+        }
+
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          return false;
+        }
+
+        return rect.bottom > 0
+          && rect.right > 0
+          && rect.top < window.innerHeight
+          && rect.left < window.innerWidth;
+      };
+
+      return Array.from(document.images)
+        .filter((image) => isVisibleInViewport(image))
+        .every((image) => image.complete && image.naturalWidth > 0);
+    },
+    undefined,
+    {timeout: 20_000}
+  );
+
+  await page.waitForFunction(
+    async (selector: string) => {
+      const target = document.querySelector(selector);
+      if (!(target instanceof HTMLElement)) {
+        return false;
+      }
+
+      const readBox = () => {
+        const rect = target.getBoundingClientRect();
+        return [
+          Math.round(rect.x),
+          Math.round(rect.y),
+          Math.round(rect.width),
+          Math.round(rect.height)
+        ].join(':');
+      };
+
+      const first = readBox();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const second = readBox();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      const third = readBox();
+
+      return first === second && second === third;
+    },
+    focusSelector,
+    {timeout: 10_000}
+  );
 }
 
 async function prepareHome(page: Page): Promise<void> {
@@ -109,14 +222,14 @@ async function prepareRackDetailsEditingCentered(page: Page): Promise<void> {
 }
 
 const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
-  {fileName: '01-home.jpg', prepare: prepareHome},
-  {fileName: '02-modules.jpg', prepare: prepareModuleBrowser},
-  {fileName: '03-module-details.jpg', prepare: prepareModuleDetails},
-  {fileName: '04-patches.jpg', prepare: preparePatchBrowser},
-  {fileName: '05-patch-details.jpg', prepare: preparePatchDetailsEditing},
-  {fileName: '06-racks.jpg', prepare: prepareRackBrowser, settleDelayMs: 5_000},
-  {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsEditingCentered, settleDelayMs: 5_000},
-  {fileName: '08-user-area.jpg', prepare: prepareUserArea, settleDelayMs: 2_500}
+  {fileName: '01-home.jpg', prepare: prepareHome, focusSelector: 'main.home-page h1'},
+  {fileName: '02-modules.jpg', prepare: prepareModuleBrowser, focusSelector: 'app-module-minimal, app-empty-state'},
+  {fileName: '03-module-details.jpg', prepare: prepareModuleDetails, focusSelector: 'app-module-composite'},
+  {fileName: '04-patches.jpg', prepare: preparePatchBrowser, focusSelector: 'app-patch-micro, app-empty-state'},
+  {fileName: '05-patch-details.jpg', prepare: preparePatchDetailsEditing, focusSelector: 'app-patch-composite'},
+  {fileName: '06-racks.jpg', prepare: prepareRackBrowser, focusSelector: 'app-rack-micro, app-empty-state'},
+  {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsEditingCentered, focusSelector: 'app-rack-composite'},
+  {fileName: '08-user-area.jpg', prepare: prepareUserArea, focusSelector: 'app-user-area-root'}
 ];
 
 test.describe('Major area screenshot automation', () => {
@@ -127,7 +240,7 @@ test.describe('Major area screenshot automation', () => {
     test(`captures ${ target.fileName }`, async ({page}) => {
       ensureOutputDir();
       await target.prepare(page);
-      await captureViewport(page, target.fileName, target.settleDelayMs);
+      await captureViewport(page, target.fileName, target.focusSelector, target.settleDelayMs);
     });
   }
 });
