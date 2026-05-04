@@ -212,7 +212,7 @@ describe('RackDetailDataService helpers', () => {
     expect(nextSpy).toHaveBeenCalledWith(rack);
   });
   
-  it('creates duplicated rack payload for current user and confirms duplication dialog', () => {
+  it('creates duplicated rack payload for current user without reusing preview media and confirms duplication dialog', () => {
     const {service, backend, dialog} = build();
     const create = (service as any).createNewRackOnBackendForCurrentUser.bind(service);
     const ask = (service as any).askForConfirmationWhenDuplicatingRack.bind(service);
@@ -229,7 +229,6 @@ describe('RackDetailDataService helpers', () => {
       name: 'Demo Rack V2',
       hp: 104,
       rows: 3,
-      image: 'img.jpg',
       public: true,
       locked: false
     });
