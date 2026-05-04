@@ -24,6 +24,7 @@ describe('RackVisualModelComponent', () => {
   let rackDetailDataService: {
     shouldShowPanelImages$: Subject<boolean>;
     analysisMode$: BehaviorSubject<RackAnalysisMode>;
+    signalFocusArea$: BehaviorSubject<any>;
     currentDownloadElementRef$: {next: jasmine.Spy};
     rackOrderChange$: {next: jasmine.Spy};
   };
@@ -32,6 +33,7 @@ describe('RackVisualModelComponent', () => {
     rackDetailDataService = {
       shouldShowPanelImages$: new Subject<boolean>(),
       analysisMode$: new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off),
+      signalFocusArea$: new BehaviorSubject(null),
       currentDownloadElementRef$: {next: jasmine.createSpy('next')},
       rackOrderChange$: {next: jasmine.createSpy('next')},
     };
@@ -77,8 +79,12 @@ describe('RackVisualModelComponent', () => {
     return {
       module: {
         id,
+        name: `Module ${ id }`,
         hp: 14,
         panels: [],
+        ins: [],
+        outs: [],
+        tags: [],
         powerPos12,
         powerNeg12,
         powerPos5,
@@ -211,6 +217,102 @@ describe('RackVisualModelComponent', () => {
     const hoverStats = host.querySelector('.moduleHoverStats');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('RoleVoices');
     expect(hoverStats?.textContent?.replace(/\s+/g, '').trim()).toContain('TagPrimarytag:VCO');
+  });
+
+  it('shows signal hover details, destination highlighting, and minimal lines in signal mode', () => {
+    const destination = makeRackedModule(11, 0, 14);
+    const unrelated = makeRackedModule(12, 0, 28);
+    moduleRef.module.name = 'Voice';
+    moduleRef.module.outs = [{id: 101, name: 'Audio Out', isAudio: true}];
+    moduleRef.module.tags = [{
+      tag: {
+        name: 'VCO',
+        type: 0
+      },
+      voteCount: [{moduletagid: 1}]
+    }];
+    destination.module.name = 'Filter';
+    destination.module.ins = [{id: 201, name: 'Audio In', isAudio: true}];
+    destination.module.tags = [{
+      tag: {
+        name: 'Filter',
+        type: 0
+      },
+      voteCount: [{moduletagid: 1}]
+    }];
+    unrelated.module.name = 'Scope';
+    component.rowedRackedModules = [[moduleRef, destination, unrelated]];
+    fixture.detectChanges();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.signal);
+    fixture.detectChanges();
+
+    component.setHoveredModule(moduleRef);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const signalCard = host.querySelector('.moduleHoverStats--signal');
+    const destinationModule = host.querySelector('[data-rack-module-key="11-11-0-14"]') as HTMLElement | null;
+    const unrelatedModule = host.querySelector('[data-rack-module-key="12-12-0-28"]');
+    const overlayLine = host.querySelector('.signalOverlay__line');
+
+    expect(signalCard?.textContent).toContain('Inputs');
+    expect(signalCard?.textContent).toContain('Outputs');
+    expect(signalCard?.textContent).toContain('Tags');
+    expect(signalCard?.textContent).toContain('Can feed');
+    expect(signalCard?.textContent).toContain('Best matches');
+    expect(signalCard?.textContent).toContain('Audio');
+    expect(signalCard?.textContent).toContain('Filter');
+    expect(signalCard?.textContent).toContain('tone shaping');
+    expect(destinationModule?.classList.contains('module--signalDestination')).toBeTrue();
+    expect(destinationModule?.getAttribute('data-signal-family')).toBe('audio');
+    expect(destinationModule?.style.getPropertyValue('--signal-destination-ring-color')).toContain('rgba(226, 82, 60');
+    expect(destinationModule?.style.getPropertyValue('--signal-destination-panel-top-color')).toContain('rgba(226, 82, 60');
+    expect(destinationModule?.style.getPropertyValue('--signal-destination-panel-bottom-color')).toContain('rgba(226, 82, 60');
+    expect(unrelatedModule?.classList.contains('module--signalMuted')).toBeTrue();
+    expect(overlayLine).not.toBeNull();
+    expect(overlayLine?.getAttribute('stroke')).toBe('#e2523c');
+  });
+
+  it('anchors the signal hover card to the left when the module is too close to the right viewport edge', () => {
+    moduleRef.module.outs = [{id: 101, name: 'Audio Out', isAudio: true}];
+    component.rackViewportElement = document.createElement('div');
+    spyOn(component.rackViewportElement, 'getBoundingClientRect').and.returnValue({
+      left: 0,
+      right: 300,
+      top: 0,
+      bottom: 300,
+      width: 300,
+      height: 300,
+      x: 0,
+      y: 0,
+      toJSON: () => ({})
+    } as DOMRect);
+    fixture.detectChanges();
+
+    rackDetailDataService.analysisMode$.next(RACK_ANALYSIS_MODES.signal);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const moduleElement = host.querySelector('[data-rack-module-key="10-10-0-0"]') as HTMLElement;
+    spyOn(moduleElement, 'getBoundingClientRect').and.returnValue({
+      left: 210,
+      right: 270,
+      top: 40,
+      bottom: 180,
+      width: 60,
+      height: 140,
+      x: 210,
+      y: 40,
+      toJSON: () => ({})
+    } as DOMRect);
+
+    component.setHoveredModule(moduleRef, moduleElement);
+    fixture.detectChanges();
+
+    const signalCard = host.querySelector('.moduleHoverStats--signal');
+
+    expect(signalCard?.classList.contains('moduleHoverStats--signalLeft')).toBeTrue();
   });
 
   it('opens the module context menu on a deliberate touch long press', () => {

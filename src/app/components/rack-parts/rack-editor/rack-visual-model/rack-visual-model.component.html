@@ -14,6 +14,28 @@
        [style.width]="rackData.hp + 'rem'"
        [style.min-width]="rackData.hp + 'rem'"
        [style.max-width]="rackData.hp + 'rem'">
+    @if (analysisMode === analysisModes.signal && signalOverlayLines.length > 0 && signalOverlayFrame) {
+      <div class="signalOverlayLayer"
+           aria-hidden="true"
+           [style.left.px]="signalOverlayFrame.left"
+           [style.top.px]="signalOverlayFrame.top"
+           [style.width.px]="signalOverlayFrame.width"
+           [style.height.px]="signalOverlayFrame.height">
+        <svg class="signalOverlay"
+             [attr.viewBox]="signalOverlayViewBox()"
+             preserveAspectRatio="none">
+          @for (line of signalOverlayLines; track line.key) {
+            <path class="signalOverlay__line"
+                  [attr.d]="line.path"
+                  [attr.stroke]="signalLineColor(line)"
+                  [attr.stroke-opacity]="signalLineOpacity(line)"
+                  [attr.stroke-width]="signalLineStrokeWidth(line)"
+                  [style.filter]="signalLineShadow(line)"
+            ></path>
+          }
+        </svg>
+      </div>
+    }
     @for (row of rowedRackedModules; track row; let rowId = $index) {
       <div class="rackRowShell"
            #rowSurface
@@ -84,11 +106,21 @@
                                     [analysisClass]="analysisVisualClass(rackedModule, analysisMode)"
                                       [showPanelImages]="shouldShowPanelImages && rackedModule.module.panels.length>0"
                                       [selectedPanelId]="rackedModule.rackingData.selectedPanelId ?? null"
-                                      [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
-                                    [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
-                                    [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
-                                      class="module"
-                                      cdkDrag
+                                       [disablePanelImageEnterAnimation]="isDragImageAnimationSuppressed(rackedModule)"
+                                       [class.module--dropRevealSuppressed]="isDropRevealSuppressed(rackedModule)"
+                                       [class.module--dropRevealAnimating]="isDropRevealAnimating(rackedModule)"
+                                       [class.module--signalSource]="isSignalSourceModule(rackedModule, analysisMode)"
+                                       [class.module--signalDestination]="signalDestinationMatchFor(rackedModule, analysisMode)"
+                                       [class.module--signalMuted]="isSignalMutedModule(rackedModule, analysisMode)"
+                                        [attr.data-signal-family]="signalDestinationFamily(rackedModule, analysisMode)"
+                                        [style.--signal-destination-ring-color]="signalDestinationRingColor(rackedModule, analysisMode)"
+                                        [style.--signal-destination-glow-color]="signalDestinationGlowColor(rackedModule, analysisMode)"
+                                        [style.--signal-destination-panel-top-color]="signalDestinationPanelTopColor(rackedModule, analysisMode)"
+                                        [style.--signal-destination-panel-bottom-color]="signalDestinationPanelBottomColor(rackedModule, analysisMode)"
+                                        [style.--signal-destination-panel-border-color]="signalDestinationPanelBorderColor(rackedModule, analysisMode)"
+                                        [attr.data-rack-module-key]="moduleDomKey(rackedModule)"
+                                          class="module"
+                                        cdkDrag
                                       [cdkDragData]="rackedModule"
                                       [cdkDragScale]="dragScale"
                                       [cdkDragDisabled]="isModuleDragDisabled(rackedModule)"
@@ -99,10 +131,10 @@
                                       (pointermove)="onModulePointerMove($event, rackedModule)"
                                       (pointerup)="onModulePointerUp(rackedModule)"
                                       (pointercancel)="onModulePointerCancel(rackedModule)"
-                                      (mouseenter)="setHoveredModule(rackedModule)"
-                                     (mouseleave)="clearHoveredModule(rackedModule)"
-                                     (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
-               >
+                                      (mouseenter)="setHoveredModule(rackedModule, $event.currentTarget)"
+                                      (mouseleave)="clearHoveredModule(rackedModule)"
+                                      (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
+                >
                 @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
@@ -135,6 +167,88 @@
                       <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'HP', value: moduleHp + 'HP'}"></ng-container>
                       <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'Role', value: functionVisual.roleLabel}"></ng-container>
                       <ng-container *ngTemplateOutlet="moduleHoverStatsRow; context: {label: 'Tag', value: functionVisual.tagLabel}"></ng-container>
+                    </div>
+                  }
+                }
+                @if (analysisMode === analysisModes.signal) {
+                  @if (signalAnalysisAtHover(); as signalAnalysis) {
+                    <div class="moduleHoverStats moduleHoverStats--signal"
+                         [class.moduleHoverStats--visible]="showHoverStats"
+                         [class.moduleHoverStats--signalLeft]="signalHoverCardPlacement === 'left'"
+                         [class.moduleHoverStats--signalRight]="signalHoverCardPlacement === 'right'"
+                         (mousedown)="$event.stopPropagation()"
+                    >
+                      <div class="moduleHoverStats__eyebrow">Signal</div>
+                      <div class="moduleHoverStats__section">
+                        <div class="moduleHoverStats__sectionLabel">Inputs</div>
+                        @if (signalAnalysis.inputNames.length > 0) {
+                          <div class="moduleHoverStats__chipList">
+                            @for (item of signalAnalysis.inputNames; track item) {
+                              <span class="moduleHoverStats__chip">{{ item }}</span>
+                            }
+                          </div>
+                        } @else {
+                          <div class="moduleHoverStats__empty">No inputs listed</div>
+                        }
+                      </div>
+                      <div class="moduleHoverStats__section">
+                        <div class="moduleHoverStats__sectionLabel">Outputs</div>
+                        @if (signalAnalysis.outputNames.length > 0) {
+                          <div class="moduleHoverStats__chipList">
+                            @for (item of signalAnalysis.outputNames; track item) {
+                              <span class="moduleHoverStats__chip">{{ item }}</span>
+                            }
+                          </div>
+                        } @else {
+                          <div class="moduleHoverStats__empty">No outputs listed</div>
+                        }
+                      </div>
+                      <div class="moduleHoverStats__section">
+                        <div class="moduleHoverStats__sectionLabel">Tags</div>
+                        @if (signalAnalysis.tagNames.length > 0) {
+                          <div class="moduleHoverStats__chipList">
+                            @for (item of signalAnalysis.tagNames; track item) {
+                              <span class="moduleHoverStats__chip moduleHoverStats__chip--tag">{{ item }}</span>
+                            }
+                          </div>
+                        } @else {
+                          <div class="moduleHoverStats__empty">No tags yet</div>
+                        }
+                      </div>
+                      <div class="moduleHoverStats__section">
+                        <div class="moduleHoverStats__sectionLabel">Can feed</div>
+                        @if (signalAnalysis.destinationTierGroups.length > 0) {
+                          <div class="moduleHoverStats__signalGroups">
+                            @for (tierGroup of signalAnalysis.destinationTierGroups; track tierGroup.tier) {
+                              <div class="moduleHoverStats__signalTier">
+                                <div class="moduleHoverStats__signalTierLabel">{{ tierGroup.label }}</div>
+                                @for (group of tierGroup.groups; track group.family) {
+                                  <div class="moduleHoverStats__signalGroup">
+                                    <div class="moduleHoverStats__signalGroupLabel">{{ group.label }}</div>
+                                    <div class="moduleHoverStats__signalMatchList">
+                                      @for (match of group.matches; track moduleDomKey(match.destination)) {
+                                        <div class="moduleHoverStats__signalMatch">
+                                          <span class="moduleHoverStats__chip"
+                                                [class.moduleHoverStats__chip--likely]="match.confidence === 'likely'"
+                                          >{{ match.destination.module.name }}</span>
+                                          <span class="moduleHoverStats__signalReason">{{ match.reasonLabel }}</span>
+                                        </div>
+                                      }
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <div class="moduleHoverStats__empty">No plausible destinations found</div>
+                        }
+                        @if (signalAnalysis.hiddenDestinationCount > 0) {
+                          <div class="moduleHoverStats__signalMeta">
+                            Showing top {{ signalAnalysis.totalDestinations }} focused destinations
+                          </div>
+                        }
+                      </div>
                     </div>
                   }
                 }

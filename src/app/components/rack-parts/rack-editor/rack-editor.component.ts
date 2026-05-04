@@ -42,6 +42,7 @@ import {
   RACK_ANALYSIS_MODES,
   RACK_ANALYSIS_MODE_OPTIONS
 } from '../rack-analysis-mode';
+import { SignalFocusArea } from '../rack-signal-analysis.utils';
 
 
 export interface ModuleRightClick {
@@ -77,6 +78,20 @@ export class RackEditorComponent extends SubManager implements OnInit, OnChanges
   private static readonly reducedScaleMultiplier = 0.65;
   readonly analysisModes = RACK_ANALYSIS_MODES;
   readonly analysisModeOptions = RACK_ANALYSIS_MODE_OPTIONS;
+  readonly signalAnalysisLegendItems = [
+    {label: 'Audio', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalAudio'},
+    {label: 'Pitch / V-Oct', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalPitch'},
+    {label: 'Clock / Gate', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalClock'},
+    {label: 'Modulation', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalModulation'},
+    {label: 'Other', swatchClass: 'rackEditorFloatingOptions__analysisSwatch--signalOther'},
+  ] as const;
+  readonly signalFocusOptions: Array<{value: SignalFocusArea; label: string}> = [
+    {value: 'voices', label: 'Voices'},
+    {value: 'tone', label: 'Tone shaping'},
+    {value: 'mixing', label: 'Mixing'},
+    {value: 'modulation', label: 'Modulation'},
+    {value: 'clock', label: 'Clock'},
+  ];
 
   moduleRightClick$ = new Subject<ModuleRightClick>();
 

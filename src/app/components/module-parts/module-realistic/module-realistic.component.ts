@@ -59,6 +59,10 @@ export class ModuleRealisticComponent {
   get functionAnalysisMode(): boolean {
     return this.analysisMode === this.analysisModes.function;
   }
+
+  get signalAnalysisMode(): boolean {
+    return this.analysisMode === this.analysisModes.signal;
+  }
   
   constructor(
     public rackDetailDataService: RackDetailDataService,
