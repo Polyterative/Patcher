@@ -51,7 +51,7 @@ Technical bug reports can also be opened as [GitHub issues](https://github.com/P
 4. [**Setting Up the Project Locally**](#setting-up-the-project-locally)
 5. [**Running E2E Tests**](#running-e2e-tests)
 6. [**Project Dependencies**](#project-dependencies)
-7. [**DB Model Details**](#db-model-details)
+7. [**Schema Reference**](#schema-reference)
 8. [**Pull Requests**](#pull-requests)
 9. [**License**](#license)
 10. [**AI & Open Data Stance**](#ai--open-data-stance)
@@ -76,7 +76,8 @@ Patcher is built for the full modular workflow, not just patch notes.
 - Keep a digital twin of your real rig: patches, racks, modules, notes, and connection state.
 - Plan racks quickly with drag-and-drop placement.
 - Move fast with streamlined connection flow and app-wide auto-save.
-- Read complexity quickly with live stats for cables, modules, and multiples.
+- Read patch complexity quickly with live stats for cables, modules, and multiples.
+- Plan racks with live HP, power, and balance analysis.
 
 ### Why it stays useful
 
@@ -90,8 +91,9 @@ Patcher is built for the full modular workflow, not just patch notes.
 👉 **[Read the User Guide](USER_GUIDE.md)** for end-user workflows:
 
 - Module discovery and filtering
-- Patch creation/editing and notes
-- Rack planning and collection management
+- Patch creation, graphs, privacy, and comments
+- Rack planning, analysis, and media export
+- Profile, account, and public-sharing controls
 
 ---
 
@@ -104,7 +106,7 @@ git clone <repository_url>
 cd Patcher
 pnpm install
 pnpm start
-# use SSR locally only when you need to debug SSR-specific behavior
+# or, when you need to debug SSR-specific behavior:
 pnpm start:ssr
 ```
 
@@ -123,10 +125,10 @@ Local app URL: `http://localhost:5556/`
 
 Notes:
 
-- `pnpm backup:data` uses local `pg_dump`, so the remote database is read-only during backup.
+- `pnpm backup:data` uses local `pg_dump` as a read-only operation, so it does not write to the remote database.
 - Backup uses the linked Supabase project from your authenticated CLI session.
 - Install local Postgres client tools first if needed: `brew install postgresql@16`
-- Backup files are written to `./backups/`, and that directory is gitignored because this repository is public.
+- Backup files are written to `./backups/`, and that directory is gitignored to avoid committing real database snapshots to this public repository.
 - The backup script refuses to run if git is not ignoring `backups/`.
 - Restore is intentionally separate, requires `SUPABASE_DB_URL`, and asks for explicit confirmation before writing.
 
@@ -148,22 +150,24 @@ The project uses the following tools and libraries:
 
 | **Tool/Library**       | **What**                                                             |
 |------------------------|----------------------------------------------------------------------|
-| **Angular**            | Web framework. Using v18                                             |
-| **Angular Material**   | UI components                                                        |
+| **Angular**            | Web framework. Using v21                                             |
+| **Angular Material**   | UI components. Using v21                                             |
 | **Supabase**           | Database, authentication, and storage                                |
 | **Vercel**             | Deployment, hosting                                                  |
 | **GitHub**             | Version control, issue tracking, project management, test automation |
 | **Database**           | PostgreSQL hosted on Supabase                                        |
-| **Sentry**             | Technical analytics and error tracking                               |
+| **Sentry**             | Error tracking, performance monitoring, and session replay           |
 | **Other Dependencies** | Check the `package.json` file                                        |
 
 ---
 
-## **DB Model Details**
+## **Schema Reference**
 
-The database model for the project is as follows:
+Patcher's live schema evolves with the app, so the most reliable references are the generated types and backend registry:
 
-![Database Model](https://user-images.githubusercontent.com/16295552/155419090-3e3a0cd6-77b9-4d3b-91be-d525ef43dd03.png)
+- Generated Supabase types: [`src/backend/database.types.ts`](src/backend/database.types.ts)
+- Backend table/join registration: [`src/app/features/backend/DatabaseStrings.ts`](src/app/features/backend/DatabaseStrings.ts)
+- Regenerate types after schema changes with: `pnpm updateBackendTypes`
 
 ---
 
