@@ -6,7 +6,7 @@ import {
 } from './test-setup';
 
 
-// getModules always ends its query chain with .ilike(), so we need it in the mock
+// getModules can still use ilike in some branches, so we keep it in the mock
 function chainableWithIlike(resolveValue: any = {data: [], count: 0, error: null}) {
   const m: any = {};
   ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
@@ -205,15 +205,21 @@ describe('SupabaseService - GET.modules filtering', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should apply ilike for description filter when description is provided', (done) => {
-    const mock = chainableWithIlike({data: [], count: 0, error: null});
-    const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
-    spyOn(supabaseClient, 'from').and.returnValue(mock);
+  it('should filter by description when description is provided', (done) => {
+    const mockData = {
+      data: [
+        {id: 1, name: 'VCO', description: 'Analog oscillator'},
+        {id: 2, name: 'Mixer', description: 'Audio mixer'}
+      ],
+      count: 2,
+      error: null
+    };
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
     
     service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'oscillator').subscribe({
-      next: () => {
-        // ilike is called at least once for description
-        expect(ilikeSpy).toHaveBeenCalledWith('description', jasmine.stringContaining('oscillator'));
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data[0].name).toBe('VCO');
         done();
       },
       error: (err) => {
@@ -270,6 +276,54 @@ describe('SupabaseService - GET.modules filtering', () => {
         const tagFilterCall = filterSpy.calls.all()
           .find((call: any) => call.args[0] === 'module_tags.tagid');
         expect(tagFilterCall).toBeUndefined();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('matches accented module names when the query is unaccented', (done) => {
+    const mockData = {
+      data: [
+        {id: 1, name: 'Lùbadh', description: 'Looper'},
+        {id: 2, name: 'Mimeophon', description: 'Delay'}
+      ],
+      count: 2,
+      error: null
+    };
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
+
+    service.GET.modules(0, 10, 'Lubadh').subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data.map((module: any) => module.name)).toEqual(['Lùbadh']);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('matches accented module descriptions when the query is unaccented', (done) => {
+    const mockData = {
+      data: [
+        {id: 1, name: 'Lùbadh', description: 'Dual lòoper and sampler'},
+        {id: 2, name: 'Mimeophon', description: 'Stereo delay'}
+      ],
+      count: 2,
+      error: null
+    };
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike(mockData));
+
+    service.GET.modules(0, 10, undefined, undefined, undefined, undefined, undefined, undefined, undefined, 'looper').subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(1);
+        expect(result.data[0].name).toBe('Lùbadh');
         done();
       },
       error: (err) => {

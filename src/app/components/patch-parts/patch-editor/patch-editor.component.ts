@@ -43,7 +43,7 @@ import {
   FormTypes,
   ISelectable
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
-import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import {
   compareModulesByManufacturerAsc,
   compareModulesByManufacturerDesc,
@@ -328,19 +328,15 @@ function asGroupModeId(value: unknown): PatchEditorGroupModeId {
 }
 
 export function filterEditorCardsByQuery(cards: EditorModuleCard[], searchQuery: string): EditorModuleCard[] {
-  const normalizedQuery = normalizeForSearch(searchQuery);
-  
-  if (!normalizedQuery) {
+  if (!searchQuery?.trim()) {
     return cards;
   }
   
-  return cards.filter(card => {
-    const normalizedName = normalizeForSearch(card.module?.name || '');
-    const normalizedManufacturer = normalizeForSearch(card.module?.manufacturer?.name || '');
-    
-    return normalizedName.includes(normalizedQuery)
-      || normalizedManufacturer.includes(normalizedQuery);
-  });
+  return cards.filter(card => matchesSearchQuery(
+    searchQuery,
+    card.module?.name,
+    card.module?.manufacturer?.name
+  ));
 }
 
 export function resolvePatchEditorSortStrategy(sortModeId: PatchEditorSortModeId): PatchEditorSortStrategy {

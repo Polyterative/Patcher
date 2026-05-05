@@ -8,15 +8,20 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('ModuleAdderDataService', () => {
-  function build() {
+  function build(options?: {
+    manufacturers?: { id: number; name: string }[];
+    modules?: { id: number; name: string }[];
+  }) {
     const standards$ = new BehaviorSubject<any[]>([]);
+    const manufacturers = options?.manufacturers ?? [{id: 1, name: 'Make Noise'}];
+    const modules = options?.modules ?? [{id: 12, name: 'Maths'}];
     const backend = {
       GET: {
         manufacturers: jasmine.createSpy('GET.manufacturers').and.returnValue(of({
-          data: [{id: 1, name: 'Make Noise'}]
+          data: manufacturers
         })),
         modules: jasmine.createSpy('GET.modules').and.returnValue(of({
-          data: [{id: 12, name: 'Maths'}]
+          data: modules
         }))
       },
       add: {
@@ -61,6 +66,26 @@ describe('ModuleAdderDataService', () => {
     
     expect(backend.GET.modules).toHaveBeenCalled();
     expect(service.similarModulesData$.value).toEqual([{id: 12, name: 'Maths'}] as any);
+  });
+
+  it('detects duplicate manufacturer names accent-insensitively', () => {
+    const {service} = build({
+      manufacturers: [{id: 1, name: 'Instruō'}]
+    });
+
+    service.newManufacturerNameControl.setValue('Instruo');
+
+    expect(service.duplicateManufacturer$.value).toEqual({id: '1', name: 'Instruō'} as any);
+  });
+
+  it('shows accent-matched similar modules on the submit-module page', () => {
+    const {service} = build({
+      modules: [{id: 2075, name: 'Lùbadh'}]
+    });
+
+    service.formData.name.control.setValue('Lubadh');
+
+    expect(service.similarModulesData$.value).toEqual([{id: 2075, name: 'Lùbadh'}] as any);
   });
   
   it('submits module after confirmation and resets form fields', () => {
