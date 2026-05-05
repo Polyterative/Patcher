@@ -110,6 +110,39 @@ delete confirmation, and the character counter is hidden until users have alread
 
 ---
 
+#### MEDIUM: Module Details — Hidden Usage Counters
+
+**Why:** Module detail currently only shows publicly listable racks and patches. A module can still be widely used in private
+or otherwise non-publicly-listable contexts, but the page falls back to "No racks/patches using this module yet." Add a
+privacy-safe aggregate so users can see that hidden usage exists without exposing who owns what.
+
+- [ ] Add a dedicated backend aggregate/RPC for module usage counts that returns public vs hidden rack/patch totals without
+  returning private entity rows, ids, or authors
+- [ ] Define "hidden" to match "not shown in the current public lists" (private entity and/or non-public author profile),
+  keeping backend semantics aligned with existing module-detail queries
+- [ ] Add threshold or bucket rules for low counts so tiny hidden cohorts do not leak sensitive ownership information
+- [ ] Update module detail UI copy so public lists can be supplemented by hidden/private usage counters when available
+- [ ] Add focused tests for the aggregate contract and the module-detail display states
+
+---
+
+#### MEDIUM: Rack Editor — Collection-Only Module Filter
+
+**Why:** User feedback surfaced a practical rack-building friction point: when populating a rack, the available module list
+can be hard to work through if someone mainly wants to place modules they already own. Add a collection-aware default that
+adapts to collection size, plus a clear double-toggle between owned-only and full-catalog browsing, while keeping rack
+composition user-controlled rather than ownership-restricted.
+
+- [ ] Add a clear double-toggle in the rack module picker / rack editing flow so users can switch between owned-only and full-catalog browsing
+- [ ] Add adaptive default logic: if the user's collection is below a defined threshold, open the full browser directly; otherwise open the same browser pre-filtered to owned modules
+- [ ] Decide and document the threshold that separates "small collection, show all" from "large enough collection, default to owned-only"
+- [ ] Support sorting the filtered set by HP/width so owned modules can be browsed in a rack-planning-friendly order
+- [ ] Keep collection filtering as a convenience view only; do not make ownership the source of truth for what a rack may contain
+- [ ] Define the empty state when the user has no collection matches so the picker does not feel broken
+- [ ] Add focused tests for adaptive default, toggle behavior, and filter + sort behavior in the rack editing module list
+
+---
+
 #### LOW: Discovery Tips — Speed and Positioning
 
 **Why:** Tips in the user area cycle too fast to read or interact with, and their screen position feels off.

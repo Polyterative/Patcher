@@ -33,7 +33,9 @@ import {
   CurrentUserModulesOrderKey,
   SimpleUserModel
 } from './supabase.types';
-import { normalizeForSearch } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import {
+  matchesSearchQuery
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 
 
 interface ManufacturerModuleStats {
@@ -125,6 +127,22 @@ type ManufacturerInsightStats = {
   oneUModules: number;
 };
 
+function applyClientSideSearchFilter<T>(
+  response: { data?: T[]; count?: number | null } & Record<string, any>,
+  from: number,
+  to: number,
+  predicate: (row: T) => boolean
+) {
+  const rows = Array.isArray(response?.data) ? response.data : [];
+  const filteredRows = rows.filter(predicate);
+  
+  return {
+    ...response,
+    data: filteredRows.slice(from, to + 1),
+    count: filteredRows.length
+  };
+}
+
 
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
@@ -186,6 +204,38 @@ export class SupabaseQueriesService {
     startDate.setUTCHours(0, 0, 0, 0);
     startDate.setUTCDate(startDate.getUTCDate() - Math.max(days - 1, 0));
     return startDate;
+  }
+
+  private async fetchAllRows<T>(
+    table:
+      | typeof DbPaths.modules
+      | typeof DbPaths.racks
+      | typeof DbPaths.patches
+      | typeof DbPaths.manufacturers,
+    buildQuery: (query: any) => any
+  ): Promise<{data: T[]; error: any}> {
+    const pageSize = SupabaseQueriesService.MAX_QUERY_ROWS;
+    const rows: T[] = [];
+    let offset = 0;
+
+    while (true) {
+      const response = await buildQuery(this.supabase.from(table))
+        .range(offset, offset + pageSize - 1);
+
+      if (response.error) {
+        return {data: [], error: response.error};
+      }
+
+      const pageRows = (response.data ?? []) as T[];
+      rows.push(...pageRows);
+
+      if (pageRows.length < pageSize) {
+        break;
+      }
+      offset += pageSize;
+    }
+
+    return {data: rows, error: null};
   }
 
   private async fetchAllUpdatedRows(
@@ -651,70 +701,86 @@ export class SupabaseQueriesService {
     description?: string,
     onlyPublic = true,
     tagIds?: number[]) {
+    const nameQuery = (name ?? '').trim();
+    const descriptionQuery = (description ?? '').trim();
+    const requiresClientTextFiltering = nameQuery.length > 0 || descriptionQuery.length > 0;
     const hasTagFilter = tagIds && tagIds.length > 0;
     const moduleTagsJoin = hasTagFilter
       ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
       : QueryJoins.module_tags;
 
-    let query = this.supabase.from(DbPaths.modules)
-      .select(`
+    const buildQuery = (query: any) => {
+      let builtQuery = query.select(`
                               id,name,hp,description,public,created,updated,
                               ${ QueryJoins.manufacturer },
                               ${ QueryJoins.standard },
                               ${ QueryJoins.module_panels },
                               ${ moduleTagsJoin }
                             `, {count: 'exact'});
-    
-    if (onlyPublic === true) {
-      query = query.filter('public', 'eq', true);
-    }
-    
-    if (withHP) {
-      if (withHpCondition === '=' || withHpCondition === undefined) {
-        query = query.filter('hp', 'eq', withHP);
-      } else if (withHpCondition === '>') {
-        query = query.filter('hp', 'gt', withHP);
-      } else if (withHpCondition === '<') {
-        query = query.filter('hp', 'lt', withHP);
-      } else if (withHpCondition === '>=') {
-        query = query.filter('hp', 'gte', withHP);
-      } else if (withHpCondition === '<=') {
-        query = query.filter('hp', 'lte', withHP);
-      } else if (withHpCondition === '!=') {
-        query = query.filter('hp', 'neq', withHP);
-      } else {
-        query = query.filter('hp', 'eq', withHP);
+      
+      if (onlyPublic === true) {
+        builtQuery = builtQuery.filter('public', 'eq', true);
       }
-    }
-    
-    if (manufacturerId) {
-      query = query.filter('manufacturerId', 'eq', manufacturerId);
-    }
-    
-    if (standard !== undefined) {
-      query = query.filter('standard', 'eq', standard);
-    }
-    
-    if (description) {
-      query = query.ilike('description', `%${ normalizeForSearch(description) }%`);
-    }
-    
-    if (hasTagFilter) {
-      query = (query as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
-    }
-    
-    
-    return rxFrom(
-      query
+      
+      if (withHP) {
+        if (withHpCondition === '=' || withHpCondition === undefined) {
+          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+        } else if (withHpCondition === '>') {
+          builtQuery = builtQuery.filter('hp', 'gt', withHP);
+        } else if (withHpCondition === '<') {
+          builtQuery = builtQuery.filter('hp', 'lt', withHP);
+        } else if (withHpCondition === '>=') {
+          builtQuery = builtQuery.filter('hp', 'gte', withHP);
+        } else if (withHpCondition === '<=') {
+          builtQuery = builtQuery.filter('hp', 'lte', withHP);
+        } else if (withHpCondition === '!=') {
+          builtQuery = builtQuery.filter('hp', 'neq', withHP);
+        } else {
+          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+        }
+      }
+      
+      if (manufacturerId) {
+        builtQuery = builtQuery.filter('manufacturerId', 'eq', manufacturerId);
+      }
+      
+      if (standard !== undefined) {
+        builtQuery = builtQuery.filter('standard', 'eq', standard);
+      }
+      
+      if (hasTagFilter) {
+        builtQuery = (builtQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
+      }
+      
+      return builtQuery
         .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
         .limit(1, {foreignTable: DbPaths.module_panels})
-        .ilike('name', `%${ normalizeForSearch(name) }%`)
-        .range(from, to)
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'})
-    )
-      .pipe(
-        remapErrors()
+        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+    };
+
+    if (!requiresClientTextFiltering) {
+      return rxFrom(buildQuery(this.supabase.from(DbPaths.modules)).range(from, to))
+        .pipe(remapErrors());
+    }
+
+    return rxFrom((async () => {
+      const response = await this.fetchAllRows<any>(DbPaths.modules, buildQuery);
+      if (response.error) {
+        return response;
+      }
+      
+      return applyClientSideSearchFilter(
+        {
+          ...response,
+          count: response.data.length
+        },
+        from,
+        to,
+        (module: any) =>
+          matchesSearchQuery(nameQuery, module?.name)
+          && matchesSearchQuery(descriptionQuery, module?.description)
       );
+    })()).pipe(remapErrors());
   }
   
   @Cacheable({
@@ -884,7 +950,7 @@ export class SupabaseQueriesService {
   ) {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const effectiveTo = to ?? this.defaultPag;
-    const normalizedName = normalizeForSearch((name ?? '').trim());
+    const nameQuery = (name ?? '').trim();
     
     const columns = [
       "id",
@@ -904,17 +970,25 @@ export class SupabaseQueriesService {
       .select(`${ columns }, rack_modules!inner(rackid)`, {count: "exact"})
       .filter("public", "eq", true)
       .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
-      .range(from, effectiveTo)
       .order(orderBy ? orderBy : "name", {ascending: orderDirection === "asc"});
     
-    if (normalizedName.length > 0) {
-      query = query.ilike('name', `%${ normalizedName }%`);
+    if (nameQuery.length === 0) {
+      query = query.range(from, effectiveTo);
     }
     
     return rxFrom(query)
       .pipe(
         remapErrors(),
-        map(response => this.stripPublicAuthorGate<Rack>(response))
+        map(response => this.stripPublicAuthorGate<Rack>(response)),
+        map((response: any) => {
+          if (nameQuery.length === 0) {
+            return response;
+          }
+          
+          return applyClientSideSearchFilter(response, from, effectiveTo, (rack: any) =>
+            matchesSearchQuery(nameQuery, rack?.name)
+          );
+        })
       );
   }
   
@@ -1222,6 +1296,7 @@ export class SupabaseQueriesService {
   ) {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
+    const nameQuery = (name ?? '').trim();
     
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
@@ -1230,14 +1305,23 @@ export class SupabaseQueriesService {
       .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
 
-    if (name) {
-      queryBuilder = queryBuilder.ilike('name', `%${ normalizeForSearch(name) }%`);
+    if (nameQuery.length === 0) {
+      queryBuilder = queryBuilder.range(from, to);
     }
 
-    return rxFrom(queryBuilder.range(from, to))
+    return rxFrom(queryBuilder)
       .pipe(
         remapErrors(),
-        map(response => this.stripPublicAuthorGate<Patch>(response))
+        map(response => this.stripPublicAuthorGate<Patch>(response)),
+        map((response: any) => {
+          if (nameQuery.length === 0) {
+            return response;
+          }
+          
+          return applyClientSideSearchFilter(response, from, to, (patch: any) =>
+            matchesSearchQuery(nameQuery, patch?.name)
+          );
+        })
       );
   }
   
@@ -1420,52 +1504,56 @@ export class SupabaseQueriesService {
     orderDirection: string = 'asc'
   ) {
     const effectiveTo = to ?? this.defaultPag;
-    const normalizedName = normalizeForSearch((name ?? '').trim());
+    const nameQuery = (name ?? '').trim();
     
     if (orderBy === 'module_updated') {
       return this.getManufacturersPaginatedByModuleActivity(
         from,
         effectiveTo,
-        normalizedName,
+        nameQuery,
         orderDirection
       );
     }
     
     let query = this.supabase.from(DbPaths.manufacturers)
       .select('id,name,logo,websiteURL,adminUser', {count: 'exact'})
-      .range(from, effectiveTo)
       .order(orderBy, {ascending: orderDirection === 'asc'});
     
-    if (normalizedName.length > 0) {
-      query = query.ilike('name', `%${ normalizedName }%`);
+    if (nameQuery.length === 0) {
+      query = query.range(from, effectiveTo);
     }
     
     return rxFrom(query).pipe(
       remapErrors(),
       switchMap((response: any) => {
-        const manufacturers = Array.isArray(response?.data) ? response.data : [];
+        const filteredResponse = nameQuery.length > 0
+          ? applyClientSideSearchFilter(response, from, effectiveTo, (manufacturer: any) =>
+            matchesSearchQuery(nameQuery, manufacturer?.name)
+          )
+          : response;
+        const manufacturers = Array.isArray(filteredResponse?.data) ? filteredResponse.data : [];
         if (manufacturers.length === 0) {
-          return rxFrom(Promise.resolve(response));
+          return rxFrom(Promise.resolve(filteredResponse));
         }
         
         const manufacturerIds = manufacturers
           .map((x: any) => x.id)
           .filter((id: unknown): id is number => typeof id === 'number');
         if (manufacturerIds.length === 0) {
-          return rxFrom(Promise.resolve(response));
+          return rxFrom(Promise.resolve(filteredResponse));
         }
         
         return rxFrom((async () => {
           const modulesActivityResponse = await this.fetchAllModuleActivityRowsForManufacturers(manufacturerIds);
           if (modulesActivityResponse.error) {
             return {
-              ...response,
+              ...filteredResponse,
               error: modulesActivityResponse.error
             };
           }
           const statsByManufacturerId = this.buildManufacturerModuleStats(modulesActivityResponse.data);
           return {
-            ...response,
+            ...filteredResponse,
             data: manufacturers.map((manufacturer: any) =>
               this.withManufacturerModuleStats(
                 manufacturer,
@@ -1481,28 +1569,26 @@ export class SupabaseQueriesService {
   private getManufacturersPaginatedByModuleActivity(
     from: number,
     to: number,
-    normalizedName: string,
+    nameQuery: string,
     orderDirection: string
   ) {
     return rxFrom((async () => {
-      let manufacturersQuery = this.supabase.from(DbPaths.manufacturers)
+      const manufacturersQuery = this.supabase.from(DbPaths.manufacturers)
         .select('id,name,logo,websiteURL,adminUser', {count: 'exact'})
         .order('name', {ascending: true});
-      
-      if (normalizedName.length > 0) {
-        manufacturersQuery = manufacturersQuery.ilike('name', `%${ normalizedName }%`);
-      }
-      
+
       const manufacturersResponse = await manufacturersQuery;
       if (manufacturersResponse.error) {
         return manufacturersResponse;
       }
       
-      const manufacturers = manufacturersResponse.data ?? [];
+      const manufacturers = (manufacturersResponse.data ?? []).filter((manufacturer: any) =>
+        matchesSearchQuery(nameQuery, manufacturer?.name)
+      );
       if (manufacturers.length === 0) {
         return {
           ...manufacturersResponse,
-          count: manufacturersResponse.count ?? 0,
+          count: 0,
           data: []
         };
       }
@@ -1554,7 +1640,7 @@ export class SupabaseQueriesService {
 
       return {
         ...manufacturersResponse,
-        count: manufacturersResponse.count ?? manufacturers.length,
+        count: manufacturers.length,
         data: pagedManufacturers
       };
     })());
