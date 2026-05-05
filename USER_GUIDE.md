@@ -1,325 +1,348 @@
 # Patcher User Guide
 
-Welcome to Patcher! This guide will help you get the most out of our platform for managing your Eurorack modular
-synthesizer setup.
+Patcher is a web workspace for Eurorack musicians who want one place to browse modules, document patches, plan racks,
+track a collection, and share selected work publicly.
 
 ## Table of Contents
 
 1. [What is Patcher?](#what-is-patcher)
 2. [Getting Started](#getting-started)
-3. [Core Features](#core-features)
-4. [Module Browser](#module-browser)
-5. [Patch Management](#patch-management)
-6. [Rack Management](#rack-management)
-7. [Your Personal Area](#your-personal-area)
-8. [Tips & Best Practices](#tips--best-practices)
-9. [Privacy & Data](#privacy--data)
+3. [Navigation](#navigation)
+4. [Modules](#modules)
+5. [Patches](#patches)
+6. [Racks](#racks)
+7. [Your Profile & Account](#your-profile--account)
+8. [Privacy & Data](#privacy--data)
+9. [Tips & Best Practices](#tips--best-practices)
 10. [Community & Support](#community--support)
+11. [Quick Reference](#quick-reference)
 
 ---
 
 ## What is Patcher?
 
-Patcher is a comprehensive web application designed for Eurorack modular synthesizer enthusiasts. Our platform helps
-you:
+Patcher helps you manage the full modular workflow:
 
-- **Browse & Discover Modules**: Explore a comprehensive database of Eurorack modules from various manufacturers
-- **Document Your Patches**: Save and share your synthesizer patches with the community
-- **Plan Your Racks**: Design and visualize your Eurorack cases before you build them
-- **Build Your Collection**: Keep track of the modules you own
-- **Connect with Others**: Share your work and discover patches from other artists
+- **Browse modules** in a free public database
+- **Build a personal collection** of the modules you own
+- **Create patches** with connection graphs, notes, tags, and sharing controls
+- **Plan racks** with layout tools, HP totals, and power/balance analysis
+- **Share publicly** with public patches, public racks, and an optional public profile
 
-Our mission is to provide a complete management system for all your modular equipment needs, prioritizing ease of use,
-clean aesthetics, and data accuracy. The entire database is publicly accessible and will always remain free—no paywalls,
-ever.
+You do **not** need an account to browse modules, public patches, public racks, or manufacturer pages.
 
 ---
 
 ## Getting Started
 
-### Creating an Account
+### Browsing before signing up
 
-1. Visit [patcher.xyz](https://patcher.xyz)
-2. Start by browsing **Modules**, **Patches**, or **Racks** if you want to explore before creating an account
-3. Click **Sign up** when you want to save your own modules, racks, and patches
-4. Create an account with your email address and password
+You can start by exploring:
+
+- **Modules** for the public hardware database
+- **Patches** for public patch examples
+- **Racks** for public rack layouts
+- **Manufacturers** for maker-specific browsing
+
+### Creating an account
+
+1. Visit [patcher.xyz](https://patcher.xyz).
+2. Click **Sign up** when you want to save your own collection, patches, or racks.
+3. Create an account with your email address and password.
+4. After signing in, use **My profile** in the toolbar to open your personal workspace.
 
 **Good to know:**
 
-- You do **not** need an account to browse the public module database
-- Public patches and public racks can be explored before signing in
-- Your personal workspace in **My Area** requires login
-
-### Navigating the Interface
-
-The main navigation provides access to all key features:
-
-- **Home**: Overview and quick access to featured content
-- **Modules**: Browse the complete module database
-- **Patches**: Explore patches created by the community
-- **Racks**: Browse rack configurations from other users
-- **My Area**: Access your personal collection, patches, and racks (requires login)
+- Browsing public content does **not** require login.
+- Submitting new modules requires login.
+- The toolbar also shows your username as a separate link to account settings.
 
 ---
 
-## Core Features
+## Navigation
 
-### Module Browser
+The main toolbar gives you direct access to:
 
-The Module Browser is your gateway to discovering Eurorack modules.
-
-**What You Can Do:**
-
-- **Browse All Modules**: Explore our comprehensive database of Eurorack modules
-- **Filter & Search**: Find modules by manufacturer, HP size, tags, or features
-- **View Detailed Information**:
-    - Module specifications (HP width, power consumption)
-    - Input/Output (CV) configurations
-    - Switch and control layouts
-    - Panel images from different manufacturers
-    - Links to official manuals
-    - Tags for easy categorization
-
-**Module Details Include:**
-
-- **Manufacturer Information**: Who makes the module
-- **Physical Specifications**: Size (HP), power requirements (+12V/-12V)
-- **I/O Configuration**: All inputs, outputs, and switches
-- **Standards**: Support for different rack formats (3U Eurorack, Intellijel 1U, Pulp Logic 1U)
-- **Patches Using This Module**: See how others are using it
-- **Racks Containing This Module**: Find example setups
-
-**Pro Tip**: Use tags to discover modules with similar functionality. Each module can have multiple tags like "
-oscillator", "filter", "sequencer", etc.
+- **Home**: overview and entry point
+- **Modules**: module database and module discovery
+- **Racks**: public rack browser
+- **Patches**: public patch browser
+- **Manufacturers**: manufacturer browser
+- **My profile**: your personal workspace after signing in
+- **Your username**: account-management page after signing in
 
 ---
 
-## Patch Management
+## Modules
 
-Patches are the heart of modular synthesis—they're your saved configurations and connections.
+### Module browser
 
-### Creating a Patch
+The module browser is the main place to discover hardware.
 
-1. Navigate to **My Area** → **My Patches**
-2. Click **Create New Patch**
-3. Fill in the details:
-    - **Name**: Give your patch a descriptive name
-    - **Description**: Explain what the patch does, what sounds it creates, or your inspiration
-4. Add modules to your patch
-5. Document the connections between modules
-6. Save your patch
+You can:
 
-### Patch Information
+- Search by **name** and **description**
+- Filter by **manufacturer**
+- Filter by **HP** with comparison operators
+- Filter by **format standard** (3U Eurorack, Intellijel 1U, Pulp Logic 1U)
+- Filter by **tags**
+- Change **sort order**
+- Reset filters at any time
 
-Each patch includes:
+### Module details
 
-- **Name & Description**: What it is and what it does
-- **Module List**: All modules used in the patch
-- **Connection Details**: How modules are patched together
-- **Author Information**: Who created it
-- **Timestamps**: When it was created and last updated
-- **Privacy Settings**: Make it public or keep it private
+Each module detail page can include:
 
-### Viewing Patches
+- Manufacturer and standard information
+- Panel gallery with multiple panel variants
+- HP, depth, and weight when available
+- Power requirements for **+12V**, **-12V**, and **+5V**
+- Inputs, outputs, total jack count, and connectivity density
+- Manual link when a manual URL is available
+- Store link when a direct buy URL is available
+- Related public patches and racks using that module
+- Comments and discussion
+- External search shortcuts for wider research
 
-- **Browse Public Patches**: Explore patches shared by the community
-- **View Connections**: See the detailed patching scheme
-- **Module Details**: Click on any module to learn more about it
-- **Save Favorites**: Add interesting patches to your personal collection for reference
+### Community curation
 
-**Privacy Options:**
+Patcher's module data is community-shaped:
 
-- **Public**: Visible to everyone in the community
-- **Private**: Only you can see it
-
----
-
-## Rack Management
-
-Plan and visualize your Eurorack cases before you build them.
-
-### Creating a Rack
-
-1. Go to **My Area** → **My Racks**
-2. Click **Create New Rack**
-3. Configure your rack:
-    - **Name**: Give your rack a name
-    - **Description**: Note the purpose or location
-    - **HP Width**: Total width of your case (e.g., 84HP, 104HP)
-    - **Number of Rows**: How many rows your case has
-4. Add modules to your rack
-5. Arrange them visually to plan your layout
-
-### Rack Features
-
-- **Visual Layout**: See how modules fit together
-- **HP Calculation**: Automatically tracks remaining space
-- **Power Planning**: Monitor total power consumption
-- **Row-by-Row Power View**: Compare rail draw per row while planning distribution
-- **Module Organization**: Drag and drop to rearrange (visual planning)
-- **Export/Share**: Save images of your rack configuration
-
-### Per-Module Actions (Right-Click)
-
-Right-click any module in your rack to access per-module actions:
-
-- **Switch Panel**: If a module has multiple panel variants (e.g. light and dark face plates), they are listed with a ✓ next to the currently active one. Click any variant to switch — the choice is saved to this rack only and does not affect other racks using the same module. Only shown when the module actually has more than one panel variant.
-- **Duplicate**: Add a copy of the module immediately to the right.
-- **Replace with blank**: Swap the module for a blank panel (useful for spacing).
-- **Delete from rack**: Remove the module from this rack.
-- **Delete all in row**: Clear all modules from the same row.
-
-### Use Cases
-
-- **Planning a Build**: Design your dream case before buying
-- **Documenting Current Setup**: Keep track of what you own
-- **Sharing Configurations**: Show others your setup
-- **Multiple Racks**: Manage several cases separately
+- Tags can be **voted on**
+- Signed-in users can **suggest additional tags**
+- Signed-in users can **submit a new module**
+- Signed-in users viewing a module can use **Submit similar** to start a prefilled submission
+- Users can **report issues** on module entries
 
 ---
 
-## Your Personal Area
+## Patches
 
-The **My Area** section is your personal workspace (requires login).
+### Creating a patch
 
-### My Modules
+1. Open **My profile**.
+2. Go to your **Patches** section.
+3. Click **Create patch**.
+4. Add a name, description, and tags.
+5. Add modules and document the connections between them.
 
-- **Your Collection**: Track which modules you own
-- **Add/Remove Modules**: Keep your collection up to date
-- **Quick Access**: Easily reference modules you own when creating patches
+### What patch pages show
 
-### My Patches
+Patch detail pages can include:
 
-- **All Your Patches**: View all patches you've created
-- **Edit & Update**: Modify your existing patches
-- **Privacy Control**: Switch patches between public and private
-- **Delete**: Remove patches you no longer need
+- Patch name, description, author, and timestamps
+- A connection list
+- A connection graph
+- Patch statistics, including:
+  - cables
+  - unique modules
+  - multiples
+  - average cables per module
+  - annotated connections
+- A **Modules needed** summary when the patch uses repeated modules
+- Comments and discussion
 
-### My Racks
+### Editing and sharing
 
-- **Your Rack Configurations**: Manage all your rack designs
-- **Edit Layouts**: Update your rack as you add or remove modules
-- **Multiple Racks**: Create separate configurations for different cases
-- **Track Changes**: See when each rack was last updated
+Patch owners can:
+
+- Edit patch metadata and tags
+- Keep working on connections in the patch editor
+- Copy a shareable link
+- Switch the patch between **public** and **private**
+- Delete the patch
+
+**Privacy note:** private patches are hidden from search, but anyone with the direct URL can still open them.
 
 ---
 
-## Tips & Best Practices
+## Racks
 
-### For Module Browsing
+### Creating a rack
 
-- **Use Multiple Filters**: Combine manufacturer, HP size, and tags for precise searches
-- **Check Power Requirements**: Always verify +12V and -12V consumption when planning
-- **Read Descriptions**: Module descriptions often contain important usage tips
-- **Check Manual Links**: Official manuals provide the most detailed information
+1. Open **My profile**.
+2. Go to your **Racks** section.
+3. Click **Create rack**.
+4. Set the rack name and basic size details.
+5. Add modules and arrange them visually.
 
-### For Patch Documentation
+### Rack planning features
 
-- **Be Descriptive**: Write clear names and descriptions so others (and future you) understand the patch
-- **Document Settings**: Note any specific knob positions or switch settings
-- **Tag Appropriately**: Use relevant tags to make your patches discoverable
-- **Share Generously**: Public patches help the entire community learn
+Rack detail pages combine a summary view with the editor:
 
-### For Rack Planning
+- Rack preview and summary stats
+- HP tracking
+- Power totals
+- Balance analysis
+- Comments
+- Downloadable rack image export (`.jpeg`)
 
-- **Leave Space**: Don't fill every HP—leave room for cables and future additions
-- **Consider Ergonomics**: Place frequently-used modules where they're easy to reach
-- **Power Budget**: Keep some power headroom; use the rack totals and row-by-row breakdown together so no single row ends up overloaded
-- **Cable Access**: Think about how cables will route between modules
+When you are editing your own rack, Patcher also exposes:
+
+- Drag-and-drop layout editing
+- Quick **Edit rack / Lock rack** switching
+- Optional panel-image view
+- Optional reduced-scale view
+- Analysis modes for **power**, **function**, and **signal**
+- **Update preview** to refresh the rack's stored preview image
+
+### Per-module actions
+
+On desktop, right-click a module in an editable rack. On touch devices, select a module to open its actions.
+
+Available actions include:
+
+- **Inspect panel**
+- **Switch Panel** for modules with multiple panel variants
+- **Duplicate**
+- **Replace with blank** for spacing
+- **Delete from rack**
+- **Delete all in row**
+
+### Sharing and duplication
+
+Rack owners can:
+
+- Toggle rack visibility between **public** and **private**
+- Delete a rack while it is in editable mode
+
+Any signed-in user can:
+
+- **Duplicate** an existing rack into their own workspace
+
+**Privacy note:** private racks are hidden from search, but anyone with the direct URL can still open them.
+
+---
+
+## Your Profile & Account
+
+### Your profile workspace
+
+Open **My profile** in the toolbar to reach your signed-in workspace.
+
+Your profile workspace includes:
+
+- **Modules**: your collection, plus quick actions to add modules or submit a new one
+- **Racks**: the racks you manage
+- **Patches**: the patches you manage
+- **Profile stats**
+- **Contributor stats**
+- **Manuals**
+- **Comments**
+- A floating search box to search across your modules, racks, and patches
+
+### Public profile controls
+
+From **My profile**, you can:
+
+- Make your profile **public** or **private**
+- Open your public profile page
+- Copy your public profile link
+
+### Account management
+
+Click your **username** in the toolbar to open account settings.
+
+That page includes:
+
+- Logout
+- Your email address
+- Linked sign-in providers
+- Password change for email/password accounts
+- **Delete my data**: removes your patches, racks, collection, and comments but keeps the account
+- **Delete my account**: permanently removes the account and all associated data
 
 ---
 
 ## Privacy & Data
 
-### Your Data
+### Visibility controls
 
-- **Ownership**: You own all patches and racks you create
-- **Privacy Control**: Choose what you share publicly
-- **Data Portability**: Your data can be exported (contact support)
-- **Account Management**: You can delete your account at any time
+- The module database is public and free to browse.
+- Profiles can be public or private.
+- Patches can be public or private.
+- Racks can be public or private.
+- Private patches and racks are hidden from search, but direct links still work.
 
-### Public Database
+### Ownership and export
 
-- **Free Forever**: The module database is publicly accessible and always free
-- **Community-Driven**: Data accuracy is maintained through community contributions
-- **No Paywalls**: Core functionality will never be restricted by payment
+- You control the visibility of what you publish.
+- Data exports are handled manually through support requests on Discord.
+- You can either delete your content while keeping the account, or delete the account entirely.
 
-### Data Collection
+### Authentication and analytics
 
-- **Authentication**: We use Supabase for secure authentication
-- **Analytics**: Basic usage analytics help us improve the platform
-- **No Selling**: We never sell user data to third parties
+- Authentication is handled through **Supabase**.
+- In production, Patcher uses **Sentry** for error tracking, performance monitoring, and session replay.
+- Patcher does **not** sell user data to third parties.
+
+---
+
+## Tips & Best Practices
+
+### For module discovery
+
+- Combine name, description, manufacturer, and tag filters for faster results.
+- Check manuals and store links when they are available.
+- Use tag voting and related racks/patches to discover alternatives.
+
+### For patch documentation
+
+- Name repeated module instances clearly when a patch uses multiple copies.
+- Add tags early so patches stay easy to find later.
+- Use the connection graph and statistics together to spot complexity quickly.
+
+### For rack planning
+
+- Leave some HP and power headroom for future changes.
+- Use **Replace with blank** when you want spacing without guessing sizes later.
+- Check both the rack totals and the balance-analysis panel before committing to a layout.
 
 ---
 
 ## Community & Support
 
-### Join the Community
+### Where to get help
 
-- **Discord Server**: Connect with other users, ask questions, and share your work
-    - [Join our Discord](https://discord.gg/N6Z32xJR)
-- **Share Your Work**: Make your patches and racks public to inspire others
-- **Learn from Others**: Browse public patches to discover new techniques
+- **Discord**: best place for questions, feedback, feature discussion, and manual data-export requests
+- **GitHub Issues**: best place for technical bug reports and reproducible problems
 
-### Getting Help
+### Ways to contribute
 
-- **Discord First**: Join our Discord server for quick help and community discussion
-- **GitHub Issues**: For bug reports or feature requests (technical users)
-    - Check the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/workflow/TODO.md) first
-- **Feature Requests**: Discuss ideas on Discord before submitting formal requests
+- Report incorrect module data
+- Submit missing modules
+- Share public patches and racks
+- Open issues or pull requests if you want to help with development
 
-### Contributing
+Useful links:
 
-Patcher is open-source and welcomes contributions!
-
-- **Report Bugs**: Help us identify and fix issues
-- **Suggest Features**: Share your ideas for improvements
-- **Submit Patches**: Contribute code improvements (see README for development setup)
-- **Improve Data**: Help maintain module information accuracy
-
-### Project Values
-
-- **Open Source**: Built on open-source principles
-- **Community First**: Prioritizing user needs and community feedback
-- **Quality Over Quantity**: Clean, reliable features over bloated functionality
-- **Accessibility**: Free and open for everyone
+- [Join our Discord](https://discord.gg/N6Z32xJR)
+- [Open a GitHub issue](https://github.com/Polyterative/Patcher/issues)
+- [Read the changelog](CHANGELOG.md)
 
 ---
 
 ## Quick Reference
 
-### Common Questions
-
 **Q: Is Patcher free to use?**  
-A: Yes! Patcher is completely free. The module database and core features will always remain free.
+A: Yes. The public module database and core product features are free.
 
 **Q: Can I use Patcher without an account?**  
-A: Yes. You can browse modules, public patches, and public racks without an account. Sign up when you want to save your
-own collection, racks, and patches in **My Area**.
+A: Yes. You can browse modules, manufacturers, public patches, and public racks without signing in.
 
-**Q: How do I add a module that's not in the database?**  
-A: Join our Discord and let us know! The team and community work together to keep the database up to date.
+**Q: How do I add a missing module?**  
+A: Sign in and use **Submit a new module**, or join Discord if you need help first.
 
 **Q: Can I export my data?**  
-A: Contact us through Discord for data export requests.
+A: Yes, through a manual support request on Discord.
 
 **Q: What formats are supported?**  
-A: We support standard 3U Eurorack, Intellijel 1U, and Pulp Logic 1U formats.
+A: 3U Eurorack, Intellijel 1U, and Pulp Logic 1U.
 
 **Q: Is there a mobile app?**  
-A: Patcher is a web application that works in mobile browsers. A dedicated mobile app is under consideration for the
-future.
+A: Patcher is currently a web app that works in mobile browsers.
 
 ---
 
-## What's Next?
-
-Check out the [Project Roadmap](https://github.com/Polyterative/Patcher/blob/develop/internaldocs/workflow/TODO.md) to see what
-features are in development and what's coming next!
-
-**Happy Patching! 🎛️**
-
----
-
-*Last updated: February 2026*  
-*For technical documentation and developer information, see the [README](README.md)*
+*Last updated: May 2026*  
+*For technical documentation and contributor setup, see the [README](README.md).*
