@@ -68,6 +68,15 @@ describe('PatchEditorComponent', () => {
     expect(filterEditorCardsByQuery(cards, 'instruo').map(card => card.module.id)).toEqual([1]);
     expect(filterEditorCardsByQuery(cards, 'ceis').map(card => card.module.id)).toEqual([1]);
   });
+
+  it('matches multi-term queries across manufacturer and module name', () => {
+    const cards = [
+      createCard('Lùbadh', 'Instruō', 1),
+      createCard('Maths', 'Make Noise', 2)
+    ];
+    
+    expect(filterEditorCardsByQuery(cards, 'instruo lubadh').map(card => card.module.id)).toEqual([1]);
+  });
   
   it('resolves added latest strategy with backend collection-updated ordering', () => {
     const strategy = resolvePatchEditorSortStrategy('addedLatest');
