@@ -1,7 +1,24 @@
 import {
+  NO_ERRORS_SCHEMA
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  ComponentFixture,
+  TestBed
+} from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
   BehaviorSubject,
+  of,
   Subject
 } from 'rxjs';
+import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import { CommentsDataService } from 'src/app/components/shared-atoms/comments/comments-data.service';
+import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
+import { AppStateService } from "src/app/shared-interproject/app-state.service";
+import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
 
 
@@ -61,13 +78,79 @@ describe('ModuleBrowserDetailComponent', () => {
       manufacturer: {id: 5, name: 'Maker'},
       manufacturerId: 5,
       hp: 12,
+      standard: {id: 0, name: 'Doepfer'},
       created: '2024-01-01',
       updated: '2024-01-02',
+      isComplete: true,
+      isApproved: false,
+      isDIY: false,
+      panels: [],
       tags: [{tag: {name: 'fm'}}, {tag: {name: 'analog'}}],
       ins: [{name: 'cv in'}],
       outs: [{name: 'audio out'}],
       manualURL: 'https://example.com/manual'
     };
+  }
+
+  async function render(options: {isDev?: boolean; isAdmin?: boolean; user?: any} = {}): Promise<{
+    fixture: ComponentFixture<ModuleBrowserDetailComponent>;
+    dataService: any;
+    loggedUser$: BehaviorSubject<any>;
+  }> {
+    TestBed.resetTestingModule();
+
+    const loggedUser$ = new BehaviorSubject<any>(options.user ?? {id: 'user-1'});
+    const dataService = {
+      singleModuleData$: new BehaviorSubject<any>(moduleFixture()),
+      racksWithThisModule$: new BehaviorSubject<any[]>([]),
+      patchesWithThisModule$: new BehaviorSubject<any[]>([]),
+      modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
+      moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
+      moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
+      isAdmin$: new BehaviorSubject<boolean>(!!options.isAdmin),
+      updateSingleModuleData$: new Subject<number>(),
+      changeModule$: new Subject<any>(),
+      requestModuleEditingToggle$: new Subject<void>(),
+      deleteModuleAndOrphanManufacturer$: new Subject<any>(),
+      deleteModule$: new Subject<number>(),
+      deleteLastPanel$: new Subject<any>()
+    };
+    const commentsDataService = {
+      requestCommentsUpdate$: {next: jasmine.createSpy('requestCommentsUpdate.next')},
+      requestReset$: {next: jasmine.createSpy('requestReset.next')}
+    };
+
+    await TestBed.configureTestingModule({
+      declarations: [ModuleBrowserDetailComponent],
+      imports: [CommonModule, FormsModule, NoopAnimationsModule],
+      providers: [
+        {provide: ModuleDetailDataService, useValue: dataService},
+        {provide: ActivatedRoute, useValue: {params: of({})}},
+        {provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate'])},
+        {provide: SeoAndUtilsService, useValue: {updateSeo: jasmine.createSpy('updateSeo')}},
+        {
+          provide: AppStateService,
+          useValue: {
+            isDev: !!options.isDev,
+            preferredPanelColor$: of(null)
+          }
+        },
+        {provide: UserManagementService, useValue: {loggedUser$}}
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    })
+      .overrideComponent(ModuleBrowserDetailComponent, {
+        set: {
+          providers: [{provide: CommentsDataService, useValue: commentsDataService}]
+        }
+      })
+      .compileComponents();
+
+    const fixture = TestBed.createComponent(ModuleBrowserDetailComponent);
+    fixture.componentInstance.ignoreSeo = true;
+    fixture.detectChanges();
+
+    return {fixture, dataService, loggedUser$};
   }
   
   it('initializes SEO baseline and parses route id updates', () => {
@@ -240,5 +323,17 @@ describe('ModuleBrowserDetailComponent', () => {
     component.ngOnDestroy();
     
     expect(dataService.singleModuleData$.value).toBeUndefined();
+  });
+
+  it('hides dev utils for non-admin users in production', async () => {
+    const {fixture} = await render({isDev: false, isAdmin: false});
+
+    expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Dev utils"]')).toBeNull();
+  });
+
+  it('shows dev utils for admin users in production', async () => {
+    const {fixture} = await render({isDev: false, isAdmin: true});
+
+    expect(fixture.nativeElement.querySelector('lib-hero-content-card[titleNormal="Dev utils"]')).not.toBeNull();
   });
 });
