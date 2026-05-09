@@ -2,6 +2,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AuthError,
+  Session,
   SupabaseClient,
   User
 } from '@supabase/supabase-js';
@@ -50,7 +51,8 @@ class PasswordResetError extends Error {
 export function createAuthNamespace(
   supabase: SupabaseClient<Database>,
   activated: ActivatedRoute,
-  snackBar: MatSnackBar
+  snackBar: MatSnackBar,
+  authSession$: Observable<Session | null>
 ) {
   const ns = {
     login$(email: string, password: string): Observable<SupabaseLoginResponse> {
@@ -466,9 +468,9 @@ export function createAuthNamespace(
      * Falls back to `false` for all other users and unauthenticated sessions.
      */
     hasAdminRole$(): Observable<boolean> {
-      return rxFrom(supabase.auth.getSession()).pipe(
-        map(({ data }) => {
-          const metadata = data?.session?.user?.app_metadata as Record<string, unknown> | undefined;
+      return authSession$.pipe(
+        map(session => {
+          const metadata = session?.user?.app_metadata as Record<string, unknown> | undefined;
           return metadata?.['role'] === 'admin';
         }),
         catchError(() => of(false))
