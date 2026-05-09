@@ -120,6 +120,28 @@ describe('SupabaseService - auth methods', () => {
       });
     }, TEST_TIMEOUT);
   });
+
+  describe('hasAdminRole$', () => {
+    it('reacts to session role changes without recreating the auth stream', () => {
+      const authSession$ = (service as any).authSession$;
+      const emitted: boolean[] = [];
+      const subscription = service.auth.hasAdminRole$().subscribe(value => emitted.push(value));
+
+      authSession$.next({
+        user: {
+          app_metadata: {role: 'admin'}
+        }
+      } as any);
+      authSession$.next({
+        user: {
+          app_metadata: {role: 'user'}
+        }
+      } as any);
+
+      expect(emitted.slice(-2)).toEqual([true, false]);
+      subscription.unsubscribe();
+    });
+  });
   
   describe('signup$', () => {
     it('should error when username is empty string', (done) => {
