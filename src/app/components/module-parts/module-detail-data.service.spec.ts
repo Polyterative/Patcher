@@ -4,7 +4,8 @@ import {
 } from '@angular/core/testing';
 import {
   BehaviorSubject,
-  of
+  of,
+  ReplaySubject
 } from 'rxjs';
 import { RackModuleAdderDialogComponent } from '../rack-parts/rack-module-adder/rack-module-adder-dialog.component';
 import { ModuleDetailDataService } from './module-detail-data.service';
@@ -13,6 +14,8 @@ import { ModuleDetailDataService } from './module-detail-data.service';
 describe('ModuleDetailDataService', () => {
   function build(options: {modulesBySameManufacturer?: any[]} = {}) {
     const loggedUser$ = new BehaviorSubject<any>({id: 'user-1'});
+    const adminRole$ = new ReplaySubject<boolean>(1);
+    adminRole$.next(false);
     const baseModule = {
       id: 10,
       name: 'Main Module',
@@ -23,7 +26,7 @@ describe('ModuleDetailDataService', () => {
     
     const backend = {
       auth: {
-        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(of(false))
+        hasAdminRole$: jasmine.createSpy('hasAdminRole$').and.returnValue(adminRole$.asObservable())
       },
       GET: {
         currentUserModules: jasmine.createSpy('currentUserModules').and.returnValue(of([{id: 50}])),
@@ -78,7 +81,8 @@ describe('ModuleDetailDataService', () => {
       appState,
       router,
       loggedUser$,
-      baseModule
+      baseModule,
+      adminRole$
     };
   }
   
@@ -207,6 +211,34 @@ describe('ModuleDetailDataService', () => {
 
     expect(backend.delete.module).not.toHaveBeenCalled();
     expect(backend.update.module).not.toHaveBeenCalled();
+  });
+
+  it('non-admin non-dev user cannot invoke destructive dev helpers', () => {
+    const {service, backend, appState, baseModule} = build();
+
+    appState.isDev = false;
+    backend.auth.hasAdminRole$.and.returnValue(of(false));
+    service.singleModuleData$.next(baseModule as any);
+
+    service.deleteLastPanel$.next(baseModule as any);
+    service.deleteModuleAndOrphanManufacturer$.next(baseModule as any);
+
+    expect(backend.delete.modulePanel).not.toHaveBeenCalled();
+    expect(backend.get.modulesBySameManufacturer).not.toHaveBeenCalled();
+    expect(backend.delete.module).not.toHaveBeenCalled();
+    expect(backend.delete.manufacturer).not.toHaveBeenCalled();
+  });
+
+  it('updates isAdmin$ when auth session role changes', () => {
+    const {service, adminRole$} = build();
+    const emitted: boolean[] = [];
+    const subscription = service.isAdmin$.subscribe(value => emitted.push(value));
+
+    adminRole$.next(true);
+    adminRole$.next(false);
+
+    expect(emitted.slice(-3)).toEqual([false, true, false]);
+    subscription.unsubscribe();
   });
   
   it('toggles editor state and clears pending changes when closing', () => {

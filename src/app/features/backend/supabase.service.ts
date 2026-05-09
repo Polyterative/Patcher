@@ -11,6 +11,7 @@ import {
   createClient,
   LockFunc,
   navigatorLock,
+  Session,
   SupabaseClient
 } from '@supabase/supabase-js';
 import { of, ReplaySubject } from 'rxjs';
@@ -55,6 +56,7 @@ export class SupabaseService extends SubManager {
   private readonly authStateSubscription: {
     unsubscribe: () => void
   } | null = null;
+  private readonly authSession$ = new ReplaySubject<Session | null>(1);
 
   constructor(
     public activated: ActivatedRoute,
@@ -81,7 +83,16 @@ export class SupabaseService extends SubManager {
       }
     );
 
+    void this.supabase.auth.getSession()
+      .then(({data}) => {
+        this.authSession$.next(data.session ?? null);
+      })
+      .catch(() => {
+        this.authSession$.next(null);
+      });
+
     const {data: authListener} = this.supabase.auth.onAuthStateChange((event, session) => {
+      this.authSession$.next(session ?? null);
       if (event === 'SIGNED_OUT') {
         this.user.logout$.emit();
       } else if (event === 'SIGNED_IN' && session) {
@@ -93,7 +104,7 @@ export class SupabaseService extends SubManager {
       this.authStateSubscription = authListener.subscription;
     }
     
-    this.auth = createAuthNamespace(this.supabase, this.activated, this.snackBar);
+    this.auth = createAuthNamespace(this.supabase, this.activated, this.snackBar, this.authSession$.asObservable());
 
     this.add = createAddNamespace(
       this.supabase,
