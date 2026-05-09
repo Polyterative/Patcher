@@ -1,11 +1,3 @@
-<p align="center">
-  <img src="src/assets/screenshots/major-area-screenshots/03-module-details.jpg" alt="Patcher module details screenshot" />
-</p>
-<p align="center">
-  <img src="src/assets/screenshots/major-area-screenshots/08-user-area.jpg" alt="Patcher user area screenshot" />
-</p>
-
-<br>
 
 <h2 align="center">The digital twin workspace for Eurorack musicians.</h2>
 <p align="center">Document patches, plan racks, track modules, and keep your real system in sync with a fast, clean workflow.<br>
