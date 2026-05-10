@@ -1,7 +1,7 @@
 
 <h2 align="center">The digital twin workspace for Eurorack musicians.</h2>
 <p align="center">Document patches, plan racks, track modules, and keep your real system in sync with a fast, clean workflow.<br>
-<a href="https://patcher.xyz">patcher.xyz</a> &nbsp;·&nbsp; <a href="https://discord.gg/N6Z32xJR">Discord</a> &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a></p>
+<a href="https://patcher.xyz">patcher.xyz</a> &nbsp;·&nbsp; <a href="https://discord.gg/JNy2HTb5ru">Discord</a> &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a></p>
 
 <br>
 
@@ -27,7 +27,7 @@ See the full [CHANGELOG](CHANGELOG.md) for details.
 
 ### Feedback & bug reports
 
-Have an idea or found something broken? Come talk to us on [Discord](https://discord.gg/N6Z32xJR) — it's the fastest way
+Have an idea or found something broken? Come talk to us on [Discord](https://discord.gg/JNy2HTb5ru) — it's the fastest way
 to reach the team and the right place for feature discussions.
 
 Technical bug reports can also be opened as [GitHub issues](https://github.com/Polyterative/Patcher/issues).
