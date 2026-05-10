@@ -48,7 +48,7 @@ export class AppFaqComponent {
     {
       question: 'How can I suggest a feature?',
       icon: 'lightbulb',
-      link: 'https://discord.com/invite/JNy2HTb5ru',
+      link: 'https://discord.gg/JNy2HTb5ru',
       answer: 'To suggest a feature, join our Discord server for discussions, or if it is a technical suggestion, you can submit an issue on our GitHub repository. The link is available in the footer.'
     },
     {

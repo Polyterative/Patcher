@@ -316,7 +316,7 @@ That page includes:
 
 Useful links:
 
-- [Join our Discord](https://discord.gg/N6Z32xJR)
+- [Join our Discord](https://discord.gg/JNy2HTb5ru)
 - [Open a GitHub issue](https://github.com/Polyterative/Patcher/issues)
 - [Read the changelog](CHANGELOG.md)
 
