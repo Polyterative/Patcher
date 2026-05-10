@@ -32,4 +32,4 @@ Attribution:
 
 Support:
 - GitHub issues: https://github.com/Polyterative/Patcher/issues
-- Community: https://discord.gg/N6Z32xJR
+- Community: https://discord.gg/JNy2HTb5ru
