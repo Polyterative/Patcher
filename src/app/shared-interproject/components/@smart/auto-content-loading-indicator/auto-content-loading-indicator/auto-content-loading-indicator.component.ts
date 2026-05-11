@@ -43,7 +43,7 @@ export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
   
   @Input() loadingLines = 1;
   @Input() skipFirstData = false;
-  @Input() loadingLabel = 'Loading';
+  @Input() loadingLabel = 'Loading content';
   protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {

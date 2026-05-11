@@ -76,9 +76,16 @@ h1 {
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
-  border: 1px solid rgba(13, 30, 52, 0.2);
-  background: linear-gradient(110deg, #1766b2, #214f87);
+  color: #224b75;
+  border: 1px solid rgba(62, 99, 138, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.1875rem 0.625rem rgba(34, 75, 117, 0.08);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+
+  &:hover {
+    background: #f2f7fc;
+    border-color: rgba(62, 99, 138, 0.42);
+  }
 }
 
 .hero-visuals {

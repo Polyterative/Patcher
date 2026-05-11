@@ -37,6 +37,14 @@ $patcher-theme: mat.define-theme((
   --app-floating-inset-inline: 1rem;
   --app-floating-inset-block: 1rem;
   --app-floating-surface-gap: 0.8rem;
+  --app-floating-surface-radius: 0.8rem;
+  --app-floating-surface-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
+  --app-floating-surface-shadow-strong: 0 0.45rem 1.4rem rgba(0, 0, 0, 0.22);
+  --app-floating-surface-blur: 0.375rem;
+  --app-floating-surface-raise-duration: 160ms;
+  --app-floating-action-radius: 1.75rem;
+  --app-floating-action-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22);
+  --app-loading-shimmer-duration: 1150ms;
 }
 
 @media (max-width: 72.5rem) {
@@ -44,5 +52,6 @@ $patcher-theme: mat.define-theme((
     --app-floating-inset-inline: 0.75rem;
     --app-floating-inset-block: 0.75rem;
     --app-floating-surface-gap: 0.65rem;
+    --app-floating-surface-radius: 0.75rem;
   }
 }

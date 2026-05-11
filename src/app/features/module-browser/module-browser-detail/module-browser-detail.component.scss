@@ -104,6 +104,22 @@
 
 .module-detail-action-button {
   width: 100%;
+  min-height: 2.75rem;
+  border-radius: 999px;
+}
+
+a.module-detail-action-button {
+  border: 0.125rem solid #3e638a !important;
+  background: #ffffff !important;
+  color: #224b75 !important;
+  font-weight: 600;
+  box-shadow: 0 0.1875rem 0.625rem rgba(34, 75, 117, 0.08);
+  text-decoration: none;
+
+  &:hover {
+    background: #f2f7fc !important;
+    border-color: rgba(62, 99, 138, 0.42) !important;
+  }
 }
 
 .module-detail-usageGrid {
@@ -127,8 +143,8 @@
 
 .module-submit-similar-fab {
   position: fixed;
-  left: calc(1rem + env(safe-area-inset-left));
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  left: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-left));
+  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   right: auto;
   z-index: 98;
   width: auto;
@@ -137,16 +153,16 @@
   min-height: 2.85rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  border: 0.0938rem solid #8aa0ba;
-  border-radius: 1.425rem;
+  border: 0.125rem solid #8aa0ba;
+  border-radius: var(--app-floating-action-radius, 1.75rem);
   background: #ffffff;
   color: #355476;
   font-size: 0.84rem;
   line-height: 1;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  box-shadow: 0 0.125rem 0.5rem rgba(39, 74, 112, 0.18);
-  transition: background-color 125ms ease-in-out, border-color 125ms ease-in-out, color 125ms ease-in-out;
+  box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
+  transition: background-color 160ms ease-in-out, border-color 160ms ease-in-out, color 160ms ease-in-out;
 
   &:hover {
     background: #f2f7fc;
