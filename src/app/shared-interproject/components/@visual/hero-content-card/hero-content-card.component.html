@@ -1,33 +1,33 @@
-<div class="container col">
-  <div class="row gap1"
-       [class.sides-pad]="sidesPadding"
-       [class.vertPadding]="vertPadding">
-    @if (titleBig && titleNormal) {
-      <div class="col gap1 title bgImage std-rounding">
+@if (shellVm$ | async; as shellVm) {
+  <div class="container col">
+    <div class="row gap1"
+         [class.sides-pad]="sidesPadding"
+         [class.vertPadding]="vertPadding">
+      @if (titleBig && titleNormal) {
+        <div class="col gap1 title bgImage std-rounding">
+          @if (titleBig) {
+            <h2 style="margin-bottom: 0"
+              [@title]
+            >
+              {{ titleBig }}
+            </h2>
+          }
+          @if (titleNormal) {
+            <h3 [@title]
+              [class.no-word-break]="!description"
+            >
+              {{ titleNormal }}
+            </h3>
+          }
+        </div>
+      } @else {
         @if (titleBig) {
-          <h2 style="margin-bottom: 0"
-            [@title]
-          >
-            {{ titleBig }}
-          </h2>
-        }
-        @if (titleNormal) {
-          <h3 [@title]
-            [class.no-word-break]="!description"
-          >
-            {{ titleNormal }}
-          </h3>
-        }
-      </div>
-    } @else {
-      @if (titleBig) {
-        <h1
-          class="row title bgImage vertPadding gap1"
-          [class.title--with-sub]="titleSub">
-          <div class="title-shell"
-               [@title]>
-            @if (showWideShellNav && (wideShell$ | async)) {
-              @if (currentShellUrl$ | async; as currentUrl) {
+          <h1
+            class="row title bgImage vertPadding gap1"
+            [class.title--with-sub]="titleSub">
+            <div class="title-shell"
+                 [@title]>
+              @if (showWideShellNav && shellVm.wideShell) {
                 <div class="title-metro-nav">
                   <div class="title-metro-topbar">
                     <a class="title-metro-brand"
@@ -37,101 +37,99 @@
                   <nav class="title-metro-targets" aria-label="Section targets">
                     @for (item of wideShellTargets; track item.route ?? item.label) {
                       <a
-                        class="title-metro-target"
-                        [class.title-metro-target--active]="isWideShellTargetActive(item, currentUrl)"
+                         class="title-metro-target"
+                         [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
+                         [routerLink]="item.route"
+                         [attr.aria-label]="item.label"
+                       >
+                         {{ item.label }}
+                       </a>
+                     }
+                    @for (item of shellVm.accountLinks; track item.route ?? item.label; let isFirst = $first) {
+                      <a
+                        class="title-metro-target title-metro-target--private"
+                        [class.title-metro-target--private-start]="isFirst"
                         [routerLink]="item.route"
+                        routerLinkActive="title-metro-target--active"
                         [attr.aria-label]="item.label"
                       >
-                        {{ item.label }}
+                        <span>{{ item.label }}</span>
                       </a>
-                    }
-                    @if (accountLinks$ | async; as accountLinks) {
-                      @for (item of accountLinks; track item.route ?? item.label; let isFirst = $first) {
-                        <a
-                          class="title-metro-target title-metro-target--private"
-                          [class.title-metro-target--private-start]="isFirst"
-                          [routerLink]="item.route"
-                          routerLinkActive="title-metro-target--active"
-                          [attr.aria-label]="item.label"
-                        >
-                          <span>{{ item.label }}</span>
-                        </a>
-                      }
                     }
                   </nav>
                 </div>
               }
-            }
-            <div class="row gap1 title-heading-row">
-              <div class="title-heading-copy"
-                   [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && (wideShell$ | async)"
-                   [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && (wideShell$ | async)">
-                <div class="title-text"
-                     [class.title-text--with-sub]="titleSub">
-                  <span class="title-main">{{ titleBig }}</span>
-                  @if (titleSub) {
-                    <span class="title-separator"
-                          aria-hidden="true">-</span>
-                    <span class="title-sub"
-                          [attr.title]="titleSub">{{ titleSub }}</span>
+              <div class="row gap1 title-heading-row">
+                <div class="title-heading-copy"
+                     [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && shellVm.wideShell"
+                     [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && shellVm.wideShell">
+                  <div class="title-text"
+                       [class.title-text--with-sub]="titleSub">
+                    <span class="title-main">{{ titleBig }}</span>
+                    @if (titleSub) {
+                      <span class="title-separator"
+                            aria-hidden="true">-</span>
+                      <span class="title-sub"
+                            [attr.title]="titleSub">{{ titleSub }}</span>
+                    }
+                  </div>
+                  @if (description && !showHelpButton && showWideShellNav && shellVm.wideShell) {
+                    <div class="title-inline-description">{{ description }}</div>
                   }
                 </div>
-                @if (description && !showHelpButton && showWideShellNav && (wideShell$ | async)) {
-                  <div class="title-inline-description">{{ description }}</div>
+                @if (icon) {
+                  <app-hero-content-card-head-icon [icon]="icon"
+                                                   class="icon-center">
+                  </app-hero-content-card-head-icon>
                 }
+                <ng-container *ngTemplateOutlet="helpButton"></ng-container>
               </div>
-              @if (icon) {
-                <app-hero-content-card-head-icon [icon]="icon"
-                                                 class="icon-center">
-                </app-hero-content-card-head-icon>
-              }
-              <ng-container *ngTemplateOutlet="helpButton"></ng-container>
             </div>
-          </div>
-        </h1>
+          </h1>
+        }
+        @if (titleNormal) {
+          <h3
+            class="row title gap1"
+            [@title]>
+            @if (icon) {
+              <app-hero-content-card-head-icon [icon]="icon"
+              >
+              </app-hero-content-card-head-icon>
+            }
+            <div class="title-text">
+              {{ titleNormal }}
+            </div>
+            <ng-container *ngTemplateOutlet="helpButton"></ng-container>
+          </h3>
+        }
       }
-      @if (titleNormal) {
-        <h3
-          class="row title gap1"
-          [@title]>
-          @if (icon) {
-            <app-hero-content-card-head-icon [icon]="icon"
-            >
-            </app-hero-content-card-head-icon>
-          }
-          <div class="title-text">
-            {{ titleNormal }}
-          </div>
-          <ng-container *ngTemplateOutlet="helpButton"></ng-container>
-        </h3>
+      @if (description && !showHelpButton && !(titleBig && showWideShellNav && shellVm.wideShell)) {
+        <mat-card-subtitle
+          class="description auto"
+          [ngClass]="descriptionAlign"
+          [@description]>
+          {{ description }}
+        </mat-card-subtitle>
       }
-    }
-    @if (description && !showHelpButton && !(titleBig && showWideShellNav && (wideShell$ | async))) {
-      <mat-card-subtitle
-        class="description auto"
-        [ngClass]="descriptionAlign"
-        [@description]>
-        {{ description }}
-      </mat-card-subtitle>
-    }
-  </div>
-  
-  <div class="content col">
-    @if (top) {
-      <div class="supporting-top">
-        <ng-content select=".TOP"></ng-content>
-      </div>
-    }
-    <div class="sides-pad">
-      <ng-content></ng-content>
     </div>
-    @if (bottom) {
-      <div class="supporting-bottom">
-        <ng-content select=".BOTTOM"></ng-content>
+    
+    <div class="content col">
+      @if (top) {
+        <div class="supporting-top">
+          <ng-content select=".TOP"></ng-content>
+        </div>
+      }
+      <div class="sides-pad">
+        <ng-content></ng-content>
       </div>
-    }
+      @if (bottom) {
+        <div class="supporting-bottom">
+          <ng-content select=".BOTTOM"></ng-content>
+        </div>
+      }
+    </div>
   </div>
-</div>
+}
 
 
 <ng-template #helpButton>
