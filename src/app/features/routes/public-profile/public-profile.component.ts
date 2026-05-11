@@ -6,13 +6,8 @@ import {
   Observable,
 } from 'rxjs';
 import {
-  startWith,
   takeUntil,
 } from 'rxjs/operators';
-import {
-  buildWideShellAccountLinks,
-  getWideShellQuickTargets,
-} from 'src/app/features/backbone/toolbar/toolbar-link-data';
 import { defaultPatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import {
   defaultRackMinimalViewConfig,
@@ -23,9 +18,6 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { PublicProfileDataService } from 'src/app/features/routes/public-profile/public-profile-data.service';
 import { PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
-import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
-import { AppStateService } from 'src/app/shared-interproject/app-state.service';
-import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 @Component({
@@ -51,10 +43,6 @@ export class PublicProfileComponent extends SubManager {
   readonly publicStats$: Observable<{name: string; value: number; icon: string}[]>;
   readonly contributorStats$: Observable<{name: string; value: number; icon: string}[] | null>;
   readonly isOwnProfile$: Observable<boolean>;
-  readonly wideShell$: Observable<boolean>;
-  readonly shellTargets: RouteClickableLink[];
-  readonly shellAccountLinks$: Observable<RouteClickableLink[]>;
-  readonly siteTitle = 'patcher.xyz';
 
   constructor(
     public readonly dataService: PublicProfileDataService,
@@ -62,22 +50,8 @@ export class PublicProfileComponent extends SubManager {
     private readonly route: ActivatedRoute,
     private readonly seoAndUtilsService: SeoAndUtilsService,
     private readonly urlCreatorService: UrlCreatorService,
-    private readonly appShellLayoutService: AppShellLayoutService,
-    private readonly appState: AppStateService,
   ) {
     super();
-    this.wideShell$ = this.appShellLayoutService.wideShell$;
-    this.shellTargets = getWideShellQuickTargets(this.appState.isDev);
-    this.shellAccountLinks$ = combineLatest([
-      this.userService.loggedUser$.pipe(startWith(undefined)),
-      this.userService.loggedUserFullProfile$.pipe(startWith(undefined)),
-    ]).pipe(
-      map(([loggedUser, profile]) => buildWideShellAccountLinks(
-        Boolean(loggedUser),
-        profile?.username?.trim() || 'Account',
-      )),
-    );
-
     this.publicStats$ = combineLatest([
       this.dataService.racksCount$,
       this.dataService.patchesCount$,

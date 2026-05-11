@@ -25,21 +25,12 @@ describe('PublicProfileComponent', () => {
     const route = {
       params: of({username: 'viewer'}),
     };
-    const appShellLayoutService = {
-      wideShell$: of(false),
-    };
-    const appState = {
-      isDev: false,
-    };
-
     const component = new PublicProfileComponent(
       dataService as any,
       userService as any,
       route as any,
       seoAndUtilsService as any,
       urlCreatorService as any,
-      appShellLayoutService as any,
-      appState as any,
     );
 
     return {
