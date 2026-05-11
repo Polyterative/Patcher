@@ -6,12 +6,14 @@ import {
 import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
-  ReplaySubject,
+  Observable,
   Subject
 } from 'rxjs';
 import {
   debounceTime,
+  distinctUntilChanged,
   map,
+  shareReplay,
   startWith,
   takeUntil
 } from 'rxjs/operators';
@@ -69,6 +71,22 @@ function buildLayoutFlexWidthState(changes: MediaChange[]): LayoutFlexWidthState
   };
 }
 
+function sameLayoutFlexWidthState(a: LayoutFlexWidthState, b: LayoutFlexWidthState): boolean {
+  return a.xs === b.xs
+    && a.sm === b.sm
+    && a.md === b.md
+    && a.lg === b.lg
+    && a.xl === b.xl
+    && a.ltsm === b.ltsm
+    && a.ltmd === b.ltmd
+    && a.ltlg === b.ltlg
+    && a.ltxl === b.ltxl
+    && a.gtxs === b.gtxs
+    && a.gtsm === b.gtsm
+    && a.gtmd === b.gtmd
+    && a.gtlg === b.gtlg;
+}
+
 
 @Injectable()
 export class AppStateService implements OnDestroy {
@@ -104,21 +122,20 @@ export class AppStateService implements OnDestroy {
 
   protected destroyEvent$ = new Subject<void>();
   
-  layoutFlexWidth$ = new ReplaySubject<LayoutFlexWidthState>(1);
+  readonly layoutFlexWidth$: Observable<LayoutFlexWidthState>;
   
   constructor(
     public mediaObserver: MediaObserver
   ) {
-    
-    this.mediaObserver.asObservable()
-        .pipe(
-          takeUntil(this.destroyEvent$),
-          map((changes) => buildLayoutFlexWidthState(changes)),
-          debounceTime(250),
-          startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE)
-        )
-        .subscribe(value => this.layoutFlexWidth$.next(value));
-    
+    this.layoutFlexWidth$ = this.mediaObserver.asObservable()
+      .pipe(
+        takeUntil(this.destroyEvent$),
+        map((changes) => buildLayoutFlexWidthState(changes)),
+        debounceTime(250),
+        startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE),
+        distinctUntilChanged(sameLayoutFlexWidthState),
+        shareReplay({bufferSize: 1, refCount: true})
+      );
   }
   
   ngOnDestroy(): void {
