@@ -120,6 +120,7 @@ export class PatchDetailDataService implements OnDestroy {
   collectionModules$ = new BehaviorSubject<DbModule[]>([]);
   //
   isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
+  patchDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
   requestPatchPrivacyStatusChange$ = new Subject<void>();
   /** Toggle the patch editing panel open/closed through the service layer. */
   requestPatchEditingToggle$ = new Subject<void>();
@@ -154,14 +155,22 @@ export class PatchDetailDataService implements OnDestroy {
         tap(_ => this.patchConnections$.next(null)),
         tap(_ => this.editorConnections$.next(null)),
         tap(() => this.patchModuleInstances$.next([])),
+        tap(() => this.singlePatchData$.next(undefined)),
+        tap(() => this.patchDetailUnavailableMessage$.next(null)),
         tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicPatchWithId(x)
-          : this.backend.get.patchWithId(x)),
+          : this.backend.get.patchWithId(x)
+        ),
+        catchError(() => of({data: undefined, error: null})),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        this.singlePatchData$.next(x.data);
+        const patch = x?.data ?? undefined;
+        this.singlePatchData$.next(patch);
+        if (!patch) {
+          this.patchDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+        }
       });
     
     // when updated patch data is received, update privacy status observable
@@ -770,6 +779,12 @@ export class PatchDetailDataService implements OnDestroy {
 
   setPublicDetailMode(enabled: boolean) {
     this.usePublicDetailReads = enabled;
+  }
+
+  private buildUnavailableMessage(): string {
+    return this.usePublicDetailReads
+      ? `This patch isn't publicly available. If it's private, only the owner can open it while signed in.`
+      : 'This patch could not be loaded.';
   }
 
   addPatchTag(tag: string): void {
