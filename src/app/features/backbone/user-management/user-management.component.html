@@ -1,15 +1,16 @@
-<lib-screen-wrapper maxSize="100%">
+<lib-screen-wrapper sizePreset="wide-shell">
   <div class="account-shell col gap1"
   >
     @if ({
       userProfile:(userManagementService.loggedUserFullProfile$|async),
       user:(userManagementService.loggedUser$|async)
     }; as bag) {
+      <!-- Reapply `userBG` here if we want the warmer private/account hero gradient back. -->
       <lib-hero-content-card titleBig="Account management"
                              [titleSub]="bag.userProfile?.username"
                              [showWideShellNav]="true"
                              icon="manage_accounts"
-                             class="userBG account-card"
+                             class="account-card"
       >
         @if (bag.user && bag.userProfile) {
           <div class="account-content col gap2"

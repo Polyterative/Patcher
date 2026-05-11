@@ -1,10 +1,11 @@
-<lib-screen-wrapper maxSize="130rem" class="auth-page-shell">
+<lib-screen-wrapper sizePreset="wide-shell" class="auth-page-shell">
   <div class="auth-page-shell__inner col gap1">
+    <!-- Reapply `userBG` here if we want the warmer private/auth hero gradient back. -->
     <lib-hero-content-card titleBig="Who are you again?"
                            description="Log in to get back to your collection, racks, and patches in My Area. You can still browse public content without signing in."
                            [showWideShellNav]="true"
                            icon="login"
-                           class="userBG auth-entry-card">
+                           class="auth-entry-card">
       <div class="col gap1">
 
         <!-- Normal Login Form -->
