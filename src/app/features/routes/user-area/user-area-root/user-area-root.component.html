@@ -5,11 +5,45 @@
   <lib-screen-wrapper maxSize="130rem">
     @if (bag.userProfile) {
       <lib-clean-card appDiscoveryTipAnchor="user-area-profile-card">
+        @if (wideShell$ | async) {
+          <div class="user-shell-nav">
+            <div class="user-shell-topbar">
+              <a class="user-shell-brand"
+                 routerLink="/home"
+                 aria-label="Go to home">patcher.xyz</a>
+              @if (shellAccountLinks$ | async; as accountLinks) {
+                <div class="user-shell-actions">
+                  @for (item of accountLinks; track item.route ?? item.label) {
+                    <a class="user-shell-action"
+                       [routerLink]="item.route"
+                       routerLinkActive="user-shell-action--active"
+                       [attr.aria-label]="item.label">
+                      @if (item.icon) {
+                        <mat-icon>{{ item.icon }}</mat-icon>
+                      }
+                      <span>{{ item.label }}</span>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+            <nav class="user-shell-targets" aria-label="Section targets">
+              @for (item of shellTargets; track item.route ?? item.label) {
+                <a class="user-shell-target"
+                   [routerLink]="item.route"
+                   routerLinkActive="user-shell-target--active"
+                   [attr.aria-label]="item.label">
+                  {{ item.label }}
+                </a>
+              }
+            </nav>
+          </div>
+        }
         <div class="user-profile-card__header">
           <div class="user-profile-card__identity">
-            <app-label-value-showcase label="User"
-            >{{ bag.userProfile.username }}
-            </app-label-value-showcase>
+            <p class="user-profile-card__eyebrow">User area</p>
+            <h1 class="user-profile-card__title">{{ bag.userProfile.username }}</h1>
+            <p class="user-profile-card__subtitle">Profile visibility, collection management, and contributor activity.</p>
           </div>
           <div class="user-profile-card__actions">
             <app-brand-primary-button
@@ -96,9 +130,10 @@
     <div appDiscoveryTipAnchor="user-area-search"
          class="user-area-floating-search">
       <lib-mat-form-entity [control]="globalSearchControl"
-                           [type]="formTypes.TEXT"
-                           label="Search modules, racks, patches"
-                           [formFieldAppearanceType]="'outline'"
+                            [type]="formTypes.TEXT"
+                            label="Search modules, racks, patches"
+                            iconL1="search"
+                            [formFieldAppearanceType]="'outline'"
       ></lib-mat-form-entity>
     </div>
   </lib-screen-wrapper>

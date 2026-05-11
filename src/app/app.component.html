@@ -1,24 +1,35 @@
-<app-toolbar></app-toolbar>
-<app-event-banner></app-event-banner>
-@if (routeLoading$ | async) {
-  <div class="app-route-loading">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <div class="app-route-loading__label">
-      <mat-icon>hourglass_top</mat-icon>
-      <span>Loading page</span>
+@if ({embeddedShell: (embeddedShell$ | async) ?? false}; as shell) {
+  <div class="app-shell" [class.app-shell--wide]="shell.embeddedShell">
+    @if (!shell.embeddedShell) {
+      <div class="app-shell__toolbar">
+        <app-toolbar></app-toolbar>
+      </div>
+    }
+
+    <div class="app-shell__content">
+      <app-event-banner></app-event-banner>
+      @if (routeLoading$ | async) {
+        <div class="app-route-loading">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <div class="app-route-loading__label">
+            <mat-icon>hourglass_top</mat-icon>
+            <span>Loading page</span>
+          </div>
+        </div>
+      }
+      <div class="main">
+        <div class="col"
+        >
+          <router-outlet></router-outlet>
+          <!--    <lib-screen-wrapper>-->
+          <app-faq></app-faq>
+          <app-footer></app-footer>
+          <!--    </lib-screen-wrapper>-->
+        </div>
+      </div>
     </div>
   </div>
 }
-<div class="main">
-  <div class="col"
-  >
-    <router-outlet></router-outlet>
-    <!--    <lib-screen-wrapper>-->
-    <app-faq></app-faq>
-    <app-footer></app-footer>
-    <!--    </lib-screen-wrapper>-->
-  </div>
-</div>
 
 <!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
 <!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->

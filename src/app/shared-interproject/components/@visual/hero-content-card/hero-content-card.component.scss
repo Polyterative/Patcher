@@ -244,6 +244,159 @@ h3 {
   min-width: 0;
 }
 
+.title-shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.title-heading-row {
+  align-items: center;
+}
+
+.title-heading-copy {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.title-metro-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  padding-bottom: 0.7rem;
+}
+
+.title-metro-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  inline-size: 100%;
+  gap: 1rem;
+}
+
+.title-metro-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.title-metro-brand {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.02rem;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: rgba(58, 34, 132, 0.92);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.title-metro-targets {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem 1.15rem;
+  min-width: 0;
+  flex-wrap: wrap;
+  padding-bottom: 0.2rem;
+}
+
+.title-metro-target {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  font-size: 1.12rem;
+  line-height: 1.1;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: rgba(35, 60, 90, 0.78);
+  text-decoration: none;
+  border-bottom: 0.12rem solid transparent;
+  white-space: nowrap;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.title-metro-target:hover {
+  color: rgba(24, 42, 65, 0.9);
+}
+
+.title-metro-target--active {
+  color: rgba(17, 31, 48, 0.96);
+  border-bottom-color: rgba(34, 72, 118, 0.9);
+}
+
+.title-metro-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.title-metro-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.9rem;
+  padding: 0.24rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 79, 111, 0.14);
+  background: rgba(255, 255, 255, 0.56);
+  color: rgba(30, 52, 78, 0.8);
+  text-decoration: none;
+  font-size: 0.8rem;
+  line-height: 1.05;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.title-metro-action mat-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  font-size: 0.85rem;
+}
+
+.title-metro-action--active {
+  border-color: rgba(34, 72, 118, 0.42);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(17, 31, 48, 0.94);
+  box-shadow: inset 0 0 0 0.0625rem rgba(34, 72, 118, 0.1);
+}
+
+.title-inline-description {
+  flex: 0 1 14rem;
+  max-width: 14rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  text-align: start;
+  text-transform: none;
+  color: rgba(30, 52, 78, 0.52);
+}
+
+.title-heading-copy .title-text {
+  flex: 0 1 auto;
+}
+
 .title-text--with-sub {
   display: flex;
   align-items: baseline;
@@ -272,7 +425,11 @@ h3 {
   color: rgba(0, 0, 0, 0.52);
 }
 
-@media (max-width: 64rem) {
+@media (max-width: 31.25rem) {
+  .title-metro-nav {
+    display: none;
+  }
+
   .title-text--with-sub {
     flex-direction: column;
     align-items: flex-start;
