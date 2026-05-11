@@ -21,6 +21,7 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  shareReplay,
   startWith
 } from 'rxjs/operators';
 import { AppShellLayoutService } from './shared-interproject/app-shell-layout.service';
@@ -51,7 +52,7 @@ export class AppComponent {
     this.animationsDisabled = isPlatformBrowser(this.platformId)
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.appViewportService.initialize();
-    const currentUrl$ = this.router.events.pipe(
+    const navigationState$ = this.router.events.pipe(
       filter((event) =>
         event instanceof NavigationStart
         || event instanceof NavigationEnd
@@ -59,7 +60,14 @@ export class AppComponent {
         || event instanceof NavigationError
       ),
       startWith(null),
-      map(() => this.router.url ?? '/'),
+      map((event) => ({
+        currentUrl: this.router.url ?? '/',
+        routeLoading: event instanceof NavigationStart
+      })),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+    const currentUrl$ = navigationState$.pipe(
+      map((state) => state.currentUrl),
       distinctUntilChanged()
     );
     this.embeddedShell$ = combineLatest([
@@ -69,15 +77,8 @@ export class AppComponent {
       map(([wideShell, currentUrl]) => wideShell && this.supportsEmbeddedShell(currentUrl)),
       distinctUntilChanged()
     );
-    this.routeLoading$ = this.router.events.pipe(
-      filter((event) =>
-        event instanceof NavigationStart
-        || event instanceof NavigationEnd
-        || event instanceof NavigationCancel
-        || event instanceof NavigationError
-      ),
-      map((event) => event instanceof NavigationStart),
-      startWith(false),
+    this.routeLoading$ = navigationState$.pipe(
+      map((state) => state.routeLoading),
       distinctUntilChanged()
     );
   }
