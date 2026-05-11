@@ -18,6 +18,7 @@ export class StatisticsComponent {
   @Input() cardClass: string = '';
   @Input() icon: string | undefined;
   @Input() emptyMessage: string | null = null;
+  @Input() compact = false;
 
   @Input() statistics: {
     name: string;
