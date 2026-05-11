@@ -47,12 +47,12 @@ describe('AppStateService', () => {
     });
   });
   
-  it('breakpoint keys matching emitted mqAliases are true after debounce', fakeAsync(() => {
+  it('breakpoint keys matching emitted mqAliases are true after a frame-sized batch', fakeAsync(() => {
     const service = buildService();
     let latestValue: any;
     service.layoutFlexWidth$.subscribe(val => (latestValue = val));
     
-    tick(250);
+    tick(16);
     
     // 'gt-xs' maps to gtxs, 'sm' maps to sm
     expect(latestValue.sm).toBeTrue();
