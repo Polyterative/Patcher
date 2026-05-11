@@ -2,7 +2,10 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { of } from 'rxjs';
+import {
+  of,
+  Subject
+} from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { ModuleBrowserDataService } from './module-browser-data.service';
 
@@ -178,6 +181,62 @@ describe('ModuleBrowserDataService', () => {
     tick(750);
     service.resetForm$.next();
     expect(service.fields.tags.control.value).toEqual([]);
+    service.ngOnDestroy();
+  }));
+
+  it('sets remoteTagFilterLoading$ during tag changes after initial results and clears it on the next backend response', fakeAsync(() => {
+    const {service, backend} = build();
+    const modulesResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
+
+    backend.GET.modules.and.returnValue(modulesResponse$.asObservable());
+    service.modulesList$.next([moduleFactory({id: 1})]);
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    expect(service.remoteTagFilterLoading$.value).toBeTrue();
+
+    tick(750);
+    modulesResponse$.next({data: [moduleFactory({id: 2})], count: 1});
+    modulesResponse$.complete();
+
+    expect(service.remoteTagFilterLoading$.value).toBeFalse();
+    service.ngOnDestroy();
+  }));
+
+  it('keeps remoteTagFilterLoading$ true across repeated tag changes until the latest response lands', fakeAsync(() => {
+    const {service, backend} = build();
+    const firstResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
+    const secondResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
+
+    backend.GET.modules.and.returnValues(firstResponse$.asObservable(), secondResponse$.asObservable());
+    service.modulesList$.next([moduleFactory({id: 1})]);
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    expect(service.remoteTagFilterLoading$.value).toBeTrue();
+    tick(750);
+
+    service.fields.tags.control.setValue([{id: '8', name: 'Filter'}]);
+    expect(service.remoteTagFilterLoading$.value).toBeTrue();
+    tick(750);
+
+    firstResponse$.next({data: [moduleFactory({id: 2})], count: 1});
+    firstResponse$.complete();
+    expect(service.remoteTagFilterLoading$.value).toBeTrue();
+
+    secondResponse$.next({data: [moduleFactory({id: 3})], count: 1});
+    secondResponse$.complete();
+    expect(service.remoteTagFilterLoading$.value).toBeFalse();
+    service.ngOnDestroy();
+  }));
+
+  it('does not set remoteTagFilterLoading$ for non-tag filter changes', fakeAsync(() => {
+    const {service} = build();
+    service.modulesList$.next([moduleFactory({id: 1})]);
+
+    service.fields.name.control.setValue('Oscillator');
+    expect(service.remoteTagFilterLoading$.value).toBeFalse();
+
+    tick(750);
+    expect(service.remoteTagFilterLoading$.value).toBeFalse();
     service.ngOnDestroy();
   }));
   

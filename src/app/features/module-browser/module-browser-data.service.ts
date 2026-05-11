@@ -140,6 +140,7 @@ const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
+  readonly remoteTagFilterLoading$ = new BehaviorSubject<boolean>(false);
   readonly updateModulesList$ = new Subject<void>();
   readonly resetForm$ = new Subject<void>();
   readonly pageEvent$ = new Subject<PageEvent>();
@@ -323,7 +324,15 @@ export class ModuleBrowserDataService extends SubManager {
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
       this.updateModulesList$.next();
-    });
+      });
+    
+    this.fields.tags.control.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.modulesList$.value !== null) {
+          this.remoteTagFilterLoading$.next(true);
+        }
+      });
 
     this.updateModulesList$
       .pipe(
@@ -358,6 +367,7 @@ export class ModuleBrowserDataService extends SubManager {
       .subscribe(x => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
         this.modulesList$.next(x.data);
+        this.remoteTagFilterLoading$.next(false);
       });
     
     this.resetForm$

@@ -156,6 +156,29 @@
   margin-top: 0.2rem;
 }
 
+.module-browser-loading-note {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+  border: 0.0625rem solid rgba(34, 75, 117, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(244, 249, 255, 0.9);
+  color: rgba(34, 75, 117, 0.88);
+}
+
+.module-browser-loading-note strong {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.module-browser-loading-note span {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgba(34, 75, 117, 0.74);
+}
+
 @media (max-width: 59.9375rem) {
   .module-filter-control--optional {
     display: none;
