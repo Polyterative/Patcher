@@ -46,6 +46,14 @@ export function getCvMapper(moduleid: number): (cv: CV) => CVwithModuleId {
   return (cv: CV) => ({...cv, moduleid});
 }
 
+function normalizeCvRangeForDb<T extends CVwithModuleId>(cv: T) {
+  return {
+    ...cv,
+    min: cv.min ?? null,
+    max: cv.max ?? null
+  };
+}
+
 export function buildCVInserter(
   supabase: SupabaseClient<Database>,
   cvs: CV[],
@@ -59,6 +67,7 @@ export function buildCVInserter(
       x.id = undefined;
       return x;
     })
+    .map(normalizeCvRangeForDb)
     .map(x => ({...x, authorid}));
   
   return mappedCVs.map(x => rxFrom(supabase.from(path).insert(x)));
@@ -70,7 +79,9 @@ export function buildCVUpdater(
   path: 'module_ins' | 'module_outs',
   moduleId: number
 ) {
-  const mappedCVs = cvs.map(getCvMapper(moduleId)).filter(x => x.id > 0);
+  const mappedCVs = cvs.map(getCvMapper(moduleId))
+    .filter(x => x.id > 0)
+    .map(normalizeCvRangeForDb);
   return mappedCVs.map(x => rxFrom(supabase.from(path).update(x).eq('id', x.id)));
 }
 
