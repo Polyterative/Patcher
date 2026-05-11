@@ -12,6 +12,10 @@
   padding-inline: 1rem;
 }
 
+.app-shell__supporting {
+  padding-inline: 1rem;
+}
+
 .app-shell__surface-shell {
   display: block;
   width: 100%;
@@ -73,6 +77,10 @@
 
 @media (max-width: 72.5rem) {
   .app-shell__surface {
+    padding-inline: 0.75rem;
+  }
+
+  .app-shell__supporting {
     padding-inline: 0.75rem;
   }
 }
