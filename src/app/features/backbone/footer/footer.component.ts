@@ -18,6 +18,7 @@ export class FooterComponent implements OnInit {
   data = build;
   readonly instagramUrl = 'https://www.instagram.com/patcher.xyz/';
   readonly instagramHandle = '@patcher.xyz';
+  readonly changelogUrl = 'https://github.com/Polyterative/Patcher/blob/develop/CHANGELOG.md';
   
   constructor(
     public readonly appState: AppStateService
