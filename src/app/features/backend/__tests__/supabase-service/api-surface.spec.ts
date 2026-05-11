@@ -78,6 +78,7 @@ describe('SupabaseService - API Surface', () => {
         'racksWithModule',
         'patchWithId',
         'patchesWithModule',
+        'moduleUsageSummary',
         'standards',
         'tagVotesForModule',
         'myVotes',
