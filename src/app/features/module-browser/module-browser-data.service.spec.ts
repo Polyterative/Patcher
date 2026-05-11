@@ -3,6 +3,7 @@ import {
   tick
 } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { MinimalModule } from 'src/app/models/module';
 import { ModuleBrowserDataService } from './module-browser-data.service';
 
 
@@ -20,6 +21,25 @@ describe('ModuleBrowserDataService', () => {
     };
     const service = new ModuleBrowserDataService(backend as any);
     return {service, backend};
+  }
+
+  function moduleFactory(overrides: Partial<MinimalModule> = {}): MinimalModule {
+    return {
+      id: overrides.id ?? 1,
+      name: overrides.name ?? 'Module',
+      description: overrides.description ?? 'Description',
+      hp: overrides.hp ?? 8,
+      public: overrides.public ?? true,
+      created: overrides.created ?? '2026-01-01T00:00:00.000Z',
+      updated: overrides.updated ?? '2026-01-01T00:00:00.000Z',
+      manufacturerId: overrides.manufacturerId ?? 1,
+      manufacturer: overrides.manufacturer ?? ({id: 1, name: 'Maker'} as any),
+      standard: overrides.standard ?? ({id: 0, name: '3U Doepfer'} as any),
+      tags: overrides.tags ?? [],
+      panels: overrides.panels ?? [],
+      ins: overrides.ins,
+      outs: overrides.outs,
+    };
   }
 
   it('initializes sort$ to updated/desc', () => {
@@ -177,4 +197,91 @@ describe('ModuleBrowserDataService', () => {
     
     service.ngOnDestroy();
   }));
+
+  it('applies owned-mode hp sorting when the default browser order is still active', () => {
+    const {service} = build();
+    service.applyOwnedModeDefaultOrder();
+
+    expect(service.fields.order.control.value).toEqual({id: 'hp', name: 'HP ↑'});
+  });
+
+  it('applies owned-mode hp sorting when only the default sort id still matches', () => {
+    const {service} = build();
+    service.fields.order.control.setValue({id: 'updated', name: 'Recently changed'} as any);
+
+    service.applyOwnedModeDefaultOrder();
+
+    expect(service.fields.order.control.value).toEqual({id: 'hp', name: 'HP ↑'});
+  });
+
+  it('filters owned modules by the active manufacturer, tags, and hp rules and sorts by hp ascending', fakeAsync(() => {
+    const {service} = build();
+    service.fields.manufacturers.control.setValue({id: '2', name: 'Maker 2'} as any);
+    service.fields.tags.control.setValue([{id: '7', name: 'Filter'}]);
+    service.fields.hp.control.setValue('10');
+    service.fields.hpCondition.control.setValue({id: '>=', name: 'more or exactly'});
+    service.fields.order.control.setValue({id: 'hp', name: 'HP ↑'});
+    tick(750);
+
+    const filtered = service.filterOwnedModules([
+      moduleFactory({
+        id: 1,
+        name: 'Too Small',
+        hp: 8,
+        manufacturerId: 2,
+        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+      }),
+      moduleFactory({
+        id: 2,
+        name: 'Keep Me First',
+        hp: 10,
+        manufacturerId: 2,
+        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+      }),
+      moduleFactory({
+        id: 3,
+        name: 'Wrong Maker',
+        hp: 12,
+        manufacturerId: 1,
+        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+      }),
+      moduleFactory({
+        id: 4,
+        name: 'Keep Me Second',
+        hp: 14,
+        manufacturerId: 2,
+        tags: [{id: 7, tag: {id: 7, name: 'Filter'} as any, voteCount: []}]
+      }),
+    ]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([2, 4]);
+    service.ngOnDestroy();
+  }));
+
+  it('filters owned modules by the active name and description queries', fakeAsync(() => {
+    const {service} = build();
+    service.fields.name.control.setValue('Oscillator');
+    service.fields.description.control.setValue('analog');
+    tick(750);
+
+    const filtered = service.filterOwnedModules([
+      moduleFactory({id: 1, name: 'Digital Voice', description: 'Digital wavetable synth'}),
+      moduleFactory({id: 2, name: 'Analog Oscillator', description: 'Warm analog tone'}),
+      moduleFactory({id: 3, name: 'Analog Filter', description: 'Classic analog tone'}),
+    ]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([2]);
+    service.ngOnDestroy();
+  }));
+
+  it('filters owned modules out when their ids are excluded for the rack-aware available mode', () => {
+    const {service} = build();
+
+    const filtered = service.filterOwnedModules([
+      moduleFactory({id: 1, name: 'Already in rack'}),
+      moduleFactory({id: 2, name: 'Still available'})
+    ], [1]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([2]);
+  });
 });

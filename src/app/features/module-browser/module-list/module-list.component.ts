@@ -69,6 +69,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
   @Input() showSearch = false;
   @Input() showOrder = false;
   @Input() encloseVertically = true;
+  @Input() emptyStateCopy = '';
 
   private readonly externalSearchQuery$ = new BehaviorSubject<string>('');
 
