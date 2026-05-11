@@ -12,26 +12,24 @@
 
 ## Active
 
-### Comments — Avoid Full-Width Layout on Large Screens
+### User Area — Ownership-First Full-Height Workspace
 
-**Goal:** keep comment surfaces readable on large screens by bounding the list, empty state, filters, and composer to a deliberate reading rail instead of letting them stretch across the full page.
+**Goal:** turn the current user area into a clearer ownership-focused workspace where modules, racks, and patches are the primary large-screen surfaces and the utility rail becomes genuinely secondary.
 
 #### Layer 1 — MVP
-- [x] Trace the comment hosts that currently render at full width on large screens
-- [x] Apply a bounded large-screen rail pattern to the shared comment surface without regressing compact layouts
-- [x] Keep the main comment states (list, empty state, composer, pagination/load-more) visually tied to the same width contract
+- [x] Trace the current user-area shell structure and identify what makes it read like a wrapped dashboard instead of a workspace
+- [ ] Define a route-level container contract where the main workspace fills the available viewport beneath the page header
+- [ ] Make **Modules / Racks / Patches** the primary large-screen surfaces instead of a wrap-anywhere stack
 
-**Layer 1 discoveries:** `app-comments-root` is shared by module detail, patch detail, and rack detail. Rack detail already wraps it in a `lib-screen-wrapper maxSize="45rem"`, while module detail and patch detail currently leave it effectively unconstrained. The separate `user-comments` route has its own filter/list/empty-state layout and still uses a raw full-width flow.
+**Layer 1 discoveries:** the current `user-area-root` uses `profile-layout` as a two-column grid with a flexible `main-content` area that still wraps `app-user-modules`, `app-user-racks`, and `app-user-patches` like independent cards rather than true workspace columns. The right side is a 18–24rem sidebar, while the search surface still floats at the viewport edge as a separate fixed element.
 
 #### Layer 2 — Structural
-- [x] Reuse the same width contract across the shared `comments-root` flow and the user-area comments page instead of introducing one-off host overrides
-- [ ] Add focused responsive coverage for the bounded comment layout
+- [ ] Give the primary ownership surfaces a shared height/overflow contract instead of letting them grow independently in normal page flow
+- [ ] Define the utility rail as a bounded secondary column with explicit rules for stats, manuals, and comments
 
 #### Layer 3 — Polish
-- [ ] Tune the alignment of filters, load-more/pagination, and empty-state messaging so the bounded rail feels intentional rather than artificially narrow
-- [ ] Review the result in the main hosts (module detail, patch detail, rack detail, user comments) so comments read consistently across surfaces
-
-**Current progress:** the shared `comments-root` now keeps its list, load-more action, empty state, and composer on a centered 48rem reading rail; the same width contract now applies to the dedicated user-comments page; and the empty states no longer sprawl across the whole page width on desktop-sized layouts.
+- [ ] Reconcile the floating search with the workspace so it supports the owned-content columns instead of competing with them
+- [ ] Tune the large-screen spacing/scroll behavior so the page reads like one tool surface rather than several unrelated blocks
 
 ---
 

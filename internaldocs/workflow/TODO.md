@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **LOW: Comments — Avoid Full-Width Layout on Large Screens**
-  Keep entity and user-area comment surfaces on a bounded reading rail on large screens so the list, empty state, and composer stay readable instead of stretching across the full page.
+- [~] **HIGH: User Area — Ownership-First Full-Height Workspace**
+  Turn the current user area from a wrapped dashboard into a clearer tool-like workspace where modules, racks, and patches are the primary large-screen surfaces.
 
 ---
 
