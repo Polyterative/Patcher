@@ -3,6 +3,10 @@
 <p align="center">Document patches, plan racks, track modules, and keep your real system in sync with a fast, clean workflow.<br>
 <a href="https://patcher.xyz">patcher.xyz</a> &nbsp;·&nbsp; <a href="https://discord.gg/JNy2HTb5ru">Discord</a> &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a></p>
 
+<p align="center">
+  <img src="documentation/readme-assets/homepage-hero-graph.jpg" alt="Patcher homepage showing the logged-out hero, patch graph preview, and patch detail showcase" width="100%">
+</p>
+
 <br>
 
 ---
