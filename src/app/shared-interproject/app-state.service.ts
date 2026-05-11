@@ -1,5 +1,8 @@
-﻿import { Injectable, OnDestroy } from '@angular/core';
-import { MediaObserver } from '@angular/flex-layout';
+import { Injectable, OnDestroy } from '@angular/core';
+import {
+  MediaChange,
+  MediaObserver
+} from '@angular/flex-layout';
 import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -14,6 +17,57 @@ import {
 } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AppFormUtils } from "src/app/shared-interproject/components/@smart/mat-form-entity/app-form-utils";
+
+export interface LayoutFlexWidthState {
+  xs: boolean;
+  sm: boolean;
+  md: boolean;
+  lg: boolean;
+  xl: boolean;
+  ltsm: boolean;
+  ltmd: boolean;
+  ltlg: boolean;
+  ltxl: boolean;
+  gtxs: boolean;
+  gtsm: boolean;
+  gtmd: boolean;
+  gtlg: boolean;
+}
+
+const DEFAULT_LAYOUT_FLEX_WIDTH_STATE: LayoutFlexWidthState = {
+  xs: false,
+  sm: false,
+  md: false,
+  lg: false,
+  xl: false,
+  ltsm: false,
+  ltmd: false,
+  ltlg: false,
+  ltxl: false,
+  gtxs: false,
+  gtsm: false,
+  gtmd: false,
+  gtlg: false
+};
+
+function buildLayoutFlexWidthState(changes: MediaChange[]): LayoutFlexWidthState {
+  const aliases = new Set(changes.map((change) => change.mqAlias));
+  return {
+    xs: aliases.has('xs'),
+    sm: aliases.has('sm'),
+    md: aliases.has('md'),
+    lg: aliases.has('lg'),
+    xl: aliases.has('xl'),
+    ltsm: aliases.has('lt-sm'),
+    ltmd: aliases.has('lt-md'),
+    ltlg: aliases.has('lt-lg'),
+    ltxl: aliases.has('lt-xl'),
+    gtxs: aliases.has('gt-xs'),
+    gtsm: aliases.has('gt-sm'),
+    gtmd: aliases.has('gt-md'),
+    gtlg: aliases.has('gt-lg')
+  };
+}
 
 
 @Injectable()
@@ -50,21 +104,7 @@ export class AppStateService implements OnDestroy {
 
   protected destroyEvent$ = new Subject<void>();
   
-  layoutFlexWidth$ = new ReplaySubject<{
-    xs: boolean,
-    sm: boolean,
-    md: boolean,
-    lg: boolean,
-    xl: boolean,
-    ltsm: boolean,
-    ltmd: boolean,
-    ltlg: boolean,
-    ltxl: boolean,
-    gtxs: boolean,
-    gtsm: boolean,
-    gtmd: boolean,
-    gtlg: boolean
-  }>(1);
+  layoutFlexWidth$ = new ReplaySubject<LayoutFlexWidthState>(1);
   
   constructor(
     public mediaObserver: MediaObserver
@@ -73,41 +113,9 @@ export class AppStateService implements OnDestroy {
     this.mediaObserver.asObservable()
         .pipe(
           takeUntil(this.destroyEvent$),
-          // tap((x) => console.log(x)),
-          map(x => ({
-            xs: x.some(x => x.mqAlias === 'xs'),
-            sm: x.some(x => x.mqAlias === 'sm'),
-            md: x.some(x => x.mqAlias === 'md'),
-            lg: x.some(x => x.mqAlias === 'lg'),
-            xl: x.some(x => x.mqAlias === 'xl'),
-            //
-            ltsm: x.some(x => x.mqAlias === 'lt-sm'),
-            ltmd: x.some(x => x.mqAlias === 'lt-md'),
-            ltlg: x.some(x => x.mqAlias === 'lt-lg'),
-            ltxl: x.some(x => x.mqAlias === 'lt-xl'),
-            //
-            gtxs: x.some(x => x.mqAlias === 'gt-xs'),
-            gtsm: x.some(x => x.mqAlias === 'gt-sm'),
-            gtmd: x.some(x => x.mqAlias === 'gt-md'),
-            gtlg: x.some(x => x.mqAlias === 'gt-lg')
-          })),
-          // distinctUntilChanged((a,b) =>a.),
+          map((changes) => buildLayoutFlexWidthState(changes)),
           debounceTime(250),
-          startWith({
-            xs:   false,
-            sm:   false,
-            md:   false,
-            lg:   false,
-            xl:   false,
-            ltsm: false,
-            ltmd: false,
-            ltlg: false,
-            ltxl: false,
-            gtxs: false,
-            gtsm: false,
-            gtmd: false,
-            gtlg: false
-          })
+          startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE)
         )
         .subscribe(value => this.layoutFlexWidth$.next(value));
     
