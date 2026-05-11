@@ -8,6 +8,7 @@ import {
   RackBalanceAxisId,
   RACK_BALANCE_AXES
 } from './rack-balance-analysis.constants';
+import { isBlankModule } from './rack-blank-module.constants';
 
 export interface RackBalanceAxisResult {
   id: RackBalanceAxisId;
@@ -38,7 +39,7 @@ export class RackBalanceAnalysisService {
   analyze(rowedRackedModules: RackedModule[][] | null | undefined): RackBalanceAnalysisResult {
     const modules = (rowedRackedModules ?? [])
       .flat()
-      .filter((entry): entry is RackedModule => !!entry?.module);
+      .filter((entry): entry is RackedModule => !!entry?.module && !isBlankModule(entry.module.id));
 
     if (modules.length === 0) {
       return {
