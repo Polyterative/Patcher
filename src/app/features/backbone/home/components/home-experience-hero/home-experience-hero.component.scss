@@ -15,6 +15,7 @@
   gap: 0.95rem;
   align-content: center;
   padding: 0.45rem;
+  contain: layout style;
 }
 
 .hero-metro-nav {
@@ -25,6 +26,7 @@
   inline-size: 100%;
   max-inline-size: 100%;
   padding-bottom: 0.7rem;
+  contain: layout style;
 }
 
 .hero-metro-topbar {
@@ -55,6 +57,7 @@
   min-width: 0;
   flex-wrap: wrap;
   padding-bottom: 0.2rem;
+  contain: layout style;
 }
 
 .hero-metro-target {
@@ -192,6 +195,7 @@ h1 {
   border-radius: 0.42rem;
   overflow: hidden;
   background: transparent;
+  contain: layout inline-size;
 }
 
 .patch-graph-shell app-patch-graph {
