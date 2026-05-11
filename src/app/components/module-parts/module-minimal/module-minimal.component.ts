@@ -20,6 +20,7 @@ import {
 } from 'rxjs/operators';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { MinimalModule } from 'src/app/models/module';
+import { RackMinimal } from 'src/app/models/rack';
 import { RackDetailDataService } from '../../rack-parts/rack-detail-data.service';
 import { ModuleDetailDataService } from '../module-detail-data.service';
 
@@ -128,6 +129,14 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
 
   onTagChooserOpenChange(isOpen: boolean): void {
     this.isTagChooserOpen = isOpen;
+  }
+
+  shouldRenderActionFooter(
+    singleModuleData: MinimalModule | undefined,
+    currentRackData: RackMinimal | undefined,
+    isCurrentRackEditable: boolean | undefined
+  ): boolean {
+    return !!singleModuleData || (!!currentRackData && !!isCurrentRackEditable);
   }
 }
 
