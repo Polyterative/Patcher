@@ -28,7 +28,7 @@ export class RouteClickableLinkComponent {
   }
   
   public trackByLink(index: number, item: RouteClickableLink): string {
-    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
+    return getRouteClickableLinkKey(item);
   }
   
   public getAriaLabel(item: RouteClickableLink): string {
@@ -51,4 +51,8 @@ export interface RouteClickableLink {
   href?: string;
   hrefNewTab?: boolean;
   style?: { [param: string]: any };
+}
+
+export function getRouteClickableLinkKey(item: RouteClickableLink): string {
+  return `${ item.route ?? '' }:${ item.href ?? '' }:${ item.label ?? '' }:${ item.icon ?? '' }`;
 }

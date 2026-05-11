@@ -10,6 +10,7 @@ import {
   startWith
 } from 'rxjs';
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { getRouteClickableLinkKey } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -97,6 +98,6 @@ export class ToolbarComponent extends SubManager {
   }
 
   public trackByLink(index: number, item: RouteClickableLink): string {
-    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
+    return getRouteClickableLinkKey(item);
   }
 }
