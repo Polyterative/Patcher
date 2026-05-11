@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **LOW: Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled**
-  Remove the dead-looking lower divider from manufacturer-detail tiles when the action footer is entirely absent.
+- [~] **MEDIUM: Rack Balance Analysis — Exclude Blank Modules From Coverage**
+  Make rack balance coverage/confidence count only real modules so blank spacers stop distorting the analysis denominator.
 
 ---
 
