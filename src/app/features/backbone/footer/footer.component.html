@@ -2,14 +2,8 @@
     <div
       class="root col"
     >
-      <!--      all equidistant-->
-      <div fxFlex="auto"
-           class="gap2"
-           fxLayout="row wrap"
-           fxLayout.lt-sm="column"
-      >
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto">
+      <div class="footer-grid gap2">
+        <div class="footer-section">
           <div class="col gap1">
             <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
             <app-label-value-showcase label="Version">
@@ -24,10 +18,7 @@
             </app-label-value-showcase>
           </div>
         </div>
-
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <div class="footer-section">
           <app-label-value-showcase label="New since v5.0"
                                     [bigText]="false"
           >
@@ -40,9 +31,7 @@
             </div>
           </app-label-value-showcase>
         </div>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <div class="footer-section">
           <app-label-value-showcase label="Navigation"
                                     [bigText]="false"
           >
@@ -60,9 +49,7 @@
             </div>
           </app-label-value-showcase>
         </div>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <div class="footer-section">
           <app-label-value-showcase label="Need help?"
                                     [bigText]="false"
           >
@@ -89,9 +76,7 @@
             </div>
           </app-label-value-showcase>
         </div>
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <div class="footer-section">
           <app-label-value-showcase label="Follow us"
                                     [bigText]="false"
           >
@@ -108,10 +93,7 @@
             </div>
           </app-label-value-showcase>
         </div>
-
-        <div fxFlex="auto"
-             fxFlex.lt-sm="auto"
-        >
+        <div class="footer-section">
           <app-label-value-showcase label="Learn Patcher"
                                     [bigText]="false"
           >
@@ -140,28 +122,20 @@
             </div>
           </app-label-value-showcase>
         </div>
-
-
       </div>
       <mat-divider inset="true"></mat-divider>
-      <div class="row gap1"
-           fxLayout.lt-sm="column"
-      >
-        <app-lottie-container fxLayoutAlign="start end"
-                              fxFlex="100"
-                              class="transparentize-half lottie-icon"
+      <div class="footer-bottom gap1">
+        <app-lottie-container class="footer-lottie transparentize-half lottie-icon"
                               [options]="{path: '/assets/json/lottie/QR Border Icon.json', loop: true, autoplay: true}"
         ></app-lottie-container>
-        <h3 fxLayoutAlign="end center"
-            fxFlex="grow"
-            class="tagline"
+        <h3 class="tagline"
         >
           THE MODERN WAY TO MANAGE EVERYTHING MODULAR</h3>
       </div>
       
       <div class="legal">
         <span class="legal-copy">© 2026 Vladyslav Yakovenko · Open-source · AGPL-3.0</span>
-        <div class="row gap1">
+        <div class="footer-links row gap1">
           <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">License</a>
           <a href="https://github.com/Polyterative/Patcher" target="_blank" class="github-link">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"
