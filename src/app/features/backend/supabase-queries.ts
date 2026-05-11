@@ -1803,11 +1803,12 @@ export class SupabaseQueriesService {
     
     const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
     
-    const columns = [
-      moduleColumns,
-      QueryJoins.manufacturer,
-      QueryJoins.module_panels,
-    ];
+     const columns = [
+       moduleColumns,
+       QueryJoins.manufacturer,
+       QueryJoins.module_tags,
+       QueryJoins.module_panels,
+     ];
     // can be optimized to avoid calling it all the time but for now it is ok
     if (includeInsOuts) {
       columns.push(QueryJoins.insOuts);
