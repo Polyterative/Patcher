@@ -35,7 +35,7 @@
                        aria-label="Go to home">{{ siteTitle }}</a>
                   </div>
                   <nav class="title-metro-targets" aria-label="Section targets">
-                    @for (item of wideShellTargets; track item.route ?? item.label) {
+                    @for (item of wideShellTargets; track trackByNavLink($index, item)) {
                       <a
                          class="title-metro-target"
                          [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
@@ -45,7 +45,7 @@
                          {{ item.label }}
                        </a>
                      }
-                    @for (item of shellVm.accountLinks; track item.route ?? item.label; let isFirst = $first) {
+                    @for (item of shellVm.accountLinks; track trackByNavLink($index, item); let isFirst = $first) {
                       <a
                         class="title-metro-target title-metro-target--private"
                         [class.title-metro-target--private-start]="isFirst"
