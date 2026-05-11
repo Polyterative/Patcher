@@ -6,7 +6,7 @@
   stats: (publicStats$ | async),
   isOwnProfile: (isOwnProfile$ | async),
 }; as bag) {
-  <lib-screen-wrapper maxSize="130rem">
+  <lib-screen-wrapper sizePreset="wide-shell">
     @if (bag.state === 'ready' && bag.profile) {
       <div class="col gap1 public-profile-page">
         <lib-hero-content-card class="userBG profile-header"
