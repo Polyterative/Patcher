@@ -12,7 +12,16 @@
              fxFlex.lt-sm="auto">
           <div class="col gap1">
             <app-label-value-showcase label="App last updated">{{ data.timestamp|timeago }}</app-label-value-showcase>
-            <app-label-value-showcase label="Version">{{ data.version }}</app-label-value-showcase>
+            <app-label-value-showcase label="Version">
+              <div class="col gap0 footer-version-block">
+                <div class="footer-version-number">{{ data.version }}</div>
+                <div class="footer-changelog-row">
+                  <a [href]="changelogUrl" target="_blank" rel="noopener noreferrer" class="footer-changelog-link">
+                    Changelog
+                  </a>
+                </div>
+              </div>
+            </app-label-value-showcase>
           </div>
         </div>
 
