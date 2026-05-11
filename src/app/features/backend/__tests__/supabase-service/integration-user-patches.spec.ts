@@ -278,9 +278,6 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
         expect(query.filter).withContext(
           'GET.patches must filter by public=true to exclude private patches from the browser'
         ).toHaveBeenCalledWith('public', 'eq', true);
-        expect(query.filter).withContext(
-          'GET.patches must also filter by author_profile_gate.public=true to exclude patches from private profiles'
-        ).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
         done();
       },
       error: (err: any) => {
@@ -297,20 +294,16 @@ describe('SupabaseService - Patch Browser Public Filtering (regression)', () => 
     
     // If the public filter is missing, the mock leaks private patches through
     let hasPublicFilter = false;
-    let hasPublicProfileFilter = false;
     const query: any = {
       filter: (col: string, op: string, val: any) => {
         if (col === 'public' && op === 'eq' && val === true) {
           hasPublicFilter = true;
         }
-        if (col === 'author_profile_gate.public' && op === 'eq' && val === true) {
-          hasPublicProfileFilter = true;
-        }
         return query;
       },
       order: () => ({
         range: () => Promise.resolve(
-          hasPublicFilter && hasPublicProfileFilter
+          hasPublicFilter
             ? {data: mockPublicOnly, count: 1, error: null}
             : {
               data: [

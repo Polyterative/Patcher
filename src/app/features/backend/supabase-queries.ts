@@ -841,19 +841,15 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicUserPatchesPaginated(authorId: string, from = 0, to: number = this.defaultPag) {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
-
     return rxFrom(
       this.supabase.from(DbPaths.patches)
-        .select(`*, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`, {count: 'exact'})
+        .select(`*, ${ QueryJoins.author }`, {count: 'exact'})
         .filter('authorid', 'eq', authorId)
         .filter('public', 'eq', true)
-        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .order('updated', {ascending: false})
         .range(from, to)
     ).pipe(
-      remapErrors(),
-      map(response => this.stripPublicAuthorGate<Patch>(response))
+      remapErrors()
     );
   }
 
@@ -1094,20 +1090,14 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicPatchWithId(id: number, columns = '*') {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
-
     return rxFrom(
       this.supabase.from(DbPaths.patches)
-        .select(`${ columns }, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
         .filter('id', 'eq', id)
         .filter('public', 'eq', true)
-        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .single()
     )
-      .pipe(
-        remapErrors(),
-        map(response => this.stripPublicAuthorGate<Patch>(response))
-      );
+      .pipe(remapErrors());
   }
 
   @Cacheable({
@@ -1125,7 +1115,7 @@ export class SupabaseQueriesService {
   getApplicationStatistics(): Observable<PublicApplicationStatistics> {
     const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connectedPatchJoin = 'patch_connections!inner(patchid)';
-    const publicPatchJoin = `patch:patches!patch_connections_patchid_fkey!inner(id, ${ publicAuthorGateJoin })`;
+    const publicPatchJoin = 'patch:patches!patch_connections_patchid_fkey!inner(id)';
     const lastThirtyDaysIso = this.getLastThirtyDaysIso();
 
     return forkJoin({
@@ -1179,16 +1169,14 @@ export class SupabaseQueriesService {
       publicPatches: this.countRows(
         DbPaths.patches,
         query => query
-          .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .select(`id, ${ connectedPatchJoin }`, {count: 'exact', head: true})
           .filter('public', 'eq', true)
-          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       ),
       publicPatchesUpdatedLast30Days: this.countRows(
         DbPaths.patches,
         query => query
-          .select(`id, ${ connectedPatchJoin }, ${ publicAuthorGateJoin }`, {count: 'exact', head: true})
+          .select(`id, ${ connectedPatchJoin }`, {count: 'exact', head: true})
           .filter('public', 'eq', true)
-          .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
           .filter('updated', 'gte', lastThirtyDaysIso)
       ),
       publicPatchConnections: this.countRows(
@@ -1196,7 +1184,6 @@ export class SupabaseQueriesService {
         query => query
           .select(`patchid, ${ publicPatchJoin }`, {count: 'exact', head: true})
           .filter('patch.public', 'eq', true)
-          .filter(`patch.${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       ),
       publicPatchAuthors: this.countRows(
         DbPaths.profiles,
@@ -1244,9 +1231,8 @@ export class SupabaseQueriesService {
         this.fetchAllUpdatedRows(
           DbPaths.patches,
           query => query
-            .select(`id,updated,${ connectedPatchJoin },${ publicAuthorGateJoin }`)
+            .select(`id,updated,${ connectedPatchJoin }`)
             .filter('public', 'eq', true)
-            .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
             .filter('updated', 'gte', startIso)
         )
       ]);
@@ -1294,15 +1280,13 @@ export class SupabaseQueriesService {
     orderDirection?: string,
     columns: string = `id,name,description,${ QueryJoins.author },updated,created`
   ) {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
     const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
     const nameQuery = (name ?? '').trim();
     
     let queryBuilder = this.supabase
       .from(DbPaths.patches)
-      .select(`${ columns + connections }, ${ publicAuthorGateJoin }`, {count: 'exact'})
+      .select(`${ columns + connections }`, {count: 'exact'})
       .filter("public", "eq", true)
-      .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
       .order(orderBy ?? 'name', {ascending: orderDirection === 'asc'});
 
     if (nameQuery.length === 0) {
@@ -1312,7 +1296,6 @@ export class SupabaseQueriesService {
     return rxFrom(queryBuilder)
       .pipe(
         remapErrors(),
-        map(response => this.stripPublicAuthorGate<Patch>(response)),
         map((response: any) => {
           if (nameQuery.length === 0) {
             return response;

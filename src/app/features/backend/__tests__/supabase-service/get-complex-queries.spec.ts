@@ -181,10 +181,8 @@ describe('SupabaseService - get complex queries', () => {
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           expect(recentRacksFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
           expect(rackAuthorsFilterSpy).toHaveBeenCalledWith('public_racks.public', 'eq', true);
-          expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           expect(recentPatchesFilterSpy).toHaveBeenCalledWith('updated', 'gte', jasmine.any(String));
           expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.public', 'eq', true);
-          expect(patchConnectionsFilterSpy).toHaveBeenCalledWith('patch.author_profile_gate.public', 'eq', true);
           expect(patchAuthorsFilterSpy).toHaveBeenCalledWith('public_patches.public', 'eq', true);
           expect(manufacturersSelectSpy).toHaveBeenCalledWith(
             jasmine.stringMatching(/public_modules:modules!inner/),
@@ -285,7 +283,6 @@ describe('SupabaseService - get complex queries', () => {
           expect(racksFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
           expect(racksFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           expect(patchesFilterSpy).toHaveBeenCalledWith('public', 'eq', true);
-          expect(patchesFilterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
           done();
         },
         error: (err) => {
@@ -298,6 +295,8 @@ describe('SupabaseService - get complex queries', () => {
 
   describe('GET.applicationModuleInsights', () => {
     it('should derive public module insight buckets from public module rows', (done) => {
+      spyOn<any>((service as any).queries, 'getNow')
+        .and.callFake(() => new Date('2026-05-02T12:00:00.000Z'));
       const modulesQuery = chainable({
         data: [
           {
@@ -424,6 +423,8 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
 
     it('should continue paginating when Supabase returns a full 500-row page', (done) => {
+      spyOn<any>((service as any).queries, 'getNow')
+        .and.callFake(() => new Date('2026-05-02T12:00:00.000Z'));
       const firstPage = Array.from({length: 500}, (_, index) => ({
         id: index + 1,
         manufacturerId: 1,

@@ -221,14 +221,23 @@ describe('SupabaseService - GET cached delegates', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should apply ilike name filter when name is provided', (done) => {
-      const mock = chainable({data: [], count: 0, error: null});
-      const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
+    it('should apply the name filter client-side when name is provided', (done) => {
+      const mock = chainable({
+        data: [
+          {id: 1, name: 'Ambient Wash'},
+          {id: 2, name: 'Perc Loop'}
+        ],
+        count: 2,
+        error: null
+      });
+      const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.GET.patches(0, 10, 'Ambient').subscribe({
-        next: () => {
-          expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('ambient'));
+        next: (result: any) => {
+          expect(ilikeSpy).not.toHaveBeenCalled();
+          expect(result.count).toBe(1);
+          expect(result.data).toEqual([{id: 1, name: 'Ambient Wash'}]);
           done();
         },
         error: (err) => {
@@ -247,6 +256,23 @@ describe('SupabaseService - GET cached delegates', () => {
       service.GET.publicPatchWithId(3).subscribe({
         next: (result: any) => {
           expect(result.data.id).toBe(3);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+
+    it('should not join the author visibility gate for public patch details', (done) => {
+      const mock = chainable({data: {id: 3, name: 'Public Patch'}, error: null});
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+      service.GET.publicPatchWithId(3).subscribe({
+        next: () => {
+          expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
           done();
         },
         error: (err) => {
@@ -274,14 +300,23 @@ describe('SupabaseService - GET cached delegates', () => {
       });
     }, TEST_TIMEOUT);
     
-    it('should apply ilike name filter when name is provided', (done) => {
-      const mock = chainable({data: [], count: 0, error: null});
-      const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
+    it('should apply the name filter client-side when name is provided', (done) => {
+      const mock = chainable({
+        data: [
+          {id: 1, name: 'Studio Rack', author_profile_gate: {public: true}},
+          {id: 2, name: 'Performance Rack', author_profile_gate: {public: true}}
+        ],
+        count: 2,
+        error: null
+      });
+      const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
       spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.GET.racksMinimal(0, undefined, 'studio').subscribe({
-        next: () => {
-          expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('studio'));
+        next: (result: any) => {
+          expect(ilikeSpy).not.toHaveBeenCalled();
+          expect(result.count).toBe(1);
+          expect(result.data).toEqual([{id: 1, name: 'Studio Rack'}]);
           done();
         },
         error: (err) => {
