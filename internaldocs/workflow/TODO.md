@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **MEDIUM: App Shell — Large-Screen Side Toolbar Experiment**
-  Explore a breakpoint-driven shell that keeps the current top toolbar on compact layouts but switches larger screens to a left-side navigation column without breaking the existing product chrome.
+- [~] **LOW: Comments — Avoid Full-Width Layout on Large Screens**
+  Keep entity and user-area comment surfaces on a bounded reading rail on large screens so the list, empty state, and composer stay readable instead of stretching across the full page.
 
 ---
 
@@ -87,18 +87,6 @@ delete confirmation, and the character counter is hidden until users have alread
 
 ---
 
-#### LOW: Comments — Avoid Full-Width Layout on Large Screens
-
-**Why:** Comment surfaces become too wide on large screens, which makes the area feel empty, harder to scan, and visually weak.
-Comments should stay in a bounded reading width instead of stretching across the full page.
-
-- [ ] Define a maximum content width for comment sections on large screens
-- [ ] Choose a layout pattern that keeps comments readable on desktop (centered column, anchored content rail, or split layout)
-- [ ] Ensure the composer, empty state, and comment list all follow the same width constraint
-- [ ] Keep smaller screens flexible while making wide-screen comments explicitly non-full-width by design
-
----
-
 ---
 
 #### ~~HIGH: Patch Editor — Report Issue Button Still Visible (regression)~~
@@ -145,25 +133,6 @@ app is processing the filter change instead of looking stuck.
 - [x] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
 - [x] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
 - [x] Add focused tests for the tag-filter loading state and completion transition
-
----
-
-#### MEDIUM: App Shell — Large-Screen Side Toolbar Experiment
-
-**Why:** On larger layouts the current top toolbar may be spending valuable horizontal space while still leaving the main shell
- feeling more web-page-like than tool-like. Try a breakpoint-driven shell where mobile and smaller screens keep the current
- top toolbar, but large screens switch to a left-side vertical navigation column. The direction should explore a page-title-
- integrated navigation treatment inspired by Metro UI / Windows Phone style section headers, where the current section feels
- large and editorial while adjacent options remain partially visible as context.
-
-- [ ] Define the breakpoint where the shell should switch from the current top toolbar to a left-side vertical toolbar
-- [ ] Keep the existing top-toolbar behavior for mobile and smaller tablet layouts so current compact navigation does not regress
-- [ ] Rework the app shell layout so the large-screen navigation reads as a real vertical column rather than a stacked top bar moved sideways
-- [ ] Explore integrating the top-level navigation with the same visual language as page titles instead of keeping a separate toolbar strip
-- [ ] Test a Metro-style composition where the active section is prominent but neighboring sections are still partially visible to hint at navigation breadth
-- [ ] Verify that event banner, route content, footer/help surfaces, and floating overlays still compose cleanly with the side-toolbar shell
-- [ ] Review the experiment against the UI consistency audit so the new shell improves navigation clarity without fragmenting the product chrome
-- [ ] Add focused responsive coverage for the breakpoint transition and the large-screen shell layout
 
 ---
 
@@ -276,10 +245,10 @@ tablet-sized treatment now leaks into normal desktop and patch-editing layouts w
 **Why:** The Patcher entry in the toolbar should always preserve the brand color instead of falling into the purple visited/active
 HTML-link look when clicked. This is a brand-consistency issue, not a state meant to inherit default browser link styling.
 
-- [ ] Define the toolbar rule that the Patcher brand entry keeps brand color in default, active, focused, and visited states
-- [ ] Remove any reliance on raw HTML link color behavior for the active/clicked state of that brand entry
-- [ ] Keep interaction feedback through non-color cues if needed, without sacrificing the brand color treatment
-- [ ] Review neighboring toolbar items so the branded entry remains distinct while the rest of the navigation keeps its normal state behavior
+- [x] Define the toolbar rule that the Patcher brand entry keeps brand color in default, active, focused, and visited states
+- [x] Remove any reliance on raw HTML link color behavior for the active/clicked state of that brand entry
+- [x] Keep interaction feedback through non-color cues if needed, without sacrificing the brand color treatment
+- [x] Review neighboring toolbar items so the branded entry remains distinct while the rest of the navigation keeps its normal state behavior
 
 ---
 
