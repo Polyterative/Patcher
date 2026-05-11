@@ -188,7 +188,9 @@
                 </mat-chip-set>
               </lib-hero-content-card>
                <div [@moduleDetailSupportEnter]="{ value: '', params: { delay: 412, duration: 190 } }">
-                 <app-comments-root></app-comments-root>
+                 <lib-screen-wrapper maxSize="48rem">
+                   <app-comments-root></app-comments-root>
+                 </lib-screen-wrapper>
                </div>
             </div>
           }
