@@ -77,8 +77,8 @@ e2e/flow-0*.spec.ts
 # Supabase CLI cache
 supabase/.temp/
 
-# Local screenshot artifacts
-/output/playwright/
+# Local generated output artifacts
+/output/
 
 # Local Supabase backups — NEVER commit: contains real user data (public repo)
 /backups/
