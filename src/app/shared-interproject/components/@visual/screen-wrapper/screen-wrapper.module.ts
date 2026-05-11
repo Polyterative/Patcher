@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { ScreenWrapperComponent } from './screen-wrapper.component';
 
 @NgModule({
@@ -11,8 +10,7 @@ import { ScreenWrapperComponent } from './screen-wrapper.component';
     ScreenWrapperComponent
   ],
   imports:      [
-    CommonModule,
-    FlexLayoutModule
+    CommonModule
   ]
 })
 export class ScreenWrapperModule { }
