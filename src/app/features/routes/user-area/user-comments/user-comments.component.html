@@ -1,13 +1,15 @@
-<div class="col gap1">
-  <lib-hero-content-card titleNormal="Comments"
-                         description="Conversations, feedback and more"
-                         class="commentsBG"
-                         icon="comment"
-                         id="comments"
-  >
-    <ng-container *ngTemplateOutlet="content;"></ng-container>
-  </lib-hero-content-card>
-</div>
+<lib-screen-wrapper maxSize="48rem" class="userComments__wrapper">
+  <div class="col gap1">
+    <lib-hero-content-card titleNormal="Comments"
+                           description="Conversations, feedback and more"
+                           class="commentsBG"
+                           icon="comment"
+                           id="comments"
+    >
+      <ng-container *ngTemplateOutlet="content;"></ng-container>
+    </lib-hero-content-card>
+  </div>
+</lib-screen-wrapper>
 
 <ng-template #content>
   <div class="col gap1 userComments__rail">
