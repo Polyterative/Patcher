@@ -108,6 +108,14 @@ describe('RackVisualModelComponent', () => {
     expect(badge?.textContent?.trim()).toBe('14HP');
   });
 
+  it('hides the per-module HP badge during rack image capture', () => {
+    component.suppressHpIndicators = true;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.hpIndicator')).toBeNull();
+  });
+
   it('keeps rack rows using the shared horizontal row layout class', () => {
     fixture.detectChanges();
 
