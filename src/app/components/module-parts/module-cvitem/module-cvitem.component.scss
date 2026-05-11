@@ -120,7 +120,11 @@
   }
 }
 
-@media (max-width: 72.5rem) {
+@media (max-width: 48rem),
+  (max-width: 72.5rem) and (pointer: coarse),
+  (max-width: 72.5rem) and (any-pointer: coarse),
+  (max-width: 72.5rem) and (hover: none),
+  (max-width: 72.5rem) and (any-hover: none) {
   .item-cvitem {
     min-width: var(--app-touch-target-prominent-min, 3.5rem);
     min-height: var(--app-touch-target-prominent-min, 3.5rem);
