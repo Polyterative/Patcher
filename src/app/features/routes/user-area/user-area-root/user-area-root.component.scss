@@ -95,6 +95,15 @@
   padding-right: 0.25rem;
 }
 
+.utility-rail-group {
+  min-width: 0;
+}
+
+.utility-rail-group--secondary {
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(34, 72, 118, 0.1);
+}
+
 .main-content {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

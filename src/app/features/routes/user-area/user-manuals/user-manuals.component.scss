@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.manuals-shell {
+  min-width: 0;
+}
+
+.manuals-list {
+  max-block-size: 16rem;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.manuals-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.manuals-empty {
+  padding: 1rem;
+  align-self: center;
+  text-align: center;
+  width: 100%;
+}
+
+@media (max-width: 60rem) {
+  .manuals-list {
+    max-block-size: none;
+    overflow: visible;
+  }
+}
