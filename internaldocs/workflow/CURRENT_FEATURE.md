@@ -12,25 +12,25 @@
 
 ## Active
 
-### Rack Details — Hide HP Override Counters During Image Upload / Update
+### Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled
 
-**Goal:** make sure rack-image upload/update mode never leaks the old HP override counters, keeping the existing suppression behavior consistent across all rack-detail image-editing states.
+**Goal:** remove the dead-looking divider from manufacturer-detail module tiles whenever the action area is completely absent, so disabled tiles no longer look like broken placeholders.
 
 #### Layer 1 — MVP
-- [ ] Trace the rack-detail image upload/update states and identify where HP override counters still remain visible
-- [ ] Confirm which current guards already suppress HP override UI in adjacent rack-detail states
+- [ ] Find the manufacturer-detail tile template and confirm which guard currently leaves the lower divider visible
+- [ ] Trace how the action-area disabled state is computed so the divider can follow the same source of truth
 
 **Layer 1 discoveries:** pending.
 
 #### Layer 2 — Structural
-- [ ] Extend the existing visibility contract so upload/update state also suppresses HP override counters
-- [ ] Keep the fix narrow so normal rack-detail viewing/editing behavior does not change outside the image-update path
+- [ ] Hide the divider whenever all tile actions are absent/disabled without changing tiles that still have a live footer action
+- [ ] Keep the fix local to manufacturer-detail/module-tile rendering so other module list surfaces stay unchanged
 
 #### Layer 3 — Polish
-- [ ] Add focused coverage for the upload/update state where the counters previously leaked through
-- [ ] Audit nearby rack-detail HP copy/labels only if the guard change reveals another inconsistent state
+- [ ] Add focused coverage for the fully-disabled tile state if a nearby component spec already exists
+- [ ] Review the final tile rhythm against neighboring manufacturer-detail cards so the footer removal does not leave awkward spacing
 
-**Current progress:** not started yet in code. Next step is to inspect the rack-detail image-editing template/state flags and follow the existing HP override visibility guards instead of introducing a parallel rule.
+**Current progress:** not started yet in code. Next step is to inspect the manufacturer-detail tile action/footer template and reuse the existing “buttons visible” decision rather than inventing a second visibility rule.
 
 ---
 
