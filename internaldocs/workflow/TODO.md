@@ -128,18 +128,10 @@ privacy-safe aggregate so users can see that hidden usage exists without exposin
 
 #### MEDIUM: Rack Editor — Collection-Only Module Filter
 
-**Why:** User feedback surfaced a practical rack-building friction point: when populating a rack, the available module list
-can be hard to work through if someone mainly wants to place modules they already own. Add a collection-aware default that
-adapts to collection size, plus a clear double-toggle between owned-only and full-catalog browsing, while keeping rack
-composition user-controlled rather than ownership-restricted.
-
-- [ ] Add a clear double-toggle in the rack module picker / rack editing flow so users can switch between owned-only and full-catalog browsing
-- [ ] Add adaptive default logic: if the user's collection is below a defined threshold, open the full browser directly; otherwise open the same browser pre-filtered to owned modules
-- [ ] Decide and document the threshold that separates "small collection, show all" from "large enough collection, default to owned-only"
-- [ ] Support sorting the filtered set by HP/width so owned modules can be browsed in a rack-planning-friendly order
-- [ ] Keep collection filtering as a convenience view only; do not make ownership the source of truth for what a rack may contain
-- [ ] Define the empty state when the user has no collection matches so the picker does not feel broken
-- [ ] Add focused tests for adaptive default, toggle behavior, and filter + sort behavior in the rack editing module list
+**Status:** Implemented on 05-11. Rack editing now supports owned-only vs full-catalog browsing in the embedded module
+browser. The adaptive threshold is **20 collection modules**: below that, the picker defaults to full catalog; at or above
+that, it defaults to owned-only. Owned mode defaults to HP-first ordering, includes contextual empty-state guidance, and
+remains a convenience filter only rather than a rack restriction.
 
 ---
 

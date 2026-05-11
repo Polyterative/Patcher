@@ -1,16 +1,56 @@
 <div class="col gap1"
      [class.module-browser-root--compact-tablet]="compactSidebarAtTablet"
 >
-  <lib-hero-content-card titleBig="Modules"
+  <lib-hero-content-card [titleBig]="titleBig"
                          class="modulesBG"
-                         description="Browse and discover modules, save your favourites and submit your own"
+                         [description]="description"
   >
     <div class="sidebar-layout">
       
       <!-- ── Left sidebar: all filters ── -->
       <aside class="filter-sidebar col gap1"
-             [class.module-filter-sidebar--expanded]="mobileFiltersExpanded"
-      >
+              [class.module-filter-sidebar--expanded]="mobileFiltersExpanded"
+       >
+        @if (showCollectionBrowseToggle) {
+          <div class="module-browser-mode col gap075">
+            <div class="col gap025 module-browser-mode__summary">
+              <span class="module-browser-mode__eyebrow">Browsing mode</span>
+              <span class="module-browser-mode__heading">{{ browseModeHeading }}</span>
+              <span class="module-browser-mode__meta">{{ visibleResultsMeta }} · {{ browseModeHint }}</span>
+            </div>
+            <div class="module-browser-mode__toggle"
+                 role="group"
+                 aria-label="Rack module browser mode"
+            >
+              @if (showAvailableBrowseMode) {
+                <button type="button"
+                        class="module-browser-mode__button"
+                        [class.module-browser-mode__button--active]="collectionBrowseMode === 'available'"
+                        [attr.aria-pressed]="collectionBrowseMode === 'available'"
+                        (click)="setCollectionBrowseMode('available')"
+                >
+                  Available
+                </button>
+              }
+              <button type="button"
+                      class="module-browser-mode__button"
+                      [class.module-browser-mode__button--active]="collectionBrowseMode === 'owned'"
+                      [attr.aria-pressed]="collectionBrowseMode === 'owned'"
+                      (click)="setCollectionBrowseMode('owned')"
+              >
+                Collection
+              </button>
+              <button type="button"
+                      class="module-browser-mode__button"
+                      [class.module-browser-mode__button--active]="collectionBrowseMode === 'all'"
+                      [attr.aria-pressed]="collectionBrowseMode === 'all'"
+                      (click)="setCollectionBrowseMode('all')"
+              >
+                All modules
+              </button>
+            </div>
+          </div>
+        }
         
         <span class="filter-sidebar__heading">Filters</span>
         
@@ -112,29 +152,32 @@
           </button>
         </div>
         
-        <app-recent-activity class="module-recent-activity"
-                             [items]="recentActivityItems$ | async"
-                             title="Recent activity"
-                             emptyText="No recent module activity in this filtered set."
-        ></app-recent-activity>
+        @if (showRecentActivity && !usesOwnedDataset) {
+          <app-recent-activity class="module-recent-activity"
+                               [items]="recentActivityItems$ | async"
+                               title="Recent activity"
+                               emptyText="No recent module activity in this filtered set."
+          ></app-recent-activity>
+        }
       
       </aside>
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
-        <app-module-list [data$]="dataService.modulesList$"
+        <app-module-list [data$]="visibleModules$"
                          [viewConfig]="viewConfig"
+                         [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
                          [encloseVertically]="false"
         ></app-module-list>
-        <mat-paginator [hidePageSize]="(dataService.serversideAdditionalData.itemsCount$|async)<20"
+        <mat-paginator [hidePageSize]="(visibleItemsCount$|async)<20"
                        [pageSizeOptions]="[20,25,50,100]"
                        [pageSize]="dataService.serversideTableRequestData.take$.value"
                        [pageIndex]="dataService.serversideTableRequestData.skip$.value / dataService.serversideTableRequestData.take$.value"
-                       [length]="dataService.serversideAdditionalData.itemsCount$|async"
-                       (page)="dataService.pageEvent$.next($event)"
+                       [length]="visibleItemsCount$|async"
+                       (page)="handlePageEvent($event)"
                        showFirstLastButtons
         ></mat-paginator>
-        <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
+        <lib-auto-update-loading-indicator [data$]="visibleModules$"
                                            [updateData$]="dataService.updateModulesList$"
         ></lib-auto-update-loading-indicator>
       </div>

@@ -16,6 +16,7 @@ import {
 import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
+import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import {
   CommentableEntityTypes,
   CommentsDataService
@@ -47,7 +48,7 @@ const JSONLD_SCRIPT_ID = 'rack-jsonld';
   templateUrl: './rack-browser-detail-view.component.html',
   styleUrls: ['./rack-browser-detail-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CommentsDataService],
+  providers: [CommentsDataService, UserAreaDataService],
   standalone: false
 })
 export class RackBrowserDetailViewComponent extends SubManager implements OnInit {
@@ -59,6 +60,7 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
 
   constructor(
     public dataService: RackDetailDataService,
+    public userAreaDataService: UserAreaDataService,
     public route: ActivatedRoute,
     readonly seoAndUtilsService: SeoAndUtilsService,
     private commentsDataService: CommentsDataService,
@@ -78,6 +80,9 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
       this.userManagementService.loggedUser$.pipe(take(1))
     ]).subscribe(([rackId, user]) => {
       this.dataService.setPublicDetailMode(!user);
+      if (user) {
+        this.userAreaDataService.updateModulesData$.next();
+      }
       this.dataService.updateSingleRackData$.next(rackId);
     });
 
