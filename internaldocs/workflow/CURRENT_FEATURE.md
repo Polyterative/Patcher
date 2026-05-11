@@ -33,7 +33,7 @@
 - [ ] Refine titles, spacing, and adjacent navigation context so the large-screen shell feels consistent with the existing product chrome
 - [ ] Recheck event banner, footer/help surfaces, and floating overlays against the large-screen shell so the experiment does not fragment the UI
 
-**Layer 3 progress:** the Metro-style title strip now lives directly inside the shared hero title surface, home hero, and user-area root; the desktop strip keeps brand plus account actions in the same integrated row; detail/edit routes now get route-aware active context such as section plus “Details” / “Editing”; and the wide-shell breakpoint has been lowered so the new shell persists on medium-large screens instead of falling back to the old toolbar too quickly. The current polish focus is the last spacing/alignment pass on the right edge of the strip plus confirming the surrounding footer/help/banner surfaces still read coherently.
+**Layer 3 progress:** the Metro-style title strip now lives directly inside the shared hero title surface, home hero, and user-area root; the desktop strip keeps brand plus account actions in the same integrated row; detail/edit routes now get route-aware active context such as section plus “Details” / “Editing”; the right edge of the strip now uses explicit primary/account groups instead of a fragile auto-margin handoff; the footer has been moved onto a native responsive shell layout; and the brand entry now keeps an explicit branded state across default, active, focus, and visited states. The current polish focus is confirming the surrounding banner/help/floating surfaces still read coherently before closing Layer 3.
 
 ---
 
