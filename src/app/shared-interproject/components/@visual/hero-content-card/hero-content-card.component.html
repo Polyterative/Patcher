@@ -35,27 +35,30 @@
                        aria-label="Go to home">{{ siteTitle }}</a>
                   </div>
                   <nav class="title-metro-targets" aria-label="Section targets">
-                    @for (item of wideShellTargets; track trackByNavLink($index, item)) {
-                      <a
-                         class="title-metro-target"
-                         [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
-                         [routerLink]="item.route"
-                         [attr.aria-label]="item.label"
-                       >
-                         {{ item.label }}
-                       </a>
-                     }
-                    @for (item of shellVm.accountLinks; track trackByNavLink($index, item); let isFirst = $first) {
-                      <a
-                        class="title-metro-target title-metro-target--private"
-                        [class.title-metro-target--private-start]="isFirst"
-                        [routerLink]="item.route"
-                        routerLinkActive="title-metro-target--active"
-                        [attr.aria-label]="item.label"
-                      >
-                        <span>{{ item.label }}</span>
-                      </a>
-                    }
+                    <div class="title-metro-target-group">
+                      @for (item of wideShellTargets; track trackByNavLink($index, item)) {
+                        <a
+                           class="title-metro-target"
+                           [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
+                           [routerLink]="item.route"
+                           [attr.aria-label]="item.label"
+                         >
+                           {{ item.label }}
+                         </a>
+                       }
+                    </div>
+                    <div class="title-metro-target-group title-metro-target-group--account">
+                      @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
+                        <a
+                          class="title-metro-target title-metro-target--private"
+                          [routerLink]="item.route"
+                          routerLinkActive="title-metro-target--active"
+                          [attr.aria-label]="item.label"
+                        >
+                          <span>{{ item.label }}</span>
+                        </a>
+                      }
+                    </div>
                   </nav>
                 </div>
               }
