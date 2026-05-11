@@ -22,6 +22,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { DbComment } from "src/app/models/comment";
 import { MatCardSubtitle } from "@angular/material/card";
+import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
 
 
 interface FilterOption {
@@ -45,6 +46,7 @@ interface FilterOption {
     MatPaginatorModule,
     MatChipsModule,
     MatCardSubtitle,
+    ScreenWrapperModule,
   ]
 })
 export class UserCommentsComponent implements OnInit {
