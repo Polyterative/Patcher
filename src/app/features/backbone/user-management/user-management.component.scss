@@ -4,6 +4,7 @@
 
 .account-shell {
   position: relative;
+  padding-bottom: 4.5rem;
 }
 
 .account-content {
@@ -65,6 +66,10 @@
 }
 
 @media (max-width: 37.4375rem) {
+  .account-shell {
+    padding-bottom: 5.5rem;
+  }
+
   .section-surface {
     padding: 0.7rem 0.8rem;
   }
