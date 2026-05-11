@@ -17,7 +17,10 @@ import {
   shareReplay,
   startWith
 } from 'rxjs/operators';
-import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import {
+  getRouteClickableLinkKey,
+  RouteClickableLink
+} from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { HomeHeroContent } from '../../home-content.models';
@@ -109,5 +112,9 @@ export class HomeExperienceHeroComponent {
   
   getSubtitleSegments(line: string) {
     return this.subtitleSegmentsByLine.get(line) ?? [];
+  }
+
+  trackByNavLink(index: number, item: RouteClickableLink): string {
+    return getRouteClickableLinkKey(item);
   }
 }
