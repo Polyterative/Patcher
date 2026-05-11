@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **HIGH: User Area — Ownership-First Full-Height Workspace**
-  Turn the current user area from a wrapped dashboard into a clearer tool-like workspace where modules, racks, and patches are the primary large-screen surfaces.
+- [~] **HIGH: User Area — Compact and Bound the Utility Rail**
+  Keep the user-area right side genuinely secondary by grouping, bounding, and collapsing its support surfaces so modules, racks, and patches remain the first read.
 
 ---
 
@@ -133,20 +133,6 @@ app is processing the filter change instead of looking stuck.
 - [x] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
 - [x] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
 - [x] Add focused tests for the tag-filter loading state and completion transition
-
----
-
-#### HIGH: User Area — Ownership-First Full-Height Workspace
-
-**Why:** The current user area reads as several competing columns instead of one clear ownership-focused workspace. Modules,
-racks, and patches should become the primary full-height surfaces so the page feels more like a tool and less like a long
-dashboard.
-
-- [ ] Define a route-level container contract where the main workspace fills the available viewport beneath the page header
-- [ ] Make **Modules / Racks / Patches** the primary large-screen columns and give each one its own internal scroll region
-- [ ] Document shared rules for column height, overflow, pagination placement, and spacing so the three owned-content sections behave consistently
-- [ ] Keep the page focus on what the user owns and manages rather than letting secondary profile/context blocks dominate the first read
-- [ ] Reuse the browser-family layout mental model as the main reference pattern for this page
 
 ---
 
