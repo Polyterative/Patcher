@@ -24,23 +24,74 @@
         <h1
           class="row title bgImage vertPadding gap1"
           [class.title--with-sub]="titleSub">
-          <div class="title-text"
-               [class.title-text--with-sub]="titleSub"
+          <div class="title-shell"
                [@title]>
-            <span class="title-main">{{ titleBig }}</span>
-            @if (titleSub) {
-              <span class="title-separator"
-                    aria-hidden="true">-</span>
-              <span class="title-sub"
-                    [attr.title]="titleSub">{{ titleSub }}</span>
+            @if (showWideShellNav && (wideShell$ | async)) {
+              @if (currentShellUrl$ | async; as currentUrl) {
+                <div class="title-metro-nav">
+                  <div class="title-metro-topbar">
+                    <a class="title-metro-brand"
+                       routerLink="/home"
+                       aria-label="Go to home">{{ siteTitle }}</a>
+                    <div class="title-metro-meta">
+                      @if (accountLinks$ | async; as accountLinks) {
+                        <div class="title-metro-actions">
+                          @for (item of accountLinks; track item.route ?? item.label) {
+                            <a
+                              class="title-metro-action"
+                              [routerLink]="item.route"
+                              routerLinkActive="title-metro-action--active"
+                              [attr.aria-label]="item.label"
+                            >
+                              @if (item.icon) {
+                                <mat-icon>{{ item.icon }}</mat-icon>
+                              }
+                              <span>{{ item.label }}</span>
+                            </a>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <nav class="title-metro-targets" aria-label="Section targets">
+                    @for (item of wideShellTargets; track item.route ?? item.label) {
+                      <a
+                        class="title-metro-target"
+                        [class.title-metro-target--active]="isWideShellTargetActive(item, currentUrl)"
+                        [routerLink]="item.route"
+                        [attr.aria-label]="item.label"
+                      >
+                        {{ item.label }}
+                      </a>
+                    }
+                  </nav>
+                </div>
+              }
             }
+            <div class="row gap1 title-heading-row">
+              <div class="title-heading-copy">
+                <div class="title-text"
+                     [class.title-text--with-sub]="titleSub">
+                  <span class="title-main">{{ titleBig }}</span>
+                  @if (titleSub) {
+                    <span class="title-separator"
+                          aria-hidden="true">-</span>
+                    <span class="title-sub"
+                          [attr.title]="titleSub">{{ titleSub }}</span>
+                  }
+                </div>
+                @if (description && !showHelpButton && showWideShellNav && (wideShell$ | async)) {
+                  <div class="title-inline-description">{{ description }}</div>
+                }
+              </div>
+              @if (icon) {
+                <app-hero-content-card-head-icon [icon]="icon"
+                                                 class="icon-center">
+                </app-hero-content-card-head-icon>
+              }
+              <ng-container *ngTemplateOutlet="helpButton"></ng-container>
+            </div>
           </div>
-          @if (icon) {
-            <app-hero-content-card-head-icon [icon]="icon"
-                                             class="icon-center">
-            </app-hero-content-card-head-icon>
-          }
-          <ng-container *ngTemplateOutlet="helpButton"></ng-container>
         </h1>
       }
       @if (titleNormal) {
@@ -59,7 +110,7 @@
         </h3>
       }
     }
-    @if (description && !showHelpButton) {
+    @if (description && !showHelpButton && !(titleBig && showWideShellNav && (wideShell$ | async))) {
       <mat-card-subtitle
         class="description auto"
         [ngClass]="descriptionAlign"

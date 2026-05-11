@@ -22,9 +22,15 @@ import {
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { SeoAndUtilsService } from 'src/app/features/backbone/seo-and-utils.service';
+import {
+  buildWideShellAccountLinks,
+  getWideShellQuickTargets
+} from 'src/app/features/backbone/toolbar/toolbar-link-data';
 import { UserAreaDataService } from 'src/app/features/routes/user-area/user-area-data.service';
 import { UntypedFormControl } from '@angular/forms';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import { AppShellLayoutService } from 'src/app/shared-interproject/app-shell-layout.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
@@ -64,6 +70,9 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   
   miscStats$ = of([]);
   contributorStats$ = of<any[] | null>(null);
+  wideShell$ = of(false);
+  shellTargets: RouteClickableLink[] = [];
+  shellAccountLinks$ = of<RouteClickableLink[]>([]);
   readonly contributorStatsEmptyMessage =
     'No contributor activity yet. Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
   
@@ -73,9 +82,21 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     public dataService: UserAreaDataService,
     readonly seoAndUtilsService: SeoAndUtilsService,
     public appState: AppStateService,
-    public urlCreatorService: UrlCreatorService
+    public urlCreatorService: UrlCreatorService,
+    private readonly appShellLayoutService: AppShellLayoutService
   ) {
     super();
+    this.wideShell$ = this.appShellLayoutService.wideShell$;
+    this.shellTargets = getWideShellQuickTargets(this.appState.isDev);
+    this.shellAccountLinks$ = combineLatest([
+      this.userService.loggedUser$.pipe(startWith(undefined)),
+      this.userService.loggedUserFullProfile$.pipe(startWith(undefined))
+    ]).pipe(
+      map(([loggedUser, profile]) => buildWideShellAccountLinks(
+        Boolean(loggedUser),
+        profile?.username?.trim() || 'Account'
+      ))
+    );
     this.miscStats$ = combineLatest([
       this.dataService.modulesData$,
       this.dataService.rackData$,

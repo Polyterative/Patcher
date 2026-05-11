@@ -1,3 +1,105 @@
+.public-shell-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  padding: 0.15rem 0 1.05rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(52, 79, 111, 0.12);
+}
+
+.public-shell-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  inline-size: 100%;
+  gap: 1rem;
+}
+
+.public-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.02rem;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: rgba(58, 34, 132, 0.92);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.public-shell-targets {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem 1.15rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.2rem;
+}
+
+.public-shell-target {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  font-size: 1.12rem;
+  line-height: 1.1;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: rgba(35, 60, 90, 0.78);
+  text-decoration: none;
+  border-bottom: 0.12rem solid transparent;
+  white-space: nowrap;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.public-shell-target--active {
+  color: rgba(17, 31, 48, 0.96);
+  border-bottom-color: rgba(34, 72, 118, 0.9);
+}
+
+.public-shell-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.public-shell-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 1.9rem;
+  padding: 0.24rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 79, 111, 0.14);
+  background: rgba(255, 255, 255, 0.56);
+  color: rgba(30, 52, 78, 0.8);
+  text-decoration: none;
+  font-size: 0.8rem;
+  line-height: 1.05;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.public-shell-action mat-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  font-size: 0.85rem;
+}
+
+.public-shell-action--active {
+  border-color: rgba(34, 72, 118, 0.42);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(17, 31, 48, 0.94);
+  box-shadow: inset 0 0 0 0.0625rem rgba(34, 72, 118, 0.1);
+}
+
 .public-profile-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
@@ -54,5 +156,11 @@
 @media (max-width: 900px) {
   .public-profile-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 31.25rem) {
+  .public-shell-nav {
+    display: none;
   }
 }

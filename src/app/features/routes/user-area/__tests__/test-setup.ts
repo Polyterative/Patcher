@@ -151,9 +151,16 @@ export function createMockDiscoveryTipService() {
 export function createMockAppStateService() {
   const preferredPanelColor$ = new BehaviorSubject<number | null>(null);
   return {
+    isDev: false,
     preferredPanelColor$: preferredPanelColor$.asObservable(),
     setPreferredPanelColor: jasmine.createSpy('setPreferredPanelColor'),
     _preferredPanelColor$: preferredPanelColor$,
+  };
+}
+
+export function createMockAppShellLayoutService() {
+  return {
+    wideShell$: of(false)
   };
 }
 

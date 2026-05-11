@@ -7,6 +7,40 @@
   isOwnProfile: (isOwnProfile$ | async),
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
+    @if (wideShell$ | async) {
+      <div class="public-shell-nav">
+        <div class="public-shell-topbar">
+          <a class="public-shell-brand"
+             routerLink="/home"
+             aria-label="Go to home">{{ siteTitle }}</a>
+          @if (shellAccountLinks$ | async; as accountLinks) {
+            <div class="public-shell-actions">
+              @for (item of accountLinks; track item.route ?? item.label) {
+                <a class="public-shell-action"
+                   [routerLink]="item.route"
+                   routerLinkActive="public-shell-action--active"
+                   [attr.aria-label]="item.label">
+                  @if (item.icon) {
+                    <mat-icon>{{ item.icon }}</mat-icon>
+                  }
+                  <span>{{ item.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+        <nav class="public-shell-targets" aria-label="Section targets">
+          @for (item of shellTargets; track item.route ?? item.label) {
+            <a class="public-shell-target"
+               [routerLink]="item.route"
+               routerLinkActive="public-shell-target--active"
+               [attr.aria-label]="item.label">
+              {{ item.label }}
+            </a>
+          }
+        </nav>
+      </div>
+    }
     @if (bag.state === 'ready' && bag.profile) {
       <div class="col gap1">
         <lib-clean-card class="profile-header">
