@@ -11,12 +11,13 @@ import {
  * - beforeEach creates a dedicated private test rack named "[E2E] Panel Switch Test"
  * - afterEach deletes it via the UI delete button — no DB pollution, no public racks
  *
- * Test module: Belgrad by XAOC Devices (id=371, 2 panels)
+ * Test module: Afterneath by EarthQuaker Devices (id=2674, 2 panels)
  * Active panel has " ✓" appended to its label.
  */
 test.describe('Authenticated Rack Panel Switching', () => {
 
   const TEST_RACK_NAME = '[E2E] Panel Switch Test';
+  const TEST_MODULE = {id: 2674, name: 'Afterneath'} as const;
 
   async function enterEditMode(page: any): Promise<void> {
     const editBtn = page.getByRole('button', {name: /^Edit rack$/i}).first();
@@ -45,13 +46,13 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(switchPanelTrigger).toBeVisible({timeout: 8_000});
     await switchPanelTrigger.hover();
 
-    const panelMenu = page.locator('.cdk-overlay-pane').filter({
-      has: page.getByRole('menuitem', {name: /Panel 1/i})
-    }).last();
+    const panelMenu = page.locator('.cdk-overlay-pane').last();
     await expect(panelMenu).toBeVisible({timeout: 5_000});
 
-    const panel1Item = panelMenu.getByRole('menuitem', {name: /Panel 1/i});
-    const panel2Item = panelMenu.getByRole('menuitem', {name: /Panel 2|Dark/i});
+    const panelItems = panelMenu.getByRole('menuitem');
+    await expect(panelItems).toHaveCount(2, {timeout: 5_000});
+    const panel1Item = panelItems.nth(0);
+    const panel2Item = panelItems.nth(1);
     await expect(panel1Item).toBeVisible({timeout: 5_000});
     await expect(panel2Item).toBeVisible({timeout: 5_000});
 
@@ -154,13 +155,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
   });
 
   test('moving a module between rows persists after reload', async ({page}) => {
-    const browser = page.locator('app-module-browser-root');
-    await expect(browser).toBeVisible({timeout: 10_000});
-    await browser.locator('input').first().fill('Belgrad');
-
-    const belgradCard = browser.locator('app-module-minimal', {hasText: /Belgrad/i}).first();
-    await expect(belgradCard).toBeVisible({timeout: 15_000});
-    await belgradCard.locator('button').last().click();
+    await addRackModuleToRack(page, TEST_MODULE);
 
     await page.waitForTimeout(2_500);
     await page.goto(rackUrl);
@@ -170,7 +165,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
     const rows = page.locator('app-rack-visual-model #screen .rackRow');
     await expect.poll(async () => rows.count(), {timeout: 10_000}).toBeGreaterThan(1);
 
-    const sourceRowIndex = await getModuleRowIndex(page, 'Belgrad');
+    const sourceRowIndex = await getModuleRowIndex(page, TEST_MODULE.name);
     expect(sourceRowIndex).toBeGreaterThanOrEqual(0);
 
     const targetRowIndex = sourceRowIndex === 0 ? 1 : 0;
@@ -227,7 +222,7 @@ test.describe('Authenticated Rack Panel Switching', () => {
         module: moduleToMove
       });
     }, {
-      moduleName: 'Belgrad',
+      moduleName: TEST_MODULE.name,
       targetRowIndex
     });
     await saveRequest;
@@ -237,19 +232,12 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
     await enterEditMode(page);
 
-    const persistedRowIndex = await getModuleRowIndex(page, 'Belgrad');
+    const persistedRowIndex = await getModuleRowIndex(page, TEST_MODULE.name);
     expect(persistedRowIndex).toBe(targetRowIndex);
   });
 
   test('right-click panel switch changes module panel and persists after reload', async ({page}) => {
-    // Add Belgrad (multi-panel module) via the module browser
-    const browser = page.locator('app-module-browser-root');
-    await expect(browser).toBeVisible({timeout: 10_000});
-    const nameInput = browser.locator('input').first();
-    await nameInput.fill('Belgrad');
-    const belgradCard = browser.locator('app-module-minimal', {hasText: /Belgrad/i}).first();
-    await expect(belgradCard).toBeVisible({timeout: 15_000});
-    await belgradCard.locator('button').last().click();
+    await addRackModuleToRack(page, TEST_MODULE);
 
     // Wait for DB sync, then reload so the module has a persisted id
     await page.waitForTimeout(2_500);
@@ -258,9 +246,9 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await enterEditMode(page);
 
     // --- Phase 1: read current panel state ---
-    const belgradInRack = page.locator('app-rack-visual-model app-module-realistic')
-      .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
-    const {panel1Item, panel2Item} = await openPanelSwitchMenu(page, belgradInRack);
+    const moduleInRack = page.locator('app-rack-visual-model app-module-realistic')
+      .filter({has: page.locator(`img[alt*="${ TEST_MODULE.name }"]`)}).first();
+    const {panel1Item, panel2Item} = await openPanelSwitchMenu(page, moduleInRack);
 
     const panel1Active = ((await panel1Item.textContent()) ?? '').includes('✓');
     const panelSwitchRequest = page.waitForResponse(response => {
@@ -286,13 +274,41 @@ test.describe('Authenticated Rack Panel Switching', () => {
     await expect(page.locator('app-rack-visual-model')).toBeVisible({timeout: 15_000});
     await enterEditMode(page);
 
-    const belgradAfterReload = page.locator('app-rack-visual-model app-module-realistic')
-      .filter({has: page.locator('img[alt*="Belgrad"]')}).first();
-    const afterReloadMenu = await openPanelSwitchMenu(page, belgradAfterReload);
+    const moduleAfterReload = page.locator('app-rack-visual-model app-module-realistic')
+      .filter({has: page.locator(`img[alt*="${ TEST_MODULE.name }"]`)}).first();
+    const afterReloadMenu = await openPanelSwitchMenu(page, moduleAfterReload);
     const activePanelItem = panel1Active ? afterReloadMenu.panel2Item : afterReloadMenu.panel1Item;
     const inactivePanelItem = panel1Active ? afterReloadMenu.panel1Item : afterReloadMenu.panel2Item;
 
     await expect(activePanelItem).toContainText('✓', {timeout: 8_000});
     await expect(inactivePanelItem).not.toContainText('✓');
   });
+
+  async function addRackModuleToRack(page: any, module: {id: number; name: string}): Promise<void> {
+    await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
+    const addRequest = page.waitForResponse(response =>
+      response.url().includes('/rest/v1/rack_modules')
+      && response.request().method() === 'POST'
+      && response.ok(),
+    {timeout: 15_000});
+
+    await page.evaluate(({moduleId, moduleName}) => {
+      const ng = (window as any).ng;
+      if (!ng?.getComponent) {
+        throw new Error('Angular debug API unavailable');
+      }
+      const rackDetail = document.querySelector('app-rack-browser-rack-detail');
+      if (!rackDetail) {
+        throw new Error('Rack detail view not found');
+      }
+      const component = ng.getComponent(rackDetail);
+      component.dataService.addModuleToRack$.next({id: moduleId, name: moduleName});
+    }, {
+      moduleId: module.id,
+      moduleName: module.name
+    });
+
+    await addRequest;
+    await expect(page.locator(`app-rack-visual-model img[alt*="${ module.name }"]`).first()).toBeVisible({timeout: 15_000});
+  }
 });
