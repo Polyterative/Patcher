@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import {
-  forkJoin,
   ReplaySubject
 } from 'rxjs';
 import {
@@ -135,11 +134,7 @@ export class ApplicationStatisticsService extends SubManager {
     map((statistics) => this.mapTeaser(statistics))
   );
   readonly page$ = this.refreshRequest$.pipe(
-    switchMap(() => forkJoin({
-      statistics: this.backend.GET.applicationStatistics(),
-      activitySeries: this.backend.GET.applicationActivitySeries(30),
-      moduleInsights: this.backend.GET.applicationModuleInsights()
-    })),
+    switchMap(() => this.backend.GET.applicationInsightsSnapshot(30)),
     map(({statistics, activitySeries, moduleInsights}) => this.mapPage(statistics, activitySeries, moduleInsights))
   );
 
