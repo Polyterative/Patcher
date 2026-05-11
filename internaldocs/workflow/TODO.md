@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **HIGH: User Area — Compact and Bound the Utility Rail**
-  Keep the user-area right side genuinely secondary by grouping, bounding, and collapsing its support surfaces so modules, racks, and patches remain the first read.
+- [~] **LOW: Rack Details — Hide HP Override Counters During Image Upload / Update**
+  Extend the existing rack-detail HP-override suppression so image upload/update mode cannot leave those counters visible by mistake.
 
 ---
 
