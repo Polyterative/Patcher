@@ -108,6 +108,7 @@ export class RackDetailDataService extends SubManager {
   isRackDataLoading$ = new BehaviorSubject<boolean>(false);
   
   rowedRackedModules$ = new BehaviorSubject<RackedModule[][] | null>(null);
+  isRackImageCaptureInProgress$ = new BehaviorSubject<boolean>(false);
   readonly functionAnalysisLegendItems$ = this.rowedRackedModules$.pipe(
     map(rowedRackedModules => buildFunctionAnalysisLegendItems(rowedRackedModules)),
     shareReplay(1)
@@ -873,12 +874,14 @@ export class RackDetailDataService extends SubManager {
     return defer(() => {
       const previousAnalysisMode = this.analysisMode$.value ?? RACK_ANALYSIS_MODES.off;
       this.analysisMode$.next(RACK_ANALYSIS_MODES.off);
+      this.isRackImageCaptureInProgress$.next(true);
 
       return of(undefined).pipe(
         // Rack analysis overlays animate out over ~320ms, so wait for the rendered UI to settle before capture.
         delay(RackDetailDataService.imageCaptureOverlayResetDelayMs),
         switchMap(() => this.generateRackJpeg$(el)),
         finalize(() => {
+          this.isRackImageCaptureInProgress$.next(false);
           if (this.analysisMode$.value === RACK_ANALYSIS_MODES.off) {
             this.analysisMode$.next(previousAnalysisMode);
           }
