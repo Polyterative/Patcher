@@ -90,12 +90,14 @@
               title="Profile stats"
               icon="analytics"
               cardClass="userBG"
+              [compact]="true"
               [statistics]="miscStats$ | async"
             ></app-statistics>
             <app-statistics
               title="Contributor stats"
               icon="insights"
               cardClass="userBG"
+              [compact]="true"
               [statistics]="contributorStats$ | async"
               [emptyMessage]="contributorStatsEmptyMessage"
             ></app-statistics>
