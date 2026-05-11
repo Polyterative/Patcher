@@ -11,6 +11,7 @@ const MOBILE_VIEWPORT = {width: 390, height: 844} as const;
 const NARROW_MOBILE_VIEWPORT = {width: 360, height: 740} as const;
 const TABLET_VIEWPORT = {width: 820, height: 1180} as const;
 const TABLET_LANDSCAPE_VIEWPORT = {width: 1024, height: 768} as const;
+const TEST_MODULE = {id: 2674, name: 'Afterneath'} as const;
 
 type Rect = {
   x: number;
@@ -191,7 +192,7 @@ test.describe('Authenticated Rack Editor layout regressions', () => {
   test('desktop keeps the rack template capped to the rack HP when a row overflows', async ({page}) => {
     await openRackAtViewport(page, rackUrl, DESKTOP_VIEWPORT);
     await enterEditMode(page);
-    await addBelgradToRack(page, 7);
+    await addRackModuleToRack(page, TEST_MODULE, 7);
 
     const metrics = await readRackOverflowTemplateMetrics(page);
 
@@ -239,25 +240,41 @@ async function createPreparedRack(page: Page, testInfo: TestInfo): Promise<strin
   await expect(page).toHaveURL(new RegExp(`/racks/details/${ createdRackId }(?:$|[?#])`), {timeout: 15_000});
 
   await enterEditMode(page);
-  await addBelgradToRack(page);
+  await addRackModuleToRack(page, TEST_MODULE);
   await lockRack(page);
 
   return createdRackUrl;
 }
 
-async function addBelgradToRack(page: Page, count = 1): Promise<void> {
-  const browser = page.locator('app-module-browser-root');
-  await expect(browser).toBeVisible({timeout: 10_000});
-
-  const searchInput = browser.locator('input').first();
-  await searchInput.fill('Belgrad');
-
-  const belgradCard = browser.locator('app-module-minimal', {hasText: /Belgrad/i}).first();
-  await expect(belgradCard).toBeVisible({timeout: 15_000});
-
+async function addRackModuleToRack(
+  page: Page,
+  module: {id: number; name: string},
+  count = 1
+): Promise<void> {
+  await expect(page.locator('app-module-browser-root')).toBeVisible({timeout: 10_000});
   for (let index = 0; index < count; index += 1) {
     const previousCount = await page.locator('app-rack-visual-model .module').count();
-    await belgradCard.locator('button').last().click();
+    const addRequest = page.waitForResponse(response =>
+      response.url().includes('/rest/v1/rack_modules')
+      && response.request().method() === 'POST'
+      && response.ok(),
+    {timeout: 15_000});
+    await page.evaluate(({moduleId, moduleName}) => {
+      const ng = (window as any).ng;
+      if (!ng?.getComponent) {
+        throw new Error('Angular debug API unavailable');
+      }
+      const rackDetail = document.querySelector('app-rack-browser-rack-detail');
+      if (!rackDetail) {
+        throw new Error('Rack detail view not found');
+      }
+      const component = ng.getComponent(rackDetail);
+      component.dataService.addModuleToRack$.next({id: moduleId, name: moduleName});
+    }, {
+      moduleId: module.id,
+      moduleName: module.name
+    });
+    await addRequest;
     await page.waitForFunction(
       expectedCount => document.querySelectorAll('app-rack-visual-model .module').length >= expectedCount,
       previousCount + 1,
