@@ -21,8 +21,21 @@
   text-align: center;
 }
 
+.section-scroll {
+  max-block-size: clamp(24rem, calc(100vh - 23rem), 50rem);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
 @media (max-width: 36rem) {
   .section-actions {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 60rem) {
+  .section-scroll {
+    max-block-size: none;
+    overflow: visible;
   }
 }
