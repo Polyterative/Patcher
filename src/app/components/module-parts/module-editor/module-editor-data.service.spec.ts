@@ -261,10 +261,10 @@ describe('ModuleEditorDataService', () => {
       expect(result.name.value).toBe('');
     });
     
-    it('uses 0 for min and max when undefined', () => {
+    it('uses empty string for min and max when undefined', () => {
       const result = service.createFormCV({}, null, null);
-      expect(result.a.value).toBe(0);
-      expect(result.b.value).toBe(0);
+      expect(result.a.value).toBe('');
+      expect(result.b.value).toBe('');
     });
     
     it('controls are enabled for new CVs (id=0)', () => {
@@ -302,6 +302,21 @@ describe('ModuleEditorDataService', () => {
       ];
       const result = service.formCVToCV(formCVs);
       expect(result).toEqual([{name: 'Gate', id: 7, min: -5, max: 5, isApproved: true}]);
+    });
+
+    it('maps empty voltage fields to undefined', () => {
+      const formCVs = [
+        makeFormCV({
+          id: 0,
+          isApproved: false,
+          name: new UntypedFormControl('Unknown range'),
+          a: new UntypedFormControl(''),
+          b: new UntypedFormControl('')
+        })
+      ];
+
+      const result = service.formCVToCV(formCVs);
+      expect(result).toEqual([{name: 'Unknown range', id: 0, min: undefined, max: undefined, isApproved: false}]);
     });
   });
   
