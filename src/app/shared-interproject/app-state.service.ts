@@ -10,7 +10,7 @@ import {
   Subject
 } from 'rxjs';
 import {
-  debounceTime,
+  auditTime,
   distinctUntilChanged,
   map,
   shareReplay,
@@ -131,7 +131,7 @@ export class AppStateService implements OnDestroy {
       .pipe(
         takeUntil(this.destroyEvent$),
         map((changes) => buildLayoutFlexWidthState(changes)),
-        debounceTime(250),
+        auditTime(16),
         startWith(DEFAULT_LAYOUT_FLEX_WIDTH_STATE),
         distinctUntilChanged(sameLayoutFlexWidthState),
         shareReplay({bufferSize: 1, refCount: true})
