@@ -2,6 +2,20 @@
 
 .manufacturer-website-btn {
   width: fit-content;
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  border-color: rgba(62, 99, 138, 0.3) !important;
+  background: #ffffff;
+  color: #224b75 !important;
+  font-weight: 600;
+  box-shadow: 0 0.1875rem 0.625rem rgba(34, 75, 117, 0.08);
+  text-decoration: none;
+
+  &:hover {
+    background: #f2f7fc;
+    border-color: rgba(62, 99, 138, 0.42) !important;
+  }
 }
 
 
@@ -15,10 +29,10 @@
   bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   z-index: 98;
   border: 0.125rem solid #3e638a;
-  border-radius: 1.75rem;
+  border-radius: var(--app-floating-action-radius, 1.75rem);
   background: #ffffff;
   color: #224b75;
-  box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22);
+  box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
   white-space: nowrap;
 
   &:hover {

@@ -109,10 +109,10 @@ $palette: (
   width: min(var(--patch-editor-search-width), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right) - var(--module-editor-close-fab-width, 12.6rem) - var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem))));
   min-height: var(--module-editor-close-fab-height, 3.5rem);
   padding: 0.2rem 0.55rem;
-  border-radius: 0.8rem;
+  border-radius: var(--app-floating-surface-radius, 0.8rem);
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(0.375rem);
-  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
+  box-shadow: var(--app-floating-surface-shadow, 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18));
   box-sizing: border-box;
 }
 

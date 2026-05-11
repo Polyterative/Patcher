@@ -87,45 +87,70 @@ import { UserManagementService } from '../user-management.service';
     </div>
   `,
   styles: [`
-      .complete-profile-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          padding: 1.25rem;
-          background-color: #f5f5f5;
+       .complete-profile-container {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           min-height: 100vh;
+           padding: 1.25rem;
+           background:
+             radial-gradient(circle at top left, rgba(61, 115, 188, 0.08), transparent 24rem),
+             linear-gradient(180deg, rgba(247, 250, 253, 0.96), rgba(255, 255, 255, 0.99));
+       }
+
+       .profile-card {
+           max-width: 31.25rem;
+           width: 100%;
+           border: 1px solid rgba(34, 75, 117, 0.12);
+           border-radius: 1rem;
+           background: rgba(255, 255, 255, 0.96);
+           box-shadow: 0 0.5rem 1.5rem rgba(15, 30, 52, 0.08);
+       }
+
+       mat-card-header {
+           padding-bottom: 0.25rem;
+       }
+
+       mat-card-title {
+           color: #163f70;
+       }
+
+       mat-card-subtitle {
+           color: rgba(24, 37, 53, 0.68);
+       }
+
+       .welcome-text {
+           margin: 1rem 0;
+           color: rgba(24, 37, 53, 0.78);
+       }
+
+       .full-width {
+           width: 100%;
+            margin-top: 0.5rem;
+       }
+
+       .hint-text {
+           font-size: 0.8rem;
+           color: rgba(24, 37, 53, 0.62);
+           margin-top: -0.25rem;
+           line-height: 1.5;
+       }
+
+       .button-spinner {
+           display: inline-block;
+           margin-right: 0.5rem;
       }
 
-      .profile-card {
-          max-width: 31.25rem;
-          width: 100%;
-      }
+       mat-card-actions {
+           padding: 0 1rem 1rem;
+       }
 
-      .welcome-text {
-          margin: 1rem 0;
-          color: #666;
-      }
-
-      .full-width {
-          width: 100%;
-          margin-top: 0.5rem;
-      }
-
-      .hint-text {
-          font-size: 0.75rem;
-          color: #999;
-          margin-top: -0.5rem;
-      }
-
-      .button-spinner {
-          display: inline-block;
-          margin-right: 0.5rem;
-      }
-
-      mat-card-actions {
-          padding: 1rem;
-      }
-  `],
+       button[mat-raised-button] {
+           min-height: 2.75rem;
+           padding-inline: 1rem;
+           border-radius: 62.4375rem;
+       }
+   `],
   standalone: false
 })
 export class CompleteProfileComponent extends SubManager implements OnInit {

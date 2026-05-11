@@ -1,3 +1,84 @@
-<!--<markdown-->
-<!--    [src]="'./CHANGELOG.md'"-->
-<!--&gt;</markdown>-->
+<lib-screen-wrapper maxSize="96rem">
+  <div class="changelog-page">
+    <lib-hero-content-card
+      titleBig="Changelog"
+      icon="history"
+      description="Release notes and project direction for Patcher."
+    >
+      <p class="changelog-hero-copy">
+        Patcher keeps its detailed release history on GitHub. This page gives that history a proper home inside the product and
+        keeps the main update paths easy to find.
+      </p>
+
+      <div class="changelog-actions">
+        <a
+          mat-stroked-button
+          class="changelog-link-button"
+          [href]="changelogUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <mat-icon>open_in_new</mat-icon>
+          View release notes
+        </a>
+        <a
+          mat-stroked-button
+          class="changelog-link-button"
+          [href]="roadmapUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <mat-icon>alt_route</mat-icon>
+          View roadmap
+        </a>
+      </div>
+    </lib-hero-content-card>
+
+    <div class="changelog-grid">
+      <section class="changelog-card">
+        <div class="changelog-card__eyebrow">Release flow</div>
+        <h2>What this page is for</h2>
+        <p>
+          The canonical version-by-version history lives in the repository changelog. That keeps release notes in the same place
+          as the code and makes linking to exact revisions straightforward.
+        </p>
+      </section>
+
+      <section class="changelog-card">
+        <div class="changelog-card__eyebrow">Project direction</div>
+        <h2>Follow what is next</h2>
+        <p>
+          The roadmap tracks near-term focus areas and larger product cleanup work, including ongoing UI consistency refinement.
+        </p>
+        <a
+          class="changelog-inline-link"
+          [href]="roadmapUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Open roadmap</a>
+      </section>
+
+      <section class="changelog-card">
+        <div class="changelog-card__eyebrow">Repository</div>
+        <h2>Stay close to the source</h2>
+        <p>
+          For commits, issues, and the full project context, use the main GitHub repository and issue tracker.
+        </p>
+        <div class="changelog-inline-links">
+          <a
+            class="changelog-inline-link"
+            [href]="repoUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Open repository</a>
+          <a
+            class="changelog-inline-link"
+            [href]="issueTrackerUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Open issues</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</lib-screen-wrapper>

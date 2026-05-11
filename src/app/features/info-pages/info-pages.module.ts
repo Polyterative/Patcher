@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterModule } from '@angular/router';
@@ -19,6 +20,7 @@ import { ChangelogComponent } from './changelog/changelog.component';
   ],
   imports:      [
     CommonModule,
+    MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
     BrandPrimaryButtonModule,
