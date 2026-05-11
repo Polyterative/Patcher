@@ -1,6 +1,7 @@
 @if ({
   patchEditingPanelOpenState: (dataService.patchEditingPanelOpenState$|async),
-  data: (dataService.singlePatchData$|async)
+  data: (dataService.singlePatchData$|async),
+  unavailableMessage: (dataService.patchDetailUnavailableMessage$|async)
 }; as bag) {
   @if (!bag.patchEditingPanelOpenState) {
     <div class="col gap1"
@@ -15,9 +16,6 @@
           <div>
             <ng-template [ngTemplateOutlet]="patch"></ng-template>
           </div>
-          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                              [data$]="dataService.singlePatchData$"
-          ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
     </div>
@@ -35,9 +33,6 @@
           <div>
             <ng-template [ngTemplateOutlet]="patch"></ng-template>
           </div>
-          <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
-                                              [data$]="dataService.singlePatchData$"
-          ></lib-auto-content-loading-indicator>
         </div>
       </lib-hero-content-card>
     </div>
@@ -48,6 +43,14 @@
                            [isEditing]="bag.patchEditingPanelOpenState"
                            [viewConfig]="viewConfig"
       ></app-patch-composite>
+    } @else if (bag.unavailableMessage) {
+      <app-advice-tooltip>
+        {{ bag.unavailableMessage }}
+      </app-advice-tooltip>
+    } @else {
+      <lib-auto-content-loading-indicator [updateData$]="dataService.updateSinglePatchData$"
+                                          [data$]="dataService.singlePatchData$"
+      ></lib-auto-content-loading-indicator>
     }
   </ng-template>
 }
