@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [5.7.2](https://github.com/Polyterative/Patcher/compare/v5.7.1...v5.7.2) (2026-05-11)
+
+
+### Features
+
+* **footer:** add changelog link ([0c58ad3](https://github.com/Polyterative/Patcher/commit/0c58ad3a4bce17e589305418b1cb7b745a4970d9))
+* **home:** soften insights framing ([76b4b56](https://github.com/Polyterative/Patcher/commit/76b4b565f4d3ed455fad135f5401481bc069acbc))
+
+
+### Bug Fixes
+
+* **app:** tighten admin gating and refresh docs links ([968aca0](https://github.com/Polyterative/Patcher/commit/968aca086e27fcc2962a23f7c651922d98df5813))
+* **backend:** keep public patches visible from private profiles ([fd4aab9](https://github.com/Polyterative/Patcher/commit/fd4aab99824553cb0d5e2eb4387bece79ce727ce))
+* **e2e:** stabilize owned detail coverage ([e860ff4](https://github.com/Polyterative/Patcher/commit/e860ff4dc136792b0eecb25ac74257e345097626))
+* **e2e:** wait for screenshot surfaces to settle ([8f03cc4](https://github.com/Polyterative/Patcher/commit/8f03cc40a2396684ba64f76aa92c545c9a866573))
+* **patches:** respect auth state in detail view ([b5d389d](https://github.com/Polyterative/Patcher/commit/b5d389de3fcd3ba094542d4c5d728424324eeb48))
+* **ui:** polish module detail and loading states ([c38b598](https://github.com/Polyterative/Patcher/commit/c38b59850730768f7b617e1cb7452522ed59df5b))
+
 ### [5.7.1](https://github.com/Polyterative/Patcher/compare/v5.7.0...v5.7.1) (2026-05-04)
 
 
