@@ -12,7 +12,9 @@ import {
   Observable
 } from 'rxjs';
 import {
+  distinctUntilChanged,
   map,
+  shareReplay,
   startWith
 } from 'rxjs/operators';
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
@@ -67,6 +69,10 @@ export class HomeExperienceHeroComponent {
   public readonly wideShell$: Observable<boolean>;
   public readonly wideShellTargets: RouteClickableLink[];
   public readonly accountLinks$: Observable<RouteClickableLink[]>;
+  public readonly shellVm$: Observable<{
+    wideShell: boolean;
+    accountLinks: RouteClickableLink[];
+  }>;
   public readonly siteTitle = 'patcher.xyz';
   public subtitleLines: string[] = [];
 
@@ -84,7 +90,19 @@ export class HomeExperienceHeroComponent {
       map(([loggedUser, profile]) => buildWideShellAccountLinks(
         Boolean(loggedUser),
         profile?.username?.trim() || 'Account'
-      ))
+      )),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+    this.shellVm$ = combineLatest([
+      this.wideShell$,
+      this.accountLinks$
+    ]).pipe(
+      map(([wideShell, accountLinks]) => ({
+        wideShell,
+        accountLinks
+      })),
+      shareReplay({bufferSize: 1, refCount: true})
     );
     this.content = this._content;
   }
