@@ -971,6 +971,14 @@ export type Database = {
     }
     Functions: {
       delete_current_user_account: { Args: never; Returns: undefined }
+      get_application_insights_snapshot: {
+        Args: { p_days?: number }
+        Returns: {
+          activity_series: Json
+          module_insights: Json
+          statistics: Json
+        }[]
+      }
       get_module_open_flag_count: {
         Args: { p_module_id: number }
         Returns: number
