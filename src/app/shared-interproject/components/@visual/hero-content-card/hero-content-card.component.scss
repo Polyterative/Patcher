@@ -263,6 +263,7 @@ h3 {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
+  contain: layout style;
 }
 
 .title-heading-copy--with-inline-description {
@@ -300,6 +301,7 @@ h3 {
   inline-size: 100%;
   max-inline-size: 100%;
   padding-bottom: 0.7rem;
+  contain: layout style;
 }
 
 .title-metro-topbar {
@@ -330,6 +332,7 @@ h3 {
   min-width: 0;
   flex-wrap: wrap;
   padding-bottom: 0.2rem;
+  contain: layout style;
 }
 
 .title-metro-target {
