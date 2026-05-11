@@ -12,25 +12,25 @@
 
 ## Active
 
-### Rack Balance Analysis — Exclude Blank Modules From Coverage
+### User Area — Search and Surface Hierarchy Cleanup
 
-**Goal:** make the rack balance coverage denominator count only real modules, so blanks/spacers do not distort confidence or coverage copy.
+**Goal:** make the user-area search feel intentionally embedded in the workspace shell rather than floating as a competing surface.
 
 #### Layer 1 — MVP
-- [ ] Inspect the current rack balance analysis denominator/confidence logic and confirm where blank spacers are still counted
-- [ ] Trace the blank-module identification helper already used by older rack stats so this analysis surface can reuse the same definition
+- [ ] Inspect the current user-area search host structure and confirm where it still reads as isolated or competes with the owned-content columns
+- [ ] Reuse the existing user-area workspace/utility-rail structure instead of inventing a separate floating treatment
 
 **Layer 1 discoveries:** pending.
 
 #### Layer 2 — Structural
-- [ ] Filter blank spacers out before computing coverage/confidence thresholds in the rack balance analysis service
-- [ ] Make blank-only racks behave like an empty rack rather than a low-confidence tagged rack
+- [ ] Keep search inside a clearly bounded shell that aligns with the utility rail and never overlaps the owned-content columns
+- [ ] Align the search surface spacing, overflow, and responsive behavior with the rest of the user-area workspace
 
 #### Layer 3 — Polish
-- [ ] Keep coverage copy/tooltips aligned with the filtered denominator
-- [ ] Add focused tests for mixed real+blank racks and blank-only racks
+- [ ] Match the final search treatment to the shared floating-surface language without reintroducing a detached overlay feel
+- [ ] Add focused coverage if an appropriate user-area layout spec can guard the chosen shell structure
 
-**Current progress:** not started yet in code. Next step is to inspect `rack-balance-analysis.service.ts` and the existing blank-module helpers so the denominator fix comes from one shared definition.
+**Current progress:** not started yet in code. Next step is to inspect `user-area-root`, the search component host markup, and the existing workspace layout spec to see whether the remaining problem is structural, visual, or just stale documentation.
 
 ---
 
