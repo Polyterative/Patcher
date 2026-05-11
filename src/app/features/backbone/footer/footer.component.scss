@@ -68,3 +68,16 @@ a {
   color: rgba(0, 0, 0, 0.5);
   font-size: 0.8rem;
 }
+
+.footer-version-block {
+  line-height: 1.35;
+}
+
+.footer-version-number {
+  font-size: inherit;
+}
+
+.footer-changelog-row,
+.footer-changelog-link {
+  font-size: 0.85rem;
+}
