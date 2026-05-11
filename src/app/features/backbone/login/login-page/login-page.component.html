@@ -1,112 +1,119 @@
-<lib-screen-wrapper maxSize="32rem" class="auth-screen">
-  <div class="col gap1">
+<lib-screen-wrapper maxSize="130rem" class="auth-page-shell">
+  <div class="auth-page-shell__inner col gap1">
     <lib-hero-content-card titleBig="Who are you again?"
-                           class="auth-entry-card">
+                           description="Log in to get back to your collection, racks, and patches in My Area. You can still browse public content without signing in."
+                           [showWideShellNav]="true"
+                           icon="login"
+                           class="userBG auth-entry-card">
       <div class="col gap1">
 
         <!-- Normal Login Form -->
         @if (!(dataService.showPasswordReset$ | async)) {
-          <div class="auth-container">
-            <!-- Email/Password Login Section -->
-            <section class="email-login-section" aria-label="Email login">
-              <app-login-email fxFlex="100"></app-login-email>
-            </section>
-            <p class="auth-support-copy">
-              Log in to get back to your collection, racks, and patches in My Area. You can still browse public content without signing in.
-            </p>
-            
-            <!-- SSO Authentication Section (temporarily hidden) -->
-            <!-- <section class="sso-section" aria-label="Social login options">
-              <app-sso-buttons
-                [showDivider]="true"
-                [dividerText]="'or'"
-                (providerSelected)="handleSSOLogin($event)">
-              </app-sso-buttons>
-            </section> -->
-            
-            <!-- Alternative Actions Section -->
-            <section class="alternative-actions-section" aria-label="Alternative actions">
-              <div class="action-link-wrapper signup-link"
-                   routerLink="/auth/signup">
-                <mat-card-subtitle fxLayoutAlign="center"
-                                   class="action-link">
-                  Need an account? <strong>Sign up</strong>
-                </mat-card-subtitle>
+          <div class="auth-surface">
+            <div class="auth-body">
+              <div class="auth-container">
+                <!-- Email/Password Login Section -->
+                <section class="email-login-section" aria-label="Email login">
+                  <app-login-email fxFlex="100"></app-login-email>
+                </section>
+                
+                <!-- SSO Authentication Section (temporarily hidden) -->
+                <!-- <section class="sso-section" aria-label="Social login options">
+                  <app-sso-buttons
+                    [showDivider]="true"
+                    [dividerText]="'or'"
+                    (providerSelected)="handleSSOLogin($event)">
+                  </app-sso-buttons>
+                </section> -->
+                
+                <!-- Alternative Actions Section -->
+                <section class="alternative-actions-section" aria-label="Alternative actions">
+                  <div class="action-link-wrapper signup-link"
+                       routerLink="/auth/signup">
+                    <mat-card-subtitle fxLayoutAlign="center"
+                                       class="action-link">
+                      Need an account? <strong>Sign up</strong>
+                    </mat-card-subtitle>
+                  </div>
+                  
+                  <div class="action-link-wrapper reset-link"
+                       (click)="dataService.togglePasswordReset$.next(true)">
+                    <mat-card-subtitle fxLayoutAlign="center"
+                                       class="action-link">
+                      Forgot your password?
+                    </mat-card-subtitle>
+                  </div>
+                </section>
               </div>
-              
-              <div class="action-link-wrapper reset-link"
-                   (click)="dataService.togglePasswordReset$.next(true)">
-                <mat-card-subtitle fxLayoutAlign="center"
-                                   class="action-link">
-                  Forgot your password?
-                </mat-card-subtitle>
-              </div>
-            </section>
-          
+            </div>
           </div>
         }
         
         <!-- Password Reset Form -->
         @if (dataService.showPasswordReset$ | async) {
-          <div class="password-reset-container">
-            <!-- Back button -->
-            <div class="back-button-wrapper">
-              <button type="button"
-                      class="back-link"
-                      (click)="dataService.togglePasswordReset$.next(false)">
-                <mat-icon>arrow_back</mat-icon>
-                <span>Back to login</span>
-              </button>
+          <div class="auth-surface">
+            <div class="auth-body">
+              <div class="password-reset-container">
+                <!-- Back button -->
+                <div class="back-button-wrapper">
+                  <button type="button"
+                          class="back-link"
+                          (click)="dataService.togglePasswordReset$.next(false)">
+                    <mat-icon>arrow_back</mat-icon>
+                    <span>Back to login</span>
+                  </button>
+                </div>
+                <!-- Success state -->
+                @if (dataService.resetSuccessMessage$ | async; as successMessage) {
+                  <div class="success-container">
+                    <mat-icon class="state-icon success-icon">check_circle</mat-icon>
+                    <h2>{{ SharedConstants.messages.passwordResetEmailSentTitle }}</h2>
+                    <p>{{ successMessage }}</p>
+                    <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary"
+                                              icon="arrow_back">
+                      Back to login
+                    </app-brand-primary-button>
+                  </div>
+                }
+                <!-- Reset form (shown when not successful) -->
+                @if (!(dataService.resetSuccessMessage$ | async)) {
+                  <div class="password-hint">
+                    <mat-icon>mail</mat-icon>
+                    <div class="password-hint__copy">
+                      <p>Enter your email address and we'll send you a link to reset your password.</p>
+                      <p>Your password stays the same until you complete the reset.</p>
+                    </div>
+                  </div>
+                  <lib-mat-form-entity
+                    fxFlex="100"
+                    [type]="dataService.fields.user.type"
+                    [control]="dataService.fields.user.control"
+                    [label]="dataService.fields.user.label"
+                    [autofocus]="true"
+                    [enterkeyhint]="'send'"
+                    (enterPressed)="dataService.requestPasswordReset$.next()"
+                    formFieldAppearanceType="fill"
+                    iconL1="email">
+                  </lib-mat-form-entity>
+                  @if (dataService.resetErrorMessage$ | async; as errorMessage) {
+                    <div
+                      class="error-message error-notification">
+                      <mat-icon>warning</mat-icon>
+                      <p>{{ errorMessage }}</p>
+                    </div>
+                  }
+                  <app-brand-primary-button
+                    class="auth-submit-button"
+                    [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
+                    innerFlex="auto"
+                    theme="positive"
+                    icon="send"
+                    (click$)="dataService.requestPasswordReset$.next()">
+                    {{ (dataService.isSubmittingReset$ | async) ? 'Sending...' : 'Send reset link' }}
+                  </app-brand-primary-button>
+                }
+              </div>
             </div>
-            <!-- Success state -->
-            @if (dataService.resetSuccessMessage$ | async; as successMessage) {
-              <div class="success-container">
-                <mat-icon class="state-icon success-icon">check_circle</mat-icon>
-                <h2>{{ SharedConstants.messages.passwordResetEmailSentTitle }}</h2>
-                <p>{{ successMessage }}</p>
-                <app-brand-primary-button (click$)="dataService.togglePasswordReset$.next(false)" theme="primary"
-                                          icon="arrow_back">
-                  Back to login
-                </app-brand-primary-button>
-              </div>
-            }
-            <!-- Reset form (shown when not successful) -->
-            @if (!(dataService.resetSuccessMessage$ | async)) {
-              <div class="password-hint">
-                <mat-icon>mail</mat-icon>
-                <div class="password-hint__copy">
-                  <p>Enter your email address and we'll send you a link to reset your password.</p>
-                  <p>Your password stays the same until you complete the reset.</p>
-                </div>
-              </div>
-              <lib-mat-form-entity
-                fxFlex="100"
-                [type]="dataService.fields.user.type"
-                [control]="dataService.fields.user.control"
-                [label]="dataService.fields.user.label"
-                [autofocus]="true"
-                [enterkeyhint]="'send'"
-                (enterPressed)="dataService.requestPasswordReset$.next()"
-                formFieldAppearanceType="fill"
-                iconL1="email">
-              </lib-mat-form-entity>
-              @if (dataService.resetErrorMessage$ | async; as errorMessage) {
-                <div
-                  class="error-message error-notification">
-                  <mat-icon>warning</mat-icon>
-                  <p>{{ errorMessage }}</p>
-                </div>
-              }
-              <app-brand-primary-button
-                class="auth-submit-button"
-                [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
-                innerFlex="auto"
-                theme="positive"
-                icon="send"
-                (click$)="dataService.requestPasswordReset$.next()">
-                {{ (dataService.isSubmittingReset$ | async) ? 'Sending...' : 'Send reset link' }}
-              </app-brand-primary-button>
-            }
           </div>
         }
       

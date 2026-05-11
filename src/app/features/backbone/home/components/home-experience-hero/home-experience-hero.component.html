@@ -5,21 +5,6 @@
         <a class="hero-metro-brand"
            routerLink="/home"
            aria-label="Go to home">{{ siteTitle }}</a>
-        @if (accountLinks$ | async; as accountLinks) {
-          <div class="hero-metro-actions">
-            @for (item of accountLinks; track item.route ?? item.label) {
-              <a class="hero-metro-action"
-                 [routerLink]="item.route"
-                 routerLinkActive="hero-metro-action--active"
-                 [attr.aria-label]="item.label">
-                @if (item.icon) {
-                  <mat-icon>{{ item.icon }}</mat-icon>
-                }
-                <span>{{ item.label }}</span>
-              </a>
-            }
-          </div>
-        }
       </div>
       <nav class="hero-metro-targets" aria-label="Section targets">
         @for (item of wideShellTargets; track item.route ?? item.label) {
@@ -31,6 +16,17 @@
           >
             {{ item.label }}
           </a>
+        }
+        @if (accountLinks$ | async; as accountLinks) {
+          @for (item of accountLinks; track item.route ?? item.label; let isFirst = $first) {
+            <a class="hero-metro-target hero-metro-target--private"
+               [class.hero-metro-target--private-start]="isFirst"
+               [routerLink]="item.route"
+               routerLinkActive="hero-metro-target--active"
+               [attr.aria-label]="item.label">
+              <span>{{ item.label }}</span>
+            </a>
+          }
         }
       </nav>
     </div>

@@ -7,58 +7,23 @@
   isOwnProfile: (isOwnProfile$ | async),
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
-    @if (wideShell$ | async) {
-      <div class="public-shell-nav">
-        <div class="public-shell-topbar">
-          <a class="public-shell-brand"
-             routerLink="/home"
-             aria-label="Go to home">{{ siteTitle }}</a>
-          @if (shellAccountLinks$ | async; as accountLinks) {
-            <div class="public-shell-actions">
-              @for (item of accountLinks; track item.route ?? item.label) {
-                <a class="public-shell-action"
-                   [routerLink]="item.route"
-                   routerLinkActive="public-shell-action--active"
-                   [attr.aria-label]="item.label">
-                  @if (item.icon) {
-                    <mat-icon>{{ item.icon }}</mat-icon>
-                  }
-                  <span>{{ item.label }}</span>
-                </a>
-              }
-            </div>
-          }
-        </div>
-        <nav class="public-shell-targets" aria-label="Section targets">
-          @for (item of shellTargets; track item.route ?? item.label) {
-            <a class="public-shell-target"
-               [routerLink]="item.route"
-               routerLinkActive="public-shell-target--active"
-               [attr.aria-label]="item.label">
-              {{ item.label }}
-            </a>
-          }
-        </nav>
-      </div>
-    }
     @if (bag.state === 'ready' && bag.profile) {
       <div class="col gap1 public-profile-page">
-        <lib-clean-card class="profile-header">
-          <div class="profile-header__inner">
-            <div class="profile-header__identity">
-              <app-label-value-showcase label="Public profile">
-                {{ bag.profile.username }}
-              </app-label-value-showcase>
-
-              @if (bag.profile.website) {
-                <a
-                  class="profile-link"
-                  [href]="bag.profile.website"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >{{ bag.profile.website }}</a>
-              }
-            </div>
+        <lib-hero-content-card class="userBG profile-header"
+                               titleBig="Public profile"
+                               [titleSub]="bag.profile.username"
+                               description="Shared racks and patches from this profile."
+                               [showWideShellNav]="true"
+                               icon="person_search">
+          <div class="profile-header__content col gap1">
+            @if (bag.profile.website) {
+              <a
+                class="profile-link"
+                [href]="bag.profile.website"
+                rel="noopener noreferrer"
+                target="_blank"
+              >{{ bag.profile.website }}</a>
+            }
 
             <div class="row gap1 profile-header__actions">
               @if (bag.isOwnProfile) {
@@ -77,7 +42,7 @@
               >Copy profile link</app-brand-primary-button>
             </div>
           </div>
-        </lib-clean-card>
+        </lib-hero-content-card>
 
         <div class="public-profile-layout">
           <div class="container gap1 main-content">

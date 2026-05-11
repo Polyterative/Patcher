@@ -50,6 +50,7 @@ describe('HeroContentCardComponent', () => {
 
     fixture = TestBed.createComponent(HeroContentCardComponent);
     fixture.componentInstance.titleBig = 'Modules';
+    fixture.componentInstance.description = 'Browse the latest additions to the catalog.';
     fixture.componentInstance.showWideShellNav = true;
     fixture.detectChanges();
   });
@@ -64,9 +65,19 @@ describe('HeroContentCardComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.title-metro-nav')).not.toBeNull();
+    expect(host.querySelector('.title-inline-description')?.textContent).toContain('Browse the latest additions to the catalog.');
     expect(host.textContent).toContain('patcher.xyz');
     expect(host.textContent).toContain('Modules');
     expect(host.textContent).toContain('Racks');
     expect(host.textContent).toContain('Log in');
+  });
+
+  it('stacks the inline description under the title block when titleSub is present', () => {
+    wideShell$.next(true);
+    fixture.componentInstance.titleSub = 'Polyterative';
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.title-heading-copy--stacked-description')).not.toBeNull();
   });
 });

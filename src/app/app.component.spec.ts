@@ -94,7 +94,7 @@ describe('AppComponent', () => {
   });
 
   it('keeps the legacy toolbar when the current route does not provide an embedded shell', () => {
-    routerMock.url = '/auth/login';
+    routerMock.url = '/not-embedded';
     wideShell$.next(true);
     fixture.detectChanges();
 
