@@ -38,6 +38,7 @@
 }
 
 .hero-metro-brand {
+  --hero-metro-brand-color: rgba(58, 34, 132, 0.92);
   display: inline-flex;
   align-items: center;
   font-size: 1.02rem;
@@ -45,9 +46,28 @@
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: rgba(58, 34, 132, 0.92);
+  color: var(--hero-metro-brand-color);
   text-decoration: none;
   white-space: nowrap;
+}
+
+.hero-metro-brand:link,
+.hero-metro-brand:visited,
+.hero-metro-brand:active {
+  color: var(--hero-metro-brand-color);
+}
+
+.hero-metro-brand:focus-visible {
+  outline: 0.125rem solid rgba(58, 34, 132, 0.22);
+  outline-offset: 0.18rem;
+  border-radius: 0.25rem;
+}
+
+.hero-metro-brand--active {
+  text-decoration: underline;
+  text-decoration-color: rgba(58, 34, 132, 0.36);
+  text-decoration-thickness: 0.12rem;
+  text-underline-offset: 0.22rem;
 }
 
 .hero-metro-targets {

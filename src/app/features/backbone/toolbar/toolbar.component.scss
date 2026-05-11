@@ -1,6 +1,7 @@
 @use "src/app/style/brand-resources.scss" as *;
 
 .title {
+  --toolbar-brand-title-color: rgba(255, 255, 255, 0.97);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -9,20 +10,26 @@
   margin: 0;
   font: 600 1rem/1.2 Roboto, "Helvetica Neue", sans-serif;
   letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.97);
+  color: var(--toolbar-brand-title-color);
   text-decoration: none;
   border-radius: 0.375rem;
   animation: fade-in 220ms ease-out;
-  --mdc-text-button-label-text-color: rgba(255, 255, 255, 0.97);
+  --mdc-text-button-label-text-color: var(--toolbar-brand-title-color);
 }
 
-.title:visited {
-  color: rgba(255, 255, 255, 0.97);
+.title:link,
+.title:visited,
+.title:active {
+  color: var(--toolbar-brand-title-color);
 }
 
 .title:focus-visible {
   outline: 0.125rem solid rgba(255, 255, 255, 0.65);
   outline-offset: 0.125rem;
+}
+
+.title--active {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 @media (hover: hover) and (pointer: fine) {
