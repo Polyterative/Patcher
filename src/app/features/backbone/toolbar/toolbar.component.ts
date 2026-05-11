@@ -5,6 +5,7 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  Observable,
   of,
   startWith
 } from 'rxjs';
@@ -31,19 +32,20 @@ import {
   standalone:      false
 })
 export class ToolbarComponent extends SubManager {
-  public readonly of = of;
   private readonly homeLinks = getToolbarHomeLinks();
+  private readonly mainLinks: RouteClickableLink[];
   private readonly adminLinks = getToolbarAdminLinks();
+  private currentUserLinks = buildToolbarUserLinks('Account');
+  private currentAdminLinks: RouteClickableLink[] = [];
+  private currentMobileSections: ToolbarMobileSection[];
 
-  public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([...this.homeLinks]);
-  public readonly mainLinks$ = new BehaviorSubject<RouteClickableLink[]>([]);
-  public readonly adminLinks$ = new BehaviorSubject<RouteClickableLink[]>([]);
-  public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>(buildToolbarUserLinks('Account'));
-  public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>(buildToolbarGuestLinks());
-  public readonly isLoggedIn$ = new BehaviorSubject(false);
-  public readonly mobileSections$ = new BehaviorSubject<ToolbarMobileSection[]>(
-    []
-  );
+  public readonly homeLinks$: Observable<RouteClickableLink[]>;
+  public readonly mainLinks$: Observable<RouteClickableLink[]>;
+  public readonly adminLinks$: BehaviorSubject<RouteClickableLink[]>;
+  public readonly linksUser$: BehaviorSubject<RouteClickableLink[]>;
+  public readonly linksA$: Observable<RouteClickableLink[]>;
+  public readonly isLoggedIn$: BehaviorSubject<boolean>;
+  public readonly mobileSections$: BehaviorSubject<ToolbarMobileSection[]>;
 
   constructor(
     public readonly appState: AppStateService,
@@ -51,9 +53,15 @@ export class ToolbarComponent extends SubManager {
     public readonly service: ToolbarService
   ) {
     super();
-    this.mainLinks$.next(getToolbarMainLinks(this.appState.isDev));
-    this.mobileSections$.next(buildToolbarSections(false, 'Account', false, this.appState.isDev));
-
+    this.mainLinks = getToolbarMainLinks(this.appState.isDev);
+    this.currentMobileSections = buildToolbarSections(false, 'Account', false, this.appState.isDev);
+    this.homeLinks$ = of(this.homeLinks);
+    this.mainLinks$ = of(this.mainLinks);
+    this.adminLinks$ = new BehaviorSubject<RouteClickableLink[]>(this.currentAdminLinks);
+    this.linksUser$ = new BehaviorSubject<RouteClickableLink[]>(this.currentUserLinks);
+    this.linksA$ = of(buildToolbarGuestLinks());
+    this.isLoggedIn$ = new BehaviorSubject(false);
+    this.mobileSections$ = new BehaviorSubject<ToolbarMobileSection[]>(this.currentMobileSections);
     this.manageSub(
       combineLatest([
         this.userService.loggedUser$.pipe(startWith(undefined)),
@@ -62,11 +70,28 @@ export class ToolbarComponent extends SubManager {
       ]).subscribe(([loggedUser, profile, isAdmin]) => {
         const isLoggedIn = !!loggedUser;
         const username = profile?.username?.trim() || 'Account';
+        const nextUserLinks = buildToolbarUserLinks(username);
+        const nextAdminLinks = isAdmin ? this.adminLinks : [];
+        const nextMobileSections = buildToolbarSections(isLoggedIn, username, isAdmin, this.appState.isDev);
 
-        this.isLoggedIn$.next(isLoggedIn);
-        this.linksUser$.next(buildToolbarUserLinks(username));
-        this.adminLinks$.next(isAdmin ? this.adminLinks : []);
-        this.mobileSections$.next(buildToolbarSections(isLoggedIn, username, isAdmin, this.appState.isDev));
+        if (this.isLoggedIn$.value !== isLoggedIn) {
+          this.isLoggedIn$.next(isLoggedIn);
+        }
+
+        if (this.currentUserLinks !== nextUserLinks) {
+          this.currentUserLinks = nextUserLinks;
+          this.linksUser$.next(nextUserLinks);
+        }
+
+        if (this.currentAdminLinks !== nextAdminLinks) {
+          this.currentAdminLinks = nextAdminLinks;
+          this.adminLinks$.next(nextAdminLinks);
+        }
+
+        if (this.currentMobileSections !== nextMobileSections) {
+          this.currentMobileSections = nextMobileSections;
+          this.mobileSections$.next(nextMobileSections);
+        }
       })
     );
   }
