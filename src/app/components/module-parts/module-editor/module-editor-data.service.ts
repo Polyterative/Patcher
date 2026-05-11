@@ -124,11 +124,11 @@ export class ModuleEditorDataService {
     const formCV: FormCV = {
       name: new UntypedFormControl(data.name || '', validatorsName),
       a: new UntypedFormControl(
-        data.min != null ? data.min : 0,
+        data.min != null ? data.min : '',
         validatorsNum
       ),
       b: new UntypedFormControl(
-        data.max != null ? data.max : 0,
+        data.max != null ? data.max : '',
         validatorsNum
       ),
       id: data.id || 0,
@@ -169,8 +169,8 @@ export class ModuleEditorDataService {
     return formCVs.map(formCV => ({
       name: formCV.name.value,
       id: formCV.id,
-      min: formCV.a.value,
-      max: formCV.b.value,
+      min: formCV.a.value === '' ? undefined : formCV.a.value,
+      max: formCV.b.value === '' ? undefined : formCV.b.value,
       isApproved: formCV.isApproved || false
     }));
   }
@@ -351,12 +351,18 @@ export class ModuleEditorDataService {
     });
   }
 
-  private toComparableCv(cv: CV): Required<Pick<CV, 'id' | 'name' | 'min' | 'max' | 'isApproved'>> {
+  private toComparableCv(cv: CV): {
+    id: number;
+    name: string;
+    min: number | null;
+    max: number | null;
+    isApproved: boolean;
+  } {
     return {
       id: cv?.id ?? 0,
       name: (cv?.name ?? '').trim(),
-      min: cv?.min ?? 0,
-      max: cv?.max ?? 0,
+      min: cv?.min ?? null,
+      max: cv?.max ?? null,
       isApproved: cv?.isApproved ?? false
     };
   }
