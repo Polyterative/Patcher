@@ -76,18 +76,26 @@
           ></app-user-patches>
         </div>
         <div class="sidebar col gap1">
-          <div class="col gap1 utility-rail-group utility-rail-group--primary">
-            <div appDiscoveryTipAnchor="user-area-search"
-                 class="user-area-utility-search">
-              <lib-mat-form-entity [control]="globalSearchControl"
-                                   [type]="formTypes.TEXT"
-                                   label="Search modules, racks, patches"
-                                   iconL1="search"
-                                   [formFieldAppearanceType]="'outline'"
-              ></lib-mat-form-entity>
-            </div>
-            <app-statistics appDiscoveryTipAnchor="user-area-stats"
-              title="Profile stats"
+           <div class="col gap1 utility-rail-group utility-rail-group--primary">
+             <div appDiscoveryTipAnchor="user-area-search"
+                  class="user-area-utility-search"
+                  role="search"
+             >
+               <div class="user-area-utility-search__header">
+                 <span class="user-area-utility-search__eyebrow">Workspace search</span>
+                 <p class="user-area-utility-search__copy">Filter your modules, racks, and patches from one bounded rail surface.</p>
+               </div>
+               <div class="user-area-utility-search__field">
+                 <lib-mat-form-entity [control]="globalSearchControl"
+                                      [type]="formTypes.TEXT"
+                                      label="Search modules, racks, patches"
+                                      iconL1="search"
+                                      [formFieldAppearanceType]="'outline'"
+                 ></lib-mat-form-entity>
+               </div>
+             </div>
+             <app-statistics appDiscoveryTipAnchor="user-area-stats"
+               title="Profile stats"
               icon="analytics"
               cardClass="userBG"
               [compact]="true"
