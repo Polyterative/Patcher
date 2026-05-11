@@ -54,19 +54,20 @@
       @if (connections | patchConnectionUniqueModules; as modules) {
         @if (modules.length > 0) {
           <lib-hero-content-card titleNormal="Modules needed">
-            <div class="col gap0">
+            <div class="col gap0 patch-composite-modules-needed">
               @for (entry of modules; track entry.moduleId; let i = $index) {
-                <div class="row gap1" style="align-items: center"
+                <div class="patch-composite-modules-needed__row"
                      [@enter]="{ value: '', params: { delay: i * 40 } }"
                      [@exit]>
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">developer_board</mat-icon>
-                  <span>
-                    <strong>{{ entry.moduleName }}</strong>
-                    <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
-                    @if (entry.copies > 1) {
-                      &nbsp;×&thinsp;{{ entry.copies }}
-                    }
-                  </span>
+                  <div class="patch-composite-modules-needed__text">
+                    <div class="patch-composite-modules-needed__name">{{ entry.moduleName }}</div>
+                    <div class="patch-composite-modules-needed__meta">
+                      <span class="patch-composite-modules-needed__manufacturer">{{ entry.manufacturerName }}</span>
+                      @if (entry.copies > 1) {
+                        <span class="patch-composite-modules-needed__copies">× {{ entry.copies }}</span>
+                      }
+                    </div>
+                  </div>
                 </div>
               }
             </div>
