@@ -177,8 +177,8 @@ export class ApplicationStatisticsService extends SubManager {
       ],
       interpretation: sharedWorkExists
         ? 'Explore public racks and patches to see how people combine modules, discover ideas, and get oriented before building your own.'
-        : 'The public catalogue is live, and this preview will grow as more people share racks and patches from public profiles.',
-      methodology: 'These totals are aggregated from public profiles only. Rack counts include shared racks, and patch counts match the public patch browser by counting shared patches with saved cable connections.',
+        : 'The public catalogue is live, and this preview will grow as more people share racks and publish connected patches.',
+      methodology: 'Rack counts come from shared racks on public profiles, while patch counts match the public patch browser by counting public patches with saved cable connections.',
       emptyMessage: 'Public insight snapshots will appear here once enough public catalogue activity is available.'
     };
   }
@@ -329,7 +329,7 @@ export class ApplicationStatisticsService extends SubManager {
       this.createSnapshotMetric(
         'Shared works',
         sharedWorks,
-        'Racks and patches from public profiles with saved connections',
+        'Shared racks plus public patches with saved connections',
         'layers',
         'amber'
       )
