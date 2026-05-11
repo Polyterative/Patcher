@@ -4,3 +4,44 @@
 .content {
   //transition: 25ms;
 }
+
+.saturn-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
+.saturn-content {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.saturn-content-shell {
+  display: flex;
+  flex-direction: column;
+}
+
+.saturn-content-shell--with-title {
+  gap: 0.5rem;
+}
+
+.saturn-toolbar {
+  min-height: 4rem;
+}
+
+.saturn-sidebar {
+  display: flex;
+  flex: 0 0 16rem;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 59.9375rem) {
+  .saturn-layout {
+    flex-direction: column;
+  }
+
+  .saturn-sidebar {
+    flex-basis: auto;
+    width: 100%;
+  }
+}
