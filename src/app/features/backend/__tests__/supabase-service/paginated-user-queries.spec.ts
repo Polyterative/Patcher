@@ -216,7 +216,6 @@ describe('SupabaseService - GET.userRacksPaginated', () => {
 describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
   let service: SupabaseService;
   let supabaseClient: any;
-  const publicAuthorGateAlias = 'author_profile_gate';
 
   beforeEach(() => {
     const setup = setupSupabaseServiceTest();
@@ -237,7 +236,6 @@ describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
       next: () => {
         expect(filterSpy).toHaveBeenCalledWith('authorid', 'eq', 'public-author');
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith(`${ publicAuthorGateAlias }.public`, 'eq', true);
         done();
       },
       error: (err) => {
@@ -247,13 +245,12 @@ describe('SupabaseService - GET.publicUserPatchesPaginated', () => {
     });
   }, TEST_TIMEOUT);
 
-  it('should strip the author gate join from public patch results', (done) => {
+  it('should return public patch results without requiring an author visibility gate', (done) => {
     spyOn(supabaseClient, 'from').and.returnValue(chainable({
       data: [{
         id: 123,
         name: 'Visible patch',
         author: {id: 'public-author', username: 'patcher'},
-        [publicAuthorGateAlias]: {public: true},
       }],
       count: 1,
       error: null
@@ -393,15 +390,25 @@ describe('SupabaseService - GET.racksMinimal', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should apply ilike name filter when name is provided', (done) => {
-    const mock = chainable({data: [], count: 0, error: null});
-    const ilikeSpy = jasmine.createSpy('ilike').and.returnValue(mock);
-    mock.ilike = ilikeSpy;
+  it('should apply the name filter client-side when name is provided', (done) => {
+    const mock = chainable({
+      data: [
+        {id: 1, name: 'Drum Bus', author_profile_gate: {public: true}},
+        {id: 2, name: 'Bass Station', author_profile_gate: {public: true}}
+      ],
+      count: 2,
+      error: null
+    });
+    const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.racksMinimal(0, 19, 'Drum').subscribe({
-      next: () => {
-        expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('drum'));
+      next: (result: any) => {
+        expect(ilikeSpy).not.toHaveBeenCalled();
+        expect(result.count).toBe(1);
+        expect(result.data).toEqual([
+          {id: 1, name: 'Drum Bus'}
+        ]);
         done();
       },
       error: (err) => {
