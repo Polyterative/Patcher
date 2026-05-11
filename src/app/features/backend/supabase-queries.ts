@@ -107,6 +107,12 @@ export interface PublicApplicationModuleInsights {
   medianHp: number;
 }
 
+export interface PublicApplicationInsightsSnapshot {
+  statistics: PublicApplicationStatistics;
+  activitySeries: PublicApplicationActivityPoint[];
+  moduleInsights: PublicApplicationModuleInsights;
+}
+
 type ModuleActivityRow = {
   manufacturerId: number;
   updated: string
@@ -1264,6 +1270,68 @@ export class SupabaseQueriesService {
       }
       return this.buildModuleInsights(response.data);
     })());
+  }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules')
+      || x.includes('patches')
+      || x.includes('profiles')
+      || x.includes('rackWithId')
+      || x.includes('racksMinimal')
+    )),
+    maxCacheCount: 20,
+  })
+  getApplicationInsightsSnapshot(days = 30): Observable<PublicApplicationInsightsSnapshot> {
+    return rxFrom(
+      this.supabase.rpc('get_application_insights_snapshot', {
+        p_days: days
+      })
+    ).pipe(
+      remapErrors(),
+      map((response: any) => {
+        const snapshot = response?.data?.[0] ?? {};
+
+        return {
+          statistics: (snapshot.statistics ?? {
+            publicModules: 0,
+            publicManufacturers: 0,
+            publicProfiles: 0,
+            publicModulesUpdatedLast30Days: 0,
+            publicRacks: 0,
+            publicRackAuthors: 0,
+            publicRacksUpdatedLast30Days: 0,
+            publicPatches: 0,
+            publicPatchConnections: 0,
+            publicPatchAuthors: 0,
+            publicPatchesUpdatedLast30Days: 0
+          }) as PublicApplicationStatistics,
+          activitySeries: (snapshot.activity_series ?? []) as PublicApplicationActivityPoint[],
+          moduleInsights: (snapshot.module_insights ?? {
+            topManufacturers: [],
+            activeManufacturers: [],
+            widestManufacturers: [],
+            oneUManufacturers: [],
+            standardMix: [],
+            standardActivity: [],
+            standardWidthAverages: [],
+            standardManufacturerCounts: [],
+            hpBands: [],
+            hpBandActivity: [],
+            hpExact: [],
+            freshnessWindows: [],
+            createdWindows: [],
+            topFiveManufacturerShare: 0,
+            soloManufacturerCount: 0,
+            medianModulesPerManufacturer: 0,
+            medianCatalogueAgeYears: 0,
+            staleModules: 0,
+            averageHp: 0,
+            medianHp: 0
+          }) as PublicApplicationModuleInsights
+        };
+      })
+    );
   }
   
   @Cacheable({

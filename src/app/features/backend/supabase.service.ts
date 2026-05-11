@@ -155,6 +155,7 @@ export class SupabaseService extends SubManager {
       currentUserComments: this.queries.getCurrentUserComments.bind(this.queries),
       currentUserContributorStats: this.queries.getCurrentUserContributorStats.bind(this.queries),
       applicationStatistics: this.queries.getApplicationStatistics.bind(this.queries),
+      applicationInsightsSnapshot: this.queries.getApplicationInsightsSnapshot.bind(this.queries),
       applicationActivitySeries: this.queries.getApplicationActivitySeries.bind(this.queries),
       applicationModuleInsights: this.queries.getApplicationModuleInsights.bind(this.queries),
       patches: this.queries.getPatches.bind(this.queries),
@@ -207,6 +208,7 @@ export class SupabaseService extends SubManager {
     currentUserComments: typeof SupabaseQueriesService.prototype.getCurrentUserComments;
     currentUserContributorStats: typeof SupabaseQueriesService.prototype.getCurrentUserContributorStats;
     applicationStatistics: typeof SupabaseQueriesService.prototype.getApplicationStatistics;
+    applicationInsightsSnapshot: typeof SupabaseQueriesService.prototype.getApplicationInsightsSnapshot;
     applicationActivitySeries: typeof SupabaseQueriesService.prototype.getApplicationActivitySeries;
     applicationModuleInsights: typeof SupabaseQueriesService.prototype.getApplicationModuleInsights;
     patches: typeof SupabaseQueriesService.prototype.getPatches;
