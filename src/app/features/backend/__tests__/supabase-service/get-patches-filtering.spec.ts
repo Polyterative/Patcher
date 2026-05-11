@@ -58,7 +58,6 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     service.GET.patches(0, 9).subscribe({
       next: () => {
         expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
-        expect(filterSpy).toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
         done();
       },
       error: (err) => {
@@ -68,14 +67,25 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     });
   }, TEST_TIMEOUT);
   
-  it('should apply ilike name filter when name is provided', (done) => {
-    const mock = chainableWithIlike({data: [], count: 0, error: null});
-    const ilikeSpy = spyOn(mock, 'ilike').and.returnValue(mock);
+  it('should apply the name filter client-side when name is provided', (done) => {
+    const mock = chainableWithIlike({
+      data: [
+        {id: 1, name: 'DrumPatch', public: true},
+        {id: 2, name: 'BassPatch', public: true}
+      ],
+      count: 2,
+      error: null
+    });
+    const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
     spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.GET.patches(0, 9, 'drum').subscribe({
-      next: () => {
-        expect(ilikeSpy).toHaveBeenCalledWith('name', jasmine.stringContaining('drum'));
+      next: (result: any) => {
+        expect(ilikeSpy).not.toHaveBeenCalled();
+        expect(result.count).toBe(1);
+        expect(result.data).toEqual([
+          {id: 1, name: 'DrumPatch', public: true}
+        ]);
         done();
       },
       error: (err) => {
@@ -85,17 +95,14 @@ describe('SupabaseService - GET.patches filtering and ordering', () => {
     });
   }, TEST_TIMEOUT);
 
-  it('should inner-join the author visibility gate for public patch listings', (done) => {
+  it('should not inner-join the author visibility gate for public patch listings', (done) => {
     const mock = chainableWithIlike({data: [], count: 0, error: null});
     const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
     spyOn(supabaseClient, 'from').and.returnValue(mock);
 
     service.GET.patches(0, 9).subscribe({
       next: () => {
-        expect(selectSpy).toHaveBeenCalledWith(
-          jasmine.stringMatching(/author_profile_gate:authorid!inner\(public\)/),
-          {count: 'exact'}
-        );
+        expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
         done();
       },
       error: (err) => {

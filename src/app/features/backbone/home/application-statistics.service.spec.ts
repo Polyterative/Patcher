@@ -132,7 +132,7 @@ describe('ApplicationStatisticsService', () => {
         {name: 'Shared patches', value: 42, icon: 'cable'}
       ]);
       expect(teaser.interpretation).toContain('Explore public racks and patches');
-      expect(teaser.methodology).toContain('aggregated from public profiles only');
+      expect(teaser.methodology).toContain('Rack counts come from shared racks on public profiles');
       done();
     });
   });
