@@ -85,8 +85,8 @@
             }
             @if (bag.data && bag.user && !bag.data.isComplete) {
                <app-edit-fab
-                 [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
-                 [editMode$]="dataService.moduleEditingPanelOpenState$"
+                  [@moduleDetailFabEnter]="{ value: '', params: { delay: 332, duration: 165 } }"
+                  [editMode$]="dataService.moduleEditingPanelOpenState$"
                 [hasPendingChanges$]="dataService.moduleEditorHasPendingChanges$"
                 (toggle$)="onEditorToggleRequest(!!bag.editing, !!bag.hasPendingEditorChanges)"
               ></app-edit-fab>
@@ -371,9 +371,7 @@
         </div>
         <div class="col gap2 module-detail-column module-detail-column--right">
           @if (bag.data && bag.editing && !bag.data.isComplete) {
-            <div class="module-detail-editorShell module-detail-swap-pane"
-                 [@moduleDetailPaneSwap]
-            >
+            <div class="module-detail-editorShell">
               <lib-hero-content-card [sidesPadding]="false"
                                      titleNormal="Module Editor"
                                      description="Update setup and port data, then use Done and Save."
