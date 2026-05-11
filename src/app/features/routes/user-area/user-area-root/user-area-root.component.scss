@@ -1,5 +1,6 @@
 .block {
-  flex: 1 1 26rem;
+  display: block;
+  min-width: 0;
 }
 
 .user-area-header {
@@ -75,8 +76,8 @@
 
 .profile-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+  gap: 1.25rem;
   align-items: start;
 }
 
@@ -86,19 +87,17 @@
 
 .sidebar {
   min-width: 0;
+  position: sticky;
+  top: 1rem;
 }
 
 .main-content {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
   min-width: 0;
   padding-bottom: 5rem;
-}
-
-.container {
-  // responsive, flex
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  align-items: start;
 }
 
 .user-area-floating-search {
@@ -120,17 +119,27 @@
   }
 }
 
+@media (max-width: 95rem) {
+  .main-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 60rem) {
   .profile-layout {
     grid-template-columns: 1fr;
   }
 
-  .block {
-    flex: 1 1 100%;
+  .main-content {
+    grid-template-columns: 1fr;
   }
 
   .main-content {
     padding-bottom: 6rem;
+  }
+
+  .sidebar {
+    position: static;
   }
 
   .user-area-page {
