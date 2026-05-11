@@ -133,6 +133,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     
     service.updateRackImagePreview$.next();
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.off);
+    expect(service.isRackImageCaptureInProgress$.value).toBeTrue();
     tick(359);
     expect(generateRackJpegSpy).not.toHaveBeenCalled();
     tick(1);
@@ -143,6 +144,7 @@ describe('RackDetailDataService media, rename, and duplication', () => {
     expect(refreshSpy).toHaveBeenCalledWith(7);
     expect(SharedConstants.successCustom).toHaveBeenCalled();
     expect(service.analysisMode$.value).toBe(RACK_ANALYSIS_MODES.function);
+    expect(service.isRackImageCaptureInProgress$.value).toBeFalse();
   }));
   
   it('updates rack preview image without deleting when no previous image exists', fakeAsync(() => {
