@@ -230,6 +230,59 @@ align cleanly when an item wraps. This makes the list feel fussier and less poli
 
 ---
 
+#### HIGH: Patch Details — Private Share-Link Behavior Is Broken / Misleading
+
+**Why:** Patch details currently tell owners that a private patch "will be accessible to anyone who has the URL", but the
+logged-out detail route only loads patches where `public = true`. In practice, shared links for private patches fail for
+external viewers and can get stuck in a partial-loading state instead of showing a clear private / unavailable message.
+
+- [ ] Decide the intended product behavior: private patches are truly URL-shareable, or the UI copy must stop claiming that
+- [ ] Align patch-detail data loading with the chosen behavior so logged-out viewers do not hit the current public-only mismatch
+- [ ] Add an explicit non-loading state for private / unavailable patch links instead of leaving the page partially loaded
+- [ ] Audit rack/patch privacy copy so all shareability messaging matches real access behavior
+- [ ] Add focused coverage for owner view, anonymous view, and shared-link behavior for private vs public patches
+
+---
+
+#### LOW: Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled
+
+**Why:** Some manufacturer-detail module tiles still show the lower divider even when the entire action area is effectively absent
+because all related buttons are disabled. In that state the divider reads like a broken placeholder and should not be visible.
+
+- [ ] Audit the manufacturer-detail module tile states where the footer/action area is fully disabled or empty
+- [ ] Remove the divider in states where no visible buttons or footer actions remain
+- [ ] Keep the divider only when it is actually separating visible content blocks
+- [ ] Review the card rhythm so empty-action tiles do not look visually broken compared with tiles that still expose actions/tags
+
+---
+
+#### MEDIUM: Module / Patch Editing — Restore Compact CV Chip Sizing Outside Touch-First Layouts
+
+**Why:** Input/output CV chips became too large because the recent iPad/tablet touch-target pass widened shared touch tokens at
+`max-width: 72.5rem`, and `module-cvitem.component.scss` now applies prominent `min-width`, `min-height`, padding, and margin
+to every `app-module-cvitem` inside that range. Since that component is reused in module detail and patch editing flows, the
+tablet-sized treatment now leaks into normal desktop and patch-editing layouts where the previous denser rhythm was correct.
+
+- [ ] Narrow the enlarged CV-chip treatment so it only applies where touch-first affordances are actually intended (coarse pointers, true tablet layouts, or a smaller explicit breakpoint)
+- [ ] Restore the previous compact padding and footprint for desktop CV chips in both module detail and patch editing contexts
+- [ ] Audit every `app-module-cvitem` consumer so the fix lands consistently across module detail, patch editor, and related CV/connection surfaces
+- [ ] Explicitly protect the current floating/overlay editing controls so this rollback does not change the button sizing that already feels correct
+- [ ] Add focused coverage for CV-chip sizing across desktop vs tablet contexts to prevent another cross-surface regression
+
+---
+
+#### LOW: App Shell — Keep the Patcher Toolbar Entry in Brand Color When Active
+
+**Why:** The Patcher entry in the toolbar should always preserve the brand color instead of falling into the purple visited/active
+HTML-link look when clicked. This is a brand-consistency issue, not a state meant to inherit default browser link styling.
+
+- [ ] Define the toolbar rule that the Patcher brand entry keeps brand color in default, active, focused, and visited states
+- [ ] Remove any reliance on raw HTML link color behavior for the active/clicked state of that brand entry
+- [ ] Keep interaction feedback through non-color cues if needed, without sacrificing the brand color treatment
+- [ ] Review neighboring toolbar items so the branded entry remains distinct while the rest of the navigation keeps its normal state behavior
+
+---
+
 #### MEDIUM: Rack Editor — Collection-Only Module Filter
 
 **Status:** Implemented on 05-11. Rack editing now supports owned-only vs full-catalog browsing in the embedded module
