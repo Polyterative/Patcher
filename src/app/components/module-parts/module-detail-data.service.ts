@@ -30,6 +30,15 @@ import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 
+export interface ModuleUsageSummary {
+  public_rack_count: number;
+  hidden_rack_bucket: HiddenUsageBucket;
+  public_patch_count: number;
+  hidden_patch_bucket: HiddenUsageBucket;
+}
+
+export type HiddenUsageBucket = 'none' | 'some' | '5_plus' | '10_plus' | '25_plus';
+
 
 @Injectable()
 export class ModuleDetailDataService implements OnDestroy {
@@ -47,6 +56,7 @@ export class ModuleDetailDataService implements OnDestroy {
   //
   racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
   patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
+  moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
   modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
   deleteModule$ = new Subject<number>();
@@ -144,6 +154,15 @@ export class ModuleDetailDataService implements OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => this.patchesWithThisModule$.next(x));
+
+    this.updateSingleModuleData$
+      .pipe(
+        tap(() => this.moduleUsageSummary$.next(undefined)),
+        delay(175),
+        switchMap(x => this.backend.get.moduleUsageSummary(x)),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(summary => this.moduleUsageSummary$.next(summary));
     
     // get modules by same manufacturer
     this.singleModuleData$
