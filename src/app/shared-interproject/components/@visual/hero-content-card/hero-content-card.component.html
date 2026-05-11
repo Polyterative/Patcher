@@ -33,25 +33,6 @@
                     <a class="title-metro-brand"
                        routerLink="/home"
                        aria-label="Go to home">{{ siteTitle }}</a>
-                    <div class="title-metro-meta">
-                      @if (accountLinks$ | async; as accountLinks) {
-                        <div class="title-metro-actions">
-                          @for (item of accountLinks; track item.route ?? item.label) {
-                            <a
-                              class="title-metro-action"
-                              [routerLink]="item.route"
-                              routerLinkActive="title-metro-action--active"
-                              [attr.aria-label]="item.label"
-                            >
-                              @if (item.icon) {
-                                <mat-icon>{{ item.icon }}</mat-icon>
-                              }
-                              <span>{{ item.label }}</span>
-                            </a>
-                          }
-                        </div>
-                      }
-                    </div>
                   </div>
                   <nav class="title-metro-targets" aria-label="Section targets">
                     @for (item of wideShellTargets; track item.route ?? item.label) {
@@ -64,12 +45,27 @@
                         {{ item.label }}
                       </a>
                     }
+                    @if (accountLinks$ | async; as accountLinks) {
+                      @for (item of accountLinks; track item.route ?? item.label; let isFirst = $first) {
+                        <a
+                          class="title-metro-target title-metro-target--private"
+                          [class.title-metro-target--private-start]="isFirst"
+                          [routerLink]="item.route"
+                          routerLinkActive="title-metro-target--active"
+                          [attr.aria-label]="item.label"
+                        >
+                          <span>{{ item.label }}</span>
+                        </a>
+                      }
+                    }
                   </nav>
                 </div>
               }
             }
             <div class="row gap1 title-heading-row">
-              <div class="title-heading-copy">
+              <div class="title-heading-copy"
+                   [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && (wideShell$ | async)"
+                   [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && (wideShell$ | async)">
                 <div class="title-text"
                      [class.title-text--with-sub]="titleSub">
                   <span class="title-main">{{ titleBig }}</span>

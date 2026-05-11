@@ -84,6 +84,13 @@ export class AppComponent {
 
   private supportsEmbeddedShell(url: string): boolean {
     const normalizedUrl = url.toLowerCase();
+    const isAuthShellRoute = normalizedUrl === '/auth'
+      || normalizedUrl.startsWith('/auth/')
+      || normalizedUrl.startsWith('/login')
+      || normalizedUrl.startsWith('/signup')
+      || normalizedUrl.startsWith('/reset-password')
+      || normalizedUrl.startsWith('/complete-profile')
+      || normalizedUrl.startsWith('/callback');
 
     return normalizedUrl === '/'
       || normalizedUrl.startsWith('/home')
@@ -92,6 +99,7 @@ export class AppComponent {
       || normalizedUrl.startsWith('/patches')
       || normalizedUrl.startsWith('/manufacturers')
       || normalizedUrl.startsWith('/insights')
+      || isAuthShellRoute
       || normalizedUrl.startsWith('/user/area')
       || normalizedUrl.startsWith('/user/account')
       || normalizedUrl.startsWith('/u/');
