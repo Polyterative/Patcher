@@ -9,8 +9,10 @@ import {
   of,
   startWith
 } from 'rxjs';
-import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
-import { getRouteClickableLinkKey } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import {
+  getRouteClickableLinkKey,
+  RouteClickableLink
+} from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
