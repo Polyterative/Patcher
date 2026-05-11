@@ -55,6 +55,7 @@ describe('StatisticsComponent', () => {
     expect(component.title).toBeNull();
     expect(component.cardClass).toBe('');
     expect(component.icon).toBeUndefined();
+    expect(component.compact).toBeFalse();
   });
 
   it('showEmptyState is true when empty message is provided and all values are zero', () => {

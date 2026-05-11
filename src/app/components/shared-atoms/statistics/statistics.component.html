@@ -5,10 +5,16 @@
   >
     <div class="statistics-card-content">
       @if (visibleStatistics.length > 0) {
-        <div class="statistics-grid">
-          @for (statistic of visibleStatistics; track statistic; let i = $index) {
-            <div class="stat-item" [style.animation-delay]="(i * 40) + 'ms'">
-              <app-label-value-showcase [label]="statistic.name" [icon]="statistic.icon">
+        <div class="statistics-grid" [class.statistics-grid--compact]="compact">
+          @for (statistic of visibleStatistics; track statistic.name; let i = $index) {
+            <div class="stat-item"
+                 [class.stat-item--compact]="compact"
+                 [style.animation-delay]="(i * 40) + 'ms'">
+              <app-label-value-showcase [label]="statistic.name"
+                                        [icon]="statistic.icon"
+                                        [bigText]="!compact"
+                                        [valueBelow]="!compact"
+                                        [pushToEnd]="compact">
                 {{ statistic.value }}
               </app-label-value-showcase>
             </div>
