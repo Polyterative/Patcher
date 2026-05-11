@@ -1,8 +1,10 @@
   @if ({
-  user:(userManagerService.loggedUser$|async),
-  isInCollection:(isInCollection$|async),
-  singleModuleData:(dataService.singleModuleData$|async)
-}; as bag) {
+   user:(userManagerService.loggedUser$|async),
+   isInCollection:(isInCollection$|async),
+   singleModuleData: (dataService.singleModuleData$|async),
+   currentRackData: (rackDataService.singleRackData$|async),
+   isCurrentRackEditable: (rackDataService.isCurrentRackEditable$|async)
+ }; as bag) {
   <div class="col parent"
        [class.parent--tagPickerOpen]="isTagChooserOpen"
        [class.parent--portraitDetailSplit]="portraitDetailSplit"
@@ -96,7 +98,7 @@
              [@moduleDetailCopyEnter]="{ value: '', params: { delay: 184, duration: 185 } }">
           <ng-content></ng-content>
         </div>
-        @if (!viewConfig.hideButtons) {
+        @if (!viewConfig.hideButtons && shouldRenderActionFooter(bag.singleModuleData, bag.currentRackData, bag.isCurrentRackEditable)) {
           <div class="module-minimal__focus-hide module-minimal__focus-hide--actions"
                [@moduleDetailActionsEnter]="{ value: '', params: { delay: 216, duration: 195 } }">
             <mat-divider [inset]="true"
@@ -142,8 +144,8 @@
                     <mat-icon>playlist_add</mat-icon>
                   </button>
                 }
-                @if (rackDataService.singleRackData$|async; as rackData) {
-                  @if (rackDataService.isCurrentRackEditable$|async) {
+                @if (bag.currentRackData; as rackData) {
+                  @if (bag.isCurrentRackEditable) {
                     <button (click)="rackDataService.addModuleToRack$.next(data)"
                             [matTooltip]="'Add to '+rackData.name"
                             [title]="!bag.user ? 'Login to add to modules your rack':''"
