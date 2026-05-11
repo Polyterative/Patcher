@@ -89,6 +89,10 @@
   min-width: 0;
   position: sticky;
   top: 1rem;
+  max-block-size: calc(100vh - 2rem);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  padding-right: 0.25rem;
 }
 
 .main-content {
@@ -96,6 +100,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   min-width: 0;
+  min-block-size: calc(100vh - 13rem);
   padding-bottom: 5rem;
   align-items: start;
 }
@@ -140,6 +145,9 @@
 
   .sidebar {
     position: static;
+    max-block-size: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .user-area-page {
