@@ -58,28 +58,52 @@ const ADMIN_LINKS: RouteClickableLink[] = [
   }
 ];
 
+const DEV_MAIN_LINKS: RouteClickableLink[] = [
+  ...MAIN_LINKS.slice(0, 3),
+  INSIGHTS_LINK,
+  ...MAIN_LINKS.slice(3)
+];
+
+const guestLinksCache = [
+  {
+    label: 'Log in',
+    route: '/auth/login',
+    icon: 'login',
+    disabled: false
+  },
+  {
+    label: 'Sign up',
+    route: '/auth/signup',
+    icon: 'account_circle',
+    style: {border: '1px solid rgba(210, 210, 210, 0.7)'},
+    disabled: false
+  }
+];
+const userLinksCache = new Map<string, RouteClickableLink[]>();
+const wideShellAccountLinksCache = new Map<string, RouteClickableLink[]>();
+const toolbarSectionsCache = new Map<string, ToolbarMobileSection[]>();
+const wideShellQuickTargetsCache = new Map<'dev' | 'prod', RouteClickableLink[]>();
+
 export function getToolbarHomeLinks(): RouteClickableLink[] {
-  return [...HOME_LINKS];
+  return HOME_LINKS;
 }
 
 export function getToolbarMainLinks(isDev: boolean): RouteClickableLink[] {
-  if (!isDev) {
-    return [...MAIN_LINKS];
-  }
-
-  return [
-    ...MAIN_LINKS.slice(0, 3),
-    INSIGHTS_LINK,
-    ...MAIN_LINKS.slice(3)
-  ];
+  return isDev ? DEV_MAIN_LINKS : MAIN_LINKS;
 }
 
 export function getToolbarAdminLinks(): RouteClickableLink[] {
-  return [...ADMIN_LINKS];
+  return ADMIN_LINKS;
 }
 
 export function buildToolbarUserLinks(username: string): RouteClickableLink[] {
-  return [
+  const normalizedUsername = username.trim() || 'Account';
+  const cachedLinks = userLinksCache.get(normalizedUsername);
+  if (cachedLinks) {
+    return cachedLinks;
+  }
+
+  const nextLinks = [
     {
       label: 'My profile',
       route: '/user/area',
@@ -87,38 +111,32 @@ export function buildToolbarUserLinks(username: string): RouteClickableLink[] {
       disabled: false
     },
     {
-      label: username,
+      label: normalizedUsername,
       route: '/user/account',
       icon: 'manage_accounts',
       disabled: false
     }
   ];
+  userLinksCache.set(normalizedUsername, nextLinks);
+  return nextLinks;
 }
 
 export function buildToolbarGuestLinks(): RouteClickableLink[] {
-  return [
-    {
-      label: 'Log in',
-      route: '/auth/login',
-      icon: 'login',
-      disabled: false
-    },
-    {
-      label: 'Sign up',
-      route: '/auth/signup',
-      icon: 'account_circle',
-      style: {border: '1px solid rgba(210, 210, 210, 0.7)'},
-      disabled: false
-    }
-  ];
+  return guestLinksCache;
 }
 
 export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string): RouteClickableLink[] {
+  const cacheKey = `${ isLoggedIn ? 'user' : 'guest' }:${ username.trim() || 'Account' }`;
+  const cachedLinks = wideShellAccountLinksCache.get(cacheKey);
+  if (cachedLinks) {
+    return cachedLinks;
+  }
+
   const baseLinks = isLoggedIn
     ? buildToolbarUserLinks(username)
     : buildToolbarGuestLinks();
 
-  return baseLinks.map((link) => {
+  const nextLinks = baseLinks.map((link) => {
     if (link.route === '/user/area') {
       return {
         ...link,
@@ -135,9 +153,17 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
 
     return link;
   });
+  wideShellAccountLinksCache.set(cacheKey, nextLinks);
+  return nextLinks;
 }
 
 export function buildToolbarSections(isLoggedIn: boolean, username: string, isAdmin: boolean, isDev: boolean): ToolbarMobileSection[] {
+  const cacheKey = `${ isLoggedIn ? 1 : 0 }:${ username.trim() || 'Account' }:${ isAdmin ? 1 : 0 }:${ isDev ? 1 : 0 }`;
+  const cachedSections = toolbarSectionsCache.get(cacheKey);
+  if (cachedSections) {
+    return cachedSections;
+  }
+
   const accountLinks = isLoggedIn ? buildToolbarUserLinks(username) : buildToolbarGuestLinks();
   const sections: ToolbarMobileSection[] = [
     {label: 'Quick links', links: getToolbarHomeLinks()},
@@ -149,12 +175,21 @@ export function buildToolbarSections(isLoggedIn: boolean, username: string, isAd
     sections.push({label: 'Admin', links: getToolbarAdminLinks()});
   }
 
+  toolbarSectionsCache.set(cacheKey, sections);
   return sections;
 }
 
 export function getWideShellQuickTargets(isDev: boolean): RouteClickableLink[] {
-  return [
+  const cacheKey = isDev ? 'dev' : 'prod';
+  const cachedTargets = wideShellQuickTargetsCache.get(cacheKey);
+  if (cachedTargets) {
+    return cachedTargets;
+  }
+
+  const nextTargets = [
     ...getToolbarHomeLinks(),
     ...getToolbarMainLinks(isDev)
   ];
+  wideShellQuickTargetsCache.set(cacheKey, nextTargets);
+  return nextTargets;
 }
