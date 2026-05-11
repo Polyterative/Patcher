@@ -105,23 +105,12 @@
   align-items: start;
 }
 
-.user-area-floating-search {
-  position: fixed;
-  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right));
-  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
-  z-index: 70;
-  width: min(30rem, calc(100vw - (var(--app-floating-inset-inline, 1rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)));
+.user-area-utility-search {
   padding: 0.35rem 0.55rem;
   border-radius: var(--app-floating-surface-radius, 0.8rem);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
   box-shadow: var(--app-floating-surface-shadow, 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18));
-}
-
-@media (max-width: 72.5rem) {
-  .user-area-floating-search {
-    width: min(var(--app-floating-tablet-side-panel-width, 24rem), calc(100vw - (var(--app-floating-inset-inline, 0.75rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)));
-  }
 }
 
 @media (max-width: 95rem) {
@@ -152,10 +141,6 @@
 
   .user-area-page {
     padding-bottom: 3rem;
-  }
-
-  .user-area-floating-search {
-    width: min(100%, calc(100vw - (var(--app-floating-inset-inline, 0.75rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)));
   }
 
   .user-profile-card__content {

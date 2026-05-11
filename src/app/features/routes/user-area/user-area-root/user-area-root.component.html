@@ -76,6 +76,15 @@
           ></app-user-patches>
         </div>
         <div class="sidebar col gap1">
+          <div appDiscoveryTipAnchor="user-area-search"
+               class="user-area-utility-search">
+            <lib-mat-form-entity [control]="globalSearchControl"
+                                 [type]="formTypes.TEXT"
+                                 label="Search modules, racks, patches"
+                                 iconL1="search"
+                                 [formFieldAppearanceType]="'outline'"
+            ></lib-mat-form-entity>
+          </div>
           <app-statistics appDiscoveryTipAnchor="user-area-stats"
             title="Profile stats"
             icon="analytics"
@@ -97,16 +106,6 @@
           </div>
         </div>
       </div>
-    </div>
-    
-    <div appDiscoveryTipAnchor="user-area-search"
-         class="user-area-floating-search">
-      <lib-mat-form-entity [control]="globalSearchControl"
-                            [type]="formTypes.TEXT"
-                            label="Search modules, racks, patches"
-                            iconL1="search"
-                            [formFieldAppearanceType]="'outline'"
-      ></lib-mat-form-entity>
     </div>
   </lib-screen-wrapper>
 }
