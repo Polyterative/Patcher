@@ -25,7 +25,10 @@ import {
   map,
   takeUntil
 } from 'rxjs/operators';
-import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  HiddenUsageBucket,
+  ModuleDetailDataService
+} from 'src/app/components/module-parts/module-detail-data.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -444,6 +447,26 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  hasHiddenUsage(bucket: HiddenUsageBucket | null | undefined): boolean {
+    return !!bucket && bucket !== 'none';
+  }
+
+  getHiddenUsageSupplementCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
+    return `Plus ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+  }
+
+  getNoPublicUsageCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
+    if (!this.hasHiddenUsage(bucket)) {
+      return `No ${ this.getHiddenUsageNoun(kind) } using this module yet. Try adding it to yours!`;
+    }
+
+    return `No public ${ this.getHiddenUsageNoun(kind) } using this module yet. It still appears in ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+  }
+
+  getUsagePendingCopy(kind: 'rack' | 'patch'): string {
+    return `Checking private and hidden ${ kind } usage...`;
+  }
+
   ngOnDestroy(): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
@@ -472,6 +495,25 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   private patchDevModule(changes: Partial<DbModule>): void {
     this.dataService.changeModule$.next(changes);
+  }
+
+  private getHiddenUsageDescriptor(bucket: HiddenUsageBucket | null | undefined): string {
+    switch (bucket) {
+      case 'some':
+        return 'some';
+      case '5_plus':
+        return '5+';
+      case '10_plus':
+        return '10+';
+      case '25_plus':
+        return '25+';
+      default:
+        return 'no';
+    }
+  }
+
+  private getHiddenUsageNoun(kind: 'rack' | 'patch'): 'racks' | 'patches' {
+    return kind === 'rack' ? 'racks' : 'patches';
   }
   
   setDevStandard(id: number): void {

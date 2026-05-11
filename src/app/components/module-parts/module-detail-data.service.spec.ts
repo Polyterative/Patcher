@@ -37,6 +37,12 @@ describe('ModuleDetailDataService', () => {
       get: {
         racksWithModule: jasmine.createSpy('racksWithModule').and.returnValue(of({data: [{rack: {id: 1}}]})),
         patchesWithModule: jasmine.createSpy('patchesWithModule').and.returnValue(of([{id: 21}])),
+        moduleUsageSummary: jasmine.createSpy('moduleUsageSummary').and.returnValue(of({
+          public_rack_count: 1,
+          hidden_rack_bucket: 'some',
+          public_patch_count: 1,
+          hidden_patch_bucket: '5_plus'
+        })),
         modulesBySameManufacturer: jasmine.createSpy('modulesBySameManufacturer').and.returnValue(of(options.modulesBySameManufacturer ?? [
           {id: 10, manufacturerId: 7, manufacturer: {name: 'Maker'}},
           {id: 11, manufacturerId: 7, manufacturer: {name: 'Maker'}}
@@ -95,11 +101,18 @@ describe('ModuleDetailDataService', () => {
     expect(backend.GET.moduleWithId).toHaveBeenCalledWith(10);
     expect(backend.get.racksWithModule).toHaveBeenCalledWith(10);
     expect(backend.get.patchesWithModule).toHaveBeenCalledWith(10);
+    expect(backend.get.moduleUsageSummary).toHaveBeenCalledWith(10);
     expect(backend.get.modulesBySameManufacturer).toHaveBeenCalledWith(7);
     
     expect(service.singleModuleData$.value?.id).toBe(10);
     expect(service.racksWithThisModule$.value).toEqual([{id: 1} as any]);
     expect(service.patchesWithThisModule$.value).toEqual([{id: 21} as any]);
+    expect(service.moduleUsageSummary$.value).toEqual({
+      public_rack_count: 1,
+      hidden_rack_bucket: 'some',
+      public_patch_count: 1,
+      hidden_patch_bucket: '5_plus'
+    });
     expect(service.modulesBySameManufacturer$.value?.map(x => x.id)).toEqual([11]);
   }));
   

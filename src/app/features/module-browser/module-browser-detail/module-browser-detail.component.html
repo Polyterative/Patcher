@@ -2,6 +2,7 @@
   data: (dataService.singleModuleData$|async),
   racksWithThisModule: (dataService.racksWithThisModule$|async),
   patchesWithThisModule: (dataService.patchesWithThisModule$|async),
+  moduleUsageSummary: (dataService.moduleUsageSummary$|async),
   modulesBySameManufacturer: (dataService.modulesBySameManufacturer$|async),
   user: (userManagementService.loggedUser$|async),
   editing: (dataService.moduleEditingPanelOpenState$|async),
@@ -395,18 +396,29 @@
                     <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
                                                         [updateData$]="dataService.updateSingleModuleData$"
                     >
-                      @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
-                        <app-module-racks
-                          [data$]="dataService.racksWithThisModule$"
-                        ></app-module-racks>
-                      } @else {
-                        <div class="col gap1 animate-fadein-slowest"
-                        >
-                          <mat-card-subtitle class="module-detail-empty-state-copy"
-                          >No racks using this module yet. Try adding it to yours!
-                          </mat-card-subtitle>
-                        </div>
-                      }
+                       @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
+                         <app-module-racks
+                           [data$]="dataService.racksWithThisModule$"
+                         ></app-module-racks>
+                          @if (hasHiddenUsage(bag.moduleUsageSummary?.hidden_rack_bucket)) {
+                            <div class="col gap1 animate-fadein-slowest">
+                              <mat-card-subtitle class="module-detail-empty-state-copy">
+                                {{ getHiddenUsageSupplementCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket) }}
+                              </mat-card-subtitle>
+                            </div>
+                          }
+                        } @else {
+                          <div class="col gap1 animate-fadein-slowest"
+                          >
+                            <mat-card-subtitle class="module-detail-empty-state-copy"
+                            >@if (bag.moduleUsageSummary == null) {
+                              {{ getUsagePendingCopy('rack') }}
+                            } @else {
+                              {{ getNoPublicUsageCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket) }}
+                            }
+                            </mat-card-subtitle>
+                          </div>
+                        }
                     </lib-auto-content-loading-indicator>
                   </lib-hero-content-card>
                 }
@@ -419,18 +431,29 @@
                     <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
                                                         [updateData$]="dataService.updateSingleModuleData$"
                     >
-                      @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
-                        <app-module-patches
-                          [data$]="dataService.patchesWithThisModule$"
-                        ></app-module-patches>
-                      } @else {
-                        <div class="col gap1 animate-fadein-slowest"
-                        >
-                          <mat-card-subtitle class="module-detail-empty-state-copy"
-                          >No patches using this module yet. Try adding it to yours!
-                          </mat-card-subtitle>
-                        </div>
-                      }
+                       @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
+                         <app-module-patches
+                           [data$]="dataService.patchesWithThisModule$"
+                         ></app-module-patches>
+                          @if (hasHiddenUsage(bag.moduleUsageSummary?.hidden_patch_bucket)) {
+                            <div class="col gap1 animate-fadein-slowest">
+                              <mat-card-subtitle class="module-detail-empty-state-copy">
+                                {{ getHiddenUsageSupplementCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket) }}
+                              </mat-card-subtitle>
+                            </div>
+                          }
+                        } @else {
+                          <div class="col gap1 animate-fadein-slowest"
+                          >
+                            <mat-card-subtitle class="module-detail-empty-state-copy"
+                            >@if (bag.moduleUsageSummary == null) {
+                              {{ getUsagePendingCopy('patch') }}
+                            } @else {
+                              {{ getNoPublicUsageCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket) }}
+                            }
+                            </mat-card-subtitle>
+                          </div>
+                        }
                     </lib-auto-content-loading-indicator>
                   </lib-hero-content-card>
                 }
