@@ -19,8 +19,10 @@ import {
   Observable
 } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
+  shareReplay,
   startWith
 } from 'rxjs/operators';
 import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
@@ -68,6 +70,11 @@ export class HeroContentCardComponent {
   public readonly wideShellTargets: RouteClickableLink[];
   public readonly currentShellUrl$: Observable<string>;
   public readonly accountLinks$: Observable<RouteClickableLink[]>;
+  public readonly shellVm$: Observable<{
+    wideShell: boolean;
+    currentUrl: string;
+    accountLinks: RouteClickableLink[];
+  }>;
   public readonly siteTitle = 'patcher.xyz';
 
   constructor(
@@ -81,7 +88,9 @@ export class HeroContentCardComponent {
     this.currentShellUrl$ = this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       startWith(null),
-      map(() => this.router.url)
+      map(() => this.router.url),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
     );
     this.accountLinks$ = combineLatest([
       this.userManagementService.loggedUser$.pipe(startWith(undefined)),
@@ -90,7 +99,21 @@ export class HeroContentCardComponent {
       map(([loggedUser, profile]) => buildWideShellAccountLinks(
         Boolean(loggedUser),
         profile?.username?.trim() || 'Account'
-      ))
+      )),
+      distinctUntilChanged(),
+      shareReplay({bufferSize: 1, refCount: true})
+    );
+    this.shellVm$ = combineLatest([
+      this.wideShell$,
+      this.currentShellUrl$,
+      this.accountLinks$
+    ]).pipe(
+      map(([wideShell, currentUrl, accountLinks]) => ({
+        wideShell,
+        currentUrl,
+        accountLinks
+      })),
+      shareReplay({bufferSize: 1, refCount: true})
     );
   }
 
