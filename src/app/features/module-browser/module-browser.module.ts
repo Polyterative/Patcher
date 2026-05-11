@@ -46,6 +46,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 import {
   MatMenu,
@@ -121,6 +122,7 @@ const parentPrefix = 'modules';
     MatTooltipModule,
     MatDividerModule,
     MatPaginatorModule,
+    MatButtonToggleModule,
     BrandPrimaryButtonModule,
     AutoContentLoadingIndicatorModule,
     MatFormEntityComponent,
