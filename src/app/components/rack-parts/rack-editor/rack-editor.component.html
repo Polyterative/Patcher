@@ -102,60 +102,80 @@
                  buttonClass: 'rackEditorResponsiveActions__button'
                }"></ng-container>
              }
-             @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off && selectedTouchModule; as selectedModule) {
-               <div class="rackEditorResponsiveActions__selection">
-                 <div class="rackEditorResponsiveActions__selectionHeader">
-                   <div class="rackEditorResponsiveActions__selectionCopy">
-                     <div class="rackEditorResponsiveActions__selectionEyebrow">Module actions</div>
-                     <div class="rackEditorResponsiveActions__selectionTitle">{{ selectedModule.module.name }}</div>
-                     <div class="rackEditorResponsiveActions__selectionMeta">
-                       {{ selectedModule.module.manufacturer.name }} · {{ selectedModule.module.hp }}HP
-                     </div>
-                   </div>
-                   <button mat-icon-button
-                           type="button"
-                           class="rackEditorResponsiveActions__selectionDismiss"
-                           aria-label="Close module actions"
-                           (click)="clearSelectedTouchModule()"
-                   >
-                     <mat-icon>close</mat-icon>
-                   </button>
-                 </div>
-                 <div class="rackEditorResponsiveActions__selectionActions">
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="openInspectPanel(selectedModule)"
-                   >
-                     <mat-icon>zoom_in</mat-icon>
-                     Inspect panel
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="duplicateSelectedTouchModule()"
-                   >
-                     <mat-icon>content_copy</mat-icon>
-                     Duplicate
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="replaceSelectedTouchModuleWithBlank()"
-                   >
-                     <mat-icon>space_bar</mat-icon>
-                     Replace with blank
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button rackEditorResponsiveActions__button--danger"
-                           (click)="removeSelectedTouchModule()"
-                   >
-                     <mat-icon>delete</mat-icon>
-                     Delete from rack
-                   </button>
-                 </div>
-               </div>
+             @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off) {
+               @if (selectedTouchModule; as selectedModule) {
+                  <div class="rackEditorResponsiveActions__selection">
+                    <div class="rackEditorResponsiveActions__selectionHeader">
+                      <div class="rackEditorResponsiveActions__selectionCopy">
+                        <div class="rackEditorResponsiveActions__selectionEyebrow">Selected module</div>
+                        <div class="rackEditorResponsiveActions__selectionTitle">{{ selectedModule.module.name }}</div>
+                        <div class="rackEditorResponsiveActions__selectionMeta">
+                          {{ selectedModule.module.manufacturer.name }} · {{ selectedModule.module.hp }}HP
+                        </div>
+                      </div>
+                      <button mat-icon-button
+                              type="button"
+                              class="rackEditorResponsiveActions__selectionDismiss"
+                              aria-label="Close module actions"
+                              (click)="clearSelectedTouchModule()"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                      <div class="rackEditorResponsiveActions__selectionActions">
+                        @for (action of touchTrayModuleActions; track action.id) {
+                          @if (action.id !== 'delete') {
+                            <button mat-stroked-button
+                                    type="button"
+                                    class="rackEditorResponsiveActions__button"
+                                    [class.rackEditorResponsiveActions__button--danger]="action.danger"
+                                    (click)="runSelectedTouchAction(action)"
+                            >
+                              <mat-icon>{{ action.icon }}</mat-icon>
+                              {{ action.label }}
+                            </button>
+                          }
+                        }
+                        <button mat-stroked-button
+                                type="button"
+                                class="rackEditorResponsiveActions__button"
+                                #touchActionMenuButton
+                                (click)="openSelectedTouchModuleMenu(touchActionMenuButton)"
+                        >
+                          <mat-icon>tune</mat-icon>
+                          Row / panel
+                        </button>
+                        @if (touchTrayModuleActions[touchTrayModuleActions.length - 1]; as destructiveAction) {
+                          <button mat-stroked-button
+                                  type="button"
+                                  class="rackEditorResponsiveActions__button"
+                                  [class.rackEditorResponsiveActions__button--danger]="destructiveAction.danger"
+                                  (click)="runSelectedTouchAction(destructiveAction)"
+                          >
+                            <mat-icon>{{ destructiveAction.icon }}</mat-icon>
+                            {{ destructiveAction.label }}
+                          </button>
+                        }
+                      </div>
+                      <div class="rackEditorResponsiveActions__selectionHint">
+                        Row and panel tools stay under <strong>Row / panel</strong> so the main edit actions remain consistent.
+                      </div>
+                  </div>
+               } @else if ((bag.rowedRackedModules | totalModulesOfRack) > 0) {
+                  <div class="rackEditorResponsiveActions__touchGuide"
+                       role="note"
+                  >
+                    <div class="rackEditorResponsiveActions__touchGuideIcon" aria-hidden="true">
+                      <mat-icon>touch_app</mat-icon>
+                    </div>
+                    <div class="rackEditorResponsiveActions__touchGuideCopy">
+                      <div class="rackEditorResponsiveActions__touchGuideTitle">Tap a module to show edit actions</div>
+                      <div class="rackEditorResponsiveActions__touchGuideText">
+                        Main actions appear here after selection. Row and panel tools stay in a dedicated secondary button.
+                      </div>
+                    </div>
+                  </div>
+               }
              }
            </div>
           <div class="rackEditorFloatingOptions">

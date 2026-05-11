@@ -162,13 +162,25 @@ $palette: (
     backdrop-filter: none;
   }
 
+  .module-card-body .module-card-actions button[mat-icon-button] {
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
+  }
+
   .patch-editor-floating-search {
-    backdrop-filter: none;
+    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
+    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.3rem));
+    width: min(var(--app-floating-tablet-side-panel-width, 22rem), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 0.75rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)));
   }
 }
 
 @media (hover: none), (pointer: coarse) {
   .module-card-body .module-card-actions {
     opacity: 1;
+  }
+
+  .module-card-body .module-card-actions button[mat-icon-button] {
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
   }
 }

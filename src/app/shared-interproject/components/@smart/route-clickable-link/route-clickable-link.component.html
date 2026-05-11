@@ -3,9 +3,9 @@
   layoutFlexWidth: (appState.layoutFlexWidth$|async)
 }; as bag) {
   @if (bag.layoutFlexWidth) {
-    <div class="row link-list">
+    <div class="row link-list" [class.link-list--column]="direction === 'column'">
       @for (item of bag.data; track trackByLink($index, item)) {
-        @if (item.icon && !bag.layoutFlexWidth.gtsm) {
+        @if (item.icon && !bag.layoutFlexWidth.gtsm && direction !== 'column') {
           <a
             mat-icon-button
             class="option icon-only"

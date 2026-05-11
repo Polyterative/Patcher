@@ -51,14 +51,23 @@ export class UserResetPasswordDataService implements OnDestroy {
         Validators.maxLength(30)
       ]),
       code: 'password',
-      flex: '100%'
+      flex: '100%',
+      iconL1: 'lock',
+      ergonomics: {
+        autofocus: true,
+        enterkeyhint: 'next'
+      }
     },
     confirmPassword: {
       type: FormTypes.PASSWORD_NEW,
       label: ERROR_MESSAGES.confirmPasswordLabel,
       control: new UntypedFormControl('', [Validators.required]),
       code: 'confirmPassword',
-      flex: '100%'
+      flex: '100%',
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'done'
+      }
     }
   };
   

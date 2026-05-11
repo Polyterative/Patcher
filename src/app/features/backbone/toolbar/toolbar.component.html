@@ -1,4 +1,4 @@
-<mat-toolbar class="toolbar sticky" role="navigation" aria-label="Primary navigation">
+<mat-toolbar class="toolbar toolbar--top sticky" role="navigation" aria-label="Primary navigation">
   <lib-screen-wrapper fxFlex="grow">
     <div class="toolbar-row row gap1" fxLayoutAlign="center center">
       <a
@@ -9,9 +9,9 @@
       >
         <span class="title-text">{{ service.state.title | async }}</span>
       </a>
-      
+
       <div fxFlex="grow"></div>
-      
+
       <div class="row gap1 buttons" fxLayoutGap.xs=".25rem" [fxHide.xs]="true">
         <app-route-clickable-link-list [data$]="homeLinks$"></app-route-clickable-link-list>
         <mat-divider vertical="true"></mat-divider>
@@ -21,14 +21,14 @@
           <app-route-clickable-link-list [data$]="adminLinks$"></app-route-clickable-link-list>
         }
       </div>
-      
+
       <div fxFlex="grow" [fxHide.xs]="true"></div>
-      
+
       <div [fxHide.xs]="true">
         <app-route-clickable-link-list
           [data$]="(isLoggedIn$ | async) ? linksUser$ : linksA$"></app-route-clickable-link-list>
       </div>
-      
+
       <button
         mat-icon-button
         class="mobile-menu-trigger"
