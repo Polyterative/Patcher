@@ -38,4 +38,22 @@ describe('ModuleMinimalComponent', () => {
     expect(nextSpy).toHaveBeenCalled();
     expect(completeSpy).toHaveBeenCalled();
   });
+
+  it('hides the footer when no module-detail or rack actions are available', () => {
+    const {component} = build();
+
+    expect(component.shouldRenderActionFooter(undefined, undefined, false)).toBeFalse();
+  });
+
+  it('shows the footer when module-detail actions are available', () => {
+    const {component} = build();
+
+    expect(component.shouldRenderActionFooter({id: 42} as any, undefined, false)).toBeTrue();
+  });
+
+  it('shows the footer when rack actions are available from an editable rack', () => {
+    const {component} = build();
+
+    expect(component.shouldRenderActionFooter(undefined, {id: 7, name: 'Perf Rack'} as any, true)).toBeTrue();
+  });
 });
