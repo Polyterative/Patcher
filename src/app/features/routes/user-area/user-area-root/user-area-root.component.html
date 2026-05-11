@@ -76,33 +76,37 @@
           ></app-user-patches>
         </div>
         <div class="sidebar col gap1">
-          <div appDiscoveryTipAnchor="user-area-search"
-               class="user-area-utility-search">
-            <lib-mat-form-entity [control]="globalSearchControl"
-                                 [type]="formTypes.TEXT"
-                                 label="Search modules, racks, patches"
-                                 iconL1="search"
-                                 [formFieldAppearanceType]="'outline'"
-            ></lib-mat-form-entity>
+          <div class="col gap1 utility-rail-group utility-rail-group--primary">
+            <div appDiscoveryTipAnchor="user-area-search"
+                 class="user-area-utility-search">
+              <lib-mat-form-entity [control]="globalSearchControl"
+                                   [type]="formTypes.TEXT"
+                                   label="Search modules, racks, patches"
+                                   iconL1="search"
+                                   [formFieldAppearanceType]="'outline'"
+              ></lib-mat-form-entity>
+            </div>
+            <app-statistics appDiscoveryTipAnchor="user-area-stats"
+              title="Profile stats"
+              icon="analytics"
+              cardClass="userBG"
+              [statistics]="miscStats$ | async"
+            ></app-statistics>
+            <app-statistics
+              title="Contributor stats"
+              icon="insights"
+              cardClass="userBG"
+              [statistics]="contributorStats$ | async"
+              [emptyMessage]="contributorStatsEmptyMessage"
+            ></app-statistics>
           </div>
-          <app-statistics appDiscoveryTipAnchor="user-area-stats"
-            title="Profile stats"
-            icon="analytics"
-            cardClass="userBG"
-            [statistics]="miscStats$ | async"
-          ></app-statistics>
-          <app-statistics
-            title="Contributor stats"
-            icon="insights"
-            cardClass="userBG"
-            [statistics]="contributorStats$ | async"
-            [emptyMessage]="contributorStatsEmptyMessage"
-          ></app-statistics>
-          <div appDiscoveryTipAnchor="user-area-manuals">
-            <app-user-manuals></app-user-manuals>
-          </div>
-          <div appDiscoveryTipAnchor="user-area-comments">
-            <app-user-comments></app-user-comments>
+          <div class="col gap1 utility-rail-group utility-rail-group--secondary">
+            <div appDiscoveryTipAnchor="user-area-manuals">
+              <app-user-manuals></app-user-manuals>
+            </div>
+            <div appDiscoveryTipAnchor="user-area-comments">
+              <app-user-comments></app-user-comments>
+            </div>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@
   hasSearchQuery: (dataService.hasSearchQuery$|async)
 }; as bag) {
   @if (bag.manuals && bag.manuals.length > 0) {
-    <div class="col gap1"
+    <div class="col gap1 manuals-shell"
     >
       <lib-hero-content-card description="Available manuals for your modules. Click to open"
                              titleNormal="Manuals"
@@ -17,15 +17,15 @@
         <div class="col gap1"
         >
           @if (bag.filteredManuals && bag.filteredManuals.length > 0) {
-            <mat-chip-listbox>
-              @for (item of bag.filteredManuals; track item) {
-                <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
-              }
-            </mat-chip-listbox>
+            <div class="manuals-list">
+              <mat-chip-listbox class="manuals-chip-list">
+                @for (item of bag.filteredManuals; track item) {
+                  <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
           } @else {
-            <mat-card-subtitle
-              style="padding: 1rem; align-self: center; text-align: center; width: 100%"
-            >
+            <mat-card-subtitle class="manuals-empty">
               @if (bag.hasSearchQuery) {
                 No manuals match the current search
               } @else {
