@@ -29,9 +29,11 @@
       activeFilter: (activeFilter$ | async),
     }; as bag) {
       @if (bag.data && bag.data.length > 0) {
-        <app-comments-item-block [data]="bag.data"
-                                 [viewConfig]="commentViewConfig"
-        ></app-comments-item-block>
+        <div class="userComments__list">
+          <app-comments-item-block [data]="bag.data"
+                                   [viewConfig]="commentViewConfig"
+          ></app-comments-item-block>
+        </div>
       } @else {
         <div class="userComments__empty">
           <mat-card-subtitle class="userComments__emptyText">

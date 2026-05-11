@@ -11,6 +11,12 @@
   padding-bottom: 0.25rem;
 }
 
+.userComments__list {
+  max-block-size: 22rem;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
 .userComments__empty {
   display: flex;
   justify-content: center;
@@ -20,4 +26,11 @@
 
 .userComments__emptyText {
   text-align: center;
+}
+
+@media (max-width: 60rem) {
+  .userComments__list {
+    max-block-size: none;
+    overflow: visible;
+  }
 }
