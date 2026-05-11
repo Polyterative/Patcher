@@ -29,10 +29,12 @@
         <div class="col"
         >
           <router-outlet></router-outlet>
-          <!--    <lib-screen-wrapper>-->
-          <app-faq></app-faq>
+          <div class="app-shell__supporting app-shell__supporting--help">
+            <lib-screen-wrapper sizePreset="wide-shell" class="app-shell__surface-shell">
+              <app-faq></app-faq>
+            </lib-screen-wrapper>
+          </div>
           <app-footer></app-footer>
-          <!--    </lib-screen-wrapper>-->
         </div>
       </div>
     </div>
