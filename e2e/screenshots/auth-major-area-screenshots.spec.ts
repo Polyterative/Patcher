@@ -40,6 +40,7 @@ interface ScreenshotTarget {
   fileName: string;
   prepare: (page: Page) => Promise<void>;
   focusSelector: string;
+  readyScopeSelector?: string;
   settleDelayMs?: number;
   authenticated?: boolean;
 }
@@ -161,9 +162,10 @@ async function captureViewport(
   page: Page,
   fileName: string,
   focusSelector: string,
+  readyScopeSelector = focusSelector,
   settleDelayMs = SCREENSHOT_DELAY_MS
 ): Promise<void> {
-  await waitForScreenshotReady(page, focusSelector);
+  await waitForScreenshotReady(page, focusSelector, readyScopeSelector);
   await page.waitForTimeout(settleDelayMs);
   await page.screenshot({
     path: path.join(OUTPUT_DIR, fileName),
@@ -192,7 +194,7 @@ async function centerElementOnViewport(page: Page, selector: string): Promise<vo
   expect(centered).toBeTruthy();
 }
 
-async function waitForScreenshotReady(page: Page, focusSelector: string): Promise<void> {
+async function waitForScreenshotReady(page: Page, focusSelector: string, readyScopeSelector: string): Promise<void> {
   await page.waitForLoadState('domcontentloaded');
   await expect(page.locator(focusSelector).first()).toBeVisible({timeout: 20_000});
 
@@ -209,7 +211,7 @@ async function waitForScreenshotReady(page: Page, focusSelector: string): Promis
   );
 
   await page.waitForFunction(
-    () => {
+    (scopeSelector: string) => {
       const isVisibleInViewport = (element: Element | null): boolean => {
         if (!(element instanceof HTMLElement)) {
           return false;
@@ -244,7 +246,7 @@ async function waitForScreenshotReady(page: Page, focusSelector: string): Promis
   );
 
   await page.waitForFunction(
-    () => {
+    (scopeSelector: string) => {
       const isVisibleInViewport = (element: Element | null): boolean => {
         if (!(element instanceof HTMLElement)) {
           return false;
@@ -266,11 +268,13 @@ async function waitForScreenshotReady(page: Page, focusSelector: string): Promis
           && rect.left < window.innerWidth;
       };
 
-      return Array.from(document.images)
+      const scopeRoot = document.querySelector(scopeSelector) ?? document.body;
+
+      return Array.from(scopeRoot.querySelectorAll('img'))
         .filter((image) => isVisibleInViewport(image))
         .every((image) => image.complete && image.naturalWidth > 0);
     },
-    undefined,
+    readyScopeSelector,
     {timeout: 20_000}
   );
 
@@ -372,10 +376,21 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
     authenticated: false
   },
   {fileName: '02-modules.jpg', prepare: prepareModuleBrowser, focusSelector: 'app-module-minimal, app-empty-state'},
-  {fileName: '03-module-details.jpg', prepare: prepareModuleDetails, focusSelector: 'app-module-composite'},
+  {
+    fileName: '03-module-details.jpg',
+    prepare: prepareModuleDetails,
+    focusSelector: 'app-module-browser-detail .module-detail-layout',
+    readyScopeSelector: 'app-module-browser-detail .module-detail-layout',
+    settleDelayMs: 1_500
+  },
   {fileName: '04-patches.jpg', prepare: preparePatchBrowser, focusSelector: 'app-patch-micro, app-empty-state'},
   {fileName: '05-patch-details.jpg', prepare: preparePatchDetailsEditing, focusSelector: 'app-patch-composite'},
-  {fileName: '06-racks.jpg', prepare: prepareRackBrowser, focusSelector: 'app-rack-micro, app-empty-state'},
+  {
+    fileName: '06-racks.jpg',
+    prepare: prepareRackBrowser,
+    focusSelector: 'app-rack-micro, app-empty-state',
+    readyScopeSelector: 'app-rack-list'
+  },
   {fileName: '07-rack-details.jpg', prepare: prepareRackDetailsEditingCentered, focusSelector: 'app-rack-composite'},
   {fileName: '08-user-area.jpg', prepare: prepareUserArea, focusSelector: 'app-user-area-root', settleDelayMs: 1_500}
 ];
@@ -407,7 +422,13 @@ test.describe('Major area screenshot automation', () => {
       try {
         await installScreenshotMode(capturePage);
         await target.prepare(capturePage);
-        await captureViewport(capturePage, target.fileName, target.focusSelector, target.settleDelayMs);
+        await captureViewport(
+          capturePage,
+          target.fileName,
+          target.focusSelector,
+          target.readyScopeSelector,
+          target.settleDelayMs
+        );
       } finally {
         await detachedContext?.close();
       }

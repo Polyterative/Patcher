@@ -7,7 +7,7 @@
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: translateY(var(--app-floating-surface-raise-offset, 0.5rem));
   }
   to {
     opacity: 1;
@@ -45,8 +45,16 @@
 }
 
 .deselect-btn--panel {
-  min-width: 3rem;
-  min-height: 3rem;
+  min-width: 0;
+  min-height: var(--app-touch-target-prominent-min, 3.25rem);
+  padding-inline: 1rem;
+  border-radius: 999px;
+  gap: 0.3rem;
+
+  .mat-icon,
+  mat-icon {
+    margin: 0;
+  }
 }
 
 // ── Header row ────────────────────────────────────────────────────────────────
@@ -99,6 +107,13 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 72.5rem) {
+  .deselect-btn--panel {
+    min-height: var(--app-touch-target-prominent-min, 3.5rem);
+    padding-inline: 1.1rem;
+  }
+}
+
 .panel-kind-chip {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -119,7 +134,7 @@
 
 @media (max-width: 72.5rem) {
   .panel-card {
-    backdrop-filter: none;
+    width: min(var(--app-floating-tablet-side-panel-width, 22rem), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1.5rem) * 2)));
   }
 }
 

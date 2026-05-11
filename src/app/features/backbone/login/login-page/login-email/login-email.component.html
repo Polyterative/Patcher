@@ -2,24 +2,15 @@
      fxLayout="column"
 >
   <lib-mat-form-entity fxFlex="100"
-                       [type]="dataService.fields.user.type"
-                       [control]="dataService.fields.user.control"
-                       [label]="dataService.fields.user.label"
-                       [autofocus]="true"
-                       [enterkeyhint]="'next'"
+                       [dataPack]="dataService.fields.user"
                        formFieldAppearanceType="fill"
-                       iconL1="email"
   >
   </lib-mat-form-entity>
   
   <lib-mat-form-entity fxFlex="100"
-                       [type]="dataService.fields.password.type"
-                       [control]="dataService.fields.password.control"
-                       [label]="dataService.fields.password.label"
-                       [enterkeyhint]="'send'"
+                       [dataPack]="dataService.fields.password"
                        (enterPressed)="dataService.mailLoginClick$.next()"
                        formFieldAppearanceType="fill"
-                       iconL1="lock"
   >
   </lib-mat-form-entity>
   

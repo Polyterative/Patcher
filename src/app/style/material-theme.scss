@@ -30,6 +30,8 @@ $patcher-theme: mat.define-theme((
   @include mat.all-component-themes($patcher-theme);
   --app-viewport-width: 100vw;
   --app-viewport-height: 100vh;
+  --app-viewport-dynamic-height: 100vh;
+  --app-viewport-stable-height: 100vh;
   --app-viewport-offset-top: 0px;
   --app-viewport-offset-left: 0px;
   --app-keyboard-inset-bottom: 0px;
@@ -41,10 +43,34 @@ $patcher-theme: mat.define-theme((
   --app-floating-surface-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
   --app-floating-surface-shadow-strong: 0 0.45rem 1.4rem rgba(0, 0, 0, 0.22);
   --app-floating-surface-blur: 0.375rem;
+  --app-floating-surface-rest-opacity: 0.78;
+  --app-floating-surface-hover-lift: 0.0625rem;
+  --app-floating-surface-raise-offset: 0.5rem;
+  --app-floating-surface-transition-duration: 160ms;
   --app-floating-surface-raise-duration: 160ms;
+  --app-floating-action-height: 3.5rem;
+  --app-floating-secondary-lane-offset: calc(var(--app-floating-action-height) + var(--app-floating-surface-gap));
+  --app-floating-tablet-side-panel-width: 24rem;
   --app-floating-action-radius: 1.75rem;
   --app-floating-action-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22);
+  --app-touch-target-min: 2.75rem;
+  --app-touch-target-comfortable-min: 3rem;
+  --app-touch-target-prominent-min: 3.25rem;
+  --app-touch-target-gap: 0.35rem;
   --app-loading-shimmer-duration: 1150ms;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --app-viewport-stable-height: 100svh;
+  }
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-viewport-height: 100dvh;
+    --app-viewport-dynamic-height: 100dvh;
+  }
 }
 
 @media (max-width: 72.5rem) {
@@ -53,5 +79,16 @@ $patcher-theme: mat.define-theme((
     --app-floating-inset-block: 0.75rem;
     --app-floating-surface-gap: 0.65rem;
     --app-floating-surface-radius: 0.75rem;
+    --app-floating-surface-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.12);
+    --app-floating-surface-shadow-strong: 0 0.25rem 0.8rem rgba(0, 0, 0, 0.14);
+    --app-floating-surface-blur: 0rem;
+    --app-floating-surface-rest-opacity: 1;
+    --app-floating-surface-hover-lift: 0rem;
+    --app-floating-surface-raise-offset: 0rem;
+    --app-floating-surface-transition-duration: 0ms;
+    --app-floating-surface-raise-duration: 0ms;
+    --app-touch-target-comfortable-min: 3.5rem;
+    --app-touch-target-prominent-min: 3.75rem;
+    --app-touch-target-gap: 0.5rem;
   }
 }

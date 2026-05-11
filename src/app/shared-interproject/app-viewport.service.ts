@@ -8,6 +8,7 @@ import { isPlatformBrowser } from '@angular/common';
 export interface AppViewportSnapshot {
   width: number;
   height: number;
+  stableHeight: number;
   offsetTop: number;
   offsetLeft: number;
   keyboardInsetBottom: number;
@@ -46,18 +47,20 @@ export class AppViewportService {
 
   currentViewport(): AppViewportSnapshot {
     if (!this.isBrowser) {
-      return {
-        width: 0,
-        height: 0,
-        offsetTop: 0,
-        offsetLeft: 0,
-        keyboardInsetBottom: 0
-      };
+        return {
+          width: 0,
+          height: 0,
+          stableHeight: 0,
+          offsetTop: 0,
+          offsetLeft: 0,
+          keyboardInsetBottom: 0
+        };
     }
 
     const visualViewport = window.visualViewport;
     const width = visualViewport?.width ?? window.innerWidth;
     const height = visualViewport?.height ?? window.innerHeight;
+    const stableHeight = window.innerHeight;
     const offsetTop = visualViewport?.offsetTop ?? 0;
     const offsetLeft = visualViewport?.offsetLeft ?? 0;
     const keyboardInsetBottom = Math.max(0, window.innerHeight - (height + offsetTop));
@@ -65,6 +68,7 @@ export class AppViewportService {
     return {
       width,
       height,
+      stableHeight,
       offsetTop,
       offsetLeft,
       keyboardInsetBottom
@@ -84,6 +88,8 @@ export class AppViewportService {
 
     rootStyle.setProperty('--app-viewport-width', `${ snapshot.width }px`);
     rootStyle.setProperty('--app-viewport-height', `${ snapshot.height }px`);
+    rootStyle.setProperty('--app-viewport-dynamic-height', `${ snapshot.height }px`);
+    rootStyle.setProperty('--app-viewport-stable-height', `${ snapshot.stableHeight }px`);
     rootStyle.setProperty('--app-viewport-offset-top', `${ snapshot.offsetTop }px`);
     rootStyle.setProperty('--app-viewport-offset-left', `${ snapshot.offsetLeft }px`);
     rootStyle.setProperty('--app-keyboard-inset-bottom', `${ snapshot.keyboardInsetBottom }px`);

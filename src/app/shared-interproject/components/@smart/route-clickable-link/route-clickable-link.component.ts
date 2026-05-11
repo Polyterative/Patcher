@@ -20,6 +20,9 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 export class RouteClickableLinkComponent {
   @Input()
   public data$: Observable<RouteClickableLink[]> = of([]);
+
+  @Input()
+  public direction: 'row' | 'column' = 'row';
   
   constructor(public readonly appState: AppStateService) {
   }

@@ -60,6 +60,10 @@
   //border: .5rem solid rgba(0, 0, 0, 0.9);
   $bgcolor:         rgba(0, 0, 0, 0.1);
 
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  gap:              0.25rem;
   color:            rgba(0, 0, 0, 0.75);
   padding:          0.5rem;
   margin:           0.25rem;
@@ -118,9 +122,10 @@
 
 @media (max-width: 72.5rem) {
   .item-cvitem {
-    min-height: 2.75rem;
-    padding: 0.65rem 0.8rem;
-    margin: 0.35rem;
+    min-width: var(--app-touch-target-prominent-min, 3.5rem);
+    min-height: var(--app-touch-target-prominent-min, 3.5rem);
+    padding: 0.85rem 1rem;
+    margin: var(--app-touch-target-gap, 0.35rem);
     border-radius: 0.7rem;
   }
 

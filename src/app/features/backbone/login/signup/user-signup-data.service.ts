@@ -20,6 +20,7 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
@@ -31,7 +32,12 @@ export class UserSignupDataService extends SubManager {
   
   // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
   
-  fields = {
+  readonly fields: {
+    username: IMatFormEntityConfig;
+    email: IMatFormEntityConfig;
+    password: IMatFormEntityConfig;
+    passwordAgain: IMatFormEntityConfig;
+  } = {
     username: {
       label: 'Username',
       code: 'username',
@@ -42,7 +48,13 @@ export class UserSignupDataService extends SubManager {
         Validators.maxLength(128),
         Validators.minLength(3)
       ])),
-      type: FormTypes.TEXT
+      type: FormTypes.TEXT,
+      hint: 'Visible by other users',
+      iconL1: 'person',
+      ergonomics: {
+        autofocus: true,
+        enterkeyhint: 'next'
+      }
     },
     email: {
       label: 'Email',
@@ -52,7 +64,12 @@ export class UserSignupDataService extends SubManager {
         Validators.required,
         Validators.email
       ])),
-      type: FormTypes.EMAIL
+      type: FormTypes.EMAIL,
+      hint: 'NOT visible by other users',
+      iconL1: 'email',
+      ergonomics: {
+        enterkeyhint: 'next'
+      }
     },
     password: {
       label: 'Password',
@@ -63,7 +80,11 @@ export class UserSignupDataService extends SubManager {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type: FormTypes.PASSWORD_NEW
+      type: FormTypes.PASSWORD_NEW,
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'next'
+      }
     },
     passwordAgain: {
       label: 'Repeat Password',
@@ -74,7 +95,11 @@ export class UserSignupDataService extends SubManager {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type: FormTypes.PASSWORD_NEW
+      type: FormTypes.PASSWORD_NEW,
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'done'
+      }
     }
   };
   mailSignClick$ = new Subject<void>();
