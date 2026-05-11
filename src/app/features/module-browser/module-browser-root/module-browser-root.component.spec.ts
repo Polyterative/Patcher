@@ -2,11 +2,16 @@ import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import {
   ComponentFixture,
+  fakeAsync,
+  tick,
   TestBed
 } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import {
+  of,
+  Subject
+} from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { SupabaseService } from '../../backend/supabase.service';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
@@ -148,5 +153,42 @@ describe('ModuleBrowserRootComponent', () => {
 
     expect(component.dataService.fields.order.control.value).toEqual(component.dataService.orderStartingValue);
     expect(component.dataService.serversideTableRequestData.sort$.value).toEqual(['updated', 'desc']);
+  });
+
+  it('shows tag-filter loading feedback and keeps current results visible until the next backend result arrives', fakeAsync(() => {
+    const backend = TestBed.inject(SupabaseService) as any;
+    const modulesResponse$ = new Subject<{data: MinimalModule[]; count: number}>();
+    const currentResults = buildOwnedModules(2);
+
+    backend.GET.modules.and.returnValue(modulesResponse$.asObservable());
+    component.dataService.modulesList$.next(currentResults);
+    component.visibleModules$.next(currentResults);
+    fixture.detectChanges();
+
+    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    fixture.detectChanges();
+
+    expect(component.dataService.remoteTagFilterLoading$.value).toBeTrue();
+    expect(component.visibleModules$.value).toEqual(currentResults);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Updating results');
+
+    tick(750);
+    modulesResponse$.next({data: [currentResults[0]], count: 1});
+    modulesResponse$.complete();
+    fixture.detectChanges();
+
+    expect(component.dataService.remoteTagFilterLoading$.value).toBeFalse();
+  }));
+
+  it('does not show remote tag-filter loading feedback in owned collection mode', () => {
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    fixture.detectChanges();
+
+    component.dataService.fields.tags.control.setValue([{id: '7', name: 'Filter'}] as any);
+    fixture.detectChanges();
+
+    expect(component.collectionBrowseMode).toBe('owned');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Updating results');
   });
 });

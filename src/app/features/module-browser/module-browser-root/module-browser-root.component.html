@@ -164,6 +164,12 @@
       
       <!-- ── Right column: results ── -->
       <div class="browser-content-area col gap1">
+        @if (!usesOwnedDataset && (dataService.remoteTagFilterLoading$ | async)) {
+          <div class="module-browser-loading-note" aria-live="polite" role="status">
+            <strong>Updating results</strong>
+            <span>Refreshing the visible list for the selected tags while keeping the current cards in place.</span>
+          </div>
+        }
         <app-module-list [data$]="visibleModules$"
                          [viewConfig]="viewConfig"
                          [emptyStateCopy]="showCollectionBrowseToggle ? rackContextEmptyStateCopy : ''"
