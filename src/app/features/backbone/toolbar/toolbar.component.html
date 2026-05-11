@@ -1,18 +1,17 @@
 <mat-toolbar class="toolbar toolbar--top sticky" role="navigation" aria-label="Primary navigation">
-  <lib-screen-wrapper fxFlex="grow">
-    <div class="toolbar-row row gap1" fxLayoutAlign="center center">
+  <lib-screen-wrapper class="toolbar-shell">
+    <div class="toolbar-row row gap1">
       <a
         routerLink="/home"
         class="title"
-        fxLayoutAlign="center center"
         aria-label="Go to home"
       >
         <span class="title-text">{{ service.state.title | async }}</span>
       </a>
 
-      <div fxFlex="grow"></div>
+      <div class="toolbar-spacer" aria-hidden="true"></div>
 
-      <div class="row gap1 buttons" fxLayoutGap.xs=".25rem" [fxHide.xs]="true">
+      <div class="row gap1 buttons toolbar-desktop-links">
         <app-route-clickable-link-list [data$]="homeLinks$"></app-route-clickable-link-list>
         <mat-divider vertical="true"></mat-divider>
         <app-route-clickable-link-list [data$]="mainLinks$"></app-route-clickable-link-list>
@@ -22,18 +21,17 @@
         }
       </div>
 
-      <div fxFlex="grow" [fxHide.xs]="true"></div>
+      <div class="toolbar-spacer toolbar-desktop-spacer" aria-hidden="true"></div>
 
-      <div [fxHide.xs]="true">
+      <div class="toolbar-account">
         <app-route-clickable-link-list
           [data$]="(isLoggedIn$ | async) ? linksUser$ : linksA$"></app-route-clickable-link-list>
       </div>
 
       <button
         mat-icon-button
-        class="mobile-menu-trigger"
+        class="mobile-menu-trigger toolbar-mobile-trigger"
         [matMenuTriggerFor]="mobileMenu"
-        [fxHide.gt-xs]="true"
         aria-label="Open navigation menu"
       >
         <mat-icon>menu</mat-icon>
