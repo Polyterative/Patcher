@@ -6,15 +6,13 @@
                          icon="settings_input_composite"
                          id="patches"
   >
-    <div class="col gap1"
+    <div class="col gap1 section-shell"
     >
-      <div class="row gap1 auto-left"
-      >
+      <div class="row gap1 auto-left section-actions">
         <app-brand-primary-button
           appDiscoveryTipAnchor="user-area-patches-create"
           (click$)="dataService.addPatch$.next()"
           icon="add"
-          fxLayoutAlign="end"
         >Create patch
         </app-brand-primary-button>
       </div>
@@ -24,7 +22,7 @@
           @if ((dataService.allPatchTags$ | async); as uniqueTags) {
             @if (uniqueTags.length > 0) {
               @let activeTag = (dataService.activeTagFilter$ | async);
-              <div class="row gap1" style="flex-wrap: wrap; align-items: center;">
+              <div class="row gap1 patch-filter-row">
                 <mat-chip-set>
                   @for (tag of uniqueTags; track tag) {
                     <mat-chip
@@ -45,13 +43,13 @@
       }
       @if ((dataService.pagedPatchesData$|async); as data) {
         @if (data.length > 0) {
-          <app-patch-list fxFlex="grow"
+          <app-patch-list class="section-list"
                           [data$]="dataService.pagedPatchesData$"
                           [showSearch]="false"
           ></app-patch-list>
         } @else {
-          <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">
+          <div class="section-empty">
+            <mat-card-subtitle>
               @if ((dataService.activeTagFilter$ | async) && globalSearchQuery.trim()) {
                 No patches match the current search and tag filter.
               } @else if (dataService.activeTagFilter$ | async) {

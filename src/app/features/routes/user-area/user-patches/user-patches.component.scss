@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.section-shell,
+.section-list {
+  min-width: 0;
+}
+
+.section-actions {
+  justify-content: flex-end;
+}
+
+.section-empty {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.section-empty mat-card-subtitle {
+  text-align: center;
+}
+
+.patch-filter-row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 36rem) {
+  .section-actions {
+    justify-content: flex-start;
+  }
+}
