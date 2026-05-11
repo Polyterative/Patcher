@@ -57,7 +57,7 @@ export class ModuleBrowserRootComponent extends SubManager implements OnInit {
   @Input() showSubmitFab = true;
   @Input() compactSidebarAtTablet = false;
   @Input() titleBig = 'Modules';
-  @Input() description = 'Browse and discover modules, save your favourites and submit your own';
+  @Input() description = 'Discover modules and save favourites';
   @Input() showRecentActivity = true;
   @Input() manageSeo = true;
   mobileFiltersExpanded = false;
