@@ -407,6 +407,17 @@ h3 {
   color: rgba(30, 52, 78, 0.52);
 }
 
+@media (min-width: 64rem) {
+  .title-inline-description {
+    flex-basis: auto;
+    max-width: min(28rem, 42vw);
+    overflow: visible;
+    display: block;
+    -webkit-line-clamp: unset;
+    text-wrap: pretty;
+  }
+}
+
 .title-heading-copy .title-text {
   flex: 0 1 auto;
 }
