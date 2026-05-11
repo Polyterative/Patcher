@@ -60,6 +60,8 @@
 //}
 
 .app-shell--wide {
+  --app-floating-inset-inline: 1.5rem;
+  --app-floating-inset-block: 1.25rem;
   background: linear-gradient(180deg, rgba(214, 236, 244, 0.88) 0%, rgba(238, 246, 250, 0.98) 14rem);
 }
 

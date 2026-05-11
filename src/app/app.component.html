@@ -36,10 +36,9 @@
         </div>
       </div>
     </div>
+    <!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
+    <!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->
+    <app-selection-panel-outlet></app-selection-panel-outlet>
+    <app-discovery-tip-surface></app-discovery-tip-surface>
   </div>
 }
-
-<!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
-<!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->
-<app-selection-panel-outlet></app-selection-panel-outlet>
-<app-discovery-tip-surface></app-discovery-tip-surface>
