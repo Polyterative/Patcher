@@ -1,24 +1,24 @@
 <section class="hero-shell" aria-labelledby="home-hero-title">
-  @if (wideShell$ | async) {
-    <div class="hero-metro-nav">
-      <div class="hero-metro-topbar">
-        <a class="hero-metro-brand"
-           routerLink="/home"
-           aria-label="Go to home">{{ siteTitle }}</a>
-      </div>
-      <nav class="hero-metro-targets" aria-label="Section targets">
-        @for (item of wideShellTargets; track item.route ?? item.label) {
-          <a
-            class="hero-metro-target"
-            [routerLink]="item.route"
-            routerLinkActive="hero-metro-target--active"
-            [attr.aria-label]="item.label"
-          >
-            {{ item.label }}
-          </a>
-        }
-        @if (accountLinks$ | async; as accountLinks) {
-          @for (item of accountLinks; track item.route ?? item.label; let isFirst = $first) {
+  @if (shellVm$ | async; as shellVm) {
+    @if (shellVm.wideShell) {
+      <div class="hero-metro-nav">
+        <div class="hero-metro-topbar">
+          <a class="hero-metro-brand"
+             routerLink="/home"
+             aria-label="Go to home">{{ siteTitle }}</a>
+        </div>
+        <nav class="hero-metro-targets" aria-label="Section targets">
+          @for (item of wideShellTargets; track item.route ?? item.label) {
+            <a
+              class="hero-metro-target"
+              [routerLink]="item.route"
+              routerLinkActive="hero-metro-target--active"
+              [attr.aria-label]="item.label"
+            >
+              {{ item.label }}
+            </a>
+          }
+          @for (item of shellVm.accountLinks; track item.route ?? item.label; let isFirst = $first) {
             <a class="hero-metro-target hero-metro-target--private"
                [class.hero-metro-target--private-start]="isFirst"
                [routerLink]="item.route"
@@ -27,9 +27,9 @@
               <span>{{ item.label }}</span>
             </a>
           }
-        }
-      </nav>
-    </div>
+        </nav>
+      </div>
+    }
   }
 
   <div class="hero-copy">
