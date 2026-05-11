@@ -24,14 +24,14 @@
 **Layer 1 discoveries:** the old `user-area-root` used `profile-layout` as a two-column grid with a flexible `main-content` area that still wrapped `app-user-modules`, `app-user-racks`, and `app-user-patches` like independent cards rather than true workspace columns. The first workspace pass now gives the owned-content area an explicit grid, normalizes the three owned sections inside that grid, bounds the utility rail, and moves search out of the floating viewport corner into the rail itself.
 
 #### Layer 2 — Structural
-- [ ] Give the primary ownership surfaces a shared height/overflow contract instead of letting them grow independently in normal page flow
+- [x] Give the primary ownership surfaces a shared height/overflow contract instead of letting them grow independently in normal page flow
 - [x] Define the utility rail as a bounded secondary column with explicit rules for stats, manuals, and comments
 
 #### Layer 3 — Polish
 - [x] Reconcile the floating search with the workspace so it supports the owned-content columns instead of competing with them
 - [ ] Tune the large-screen spacing/scroll behavior so the page reads like one tool surface rather than several unrelated blocks
 
-**Current progress:** the user area now reads as a real workspace skeleton instead of a loose wrapped dashboard: owned content sits in explicit primary columns, the section internals use consistent native action/empty-state layout, the right rail is bounded and sticky, and global search has been pulled into that rail instead of floating over the page.
+**Current progress:** the user area now reads as a real workspace skeleton instead of a loose wrapped dashboard: owned content sits in explicit primary columns, the section internals use consistent native action/empty-state layout, the right rail is bounded and sticky, global search has been pulled into that rail instead of floating over the page, and the owned module/rack/patch lists now have bounded internal scroll shells instead of growing unbounded in normal page flow. The next remaining work is visual/spacing polish rather than another structural rewrite.
 
 ---
 
