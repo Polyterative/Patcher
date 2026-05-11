@@ -1,7 +1,7 @@
-<lib-screen-wrapper maxSize="32rem">
+<lib-screen-wrapper maxSize="32rem" class="auth-screen">
   <div class="col gap1">
     <lib-hero-content-card titleBig="Who are you again?"
-                           style="padding-bottom: 32rem;">
+                           class="auth-entry-card">
       <div class="col gap1">
 
         <!-- Normal Login Form -->
@@ -51,11 +51,12 @@
           <div class="password-reset-container">
             <!-- Back button -->
             <div class="back-button-wrapper">
-              <mat-card-subtitle style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;"
-                                 (click)="dataService.togglePasswordReset$.next(false)">
-                <mat-icon style="font-size: 1.25rem; width: 1.25rem; height: 1.25rem;">arrow_back</mat-icon>
-                Back to login
-              </mat-card-subtitle>
+              <button type="button"
+                      class="back-link"
+                      (click)="dataService.togglePasswordReset$.next(false)">
+                <mat-icon>arrow_back</mat-icon>
+                <span>Back to login</span>
+              </button>
             </div>
             <!-- Success state -->
             @if (dataService.resetSuccessMessage$ | async; as successMessage) {
@@ -71,12 +72,13 @@
             }
             <!-- Reset form (shown when not successful) -->
             @if (!(dataService.resetSuccessMessage$ | async)) {
-              <p class="reset-hint-text">
-                Enter your email address and we'll send you a link to reset your password.
-              </p>
-              <p class="reset-hint-text">
-                The password won't change until you complete the procedure
-              </p>
+              <div class="password-hint">
+                <mat-icon>mail</mat-icon>
+                <div class="password-hint__copy">
+                  <p>Enter your email address and we'll send you a link to reset your password.</p>
+                  <p>Your password stays the same until you complete the reset.</p>
+                </div>
+              </div>
               <lib-mat-form-entity
                 fxFlex="100"
                 [type]="dataService.fields.user.type"
@@ -96,7 +98,7 @@
                 </div>
               }
               <app-brand-primary-button
-                style="padding-top: 1rem"
+                class="auth-submit-button"
                 [disabled]="(dataService.isSubmittingReset$ | async) || dataService.fields.user.control.invalid"
                 innerFlex="auto"
                 theme="positive"

@@ -12,7 +12,7 @@
       <p>{{ item.answer }}</p>
       @if (item.link) {
         <mat-action-row>
-          <a [href]="item.link" target="_blank" mat-stroked-button style="text-decoration: none;">
+          <a [href]="item.link" target="_blank" rel="noopener noreferrer" mat-stroked-button class="faq-link">
             <mat-icon>open_in_new</mat-icon>
             Open link
           </a>
