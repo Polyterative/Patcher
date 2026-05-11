@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **LOW: Rack Details — Hide HP Override Counters During Image Upload / Update**
-  Extend the existing rack-detail HP-override suppression so image upload/update mode cannot leave those counters visible by mistake.
+- [~] **LOW: Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled**
+  Remove the dead-looking lower divider from manufacturer-detail tiles when the action footer is entirely absent.
 
 ---
 
