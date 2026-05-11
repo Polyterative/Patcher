@@ -8,25 +8,28 @@
              aria-label="Go to home">{{ siteTitle }}</a>
         </div>
         <nav class="hero-metro-targets" aria-label="Section targets">
-          @for (item of wideShellTargets; track trackByNavLink($index, item)) {
-            <a
-              class="hero-metro-target"
-              [routerLink]="item.route"
-              routerLinkActive="hero-metro-target--active"
-              [attr.aria-label]="item.label"
-            >
-              {{ item.label }}
-            </a>
-          }
-          @for (item of shellVm.accountLinks; track trackByNavLink($index, item); let isFirst = $first) {
-            <a class="hero-metro-target hero-metro-target--private"
-               [class.hero-metro-target--private-start]="isFirst"
-               [routerLink]="item.route"
-               routerLinkActive="hero-metro-target--active"
-               [attr.aria-label]="item.label">
-              <span>{{ item.label }}</span>
-            </a>
-          }
+          <div class="hero-metro-target-group">
+            @for (item of wideShellTargets; track trackByNavLink($index, item)) {
+              <a
+                class="hero-metro-target"
+                [routerLink]="item.route"
+                routerLinkActive="hero-metro-target--active"
+                [attr.aria-label]="item.label"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </div>
+          <div class="hero-metro-target-group hero-metro-target-group--account">
+            @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
+              <a class="hero-metro-target hero-metro-target--private"
+                 [routerLink]="item.route"
+                 routerLinkActive="hero-metro-target--active"
+                 [attr.aria-label]="item.label">
+                <span>{{ item.label }}</span>
+              </a>
+            }
+          </div>
         </nav>
       </div>
     }
