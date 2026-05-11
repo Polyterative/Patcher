@@ -36,7 +36,7 @@
     <p class="eyebrow">{{ content.eyebrow }}</p>
     <h1 id="home-hero-title">{{ content.title }}</h1>
     <ul class="subtitle">
-      @for (line of getSubtitleLines(); track line) {
+      @for (line of subtitleLines; track line) {
         <li>
           @for (segment of getSubtitleSegments(line); track $index) {
             @if (segment.highlighted) {

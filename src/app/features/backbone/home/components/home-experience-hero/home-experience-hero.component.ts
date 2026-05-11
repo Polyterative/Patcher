@@ -29,7 +29,7 @@ import { buildHomeTextSegments } from '../../home-text-segments.util';
   standalone: false
 })
 export class HomeExperienceHeroComponent {
-  @Input() content: HomeHeroContent = {
+  private _content: HomeHeroContent = {
     eyebrow: '',
     title: '',
     subtitle: '',
@@ -38,11 +38,37 @@ export class HomeExperienceHeroComponent {
       alt: ''
     }
   };
+  private subtitleSegmentsByLine = new Map<string, ReturnType<typeof buildHomeTextSegments>>();
+
+  @Input()
+  set content(value: HomeHeroContent) {
+    this._content = value ?? {
+      eyebrow: '',
+      title: '',
+      subtitle: '',
+      mainVisual: {
+        src: '',
+        alt: ''
+      }
+    };
+    this.subtitleLines = this._content.subtitle
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+    this.subtitleSegmentsByLine = new Map(
+      this.subtitleLines.map((line) => [line, buildHomeTextSegments(line, this._content.subtitleKeywords ?? [])])
+    );
+  }
+
+  get content(): HomeHeroContent {
+    return this._content;
+  }
 
   public readonly wideShell$: Observable<boolean>;
   public readonly wideShellTargets: RouteClickableLink[];
   public readonly accountLinks$: Observable<RouteClickableLink[]>;
   public readonly siteTitle = 'patcher.xyz';
+  public subtitleLines: string[] = [];
 
   constructor(
     private readonly appShellLayoutService: AppShellLayoutService,
@@ -60,16 +86,10 @@ export class HomeExperienceHeroComponent {
         profile?.username?.trim() || 'Account'
       ))
     );
+    this.content = this._content;
   }
   
-  getSubtitleLines() {
-    return this.content.subtitle
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-  }
-
   getSubtitleSegments(line: string) {
-    return buildHomeTextSegments(line, this.content.subtitleKeywords ?? []);
+    return this.subtitleSegmentsByLine.get(line) ?? [];
   }
 }
