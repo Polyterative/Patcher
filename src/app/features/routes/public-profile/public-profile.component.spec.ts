@@ -12,6 +12,7 @@ describe('PublicProfileComponent', () => {
       routeState$: new BehaviorSubject<any>('loading'),
     };
     const userService = {
+      loggedUser$: new BehaviorSubject<any>(null),
       loggedUserFullProfile$: new BehaviorSubject<any>(null),
       updateProfileVisibility$: jasmine.createSpy().and.returnValue(of(void 0)),
     };
@@ -24,6 +25,12 @@ describe('PublicProfileComponent', () => {
     const route = {
       params: of({username: 'viewer'}),
     };
+    const appShellLayoutService = {
+      wideShell$: of(false),
+    };
+    const appState = {
+      isDev: false,
+    };
 
     const component = new PublicProfileComponent(
       dataService as any,
@@ -31,6 +38,8 @@ describe('PublicProfileComponent', () => {
       route as any,
       seoAndUtilsService as any,
       urlCreatorService as any,
+      appShellLayoutService as any,
+      appState as any,
     );
 
     return {

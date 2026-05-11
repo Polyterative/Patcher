@@ -1,5 +1,5 @@
-<lib-screen-wrapper maxSize="86rem">
-  <main class="home-page">
+<main class="home-page">
+  <div class="home-page__inner">
     <section class="section-enter">
         <app-home-experience-hero [content]="heroContent">
           <div hero-actions class="hero-action-stack">
@@ -29,18 +29,21 @@
                   @case ('patch') {
                     <app-patch-browser-patch-detail
                       [ignoreSeo]="true"
+                      [showWideShellNav]="false"
                       [viewConfig]="patchViewConfig"
                     ></app-patch-browser-patch-detail>
                   }
                   @case ('module') {
                     <app-module-browser-detail
                       [ignoreSeo]="true"
+                      [showWideShellNav]="false"
                       [viewConfig]="moduleViewConfig"
                     ></app-module-browser-detail>
                   }
                   @case ('rack') {
                     <app-rack-browser-rack-detail
                       [ignoreSeo]="true"
+                      [showWideShellNav]="false"
                       [viewConfig]="rackViewConfig"
                     ></app-rack-browser-rack-detail>
                   }
@@ -125,5 +128,5 @@
         <div></div>
       }
     </section>
-  </main>
-</lib-screen-wrapper>
+  </div>
+</main>
