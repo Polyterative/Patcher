@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-inline-size: 32rem;
+  margin-inline: auto;
   padding: 2.5rem 1rem;
   gap: 0.5rem;
   opacity: 0.6;
