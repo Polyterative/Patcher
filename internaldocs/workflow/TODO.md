@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **MEDIUM: Rack Balance Analysis — Exclude Blank Modules From Coverage**
-  Make rack balance coverage/confidence count only real modules so blank spacers stop distorting the analysis denominator.
+- [~] **MEDIUM: User Area — Search and Surface Hierarchy Cleanup**
+  Make user-area search feel like a bounded part of the workspace shell instead of a competing floating surface.
 
 ---
 
@@ -141,11 +141,11 @@ app is processing the filter change instead of looking stuck.
 **Why:** The right side currently grows awkwardly and competes with the owned-content columns. Stats, contributor context,
 comments-related signals, and manuals need to become a smaller bounded utility rail instead of an expanding parallel page.
 
-- [ ] Redefine the right side as a compact secondary rail with explicit height and overflow behavior on large screens
-- [ ] Split profile utility from contributor context so the rail reads as distinct supporting blocks instead of one long stack
-- [ ] Demote comments-related signals from a dominant right-rail presence so they do not visually outweigh modules, racks, and patches
-- [ ] Reduce manuals to a shorter quick-access surface with a smaller footprint while preserving fast entry to owned manuals
-- [ ] Document how the utility rail should collapse, stack, or move on narrower desktop and tablet widths
+- [x] Redefine the right side as a compact secondary rail with explicit height and overflow behavior on large screens
+- [x] Split profile utility from contributor context so the rail reads as distinct supporting blocks instead of one long stack
+- [x] Demote comments-related signals from a dominant right-rail presence so they do not visually outweigh modules, racks, and patches
+- [x] Reduce manuals to a shorter quick-access surface with a smaller footprint while preserving fast entry to owned manuals
+- [x] Document how the utility rail should collapse, stack, or move on narrower desktop and tablet widths
 
 ---
 
@@ -166,10 +166,10 @@ comments-related signals, and manuals need to become a smaller bounded utility r
 We already have other mitigations around disabled HP-override UI, but this upload/update state appears to be missing a guard and
 should hide those controls too whenever they would otherwise leak through.
 
-- [ ] Audit the rack image upload/update states and identify where HP override counters can still remain visible
-- [ ] Extend the existing HP-override visibility guards so upload/update mode hides the counters as well
-- [ ] Keep the fix narrow so it does not reintroduce HP-override UI in normal rack-detail viewing
-- [ ] Add focused coverage for image upload/update states where HP controls were previously suppressed by other mitigations
+- [x] Audit the rack image upload/update states and identify where HP override counters can still remain visible
+- [x] Extend the existing HP-override visibility guards so upload/update mode hides the counters as well
+- [x] Keep the fix narrow so it does not reintroduce HP-override UI in normal rack-detail viewing
+- [x] Add focused coverage for image upload/update states where HP controls were previously suppressed by other mitigations
 
 ---
 
@@ -178,10 +178,10 @@ should hide those controls too whenever they would otherwise leak through.
 **Why:** The "Modules needed" list currently uses icons that add little value, and multi-line names/manufacturer lines do not
 align cleanly when an item wraps. This makes the list feel fussier and less polished than it needs to.
 
-- [ ] Re-evaluate whether the leading icon should be removed from the modules-needed rows entirely
-- [ ] Improve wrapped-row alignment so second lines sit cleanly with the text block instead of feeling offset by the icon column
-- [ ] Keep manufacturer text visually secondary without weakening scanability of the module name
-- [ ] Review the final row rhythm against nearby rack/patch stats surfaces so the simplified list feels calmer and more consistent
+- [x] Re-evaluate whether the leading icon should be removed from the modules-needed rows entirely
+- [x] Improve wrapped-row alignment so second lines sit cleanly with the text block instead of feeling offset by the icon column
+- [x] Keep manufacturer text visually secondary without weakening scanability of the module name
+- [x] Review the final row rhythm against nearby rack/patch stats surfaces so the simplified list feels calmer and more consistent
 
 ---
 
@@ -191,11 +191,11 @@ align cleanly when an item wraps. This makes the list feel fussier and less poli
 logged-out detail route only loads patches where `public = true`. In practice, shared links for private patches fail for
 external viewers and can get stuck in a partial-loading state instead of showing a clear private / unavailable message.
 
-- [ ] Decide the intended product behavior: private patches are truly URL-shareable, or the UI copy must stop claiming that
-- [ ] Align patch-detail data loading with the chosen behavior so logged-out viewers do not hit the current public-only mismatch
-- [ ] Add an explicit non-loading state for private / unavailable patch links instead of leaving the page partially loaded
-- [ ] Audit rack/patch privacy copy so all shareability messaging matches real access behavior
-- [ ] Add focused coverage for owner view, anonymous view, and shared-link behavior for private vs public patches
+- [x] Decide the intended product behavior: private patches are truly URL-shareable, or the UI copy must stop claiming that
+- [x] Align patch-detail data loading with the chosen behavior so logged-out viewers do not hit the current public-only mismatch
+- [x] Add an explicit non-loading state for private / unavailable patch links instead of leaving the page partially loaded
+- [x] Audit rack/patch privacy copy so all shareability messaging matches real access behavior
+- [x] Add focused coverage for owner view, anonymous view, and shared-link behavior for private vs public patches
 
 ---
 
@@ -204,10 +204,10 @@ external viewers and can get stuck in a partial-loading state instead of showing
 **Why:** Some manufacturer-detail module tiles still show the lower divider even when the entire action area is effectively absent
 because all related buttons are disabled. In that state the divider reads like a broken placeholder and should not be visible.
 
-- [ ] Audit the manufacturer-detail module tile states where the footer/action area is fully disabled or empty
-- [ ] Remove the divider in states where no visible buttons or footer actions remain
-- [ ] Keep the divider only when it is actually separating visible content blocks
-- [ ] Review the card rhythm so empty-action tiles do not look visually broken compared with tiles that still expose actions/tags
+- [x] Audit the manufacturer-detail module tile states where the footer/action area is fully disabled or empty
+- [x] Remove the divider in states where no visible buttons or footer actions remain
+- [x] Keep the divider only when it is actually separating visible content blocks
+- [x] Review the card rhythm so empty-action tiles do not look visually broken compared with tiles that still expose actions/tags
 
 ---
 
@@ -218,11 +218,11 @@ because all related buttons are disabled. In that state the divider reads like a
 to every `app-module-cvitem` inside that range. Since that component is reused in module detail and patch editing flows, the
 tablet-sized treatment now leaks into normal desktop and patch-editing layouts where the previous denser rhythm was correct.
 
-- [ ] Narrow the enlarged CV-chip treatment so it only applies where touch-first affordances are actually intended (coarse pointers, true tablet layouts, or a smaller explicit breakpoint)
-- [ ] Restore the previous compact padding and footprint for desktop CV chips in both module detail and patch editing contexts
-- [ ] Audit every `app-module-cvitem` consumer so the fix lands consistently across module detail, patch editor, and related CV/connection surfaces
-- [ ] Explicitly protect the current floating/overlay editing controls so this rollback does not change the button sizing that already feels correct
-- [ ] Add focused coverage for CV-chip sizing across desktop vs tablet contexts to prevent another cross-surface regression
+- [x] Narrow the enlarged CV-chip treatment so it only applies where touch-first affordances are actually intended (coarse pointers, true tablet layouts, or a smaller explicit breakpoint)
+- [x] Restore the previous compact padding and footprint for desktop CV chips in both module detail and patch editing contexts
+- [x] Audit every `app-module-cvitem` consumer so the fix lands consistently across module detail, patch editor, and related CV/connection surfaces
+- [x] Explicitly protect the current floating/overlay editing controls so this rollback does not change the button sizing that already feels correct
+- [x] Add focused coverage for CV-chip sizing across desktop vs tablet contexts to prevent another cross-surface regression
 
 ---
 
@@ -264,11 +264,11 @@ modules in coverage when one slot is a blank spacer. The likely root cause is th
 counts blanks in `totalModules` / confidence math even though blanks never contribute balance tags. Older rack stats
 already exclude `BLANK_MODULE_IDS`, so this newer analysis surface should follow the same rule.
 
-- [ ] Filter blank spacer modules out before computing `modules.length`, `confidence`, and low-data thresholds in
+- [x] Filter blank spacer modules out before computing `modules.length`, `confidence`, and low-data thresholds in
   `rack-balance-analysis.service.ts`
-- [ ] Make blank-only racks behave like an empty rack for the balance panel instead of a low-confidence tagged rack
-- [ ] Keep coverage copy aligned with the filtered denominator so the UI and tooltip both report non-blank module counts
-- [ ] Add focused tests for mixed real+blank racks and blank-only racks
+- [x] Make blank-only racks behave like an empty rack for the balance panel instead of a low-confidence tagged rack
+- [x] Keep coverage copy aligned with the filtered denominator so the UI and tooltip both report non-blank module counts
+- [x] Add focused tests for mixed real+blank racks and blank-only racks
 
 ---
 
