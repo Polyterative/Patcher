@@ -8,6 +8,21 @@
   min-width: 0;
 }
 
+.app-shell__surface {
+  padding-inline: 1rem;
+}
+
+.app-shell__surface-shell {
+  display: block;
+  width: 100%;
+}
+
+.app-shell__surface--loading {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
 .main {
   //padding-top:      1rem;
   //padding-right:    1rem;
@@ -17,11 +32,11 @@
 }
 
 .app-route-loading {
-  position: sticky;
-  top: 0;
-  z-index: 20;
   background: rgba(248, 251, 255, 0.96);
   backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
+  border-radius: 0 0 0.85rem 0.85rem;
+  overflow: hidden;
+  box-shadow: 0 0.25rem 0.8rem rgba(37, 59, 86, 0.08);
 }
 
 .app-route-loading__label {
@@ -52,4 +67,10 @@
   min-height: 100vh;
   background: linear-gradient(180deg, rgba(220, 239, 246, 0.98) 0%, rgba(238, 246, 250, 0.98) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 72.5rem) {
+  .app-shell__surface {
+    padding-inline: 0.75rem;
+  }
 }
