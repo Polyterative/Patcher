@@ -38,12 +38,14 @@
     >
       @if ((dataService.pagedModulesData$ | async); as data) {
         @if (data.length > 0) {
-          <app-module-list class="section-list"
-                           [data$]="dataService.pagedModulesData$"
-                           [viewConfig]="modulesViewConfig"
-                           [showSearch]="false"
-                           [encloseVertically]="encloseVertically"
-          ></app-module-list>
+          <div class="section-scroll">
+            <app-module-list class="section-list"
+                             [data$]="dataService.pagedModulesData$"
+                             [viewConfig]="modulesViewConfig"
+                             [showSearch]="false"
+                             [encloseVertically]="encloseVertically"
+            ></app-module-list>
+          </div>
         } @else {
           <div class="section-empty">
             <mat-card-subtitle>
