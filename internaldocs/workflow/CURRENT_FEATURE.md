@@ -12,26 +12,26 @@
 
 ## Active
 
-### User Area — Ownership-First Full-Height Workspace
+### User Area — Compact and Bound the Utility Rail
 
-**Goal:** turn the current user area into a clearer ownership-focused workspace where modules, racks, and patches are the primary large-screen surfaces and the utility rail becomes genuinely secondary.
+**Goal:** keep the user-area right side genuinely secondary by turning it into a shorter, bounded utility rail that supports the owned-content workspace instead of reading like a second dashboard.
 
 #### Layer 1 — MVP
-- [x] Trace the current user-area shell structure and identify what makes it read like a wrapped dashboard instead of a workspace
-- [x] Define a route-level container contract where the main workspace fills the available viewport beneath the page header
-- [x] Make **Modules / Racks / Patches** the primary large-screen surfaces instead of a wrap-anywhere stack
+- [x] Keep the right rail bounded on large screens instead of letting it grow as a parallel page
+- [x] Split the rail into clearer primary vs secondary support groups so stats, manuals, and comments do not blend into one long stack
 
-**Layer 1 discoveries:** the old `user-area-root` used `profile-layout` as a two-column grid with a flexible `main-content` area that still wrapped `app-user-modules`, `app-user-racks`, and `app-user-patches` like independent cards rather than true workspace columns. The first workspace pass now gives the owned-content area an explicit grid, normalizes the three owned sections inside that grid, bounds the utility rail, and moves search out of the floating viewport corner into the rail itself.
+**Layer 1 discoveries:** the earlier workspace pass already moved search into the rail and gave the sidebar a sticky bounded shell, but the internal hierarchy still felt too flat. Grouping search + stats separately from manuals + comments immediately made the main columns read as primary again.
 
 #### Layer 2 — Structural
-- [x] Give the primary ownership surfaces a shared height/overflow contract instead of letting them grow independently in normal page flow
-- [x] Define the utility rail as a bounded secondary column with explicit rules for stats, manuals, and comments
+- [x] Reduce manuals to a smaller quick-access surface rather than an open-ended block
+- [x] Bound the comments surface so its body does not visually outweigh modules, racks, and patches
 
 #### Layer 3 — Polish
-- [x] Reconcile the floating search with the workspace so it supports the owned-content columns instead of competing with them
-- [ ] Tune the large-screen spacing/scroll behavior so the page reads like one tool surface rather than several unrelated blocks
+- [x] Remove leftover layout dependencies from utility-rail components where native layout already replaced them
+- [x] Make the rail collapse earlier on narrower desktop / tablet widths so it stops competing before the layout feels cramped
+- [ ] Tighten the remaining visual rhythm of the rail cards so the whole side reads as one supporting lane rather than several equal-weight panels
 
-**Current progress:** the user area now reads as a real workspace skeleton instead of a loose wrapped dashboard: owned content sits in explicit primary columns, the section internals use consistent native action/empty-state layout, the right rail is bounded and sticky, global search has been pulled into that rail instead of floating over the page, and the owned module/rack/patch lists now have bounded internal scroll shells instead of growing unbounded in normal page flow. The next remaining work is visual/spacing polish rather than another structural rewrite.
+**Current progress:** the rail is now explicitly grouped, manuals are a compact quick-access list, comments use a bounded list body with pagination still visible, `user-manuals` no longer carries an unused `FlexModule` import, and the rail stacks earlier at `82rem` so mid-width desktops/tablets keep the owned-content workspace comfortable. What remains is small-scale card rhythm polish rather than another structural rewrite.
 
 ---
 
