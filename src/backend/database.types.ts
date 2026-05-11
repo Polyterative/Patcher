@@ -975,6 +975,24 @@ export type Database = {
         Args: { p_module_id: number }
         Returns: number
       }
+      get_module_usage_summary: {
+        Args: { p_module_id: number }
+        Returns: {
+          hidden_patch_count: number
+          hidden_rack_count: number
+          public_patch_count: number
+          public_rack_count: number
+        }[]
+      }
+      get_module_usage_summary_bucketed: {
+        Args: { p_module_id: number }
+        Returns: {
+          hidden_patch_bucket: string
+          hidden_rack_bucket: string
+          public_patch_count: number
+          public_rack_count: number
+        }[]
+      }
       get_public_patches_for_module: {
         Args: {
           p_from?: number

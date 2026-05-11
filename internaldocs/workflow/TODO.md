@@ -24,7 +24,8 @@
 
 ## Active
 
-_(none)_
+- [~] **MEDIUM: Module Browser — Tag Filter Loading Feedback**
+  Keep module-browser results visually stable while tag filtering is recomputing so users see clear loading feedback instead of a confusing empty-state flash.
 
 ---
 
@@ -47,12 +48,8 @@ desktop-only assumptions for confident iPad demos. The biggest risks are not "mo
 touch-hostile interaction patterns in editing flows, floating UI collisions, keyboard/viewport assumptions, and a few
 shared primitives that amplify friction across many screens.
 
-- [ ] Replace desktop-only rack-edit actions with a clear touch-accessible primary path; keep context menu as secondary
-- [ ] Unify floating-surface behavior on tablet so search/FAB/selection/analysis surfaces stop competing for bottom-corner space
-- [ ] Introduce a shared keyboard-aware viewport strategy (single viewport meta source, `dvh`/`svh` fallbacks where needed, evaluate `visualViewport` for overlays)
-- [ ] Upgrade shared form ergonomics for tablet (`inputmode`, `enterkeyhint`, first-focus defaults, and sane enter-key flow)
-- [ ] Enlarge or simplify the highest-frequency touch targets (CV ports, dense icon rows, tiny toggles, crop nudge controls, selection dismiss)
-- [ ] Reduce performance-heavy fixed overlays and other demo-visible motion/scroll pressure on iPad work surfaces
+- [x] Enlarge or simplify the highest-frequency touch targets (CV ports, dense icon rows, tiny toggles, crop nudge controls, selection dismiss)
+ - [x] Reduce performance-heavy fixed overlays and other demo-visible motion/scroll pressure on iPad work surfaces
 
 ---
 
@@ -116,13 +113,108 @@ delete confirmation, and the character counter is hidden until users have alread
 or otherwise non-publicly-listable contexts, but the page falls back to "No racks/patches using this module yet." Add a
 privacy-safe aggregate so users can see that hidden usage exists without exposing who owns what.
 
-- [ ] Add a dedicated backend aggregate/RPC for module usage counts that returns public vs hidden rack/patch totals without
+- [x] Add a dedicated backend aggregate/RPC for module usage counts that returns public vs hidden rack/patch totals without
   returning private entity rows, ids, or authors
-- [ ] Define "hidden" to match "not shown in the current public lists" (private entity and/or non-public author profile),
+- [x] Define "hidden" to match "not shown in the current public lists" (private entity and/or non-public author profile),
   keeping backend semantics aligned with existing module-detail queries
-- [ ] Add threshold or bucket rules for low counts so tiny hidden cohorts do not leak sensitive ownership information
-- [ ] Update module detail UI copy so public lists can be supplemented by hidden/private usage counters when available
-- [ ] Add focused tests for the aggregate contract and the module-detail display states
+- [x] Add threshold or bucket rules for low counts so tiny hidden cohorts do not leak sensitive ownership information
+- [x] Update module detail UI copy so public lists can be supplemented by hidden/private usage counters when available
+- [x] Add focused tests for the aggregate contract and the module-detail display states
+
+---
+
+#### MEDIUM: Module Browser — Tag Filter Loading Feedback
+
+**Why:** Filtering the module browser by tag can take long enough to feel unresponsive. Users need immediate feedback that the
+app is processing the filter change instead of looking stuck.
+
+- [ ] Add a visible loading state when tag selection triggers module-browser filtering
+- [ ] Keep the current results stable until the next filtered result set is ready, instead of flashing an ambiguous empty state
+- [ ] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
+- [ ] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
+- [ ] Add focused tests for the tag-filter loading state and completion transition
+
+---
+
+#### MEDIUM: App Shell — Large-Screen Side Toolbar Experiment
+
+**Why:** On larger layouts the current top toolbar may be spending valuable horizontal space while still leaving the main shell
+ feeling more web-page-like than tool-like. Try a breakpoint-driven shell where mobile and smaller screens keep the current
+ top toolbar, but large screens switch to a left-side vertical navigation column. The direction should explore a page-title-
+ integrated navigation treatment inspired by Metro UI / Windows Phone style section headers, where the current section feels
+ large and editorial while adjacent options remain partially visible as context.
+
+- [ ] Define the breakpoint where the shell should switch from the current top toolbar to a left-side vertical toolbar
+- [ ] Keep the existing top-toolbar behavior for mobile and smaller tablet layouts so current compact navigation does not regress
+- [ ] Rework the app shell layout so the large-screen navigation reads as a real vertical column rather than a stacked top bar moved sideways
+- [ ] Explore integrating the top-level navigation with the same visual language as page titles instead of keeping a separate toolbar strip
+- [ ] Test a Metro-style composition where the active section is prominent but neighboring sections are still partially visible to hint at navigation breadth
+- [ ] Verify that event banner, route content, footer/help surfaces, and floating overlays still compose cleanly with the side-toolbar shell
+- [ ] Review the experiment against the UI consistency audit so the new shell improves navigation clarity without fragmenting the product chrome
+- [ ] Add focused responsive coverage for the breakpoint transition and the large-screen shell layout
+
+---
+
+#### HIGH: User Area — Ownership-First Full-Height Workspace
+
+**Why:** The current user area reads as several competing columns instead of one clear ownership-focused workspace. Modules,
+racks, and patches should become the primary full-height surfaces so the page feels more like a tool and less like a long
+dashboard.
+
+- [ ] Define a route-level container contract where the main workspace fills the available viewport beneath the page header
+- [ ] Make **Modules / Racks / Patches** the primary large-screen columns and give each one its own internal scroll region
+- [ ] Document shared rules for column height, overflow, pagination placement, and spacing so the three owned-content sections behave consistently
+- [ ] Keep the page focus on what the user owns and manages rather than letting secondary profile/context blocks dominate the first read
+- [ ] Reuse the browser-family layout mental model as the main reference pattern for this page
+
+---
+
+#### HIGH: User Area — Compact and Bound the Utility Rail
+
+**Why:** The right side currently grows awkwardly and competes with the owned-content columns. Stats, contributor context,
+comments-related signals, and manuals need to become a smaller bounded utility rail instead of an expanding parallel page.
+
+- [ ] Redefine the right side as a compact secondary rail with explicit height and overflow behavior on large screens
+- [ ] Split profile utility from contributor context so the rail reads as distinct supporting blocks instead of one long stack
+- [ ] Demote comments-related signals from a dominant right-rail presence so they do not visually outweigh modules, racks, and patches
+- [ ] Reduce manuals to a shorter quick-access surface with a smaller footprint while preserving fast entry to owned manuals
+- [ ] Document how the utility rail should collapse, stack, or move on narrower desktop and tablet widths
+
+---
+
+#### MEDIUM: User Area — Search and Surface Hierarchy Cleanup
+
+**Why:** The floating search currently feels bolted onto the page and adds competition between overlays and the main user-area containers.
+
+- [ ] Decide whether search belongs in the page header/shell or as a clearly bounded utility surface, rather than an isolated floating element
+- [ ] Ensure search never obscures the owned-content columns or fights their internal scroll regions
+- [ ] Align the user-area search treatment with the shared floating-surface language from the UI consistency audit
+- [ ] Document z-order, safe-area, and responsive behavior so search supports the workspace instead of competing with it
+
+---
+
+#### LOW: Rack Details — Hide HP Override Counters During Image Upload / Update
+
+**Why:** There is still a bug path where HP override counters can remain visible while uploading or updating the rack image.
+We already have other mitigations around disabled HP-override UI, but this upload/update state appears to be missing a guard and
+should hide those controls too whenever they would otherwise leak through.
+
+- [ ] Audit the rack image upload/update states and identify where HP override counters can still remain visible
+- [ ] Extend the existing HP-override visibility guards so upload/update mode hides the counters as well
+- [ ] Keep the fix narrow so it does not reintroduce HP-override UI in normal rack-detail viewing
+- [ ] Add focused coverage for image upload/update states where HP controls were previously suppressed by other mitigations
+
+---
+
+#### LOW: Patch Details — Modules Needed List Cleanup
+
+**Why:** The "Modules needed" list currently uses icons that add little value, and multi-line names/manufacturer lines do not
+align cleanly when an item wraps. This makes the list feel fussier and less polished than it needs to.
+
+- [ ] Re-evaluate whether the leading icon should be removed from the modules-needed rows entirely
+- [ ] Improve wrapped-row alignment so second lines sit cleanly with the text block instead of feeling offset by the icon column
+- [ ] Keep manufacturer text visually secondary without weakening scanability of the module name
+- [ ] Review the final row rhythm against nearby rack/patch stats surfaces so the simplified list feels calmer and more consistent
 
 ---
 

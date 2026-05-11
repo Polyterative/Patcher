@@ -95,6 +95,34 @@ describe('SupabaseService - Remaining Branches', () => {
       error: done.fail
     });
   }, TEST_TIMEOUT);
+
+  it('get.moduleUsageSummary calls the bucketed RPC and unwraps the first row', (done) => {
+    const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({
+      data: [{
+        public_rack_count: 2,
+        hidden_rack_bucket: 'some',
+        public_patch_count: 3,
+        hidden_patch_bucket: '5_plus'
+      }],
+      error: null
+    }));
+
+    service.get.moduleUsageSummary(77).subscribe({
+      next: (summary: any) => {
+        expect(rpcSpy).toHaveBeenCalledWith('get_module_usage_summary_bucketed', {
+          p_module_id: 77
+        });
+        expect(summary).toEqual({
+          public_rack_count: 2,
+          hidden_rack_bucket: 'some',
+          public_patch_count: 3,
+          hidden_patch_bucket: '5_plus'
+        });
+        done();
+      },
+      error: done.fail
+    });
+  }, TEST_TIMEOUT);
   
   it('add.moduleOUTs maps moduleid into inserted rows', (done) => {
     const query = chainable({data: [], error: null});
