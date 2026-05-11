@@ -64,6 +64,7 @@ describe('UserAreaRootComponent - Layout Shell', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.user-area-utility-search')).not.toBeNull();
+    expect(host.querySelector('.user-area-utility-search__header')).not.toBeNull();
     expect(host.querySelector('.user-area-floating-search')).toBeNull();
     expect(host.querySelectorAll('.utility-rail-group').length).toBe(2);
   });
