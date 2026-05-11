@@ -5,6 +5,7 @@ import {
 } from '@angular/core/testing';
 import { MediaObserver } from '@angular/flex-layout';
 import { of } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AppStateService } from './app-state.service';
 
@@ -37,7 +38,7 @@ describe('AppStateService', () => {
   
   it('layoutFlexWidth$ emits an object with all 13 boolean breakpoint keys', (done) => {
     const service = buildService();
-    service.layoutFlexWidth$.subscribe(value => {
+    service.layoutFlexWidth$.pipe(take(1)).subscribe(value => {
       expect(Object.keys(value).length).toBe(13);
       BREAKPOINT_KEYS.forEach(key => {
         expect(typeof value[key]).toBe('boolean');
