@@ -1,41 +1,26 @@
-<lib-screen-wrapper
-
->
-  <div class="row gap1"
-       fxLayout.lt-md="column"
-  >
-    <div fxFlex="100"
-         class="content"
-    >
-      <ng-container *ngIf="title else content ">
-    
-        <div fxFlex="100"
-             fxLayout="column"
-             fxLayoutGap=".5rem"
-        >
-          <mat-toolbar fxFlex="4rem"
-                       style="background-color: #778698"
-                       color="primary"
-                       id="navbar"
+<lib-screen-wrapper>
+  <div class="row gap1 saturn-layout">
+    <div class="content saturn-content">
+      <ng-container *ngIf="title else content">
+        <div class="saturn-content-shell saturn-content-shell--with-title">
+          <mat-toolbar
+            class="saturn-toolbar"
+            style="background-color: #778698"
+            color="primary"
+            id="navbar"
           >
             <mat-toolbar-row>{{title}}</mat-toolbar-row>
           </mat-toolbar>
-        
+
           <router-outlet></router-outlet>
         </div>
-    
       </ng-container>
-    
+
       <ng-template #content>
         <router-outlet></router-outlet>
       </ng-template>
     </div>
-    <div fxLayout="column"
-         fxLayoutGap="1rem"
-         fxFlex="16rem"
-         fxFlex.lt-md="auto"
-         class="sidebar"
-    >
+    <div class="sidebar saturn-sidebar">
       <div>
         <router-outlet name="user"></router-outlet>
       </div>
@@ -43,6 +28,5 @@
         <router-outlet name="sidebar"></router-outlet>
       </div>
     </div>
-
   </div>
 </lib-screen-wrapper>
