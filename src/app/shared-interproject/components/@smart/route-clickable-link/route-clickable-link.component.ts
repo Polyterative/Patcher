@@ -30,11 +30,7 @@ export class RouteClickableLinkComponent {
   public trackByLink(index: number, item: RouteClickableLink): string {
     return getRouteClickableLinkKey(item);
   }
-  
-  public getAriaLabel(item: RouteClickableLink): string {
-    return item.label || item.icon || 'Navigation link';
-  }
-  
+
   public onLinkInteraction(event: Event, item: RouteClickableLink): void {
     if (item.disabled) {
       event.preventDefault();
