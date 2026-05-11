@@ -128,11 +128,20 @@
   }
 }
 
-@media (max-width: 60rem) {
+@media (max-width: 82rem) {
   .profile-layout {
     grid-template-columns: 1fr;
   }
 
+  .sidebar {
+    position: static;
+    max-block-size: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 60rem) {
   .main-content {
     grid-template-columns: 1fr;
   }
@@ -142,10 +151,7 @@
   }
 
   .sidebar {
-    position: static;
-    max-block-size: none;
-    overflow: visible;
-    padding-right: 0;
+    margin-top: 0.25rem;
   }
 
   .user-area-page {
