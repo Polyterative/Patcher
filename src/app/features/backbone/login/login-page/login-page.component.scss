@@ -1,20 +1,61 @@
 @use "src/app/style/brand-resources" as *;
 
-.auth-screen {
-  margin-bottom: 6rem;
+.auth-page-shell {
+  width: 100%;
+}
+
+.auth-page-shell__inner {
+  position: relative;
+  padding-bottom: 4.5rem;
 }
 
 .auth-entry-card {
-  padding-bottom: clamp(12rem, 26vh, 22rem);
+  width: 100%;
+}
+
+.auth-surface {
+  width: min(100%, 32rem);
+  margin-inline: auto;
+  padding: 0.7rem 0.7rem 0.9rem;
+  border: 1px solid rgba(87, 109, 132, 0.14);
+  border-radius: 1rem;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.72), rgba(244, 248, 253, 0.86));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26), 0 0.45rem 1.2rem rgba(31, 47, 68, 0.05);
+}
+
+.auth-body {
+  width: 100%;
+  margin-inline: auto;
+}
+
+:host ::ng-deep .auth-entry-card .content {
+  padding-bottom: clamp(6rem, 14vh, 9rem);
+}
+
+:host ::ng-deep .auth-entry-card h1.title {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .auth-entry-card h1.title .title-main {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 48rem) {
-  .auth-screen {
-    margin-bottom: 3.5rem;
+  .auth-page-shell__inner {
+    padding-bottom: 5.5rem;
   }
 
-  .auth-entry-card {
-    padding-bottom: clamp(8rem, 22vh, 14rem);
+  :host ::ng-deep .auth-entry-card .content {
+    padding-bottom: clamp(4.5rem, 12vh, 6.5rem);
+  }
+
+  .auth-surface {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.9rem;
+    border-radius: 0.85rem;
   }
 }
 
@@ -140,19 +181,6 @@
     mat-card-subtitle.action-link {
       font-size: 0.875rem;
     }
-  }
-}
-
-.auth-support-copy {
-  margin: 1rem 0 0;
-  padding: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  text-align: left;
-
-  @media (max-width: 30rem) {
-    font-size: 0.85rem;
   }
 }
 
