@@ -19,6 +19,7 @@ import {
 } from 'rxjs/operators';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   MAT_DIALOG_DATA,
@@ -49,7 +50,13 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
   
-  fields = {
+  fields: {
+    name: IMatFormEntityConfig;
+    public: {
+      code: string;
+      control: FormControl<boolean>;
+    };
+  } = {
     // hp:   {
     //   label:   'hp',
     //   code:    'hp',
@@ -84,7 +91,12 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
         Validators.maxLength(32)
         // Validators.max(12)
       ])),
-      type:    FormTypes.TEXT
+      type:    FormTypes.TEXT,
+      iconL1: 'label',
+      ergonomics: {
+        autofocus: true,
+        enterkeyhint: 'done'
+      }
     },
     public: {
       code: 'public',

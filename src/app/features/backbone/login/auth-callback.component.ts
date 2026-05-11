@@ -31,13 +31,15 @@ import { UserManagementService } from 'src/app/features/backbone/login/user-mana
     </div>
   `,
   styles: [`
-      .auth-callback-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          width: 100vw;
-      }
+       .auth-callback-container {
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           min-height: var(--app-viewport-height, 100vh);
+           width: 100vw;
+           padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + var(--app-keyboard-inset-bottom, 0px) + 1.25rem);
+           box-sizing: border-box;
+       }
 
       .spinner-container {
           display: flex;

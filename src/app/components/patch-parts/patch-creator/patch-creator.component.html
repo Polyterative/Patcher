@@ -10,11 +10,9 @@
       <p style="font-size: 1rem">
         You can always edit the patch name and add modules later.
       </p>
-      <lib-mat-form-entity [type]="fields.name.type"
-                           [control]="fields.name.control"
-                           [label]="fields.name.label"
+      <lib-mat-form-entity [dataPack]="fields.name"
                            [hint]="(fields.name.control.value?.length || 0) + '/32'"
-                           iconL1="label"
+                           (enterPressed)="save$.next()"
       >
       </lib-mat-form-entity>
       

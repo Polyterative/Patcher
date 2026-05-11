@@ -167,18 +167,23 @@
 
 .setup-panel-nudge {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 2.5rem));
+  grid-template-columns: repeat(3, minmax(0, var(--app-touch-target-comfortable-min, 3rem)));
   grid-template-areas:
     ". up ."
     "left . right"
     ". down .";
-  gap: 0.25rem;
+  gap: var(--app-touch-target-gap, 0.35rem);
   width: fit-content;
 
   button:nth-child(1) { grid-area: up; }
   button:nth-child(2) { grid-area: left; }
   button:nth-child(3) { grid-area: right; }
   button:nth-child(4) { grid-area: down; }
+
+  button {
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
+  }
 }
 
 .setup-panel-crop-grid {
@@ -439,6 +444,11 @@
     grid-template-columns: 1fr;
   }
 
+  .save-fab {
+    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
+    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.3rem));
+  }
+
   .cv-row-legend {
     grid-template-columns: var(--cv-row-grid-tablet);
     width: min(100%, var(--cv-row-max-width-tablet));
@@ -457,8 +467,13 @@
   }
 
   .setup-panel-nudge {
-    grid-template-columns: repeat(3, minmax(0, 3rem));
-    gap: 0.5rem;
+    grid-template-columns: repeat(3, minmax(0, var(--app-touch-target-prominent-min, 3.5rem)));
+    gap: var(--app-touch-target-gap, 0.5rem);
+
+    button {
+      width: var(--app-touch-target-prominent-min, 3.5rem);
+      height: var(--app-touch-target-prominent-min, 3.5rem);
+    }
   }
 }
 

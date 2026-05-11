@@ -41,7 +41,7 @@
                   #autosize="cdkTextareaAutosize"
                   [formControl]="control"
                   [attr.inputmode]="resolvedInputMode"
-                  [attr.enterkeyhint]="enterkeyhint || null"
+                  [attr.enterkeyhint]="resolvedEnterKeyHint"
                   [placeholder]="placeholder"
                   cdkAutosizeMinRows="1"
                   cdkTextareaAutosize
@@ -52,7 +52,7 @@
         <input #primaryInput
                [autocomplete]="!disableBrowserAutocomplete"
                [attr.inputmode]="resolvedInputMode"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="type"
@@ -66,7 +66,7 @@
         <input #primaryInput
                [autocomplete]="!disableBrowserAutocomplete"
                [attr.inputmode]="resolvedInputMode"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [formControl]="control"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
@@ -78,8 +78,8 @@
       @if ((type === types.PASSWORD_CURRENT)) {
         <input #primaryInput
                [autocomplete]="!disableBrowserAutocomplete"
-               [attr.inputmode]="inputmode || 'text'"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="hidePassword ? 'password' : 'text'"
@@ -92,8 +92,8 @@
       @if ((type === types.PASSWORD_NEW)) {
         <input #primaryInput
                [autocomplete]="!disableBrowserAutocomplete"
-               [attr.inputmode]="inputmode || 'text'"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.inputmode]="resolvedInputMode"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [formControl]="control"
                [placeholder]="placeholder"
                [type]="hidePassword ? 'password' : 'text'"
@@ -190,7 +190,7 @@
                   [matChipInputFor]="chipList"
                   [matChipInputSeparatorKeyCodes]="autocompleteSeparatorKeysCodes"
                   [attr.inputmode]="resolvedInputMode"
-                  [attr.enterkeyhint]="enterkeyhint || null"
+                  [attr.enterkeyhint]="resolvedEnterKeyHint"
                   [placeholder]="placeholder"
            >
         </mat-chip-grid>
@@ -216,7 +216,7 @@
                  (matChipInputTokenEnd)="cleanMultiComplete($event)"
                   [formControl]="ghostControl"
                   [attr.inputmode]="resolvedInputMode"
-                  [attr.enterkeyhint]="enterkeyhint || null"
+                  [attr.enterkeyhint]="resolvedEnterKeyHint"
                   [matAutocomplete]="autocomplete"
                   [matChipInputAddOnBlur]="true"
                   [matChipInputFor]="chipList"
@@ -289,7 +289,7 @@
         <input #primaryInput
                [formControl]="control"
                [attr.inputmode]="resolvedInputMode"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
@@ -315,7 +315,7 @@
         <input #primaryInput
                [formControl]="control"
                [attr.inputmode]="resolvedInputMode"
-               [attr.enterkeyhint]="enterkeyhint || null"
+               [attr.enterkeyhint]="resolvedEnterKeyHint"
                [matAutocomplete]="autocomplete"
                [placeholder]="placeholder"
                (keydown.enter)="onInputEnterPressed($event)"
@@ -416,7 +416,7 @@
     <input #primaryInput
            matInput
            [formControl]="control"
-           [attr.enterkeyhint]="enterkeyhint || null"
+           [attr.enterkeyhint]="resolvedEnterKeyHint"
            [matDatepicker]="picker"
            [max]="dateMax"
            [min]="dateMin"

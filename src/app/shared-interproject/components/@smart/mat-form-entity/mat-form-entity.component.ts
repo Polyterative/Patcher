@@ -232,6 +232,10 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       return this.inputmode;
     }
 
+    if (this.isSearchField) {
+      return 'search';
+    }
+
     switch (this.type) {
       case FormTypes.EMAIL:
         return 'email';
@@ -245,6 +249,18 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       default:
         return 'text';
     }
+  }
+
+  get resolvedEnterKeyHint(): AppEnterKeyHint | null {
+    if (this.enterkeyhint) {
+      return this.enterkeyhint;
+    }
+
+    if (this.isSearchField || this.type === FormTypes.AUTOCOMPLETE || this.type === FormTypes.AUTOCOMPLETE_GROUPED) {
+      return 'search';
+    }
+
+    return null;
   }
   
   ngOnDestroy(): void {
@@ -649,5 +665,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
 
     nextField.focus();
     return true;
+  }
+
+  private get isSearchField(): boolean {
+    return this.iconL1 === 'search';
   }
 }
