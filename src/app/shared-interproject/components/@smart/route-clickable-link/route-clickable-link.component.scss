@@ -1,5 +1,8 @@
 .link-list {
+  display: inline-flex;
   align-items: center;
+  min-width: 0;
+  contain: layout style;
 }
 
 .link-list--column {
@@ -16,6 +19,7 @@
   --mdc-icon-button-icon-color: rgba(255, 255, 255, 0.95);
   --mat-text-button-state-layer-color: rgba(255, 255, 255, 1);
   --mat-icon-button-state-layer-color: rgba(255, 255, 255, 1);
+  contain: layout style;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.18);
