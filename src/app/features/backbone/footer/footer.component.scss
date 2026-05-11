@@ -22,17 +22,20 @@
 
 a {
   color: rgba(0, 0, 0, 0.93);
-  text-decoration: none;
-  border-bottom: 1px dotted rgba(0, 0, 0, 0.93);
-
-  transition: border-bottom 0.2s ease-in-out;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-thickness: 0.0625rem;
+  text-decoration-color: rgba(0, 0, 0, 0.24);
+  text-underline-offset: 0.16rem;
+  border-bottom: none;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
 
   &:visited {
     color: rgba(0, 0, 0, 0.93);
   }
 
   &:hover {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.93);
+    text-decoration-color: rgba(0, 0, 0, 0.93);
   }
 }
 

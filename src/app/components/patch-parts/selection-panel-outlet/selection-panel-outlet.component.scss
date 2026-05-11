@@ -32,16 +32,16 @@
   width: 26rem;
   max-width: calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1.5rem) * 2));
   background-color: color.adjust(#5ED0B4, $alpha: -0.82);
-  backdrop-filter: blur(0.375rem);
+  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
   border: 1px solid rgba(94, 208, 180, 0.35);
-  border-radius: 0.5rem;
+  border-radius: var(--app-floating-surface-radius, 0.8rem);
   padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.25);
+  box-shadow: var(--app-floating-surface-shadow-strong, 0 0.45rem 1.4rem rgba(0, 0, 0, 0.22));
   // Fade + slide-up animation on panel appearance
-  animation: fadeSlideUp 150ms ease-out both;
+  animation: fadeSlideUp var(--app-floating-surface-raise-duration, 160ms) ease-out both;
 }
 
 .deselect-btn--panel {

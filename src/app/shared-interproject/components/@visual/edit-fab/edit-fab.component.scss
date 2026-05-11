@@ -29,9 +29,10 @@
     padding-left: 2rem;
     padding-right: 2rem;
     border: 0.125rem solid #3e638a;
-    box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.28);
+    box-shadow: var(--app-floating-action-shadow, 0 0.25rem 0.875rem rgba(38, 76, 116, 0.22));
     background: #ffffff;
     color: #224b75;
+    border-radius: var(--app-floating-action-radius, 1.75rem);
   }
 
   button.edit-fab-editing {
