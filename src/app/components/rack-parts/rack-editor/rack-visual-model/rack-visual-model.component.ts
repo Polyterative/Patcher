@@ -141,6 +141,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   @Input() rackViewportElement: HTMLElement | null = null;
   @Input() isCurrentRackPropertyOfCurrentUser: boolean;
   @Input() isCurrentRackEditable: boolean;
+  @Input() suppressHpIndicators = false;
   @Input() selectedTouchModule: RackedModule | null = null;
   @Input() touchPrimaryActionsEnabled = false;
   @Input() dragScale = 1;

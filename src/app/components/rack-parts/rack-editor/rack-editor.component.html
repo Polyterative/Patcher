@@ -7,6 +7,7 @@
   analysisMode:(dataService.analysisMode$|async),
   signalFocusArea:(dataService.signalFocusArea$|async),
   shouldShowPanelImages:(dataService.shouldShowPanelImages$|async),
+  isRackImageCaptureInProgress:(dataService.isRackImageCaptureInProgress$|async),
   functionAnalysisLegendItems:(dataService.functionAnalysisLegendItems$|async),
   functionAnalysisResidualLabel:(dataService.functionAnalysisResidualLabel$|async),
   functionAnalysisCoverageSummary:(dataService.functionAnalysisCoverageSummary$|async)
@@ -62,11 +63,12 @@
                                        [rackViewportElement]="rackViewport"
                                        [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
                                        [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                       [selectedTouchModule]="selectedTouchModule"
-                                       [touchPrimaryActionsEnabled]="touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off"
-                                       [rackDetailDataService]="dataService"
-                                       [moduleRightClick$]="moduleRightClick$"
-                                       (touchModuleSelected)="onTouchModuleSelected($event)"
+                                        [selectedTouchModule]="selectedTouchModule"
+                                        [touchPrimaryActionsEnabled]="touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off"
+                                        [suppressHpIndicators]="bag.isRackImageCaptureInProgress"
+                                        [rackDetailDataService]="dataService"
+                                        [moduleRightClick$]="moduleRightClick$"
+                                        (touchModuleSelected)="onTouchModuleSelected($event)"
                                         [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
                                         [style.width.rem]="rackWidthRem()"
                                         [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
