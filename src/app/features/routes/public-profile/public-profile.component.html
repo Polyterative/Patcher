@@ -114,7 +114,7 @@
     } @else if (bag.state === 'private' && bag.profile) {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">This profile is private.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">This profile is private.</mat-card-title>
         @if (bag.isOwnProfile) {
           <div class="row gap1 center">
             <app-brand-primary-button
@@ -131,12 +131,12 @@
     } @else if (bag.state === 'incomplete') {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">This profile is not available yet.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">This profile is not available yet.</mat-card-title>
       </div>
     } @else if (bag.state === 'not-found' || bag.state === 'error') {
       <div class="col gap1 public-profile-state">
         <app-empty-state backgroundImage="assets/svg/404.svg"></app-empty-state>
-        <mat-card-title fxLayoutAlign="center">Profile not found.</mat-card-title>
+        <mat-card-title class="public-profile-state__title">Profile not found.</mat-card-title>
       </div>
     } @else {
       <div class="col gap1">
