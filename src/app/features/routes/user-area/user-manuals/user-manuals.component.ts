@@ -9,7 +9,6 @@ import {
   MatChipListbox,
   MatChipOption
 } from "@angular/material/chips";
-import { FlexModule } from "@angular/flex-layout";
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
 import { MatCardSubtitle } from "@angular/material/card";
 import { RackListModule } from "src/app/components/rack-list/rack-list.module";
@@ -22,7 +21,6 @@ import { RackListModule } from "src/app/components/rack-list/rack-list.module";
     AutoUpdateLoadingIndicatorModule,
     MatChipListbox,
     MatChipOption,
-    FlexModule,
     HeroContentCardModule,
     MatCardSubtitle,
     RackListModule,
