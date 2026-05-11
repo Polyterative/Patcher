@@ -342,6 +342,26 @@ describe('RackVisualModelComponent', () => {
     }
   });
 
+  it('emits a touch selection on a simple touch tap when primary actions are enabled', () => {
+    (component as any).touchInteractionMode = true;
+    component.touchPrimaryActionsEnabled = true;
+    const selectionSpy = spyOn(component.touchModuleSelected, 'emit');
+
+    component.onModulePointerDown({
+      pointerType: 'touch',
+      clientX: 48,
+      clientY: 96
+    } as PointerEvent, moduleRef);
+
+    component.onModulePointerUp({
+      pointerType: 'touch',
+      clientX: 48,
+      clientY: 96
+    } as PointerEvent, moduleRef);
+
+    expect(selectionSpy).toHaveBeenCalledWith(moduleRef);
+  });
+
   it('cancels the touch long press when the finger starts moving', () => {
     jasmine.clock().install();
     try {
@@ -364,6 +384,33 @@ describe('RackVisualModelComponent', () => {
 
       expect(nextSpy).not.toHaveBeenCalled();
       expect(component.isModuleDragDisabled(moduleRef)).toBeFalse();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('does not emit a touch selection after the long-press secondary menu opens', () => {
+    jasmine.clock().install();
+    try {
+      (component as any).touchInteractionMode = true;
+      component.touchPrimaryActionsEnabled = true;
+      const selectionSpy = spyOn(component.touchModuleSelected, 'emit');
+
+      component.onModulePointerDown({
+        pointerType: 'touch',
+        clientX: 48,
+        clientY: 96
+      } as PointerEvent, moduleRef);
+
+      jasmine.clock().tick(550);
+
+      component.onModulePointerUp({
+        pointerType: 'touch',
+        clientX: 48,
+        clientY: 96
+      } as PointerEvent, moduleRef);
+
+      expect(selectionSpy).not.toHaveBeenCalled();
     } finally {
       jasmine.clock().uninstall();
     }

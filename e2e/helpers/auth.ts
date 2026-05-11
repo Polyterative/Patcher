@@ -61,7 +61,7 @@ async function loginWithCredentials(page: Page, credentials: E2EAuthCredentials,
   await loginButton.click();
 
   await expect(page).toHaveURL(/\/user\/area/, {timeout: 20_000});
-  await expect(page.getByRole('link', {name: /my profile/i})).toBeVisible({timeout: 15_000});
+  await expect(page.locator('app-user-area-root').first()).toBeVisible({timeout: 15_000});
 }
 
 export async function loginAndSaveStorageState(baseURL: string, storageStatePath = AUTH_STORAGE_STATE_PATH): Promise<void> {

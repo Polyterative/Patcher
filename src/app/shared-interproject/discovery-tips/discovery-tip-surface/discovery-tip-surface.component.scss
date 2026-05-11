@@ -72,12 +72,12 @@
   font: inherit;
   cursor: pointer;
   transition:
-    transform 120ms ease,
-    background-color 120ms ease,
-    opacity 120ms ease;
+    transform var(--app-floating-surface-transition-duration, 120ms) ease,
+    background-color var(--app-floating-surface-transition-duration, 120ms) ease,
+    opacity var(--app-floating-surface-transition-duration, 120ms) ease;
 
   &:hover {
-    transform: translateY(-1px);
+    transform: translateY(calc(var(--app-floating-surface-hover-lift, 0.0625rem) * -1));
   }
 }
 
@@ -99,7 +99,7 @@
 @keyframes discovery-tip-enter {
   from {
     opacity: 0;
-    transform: translateY(0.35rem);
+    transform: translateY(var(--app-floating-surface-raise-offset, 0.35rem));
   }
   to {
     opacity: 1;

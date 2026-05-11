@@ -3,7 +3,7 @@ import {
   OnInit
 } from '@angular/core';
 import {
-  FormControl,
+  UntypedFormControl,
   Validators
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,6 +17,8 @@ import {
 } from 'rxjs/operators';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { UserManagementService } from '../user-management.service';
 
 
@@ -47,29 +49,12 @@ import { UserManagementService } from '../user-management.service';
             Welcome! Please choose a username for your account.
           </p>
           
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Username</mat-label>
-            <input
-              matInput
-              [formControl]="usernameControl"
-              placeholder="Enter your username"
-              (keyup.enter)="saveUsername()"
-            >
-            <mat-error *ngIf="usernameControl.hasError('required')">
-              Username is required
-            </mat-error>
-            <mat-error *ngIf="usernameControl.hasError('minlength')">
-              Username must be at least 3 characters
-            </mat-error>
-            <mat-error *ngIf="usernameControl.hasError('pattern')">
-              Username can only contain letters, numbers, and underscores
-            </mat-error>
-          </mat-form-field>
-          
-          <p class="hint-text">
-            Choose a unique username between 3-20 characters.
-            You can use letters, numbers, and underscores.
-          </p>
+          <lib-mat-form-entity
+            class="full-width"
+            [dataPack]="usernameField"
+            formFieldAppearanceType="outline"
+            (enterPressed)="saveUsername()"
+          ></lib-mat-form-entity>
         </mat-card-content>
         
         <mat-card-actions align="end">
@@ -88,15 +73,16 @@ import { UserManagementService } from '../user-management.service';
   `,
   styles: [`
        .complete-profile-container {
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           min-height: 100vh;
-           padding: 1.25rem;
-           background:
-             radial-gradient(circle at top left, rgba(61, 115, 188, 0.08), transparent 24rem),
-             linear-gradient(180deg, rgba(247, 250, 253, 0.96), rgba(255, 255, 255, 0.99));
-       }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: var(--app-viewport-height, 100vh);
+            padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + var(--app-keyboard-inset-bottom, 0px) + 1.25rem);
+            background:
+              radial-gradient(circle at top left, rgba(61, 115, 188, 0.08), transparent 24rem),
+              linear-gradient(180deg, rgba(247, 250, 253, 0.96), rgba(255, 255, 255, 0.99));
+            box-sizing: border-box;
+        }
 
        .profile-card {
            max-width: 31.25rem;
@@ -154,12 +140,26 @@ import { UserManagementService } from '../user-management.service';
   standalone: false
 })
 export class CompleteProfileComponent extends SubManager implements OnInit {
-  usernameControl = new FormControl('', [
+  readonly usernameControl = new UntypedFormControl('', [
     Validators.required,
     Validators.minLength(3),
     Validators.maxLength(20),
     Validators.pattern(/^[a-zA-Z0-9_]+$/)
   ]);
+
+  readonly usernameField: IMatFormEntityConfig = {
+    type: FormTypes.TEXT,
+    control: this.usernameControl,
+    label: 'Username',
+    code: 'complete-profile-username',
+    flex: '100%',
+    hint: 'Choose a unique username between 3-20 characters. Use only letters, numbers, and underscores.',
+    iconL1: 'person',
+    ergonomics: {
+      autofocus: true,
+      enterkeyhint: 'done'
+    }
+  };
   
   saving = false;
   

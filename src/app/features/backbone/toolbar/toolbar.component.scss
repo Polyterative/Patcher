@@ -123,13 +123,7 @@ mat-divider {
   position: -webkit-sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: saturate(120%) blur(0.375rem);
-}
-
-@media (max-width: 72.5rem) {
-  .sticky {
-    backdrop-filter: none;
-  }
+  backdrop-filter: saturate(120%) blur(var(--app-floating-surface-blur, 0.375rem));
 }
 
 @keyframes fade-in {

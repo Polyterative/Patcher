@@ -136,6 +136,117 @@ describe('RackEditorComponent', () => {
     expect(component.viewOptionsExpanded).toBeTrue();
   });
 
+  it('opens secondary touch actions for the selected module from the visible action tray', () => {
+    const menuItems$ = new BehaviorSubject<any[]>([]);
+    const open$ = new Subject<MouseEvent>();
+    const dataService = {
+      isCurrentRackPropertyOfCurrentUser$: new BehaviorSubject(true),
+      isCurrentRackEditable$: new BehaviorSubject(true),
+      requestRackedModuleDuplication$: new Subject<RackedModule>(),
+      requestRackedModuleRemoval$: new Subject<RackedModule>(),
+      requestRackedModuleReplaceWithBlank$: new Subject<RackedModule>(),
+      requestRackedModuleRowClearing$: new Subject<RackedModule>(),
+      requestRackedModulePanelSwitch$: new Subject<any>(),
+    };
+    const contextMenu = {menuItems$, open$} as GeneralContextMenuDataService;
+
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      dataService as any,
+      contextMenu,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const openSpy = spyOn(open$, 'next');
+    const anchor = document.createElement('button');
+    spyOn(anchor, 'getBoundingClientRect').and.returnValue({
+      left: 120,
+      top: 240,
+      width: 80,
+      height: 40,
+      right: 200,
+      bottom: 280,
+      x: 120,
+      y: 240,
+      toJSON: () => ({})
+    } as DOMRect);
+
+    component.data = {hp: 104} as any;
+    component.ngOnInit();
+    component.selectedTouchModule = {
+      module: {
+        name: 'Belgrad',
+        hp: 14,
+        manufacturer: {name: 'Xaoc Devices'},
+        panels: []
+      }
+    } as any;
+
+    component.openSelectedTouchModuleMenu(anchor);
+
+    expect(menuItems$.value.map(item => item.id)).toContain('clear-row');
+    expect(openSpy).toHaveBeenCalled();
+    expect(openSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
+      clientX: 160,
+      clientY: 260
+    }));
+  });
+
+  it('uses the same shared action ids for the touch tray and the context menu', () => {
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {} as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+
+    expect(component.touchTrayModuleActions.map(action => action.id)).toEqual([
+      'inspect',
+      'duplicate',
+      'replace-with-blank',
+      'delete'
+    ]);
+    expect(component.moduleActions.filter(action => action.includeInContextMenu).map(action => action.id)).toEqual([
+      'inspect',
+      'duplicate',
+      'replace-with-blank',
+      'delete',
+      'clear-row'
+    ]);
+  });
+
+  it('clears the touch selection after running the shared replace-with-blank action', () => {
+    const replaceWithBlank$ = new Subject<RackedModule>();
+    const component = new RackEditorComponent(
+      {} as MatSnackBar,
+      {} as SupabaseService,
+      {
+        requestRackedModuleReplaceWithBlank$: replaceWithBlank$
+      } as RackDetailDataService,
+      {} as GeneralContextMenuDataService,
+      {markForCheck: () => undefined} as ChangeDetectorRef,
+      jasmine.createSpyObj<MatDialog>('MatDialog', ['open'])
+    );
+    const moduleRef = {
+      module: {
+        name: 'Belgrad'
+      }
+    } as RackedModule;
+    const replaceSpy = spyOn(replaceWithBlank$, 'next');
+
+    component.selectedTouchModule = moduleRef;
+
+    const replaceAction = component.moduleActions.find(action => action.id === 'replace-with-blank');
+    expect(replaceAction).toBeDefined();
+    component.runSelectedTouchAction(replaceAction!);
+
+    expect(replaceSpy).toHaveBeenCalledWith(moduleRef);
+    expect(component.selectedTouchModule).toBeNull();
+  });
+
   it('does not expose the paused signal analysis mode in the UI options', () => {
     const component = new RackEditorComponent(
       {} as MatSnackBar,

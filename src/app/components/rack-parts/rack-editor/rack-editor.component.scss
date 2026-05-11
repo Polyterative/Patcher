@@ -6,8 +6,6 @@ $bgGradientBG: rgb(223, 223, 223);
 $floatingInsetDesktop: 1rem;
 $floatingInsetMobile: 0.75rem;
 $floatingSurfaceMaxWidth: 16.5rem;
-$floatingSurfaceRestOpacity: 0.78;
-
 .readOnlyBG {
   //background: $bgGradientBG;
   background: $bgGradientBG;
@@ -85,6 +83,10 @@ $floatingSurfaceRestOpacity: 0.78;
   display: none;
 }
 
+.rackEditorResponsiveActions__touchGuide {
+  display: none;
+}
+
 // Keep Rack Editor controls on the left so they never compete with the shared right-side edit/save FAB stack.
 .rackEditorFloatingOptions {
   position: fixed;
@@ -114,10 +116,14 @@ $floatingSurfaceRestOpacity: 0.78;
   );
   border-radius: 0.85rem;
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(0.375rem);
-  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
-  opacity: $floatingSurfaceRestOpacity;
-  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
+  box-shadow: var(--app-floating-surface-shadow, 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18));
+  opacity: var(--app-floating-surface-rest-opacity, 0.78);
+  transition:
+    opacity var(--app-floating-surface-transition-duration, 160ms) ease,
+    transform var(--app-floating-surface-transition-duration, 160ms) ease,
+    box-shadow var(--app-floating-surface-transition-duration, 160ms) ease,
+    backdrop-filter var(--app-floating-surface-transition-duration, 160ms) ease;
 }
 
 .rackEditorFloatingOptions__panel:hover,
@@ -125,8 +131,8 @@ $floatingSurfaceRestOpacity: 0.78;
 .rackEditorFloatingOptions__quickToggle:hover,
 .rackEditorFloatingOptions__quickToggle:focus-within {
   opacity: 1;
-  transform: translateY(-0.0625rem);
-  box-shadow: 0 0.45rem 1.25rem rgba(0, 0, 0, 0.2);
+  transform: translateY(calc(var(--app-floating-surface-hover-lift, 0.0625rem) * -1));
+  box-shadow: var(--app-floating-surface-shadow-strong, 0 0.45rem 1.25rem rgba(0, 0, 0, 0.2));
 }
 
 .rackEditorFloatingOptions__panel {
@@ -391,14 +397,17 @@ $floatingSurfaceRestOpacity: 0.78;
   box-shadow: 0 0.25rem 0.875rem rgba(38, 76, 116, 0.28);
   background: #ffffff;
   color: #224b75;
-  opacity: $floatingSurfaceRestOpacity;
-  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  opacity: var(--app-floating-surface-rest-opacity, 0.78);
+  transition:
+    opacity var(--app-floating-surface-transition-duration, 160ms) ease,
+    transform var(--app-floating-surface-transition-duration, 160ms) ease,
+    box-shadow var(--app-floating-surface-transition-duration, 160ms) ease;
 }
 
 .rackEditorFloatingOptions__toggle:hover,
 .rackEditorFloatingOptions__toggle:focus-visible {
   opacity: 1;
-  transform: translateY(-0.0625rem);
+  transform: translateY(calc(var(--app-floating-surface-hover-lift, 0.0625rem) * -1));
   box-shadow: 0 0.45rem 1.25rem rgba(38, 76, 116, 0.32);
 }
 
@@ -430,6 +439,47 @@ $floatingSurfaceRestOpacity: 0.78;
     border-radius: 1rem;
     border: 1px solid rgba(34, 75, 117, 0.14);
     background: rgba(255, 255, 255, 0.94);
+  }
+
+  .rackEditorResponsiveActions__touchGuide {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.75rem 0.8rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(34, 75, 117, 0.14);
+    background: linear-gradient(180deg, rgba(244, 249, 255, 0.96), rgba(255, 255, 255, 0.94));
+    color: rgba(23, 49, 74, 0.92);
+  }
+
+  .rackEditorResponsiveActions__touchGuideIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.125rem;
+    height: 2.125rem;
+    border-radius: 999px;
+    background: rgba(34, 75, 117, 0.12);
+    color: rgba(34, 75, 117, 0.92);
+  }
+
+  .rackEditorResponsiveActions__touchGuideCopy {
+    min-width: 0;
+  }
+
+  .rackEditorResponsiveActions__touchGuideTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .rackEditorResponsiveActions__touchGuideText {
+    margin-top: 0.2rem;
+    font-size: 0.76rem;
+    line-height: 1.35;
+    color: rgba(41, 65, 88, 0.82);
   }
 
   .rackEditorResponsiveActions__selectionHeader {
@@ -473,6 +523,12 @@ $floatingSurfaceRestOpacity: 0.78;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
     gap: 0.35rem;
+  }
+
+  .rackEditorResponsiveActions__selectionHint {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: rgba(44, 66, 87, 0.78);
   }
 
   .rackEditorFloatingOptions {
@@ -592,7 +648,7 @@ $floatingSurfaceRestOpacity: 0.78;
     border-radius: 0.75rem;
     border: 0.0625rem solid rgba(62, 99, 138, 0.16);
     background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: none;
+    box-shadow: var(--app-floating-surface-shadow, 0 0.2rem 0.7rem rgba(0, 0, 0, 0.12));
   }
 
   .rackEditorFloatingOptions__quickToggle {
