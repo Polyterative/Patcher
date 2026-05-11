@@ -12,25 +12,25 @@
 
 ## Active
 
-### Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled
+### Rack Balance Analysis — Exclude Blank Modules From Coverage
 
-**Goal:** remove the dead-looking divider from manufacturer-detail module tiles whenever the action area is completely absent, so disabled tiles no longer look like broken placeholders.
+**Goal:** make the rack balance coverage denominator count only real modules, so blanks/spacers do not distort confidence or coverage copy.
 
 #### Layer 1 — MVP
-- [ ] Find the manufacturer-detail tile template and confirm which guard currently leaves the lower divider visible
-- [ ] Trace how the action-area disabled state is computed so the divider can follow the same source of truth
+- [ ] Inspect the current rack balance analysis denominator/confidence logic and confirm where blank spacers are still counted
+- [ ] Trace the blank-module identification helper already used by older rack stats so this analysis surface can reuse the same definition
 
 **Layer 1 discoveries:** pending.
 
 #### Layer 2 — Structural
-- [ ] Hide the divider whenever all tile actions are absent/disabled without changing tiles that still have a live footer action
-- [ ] Keep the fix local to manufacturer-detail/module-tile rendering so other module list surfaces stay unchanged
+- [ ] Filter blank spacers out before computing coverage/confidence thresholds in the rack balance analysis service
+- [ ] Make blank-only racks behave like an empty rack rather than a low-confidence tagged rack
 
 #### Layer 3 — Polish
-- [ ] Add focused coverage for the fully-disabled tile state if a nearby component spec already exists
-- [ ] Review the final tile rhythm against neighboring manufacturer-detail cards so the footer removal does not leave awkward spacing
+- [ ] Keep coverage copy/tooltips aligned with the filtered denominator
+- [ ] Add focused tests for mixed real+blank racks and blank-only racks
 
-**Current progress:** not started yet in code. Next step is to inspect the manufacturer-detail tile action/footer template and reuse the existing “buttons visible” decision rather than inventing a second visibility rule.
+**Current progress:** not started yet in code. Next step is to inspect `rack-balance-analysis.service.ts` and the existing blank-module helpers so the denominator fix comes from one shared definition.
 
 ---
 
