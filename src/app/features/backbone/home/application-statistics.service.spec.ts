@@ -107,6 +107,11 @@ describe('ApplicationStatisticsService', () => {
     const backend = {
       GET: {
         applicationStatistics: jasmine.createSpy('GET.applicationStatistics').and.returnValue(of(counts)),
+        applicationInsightsSnapshot: jasmine.createSpy('GET.applicationInsightsSnapshot').and.returnValue(of({
+          statistics: counts,
+          activitySeries,
+          moduleInsights
+        })),
         applicationActivitySeries: jasmine.createSpy('GET.applicationActivitySeries').and.returnValue(of(activitySeries)),
         applicationModuleInsights: jasmine.createSpy('GET.applicationModuleInsights').and.returnValue(of(moduleInsights))
       }
@@ -163,8 +168,9 @@ describe('ApplicationStatisticsService', () => {
     const {backend, service} = build();
 
     service.page$.subscribe((page) => {
-      expect(backend.GET.applicationActivitySeries).toHaveBeenCalledWith(30);
-      expect(backend.GET.applicationModuleInsights).toHaveBeenCalled();
+      expect(backend.GET.applicationInsightsSnapshot).toHaveBeenCalledWith(30);
+      expect(backend.GET.applicationActivitySeries).not.toHaveBeenCalled();
+      expect(backend.GET.applicationModuleInsights).not.toHaveBeenCalled();
       expect(page.heroHighlights).toEqual([
         {label: 'Public modules', value: '1,280', icon: 'view_module'},
         {label: 'Library momentum', value: '5%', icon: 'timeline'},
