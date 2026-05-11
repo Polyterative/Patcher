@@ -1,39 +1,41 @@
-<lib-screen-wrapper maxSize="32rem"
-                    class="auth-screen">
-  <div class="gradientCard col gap1">
+<lib-screen-wrapper maxSize="130rem"
+                    class="auth-page-shell">
+  <div class="auth-page-shell__inner col gap1">
     <lib-hero-content-card titleBig="We haven't been introduced yet"
-                           class="auth-entry-card">
+                           description="Sign up to save your collection, racks, and patches in My Area. You can still browse public content without an account."
+                           [showWideShellNav]="true"
+                           icon="person_add"
+                           class="userBG auth-entry-card">
       <div class="col gap1">
-        
-        <div class="auth-container">
-          <!-- Email/Password Signup Section -->
-          <section class="email-signup-section" aria-label="Email signup">
-            <app-signup-email fxFlex="100"></app-signup-email>
-          </section>
-          <p class="auth-support-copy">
-            Sign up to save your collection, racks, and patches in My Area. You can still browse public content without an account.
-          </p>
-          
-          <!-- SSO Authentication Section (temporarily hidden) -->
-          <!-- <section class="sso-section" aria-label="Social signup options">
-            <app-sso-buttons
-              [showDivider]="true"
-              [dividerText]="'or'"
-              (providerSelected)="handleSSOSignup($event)">
-            </app-sso-buttons>
-          </section> -->
-          
-          <!-- Alternative Actions Section -->
-          <section class="alternative-actions-section" aria-label="Alternative actions">
-            <div class="action-link-wrapper login-link"
-                 routerLink="/auth/login">
-              <mat-card-subtitle fxLayoutAlign="center"
-                                 class="action-link">
-                Already have an account? <strong>Log in</strong>
-              </mat-card-subtitle>
+        <div class="auth-surface">
+          <div class="auth-body">
+            <div class="auth-container">
+              <!-- Email/Password Signup Section -->
+              <section class="email-signup-section" aria-label="Email signup">
+                <app-signup-email fxFlex="100"></app-signup-email>
+              </section>
+              
+              <!-- SSO Authentication Section (temporarily hidden) -->
+              <!-- <section class="sso-section" aria-label="Social signup options">
+                <app-sso-buttons
+                  [showDivider]="true"
+                  [dividerText]="'or'"
+                  (providerSelected)="handleSSOSignup($event)">
+                </app-sso-buttons>
+              </section> -->
+              
+              <!-- Alternative Actions Section -->
+              <section class="alternative-actions-section" aria-label="Alternative actions">
+                <div class="action-link-wrapper login-link"
+                     routerLink="/auth/login">
+                  <mat-card-subtitle fxLayoutAlign="center"
+                                     class="action-link">
+                    Already have an account? <strong>Log in</strong>
+                  </mat-card-subtitle>
+                </div>
+              </section>
             </div>
-          </section>
-        
+          </div>
         </div>
       
       </div>

@@ -3,47 +3,19 @@
   globalSearchQuery: (globalSearchQuery$|async)
 }; as bag) {
   <lib-screen-wrapper maxSize="130rem">
-    @if (bag.userProfile) {
-      <lib-clean-card appDiscoveryTipAnchor="user-area-profile-card">
-        @if (wideShell$ | async) {
-          <div class="user-shell-nav">
-            <div class="user-shell-topbar">
-              <a class="user-shell-brand"
-                 routerLink="/home"
-                 aria-label="Go to home">patcher.xyz</a>
-              @if (shellAccountLinks$ | async; as accountLinks) {
-                <div class="user-shell-actions">
-                  @for (item of accountLinks; track item.route ?? item.label) {
-                    <a class="user-shell-action"
-                       [routerLink]="item.route"
-                       routerLinkActive="user-shell-action--active"
-                       [attr.aria-label]="item.label">
-                      @if (item.icon) {
-                        <mat-icon>{{ item.icon }}</mat-icon>
-                      }
-                      <span>{{ item.label }}</span>
-                    </a>
-                  }
-                </div>
-              }
-            </div>
-            <nav class="user-shell-targets" aria-label="Section targets">
-              @for (item of shellTargets; track item.route ?? item.label) {
-                <a class="user-shell-target"
-                   [routerLink]="item.route"
-                   routerLinkActive="user-shell-target--active"
-                   [attr.aria-label]="item.label">
-                  {{ item.label }}
-                </a>
-              }
-            </nav>
-          </div>
-        }
-        <div class="user-profile-card__header">
-          <div class="user-profile-card__identity">
-            <p class="user-profile-card__eyebrow">User area</p>
-            <h1 class="user-profile-card__title">{{ bag.userProfile.username }}</h1>
-            <p class="user-profile-card__subtitle">Profile visibility, collection management, and contributor activity.</p>
+    <lib-hero-content-card appDiscoveryTipAnchor="user-area-profile-card"
+                           class="userBG user-area-header"
+                           titleBig="User area"
+                           [titleSub]="bag.userProfile?.username"
+                           [showWideShellNav]="true"
+                           icon="dashboard">
+      @if (bag.userProfile) {
+        <div class="user-profile-card__content">
+          <div class="user-profile-card__status"
+               [class.user-profile-card__status--public]="bag.userProfile.public"
+               [class.user-profile-card__status--private]="!bag.userProfile.public">
+            <mat-icon>{{ bag.userProfile.public ? 'public' : 'visibility_off' }}</mat-icon>
+            <span>{{ bag.userProfile.public ? 'Public profile is visible to everyone.' : 'Public profile is hidden from visitors.' }}</span>
           </div>
           <div class="user-profile-card__actions">
             <app-brand-primary-button
@@ -81,8 +53,8 @@
           </mat-button-toggle-group>
         </div>
         -->
-      </lib-clean-card>
-    }
+      }
+    </lib-hero-content-card>
     <div class="col gap1 user-area-page"
     >
       <div class="profile-layout">
