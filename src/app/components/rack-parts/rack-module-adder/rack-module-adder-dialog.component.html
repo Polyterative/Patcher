@@ -5,23 +5,20 @@
   <div>
     <mat-dialog-content>
       <!--      <app-rack-visual-model></app-rack-visual-model>-->
-      <div fxFlex="100"
-           fxLayout="column wrap"
-           fxLayout.xs="column"
-           fxLayoutGap="1rem"
-      >
+      <div class="moduleChooserGrid">
         
-        <lib-mat-form-entity fxFlex="100"
-                             [type]="fields.rack.type"
-                             [control]="fields.rack.control"
-                             [label]="fields.rack.label"
-                             [disableVoidSelection]="true"
-                             [options$]="fields.rack.options$"
-                             [disableClearButton]="false"
-                             [disabled]="(userAreaDataService.rackData$|async)===undefined"
-                             iconL1="view_comfy"
-        >
-        </lib-mat-form-entity>
+        <div class="moduleChooserCard">
+          <lib-mat-form-entity [type]="fields.rack.type"
+                               [control]="fields.rack.control"
+                               [label]="fields.rack.label"
+                               [disableVoidSelection]="true"
+                               [options$]="fields.rack.options$"
+                               [disableClearButton]="false"
+                               [disabled]="(userAreaDataService.rackData$|async)===undefined"
+                               iconL1="view_comfy"
+          >
+          </lib-mat-form-entity>
+        </div>
       
       </div>
     
