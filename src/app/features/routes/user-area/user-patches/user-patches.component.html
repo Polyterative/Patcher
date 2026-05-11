@@ -43,10 +43,12 @@
       }
       @if ((dataService.pagedPatchesData$|async); as data) {
         @if (data.length > 0) {
-          <app-patch-list class="section-list"
-                          [data$]="dataService.pagedPatchesData$"
-                          [showSearch]="false"
-          ></app-patch-list>
+          <div class="section-scroll">
+            <app-patch-list class="section-list"
+                            [data$]="dataService.pagedPatchesData$"
+                            [showSearch]="false"
+            ></app-patch-list>
+          </div>
         } @else {
           <div class="section-empty">
             <mat-card-subtitle>

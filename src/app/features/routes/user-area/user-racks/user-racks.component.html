@@ -18,11 +18,13 @@
       <mat-divider inset="true"></mat-divider>
       @if ((dataService.pagedRacksData$|async); as data) {
         @if (data.length > 0) {
-          <app-rack-list class="section-list"
-                         [data$]="dataService.pagedRacksData$"
-                         [showSearch]="false"
-                         [viewConfig]="rackMinimalViewConfig"
-          ></app-rack-list>
+          <div class="section-scroll">
+            <app-rack-list class="section-list"
+                           [data$]="dataService.pagedRacksData$"
+                           [showSearch]="false"
+                           [viewConfig]="rackMinimalViewConfig"
+            ></app-rack-list>
+          </div>
         } @else {
           <div class="section-empty">
             <mat-card-subtitle>
