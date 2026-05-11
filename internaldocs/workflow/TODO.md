@@ -24,8 +24,7 @@
 
 ## Active
 
-- [~] **MEDIUM: User Area — Search and Surface Hierarchy Cleanup**
-  Make user-area search feel like a bounded part of the workspace shell instead of a competing floating surface.
+- None right now. Pick the next concrete backlog item before starting more implementation work.
 
 ---
 
@@ -153,10 +152,10 @@ comments-related signals, and manuals need to become a smaller bounded utility r
 
 **Why:** The floating search currently feels bolted onto the page and adds competition between overlays and the main user-area containers.
 
-- [ ] Decide whether search belongs in the page header/shell or as a clearly bounded utility surface, rather than an isolated floating element
-- [ ] Ensure search never obscures the owned-content columns or fights their internal scroll regions
-- [ ] Align the user-area search treatment with the shared floating-surface language from the UI consistency audit
-- [ ] Document z-order, safe-area, and responsive behavior so search supports the workspace instead of competing with it
+- [x] Decide whether search belongs in the page header/shell or as a clearly bounded utility surface, rather than an isolated floating element
+- [x] Ensure search never obscures the owned-content columns or fights their internal scroll regions
+- [x] Align the user-area search treatment with the shared floating-surface language from the UI consistency audit
+- [x] Document z-order, safe-area, and responsive behavior so search supports the workspace instead of competing with it
 
 ---
 
@@ -378,10 +377,10 @@ important notices without turning Patcher into a blog platform.
 **Why:** `/insights` currently builds the page from many count queries plus paged scans of public rows. That is acceptable
 for a dev-only rollout, but a public launch should move the heavy work server-side and return a compact cached payload.
 
-- [ ] Decide the first production shape: summary tables / materialized views vs a server function returning one payload
-- [ ] Pre-aggregate the public insights inputs so the page stops scanning full public module / rack / patch datasets on cold load
-- [ ] Add an explicit cache / refresh strategy for the public insights snapshot
-- [ ] Switch the page to the compact backend response and keep methodology copy aligned with the new aggregation model
+- [x] Decide the first production shape: summary tables / materialized views vs a server function returning one payload
+- [x] Pre-aggregate the public insights inputs so the page stops scanning full public module / rack / patch datasets on cold load
+- [x] Add an explicit cache / refresh strategy for the public insights snapshot
+- [x] Switch the page to the compact backend response and keep methodology copy aligned with the new aggregation model
 
 ---
 
