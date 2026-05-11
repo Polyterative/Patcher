@@ -2,10 +2,11 @@
   <lib-screen-wrapper class="toolbar-shell">
     <div class="toolbar-row row gap1">
       <a
-        routerLink="/home"
-        class="title"
-        aria-label="Go to home"
-      >
+         routerLink="/home"
+         class="title"
+         routerLinkActive="title--active"
+         aria-label="Go to home"
+       >
         <span class="title-text">{{ service.state.title | async }}</span>
       </a>
 

@@ -313,6 +313,7 @@ h3 {
 }
 
 .title-metro-brand {
+  --title-metro-brand-color: rgba(58, 34, 132, 0.92);
   display: inline-flex;
   align-items: center;
   font-size: 1.02rem;
@@ -320,9 +321,28 @@ h3 {
   font-weight: 500;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: rgba(58, 34, 132, 0.92);
+  color: var(--title-metro-brand-color);
   text-decoration: none;
   white-space: nowrap;
+}
+
+.title-metro-brand:link,
+.title-metro-brand:visited,
+.title-metro-brand:active {
+  color: var(--title-metro-brand-color);
+}
+
+.title-metro-brand:focus-visible {
+  outline: 0.125rem solid rgba(58, 34, 132, 0.22);
+  outline-offset: 0.18rem;
+  border-radius: 0.25rem;
+}
+
+.title-metro-brand--active {
+  text-decoration: underline;
+  text-decoration-color: rgba(58, 34, 132, 0.36);
+  text-decoration-thickness: 0.12rem;
+  text-underline-offset: 0.22rem;
 }
 
 .title-metro-targets {
