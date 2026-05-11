@@ -12,22 +12,22 @@
 
 ## Active
 
-### Module Browser — Tag Filter Loading Feedback
+### App Shell — Large-Screen Side Toolbar Experiment
 
-**Goal:** keep module-browser filtering calm and legible by preserving the current result set until the next tag-filter result is ready, while showing shared loading feedback instead of a misleading empty state.
+**Goal:** test a large-screen shell variant that turns the current top-toolbar chrome into a left-side navigation column without regressing compact layouts, floating surfaces, or overall product consistency.
 
 #### Layer 1 — MVP
-- [ ] Trace the current module-browser tag-filter flow and identify exactly where the empty-state flash happens
-- [ ] Add the first visible loading state for tag-triggered filtering while preserving the previous results until the next filtered list is ready
-- [ ] Review the resulting browser states so tag changes feel stable and clear instead of briefly reading as "no results"
+- [ ] Trace the current app-shell composition points (toolbar, banner, content, footer, floating overlays) and pick the first large-screen breakpoint experiment
+- [ ] Rework the main shell layout so larger screens can render a genuine left-side navigation column while smaller layouts keep the current top-toolbar behavior
+- [ ] Review the first shell experiment against key routes so the new column reads intentional rather than like the top bar simply rotated sideways
 
 #### Layer 2 — Structural
-- [ ] Move the tag-filter loading behavior into the data flow rather than patching it only in the template
-- [ ] Add focused tests for tag-filter loading, repeated filter changes, and completion transitions
+- [ ] Tighten the shell layout into a reusable breakpoint-driven structure instead of one-off page overrides
+- [ ] Add focused responsive coverage for the breakpoint transition and large-screen shell composition
 
 #### Layer 3 — Polish
-- [ ] Align the loading copy and visual treatment with the app's shared loading language
-- [ ] Make sure repeated fast tag changes never leave stale results, stale loaders, or ambiguous empty states behind
+- [ ] Refine titles, spacing, and adjacent navigation context so the large-screen shell feels consistent with the existing product chrome
+- [ ] Recheck event banner, footer/help surfaces, and floating overlays against the large-screen shell so the experiment does not fragment the UI
 
 ---
 

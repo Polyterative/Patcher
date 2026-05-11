@@ -24,8 +24,8 @@
 
 ## Active
 
-- [~] **MEDIUM: Module Browser — Tag Filter Loading Feedback**
-  Keep module-browser results visually stable while tag filtering is recomputing so users see clear loading feedback instead of a confusing empty-state flash.
+- [~] **MEDIUM: App Shell — Large-Screen Side Toolbar Experiment**
+  Explore a breakpoint-driven shell that keeps the current top toolbar on compact layouts but switches larger screens to a left-side navigation column without breaking the existing product chrome.
 
 ---
 
@@ -83,7 +83,19 @@ delete confirmation, and the character counter is hidden until users have alread
 - [x] Show character counter from the first keystroke (or ≥ 10% threshold) instead of after 333 chars; optionally
   colour-code at 80% / 95% (Mo-1)
 - [x] Add an in-flight spinner to the submit button and prevent double-submission while the server round-trip is in
-  progress (partial fix for M-2)
+   progress (partial fix for M-2)
+
+---
+
+#### LOW: Comments — Avoid Full-Width Layout on Large Screens
+
+**Why:** Comment surfaces become too wide on large screens, which makes the area feel empty, harder to scan, and visually weak.
+Comments should stay in a bounded reading width instead of stretching across the full page.
+
+- [ ] Define a maximum content width for comment sections on large screens
+- [ ] Choose a layout pattern that keeps comments readable on desktop (centered column, anchored content rail, or split layout)
+- [ ] Ensure the composer, empty state, and comment list all follow the same width constraint
+- [ ] Keep smaller screens flexible while making wide-screen comments explicitly non-full-width by design
 
 ---
 
@@ -128,11 +140,11 @@ privacy-safe aggregate so users can see that hidden usage exists without exposin
 **Why:** Filtering the module browser by tag can take long enough to feel unresponsive. Users need immediate feedback that the
 app is processing the filter change instead of looking stuck.
 
-- [ ] Add a visible loading state when tag selection triggers module-browser filtering
-- [ ] Keep the current results stable until the next filtered result set is ready, instead of flashing an ambiguous empty state
-- [ ] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
-- [ ] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
-- [ ] Add focused tests for the tag-filter loading state and completion transition
+- [x] Add a visible loading state when tag selection triggers module-browser filtering
+- [x] Keep the current results stable until the next filtered result set is ready, instead of flashing an ambiguous empty state
+- [x] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
+- [x] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
+- [x] Add focused tests for the tag-filter loading state and completion transition
 
 ---
 

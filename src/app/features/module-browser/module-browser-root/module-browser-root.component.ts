@@ -32,8 +32,10 @@ import {
   PageEvent
 } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
-import { MinimalModule } from 'src/app/models/module';
-import { RackedModule } from 'src/app/models/module';
+import {
+  MinimalModule,
+  RackedModule
+} from 'src/app/models/module';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { ModuleList } from '../module-browser-data.service';
 
