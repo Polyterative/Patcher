@@ -1,6 +1,23 @@
+.userComments__rail {
+  width: 100%;
+  max-inline-size: 48rem;
+  margin-inline: auto;
+}
+
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-bottom: 0.25rem;
+}
+
+.userComments__empty {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.userComments__emptyText {
+  text-align: center;
 }

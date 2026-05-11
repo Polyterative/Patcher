@@ -10,7 +10,7 @@
 </div>
 
 <ng-template #content>
-  <div class="col gap1">
+  <div class="col gap1 userComments__rail">
     <mat-chip-listbox class="filter-chips"
                       [value]="activeFilter$ | async"
                       (change)="setFilter($event.value ?? null)"
@@ -31,8 +31,8 @@
                                  [viewConfig]="commentViewConfig"
         ></app-comments-item-block>
       } @else {
-        <div fxFlex="100">
-          <mat-card-subtitle fxLayoutAlign="center center">
+        <div class="userComments__empty">
+          <mat-card-subtitle class="userComments__emptyText">
             @if (bag.hasSearchQuery && bag.activeFilter !== null) {
               No comments match the current search and type filter.
             } @else if (bag.hasSearchQuery) {
