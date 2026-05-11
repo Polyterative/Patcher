@@ -107,6 +107,10 @@
   align-items: start;
 }
 
+.public-profile-page {
+  padding-bottom: 5rem;
+}
+
 .profile-header {
   width: 100%;
 }
@@ -160,6 +164,10 @@
 }
 
 @media (max-width: 31.25rem) {
+  .public-profile-page {
+    padding-bottom: 6rem;
+  }
+
   .public-shell-nav {
     display: none;
   }
