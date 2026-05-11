@@ -6,8 +6,6 @@ import {
 } from '@angular/core/testing';
 import { UserAreaRootComponent } from '../user-area-root/user-area-root.component';
 import {
-  createMockAppStateService,
-  createMockAppShellLayoutService,
   createMockSeoAndUtilsService,
   createMockSupabaseService,
   createMockUserAreaDataService,
@@ -40,11 +38,9 @@ describe('UserAreaRootComponent - Initialization', () => {
     component = new UserAreaRootComponent(
       mockUserService as any,
       mockBackend as any,
-        mockDataService as any,
-        mockSeoService as any,
-        createMockAppStateService() as any,
-        createMockUrlCreatorService() as any,
-        createMockAppShellLayoutService() as any
+      mockDataService as any,
+      mockSeoService as any,
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = ignoreSeo;
     component.ngOnInit();
@@ -124,9 +120,7 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
-      createMockUrlCreatorService() as any,
-      createMockAppShellLayoutService() as any
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
 
@@ -160,9 +154,7 @@ describe('UserAreaRootComponent - miscStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
-      createMockUrlCreatorService() as any,
-      createMockAppShellLayoutService() as any
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();
@@ -268,9 +260,7 @@ describe('UserAreaRootComponent - contributorStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
-      createMockUrlCreatorService() as any,
-      createMockAppShellLayoutService() as any
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
   }
@@ -322,9 +312,7 @@ describe('UserAreaRootComponent - Global Search', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
-      createMockUrlCreatorService() as any,
-      createMockAppShellLayoutService() as any
+      createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
     component.ngOnInit();
