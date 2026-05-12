@@ -44,3 +44,12 @@
 - **Tests run:** `pnpm test-headless --include="src/app/features/backend/__tests__/supabase-service/update-patch-add-patch.spec.ts" --include="src/app/components/patch-parts/patch-creator/patch-creator.component.spec.ts"`, `pnpm build`, and `pnpm exec playwright test --reporter=list --project=chromium-auth e2e/auth-patch-creation.spec.ts`
 - **Results:** New patch creation now works without a linked rack, existing unlinked patches keep working unchanged, and the create dialog shows optional linked-rack context plus rack options when available.
 - **Next step:** Add privacy-safe viewer handling for linked racks and track the live migration apply as an external rollout dependency.
+
+## 2026-05-12T12:36:00+02:00
+
+- **Selected task:** Guard linked-rack create/edit writes while the live `linked_rack_id` schema rollout is still pending.
+- **Actions performed:** Changed patch add/update helpers to throw real Supabase response errors, added missing-column fallback handling to patch detail linked-rack edits and linked-rack-selected patch creation, surfaced disabled-state guidance in the owner UI, and extended focused backend/patch specs for the guarded path.
+- **Files changed:** `src/app/features/backend/supabase.cache.ts`, `src/app/features/backend/supabase-add.ts`, `src/app/features/backend/supabase-update.ts`, `src/app/components/patch-parts/linked-rack-rollout.ts`, `src/app/components/patch-parts/patch-detail-data.service.ts`, `src/app/components/patch-parts/patch-minimal/*`, `src/app/components/patch-parts/patch-creator/*`, linked-rack backend/spec files, `agent/*`, `internaldocs/workflow/CURRENT_FEATURE.md`, session `plan.md`
+- **Tests run:** `pnpm test-headless --include="src/app/features/backend/__tests__/supabase-service/update-patch-add-patch.spec.ts" --include="src/app/components/patch-parts/patch-details/patch-detail-data-service-sync-errors.spec.ts" --include="src/app/components/patch-parts/patch-creator/patch-creator.component.spec.ts" --include="src/app/components/patch-parts/patch-minimal/patch-minimal.component.spec.ts"` and `pnpm build`
+- **Results:** Users now get explicit linked-rack-unavailable guidance instead of a raw `PGRST204`, and unlinked patch creation/editing remains available while the live migration is still blocked.
+- **Next step:** Add the patch-editor operation mode selector with linked-rack context preview.

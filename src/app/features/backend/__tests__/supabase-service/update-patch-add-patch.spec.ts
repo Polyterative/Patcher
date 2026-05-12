@@ -154,6 +154,29 @@ describe('SupabaseService - update.patchSilent', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should surface Supabase response errors when patchSilent fails', (done) => {
+    const mockUser = {id: 'silent-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    spyOn(supabaseClient, 'from').and.returnValue(chainable({
+      data: null,
+      error: {
+        code: 'PGRST204',
+        message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+      }
+    }));
+    
+    service.update.patchSilent({id: 2, name: 'Q'} as any).subscribe({
+      next: () => {
+        fail('should have errored');
+        done();
+      },
+      error: (err) => {
+        expect(err.code).toBe('PGRST204');
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
 });
 
 describe('SupabaseService - add.patch', () => {
@@ -268,6 +291,29 @@ describe('SupabaseService - add.patch', () => {
       },
       error: (err) => {
         fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should surface Supabase response errors when patch insert fails', (done) => {
+    const mockUser = {id: 'patch-author'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+    spyOn(supabaseClient, 'from').and.returnValue(chainable({
+      data: null,
+      error: {
+        code: 'PGRST204',
+        message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+      }
+    }));
+    
+    service.add.patch({name: 'Linked Patch', linked_rack_id: 19} as any).subscribe({
+      next: () => {
+        fail('should have errored');
+        done();
+      },
+      error: (err) => {
+        expect(err.code).toBe('PGRST204');
         done();
       }
     });

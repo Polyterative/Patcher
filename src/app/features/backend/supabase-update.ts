@@ -36,7 +36,8 @@ import {
   cacheBust,
   catchErrors,
   remapErrors,
-  showSuccessMessage
+  showSuccessMessage,
+  throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
@@ -259,6 +260,7 @@ export function createUpdateNamespace(
               .single()
           );
         }),
+        throwIfSupabaseError(),
         cacheBust(['patches', 'patchConnections'])
       );
     },

@@ -20,7 +20,8 @@ import { DbPaths } from './DatabaseStrings';
 import {
   cacheBust,
   catchErrors,
-  remapErrors
+  remapErrors,
+  throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 
@@ -165,6 +166,7 @@ export function createAddNamespace(
               .select('id')
           );
         }),
+        throwIfSupabaseError(),
         cacheBust(['patches']),
         remapErrors());
     },

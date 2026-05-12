@@ -34,6 +34,11 @@
             You do not have any racks yet. You can keep patching without one and link a rack later.
           </p>
         }
+        @if (linkedRackPersistenceBlocked$ | async) {
+          <p style="font-size: 0.9rem; margin: 0">
+            Linked rack saving is not available yet in this environment. Create the patch without a linked rack for now.
+          </p>
+        }
       </div>
       
       <app-lib-showcase-grid [data]="[
