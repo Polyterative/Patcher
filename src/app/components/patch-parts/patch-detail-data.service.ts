@@ -944,28 +944,70 @@ export class PatchDetailDataService implements OnDestroy {
   
   /**
    * Ensures an instance exists for the given module in the current patch.
-   * If one already exists, returns its id. If not, creates one and returns the new id.
+   * If one already exists and forceNew is false, returns its id.
+   * If forceNew is true, always creates a new instance (used by rack copies
+   * that need their own distinct instance).
    * Used by module-cvs for lazy auto-create on first CV click.
    */
-  ensureModuleInstance$(module: DbModule | MinimalModule): Observable<number> {
+  ensureModuleInstance$(module: DbModule | MinimalModule, forceNew = false): Observable<number> {
     const patch = this.singlePatchData$.value;
     if (!patch) { return EMPTY as Observable<number>; }
     
-    // Check if an instance already exists
-    const existing = this.patchModuleInstances$.value.find(i => i.module_id === module.id);
-    if (existing) {
-      return of(existing.id);
+    const existingInstances = this.patchModuleInstances$.value.filter(i => i.module_id === module.id);
+
+    // Reuse existing if not forcing a new one
+    if (!forceNew && existingInstances.length > 0) {
+      return of(existingInstances[0].id);
     }
-    
-    // Auto-create one
-    return this.backend.add.patchModuleInstance(patch.id, module.id, null).pipe(
-      map(instance => {
-        // Update local state so the editor cards react
+
+    // Guard against exceeding copy limit (total after this operation)
+    const wouldBeCount = existingInstances.length === 0 ? 1 : existingInstances.length + 1;
+    if (wouldBeCount > MAX_INSTANCES_PER_MODULE) {
+      return existingInstances.length > 0 ? of(existingInstances[0].id) : EMPTY as Observable<number>;
+    }
+
+    // No instances at all → single auto-create (no label needed for first)
+    if (existingInstances.length === 0) {
+      return this.backend.add.patchModuleInstance(patch.id, module.id, null).pipe(
+        map(instance => {
+          this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
+          return instance.id as number;
+        }),
+        catchError(err => {
+          console.error('Failed to auto-create instance:', err);
+          return EMPTY as Observable<number>;
+        })
+      );
+    }
+
+    // 1 existing + need another → jumpstart: relabel existing to "(1)", create "(2)"
+    if (existingInstances.length === 1) {
+      return forkJoin([
+        this.relabelExistingInstance$(existingInstances, module.id, '(1)'),
+        this.backend.add.patchModuleInstance(patch.id, module.id, '(2)')
+      ]).pipe(
+        tap(([_, newInstance]) => {
+          this.patchModuleInstances$.next([...this.patchModuleInstances$.value, newInstance]);
+          this.renumberModuleInstances$(module.id).subscribe();
+        }),
+        map(([_, newInstance]) => newInstance.id as number),
+        catchError(err => {
+          console.error('Failed to jumpstart instances:', err);
+          return EMPTY as Observable<number>;
+        })
+      );
+    }
+
+    // 2+ existing → add next sequential copy
+    const nextLabel = `(${ existingInstances.length + 1 })`;
+    return this.backend.add.patchModuleInstance(patch.id, module.id, nextLabel).pipe(
+      tap(instance => {
         this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
-        return instance.id as number;
+        this.renumberModuleInstances$(module.id).subscribe();
       }),
+      map(instance => instance.id as number),
       catchError(err => {
-        console.error('Failed to auto-create instance:', err);
+        console.error('Failed to add instance copy:', err);
         return EMPTY as Observable<number>;
       })
     );
