@@ -90,6 +90,96 @@ $palette: (
   margin-bottom: 0.55rem;
 }
 
+.patch-editor-operation-mode {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+.patch-editor-operation-mode__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.patch-editor-operation-mode__hint,
+.patch-editor-linked-rack__copy {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  opacity: 0.82;
+}
+
+.patch-editor-operation-mode__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.patch-editor-operation-mode__button {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid rgba(47, 88, 129, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+}
+
+.patch-editor-operation-mode__button--active {
+  border-color: rgba(47, 88, 129, 0.48);
+  background: rgba(94, 208, 180, 0.14);
+  box-shadow: 0 0 0 1px rgba(94, 208, 180, 0.18);
+}
+
+.patch-editor-linked-rack__summary {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.patch-editor-linked-rack__name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.patch-editor-linked-rack__meta {
+  font-size: 0.88rem;
+  opacity: 0.76;
+}
+
+.patch-editor-linked-rack__rows {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.patch-editor-linked-rack__row {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.patch-editor-linked-rack__row-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.patch-editor-linked-rack__row-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: stretch;
+}
+
+.patch-editor-linked-rack__module-card {
+  flex: 0 1 15rem;
+  min-width: min(15rem, 100%);
+}
+
 :host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
   flex: 0 0 var(--patch-editor-inline-control-width);
   max-width: var(--patch-editor-inline-control-width);

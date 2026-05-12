@@ -53,3 +53,12 @@
 - **Tests run:** `pnpm test-headless --include="src/app/features/backend/__tests__/supabase-service/update-patch-add-patch.spec.ts" --include="src/app/components/patch-parts/patch-details/patch-detail-data-service-sync-errors.spec.ts" --include="src/app/components/patch-parts/patch-creator/patch-creator.component.spec.ts" --include="src/app/components/patch-parts/patch-minimal/patch-minimal.component.spec.ts"` and `pnpm build`
 - **Results:** Users now get explicit linked-rack-unavailable guidance instead of a raw `PGRST204`, and unlinked patch creation/editing remains available while the live migration is still blocked.
 - **Next step:** Add the patch-editor operation mode selector with linked-rack context preview.
+
+## 2026-05-12T12:44:00+02:00
+
+- **Selected task:** Add a patch-editor operation mode selector with read-only linked-rack context below the editor.
+- **Actions performed:** Added operation-mode state/options to the patch editor, loaded linked-rack preview rows from the existing rack detail + racked modules reads, rendered the linked-rack mode button group and read-only preview card, and extended focused patch-editor specs for the new mode/preview helpers.
+- **Files changed:** `src/app/components/patch-parts/patch-editor/*`, `agent/*`, `internaldocs/workflow/CURRENT_FEATURE.md`, session `plan.md`
+- **Tests run:** `pnpm test-headless --include="src/app/components/patch-parts/patch-editor/patch-editor.component.spec.ts" --include="src/app/components/patch-parts/patch-editor/patch-editor-extended.spec.ts" --include="src/app/components/patch-parts/patch-editor/patch-editor-build-cards.spec.ts"` and `pnpm build`
+- **Results:** The patch editor now exposes collection vs linked-rack mode, and linked-rack mode shows a read-only rack-context section below the editor while leaving collection-first editing unchanged.
+- **Next step:** Add privacy-safe viewer handling for linked racks.
