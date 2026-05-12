@@ -2,21 +2,32 @@ import {
   buildLinkedRackInstanceMap,
   buildLinkedRackPreviewRows,
   buildLinkedRackPreviewState,
+  LinkedRackPreviewState,
   EditorModuleCard,
   filterEditorCardsByQuery,
-  LinkedRackPreviewState,
   PATCH_EDITOR_OPERATION_MODE_OPTIONS,
   PatchEditorComponent,
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { PatchModuleInstance } from 'src/app/models/connection';
+import { LinkedRackUiState } from '../patch-detail-data.service';
 
 function createPatchEditorComponent(): PatchEditorComponent {
+  const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+    kind: 'unlinked',
+    statusTone: 'neutral',
+    statusLabel: 'Collection-first',
+    description: 'No rack is linked yet.',
+    rackId: null
+  });
   return new PatchEditorComponent(
     {} as any,
-    {singlePatchData$: of(undefined)} as any,
+    {
+      singlePatchData$: of(undefined),
+      linkedRackState$
+    } as any,
     {} as any,
     {nativeElement: document.createElement('div')} as any,
     {markForCheck: () => {}} as any
@@ -62,8 +73,116 @@ describe('PatchEditorComponent', () => {
     expect(component.operationMode$.value).toBe('collection');
   });
 
+  it('derives hasLinkedRack$ from linked-rack state instead of patch re-emissions', (done) => {
+    const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+      kind: 'unlinked',
+      statusTone: 'neutral',
+      statusLabel: 'Collection-first',
+      description: 'No rack is linked yet.',
+      rackId: null
+    });
+    const component = new PatchEditorComponent(
+      {} as any,
+      {
+        singlePatchData$: of(undefined),
+        linkedRackState$
+      } as any,
+      {} as any,
+      {nativeElement: document.createElement('div')} as any,
+      {markForCheck: () => {}} as any
+    );
+    const values: boolean[] = [];
+    const sub = component.hasLinkedRack$.subscribe(value => values.push(value));
+
+    linkedRackState$.next({
+      kind: 'linked',
+      statusTone: 'positive',
+      statusLabel: 'Linked rack active',
+      description: 'Linked.',
+      rackId: 42
+    });
+
+    setTimeout(() => {
+      expect(values).toEqual([false, true]);
+      sub.unsubscribe();
+      done();
+    }, 0);
+  });
+
   it('exposes collection and linked-rack operation modes', () => {
     expect(PATCH_EDITOR_OPERATION_MODE_OPTIONS.map(option => option.mode)).toEqual(['linkedRack', 'collection']);
+  });
+
+  it('uses the rack summary line for divergence messaging when the linked rack is out of sync', () => {
+    const component = createPatchEditorComponent();
+
+    const message = component.getRackToolbarSummary({
+      kind: 'ready',
+      description: 'Click ins and outs to wire connections.',
+      rack: {name: 'Studio Current', rows: 4, hp: 104} as any,
+      rows: [],
+      moduleCount: 8
+    } as any, {
+      orphanedModules: [],
+      excessInstances: [],
+      totalOrphanedInstances: 2,
+      clean: false
+    }, 1);
+
+    expect(message).toContain('Linked rack warning');
+    expect(message).toContain('2 instances sit outside the current rack');
+    expect(message).toContain('1 connection affected');
+  });
+
+  it('keeps the rack guidance copy neutral even when divergence exists', () => {
+    const component = createPatchEditorComponent();
+
+    const message = component.getRackWorkspaceMessage({
+      kind: 'ready',
+      description: 'Click ins and outs to wire connections.',
+      rows: [],
+      moduleCount: 8
+    } as any);
+
+    expect(message).toBe('Click ins and outs to wire connections.');
+  });
+
+  it('shows the rack summary in the toolbar when divergence is clean', () => {
+    const component = createPatchEditorComponent();
+
+    const message = component.getRackToolbarSummary({
+      kind: 'ready',
+      description: 'Click ins and outs to wire connections.',
+      rack: {name: 'Studio Current', rows: 4, hp: 104} as any,
+      rows: [],
+      moduleCount: 36
+    } as any, {
+      orphanedModules: [],
+      excessInstances: [],
+      totalOrphanedInstances: 0,
+      clean: true
+    }, 0);
+
+    expect(message).toBe('Studio Current · 4 rows · 104 HP · 36 placed modules');
+  });
+
+  it('shows collection-mode guidance in the card description', () => {
+    const component = createPatchEditorComponent();
+
+    const message = component.getWorkspaceDescription(
+      'collection',
+      {
+        kind: 'unlinked',
+        description: 'unused',
+        rows: [],
+        moduleCount: 0
+      } as any,
+      null,
+      0
+    );
+
+    expect(message).toContain('Browse your collection');
+    expect(message).toContain('add copies to the patch');
   });
   
   it('returns all cards when search query is empty', () => {

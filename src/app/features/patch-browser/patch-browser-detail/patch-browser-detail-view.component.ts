@@ -8,6 +8,7 @@ import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { combineLatest } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
   take,
@@ -69,13 +70,18 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
       this.route.params.pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
         filter(x => x > 0),
-        take(1)
+        distinctUntilChanged()
       ),
-      this.userManagementService.loggedUser$.pipe(take(1))
-    ]).subscribe(([patchId, user]) => {
-      this.dataService.setPublicDetailMode(!user);
-      this.dataService.updateSinglePatchData$.next(patchId);
-    });
+      this.userManagementService.loggedUser$.pipe(
+        map(user => !user),
+        distinctUntilChanged()
+      )
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([patchId, usePublicDetailMode]) => {
+        this.dataService.setPublicDetailMode(usePublicDetailMode);
+        this.dataService.updateSinglePatchData$.next(patchId);
+      });
     
     if (!this.ignoreSeo) {
       combineLatest([
