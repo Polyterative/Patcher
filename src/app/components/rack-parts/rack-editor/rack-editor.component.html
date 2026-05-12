@@ -32,14 +32,17 @@
       <div class="col gap1 transition-all">
         @if (dataService.isCurrentRackPrivate$|async) {
           <app-advice-tooltip
+            title="Private rack"
+            tone="warning"
             [@enter]="{ value: '', params: { delay: 250}}"
           >
-            This rack private. It won't be listed in search but will be accessible to anyone who has
-            the URL
+            This rack is private. It won't appear in search, but anyone with the URL can still open it.
           </app-advice-tooltip>
         }
         @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
           <app-advice-tooltip
+            title="Tip"
+            tone="info"
             [@enter]="{ value: '', params: { delay: 500}}"
           >
             Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.

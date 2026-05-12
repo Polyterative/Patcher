@@ -1,6 +1,13 @@
-<div class="item">
-  <span class="item__icon" aria-hidden="true">💡</span>
-  <div class="item__content">
-    <ng-content></ng-content>
+<div class="advice-card" [attr.data-tone]="tone" role="note">
+  <div class="advice-card__icon-shell" aria-hidden="true">
+    <mat-icon class="advice-card__icon">{{ iconName }}</mat-icon>
+  </div>
+  <div class="advice-card__body">
+    @if (title) {
+      <div class="advice-card__title">{{ title }}</div>
+    }
+    <div class="advice-card__content">
+      <ng-content></ng-content>
+    </div>
   </div>
 </div>

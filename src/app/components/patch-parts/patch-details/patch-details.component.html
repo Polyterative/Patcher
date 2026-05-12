@@ -5,6 +5,8 @@
   <div class="patch-details-shell">
     @if (dataService.isCurrentPatchPrivate$|async) {
       <app-advice-tooltip
+        title="Private patch"
+        tone="warning"
         [@enter]="{ value: '', params: { delay: 250}}"
       >
         This patch is private. It won't appear in public listings, and signed-out visitors can't open it from a shared URL.
