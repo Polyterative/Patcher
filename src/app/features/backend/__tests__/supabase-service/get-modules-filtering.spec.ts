@@ -228,7 +228,86 @@ describe('SupabaseService - GET.modules filtering', () => {
       }
     });
   }, TEST_TIMEOUT);
-  
+
+  it('applies a server-side ilike filter for module name searches before client refinement', (done) => {
+    const mock = chainableWithIlike({
+      data: [{id: 1, name: 'Rings', description: 'Resonator'}],
+      count: 1,
+      error: null
+    });
+    const ilikeSpy = spyOn(mock, 'ilike').and.callThrough();
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.modules(0, 10, 'rings').subscribe({
+      next: () => {
+        expect(ilikeSpy).toHaveBeenCalledWith('name', '%rings%');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('falls back to the broad client-side scan when narrowed ilike results are empty', (done) => {
+    const queries = (service as any).queries;
+    spyOn(supabaseClient, 'from').and.returnValue(chainableWithIlike({
+      data: [{id: 1, name: 'Lùbadh', description: 'Dual looper'}],
+      count: 1,
+      error: null
+    }));
+    const fetchAllRowsSpy = spyOn(queries as any, 'fetchAllRows').and.returnValues(
+      Promise.resolve({data: [], error: null}),
+      Promise.resolve({
+        data: [
+          {id: 1, name: 'Lùbadh', description: 'Dual looper'},
+          {id: 2, name: 'Mimeophon', description: 'Stereo delay'}
+        ],
+        error: null
+      })
+    );
+
+    service.GET.modules(0, 10, 'Lubadh').subscribe({
+      next: (result: any) => {
+        expect(fetchAllRowsSpy.calls.count()).toBe(2);
+        expect(result.count).toBe(1);
+        expect(result.data[0].name).toBe('Lùbadh');
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('returns an empty result when neither narrowed nor fallback matching finds a module', (done) => {
+    const queries = (service as any).queries;
+    spyOn(queries as any, 'fetchAllRows').and.returnValues(
+      Promise.resolve({data: [], error: null}),
+      Promise.resolve({
+        data: [
+          {id: 1, name: 'Rings', description: 'Resonator'},
+          {id: 2, name: 'Belgrad', description: 'Dual peak filter'}
+        ],
+        error: null
+      })
+    );
+
+    service.GET.modules(0, 10, 'zzqxv').subscribe({
+      next: (result: any) => {
+        expect(result.count).toBe(0);
+        expect(result.data).toEqual([]);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+   
   it('should apply filter on module_tags.tagid when tagIds are provided', (done) => {
     const mock = chainableWithIlike({data: [], count: 0, error: null});
     const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);

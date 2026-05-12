@@ -88,6 +88,17 @@ describe('PatchBrowserDataService', () => {
     tick();
     expect(canReset).toBeTrue();
   }));
+
+  it('passes the debounced search term to GET.patches', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.search.control.setValue('rack');
+
+    tick(750);
+
+    const args = backend.GET.patches.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('rack');
+    service.ngOnDestroy();
+  }));
   
   it('pageEvent$ updates skip/take and triggers reload', fakeAsync(() => {
     const {service, backend} = build();
