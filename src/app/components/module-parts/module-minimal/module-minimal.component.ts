@@ -131,6 +131,10 @@ export class ModuleMinimalComponent implements OnInit, OnDestroy {
     this.isTagChooserOpen = isOpen;
   }
 
+  shouldShowPanelVariantsBadge(): boolean {
+    return (this.data?.panels?.length ?? 0) > 1 && !this.viewConfig?.hidePanelsOptions;
+  }
+
   shouldRenderActionFooter(
     singleModuleData: MinimalModule | undefined,
     currentRackData: RackMinimal | undefined,

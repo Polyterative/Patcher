@@ -43,6 +43,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { LibShowcaseGridComponent } from 'src/app/components/rack-parts/rack-editor/lib-showcase-grid/lib-showcase-grid.component';
 import { FormValidPipe } from 'src/app/shared-interproject/components/@smart/mat-form-entity/is-control-valid.pipe';
 import { StatisticsModule } from 'src/app/components/shared-atoms/statistics/statistics.module';
@@ -112,6 +113,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     LibGraphModule,
     PatchMicroModule,
     MatSlideToggleModule,
+    MatButtonToggleModule,
     LibShowcaseGridComponent,
     FormValidPipe,
     StatisticsModule,

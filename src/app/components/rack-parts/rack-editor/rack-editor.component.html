@@ -239,16 +239,19 @@
                      <div class="rackEditorFloatingOptions__analysisFocus"
                           role="group"
                           aria-label="Signal focus area">
-                       @for (option of signalFocusOptions; track option.value) {
-                         <button type="button"
-                                 class="rackEditorFloatingOptions__analysisFocusButton"
-                                 [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
-                                 [attr.aria-pressed]="bag.signalFocusArea === option.value"
-                                 (click)="dataService.signalFocusArea$.next(option.value)"
-                         >
-                           {{ option.label }}
-                         </button>
-                       }
+                        @for (option of signalFocusOptions; track option.value) {
+                          <button type="button"
+                                  class="rackEditorFloatingOptions__analysisFocusButton"
+                                  [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
+                                  [attr.aria-pressed]="bag.signalFocusArea === option.value"
+                                  (click)="dataService.signalFocusArea$.next(option.value)"
+                          >
+                            @if (bag.signalFocusArea === option.value) {
+                              <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                            }
+                            {{ option.label }}
+                          </button>
+                        }
                      </div>
                      <div class="rackEditorFloatingOptions__analysisLegend">
                        @for (item of signalAnalysisLegendItems; track item.label) {
@@ -269,16 +272,19 @@
                       role="group"
                       aria-label="Rack analysis mode"
                 >
-                  @for (option of analysisModeOptions; track option.mode) {
-                    <button type="button"
-                            class="rackEditorFloatingOptions__analysisModeButton"
-                            [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
-                            [attr.aria-pressed]="currentAnalysisMode === option.mode"
-                            (click)="dataService.analysisMode$.next(option.mode)"
-                    >
-                      {{ option.label }}
-                    </button>
-                  }
+                   @for (option of analysisModeOptions; track option.mode) {
+                     <button type="button"
+                             class="rackEditorFloatingOptions__analysisModeButton"
+                             [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
+                             [attr.aria-pressed]="currentAnalysisMode === option.mode"
+                             (click)="dataService.analysisMode$.next(option.mode)"
+                     >
+                       @if (currentAnalysisMode === option.mode) {
+                         <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                       }
+                       {{ option.label }}
+                     </button>
+                   }
                 </div>
               </div>
             @if (viewOptionsExpanded) {
