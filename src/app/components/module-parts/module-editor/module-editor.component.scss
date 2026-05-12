@@ -100,6 +100,10 @@
   }
 }
 
+.setup-subblock > .row:first-child {
+  margin-bottom: 0.2rem;
+}
+
 .setup-field-stack > lib-mat-form-entity {
   display: block;
   min-width: 0;
