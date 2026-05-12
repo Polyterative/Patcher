@@ -3,110 +3,122 @@
 
 @use "src/app/style/brand-resources" as *;
 
-.delete-instance-btn {
-  color: $brand-warning;
-}
-
-.module-card-body {
-  position: relative;
-
-  .module-card-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 624.9375rem;
-    backdrop-filter: blur(0.25rem) brightness(1.7);
-    opacity: 0.6;
-    transition: opacity 175ms ease-in-out;
-  }
-
-  &:hover .module-card-actions {
-    opacity: 1;
-  }
-}
-
-.leftBorderS {
-  border-left-width: .5rem;
-  border-left-style: solid;
-  border-left-color: #778698;
-  padding-left:      .5rem;
-}
-
-.connCommitter {
-  //background-color: grey;
-  padding: .5rem;
-  border:  0.2rem dotted #325574;
-}
-
-//$palette: (
-//            a : #c8b78c,
-//            b : #87bbe3,
-//            c : #dda6b3,
-//            d : #87c6b7,
-//            e : #b5b7d7
-//          );
-
-
 $palette: (
-            a : #EE8BB5,
-            b : #5ED0B4,
-            c : #E89D70,
-            d : #AAA8EA,
-            e : #B1C06F
-          );
-
-
-.connections {
-  & h3 {
-    padding-left: 1em !important
-  }
-
-  background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
-}
-
-
-.instances {
-  background-color: color.adjust(map.get($palette, c), $alpha: -0.7);
-}
+             a : #EE8BB5,
+             b : #5ED0B4,
+             c : #E89D70,
+             d : #AAA8EA,
+             e : #B1C06F
+           );
 
 :host {
   display: block;
   width: 100%;
   min-width: 0;
-  --patch-editor-search-width: 21rem;
-  --patch-editor-inline-control-width: 14.5rem;
 }
 
-.patch-editor-inline-controls {
+.connections {
+  & h3 {
+    padding-left: 1em !important;
+  }
+
+  background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
+}
+
+.delete-instance-btn {
+  color: $brand-warning;
+}
+
+.patch-editor-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.patch-editor-workspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.patch-editor-workspace__summary {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.9rem 1rem;
+}
+
+.patch-editor-workspace__copy {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  flex: 1 1 21rem;
+}
+
+.patch-editor-workspace__kicker {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(26, 61, 96, 0.64);
+}
+
+.patch-editor-workspace__title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.patch-editor-workspace__description {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.42;
+}
+
+.patch-editor-workspace__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.patch-editor-meta-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.55rem;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(27, 49, 74, 0.78);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.patch-editor-meta-chip--accent {
+  background: rgba(94, 208, 180, 0.14);
+  color: rgba(19, 94, 76, 0.9);
 }
 
 .patch-editor-operation-mode {
   display: grid;
-  gap: 0.45rem;
-  margin-bottom: 0.9rem;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(245, 249, 252, 0.72);
+}
+
+.patch-editor-operation-mode__header {
+  display: grid;
+  gap: 0.25rem;
 }
 
 .patch-editor-operation-mode__title {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
-.patch-editor-operation-mode__hint,
-.patch-editor-linked-rack__copy {
-  margin: 0;
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: rgba(30, 52, 78, 0.52);
+.patch-editor-operation-mode__hint {
+  font-size: 0.84rem;
+  line-height: 1.4;
 }
 
 .patch-editor-operation-mode__buttons {
@@ -116,11 +128,11 @@ $palette: (
 }
 
 .patch-editor-operation-mode__button {
-  min-height: 2.4rem;
-  padding: 0.45rem 0.9rem;
+  min-height: 2.45rem;
+  padding: 0.45rem 0.95rem;
   border: 1px solid rgba(47, 88, 129, 0.18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.9);
   color: inherit;
   font: inherit;
   font-size: 0.875rem;
@@ -131,7 +143,7 @@ $palette: (
 
 .patch-editor-operation-mode__button--active {
   border-color: rgba(47, 88, 129, 0.48);
-  background: rgba(94, 208, 180, 0.14);
+  background: rgba(94, 208, 180, 0.16);
   box-shadow: 0 0 0 1px rgba(94, 208, 180, 0.18);
 }
 
@@ -141,98 +153,193 @@ $palette: (
   pointer-events: none;
 }
 
-
-
-:host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
-  flex: 0 0 var(--patch-editor-inline-control-width);
-  max-width: var(--patch-editor-inline-control-width);
+.patch-editor-mode-panel {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(246, 249, 252, 0.74);
 }
 
-:host ::ng-deep .patch-editor-inline-controls .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-.patch-editor-floating-search {
-  position: fixed;
-  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem)));
-  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
-  z-index: 99;
+.patch-editor-mode-panel__header {
   display: flex;
-  align-items: center;
-  width: min(var(--patch-editor-search-width), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right) - var(--module-editor-close-fab-width, 12.6rem) - var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem))));
-  min-height: var(--module-editor-close-fab-height, 3.5rem);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--app-floating-surface-radius, 0.8rem);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(var(--app-floating-surface-blur, 0.375rem));
-  box-shadow: var(--app-floating-surface-shadow, 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18));
-  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
 }
 
-:host ::ng-deep .patch-editor-floating-search > lib-mat-form-entity {
-  display: block;
-  flex: 1 1 auto;
+.patch-editor-mode-panel__title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.94);
+}
+
+.patch-editor-mode-panel__meta {
+  font-size: 0.82rem;
+}
+
+.patch-editor-mode-panel__copy {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.patch-editor-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(11rem, 0.8fr));
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(252, 253, 255, 0.88);
+}
+
+.patch-editor-controls__search {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
   min-width: 0;
 }
 
-:host ::ng-deep .patch-editor-floating-search .mat-mdc-form-field {
-  width: 100%;
-  margin: 0;
+.patch-editor-controls__clear {
+  margin-top: 0.25rem;
+  white-space: nowrap;
 }
 
-:host ::ng-deep .patch-editor-floating-search .mat-mdc-form-field-subscript-wrapper {
+:host ::ng-deep .patch-editor-controls .patch-editor-control,
+:host ::ng-deep .patch-editor-controls__search > lib-mat-form-entity {
+  display: block;
+  min-width: 0;
+}
+
+:host ::ng-deep .patch-editor-controls .mat-mdc-form-field-subscript-wrapper {
   display: none;
 }
 
-@media (max-width: 61.25rem) {
-  :host {
-    --patch-editor-inline-control-width: calc(50% - 0.3rem);
-  }
+.patch-editor-empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+  padding: 1rem 1.05rem;
+  border-radius: 1rem;
+  background: rgba(243, 248, 252, 0.78);
+}
 
-  :host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
-    flex-basis: var(--patch-editor-inline-control-width);
-    max-width: var(--patch-editor-inline-control-width);
+.patch-editor-empty-state__title {
+  font-weight: 700;
+}
+
+.patch-editor-empty-state__copy {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.module-card-body {
+  position: relative;
+  padding-top: 0.15rem;
+
+  &:hover .module-card-actions {
+    opacity: 1;
   }
 }
 
-@media (max-width: 35rem) {
-  :host {
-    --patch-editor-inline-control-width: 100%;
+.module-card-actions {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.15rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.25rem 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  opacity: 0.72;
+  transition: opacity 175ms ease-in-out;
+}
+
+.module-card-actions__metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding-right: 0.05rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: rgba(27, 49, 74, 0.68);
+
+  mat-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    font-size: 0.9rem;
+  }
+}
+
+.patch-editor-rack-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 244, 221, 0.72);
+  color: rgba(104, 67, 15, 0.9);
+  cursor: help;
+}
+
+.patch-editor-rack-warning__copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.patch-editor-rack-warning__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.patch-editor-rack-warning__description {
+  font-size: 0.86rem;
+}
+
+@media (max-width: 68rem) {
+  .patch-editor-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .patch-editor-floating-search {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
-    left: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-left));
-    width: auto;
-    bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + 3.8rem);
+  .patch-editor-controls__search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 44rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.85rem 0.9rem;
+  }
+
+  .patch-editor-controls__search {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 72.5rem) {
-  .module-card-body .module-card-actions {
-    gap: 0.65rem;
+  .module-card-actions {
+    gap: 0.6rem;
     opacity: 1;
     backdrop-filter: none;
   }
 
-  .module-card-body .module-card-actions button[mat-icon-button] {
+  .module-card-actions button[mat-icon-button] {
     width: var(--app-touch-target-comfortable-min, 3rem);
     height: var(--app-touch-target-comfortable-min, 3rem);
-  }
-
-  .patch-editor-floating-search {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
-    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.3rem));
-    width: min(var(--app-floating-tablet-side-panel-width, 22rem), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 0.75rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right)));
   }
 }
 
 @media (hover: none), (pointer: coarse) {
-  .module-card-body .module-card-actions {
+  .module-card-actions {
     opacity: 1;
   }
 
-  .module-card-body .module-card-actions button[mat-icon-button] {
+  .module-card-actions button[mat-icon-button] {
     width: var(--app-touch-target-comfortable-min, 3rem);
     height: var(--app-touch-target-comfortable-min, 3rem);
   }
@@ -536,5 +643,3 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   font-size: 0.72rem;
   color: #6c7f92;
 }
-
-
