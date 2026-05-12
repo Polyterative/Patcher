@@ -12,6 +12,7 @@ import {
   Subject
 } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
@@ -197,7 +198,7 @@ export class ModuleBrowserDataService extends SubManager {
         type: FormTypes.AUTOCOMPLETE,
         options$: this.backend.GET.manufacturers(0, 9999, 'id,name')
           .pipe(
-            map(x => x.data.map(z => ({id: z.id.toString(), name: z.name}))),
+            map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
             startWith([]),
             takeUntil(this.destroy$),
             share()
@@ -348,19 +349,23 @@ export class ModuleBrowserDataService extends SubManager {
             : undefined;
           
           return this.backend.GET.modules(
-            skip,
-            (skip + take) - 1,
-            filter,
-            sortCol || null,
-            sortDir,
-            parseInt(getCleanedValueId(this.fields.manufacturers.control)),
-            parseInt(this.fields.hp.control.value),
-            this.fields.hpCondition.control.value?.id,
-            standard,
-            this.fields.description.control.value,
-            true,
-            tagIds
-          );
+              skip,
+              (skip + take) - 1,
+              filter,
+              sortCol || null,
+              sortDir,
+              parseInt(getCleanedValueId(this.fields.manufacturers.control)),
+              parseInt(this.fields.hp.control.value),
+              this.fields.hpCondition.control.value?.id,
+              standard,
+              this.fields.description.control.value,
+              true,
+              tagIds
+            )
+            .pipe(catchError(error => {
+              console.error('Failed to load modules:', error);
+              return of({data: [], count: 0});
+            }));
         }),
         takeUntil(this.destroy$)
       )
