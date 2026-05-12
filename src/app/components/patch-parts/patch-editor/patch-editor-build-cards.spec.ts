@@ -31,7 +31,7 @@ function fakeConnection(instanceIdA: number, instanceIdB: number): PatchConnecti
 
 describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
-    return new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    return new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
   }
   
   it('module with 0 instances produces one card with no instanceId and negative trackingId', () => {
@@ -113,7 +113,7 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
 
 describe('PatchEditorComponent.buildConnectionNames (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
-    return new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    return new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
   }
   
   it('returns empty array when instanceId is undefined', () => {
