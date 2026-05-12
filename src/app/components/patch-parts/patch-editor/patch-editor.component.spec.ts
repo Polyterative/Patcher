@@ -709,4 +709,183 @@ describe('PatchEditorComponent', () => {
       expect(component.expandedRackModule).toBeNull();
     });
   });
+
+  describe('detectLinkedRackDivergence', () => {
+    const { detectLinkedRackDivergence } = require('./patch-editor.component');
+
+    const mkPreviewState = (modules: Array<{id: number; name: string; row: number; col: number}>): LinkedRackPreviewState => ({
+      kind: 'ready',
+      description: '',
+      rack: { id: 1, name: 'Test', hp: 84, rows: 1 } as any,
+      rows: [{
+        row: 0,
+        modules: modules.map(m => ({
+          trackingId: m.id * 1000,
+          module: { id: m.id, name: m.name } as any,
+          row: m.row,
+          column: m.col,
+          selectedPanelId: null
+        }))
+      }],
+      moduleCount: modules.length
+    });
+
+    it('returns clean when rack and instances match', () => {
+      const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const result = detectLinkedRackDivergence(state, instances, []);
+      expect(result.clean).toBeTrue();
+      expect(result.totalOrphanedInstances).toBe(0);
+    });
+
+    it('returns clean when no instances exist', () => {
+      const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
+      const result = detectLinkedRackDivergence(state, [], []);
+      expect(result.clean).toBeTrue();
+    });
+
+    it('detects orphaned modules (instance for module not in rack)', () => {
+      const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
+      const instances: PatchModuleInstance[] = [
+        {id: 100, module_id: 1} as any,
+        {id: 200, module_id: 99} as any
+      ];
+      const result = detectLinkedRackDivergence(state, instances, []);
+      expect(result.clean).toBeFalse();
+      expect(result.orphanedModules.length).toBe(1);
+      expect(result.orphanedModules[0].moduleId).toBe(99);
+      expect(result.totalOrphanedInstances).toBe(1);
+    });
+
+    it('detects excess instances (more instances than rack positions)', () => {
+      const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
+      const instances: PatchModuleInstance[] = [
+        {id: 100, module_id: 1} as any,
+        {id: 101, module_id: 1} as any,
+        {id: 102, module_id: 1} as any
+      ];
+      const result = detectLinkedRackDivergence(state, instances, []);
+      expect(result.clean).toBeFalse();
+      expect(result.excessInstances.length).toBe(1);
+      expect(result.excessInstances[0].patchInstances).toBe(3);
+      expect(result.excessInstances[0].rackPositions).toBe(1);
+      expect(result.totalOrphanedInstances).toBe(2);
+    });
+
+    it('returns clean when preview is not ready', () => {
+      const state: LinkedRackPreviewState = {
+        kind: 'loading', description: '', rows: [], moduleCount: 0
+      };
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const result = detectLinkedRackDivergence(state, instances, []);
+      expect(result.clean).toBeTrue();
+    });
+
+    it('handles multiple orphaned and excess together', () => {
+      const state = mkPreviewState([
+        {id: 1, name: 'VCA', row: 0, col: 0},
+        {id: 1, name: 'VCA', row: 0, col: 1}
+      ]);
+      const instances: PatchModuleInstance[] = [
+        {id: 100, module_id: 1} as any,
+        {id: 101, module_id: 1} as any,
+        {id: 102, module_id: 1} as any,
+        {id: 200, module_id: 50} as any
+      ];
+      const result = detectLinkedRackDivergence(state, instances, []);
+      expect(result.clean).toBeFalse();
+      expect(result.orphanedModules.length).toBe(1);
+      expect(result.excessInstances.length).toBe(1);
+      expect(result.totalOrphanedInstances).toBe(2);
+    });
+  });
+
+  describe('countOrphanedConnections', () => {
+    const { countOrphanedConnections } = require('./patch-editor.component');
+
+    it('returns 0 when no connections exist', () => {
+      const map = new Map<number, number>([[1000, 100]]);
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      expect(countOrphanedConnections(map, instances, [])).toBe(0);
+    });
+
+    it('returns 0 when all instances are mapped', () => {
+      const map = new Map<number, number>([[1000, 100]]);
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const connections = [{instance_id_a: 100, instance_id_b: 100} as any];
+      expect(countOrphanedConnections(map, instances, connections)).toBe(0);
+    });
+
+    it('counts connections referencing orphaned instances', () => {
+      const map = new Map<number, number>([[1000, 100]]);
+      const instances: PatchModuleInstance[] = [
+        {id: 100, module_id: 1} as any,
+        {id: 200, module_id: 2} as any
+      ];
+      const connections = [
+        {instance_id_a: 100, instance_id_b: 200} as any,
+        {instance_id_a: 200, instance_id_b: null} as any,
+        {instance_id_a: 100, instance_id_b: 100} as any
+      ];
+      expect(countOrphanedConnections(map, instances, connections)).toBe(2);
+    });
+
+    it('returns 0 when all connections have null instance IDs', () => {
+      const map = new Map<number, number>([[1000, 100]]);
+      const instances: PatchModuleInstance[] = [{id: 100, module_id: 1} as any];
+      const connections = [{instance_id_a: null, instance_id_b: null} as any];
+      expect(countOrphanedConnections(map, instances, connections)).toBe(0);
+    });
+  });
+
+  describe('getDivergenceTooltip (buildDivergenceTooltip)', () => {
+    const { buildDivergenceTooltip } = require('./patch-editor.component');
+
+    it('includes orphaned module names', () => {
+      const divergence = {
+        orphanedModules: [{moduleId: 1, moduleName: 'Maths', rackPositions: 0, patchInstances: 2}],
+        excessInstances: [],
+        totalOrphanedInstances: 2,
+        clean: false
+      };
+      const tooltip = buildDivergenceTooltip(divergence, 0);
+      expect(tooltip).toContain('Maths');
+      expect(tooltip).toContain('2 instances');
+      expect(tooltip).toContain('not in rack');
+    });
+
+    it('includes excess instance info', () => {
+      const divergence = {
+        orphanedModules: [],
+        excessInstances: [{moduleId: 1, moduleName: 'VCA', rackPositions: 1, patchInstances: 3}],
+        totalOrphanedInstances: 2,
+        clean: false
+      };
+      const tooltip = buildDivergenceTooltip(divergence, 0);
+      expect(tooltip).toContain('VCA');
+      expect(tooltip).toContain('2 extra instances');
+    });
+
+    it('includes orphaned connection count', () => {
+      const divergence = {
+        orphanedModules: [],
+        excessInstances: [{moduleId: 1, moduleName: 'VCA', rackPositions: 1, patchInstances: 2}],
+        totalOrphanedInstances: 1,
+        clean: false
+      };
+      const tooltip = buildDivergenceTooltip(divergence, 3);
+      expect(tooltip).toContain('3 connections');
+    });
+
+    it('always mentions collection mode', () => {
+      const divergence = {
+        orphanedModules: [{moduleId: 1, moduleName: 'X', rackPositions: 0, patchInstances: 1}],
+        excessInstances: [],
+        totalOrphanedInstances: 1,
+        clean: false
+      };
+      const tooltip = buildDivergenceTooltip(divergence, 0);
+      expect(tooltip).toContain('collection mode');
+    });
+  });
 });
