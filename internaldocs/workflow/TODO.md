@@ -24,7 +24,8 @@
 
 ## Active
 
-- None right now. Pick the next concrete backlog item before starting more implementation work.
+- [~] Patch Builder — Optional Rack Context: add an optional rack association for patches while keeping the existing
+  collection-first editor model; layered execution notes live in `CURRENT_FEATURE.md`.
 
 ---
 
