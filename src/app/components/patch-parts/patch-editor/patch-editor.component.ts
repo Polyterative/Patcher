@@ -160,7 +160,7 @@ const defaultGroupModeId: PatchEditorGroupModeId = 'none';
 const defaultOperationMode: PatchEditorOperationMode = PATCH_EDITOR_OPERATION_MODES.collection;
 
 export const PATCH_EDITOR_OPERATION_MODE_OPTIONS: ReadonlyArray<PatchEditorOperationModeOption> = [
-  {mode: PATCH_EDITOR_OPERATION_MODES.linkedRack, label: 'Linked rack'},
+  {mode: PATCH_EDITOR_OPERATION_MODES.linkedRack, label: 'Rack'},
   {mode: PATCH_EDITOR_OPERATION_MODES.collection, label: 'Collection'}
 ];
 
@@ -1017,23 +1017,6 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.operationMode$.next(mode);
     this.expandedRackTrackingId = null;
     this.expandedRackModule = null;
-  }
-
-  getCollectionResultsSummary(totalCards: number, visibleCards: number, searchQuery: string): string {
-    if (!totalCards) {
-      return 'Your collection is empty here for now.';
-    }
-    if (!searchQuery.trim()) {
-      return `${ totalCards } module card${ totalCards === 1 ? '' : 's' } ready for patching.`;
-    }
-    return `${ visibleCards } of ${ totalCards } module card${ totalCards === 1 ? '' : 's' } match "${ searchQuery }".`;
-  }
-
-  getLinkedRackSummary(preview: LinkedRackPreviewState): string {
-    if (preview.kind !== 'ready' || !preview.rack) {
-      return preview.description;
-    }
-    return `${ preview.rack.name } · ${ preview.rack.rows } row${ preview.rack.rows === 1 ? '' : 's' } · ${ preview.rack.hp } HP`;
   }
 
   getModuleCardConnectionTooltip(card: EditorModuleCard): string {

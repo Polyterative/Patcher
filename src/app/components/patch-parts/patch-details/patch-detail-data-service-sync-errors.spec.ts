@@ -49,7 +49,9 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       },
       GET: {
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
-        patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([]))
+        patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([])),
+        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}})),
+        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}}))
       },
       update: {
         patch: jasmine.createSpy('update.patch').and.returnValue(of({data: [patch()]})),
@@ -162,6 +164,21 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.linkedRackState$.value.kind).toBe('linked');
     expect(service.linkedRackState$.value.statusTone).toBe('positive');
     expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
+  });
+
+  it('loads the linked rack through public reads for non-owner patch detail views', () => {
+    const {service, backend} = build();
+    backend.auth.getUserSession$.and.returnValue(of({id: 'viewer-1'}));
+    service.setPublicDetailMode(true);
+    service.singlePatchData$.next(patch({
+      id: 44,
+      author: {id: 'owner-1', username: 'owner'},
+      linked_rack_id: 42
+    }));
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(42);
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackName).toBe('Public Rack');
   });
 
   it('persists linked-rack changes without touching editor connections', () => {

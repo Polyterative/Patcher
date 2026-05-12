@@ -184,6 +184,10 @@ $floatingSurfaceMaxWidth: 16.5rem;
 
 .rackEditorFloatingOptions__analysisFocusButton {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   border: 0.0625rem solid rgba(62, 99, 138, 0.22);
   border-radius: 999px;
   min-width: 0;
@@ -214,6 +218,7 @@ $floatingSurfaceMaxWidth: 16.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.45rem;
   border: 0.0625rem solid rgba(62, 99, 138, 0.25);
   border-radius: 999px;
   min-width: 0;
@@ -228,6 +233,14 @@ $floatingSurfaceMaxWidth: 16.5rem;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, color 140ms ease;
+}
+
+.rackEditorFloatingOptions__segmentedIcon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .rackEditorFloatingOptions__analysisModeButton:hover {

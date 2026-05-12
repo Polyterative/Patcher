@@ -12,7 +12,6 @@ import {
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Subject } from 'rxjs';
 import {
-  LinkedRackUiState,
   PatchDetailDataService
 } from 'src/app/components/patch-parts/patch-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
@@ -65,28 +64,6 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
 
   clearLinkedRack(): void {
     this.dataService.clearLinkedRack();
-  }
-
-  getLinkedRackStatusClass(state: LinkedRackUiState | null | undefined): string {
-    switch (state?.statusTone) {
-      case 'positive':
-        return 'patch-linked-rack__status--positive';
-      case 'warning':
-        return 'patch-linked-rack__status--warning';
-      default:
-        return 'patch-linked-rack__status--neutral';
-    }
-  }
-
-  getLinkedRackAvailabilityLabel(optionCount: number | null | undefined): string {
-    const count = optionCount ?? 0;
-    if (count === 0) {
-      return 'No saved racks yet';
-    }
-    if (count === 1) {
-      return '1 rack available';
-    }
-    return `${ count } racks available`;
   }
   
 }

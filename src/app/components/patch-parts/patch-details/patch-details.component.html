@@ -20,47 +20,16 @@
       @if ({
         length: (bag.connections.length)
       }; as bagA) {
-        <div class="patch-details-intro">
-          <div class="patch-details-intro__copy">
-            <div class="patch-details-intro__kicker">{{ isEditing ? 'Editing overview' : 'Patch flow' }}</div>
-            <div class="patch-details-intro__title">
-              @if (bagA.length > 0) {
-                {{ isEditing ? 'Connections update live while you edit.' : 'Signal flow at a glance.' }}
-              } @else {
-                {{ isEditing ? 'Start wiring the patch.' : 'No connections recorded yet.' }}
-              }
-            </div>
-            <p class="patch-details-intro__description">
-              @if (bagA.length > 0) {
-                {{ isEditing
-                  ? 'Use the editor below to add, remove, or refine connections while the graph reflects the current state.'
-                  : 'The graph and list stay in sync so you can inspect the patch visually or connection by connection.' }}
-              } @else {
-                {{ isEditing
-                  ? 'Select an output and an input to begin building the patch. You can still link a rack for spatial context without changing how the patch saves.'
-                  : 'Open the editor to start patching, then come back here for a clean read-only overview.' }}
-              }
-            </p>
-          </div>
-          @if (!isEditing && bag.linkedRackState?.kind === 'linked' && bag.linkedRackState.rackName) {
-            <div class="patch-details-intro__linked-rack">
-              <div class="patch-details-intro__linked-rack-label">Linked rack</div>
-              <div class="patch-details-intro__linked-rack-name">{{ bag.linkedRackState.rackName }}</div>
-            </div>
-          }
-        </div>
         <div class="patch-details-content"
              [class.patch-details-content--has-connections]="!isEditing && bagA.length > 0">
           @if (bagA.length > 0) {
-            <lib-hero-content-card [titleNormal]="isEditing ? 'Live graph' : 'Connections graph'"
-                                   class="patch-details-graph"
-            >
+            <div class="patch-details-graph">
               <lib-clean-card>
                 <app-patch-graph [progressiveRender]="!isEditing"
                                    [animateGraphBuild]="isEditing"
                 ></app-patch-graph>
               </lib-clean-card>
-            </lib-hero-content-card>
+            </div>
           } @else {
             <div class="patch-details-empty-state" [@enter]="{ value: '', params: { delay: 150 } }">
               <mat-icon>cable</mat-icon>
