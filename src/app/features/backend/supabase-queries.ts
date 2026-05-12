@@ -149,6 +149,12 @@ function applyClientSideSearchFilter<T>(
   };
 }
 
+function escapeIlikePattern(value: string): string {
+  return value.replaceAll('\\', '\\\\')
+    .replaceAll('%', '\\%')
+    .replaceAll('_', '\\_');
+}
+
 
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
@@ -715,77 +721,160 @@ export class SupabaseQueriesService {
       ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
       : QueryJoins.module_tags;
 
-    const buildQuery = (query: any) => {
-      let builtQuery = query.select(`
-                              id,name,hp,description,public,created,updated,
-                              ${ QueryJoins.manufacturer },
-                              ${ QueryJoins.standard },
-                              ${ QueryJoins.module_panels },
-                              ${ moduleTagsJoin }
-                            `, {count: 'exact'});
-      
+    const applyBaseFilters = (builtQuery: any, applyTextFilters = false) => {
+      let nextQuery = builtQuery;
+
       if (onlyPublic === true) {
-        builtQuery = builtQuery.filter('public', 'eq', true);
+        nextQuery = nextQuery.filter('public', 'eq', true);
       }
-      
+
       if (withHP) {
         if (withHpCondition === '=' || withHpCondition === undefined) {
-          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+          nextQuery = nextQuery.filter('hp', 'eq', withHP);
         } else if (withHpCondition === '>') {
-          builtQuery = builtQuery.filter('hp', 'gt', withHP);
+          nextQuery = nextQuery.filter('hp', 'gt', withHP);
         } else if (withHpCondition === '<') {
-          builtQuery = builtQuery.filter('hp', 'lt', withHP);
+          nextQuery = nextQuery.filter('hp', 'lt', withHP);
         } else if (withHpCondition === '>=') {
-          builtQuery = builtQuery.filter('hp', 'gte', withHP);
+          nextQuery = nextQuery.filter('hp', 'gte', withHP);
         } else if (withHpCondition === '<=') {
-          builtQuery = builtQuery.filter('hp', 'lte', withHP);
+          nextQuery = nextQuery.filter('hp', 'lte', withHP);
         } else if (withHpCondition === '!=') {
-          builtQuery = builtQuery.filter('hp', 'neq', withHP);
+          nextQuery = nextQuery.filter('hp', 'neq', withHP);
         } else {
-          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+          nextQuery = nextQuery.filter('hp', 'eq', withHP);
         }
       }
-      
+
       if (manufacturerId) {
-        builtQuery = builtQuery.filter('manufacturerId', 'eq', manufacturerId);
+        nextQuery = nextQuery.filter('manufacturerId', 'eq', manufacturerId);
       }
-      
+
       if (standard !== undefined) {
-        builtQuery = builtQuery.filter('standard', 'eq', standard);
+        nextQuery = nextQuery.filter('standard', 'eq', standard);
       }
-      
+
+      if (applyTextFilters) {
+        if (nameQuery.length > 0) {
+          nextQuery = nextQuery.ilike('name', `%${ escapeIlikePattern(nameQuery) }%`);
+        }
+
+        if (descriptionQuery.length > 0) {
+          nextQuery = nextQuery.ilike('description', `%${ escapeIlikePattern(descriptionQuery) }%`);
+        }
+      }
+
       if (hasTagFilter) {
-        builtQuery = (builtQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
+        nextQuery = (nextQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
       }
-      
-      return builtQuery
-        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
-        .limit(1, {foreignTable: DbPaths.module_panels})
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+
+      return nextQuery;
+    };
+
+    const buildDetailedQuery = (query: any) => applyBaseFilters(
+      query.select(`
+                    id,name,hp,description,public,created,updated,
+                    ${ QueryJoins.manufacturer },
+                    ${ QueryJoins.standard },
+                    ${ QueryJoins.module_panels },
+                    ${ moduleTagsJoin }
+                  `, {count: 'exact'})
+    )
+      .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
+      .limit(1, {foreignTable: DbPaths.module_panels})
+      .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+
+    const buildSearchRowsQuery = (query: any, applyTextFilters = false) => {
+      const lightweightSelect = hasTagFilter
+        ? `id,name,description,${ DbPaths.module_tags }!inner(id)`
+        : 'id,name,description';
+
+      return applyBaseFilters(
+        query.select(lightweightSelect, {count: 'exact'}),
+        applyTextFilters
+      ).order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
     };
 
     if (!requiresClientTextFiltering) {
-      return rxFrom(buildQuery(this.supabase.from(DbPaths.modules)).range(from, to))
+      return rxFrom(buildDetailedQuery(this.supabase.from(DbPaths.modules)).range(from, to))
         .pipe(remapErrors());
     }
 
     return rxFrom((async () => {
-      const response = await this.fetchAllRows<any>(DbPaths.modules, buildQuery);
-      if (response.error) {
-        return response;
+      const filterPredicate = (module: any) =>
+        matchesSearchQuery(nameQuery, module?.name)
+        && matchesSearchQuery(descriptionQuery, module?.description);
+
+      const narrowedSearchResponse = await this.fetchAllRows<any>(
+        DbPaths.modules,
+        (query: any) => buildSearchRowsQuery(query, true)
+      );
+      if (narrowedSearchResponse.error) {
+        return narrowedSearchResponse;
       }
-      
-      return applyClientSideSearchFilter(
+
+      let filteredSearchRows = applyClientSideSearchFilter(
         {
-          ...response,
-          count: response.data.length
+          ...narrowedSearchResponse,
+          count: narrowedSearchResponse.data.length
         },
         from,
         to,
-        (module: any) =>
-          matchesSearchQuery(nameQuery, module?.name)
-          && matchesSearchQuery(descriptionQuery, module?.description)
+        filterPredicate
       );
+
+      if (filteredSearchRows.count === 0) {
+        const fallbackSearchResponse = await this.fetchAllRows<any>(
+          DbPaths.modules,
+          (query: any) => buildSearchRowsQuery(query, false)
+        );
+        if (fallbackSearchResponse.error) {
+          return fallbackSearchResponse;
+        }
+
+        filteredSearchRows = applyClientSideSearchFilter(
+          {
+            ...fallbackSearchResponse,
+            count: fallbackSearchResponse.data.length
+          },
+          from,
+          to,
+          filterPredicate
+        );
+      }
+
+      if (filteredSearchRows.count === 0) {
+        return filteredSearchRows;
+      }
+
+      const pageIds = (filteredSearchRows.data ?? [])
+        .map((module: any) => module?.id)
+        .filter((id: number | undefined): id is number => Number.isFinite(id));
+
+      if (pageIds.length === 0) {
+        return {
+          ...filteredSearchRows,
+          data: []
+        };
+      }
+
+      const detailResponse = await buildDetailedQuery(this.supabase.from(DbPaths.modules))
+        .filter('id', 'in', `(${ pageIds.join(',') })`)
+        .range(0, pageIds.length - 1);
+      if (detailResponse.error) {
+        return detailResponse;
+      }
+
+      const detailRows = Array.isArray(detailResponse.data) ? detailResponse.data : [];
+      const orderedPageRows = pageIds
+        .map((id) => detailRows.find((row: any) => row?.id === id))
+        .filter(Boolean);
+
+      return {
+        ...detailResponse,
+        data: orderedPageRows,
+        count: filteredSearchRows.count
+      };
     })()).pipe(remapErrors());
   }
   

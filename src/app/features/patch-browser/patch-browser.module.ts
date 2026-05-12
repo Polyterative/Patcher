@@ -27,6 +27,7 @@ import { PageHeaderModule } from 'src/app/shared-interproject/components/@visual
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { WidthLimiterModule } from 'src/app/shared-interproject/components/@visual/width-limiter/width-limiter.module';
 import { generateUranusRoutes } from 'src/app/shared-interproject/routing-layouts/uranus/uranus.module';
+import { AutoUpdateLoadingIndicatorModule } from '../../shared-interproject/components/@smart/auto-update-loading-indicator/auto-update-loading-indicator.module';
 import { PatchListModule } from '../../components/patch-list/patch-list.module';
 import { LocalDataFilterModule } from '../../components/shared-atoms/local-data-filter/local-data-filter.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
@@ -102,6 +103,7 @@ const parentPrefix = 'patches';
     MatPaginatorModule,
     BrandPrimaryButtonModule,
     AutoContentLoadingIndicatorModule,
+    AutoUpdateLoadingIndicatorModule,
     MatFormEntityComponent,
     MatToolbarModule,
     PageHeaderModule,
