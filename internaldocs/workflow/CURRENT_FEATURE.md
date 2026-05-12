@@ -54,6 +54,8 @@ linked-rack persistence still depends on applying the existing migration in the 
 - The control sources options from the current user's racks via `backend.get.currentUserRacks()`.
 - Successful linked-rack changes update local patch metadata/state without forcing a detail reload that would reset editor
   connection state.
+- Owned rack detail now exposes a one-confirmation **Create patch from this rack** action that auto-generates the patch name,
+  links the current rack, and routes directly into the new patch detail/editor flow.
 - The shared public patch-browser query deliberately does not select `linked_rack_id` by default yet, so public listing
   surfaces remain compatible while linked-rack support is still being rolled out across environments.
 - The patch creator dialog now exposes the same optional linked-rack context, but normal patch creation stays schema-safe by
@@ -67,7 +69,7 @@ linked-rack persistence still depends on applying the existing migration in the 
 
 #### Layer 2 — Structural
 - [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
-- [ ] Add rack-context entry points from rack detail/editor that preselect the association when starting a patch
+- [x] Add rack-context entry points from rack detail/editor that preselect the association when starting a patch
 - [x] Define compatibility/status language for:
   - `In linked rack`
   - `In collection only`
@@ -83,7 +85,7 @@ linked-rack persistence still depends on applying the existing migration in the 
 - [x] Per-copy instance synchronization: positional matching algorithm, lazy instance creation, per-copy dimming/selection
 
 #### Layer 3 — Polish
-- [ ] Add helper copy and onboarding cues so users understand the difference between optional rack context and direct-list patch editing
+- [x] Add helper copy and onboarding cues so users understand the difference between optional rack context and direct-list patch editing
 - [x] Add visual treatment for stale or diverged rack context that stays informative without feeling like an error
 - [ ] Review educational/planning flows to ensure rack-linked mode does not weaken non-1:1 use cases
 - [x] Add focused acceptance criteria for create-from-rack, create-without-rack, change/clear rack, stale rack, and viewer-no-access states

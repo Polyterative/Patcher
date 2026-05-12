@@ -36,15 +36,10 @@ import {
 } from "@angular/material/dialog";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import {
-  adjectives,
-  animals,
-  colors,
-  uniqueNamesGenerator
-} from 'unique-names-generator';
-import {
   isLinkedRackSchemaMissingError,
   LINKED_RACK_PENDING_CREATE_MESSAGE
 } from '../linked-rack-rollout';
+import { generatePatchName } from '../patch-name-generator';
 
 
 export interface PatchCreatorOutModel {
@@ -134,12 +129,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   
   private generatePatchName(): string {
-    return uniqueNamesGenerator({
-      dictionaries: [adjectives, colors, animals],
-      separator: ' ',
-      style: 'capital',
-      length: 2
-    });
+    return generatePatchName();
   }
   
   ngOnDestroy(): void {
