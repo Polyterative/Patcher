@@ -5,5 +5,6 @@
 - [x] Degraded-state and back-compat expectations are documented without changing collection-first editing.
 - [x] Focused acceptance scenarios are documented for create-from-rack, create-without-rack, change/clear, stale rack, and viewer-no-access.
 - [x] Nullable schema/backend support for `linked_rack_id` is implemented.
-- [ ] UI choose/change/clear flows are implemented.
+- [x] Existing-patch owner UI choose/change/clear flows are implemented.
+- [ ] Patch creation can optionally set the linked rack.
 - [ ] Privacy-safe viewer rendering is implemented.

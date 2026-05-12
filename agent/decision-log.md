@@ -14,3 +14,11 @@
 - Added focused backend coverage for add/update/detail handling of `linked_rack_id`.
 - Updated `database.types.ts` in-repo to match the migration-backed schema contract so app code can compile against the new field before a separate live-schema apply/type-regeneration step.
 - Next bounded task is the owner-facing choose/change/clear UI slice.
+
+## 2026-05-12T11:41:00+02:00
+
+- Added owner-only linked-rack status UI to the patch detail shell and linked-rack choose/change/clear controls to patch edit metadata.
+- Kept the linked-rack edit path metadata-only: changing or clearing the link updates `linked_rack_id` without forcing a patch-detail reload that would disturb local connection state.
+- Reused `get.currentUserRacks()` instead of widening the backend API surface.
+- Added focused service/component coverage and updated the authenticated patch-detail screenshot spec to capture the linked-rack edit shell.
+- Next bounded task is patch creation support for optional linked-rack selection.
