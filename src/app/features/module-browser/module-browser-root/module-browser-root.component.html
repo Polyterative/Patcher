@@ -135,7 +135,7 @@
                        showFirstLastButtons
         ></mat-paginator>
         <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
-                                           [updateData$]="dataService.updateModulesList$"
+                                           [updateData$]="dataService.modulesLoadingTrigger$"
         ></lib-auto-update-loading-indicator>
       </div>
     

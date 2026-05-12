@@ -76,6 +76,26 @@ describe('ModuleBrowserDataService', () => {
 
     expect(sortArgs(backend)).toEqual(['updated', 'desc']);
   });
+
+  it('emits loading feedback immediately on filter input before the debounced fetch starts', fakeAsync(() => {
+    const {service, backend} = build();
+    const loadingEvents: number[] = [];
+    service.modulesLoadingTrigger$.subscribe(() => loadingEvents.push(backend.GET.modules.calls.count()));
+    backend.GET.modules.calls.reset();
+
+    service.fields.name.control.setValue('rings');
+
+    expect(loadingEvents.length).toBe(1);
+    expect(backend.GET.modules.calls.count()).toBe(0);
+
+    tick(749);
+    expect(backend.GET.modules.calls.count()).toBe(0);
+
+    tick(1);
+    expect(loadingEvents.length).toBe(2);
+    expect(backend.GET.modules.calls.count()).toBe(1);
+    service.ngOnDestroy();
+  }));
   
   it('canReset$ emits false when all fields are at default', fakeAsync(() => {
     const {service} = build();
