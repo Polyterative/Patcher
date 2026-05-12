@@ -1019,6 +1019,20 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.expandedRackModule = null;
   }
 
+  isOperationModeDisabled(mode: PatchEditorOperationMode, hasLinkedRack: boolean): boolean {
+    return mode === PATCH_EDITOR_OPERATION_MODES.linkedRack && !hasLinkedRack;
+  }
+
+  getOperationModeTooltip(mode: PatchEditorOperationMode, hasLinkedRack: boolean): string {
+    if (mode === PATCH_EDITOR_OPERATION_MODES.linkedRack) {
+      return hasLinkedRack
+        ? 'Rack mode mirrors the linked rack layout so you can patch directly against the modules placed in that rack.'
+        : 'Rack mode uses the linked rack as the patching workspace. Link a rack above to enable this mode.';
+    }
+
+    return 'Collection mode lets you browse your own modules, search or sort them, and add copies into the patch.';
+  }
+
   getModuleCardConnectionTooltip(card: EditorModuleCard): string {
     if (!card.connectionCount) {
       return '';

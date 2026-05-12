@@ -184,6 +184,22 @@ describe('PatchEditorComponent', () => {
     expect(message).toContain('Browse your collection');
     expect(message).toContain('add copies to the patch');
   });
+
+  it('explains why rack mode is disabled when no linked rack exists', () => {
+    const component = createPatchEditorComponent();
+
+    expect(component.isOperationModeDisabled('linkedRack', false)).toBeTrue();
+    expect(component.getOperationModeTooltip('linkedRack', false)).toContain('Link a rack above');
+    expect(component.getOperationModeTooltip('linkedRack', false)).toContain('patching workspace');
+  });
+
+  it('explains what collection mode does', () => {
+    const component = createPatchEditorComponent();
+
+    expect(component.isOperationModeDisabled('collection', false)).toBeFalse();
+    expect(component.getOperationModeTooltip('collection', false)).toContain('browse your own modules');
+    expect(component.getOperationModeTooltip('collection', false)).toContain('add copies');
+  });
   
   it('returns all cards when search query is empty', () => {
     const cards = [

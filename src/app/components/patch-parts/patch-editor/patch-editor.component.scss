@@ -57,6 +57,10 @@ $palette: (
   flex: 0 0 auto;
 }
 
+.patch-editor-operation-mode__option {
+  display: inline-flex;
+}
+
 .patch-editor-toolbar__meta {
   display: grid;
   gap: 0.2rem;
@@ -101,6 +105,10 @@ $palette: (
 :host ::ng-deep .patch-editor-controls__search > lib-mat-form-entity {
   display: block;
   min-width: 0;
+}
+
+:host ::ng-deep .patch-editor-controls .patch-editor-control {
+  width: 100%;
 }
 
 :host ::ng-deep .patch-editor-controls .mat-mdc-form-field-subscript-wrapper {
@@ -169,6 +177,13 @@ $palette: (
 @media (max-width: 60rem) {
   .patch-editor-controls {
     grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(9rem, 1fr));
+  }
+}
+
+@media (min-width: 52.01rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(10rem, 20rem));
+    justify-content: start;
   }
 }
 
