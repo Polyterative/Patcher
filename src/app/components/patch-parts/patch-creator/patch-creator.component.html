@@ -15,6 +15,26 @@
                            (enterPressed)="save$.next()"
       >
       </lib-mat-form-entity>
+      <div class="col gap050">
+        <div class="text-strong">Linked rack</div>
+        <p style="font-size: 0.95rem; margin: 0">
+          Optional context only. Your patch still edits against your collection and patch-local copies.
+        </p>
+        <lib-mat-form-entity
+          [control]="fields.linkedRack.control"
+          [type]="fields.linkedRack.type"
+          [options$]="linkedRackOptions$"
+          [label]="fields.linkedRack.label"
+          [iconL1]="fields.linkedRack.iconL1"
+          [formFieldAppearanceType]="'outline'"
+        >
+        </lib-mat-form-entity>
+        @if ((linkedRackOptions$ | async)?.length === 0) {
+          <p style="font-size: 0.9rem; margin: 0">
+            You do not have any racks yet. You can keep patching without one and link a rack later.
+          </p>
+        }
+      </div>
       
       <app-lib-showcase-grid [data]="[
         {

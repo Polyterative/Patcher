@@ -157,11 +157,12 @@ export function createAddNamespace(
             supabase
               .from(DbPaths.patches)
               .insert({
-                ...data,
+                name: data.name,
                 authorid: user.id,
-                linked_rack_id: data.linked_rack_id ?? null,
-                public: data.public ?? true
+                public: data.public ?? true,
+                ...(data.linked_rack_id === undefined ? {} : {linked_rack_id: data.linked_rack_id})
               })
+              .select('id')
           );
         }),
         cacheBust(['patches']),

@@ -32,15 +32,18 @@ instance identity, labels, and connection persistence.
 - Prefer text-first state messaging over icon-only/status-color-only communication.
 
 #### Layer 1 — MVP
-- [ ] Add a nullable linked-rack association in patch create/edit flows without changing the existing no-rack default (`patches.linked_rack_id`, nullable, `ON DELETE SET NULL`)
+- [x] Add a nullable linked-rack association in patch create/edit flows without changing the existing no-rack default (`patches.linked_rack_id`, nullable, `ON DELETE SET NULL`)
 - [x] Surface the selected linked rack in patch detail/editor with choose/change/clear actions
-- [ ] Keep module sourcing and connection editing unchanged: collection modules + patch instances remain the working surface
+- [x] Keep module sourcing and connection editing unchanged: collection modules + patch instances remain the working surface
 - [ ] Add a privacy-safe viewer state for linked-rack context when the rack cannot be shown
-- [ ] Preserve current behavior for existing patches with no linked rack
+- [x] Preserve current behavior for existing patches with no linked rack
 
 **Implementation status:** The nullable schema migration/backend round-trip is in place, and existing-patch owner flows now
-show linked-rack status plus choose/change/clear controls. The remaining Layer 1 work is patch creation support, preserving
-no-rack behavior across all entry points, and the privacy-safe viewer state.
+show linked-rack status plus choose/change/clear controls. Public patch browsing stays rollout-safe by keeping the shared
+listing query on its pre-linked-rack column set until list surfaces explicitly need the new field. Patch creation now
+surfaces an optional linked-rack selector and preserves unlinked creation by omitting `linked_rack_id` unless the user
+explicitly selected a rack. The remaining Layer 1 work is the privacy-safe viewer state. Live selected linked-rack
+persistence still depends on applying the existing migration in the target Supabase environment.
 
 **Owner-flow implementation notes:**
 - Existing patch detail now shows an owner-only linked-rack summary card with text-first status.
@@ -48,6 +51,10 @@ no-rack behavior across all entry points, and the privacy-safe viewer state.
 - The control sources options from the current user's racks via `backend.get.currentUserRacks()`.
 - Successful linked-rack changes update local patch metadata/state without forcing a detail reload that would reset editor
   connection state.
+- The shared public patch-browser query deliberately does not select `linked_rack_id` by default yet, so public listing
+  surfaces remain compatible while linked-rack support is still being rolled out across environments.
+- The patch creator dialog now exposes the same optional linked-rack context, but normal patch creation stays schema-safe by
+  omitting `linked_rack_id` unless a rack was explicitly selected.
 
 #### Layer 2 — Structural
 - [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch

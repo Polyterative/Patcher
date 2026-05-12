@@ -21,13 +21,13 @@ test.describe('Patch Browser', () => {
   });
   
   test('shows at least one patch card', async ({page}) => {
-    await expect(page.locator('div.card').first()).toBeVisible({timeout: 15_000});
+    await expect(page.locator('app-patch-list app-patch-micro').first()).toBeVisible({timeout: 15_000});
   });
   
   test('paginator shows total item count greater than zero', async ({page}) => {
-    const status = page.getByRole('status');
-    await expect(status).toBeVisible({timeout: 15_000});
-    await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
+    const rangeLabel = page.locator('mat-paginator .mat-mdc-paginator-range-label');
+    await expect(rangeLabel).toBeVisible({timeout: 15_000});
+    await expect(rangeLabel).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
   });
   
   test('page heading is visible', async ({page}) => {
