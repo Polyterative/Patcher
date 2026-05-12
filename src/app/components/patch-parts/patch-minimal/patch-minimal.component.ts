@@ -62,10 +62,6 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
     this.dataService.removePatchTag(tag);
   }
 
-  clearLinkedRack(): void {
-    this.dataService.clearLinkedRack();
-  }
-  
 }
 
 export interface PatchMinimalViewConfig {

@@ -66,6 +66,8 @@
 
                   @if (bag.divergence && !bag.divergence.clean) {
                     <app-advice-tooltip class="patch-editor-toolbar__warning"
+                                        title="Linked rack warning"
+                                        tone="warning"
                                         [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
                                         matTooltipClass="patch-divergence-tooltip">
                       Rack and patch copies have diverged.

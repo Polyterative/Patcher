@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
 import { AdviceTooltipComponent } from './advice-tooltip/advice-tooltip.component';
 
 @NgModule({
@@ -9,7 +9,7 @@ import { AdviceTooltipComponent } from './advice-tooltip/advice-tooltip.componen
   ],
   imports:      [
     CommonModule,
-    MatToolbarModule
+    MatIconModule
   ],
   exports:      [
     AdviceTooltipComponent

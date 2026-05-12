@@ -2,7 +2,6 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -12,9 +11,6 @@ import { PatchMinimalComponent } from './patch-minimal.component';
 import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
-import {
-  BrandPrimaryButtonComponent
-} from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
 import {
   BrandPrimaryButtonModule
 } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
@@ -64,7 +60,6 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       },
       removePatchTag: jasmine.createSpy('removePatchTag'),
       addPatchTag: jasmine.createSpy('addPatchTag'),
-      clearLinkedRack: jasmine.createSpy('clearLinkedRack'),
       requestPatchPrivacyStatusChange$: {next: jasmine.createSpy('requestPatchPrivacyStatusChange$.next')},
       deletePatch$: {next: jasmine.createSpy('deletePatch$.next')},
       requestPatchEditingToggle$: {next: jasmine.createSpy('requestPatchEditingToggle$.next')}
@@ -158,21 +153,13 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.querySelector('.patch-linked-rack__info')).toBeNull();
   });
 
-  it('shows clear action in edit mode and forwards the click', () => {
+  it('hides the separate clear action in edit mode', () => {
     dataService.patchEditingPanelOpenState$.next(true);
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const clearAction = fixture.debugElement
-      .queryAll(By.directive(BrandPrimaryButtonComponent))
-      .find(debugElement => debugElement.nativeElement.classList.contains('patch-linked-rack__clear'));
-    const clearButton = clearAction?.query(By.css('a'))?.nativeElement as HTMLElement | undefined;
-    expect(clearAction).toBeDefined();
     expect(host.textContent).toContain('Open rack');
-
-    clearButton?.click();
-
-    expect(dataService.clearLinkedRack).toHaveBeenCalled();
+    expect(host.textContent).not.toContain('Clear linked rack');
   });
 
   it('renders the no-racks hint when editing with no owned racks', () => {
@@ -191,17 +178,14 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.textContent).toContain('You do not have any racks yet.');
   });
 
-  it('renders the rollout hint and disables clear when linked-rack persistence is blocked', () => {
+  it('renders the rollout hint without a separate clear action when linked-rack persistence is blocked', () => {
     dataService.patchEditingPanelOpenState$.next(true);
     dataService.linkedRackPersistenceBlocked$.next(true);
     dataService.linkedRackPersistenceHint$.next('Linked rack saving is not available yet in this environment.');
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const clearAction = fixture.debugElement
-      .queryAll(By.directive(BrandPrimaryButtonComponent))
-      .find(debugElement => debugElement.nativeElement.classList.contains('patch-linked-rack__clear'));
     expect(host.textContent).toContain('Linked rack saving is not available yet in this environment.');
-    expect(clearAction?.componentInstance.disabled).toBeTrue();
+    expect(host.textContent).not.toContain('Clear linked rack');
   });
 });
