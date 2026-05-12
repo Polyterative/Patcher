@@ -46,3 +46,11 @@
 - Kept the external migration blocker in place: the repo now degrades gracefully, but actual linked-rack persistence still requires the live `patches.linked_rack_id` column.
 - Validated the guarded write path with focused backend, patch-detail, patch-creator, and patch-minimal specs plus a production build.
 - Next bounded task is the requested patch-editor operation mode selector with linked-rack context preview.
+
+## 2026-05-12T12:44:00+02:00
+
+- Added a patch-editor operation mode selector modeled on the rack editor button-group pattern, keeping collection-first editing as the default and rendering linked-rack context as a separate read-only section below the editor.
+- Loaded linked-rack preview data from the existing rack detail/racked-modules reads instead of introducing new backend APIs, and kept the preview informational only so it never mutates patch instances or connection state.
+- Added focused patch-editor coverage for the new operation-mode options and row-grouped linked-rack preview shaping.
+- Validation stayed at focused unit/build coverage because the shared live environment still cannot persist a linked patch until the external schema migration lands, which blocks a stable visible end-to-end assertion for linked-rack mode.
+- Next bounded task is privacy-safe viewer handling for unavailable or inaccessible linked racks.

@@ -1,10 +1,14 @@
 import {
+  buildLinkedRackPreviewRows,
+  buildLinkedRackPreviewState,
   EditorModuleCard,
   filterEditorCardsByQuery,
+  PATCH_EDITOR_OPERATION_MODE_OPTIONS,
   PatchEditorComponent,
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
+import { of } from 'rxjs';
 
 
 const createCard = (
@@ -34,9 +38,19 @@ const createCard = (
 
 describe('PatchEditorComponent', () => {
   it('should hide module tags in patch editor cards to keep the editor compact', () => {
-    const component = new PatchEditorComponent({} as any, {} as any, {} as any);
+    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
     
     expect(component.modulesViewConfig.hideTags).toBeTrue();
+  });
+
+  it('defaults the patch editor operation mode to collection', () => {
+    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+
+    expect(component.operationMode$.value).toBe('collection');
+  });
+
+  it('exposes collection and linked-rack operation modes', () => {
+    expect(PATCH_EDITOR_OPERATION_MODE_OPTIONS.map(option => option.mode)).toEqual(['collection', 'linkedRack']);
   });
   
   it('returns all cards when search query is empty', () => {
@@ -177,5 +191,32 @@ describe('PatchEditorComponent', () => {
     const grouped = sortAndGroupEditorCards(cards, resolvePatchEditorSortStrategy('nameAsc'), 'patchPresence');
     
     expect(grouped.map(card => card.module.id)).toEqual([2, 3, 1]);
+  });
+
+  it('groups linked-rack preview modules by row and sorts them by column', () => {
+    const rows = buildLinkedRackPreviewRows([
+      {
+        module: {id: 2, name: 'B', manufacturer: {name: 'Maker'}} as any,
+        rackingData: {id: 22, row: 1, column: 8, selectedPanelId: null}
+      },
+      {
+        module: {id: 1, name: 'A', manufacturer: {name: 'Maker'}} as any,
+        rackingData: {id: 11, row: 0, column: 6, selectedPanelId: null}
+      },
+      {
+        module: {id: 3, name: 'C', manufacturer: {name: 'Maker'}} as any,
+        rackingData: {id: 33, row: 1, column: 2, selectedPanelId: null}
+      }
+    ] as any);
+
+    expect(rows.map(row => row.row)).toEqual([0, 1]);
+    expect(rows[1].modules.map(card => card.module.id)).toEqual([3, 2]);
+  });
+
+  it('builds an unavailable linked-rack preview state when the rack cannot be loaded', () => {
+    const state = buildLinkedRackPreviewState(undefined);
+
+    expect(state.kind).toBe('unavailable');
+    expect(state.rows).toEqual([]);
   });
 });

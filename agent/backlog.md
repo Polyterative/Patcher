@@ -8,11 +8,11 @@
 - [x] Fix the public patches browser regression by keeping the shared listing query rollout-safe and restoring smoke coverage for loaded results.
 - [x] Add optional linked-rack selection to patch creation while keeping unlinked patch creation and existing unlinked patches working unchanged.
 - [x] Guard linked-rack create/edit writes so the missing live `linked_rack_id` column degrades to explicit unavailable messaging instead of a raw `PGRST204`.
+- [x] Add a patch-editor operation mode selector with read-only linked-rack context below the editor.
 
 ## Ready next
 
 - [ ] Add privacy-safe viewer handling for unavailable or inaccessible linked racks.
-- [ ] Add a patch-editor operation mode selector with read-only linked-rack context below the editor.
 - [ ] Add rack-origin patch creation entry points that preselect the linked rack without changing collection-first editing.
 
 ## Deferred / external

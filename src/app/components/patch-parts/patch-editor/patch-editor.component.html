@@ -4,7 +4,10 @@
   cards: (editorCards$|async),
   sourceCards: (sourceEditorCards$|async),
   searchQuery: (moduleSearchQuery$|async),
-  loaded: (collectionLoaded$|async)
+  loaded: (collectionLoaded$|async),
+  operationMode: (operationMode$|async),
+  linkedRackPreview: (linkedRackPreviewState$|async),
+  hasLinkedRack: (hasLinkedRack$|async)
 }; as bag) {
   @if (bag.editorConnections == null) {
     <lib-auto-content-loading-indicator
@@ -34,8 +37,31 @@
           description="Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module."
           [showHelpButton]="true"
         >
-        @if (bag.sourceCards.length > 0) {
-          <div class="patch-editor-inline-controls">
+          @if (bag.hasLinkedRack) {
+            <div class="patch-editor-operation-mode">
+              <div class="patch-editor-operation-mode__title">Operation mode</div>
+              <div class="patch-editor-operation-mode__hint">
+                Collection stays editable. Linked rack mode only adds read-only context below the editor.
+              </div>
+              <div class="patch-editor-operation-mode__buttons"
+                   role="group"
+                   aria-label="Patch editor operation mode"
+              >
+                @for (option of operationModeOptions; track option.mode) {
+                  <button type="button"
+                          class="patch-editor-operation-mode__button"
+                          [class.patch-editor-operation-mode__button--active]="bag.operationMode === option.mode"
+                          [attr.aria-pressed]="bag.operationMode === option.mode"
+                          (click)="setOperationMode(option.mode)"
+                  >
+                    {{ option.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          @if (bag.sourceCards.length > 0) {
+            <div class="patch-editor-inline-controls">
             <lib-mat-form-entity class="patch-editor-control"
                                  [control]="moduleSortControl"
                                  [type]="formTypes.SELECT"
@@ -111,7 +137,54 @@
             </flexbox-row-fast>
           }
         </lib-hero-content-card>
-    </div>
+        @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
+          <lib-hero-content-card
+            [titleNormal]="'Linked rack context'"
+            class="patch-editor-linked-rack"
+            [showHelpButton]="true"
+            description="Read-only rack context for orientation. Collection modules above remain the editable source list."
+          >
+            @if (bag.linkedRackPreview.kind === 'loading') {
+              <mat-card-subtitle fxLayoutAlign="center center">
+                Loading linked rack…
+              </mat-card-subtitle>
+            } @else if (bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
+              <div class="patch-editor-linked-rack__summary">
+                <div class="patch-editor-linked-rack__name">{{ bag.linkedRackPreview.rack.name }}</div>
+                <div class="patch-editor-linked-rack__meta">
+                  {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
+                  · {{ bag.linkedRackPreview.rack.hp }} HP
+                  · {{ bag.linkedRackPreview.moduleCount }} module{{ bag.linkedRackPreview.moduleCount === 1 ? '' : 's' }}
+                </div>
+                <p class="patch-editor-linked-rack__copy">
+                  {{ bag.linkedRackPreview.description }}
+                </p>
+              </div>
+              <div class="patch-editor-linked-rack__rows">
+                @for (row of bag.linkedRackPreview.rows; track row.row) {
+                  <div class="patch-editor-linked-rack__row">
+                    <div class="patch-editor-linked-rack__row-label">Row {{ row.row + 1 }}</div>
+                    <div class="patch-editor-linked-rack__row-cards">
+                      @for (previewCard of row.modules; track previewCard.trackingId) {
+                        <div class="patch-editor-linked-rack__module-card">
+                          <app-module-composite [data]="previewCard.module"
+                                                [viewConfig]="modulesViewConfig"
+                                                [preferredPanelColor]="appState.preferredPanelColor$ | async"
+                          ></app-module-composite>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="patch-editor-linked-rack__copy">
+                {{ bag.linkedRackPreview.description }}
+              </p>
+            }
+          </lib-hero-content-card>
+        }
+     </div>
     
     @if (bag.sourceCards.length > 0) {
       <div class="patch-editor-floating-search">
