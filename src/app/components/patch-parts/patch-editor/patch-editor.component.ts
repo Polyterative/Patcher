@@ -487,7 +487,7 @@ export function buildLinkedRackPreviewState(
   const rows = buildLinkedRackPreviewRows(rackedModules);
   return {
     kind: 'ready',
-    description: 'Read-only rack context only. Module sourcing and editing above still come from your collection.',
+    description: 'Click ins and outs to wire connections from linked rack modules. Module sourcing and editing above still come from your collection.',
     rack,
     rows,
     moduleCount: rackedModules.length
@@ -563,6 +563,13 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   /** Whether collection modules have been loaded at least once */
   collectionLoaded$ = new BehaviorSubject<boolean>(false);
+
+  /**
+   * Maps module_id → first instance_id for linked rack modules.
+   * Derived from patchModuleInstances$ so linked rack cards get correct instanceId
+   * for CV highlighting and connection count badges after auto-creation.
+   */
+  linkedRackInstanceMap$ = new BehaviorSubject<Map<number, number>>(new Map());
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -666,6 +673,33 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
           this.operationMode$.next(defaultOperationMode);
         }
       });
+
+    // Build a module_id → instance_id map so linked rack cards get reactive instanceId binding.
+    // This enables CV highlighting and connection count badges on linked rack modules.
+    combineLatest([
+      this.dataService.patchModuleInstances$,
+      this.linkedRackPreviewState$
+    ])
+      .pipe(
+        map(([instances, previewState]) => {
+          const instanceMap = new Map<number, number>();
+          if (previewState.kind !== 'ready') { return instanceMap; }
+          const rackModuleIds = new Set<number>();
+          for (const row of previewState.rows) {
+            for (const card of row.modules) {
+              rackModuleIds.add(card.module.id);
+            }
+          }
+          for (const inst of instances) {
+            if (rackModuleIds.has(inst.module_id) && !instanceMap.has(inst.module_id)) {
+              instanceMap.set(inst.module_id, inst.id);
+            }
+          }
+          return instanceMap;
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(map => this.linkedRackInstanceMap$.next(map));
   }
   
   /** Trigger adding another copy of the same module */

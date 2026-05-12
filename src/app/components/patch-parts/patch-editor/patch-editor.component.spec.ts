@@ -219,4 +219,10 @@ describe('PatchEditorComponent', () => {
     expect(state.kind).toBe('unavailable');
     expect(state.rows).toEqual([]);
   });
+
+  it('linkedRackInstanceMap$ starts empty', () => {
+    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+
+    expect(component.linkedRackInstanceMap$.value.size).toBe(0);
+  });
 });
