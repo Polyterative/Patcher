@@ -51,6 +51,7 @@
                 [type]="formTypes.SELECT"
                 [options$]="dataService.linkedRackOptions$"
                 [formFieldAppearanceType]="'outline'"
+                voidSelectionLabel="Clear / Nothing"
                 iconL1="view_stream"
                 label="Choose linked rack"
               ></lib-mat-form-entity>
@@ -73,14 +74,6 @@
                     >Open rack
                     </app-brand-primary-button>
                   }
-                  <app-brand-primary-button
-                    class="patch-linked-rack__clear"
-                    icon="link_off"
-                    theme="warning"
-                    [disabled]="bag.linkedRackPersistenceBlocked"
-                    (click$)="clearLinkedRack()"
-                  >Clear linked rack
-                  </app-brand-primary-button>
                 </div>
               }
             </div>

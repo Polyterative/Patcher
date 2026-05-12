@@ -3,6 +3,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject } from 'rxjs';
 import { FormTypes } from './form-element-models';
 import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.component';
 
@@ -23,10 +24,21 @@ import { IMatFormEntityConfig, MatFormEntityComponent } from './mat-form-entity.
     <lib-mat-form-entity
       [dataPack]="searchField"
     ></lib-mat-form-entity>
+
+    <lib-mat-form-entity
+      [control]="selectControl"
+      [type]="types.SELECT"
+      [options$]="selectOptions$"
+      voidSelectionLabel="Clear / Nothing"
+      label="Linked rack"
+    ></lib-mat-form-entity>
   `
 })
 class HostComponent {
   doneEnterCount = 0;
+  readonly types = FormTypes;
+  readonly selectControl = new UntypedFormControl('');
+  readonly selectOptions$ = new BehaviorSubject([{id: '7', name: 'Studio Rack'}]);
 
   readonly firstField: IMatFormEntityConfig = {
     type: FormTypes.TEXT,
@@ -121,6 +133,14 @@ describe('MatFormEntityComponent ergonomics', () => {
 
     expect(searchInput.getAttribute('inputmode')).toBe('search');
     expect(searchInput.getAttribute('enterkeyhint')).toBe('search');
+  });
+
+  it('renders a custom void option label for selects', () => {
+    const selectComponent = fixture.debugElement
+      .queryAll(By.directive(MatFormEntityComponent))[3]
+      .componentInstance as MatFormEntityComponent;
+
+    expect(selectComponent.voidSelectionLabel).toBe('Clear / Nothing');
   });
 
   function getRenderedInputs(): HTMLInputElement[] {

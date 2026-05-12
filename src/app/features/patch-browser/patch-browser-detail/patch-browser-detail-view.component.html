@@ -44,7 +44,7 @@
                            [viewConfig]="viewConfig"
       ></app-patch-composite>
     } @else if (bag.unavailableMessage) {
-      <app-advice-tooltip>
+      <app-advice-tooltip title="Unavailable" tone="info">
         {{ bag.unavailableMessage }}
       </app-advice-tooltip>
     } @else {

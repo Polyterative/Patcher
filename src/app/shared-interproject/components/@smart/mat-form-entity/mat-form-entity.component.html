@@ -110,7 +110,7 @@
                     fxFlex="100"
         >
           @if (!disableVoidSelection) {
-            <mat-option>/</mat-option>
+            <mat-option>{{ voidSelectionLabel }}</mat-option>
             <!--VOID OPTION-->
           }
           @for (option of (bag.options); track option) {
