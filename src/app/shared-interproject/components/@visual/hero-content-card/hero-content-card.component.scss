@@ -313,7 +313,7 @@ h3 {
 }
 
 .title-metro-brand {
-  --title-metro-brand-color: rgba(58, 34, 132, 0.92);
+  --title-metro-brand-color: #{$brand-primary};
   display: inline-flex;
   align-items: center;
   font-size: 1.02rem;
@@ -333,14 +333,14 @@ h3 {
 }
 
 .title-metro-brand:focus-visible {
-  outline: 0.125rem solid rgba(58, 34, 132, 0.22);
+  outline: 0.125rem solid rgba($brand-primary, 0.22);
   outline-offset: 0.18rem;
   border-radius: 0.25rem;
 }
 
 .title-metro-brand--active {
   text-decoration: underline;
-  text-decoration-color: rgba(58, 34, 132, 0.36);
+  text-decoration-color: rgba($brand-primary, 0.36);
   text-decoration-thickness: 0.12rem;
   text-underline-offset: 0.22rem;
 }
