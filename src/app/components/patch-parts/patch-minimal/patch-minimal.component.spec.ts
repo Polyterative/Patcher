@@ -164,6 +164,29 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.textContent).not.toContain('Clear linked rack');
   });
 
+  it('shows the linked-rack help icon in edit mode', () => {
+    dataService.patchEditingPanelOpenState$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const helpButton = host.querySelector('[aria-label="About linked rack"]');
+    expect(helpButton).not.toBeNull();
+  });
+
+  it('shows a rich linked-rack help popover in edit mode', () => {
+    dataService.patchEditingPanelOpenState$.next(true);
+    fixture.detectChanges();
+
+    component.openLinkedRackHelp();
+
+    expect(component.linkedRackHelpOpen).toBeTrue();
+    expect(component.linkedRackHelpSections.map(section => section.title)).toEqual([
+      'Why it helps',
+      'Best moment to use it',
+      'How it behaves'
+    ]);
+  });
+
   it('renders the no-racks hint when editing with no owned racks', () => {
     dataService.patchEditingPanelOpenState$.next(true);
     dataService.linkedRackState$.next(linkedState({

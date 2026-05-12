@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
   OnDestroy,
   OnInit
@@ -34,11 +35,30 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   readonly tagSeparatorKeysCodes: number[] = [ENTER, COMMA];
   readonly formTypes = FormTypes;
+  linkedRackHelpOpen = false;
+  readonly linkedRackHelpSections = [
+    {
+      icon: 'bolt',
+      title: 'Why it helps',
+      body: 'Use a linked rack when seeing the patch inside its real rack helps you patch faster and with less guesswork.'
+    },
+    {
+      icon: 'view_quilt',
+      title: 'Best moment to use it',
+      body: 'It is especially handy when that rack is already in front of you, because the layout on screen matches what you are looking at physically.'
+    },
+    {
+      icon: 'sync_alt',
+      title: 'How it behaves',
+      body: 'The rack is optional context only. The patch still works on its own, and if the rack changes later the linked-rack view updates while the patch stays intact.'
+    }
+  ] as const;
   
   constructor(
     public userManagerService: UserManagementService,
     public dataService: PatchDetailDataService,
-    public urlCreatorService: UrlCreatorService
+    public urlCreatorService: UrlCreatorService,
+    private readonly elementRef: ElementRef<HTMLElement>
   ) {}
   
   ngOnInit(): void {
@@ -60,6 +80,25 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
 
   removeTag(tag: string): void {
     this.dataService.removePatchTag(tag);
+  }
+
+  openLinkedRackHelp(): void {
+    this.linkedRackHelpOpen = true;
+  }
+
+  closeLinkedRackHelp(): void {
+    this.linkedRackHelpOpen = false;
+  }
+
+  onLinkedRackHelpFocusOut(event: FocusEvent): void {
+    const nextTarget = event.relatedTarget as Node | null;
+    const helpRoot = this.elementRef.nativeElement.querySelector('.patch-linked-rack__help');
+
+    if (nextTarget && helpRoot?.contains(nextTarget)) {
+      return;
+    }
+
+    this.closeLinkedRackHelp();
   }
 
 }
