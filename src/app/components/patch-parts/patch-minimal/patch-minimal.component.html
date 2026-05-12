@@ -138,13 +138,19 @@
                 <div class="patch-linked-rack__name">{{ bag.linkedRackState.rackName }}</div>
               }
             </div>
-            @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackImage) {
-              <img
-                class="patch-linked-rack__preview"
-                [src]="getRackPreviewUrl(bag.linkedRackState.rackImage)"
-                [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
-                loading="lazy"
+            @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackImage && bag.linkedRackState.rackId != null) {
+              <a
+                class="patch-linked-rack__preview-link"
+                [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
+                aria-label="Open linked rack"
               >
+                <img
+                  class="patch-linked-rack__preview"
+                  [src]="getRackPreviewUrl(bag.linkedRackState.rackImage)"
+                  [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
+                  loading="lazy"
+                >
+              </a>
             }
           </div>
           @if (bag.linkedRackPersistenceHint && bag.user && bag.singlePatchData && bag.singlePatchData.author.id === bag.user.id) {
