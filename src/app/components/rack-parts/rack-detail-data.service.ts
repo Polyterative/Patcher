@@ -64,6 +64,11 @@ import {
   buildFunctionAnalysisResidualLabel
 } from './rack-function-visuals.utils';
 import { SignalFocusArea } from './rack-signal-analysis.utils';
+import {
+  isLinkedRackSchemaMissingError,
+  LINKED_RACK_PENDING_CREATE_MESSAGE
+} from '../patch-parts/linked-rack-rollout';
+import { generatePatchName } from '../patch-parts/patch-name-generator';
 
 
 function cloneRackData<T>(value: T): T {
@@ -133,6 +138,7 @@ export class RackDetailDataService extends SubManager {
   userRequestedSmallerScale$ = new BehaviorSubject<boolean>(false);
   //
   requestRackEditableStatusChange$ = new Subject<void>();
+  requestCreatePatchFromRack$ = new Subject<void>();
   requestRackPrivacyStatusChange$ = new Subject<void>();
   requestRackedModuleRemoval$ = new Subject<RackedModule>();
   requestRackedModuleDuplication$ = new Subject<RackedModule>();
@@ -387,6 +393,55 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroy$),
       )
       .subscribe();
+
+    this.requestCreatePatchFromRack$
+      .pipe(
+        withLatestFrom(this.singleRackData$, this.isCurrentRackPropertyOfCurrentUser$),
+        switchMap(([_, rack, isOwner]) => {
+          if (!rack) {
+            SharedConstants.errorCustom(this.snackBar, 'Rack data is still loading. Try again in a moment.');
+            return EMPTY;
+          }
+
+          if (!isOwner) {
+            SharedConstants.errorCustom(this.snackBar, 'Only the rack owner can start a linked patch from this rack.');
+            return EMPTY;
+          }
+
+          return this.askForConfirmationWhenCreatingPatchFromRack(rack);
+        }),
+        switchMap((rack) => {
+          const generatedPatchName = generatePatchName();
+          this.snackBar.open(`Creating "${ generatedPatchName }"…`, undefined);
+
+          return this.backend.add.patch({
+            name: generatedPatchName,
+            public: true,
+            linked_rack_id: rack.id
+          }).pipe(
+            map((response) => ({
+              rack,
+              generatedPatchName,
+              createdPatchId: this.extractCreatedPatchId(response)
+            })),
+            catchError((error) => {
+              if (isLinkedRackSchemaMissingError(error)) {
+                SharedConstants.errorCustom(this.snackBar, LINKED_RACK_PENDING_CREATE_MESSAGE);
+              } else {
+                console.error('Failed to create linked patch from rack:', error);
+                SharedConstants.errorCustom(this.snackBar, 'Patch creation failed — check your connection and try again.');
+              }
+
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({rack, generatedPatchName, createdPatchId}) => {
+        this.router.navigate(['/patches/details', createdPatchId]);
+        SharedConstants.successCustom(this.snackBar, `"${ generatedPatchName }" is ready with "${ rack.name }" linked.`);
+      });
     
     this.formData.name.control.valueChanges
       .pipe(
@@ -804,6 +859,40 @@ export class RackDetailDataService extends SubManager {
         }),
         filter((x: ConfirmDialogDataOutModel) => !!x?.answer)
       );
+  }
+
+  private askForConfirmationWhenCreatingPatchFromRack(rack: RackMinimal) {
+    const data: ConfirmDialogDataInModel = {
+      title: `Start a patch from "${ rack.name }"?`,
+      description: 'We will generate the name automatically, link this rack, and open the patch immediately so you can start working.',
+      positive: {label: 'Create patch', theme: 'positive'}
+    };
+
+    return this.dialog.open(
+      ConfirmDialogComponent,
+      {
+        data,
+        disableClose: false
+      }
+    )
+      .afterClosed()
+      .pipe(
+        tap((x: ConfirmDialogDataOutModel) => {
+          if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No patch created.');
+        }),
+        filter((x: ConfirmDialogDataOutModel) => !!x?.answer),
+        map(() => rack)
+      );
+  }
+
+  private extractCreatedPatchId(response: {id?: number; data?: Array<{id?: number}>} | undefined): number {
+    const createdPatchId = response?.data?.[0]?.id ?? response?.id;
+
+    if (!createdPatchId) {
+      throw new Error('Patch creation did not return a patch id.');
+    }
+
+    return createdPatchId;
   }
   
   // bump up version number in name of rack if it has one, otherwise add "V2" — used when duplicating

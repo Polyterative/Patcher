@@ -1,9 +1,18 @@
-<!--<div class="row gap1"-->
-<!--     fxLayoutAlign="end center"-->
-<!--&gt;-->
-<!--  <app-brand-primary-button disabled="true"-->
-<!--                            matTooltip="Sorry, this feature is not yet implemented, but will be soon, reach out to us via mail if you need help with this"-->
-<!--  >-->
-<!--    Clone-->
-<!--  </app-brand-primary-button>-->
-<!--</div>-->
+@if (dataService.isCurrentRackPropertyOfCurrentUser$ | async) {
+  <lib-clean-card class="rackDetails__startPatchCard">
+    <div class="col gap075">
+      <div class="rackDetails__eyebrow">Linked patch flow</div>
+      <div class="rackDetails__title">Start patching from this rack</div>
+      <p class="rackDetails__description">
+        One confirmation creates a new patch with an auto-generated name, links this rack, and opens the patch immediately.
+      </p>
+      <app-brand-primary-button
+        theme="positive"
+        icon="settings_input_composite"
+        (click$)="dataService.requestCreatePatchFromRack$.next()"
+      >
+        Create patch from this rack
+      </app-brand-primary-button>
+    </div>
+  </lib-clean-card>
+}
