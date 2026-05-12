@@ -262,7 +262,7 @@ export class ModuleAdderDataService extends SubManager {
     
     // load manufacturers into options BehaviorSubject
     this.backend.GET.manufacturers(0, 99999, 'id,name').pipe(
-      map(x => x.data.map(z => ({ id: z.id.toString(), name: z.name }))),
+      map(x => (x.data ?? []).map(z => ({ id: z.id.toString(), name: z.name }))),
       takeUntil(this.destroy$)
     ).subscribe(opts => this._manufacturerOptions$.next(opts));
 
@@ -322,7 +322,12 @@ export class ModuleAdderDataService extends SubManager {
       .pipe(
         tap(() => this.similarModulesData$.next(undefined)),
         filter(() => this.formData.name.control.value.length > 0 || !!this.formData.manufacturer.control.value),
-        switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)),
+        switchMap(() => this.backend.GET.modules(0, (10) - 1, this.formData.name.control.value, undefined, undefined, parseInt(getCleanedValueId(this.formData.manufacturer.control)), undefined, undefined, undefined, undefined, false)
+          .pipe(catchError(error => {
+            console.error('Failed to search similar modules:', error);
+            SharedConstants.errorCustom(this.snackBar, 'Failed to search similar modules');
+            return of({data: []});
+          }))),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {

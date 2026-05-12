@@ -4,7 +4,8 @@ import {
 } from '@angular/core/testing';
 import {
   of,
-  Subject
+  Subject,
+  throwError
 } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { ModuleBrowserDataService } from './module-browser-data.service';
@@ -138,6 +139,43 @@ describe('ModuleBrowserDataService', () => {
     expect(args[9]).toBe('analog filter');
     service.ngOnDestroy();
   }));
+
+  it('resets pagination and asks the paginator to return to the first page when search changes', fakeAsync(() => {
+    const {service, backend} = build();
+    const paginatorSpy = jasmine.createSpy('paginatorToFistPage$');
+    service.paginatorToFistPage$.subscribe(paginatorSpy);
+    service.serversideTableRequestData.skip$.next(40);
+    backend.GET.modules.calls.reset();
+
+    service.fields.name.control.setValue('rings');
+    tick(750);
+
+    expect(service.serversideTableRequestData.skip$.value).toBe(0);
+    expect(paginatorSpy).toHaveBeenCalled();
+    expect(backend.GET.modules.calls.mostRecent().args[2]).toBe('rings');
+    service.ngOnDestroy();
+  }));
+
+  it('keeps the remote search stream alive after a backend error', fakeAsync(() => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    backend.GET.modules.and.returnValues(
+      throwError(() => new Error('network')),
+      of({data: [moduleFactory({id: 22, name: 'Recovered'})], count: 1})
+    );
+
+    service.updateModulesList$.next();
+    expect(service.modulesList$.value).toEqual([]);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(0);
+
+    service.fields.name.control.setValue('recovered');
+    tick(750);
+
+    expect(service.modulesList$.value?.map(module => module.name)).toEqual(['Recovered']);
+    expect(service.serversideAdditionalData.itemsCount$.value).toBe(1);
+    expect(console.error).toHaveBeenCalledWith('Failed to load modules:', jasmine.any(Error));
+    service.ngOnDestroy();
+  }));
   
   it('canReset$ emits true when hp field has value', fakeAsync(() => {
     const {service} = build();
@@ -250,6 +288,21 @@ describe('ModuleBrowserDataService', () => {
     service.ngOnDestroy();
   }));
 
+  it('clears tag-filter loading feedback when a filtered backend request fails', fakeAsync(() => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    service.modulesList$.next([moduleFactory({id: 1})]);
+    backend.GET.modules.and.returnValue(throwError(() => new Error('tag failure')));
+
+    service.fields.tags.control.setValue([{id: '5', name: 'Oscillator'}]);
+    expect(service.remoteTagFilterLoading$.value).toBeTrue();
+    tick(750);
+
+    expect(service.remoteTagFilterLoading$.value).toBeFalse();
+    expect(service.modulesList$.value).toEqual([]);
+    service.ngOnDestroy();
+  }));
+
   it('does not set remoteTagFilterLoading$ for non-tag filter changes', fakeAsync(() => {
     const {service} = build();
     service.modulesList$.next([moduleFactory({id: 1})]);
@@ -352,6 +405,21 @@ describe('ModuleBrowserDataService', () => {
     ]);
 
     expect(filtered?.map((module) => module.id)).toEqual([2]);
+    service.ngOnDestroy();
+  }));
+
+  it('filters owned modules with accent-insensitive text search', fakeAsync(() => {
+    const {service} = build();
+    service.fields.name.control.setValue('Lubadh');
+    service.fields.description.control.setValue('looper');
+    tick(750);
+
+    const filtered = service.filterOwnedModules([
+      moduleFactory({id: 1, name: 'Lùbadh', description: 'Dual lòoper and sampler'}),
+      moduleFactory({id: 2, name: 'Mimeophon', description: 'Stereo delay'})
+    ]);
+
+    expect(filtered?.map((module) => module.id)).toEqual([1]);
     service.ngOnDestroy();
   }));
 

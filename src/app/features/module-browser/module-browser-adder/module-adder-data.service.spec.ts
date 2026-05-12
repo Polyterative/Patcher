@@ -1,6 +1,7 @@
 import {
   BehaviorSubject,
   of,
+  Subject,
   throwError
 } from 'rxjs';
 import { ModuleAdderDataService } from './module-adder-data.service';
@@ -66,6 +67,59 @@ describe('ModuleAdderDataService', () => {
     
     expect(backend.GET.modules).toHaveBeenCalled();
     expect(service.similarModulesData$.value).toEqual([{id: 12, name: 'Maths'}] as any);
+  });
+
+  it('shows a loading state while submit-module similar search is pending', () => {
+    const {service, backend} = build();
+    const response$ = new Subject<{data: { id: number; name: string }[]}>();
+    backend.GET.modules.and.returnValue(response$.asObservable());
+    service.similarModulesData$.next([{id: 1, name: 'Previous'}] as any);
+
+    service.formData.name.control.setValue('Rings');
+
+    expect(service.similarModulesData$.value).toBeUndefined();
+    response$.next({data: [{id: 2, name: 'Rings'}]});
+    response$.complete();
+    expect(service.similarModulesData$.value).toEqual([{id: 2, name: 'Rings'}] as any);
+  });
+
+  it('supports manufacturer-only similar search for empty-state discovery', () => {
+    const {service, backend} = build({modules: []});
+
+    service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
+
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('');
+    expect(args[5]).toBe(1);
+    expect(args[10]).toBeFalse();
+    expect(service.similarModulesData$.value).toEqual([]);
+  });
+
+  it('clears similar search results to an empty list when no matches are found', () => {
+    const {service} = build({modules: []});
+
+    service.formData.name.control.setValue('No Exact Match');
+
+    expect(service.similarModulesData$.value).toEqual([]);
+  });
+
+  it('keeps submit-module similar search working after a backend error', () => {
+    const {service, backend} = build();
+    spyOn(console, 'error');
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {
+    });
+    backend.GET.modules.and.returnValues(
+      throwError(() => new Error('network')),
+      of({data: [{id: 42, name: 'Recovered'}]})
+    );
+
+    service.formData.name.control.setValue('Broken');
+    expect(service.similarModulesData$.value).toEqual([]);
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(jasmine.anything(), 'Failed to search similar modules');
+
+    service.formData.name.control.setValue('Recovered');
+    expect(service.similarModulesData$.value).toEqual([{id: 42, name: 'Recovered'}] as any);
+    expect(console.error).toHaveBeenCalledWith('Failed to search similar modules:', jasmine.any(Error));
   });
 
   it('detects duplicate manufacturer names accent-insensitively', () => {
