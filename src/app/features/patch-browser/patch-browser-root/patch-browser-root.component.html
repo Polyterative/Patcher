@@ -52,9 +52,11 @@
                        (page)="dataService.pageEvent$.next($event)"
                        showFirstLastButtons
         ></mat-paginator>
-        <lib-auto-content-loading-indicator [data$]="dataService.patchesList$"
-                                            [updateData$]="dataService.updatePatchesList$"
-        ></lib-auto-content-loading-indicator>
+        @if ((dataService.patchesList$ | async) !== null) {
+          <lib-auto-update-loading-indicator [data$]="dataService.patchesList$"
+                                             [updateData$]="dataService.updatePatchesList$"
+          ></lib-auto-update-loading-indicator>
+        }
       </div>
     
     </div>
