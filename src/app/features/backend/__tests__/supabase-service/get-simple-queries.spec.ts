@@ -136,6 +136,22 @@ describe('SupabaseService - get simple queries', () => {
         }
       });
     }, TEST_TIMEOUT);
+
+    it('should preserve linked_rack_id in patch detail responses', (done) => {
+      const mockData = {id: 10, name: 'My Patch', linked_rack_id: 33, author: {id: 'u1'}};
+      spyOn(supabaseClient, 'from').and.returnValue(chainable({data: mockData, error: null}));
+
+      service.get.patchWithId(10).subscribe({
+        next: (result: any) => {
+          expect(result.data.linked_rack_id).toBe(33);
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
     
     it('should accept a custom columns argument', (done) => {
       const mock = chainable({data: {id: 10}, error: null});
