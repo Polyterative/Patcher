@@ -213,6 +213,30 @@ describe('SupabaseService - add.patch', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should omit linked_rack_id when no linked rack was selected', (done) => {
+    const mockUser = {id: 'patch-author'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+    const mock = chainable({data: [{id: 78}], error: null});
+    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.add.patch({name: 'Unlinked Patch'} as any).subscribe({
+      next: () => {
+        const payload = insertSpy.calls.first().args[0] as any;
+        expect(payload.name).toBe('Unlinked Patch');
+        expect(payload.authorid).toBe('patch-author');
+        expect(payload.public).toBeTrue();
+        expect(Object.prototype.hasOwnProperty.call(payload, 'linked_rack_id')).toBeFalse();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
   
   it('should throw when user is not authenticated', (done) => {
     spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(null));

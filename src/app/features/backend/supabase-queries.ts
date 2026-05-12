@@ -1346,7 +1346,7 @@ export class SupabaseQueriesService {
     name?: string,
     orderBy?: string,
     orderDirection?: string,
-    columns: string = `id,name,description,linked_rack_id,${ QueryJoins.author },updated,created`
+    columns: string = `id,name,description,${ QueryJoins.author },updated,created`
   ) {
     const connections = `,patch_connections!inner(patchid,a,b)`; // Ensures only patches with connections are included
     const nameQuery = (name ?? '').trim();
