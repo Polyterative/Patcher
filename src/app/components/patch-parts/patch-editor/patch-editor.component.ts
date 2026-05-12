@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { UntypedFormControl } from '@angular/forms';
@@ -783,6 +785,40 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
 
   /** Count of connections referencing instances not mapped to any rack position */
   orphanedConnectionCount$ = new BehaviorSubject<number>(0);
+
+  /** Auto-scale factor for the linked rack visual (fits rack to container width) */
+  rackAutoScale = 1;
+  rackScaledHeightPx = 0;
+  rackScaledWidthPx = 0;
+  private rackBaseHeightPx = 0;
+  private rackResizeObserver?: ResizeObserver;
+  private rackScreenResizeObserver?: ResizeObserver;
+  private rackViewportRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('rackViewport', { static: false })
+  set rackViewport(ref: ElementRef<HTMLElement> | undefined) {
+    this.rackViewportRef = ref;
+    this.rackResizeObserver?.disconnect();
+    if (ref) {
+      this.setupRackAutoScale();
+    }
+  }
+
+  @ViewChild('rackScreen', { static: false })
+  set rackScreen(ref: ElementRef<HTMLElement> | undefined) {
+    this.rackScreenResizeObserver?.disconnect();
+    if (ref) {
+      this.rackScreenResizeObserver = new ResizeObserver(entries => {
+        const height = entries[0]?.contentRect.height ?? 0;
+        if (height > 0) {
+          this.rackBaseHeightPx = height;
+          this.rackScaledHeightPx = height * this.rackAutoScale;
+          this.cdr.markForCheck();
+        }
+      });
+      this.rackScreenResizeObserver.observe(ref.nativeElement);
+    }
+  }
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -790,7 +826,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     public backend: SupabaseService,
     public dataService: PatchDetailDataService,
     public appState: AppStateService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private cdr: ChangeDetectorRef
   ) {
     this.hasLinkedRack$ = this.dataService.singlePatchData$.pipe(
       map(patch => patch?.linked_rack_id != null),
@@ -799,6 +836,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
+    this.rackResizeObserver?.disconnect();
+    this.rackScreenResizeObserver?.disconnect();
     this.destroyEvent$.next();
     this.destroyEvent$.complete();
   }
@@ -883,6 +922,10 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         // Reset expanded module when rack changes (trackingIds are no longer valid)
         this.expandedRackTrackingId = null;
         this.expandedRackModule = null;
+        // Trigger auto-scale after rack data loads
+        if (state.kind === 'ready' && state.rack) {
+          queueMicrotask(() => this.updateRackAutoScale(state.rack!.hp));
+        }
       });
 
     this.hasLinkedRack$
@@ -1156,5 +1199,29 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     }
     
     return names;
+  }
+
+  /** Compute auto-scale so the rack visual fits within its container width */
+  updateRackAutoScale(rackHp: number): void {
+    const containerWidth = this.rackViewportRef?.nativeElement.clientWidth ?? 0;
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const rackWidthPx = rackHp * remPx;
+    this.rackAutoScale = (rackWidthPx > 0 && containerWidth > 0)
+      ? Math.min(1, containerWidth / rackWidthPx)
+      : 1;
+    this.rackScaledWidthPx = rackWidthPx * this.rackAutoScale;
+    this.rackScaledHeightPx = this.rackBaseHeightPx * this.rackAutoScale;
+    this.cdr.markForCheck();
+  }
+
+  private setupRackAutoScale(): void {
+    if (!this.rackViewportRef) return;
+    this.rackResizeObserver = new ResizeObserver(() => {
+      const state = this.linkedRackPreviewState$.value;
+      if (state.kind === 'ready' && state.rack) {
+        this.updateRackAutoScale(state.rack.hp);
+      }
+    });
+    this.rackResizeObserver.observe(this.rackViewportRef.nativeElement);
   }
 }
