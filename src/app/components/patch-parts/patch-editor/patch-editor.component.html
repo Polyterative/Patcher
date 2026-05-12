@@ -73,95 +73,17 @@
             </div>
 
           @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
-            <!-- Linked rack mode: realistic rack visual -->
+            <!-- Linked rack mode: loading / error states stay inside the card -->
             @if (bag.linkedRackPreview.kind === 'loading') {
               <mat-card-subtitle fxLayoutAlign="center center">
                 Loading linked rack…
               </mat-card-subtitle>
-            } @else if (bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
-              <div class="patch-editor-rack-visual"
-                   [class.patch-editor-rack-visual--compact]="bag.linkedRackPreview.rack.hp > 120">
-                <div class="patch-editor-rack-visual__header">
-                  <span class="patch-editor-rack-visual__rack-name">{{ bag.linkedRackPreview.rack.name }}</span>
-                  <span class="patch-editor-rack-visual__rack-meta">
-                    {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
-                    · {{ bag.linkedRackPreview.rack.hp }} HP
-                  </span>
-                  @if (bag.divergence && !bag.divergence.clean) {
-                    <span class="patch-editor-rack-visual__divergence-note"
-                          [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
-                          matTooltipClass="patch-divergence-tooltip">
-                      <mat-icon>info_outline</mat-icon>
-                      {{ bag.divergence.totalOrphanedInstances }}
-                      instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} outside rack
-                      @if (bag.orphanedConnectionCount > 0) {
-                        · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
-                      }
-                    </span>
-                  }
-                </div>
-                <div class="patch-editor-rack-visual__scroll-area">
-                  <div class="patch-editor-rack-visual__screen"
-                       [class.patch-editor-rack-visual__screen--has-selection]="expandedRackTrackingId"
-                       [style.width.rem]="bag.linkedRackPreview.rack.hp">
-                    @for (row of bag.linkedRackPreview.rows; track row.row; let rowIdx = $index) {
-                      <div class="patch-editor-rack-visual__row">
-                        @for (previewCard of row.modules; track previewCard.trackingId; let colIdx = $index) {
-                          <div class="patch-editor-rack-visual__module-wrapper"
-                               [@moduleEnter]="{ value: '', params: { delay: colIdx * 50 }}"
-                               [class.patch-editor-rack-visual__module-wrapper--selected]="expandedRackTrackingId === previewCard.trackingId"
-                               [class.patch-editor-rack-visual__module-wrapper--dimmed]="isRackModuleDimmed(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'in'"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'out'"
-                               (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.trackingId, previewCard.module)">
-                            <app-module-realistic
-                              class="patch-editor-rack-visual__module"
-                              [data]="previewCard.module"
-                              [showPanelImages]="previewCard.module.panels?.length > 0"
-                              [selectedPanelId]="previewCard.selectedPanelId"
-                              [disablePanelImageEnterAnimation]="true"
-                            ></app-module-realistic>
-                            <!-- Inline CV panel beside selected module -->
-                            @if (expandedRackTrackingId === previewCard.trackingId) {
-                              <div class="patch-editor-rack-visual__cv-inline"
-                                   (click)="$event.stopPropagation()">
-                                <div class="patch-editor-rack-visual__cv-inline-header">
-                                  <span class="patch-editor-rack-visual__cv-panel-name">{{ previewCard.module.name }}
-                                    @if (getRackModuleCopyLabel(previewCard.trackingId, previewCard.module.id); as copyLabel) {
-                                      <span class="patch-editor-rack-visual__cv-copy-label">{{ copyLabel }}</span>
-                                    }
-                                  </span>
-                                  <span class="patch-editor-rack-visual__cv-panel-manufacturer">{{ previewCard.module.manufacturer?.name }}</span>
-                                </div>
-                                <app-module-cvs
-                                  [data]="previewCard.module"
-                                  [instanceId]="bag.instanceMap?.get(previewCard.trackingId)"
-                                  [forceNewInstance]="!bag.instanceMap?.has(previewCard.trackingId)"
-                                ></app-module-cvs>
-                              </div>
-                            }
-                          </div>
-                        }
-                        @if (row.modules.length === 0) {
-                          <div class="patch-editor-rack-visual__row-empty">Empty row</div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-                @if (!expandedRackModule) {
-                  <div class="patch-editor-rack-visual__hint">
-                    <mat-icon>touch_app</mat-icon>
-                    <span>Tap a module to see its ins &amp; outs</span>
-                  </div>
-                }
-              </div>
-            } @else {
+            } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
               <p class="patch-editor-linked-rack__copy">
                 {{ bag.linkedRackPreview.description }}
               </p>
             }
+            <!-- rack visual rendered outside the card below -->
           } @else {
             <!-- Collection mode: existing card list -->
             @if (bag.sourceCards.length > 0) {
@@ -242,6 +164,95 @@
             }
           }
         </lib-hero-content-card>
+
+      <!-- Linked rack visual: rendered outside the card for full-width centering -->
+      @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
+           && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
+        <div class="patch-editor-rack-visual">
+          <div class="patch-editor-rack-visual__header">
+            <span class="patch-editor-rack-visual__rack-name">{{ bag.linkedRackPreview.rack.name }}</span>
+            <span class="patch-editor-rack-visual__rack-meta">
+              {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
+              · {{ bag.linkedRackPreview.rack.hp }} HP
+            </span>
+            @if (bag.divergence && !bag.divergence.clean) {
+              <span class="patch-editor-rack-visual__divergence-note"
+                    [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
+                    matTooltipClass="patch-divergence-tooltip">
+                <mat-icon>info_outline</mat-icon>
+                {{ bag.divergence.totalOrphanedInstances }}
+                instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} outside rack
+                @if (bag.orphanedConnectionCount > 0) {
+                  · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
+                }
+              </span>
+            }
+          </div>
+          <div class="patch-editor-rack-visual__viewport" #rackViewport>
+            <div class="patch-editor-rack-visual__frame"
+                 [style.width.px]="rackScaledWidthPx"
+                 [style.height.px]="rackScaledHeightPx">
+              <div class="patch-editor-rack-visual__screen"
+                   #rackScreen
+                   [class.patch-editor-rack-visual__screen--has-selection]="expandedRackTrackingId"
+                   [style.width.rem]="bag.linkedRackPreview.rack.hp"
+                   [style.transform]="'scale(' + rackAutoScale + ')'"
+                   [style.transform-origin]="'top left'">
+                @for (row of bag.linkedRackPreview.rows; track row.row; let rowIdx = $index) {
+                  <div class="patch-editor-rack-visual__row">
+                    @for (previewCard of row.modules; track previewCard.trackingId; let colIdx = $index) {
+                      <div class="patch-editor-rack-visual__module-wrapper"
+                           [@moduleEnter]="{ value: '', params: { delay: colIdx * 50 }}"
+                           [class.patch-editor-rack-visual__module-wrapper--selected]="expandedRackTrackingId === previewCard.trackingId"
+                           [class.patch-editor-rack-visual__module-wrapper--dimmed]="isRackModuleDimmed(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
+                           [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
+                           [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'in'"
+                           [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'out'"
+                           (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.trackingId, previewCard.module)">
+                        <app-module-realistic
+                          class="patch-editor-rack-visual__module"
+                          [data]="previewCard.module"
+                          [showPanelImages]="previewCard.module.panels?.length > 0"
+                          [selectedPanelId]="previewCard.selectedPanelId"
+                          [disablePanelImageEnterAnimation]="true"
+                        ></app-module-realistic>
+                        @if (expandedRackTrackingId === previewCard.trackingId) {
+                          <div class="patch-editor-rack-visual__cv-inline"
+                               [style.transform]="'scale(' + (1 / rackAutoScale) + ')'"
+                               (click)="$event.stopPropagation()">
+                            <div class="patch-editor-rack-visual__cv-inline-header">
+                              <span class="patch-editor-rack-visual__cv-panel-name">{{ previewCard.module.name }}
+                                @if (getRackModuleCopyLabel(previewCard.trackingId, previewCard.module.id); as copyLabel) {
+                                  <span class="patch-editor-rack-visual__cv-copy-label">{{ copyLabel }}</span>
+                                }
+                              </span>
+                              <span class="patch-editor-rack-visual__cv-panel-manufacturer">{{ previewCard.module.manufacturer?.name }}</span>
+                            </div>
+                            <app-module-cvs
+                              [data]="previewCard.module"
+                              [instanceId]="bag.instanceMap?.get(previewCard.trackingId)"
+                              [forceNewInstance]="!bag.instanceMap?.has(previewCard.trackingId)"
+                            ></app-module-cvs>
+                          </div>
+                        }
+                      </div>
+                    }
+                    @if (row.modules.length === 0) {
+                      <div class="patch-editor-rack-visual__row-empty">Empty row</div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+          @if (!expandedRackModule) {
+            <div class="patch-editor-rack-visual__hint">
+              <mat-icon>touch_app</mat-icon>
+              <span>Tap a module to see its ins &amp; outs</span>
+            </div>
+          }
+        </div>
+      }
      </div>
     
     @if (bag.sourceCards.length > 0) {

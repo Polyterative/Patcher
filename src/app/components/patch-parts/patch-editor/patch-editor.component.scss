@@ -247,20 +247,12 @@ $rack-grid-weight: 0.1rem;
   display: grid;
   gap: 0.6rem;
   padding: 0.35rem 0;
-
-  &--compact {
-    font-size: 0.85rem;
-
-    .patch-editor-rack-visual__screen {
-      transform: scale(0.8);
-      transform-origin: top left;
-    }
-  }
 }
 
 .patch-editor-rack-visual__header {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.6rem;
   flex-wrap: wrap;
 }
@@ -292,20 +284,33 @@ $rack-grid-weight: 0.1rem;
   }
 }
 
-.patch-editor-rack-visual__scroll-area {
-  overflow-x: auto;
-  overflow-y: visible;
-  padding-bottom: 0.4rem;
-  -webkit-overflow-scrolling: touch;
+.patch-editor-rack-visual__viewport {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.patch-editor-rack-visual__frame {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 .patch-editor-rack-visual__screen {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
   border-radius: 0.45rem;
   padding: 0.3rem;
   min-width: fit-content;
+  transform-origin: top left;
+  will-change: transform;
+  transition: transform 120ms ease-out;
 }
 
 .patch-editor-rack-visual__row {
@@ -394,6 +399,7 @@ $rack-grid-weight: 0.1rem;
 .patch-editor-rack-visual__hint {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   font-size: 0.72rem;
   color: #6c7f92;
@@ -484,6 +490,8 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   z-index: 20;
   pointer-events: auto;
   animation: cvInlineAppear 180ms ease-out;
+  // Counter the parent's scale transform so the popup renders at native size
+  transform-origin: top left;
 }
 
 .patch-editor-rack-visual__cv-inline-header {
@@ -498,12 +506,10 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
 @keyframes cvInlineAppear {
   from {
     opacity: 0;
-    transform: translateX(-0.3rem) scale(0.97);
     box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0), 0 0 0 1px rgba(0, 0, 0, 0);
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
   }
 }
@@ -511,11 +517,6 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
 // Allow the screen's overflow to show the floating panel
 .patch-editor-rack-visual__screen--has-selection {
   overflow: visible;
-}
-
-.patch-editor-rack-visual__scroll-area:has(.patch-editor-rack-visual__screen--has-selection) {
-  overflow: visible;
-  padding-right: 18rem;
 }
 
 .patch-editor-rack-visual__cv-panel-name {
