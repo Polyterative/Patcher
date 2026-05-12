@@ -7,7 +7,11 @@ import {
   PatchModuleInstance
 } from 'src/app/models/connection';
 import { DbModule } from 'src/app/models/module';
-import { of } from 'rxjs';
+import {
+  BehaviorSubject,
+  of
+} from 'rxjs';
+import { LinkedRackUiState } from '../patch-detail-data.service';
 
 
 function fakeModule(id: number, name = `Mod${ id }`): DbModule {
@@ -28,12 +32,26 @@ function fakeConnection(instanceIdA: number, instanceIdB: number): PatchConnecti
   };
 }
 
+function fakeDataService() {
+  const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+    kind: 'unlinked',
+    statusTone: 'neutral',
+    statusLabel: 'Collection-first',
+    description: 'No rack is linked yet.',
+    rackId: null
+  });
+  return {
+    singlePatchData$: of(undefined),
+    linkedRackState$
+  };
+}
+
 
 describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
       {} as any,
-      {singlePatchData$: of(undefined)} as any,
+      fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
       {markForCheck: () => {}} as any
@@ -121,7 +139,7 @@ describe('PatchEditorComponent.buildConnectionNames (via private access)', () =>
   function buildComponent(): PatchEditorComponent {
     return new PatchEditorComponent(
       {} as any,
-      {singlePatchData$: of(undefined)} as any,
+      fakeDataService() as any,
       {} as any,
       {nativeElement: document.createElement('div')} as any,
       {markForCheck: () => {}} as any

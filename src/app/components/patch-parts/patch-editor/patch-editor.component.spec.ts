@@ -2,6 +2,8 @@ import {
   buildLinkedRackInstanceMap,
   buildLinkedRackPreviewRows,
   buildLinkedRackPreviewState,
+  countOrphanedConnections,
+  detectLinkedRackDivergence,
   LinkedRackPreviewState,
   EditorModuleCard,
   filterEditorCardsByQuery,
@@ -111,6 +113,216 @@ describe('PatchEditorComponent', () => {
 
   it('exposes collection and linked-rack operation modes', () => {
     expect(PATCH_EDITOR_OPERATION_MODE_OPTIONS.map(option => option.mode)).toEqual(['linkedRack', 'collection']);
+  });
+
+  it('sorts linked-rack preview rows and modules by physical position', () => {
+    const rows = buildLinkedRackPreviewRows([
+      {
+        module: {id: 1, name: 'Late'} as any,
+        rackingData: {id: 301, row: 2, column: 18, selectedPanelId: 9}
+      },
+      {
+        module: {id: 2, name: 'First'} as any,
+        rackingData: {id: 101, row: 1, column: 14}
+      },
+      {
+        module: {id: 3, name: 'Earlier'} as any,
+        rackingData: {id: 102, row: 1, column: 2}
+      }
+    ] as any);
+
+    expect(rows.map(row => row.row)).toEqual([1, 2]);
+    expect(rows[0].modules.map(card => card.trackingId)).toEqual([102, 101]);
+    expect(rows[1].modules[0].selectedPanelId).toBe(9);
+    expect(rows[0].modules[0].selectedPanelId).toBeNull();
+  });
+
+  it('maps duplicate linked-rack positions to patch instances by rack position and instance id', () => {
+    const preview = buildLinkedRackPreviewState(
+      {id: 10, name: 'Studio Rack'} as any,
+      [
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}},
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7003, row: 2, column: 1}}
+      ] as any
+    );
+
+    const instanceMap = buildLinkedRackInstanceMap(preview, [
+      {id: 22, patch_id: 1, module_id: 7, instance_label: null},
+      {id: 11, patch_id: 1, module_id: 7, instance_label: null}
+    ]);
+
+    expect(instanceMap.get(7001)).toBe(11);
+    expect(instanceMap.get(7002)).toBe(22);
+    expect(instanceMap.has(7003)).toBeFalse();
+  });
+
+  it('detects linked-rack divergence for orphaned modules and excess copies', () => {
+    const preview = buildLinkedRackPreviewState(
+      {id: 10, name: 'Studio Rack'} as any,
+      [
+        {module: {id: 1, name: 'Rack Module'} as any, rackingData: {id: 1001, row: 1, column: 1}}
+      ] as any
+    );
+
+    const divergence = detectLinkedRackDivergence(preview, [
+      {id: 11, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'} as any},
+      {id: 12, patch_id: 1, module_id: 1, instance_label: null, module: {name: 'Rack Module'} as any},
+      {id: 99, patch_id: 1, module_id: 9, instance_label: null, module: {name: 'Orphan'} as any}
+    ], []);
+
+    expect(divergence.clean).toBeFalse();
+    expect(divergence.totalOrphanedInstances).toBe(2);
+    expect(divergence.excessInstances[0]).toEqual(jasmine.objectContaining({
+      moduleId: 1,
+      rackPositions: 1,
+      patchInstances: 2
+    }));
+    expect(divergence.orphanedModules[0]).toEqual(jasmine.objectContaining({
+      moduleId: 9,
+      rackPositions: 0,
+      patchInstances: 1
+    }));
+  });
+
+  it('counts each connection with orphaned instances once and ignores legacy module-level connections', () => {
+    const instanceMap = new Map<number, number>([[1001, 11]]);
+    const instances = [
+      {id: 11, patch_id: 1, module_id: 1},
+      {id: 22, patch_id: 1, module_id: 2},
+      {id: 33, patch_id: 1, module_id: 3}
+    ] as any;
+    const connections = [
+      {instance_id_a: 22, instance_id_b: 33},
+      {instance_id_a: 11, instance_id_b: undefined},
+      {instance_id_a: undefined, instance_id_b: undefined}
+    ] as any;
+
+    expect(countOrphanedConnections(instanceMap, instances, connections)).toBe(1);
+  });
+
+  it('clears the expanded rack CV panel when switching editor modes', () => {
+    const component = createPatchEditorComponent();
+    component.expandedRackTrackingId = 123;
+    component.expandedRackModule = {id: 1, name: 'Maths'} as any;
+
+    component.setOperationMode('collection');
+
+    expect(component.operationMode$.value).toBe('collection');
+    expect(component.expandedRackTrackingId).toBeNull();
+    expect(component.expandedRackModule).toBeNull();
+  });
+
+  it('labels duplicate rack module copies by rack position only when disambiguation is needed', () => {
+    const component = createPatchEditorComponent();
+    component.linkedRackPreviewState$.next(buildLinkedRackPreviewState(
+      {id: 10, name: 'Studio Rack'} as any,
+      [
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}},
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 8, name: 'Plaits'} as any, rackingData: {id: 8001, row: 1, column: 32}}
+      ] as any
+    ));
+
+    expect(component.getRackModuleCopyLabel(7001, 7)).toBe('(1)');
+    expect(component.getRackModuleCopyLabel(7002, 7)).toBe('(2)');
+    expect(component.getRackModuleCopyLabel(8001, 8)).toBeNull();
+  });
+
+  it('auto-scales wide linked-rack visuals to the viewport and keeps narrower racks at full scale', () => {
+    const component = createPatchEditorComponent();
+    (component as any).rackViewportRef = {nativeElement: {clientWidth: 800}};
+    (component as any).rackBaseHeightPx = 240;
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+    component.updateRackAutoScale(100);
+
+    expect(component.rackAutoScale).toBeCloseTo(800 / (100 * remPx), 3);
+    expect(component.rackScaledWidthPx).toBeCloseTo(800, 1);
+    expect(component.rackScaledHeightPx).toBeCloseTo(240 * (800 / (100 * remPx)), 1);
+
+    component.updateRackAutoScale(20);
+
+    expect(component.rackAutoScale).toBe(1);
+    expect(component.rackScaledWidthPx).toBeCloseTo(20 * remPx, 1);
+    expect(component.rackScaledHeightPx).toBeCloseTo(240, 1);
+  });
+
+  it('builds unavailable linked-rack preview state when the rack cannot be resolved', () => {
+    const preview = buildLinkedRackPreviewState(undefined, [
+      {module: {id: 1, name: 'Ignored'} as any, rackingData: {id: 1001, row: 1, column: 1}}
+    ] as any);
+
+    expect(preview.kind).toBe('unavailable');
+    expect(preview.moduleCount).toBe(0);
+    expect(preview.rows).toEqual([]);
+    expect(preview.description).toContain('Collection-first editing still works');
+  });
+
+  it('uses deterministic fallback tracking ids for rack positions missing row ids', () => {
+    const rows = buildLinkedRackPreviewRows([
+      {module: {id: 4, name: 'Fallback'} as any, rackingData: {row: 1, column: 3}},
+      {module: {id: 8, name: 'Explicit'} as any, rackingData: {id: 808, row: 1, column: 5}}
+    ] as any);
+
+    expect(rows[0].modules[0].trackingId).toBe(200304);
+    expect(rows[0].modules[1].trackingId).toBe(808);
+  });
+
+  it('does not map linked-rack instances until the rack preview is ready', () => {
+    const map = buildLinkedRackInstanceMap({
+      kind: 'loading',
+      description: 'Loading',
+      rows: [{
+        row: 1,
+        modules: [{trackingId: 1001, module: {id: 7} as any, row: 1, column: 1, selectedPanelId: null}]
+      }],
+      moduleCount: 1
+    }, [
+      {id: 500, patch_id: 1, module_id: 7, instance_label: null}
+    ]);
+
+    expect(map.size).toBe(0);
+  });
+
+  it('reports clean divergence when duplicate rack positions exactly match patch copies', () => {
+    const preview = buildLinkedRackPreviewState(
+      {id: 10, name: 'Studio Rack'} as any,
+      [
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7001, row: 1, column: 4}},
+        {module: {id: 7, name: 'Maths'} as any, rackingData: {id: 7002, row: 1, column: 20}}
+      ] as any
+    );
+
+    const divergence = detectLinkedRackDivergence(preview, [
+      {id: 22, patch_id: 1, module_id: 7, instance_label: null},
+      {id: 11, patch_id: 1, module_id: 7, instance_label: null}
+    ], []);
+
+    expect(divergence.clean).toBeTrue();
+    expect(divergence.totalOrphanedInstances).toBe(0);
+    expect(divergence.excessInstances).toEqual([]);
+    expect(divergence.orphanedModules).toEqual([]);
+  });
+
+  it('keeps warning summaries focused on instances when no orphaned connections are affected', () => {
+    const component = createPatchEditorComponent();
+
+    const message = component.getRackToolbarSummary({
+      kind: 'ready',
+      description: '',
+      rack: {name: 'Studio Current', rows: 2, hp: 84} as any,
+      rows: [],
+      moduleCount: 3
+    } as any, {
+      orphanedModules: [],
+      excessInstances: [{moduleId: 7, moduleName: 'Maths', rackPositions: 1, patchInstances: 2}],
+      totalOrphanedInstances: 1,
+      clean: false
+    }, 0);
+
+    expect(message).toContain('1 instance sits outside the current rack');
+    expect(message).not.toContain('connection affected');
   });
 
   it('uses the rack summary line for divergence messaging when the linked rack is out of sync', () => {
@@ -657,6 +869,17 @@ describe('PatchEditorComponent', () => {
       expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBe('in');
     });
 
+    it('returns the destination role when only an input side is selected first', () => {
+      const instanceMap = new Map([[20, 200], [30, 300]]);
+      const sel = {
+        a: null,
+        b: {cv: {module: {id: 2}, instance_id: 200}, kind: 'in' as const}
+      };
+
+      expect(component.getRackModuleConnectionRole(20, 2, instanceMap, sel as any)).toBe('in');
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBeNull();
+    });
+
     it('only matches the specific copy in pre-confirm when both are same module', () => {
       // Two copies of the same module, one selected as out, the other as in
       const instanceMap = new Map([[10, 100], [20, 200]]);
@@ -711,6 +934,19 @@ describe('PatchEditorComponent', () => {
       const sel = {
         a: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const},
         b: null
+      };
+
+      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as any)).toBe(false);
+    });
+
+    it('does not dim a selected input-only destination while another module is expanded', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+
+      const instanceMap = new Map([[30, 300]]);
+      const sel = {
+        a: null,
+        b: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const}
       };
 
       expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as any)).toBe(false);

@@ -1107,7 +1107,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       const connectionSuffix = orphanedConnectionCount > 0
         ? ` · ${ orphanedConnectionCount } connection${ orphanedConnectionCount === 1 ? '' : 's' } affected`
         : '';
-      return `Linked rack warning — Rack and patch copies have diverged. ${ divergence.totalOrphanedInstances } instance${ divergence.totalOrphanedInstances === 1 ? '' : 's' } sit outside the current rack${ connectionSuffix }.`;
+      const instanceVerb = divergence.totalOrphanedInstances === 1 ? 'sits' : 'sit';
+      return `Linked rack warning — Rack and patch copies have diverged. ${ divergence.totalOrphanedInstances } instance${ divergence.totalOrphanedInstances === 1 ? '' : 's' } ${ instanceVerb } outside the current rack${ connectionSuffix }.`;
     }
 
     return `${ preview.rack.name } · ${ preview.rack.rows } row${ preview.rack.rows === 1 ? '' : 's' } · ${ preview.rack.hp } HP · ${ preview.moduleCount } placed module${ preview.moduleCount === 1 ? '' : 's' }`;
@@ -1148,11 +1149,11 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     instanceMap: Map<number, number> | null,
     sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null
   ): 'in' | 'out' | null {
-    if (!sel?.a) return null;
+    if (!sel?.a && !sel?.b) return null;
     const myInstanceId = instanceMap?.get(trackingId);
 
     // Check side A
-    if (sel.a.cv.module?.id === moduleId) {
+    if (sel.a?.cv.module?.id === moduleId) {
       // If the selected CV has a specific instance_id, only match this exact copy
       if (sel.a.cv.instance_id != null) {
         if (sel.a.cv.instance_id === myInstanceId) return sel.a.kind;
