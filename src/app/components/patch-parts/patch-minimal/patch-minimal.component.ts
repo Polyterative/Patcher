@@ -15,6 +15,7 @@ import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-det
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
 import { PatchMinimal } from 'src/app/models/patch';
+import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$ = new Subject<void>();
   readonly tagSeparatorKeysCodes: number[] = [ENTER, COMMA];
+  readonly formTypes = FormTypes;
   
   constructor(
     public userManagerService: UserManagementService,
@@ -56,6 +58,10 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
 
   removeTag(tag: string): void {
     this.dataService.removePatchTag(tag);
+  }
+
+  clearLinkedRack(): void {
+    this.dataService.clearLinkedRack();
   }
   
 }

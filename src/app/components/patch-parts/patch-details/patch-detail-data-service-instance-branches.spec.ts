@@ -41,7 +41,8 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
         getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
       },
       get: {
-        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch()}))
+        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch()})),
+        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),

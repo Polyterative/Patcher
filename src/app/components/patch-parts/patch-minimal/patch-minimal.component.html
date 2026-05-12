@@ -1,7 +1,9 @@
 @if ({
   patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
   user:(userManagerService.loggedUser$|async),
-  singlePatchData: (dataService.singlePatchData$|async)
+  singlePatchData: (dataService.singlePatchData$|async),
+  linkedRackState: (dataService.linkedRackState$|async),
+  linkedRackOptions: (dataService.linkedRackOptions$|async)
 }; as bag) {
     <div class="col parent"
     >
@@ -36,6 +38,38 @@
             >
           </mat-chip-grid>
         </mat-form-field>
+          @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
+            <div class="patch-linked-rack patch-edit-meta-grid__linked-rack">
+              <div class="patch-linked-rack__header">
+                <div class="patch-linked-rack__title">Linked rack</div>
+                <div class="patch-linked-rack__status">{{ bag.linkedRackState.statusLabel }}</div>
+              </div>
+              <lib-mat-form-entity
+                class="patch-linked-rack__field"
+                [control]="dataService.formData.linkedRack.control"
+                [type]="formTypes.SELECT"
+                [options$]="dataService.linkedRackOptions$"
+                [formFieldAppearanceType]="'outline'"
+                iconL1="view_stream"
+                label="Choose linked rack"
+              ></lib-mat-form-entity>
+              <p class="patch-linked-rack__copy">
+                {{ bag.linkedRackState.description }}
+              </p>
+              @if (bag.linkedRackOptions.length === 0) {
+                <p class="patch-linked-rack__hint">
+                  You do not have any racks yet. You can keep patching without one and link a rack later.
+                </p>
+              }
+              @if (bag.linkedRackState.kind !== 'unlinked') {
+                <div class="patch-linked-rack__actions">
+                  <button mat-stroked-button type="button" class="patch-linked-rack__clear" (click)="clearLinkedRack()">
+                    Clear linked rack
+                  </button>
+                </div>
+              }
+            </div>
+          }
       </div>
     }
     @if (!bag.patchEditingPanelOpenState) {
@@ -43,6 +77,20 @@
         [data]="data"
         [viewConfig]="viewConfig"
       ></app-patch-micro>
+    }
+    @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
+      <div class="patch-linked-rack patch-linked-rack--summary">
+        <div class="patch-linked-rack__header">
+          <div class="patch-linked-rack__title">Linked rack</div>
+          <div class="patch-linked-rack__status">{{ bag.linkedRackState.statusLabel }}</div>
+        </div>
+        @if (bag.linkedRackState.rackName) {
+          <div class="patch-linked-rack__rack-name">{{ bag.linkedRackState.rackName }}</div>
+        }
+        <p class="patch-linked-rack__copy">
+          {{ bag.linkedRackState.description }}
+        </p>
+      </div>
     }
     <ng-content></ng-content>
     @if (!viewConfig.hideButtons) {
