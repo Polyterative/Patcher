@@ -72,6 +72,27 @@ describe('SupabaseService - public patch visibility', () => {
     });
   }, TEST_TIMEOUT);
 
+  it('GET.publicRackWithId should load a public rack without author profile gating', (done) => {
+    const mock = chainable({data: {id: 77, name: 'Hidden Profile Rack'}, error: null});
+    const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+    const filterSpy = spyOn(mock, 'filter').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.GET.publicRackWithId(77).subscribe({
+      next: (result: any) => {
+        expect(result.data?.id).toBe(77);
+        expect(selectSpy.calls.mostRecent().args[0]).not.toContain('author_profile_gate:authorid!inner(public)');
+        expect(filterSpy).toHaveBeenCalledWith('public', 'eq', true);
+        expect(filterSpy).not.toHaveBeenCalledWith('author_profile_gate.public', 'eq', true);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
   it('GET.publicUserPatchesPaginated should keep author filtering but ignore author profile visibility', (done) => {
     const mock = chainable({data: [], count: 0, error: null});
     const selectSpy = spyOn(mock, 'select').and.returnValue(mock);

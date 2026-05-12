@@ -86,6 +86,7 @@ export interface LinkedRackUiState {
   description: string;
   rackName?: string;
   rackId?: number | null;
+  rackImage?: string;
 }
 
 const defaultLinkedRackUiState: LinkedRackUiState = {
@@ -1277,7 +1278,8 @@ export class PatchDetailDataService implements OnDestroy {
       statusLabel: 'Linked rack active',
       description: 'The linked rack gives you spatial context while the patch still saves against your collection and patch-local copies.',
       rackName: linkedRack.name,
-      rackId: linkedRack.id
+      rackId: linkedRack.id,
+      rackImage: linkedRack.image
     };
   }
 }
