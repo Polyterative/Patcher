@@ -433,7 +433,9 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   position: absolute;
   top: 0;
   left: 100%;
+  right: auto;
   margin-left: 0.5rem;
+  margin-right: 0;
   min-width: 16rem;
   max-width: 22rem;
   padding: 0.75rem;
@@ -447,6 +449,22 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   animation: cvInlineAppear 180ms ease-out;
   // Counter the parent's scale transform so the popup renders at native size
   transform-origin: top left;
+}
+
+.patch-editor-rack-visual__cv-inline--open-right {
+  left: 100%;
+  right: auto;
+  margin-left: 0.5rem;
+  margin-right: 0;
+  transform-origin: top left;
+}
+
+.patch-editor-rack-visual__cv-inline--open-left {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 0.5rem;
+  transform-origin: top right;
 }
 
 .patch-editor-rack-visual__cv-inline-header {

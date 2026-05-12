@@ -3,7 +3,14 @@
        [routerLink]="['/modules/details',data.id]"
        class="clickable modulePartImageHost"
        [@.disabled]="disableEnterAnimation"
-  >
+       #tooltipAnchor
+       [matTooltip]="tooltip"
+       [matTooltipDisabled]="tooltipDisabled"
+       [matTooltipClass]="tooltipClass"
+       [matTooltipPosition]="tooltipPosition"
+       (mouseenter)="updateTooltipPosition(tooltipAnchor)"
+       (focusin)="updateTooltipPosition(tooltipAnchor)"
+   >
     @if ({
       height: data.standard|getModuleHeightForStandard
     }; as bag) {
@@ -39,7 +46,14 @@
   <div [routerLink]="['/modules/details',data.id]"
        class="clickable modulePartImageHost modulePartImageHost--surface"
        [@.disabled]="disableEnterAnimation"
-  >
+       #tooltipAnchor
+       [matTooltip]="tooltip"
+       [matTooltipDisabled]="tooltipDisabled"
+       [matTooltipClass]="tooltipClass"
+       [matTooltipPosition]="tooltipPosition"
+       (mouseenter)="updateTooltipPosition(tooltipAnchor)"
+       (focusin)="updateTooltipPosition(tooltipAnchor)"
+   >
     @if ({
       height: data.standard|getModuleHeightForStandard
     }; as bag) {

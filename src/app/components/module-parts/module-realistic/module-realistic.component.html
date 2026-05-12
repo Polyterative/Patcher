@@ -52,9 +52,9 @@
                            [selectedPanelId]="selectedPanelId"
                            [containImage]="false"
                            [disableEnterAnimation]="disablePanelImageEnterAnimation"
-                           [matTooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
-                           [matTooltipDisabled]="analysisModeActive || touchInteractionMode"
-                           matTooltipClass="module-panel-tooltip"
+                           [tooltip]="analysisModeActive ? '' : buildPanelTooltip(data, selectedPanelId)"
+                           [tooltipDisabled]="analysisModeActive || touchInteractionMode"
+                           [tooltipClass]="'module-panel-tooltip'"
     ></app-module-part-image>
   }
   <div class="analysisOverlay"

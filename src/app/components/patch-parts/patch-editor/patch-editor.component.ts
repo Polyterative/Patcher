@@ -153,6 +153,8 @@ export interface LinkedRackPreviewState {
   moduleCount: number;
 }
 
+export type RackInlinePanelSide = 'left' | 'right';
+
 const unknownManufacturerGroupKey = '\uffff';
 
 const defaultSortModeId: PatchEditorSortModeId = 'nameAsc';
@@ -170,6 +172,31 @@ const defaultLinkedRackPreviewState: LinkedRackPreviewState = {
   rows: [],
   moduleCount: 0
 };
+
+const rackInlinePanelMaxWidthRem = 22;
+const rackInlinePanelGapPx = 8;
+const rackInlinePanelViewportMarginPx = 12;
+
+export function resolveRackInlinePanelSide(
+  moduleRect: Pick<DOMRect, 'left' | 'right'>,
+  viewportWidth: number,
+  viewportOffsetLeft = 0,
+  panelWidthPx = rackInlinePanelMaxWidthRem * 16
+): RackInlinePanelSide {
+  const viewportRight = viewportOffsetLeft + viewportWidth;
+  const availableLeft = Math.max(0, moduleRect.left - viewportOffsetLeft - rackInlinePanelGapPx - rackInlinePanelViewportMarginPx);
+  const availableRight = Math.max(0, viewportRight - moduleRect.right - rackInlinePanelGapPx - rackInlinePanelViewportMarginPx);
+
+  if (availableRight >= panelWidthPx) {
+    return 'right';
+  }
+
+  if (availableLeft >= panelWidthPx) {
+    return 'left';
+  }
+
+  return availableLeft > availableRight ? 'left' : 'right';
+}
 
 const loadingLinkedRackPreviewState: LinkedRackPreviewState = {
   kind: 'loading',
@@ -766,6 +793,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   /** Currently expanded rack position in the rack visual (for showing CVs) */
   expandedRackTrackingId: number | null = null;
   expandedRackModule: DbModule | null = null;
+  expandedRackInlineSide: RackInlinePanelSide = 'right';
   
   /** Whether collection modules have been loaded at least once */
   collectionLoaded$ = new BehaviorSubject<boolean>(false);
@@ -1038,6 +1066,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   clearExpandedRackSelection(): void {
     this.expandedRackTrackingId = null;
     this.expandedRackModule = null;
+    this.expandedRackInlineSide = 'right';
     this.cdr.markForCheck();
   }
 
@@ -1057,13 +1086,30 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       && rackVisual.contains(target);
   }
 
-  selectRackModule(trackingId: number, module: DbModule): void {
+  selectRackModule(trackingId: number, module: DbModule, anchor?: HTMLElement): void {
     if (this.expandedRackTrackingId === trackingId) {
       this.clearExpandedRackSelection();
     } else {
       this.expandedRackTrackingId = trackingId;
       this.expandedRackModule = module;
+      this.expandedRackInlineSide = this.resolveRackInlinePanelSide(anchor);
+      this.cdr.markForCheck();
     }
+  }
+
+  private resolveRackInlinePanelSide(anchor?: HTMLElement): RackInlinePanelSide {
+    const visualViewport = typeof window !== 'undefined' ? window.visualViewport : null;
+    const viewportWidth = visualViewport?.width ?? (typeof window !== 'undefined' ? window.innerWidth : 0);
+    const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
+    if (!anchor || viewportWidth <= 0) {
+      return 'right';
+    }
+
+    return resolveRackInlinePanelSide(
+      anchor.getBoundingClientRect(),
+      viewportWidth,
+      viewportOffsetLeft
+    );
   }
 
   /**
