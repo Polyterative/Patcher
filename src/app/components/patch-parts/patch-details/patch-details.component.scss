@@ -18,26 +18,10 @@
 
 .patch-details-graph {
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
 }
 
 .patch-details-connections {
   min-width: 0;
   flex: 0 1 auto;
-}
-
-@media (min-width: 80rem) {
-  .patch-details-content--has-connections {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-
-  .patch-details-graph {
-    flex: 1 1 60%;
-  }
-
-  .patch-details-connections {
-    flex: 0 1 40%;
-    max-width: 28rem;
-  }
 }

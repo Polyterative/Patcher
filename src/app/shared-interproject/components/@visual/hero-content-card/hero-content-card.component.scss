@@ -1,3 +1,4 @@
+@use "sass:color";
 //@use '@angular/material' as mat;
 //@import '@angular/material/theming';
 @use "src/app/style/brand-resources" as *;
@@ -304,6 +305,61 @@ h3 {
   contain: layout style;
 }
 
+.title-metro-nav-origin {
+  display: block;
+}
+
+.title-metro-sticky-shell {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  z-index: 1200;
+  isolation: isolate;
+  background: color.adjust($brand-secondary, $lightness: 34%, $alpha: -0.1);
+  backdrop-filter: blur(1rem) saturate(180%) brightness(1.08);
+  -webkit-backdrop-filter: blur(1rem) saturate(180%) brightness(1.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.46);
+  box-shadow:
+    0 0.5rem 2rem rgba(26, 44, 66, 0.16),
+    0 0.125rem 0.5rem rgba(26, 44, 66, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.22);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.9rem);
+  transition:
+    opacity 220ms cubic-bezier(0.2, 0, 0, 1),
+    transform 260ms cubic-bezier(0.2, 0, 0, 1),
+    visibility 0ms linear 260ms;
+}
+
+.title-metro-sticky-shell--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0ms;
+}
+
+.title-metro-sticky-wrapper {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding-inline: 1rem;
+}
+
+.title-metro-nav--floating {
+  position: relative;
+  z-index: 1;
+  inline-size: 100%;
+  padding: 0.65rem 0 0.55rem;
+}
+
+.title-metro-nav--floating .title-metro-targets {
+  padding-bottom: 0;
+  align-items: center;
+}
+
 .title-metro-topbar {
   display: flex;
   align-items: center;
@@ -416,7 +472,6 @@ h3 {
   opacity: 1;
 }
 
-
 .title-inline-description {
   align-self: baseline;
   flex: 0 1 14rem;
@@ -526,6 +581,12 @@ h3 {
     grid-column: 1;
     padding-top: 0;
     max-width: min(32rem, 100%);
+  }
+}
+
+@media (max-width: 72.5rem) {
+  .title-metro-sticky-wrapper {
+    padding-inline: 0.75rem;
   }
 }
 

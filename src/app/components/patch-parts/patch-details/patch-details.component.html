@@ -38,7 +38,7 @@
             </app-advice-tooltip>
           }
 
-          @if (!isEditing && bagA.length > 0) {
+          @if (!isEditing && bagA.length > 0 && showConnectionsList) {
             @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
               <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'"
                                      class="patch-details-connections"
