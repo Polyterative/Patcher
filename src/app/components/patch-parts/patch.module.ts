@@ -12,6 +12,7 @@ import { TimeagoModule } from 'ngx-timeago';
 import { PatchConnectionModule } from 'src/app/components/patch-connection/patch-connection.module';
 import { PatchCreatorComponent } from 'src/app/components/patch-parts/patch-creator/patch-creator.component';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
+import { RackDetailDataService } from 'src/app/components/rack-parts/rack-detail-data.service';
 import { PatchDetailsComponent } from 'src/app/components/patch-parts/patch-details/patch-details.component';
 import { PatchEditorComponent } from 'src/app/components/patch-parts/patch-editor/patch-editor.component';
 import { PatchMinimalComponent } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
@@ -49,6 +50,7 @@ import { PatchConnectionStatsPipe } from 'src/app/components/patch-parts/patch-c
 import { PatchConnectionUniqueModulesPipe } from 'src/app/components/patch-parts/patch-connection-unique-modules.pipe';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { ModuleBrowserModule } from 'src/app/features/module-browser/module-browser.module';
+import { ModulePartsModule } from 'src/app/components/module-parts/module-parts.module';
 import { EditFabModule } from 'src/app/shared-interproject/components/@visual/edit-fab/edit-fab.module';
 
 
@@ -72,7 +74,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     PatchConnectionStatsPipe,
     PatchConnectionUniqueModulesPipe
   ],
-  providers:    [PatchDetailDataService],
+  providers:    [PatchDetailDataService, RackDetailDataService],
   imports: [
     CommonModule,
     ConfirmDialogModule,
@@ -115,6 +117,7 @@ import { EditFabModule } from 'src/app/shared-interproject/components/@visual/ed
     StatisticsModule,
     FlexboxRowFastModule,
     ModuleBrowserModule,
+    ModulePartsModule,
     EditFabModule
   ]
 })

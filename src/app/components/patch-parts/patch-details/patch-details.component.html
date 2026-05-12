@@ -20,30 +20,37 @@
       @if ({
         length: (bag.connections.length)
       }; as bagA) {
-        @if (!isEditing && bagA.length > 0) {
-          @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
-            <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'">
-              <app-patch-connections-list [editorConnections]="bag.connections"
-                                          [isEditing]="false"
-                                          [instanceLabelMap]="instanceLabelMap"
-              ></app-patch-connections-list>
+        <div class="patch-details-content"
+             [class.patch-details-content--has-connections]="!isEditing && bagA.length > 0">
+          @if (bagA.length > 0) {
+            <lib-hero-content-card [titleNormal]="'Connections graph'"
+                                   class="patch-details-graph"
+            >
+              <lib-clean-card>
+                <app-patch-graph [progressiveRender]="!isEditing"
+                                 [animateGraphBuild]="isEditing"
+                ></app-patch-graph>
+              </lib-clean-card>
             </lib-hero-content-card>
+          } @else {
+            <app-advice-tooltip [@enter]="{ value: '', params: { delay: 150 } }">
+              This patch has no connections yet. Open the editor to start patching.
+            </app-advice-tooltip>
           }
-        }
-        @if (bagA.length > 0) {
-          <lib-hero-content-card [titleNormal]="'Connections graph'"
-          >
-            <lib-clean-card>
-              <app-patch-graph [progressiveRender]="!isEditing"
-                               [animateGraphBuild]="isEditing"
-              ></app-patch-graph>
-            </lib-clean-card>
-          </lib-hero-content-card>
-        } @else {
-          <app-advice-tooltip [@enter]="{ value: '', params: { delay: 150 } }">
-            This patch has no connections yet. Open the editor to start patching.
-          </app-advice-tooltip>
-        }
+
+          @if (!isEditing && bagA.length > 0) {
+            @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
+              <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'"
+                                     class="patch-details-connections"
+              >
+                <app-patch-connections-list [editorConnections]="bag.connections"
+                                            [isEditing]="false"
+                                            [instanceLabelMap]="instanceLabelMap"
+                ></app-patch-connections-list>
+              </lib-hero-content-card>
+            }
+          }
+        </div>
       }
     }
   </div>
