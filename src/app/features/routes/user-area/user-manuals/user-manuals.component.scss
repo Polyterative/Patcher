@@ -1,21 +1,29 @@
 :host {
   display: block;
+  min-width: 0;
 }
 
 .manuals-shell {
   min-width: 0;
+  gap: 0.85rem;
+}
+
+.manuals-stack {
+  gap: 0.75rem;
 }
 
 .manuals-list {
-  max-block-size: 16rem;
+  max-block-size: clamp(20rem, calc(100vh - 24rem), 25rem);
   overflow: auto;
   scrollbar-gutter: stable;
+  padding-right: 0.15rem;
 }
 
 .manuals-chip-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-content: flex-start;
 }
 
 .manuals-empty {
@@ -29,5 +37,6 @@
   .manuals-list {
     max-block-size: none;
     overflow: visible;
+    padding-right: 0;
   }
 }

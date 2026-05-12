@@ -1,20 +1,35 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.userComments__wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.userComments__stack {
+  gap: 0.85rem;
+}
+
 .userComments__rail {
   width: 100%;
-  max-inline-size: 48rem;
-  margin-inline: auto;
+  min-width: 0;
+  gap: 0.75rem;
 }
 
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding-bottom: 0.25rem;
+  align-content: flex-start;
 }
 
 .userComments__list {
-  max-block-size: 22rem;
+  max-block-size: clamp(20rem, calc(100vh - 24rem), 25rem);
   overflow: auto;
   scrollbar-gutter: stable;
+  padding-right: 0.15rem;
 }
 
 .userComments__empty {
@@ -32,5 +47,6 @@
   .userComments__list {
     max-block-size: none;
     overflow: visible;
+    padding-right: 0;
   }
 }
