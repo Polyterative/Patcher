@@ -595,7 +595,7 @@ export function detectLinkedRackDivergence(
     const existing = instancesPerModule.get(inst.module_id);
     instancesPerModule.set(inst.module_id, {
       count: (existing?.count ?? 0) + 1,
-      name: existing?.name ?? `Module ${inst.module_id}`
+      name: existing?.name ?? inst.module?.name ?? `Module ${inst.module_id}`
     });
   }
 
