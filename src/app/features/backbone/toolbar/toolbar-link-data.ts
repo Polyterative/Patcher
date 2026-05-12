@@ -126,7 +126,8 @@ export function buildToolbarGuestLinks(): RouteClickableLink[] {
 }
 
 export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string): RouteClickableLink[] {
-  const cacheKey = `${ isLoggedIn ? 'user' : 'guest' }:${ username.trim() || 'Account' }`;
+  const normalizedUsername = username.trim() || 'Account';
+  const cacheKey = `${ isLoggedIn ? 'user' : 'guest' }:${ normalizedUsername }`;
   const cachedLinks = wideShellAccountLinksCache.get(cacheKey);
   if (cachedLinks) {
     return cachedLinks;
@@ -140,7 +141,7 @@ export function buildWideShellAccountLinks(isLoggedIn: boolean, username: string
     if (link.route === '/user/area') {
       return {
         ...link,
-        label: 'Profile'
+        label: normalizedUsername
       };
     }
 
