@@ -25,7 +25,8 @@
 
 .right-col {
   min-width: 0;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 1rem;
 }
 
 .patch-composite-sidebar,
