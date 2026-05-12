@@ -20,6 +20,9 @@
   border: 1px solid rgba(34, 75, 117, 0.16);
   border-radius: 0.85rem;
   box-shadow: 0 0.25rem 0.75rem rgba(19, 54, 89, 0.14);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: min(22rem, calc(var(--app-viewport-width, 100vw) - 2rem));
 }
 
 .patch-divergence-tooltip .mdc-tooltip__surface {

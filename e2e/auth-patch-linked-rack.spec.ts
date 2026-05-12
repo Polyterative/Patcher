@@ -149,4 +149,41 @@ test.describe('Linked rack visual in patch editor', () => {
     await moduleWrappers.first().click();
     await expect(cvPanel).toBeHidden({timeout: 5_000});
   });
+
+  test('clicking outside the linked-rack component clears the selected module panel', async ({page}) => {
+    test.setTimeout(60_000);
+
+    await page.goto(scenario.patchUrl);
+    await expect(page.locator('app-patch-composite')).toBeVisible({timeout: 20_000});
+
+    const editBtn = page.locator('app-edit-fab button', {hasText: /^Edit$/i}).first();
+    const editingHeading = page.getByRole('heading', {name: /Patch editing/i}).first();
+
+    await Promise.any([
+      editingHeading.waitFor({state: 'visible', timeout: 12_000}),
+      editBtn.waitFor({state: 'visible', timeout: 12_000})
+    ]).catch(() => undefined);
+
+    if (await editBtn.isVisible().catch(() => false)) {
+      await editBtn.click();
+      await expect(editingHeading).toBeVisible({timeout: 20_000});
+    }
+
+    const linkedRackButton = page.getByRole('radio', {name: /^Rack$/i}).first();
+    await expect(linkedRackButton).toBeVisible({timeout: 15_000});
+    if (!(await linkedRackButton.isChecked())) {
+      await linkedRackButton.click();
+    }
+
+    const moduleWrappers = page.locator('.patch-editor-rack-visual__module-wrapper');
+    await expect(moduleWrappers.first()).toBeVisible({timeout: 15_000});
+    await moduleWrappers.first().click();
+
+    const cvPanel = page.locator('.patch-editor-rack-visual__cv-inline');
+    await expect(cvPanel).toBeVisible({timeout: 10_000});
+
+    await editingHeading.click();
+
+    await expect(cvPanel).toBeHidden({timeout: 5_000});
+  });
 });

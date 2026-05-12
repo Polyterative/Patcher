@@ -1,13 +1,36 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   HostBinding,
+  HostListener,
   Input,
-  OnChanges
+  OnChanges,
+  Optional
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
+import {
+  MatTooltip,
+  TooltipPosition
+} from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
+import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
+
+
+export function resolveSurfaceTooltipPosition(
+  hostRect: Pick<DOMRect, 'left' | 'right'>,
+  viewportWidth: number,
+  viewportOffsetLeft = 0,
+  margin = 16
+): TooltipPosition {
+  const viewportRight = viewportOffsetLeft + viewportWidth;
+  const availableLeft = Math.max(0, hostRect.left - viewportOffsetLeft - margin);
+  const availableRight = Math.max(0, viewportRight - hostRect.right - margin);
+
+  return availableLeft > availableRight ? 'before' : 'after';
+}
 
 
 @Component({
@@ -24,7 +47,7 @@ import { MinimalModule } from 'src/app/models/module';
   ],
   standalone: false
 })
-export class ModulePartImageComponent implements OnChanges {
+export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   
   @Input() data: MinimalModule;
   @Input() selectedPanelId: number | null = null;
@@ -58,8 +81,15 @@ export class ModulePartImageComponent implements OnChanges {
   }
   
   constructor(
-    public changeDetection: ChangeDetectorRef
+    public changeDetection: ChangeDetectorRef,
+    private readonly hostElementRef?: ElementRef<HTMLElement>,
+    private readonly appViewportService?: AppViewportService,
+    @Optional() private readonly matTooltip: MatTooltip | null = null
   ) { }
+
+  ngAfterViewInit(): void {
+    this.updateTooltipPosition();
+  }
   
   ngOnChanges(): void {
     if (this.data.panels?.length > 0) {
@@ -73,7 +103,28 @@ export class ModulePartImageComponent implements OnChanges {
     } else {
       this.filename = undefined;
     }
+    this.updateTooltipPosition();
     this.changeDetection.detectChanges();
+  }
+
+  @HostListener('mouseenter')
+  @HostListener('focusin')
+  @HostListener('window:resize')
+  updateTooltipPosition(): void {
+    if (!this.matTooltip || !this.hostElementRef || !this.appViewportService) {
+      return;
+    }
+
+    const viewport = this.appViewportService.currentViewport();
+    if (!viewport.width) {
+      return;
+    }
+
+    this.matTooltip.position = resolveSurfaceTooltipPosition(
+      this.hostElementRef.nativeElement.getBoundingClientRect(),
+      viewport.width,
+      viewport.offsetLeft
+    );
   }
   
 }

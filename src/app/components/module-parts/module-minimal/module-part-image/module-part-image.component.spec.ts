@@ -1,5 +1,8 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { ModulePartImageComponent } from './module-part-image.component';
+import {
+  ModulePartImageComponent,
+  resolveSurfaceTooltipPosition
+} from './module-part-image.component';
 
 
 function buildComponent(): ModulePartImageComponent {
@@ -134,5 +137,28 @@ describe('ModulePartImageComponent — panel resolution', () => {
     expect(c.imageLoadingMode).toBe('lazy');
     expect(c.imageDecodingMode).toBe('async');
   });
+ 
+});
 
+describe('resolveSurfaceTooltipPosition', () => {
+  it('opens the tooltip before the module when there is more space on the left', () => {
+    expect(resolveSurfaceTooltipPosition({
+      left: 1040,
+      right: 1100
+    } as DOMRect, 1280)).toBe('before');
+  });
+
+  it('opens the tooltip after the module when there is more space on the right', () => {
+    expect(resolveSurfaceTooltipPosition({
+      left: 120,
+      right: 180
+    } as DOMRect, 1280)).toBe('after');
+  });
+
+  it('accounts for the visual viewport offset when choosing a side', () => {
+    expect(resolveSurfaceTooltipPosition({
+      left: 390,
+      right: 450
+    } as DOMRect, 420, 200)).toBe('before');
+  });
 });
