@@ -17,8 +17,14 @@ import {
   switchMap,
   takeUntil
 } from 'rxjs/operators';
+import { Rack } from 'src/app/models/rack';
 import { SupabaseService } from 'src/app/features/backend/supabase.service';
-import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  FormTypes,
+  findAndApplyOptionForId,
+  getCleanedValueId,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
 import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
@@ -37,6 +43,7 @@ export interface PatchCreatorOutModel {
 }
 
 export interface PatchCreatorInModel {
+  linkedRackId?: number | null;
 }
 
 @Component({
@@ -49,9 +56,12 @@ export interface PatchCreatorInModel {
 export class PatchCreatorComponent implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
   data$ = new BehaviorSubject<[]>([]);
+  readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
+  readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
   
   fields: {
     name: IMatFormEntityConfig;
+    linkedRack: IMatFormEntityConfig;
     public: {
       code: string;
       control: FormControl<boolean>;
@@ -98,6 +108,15 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
         enterkeyhint: 'done'
       }
     },
+    linkedRack: {
+      label: 'Choose linked rack',
+      code: 'linked-rack',
+      flex: '6rem',
+      control: new UntypedFormControl(''),
+      type: FormTypes.SELECT,
+      options$: this.linkedRackOptions$,
+      iconL1: 'view_stream'
+    },
     public: {
       code: 'public',
       control: new FormControl<boolean>(true, { nonNullable: true })
@@ -132,7 +151,10 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
           switchMap(x => this.backend.add.patch(
             {
               name: this.fields.name.control.value,
-              public: this.fields.public.control.value
+              public: this.fields.public.control.value,
+              ...(this.getSelectedLinkedRackId() == null
+                ? {}
+                : {linked_rack_id: this.getSelectedLinkedRackId()})
               // hp:       this.fields.hp.control.value,
               // rows:     this.fields.rows.control.value
             }
@@ -154,6 +176,25 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
+    this.backend.get.currentUserRacks()
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(racks => {
+        this.currentUserRacks$.next(racks);
+        const options = racks.map(rack => ({
+          id: `${ rack.id }`,
+          name: rack.name || `Rack #${ rack.id }`
+        }));
+        this.linkedRackOptions$.next(options);
+
+        if (this.data.linkedRackId != null) {
+          findAndApplyOptionForId(`${ this.data.linkedRackId }`, this.fields.linkedRack.control, options);
+        }
+      });
+  }
+
+  private getSelectedLinkedRackId(): number | null {
+    const selectedId = Number.parseInt(getCleanedValueId(this.fields.linkedRack.control), 10);
+    return Number.isFinite(selectedId) ? selectedId : null;
   }
   
 }
