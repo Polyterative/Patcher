@@ -32,16 +32,20 @@
         </lib-hero-content-card>
       }
       <lib-hero-content-card
-        [titleNormal]="'Modules (' + (bag.sourceCards?.length || 0) + ')'"
+        [titleNormal]="bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
+          ? 'Linked rack (' + (bag.linkedRackPreview.moduleCount || 0) + ')'
+          : 'Modules (' + (bag.sourceCards?.length || 0) + ')'"
           class="modulesBG"
-          description="Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module."
+          [description]="bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
+            ? 'Click a module to reveal its ins and outs, then wire connections.'
+            : 'Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module.'"
           [showHelpButton]="true"
         >
           @if (bag.hasLinkedRack) {
             <div class="patch-editor-operation-mode">
               <div class="patch-editor-operation-mode__title">Operation mode</div>
               <div class="patch-editor-operation-mode__hint">
-                Collection stays editable. Linked rack mode shows rack modules below with interactive ins and outs.
+                Switch between your collection and the linked rack visual for patching.
               </div>
               <div class="patch-editor-operation-mode__buttons"
                    role="group"
@@ -60,121 +64,72 @@
               </div>
             </div>
           }
-          @if (bag.sourceCards.length > 0) {
-            <div class="patch-editor-inline-controls">
-            <lib-mat-form-entity class="patch-editor-control"
-                                 [control]="moduleSortControl"
-                                 [type]="formTypes.SELECT"
-                                 [options$]="sortModeOptions$"
-                                 [disableVoidSelection]="true"
-                                 [formFieldAppearanceType]="'outline'"
-                                 iconL1="sort"
-                                 label="Sort"
-            ></lib-mat-form-entity>
-            <lib-mat-form-entity class="patch-editor-control"
-                                 [control]="moduleGroupControl"
-                                 [type]="formTypes.SELECT"
-                                 [options$]="groupModeOptions$"
-                                 [disableVoidSelection]="true"
-                                 [formFieldAppearanceType]="'outline'"
-                                 iconL1="view_stream"
-                                 label="Group"
-            ></lib-mat-form-entity>
-          </div>
-        }
-          @if (!bag.loaded) {
-            <mat-card-subtitle fxLayoutAlign="center center">
-              Loading modules…
-            </mat-card-subtitle>
-          } @else if (bag.sourceCards.length === 0) {
-            <mat-card-subtitle fxLayoutAlign="center center">
-              Add modules to your collection to start patching
-            </mat-card-subtitle>
-          } @else if (bag.cards.length === 0) {
-            <mat-card-subtitle fxLayoutAlign="center center">
-              No modules match "{{ bag.searchQuery }}". Try another search.
-            </mat-card-subtitle>
-          } @else {
-            <flexbox-row-fast>
-              @for (card of bag.cards; track card.trackingId) {
-                <lib-clean-card>
-                  <div class="module-card-body">
-                    <div class="module-card-actions">
-                      @if (card.connectionCount > 0) {
-                        <span
-                          [matTooltip]="card.connectionCount + ' connection' + (card.connectionCount > 1 ? 's' : '') + ':\n' + card.connectionNames.join('\n')"
-                          style="font-size: 0.75rem; opacity: 0.6; display: flex; align-items: center; gap: 2px">
-                          <mat-icon style="font-size: 14px; width: 14px; height: 14px">cable</mat-icon>
-                          {{ card.connectionCount }}
-                        </span>
-                      }
-                      @if (card.instanceCount > 1) {
-                        <button mat-icon-button
-                                class="delete-instance-btn"
-                                matTooltip="Remove this copy"
-                                (click)="dataService.removeModuleInstance$.next(card.instance)"
-                        >
-                          <mat-icon>delete_outline</mat-icon>
-                        </button>
-                      }
-                      <button mat-icon-button
-                              [matTooltip]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
-                              [disabled]="card.instanceCount >= maxInstances || addingCopy.has(card.module.id)"
-                              (click)="onAddCopy(card)"
-                      >
-                        <mat-icon>content_copy</mat-icon>
-                      </button>
-                    </div>
-                    <app-module-composite [data]="card.module"
-                                          [viewConfig]="modulesViewConfig"
-                                          [instanceId]="card.instance?.id"
-                                          [nameSuffix]="card.label"
-                                          [preferredPanelColor]="appState.preferredPanelColor$ | async"
-                    ></app-module-composite>
-                  </div>
-                </lib-clean-card>
-              }
-            </flexbox-row-fast>
-          }
-        </lib-hero-content-card>
-        @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
-          <lib-hero-content-card
-            [titleNormal]="'Linked rack context'"
-            class="patch-editor-linked-rack"
-            [showHelpButton]="true"
-            description="Click ins and outs below to wire connections from linked rack modules. Collection modules above remain the editable source list."
-          >
+
+          @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
+            <!-- Linked rack mode: realistic rack visual -->
             @if (bag.linkedRackPreview.kind === 'loading') {
               <mat-card-subtitle fxLayoutAlign="center center">
                 Loading linked rack…
               </mat-card-subtitle>
             } @else if (bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
-              <div class="patch-editor-linked-rack__summary">
-                <div class="patch-editor-linked-rack__name">{{ bag.linkedRackPreview.rack.name }}</div>
-                <div class="patch-editor-linked-rack__meta">
-                  {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
-                  · {{ bag.linkedRackPreview.rack.hp }} HP
-                  · {{ bag.linkedRackPreview.moduleCount }} module{{ bag.linkedRackPreview.moduleCount === 1 ? '' : 's' }}
+              <div class="patch-editor-rack-visual"
+                   [class.patch-editor-rack-visual--compact]="bag.linkedRackPreview.rack.hp > 120">
+                <div class="patch-editor-rack-visual__header">
+                  <span class="patch-editor-rack-visual__rack-name">{{ bag.linkedRackPreview.rack.name }}</span>
+                  <span class="patch-editor-rack-visual__rack-meta">
+                    {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
+                    · {{ bag.linkedRackPreview.rack.hp }} HP
+                  </span>
                 </div>
-                <p class="patch-editor-linked-rack__copy">
-                  {{ bag.linkedRackPreview.description }}
-                </p>
-              </div>
-              <div class="patch-editor-linked-rack__rows">
-                @for (row of bag.linkedRackPreview.rows; track row.row) {
-                  <div class="patch-editor-linked-rack__row">
-                    <div class="patch-editor-linked-rack__row-label">Row {{ row.row + 1 }}</div>
-                    <div class="patch-editor-linked-rack__row-cards">
-                      @for (previewCard of row.modules; track previewCard.trackingId) {
-                        <div class="patch-editor-linked-rack__module-card">
-                          <app-module-composite [data]="previewCard.module"
-                                                [viewConfig]="modulesViewConfig"
-                                                [instanceId]="(linkedRackInstanceMap$ | async)?.get(previewCard.module.id)"
-                                                [preferredPanelColor]="appState.preferredPanelColor$ | async"
-                          ></app-module-composite>
-                        </div>
-                      }
-                    </div>
+                <div class="patch-editor-rack-visual__scroll-area">
+                  <div class="patch-editor-rack-visual__screen"
+                       [class.patch-editor-rack-visual__screen--has-selection]="expandedRackModuleId"
+                       [style.width.rem]="bag.linkedRackPreview.rack.hp">
+                    @for (row of bag.linkedRackPreview.rows; track row.row; let rowIdx = $index) {
+                      <div class="patch-editor-rack-visual__row">
+                        @for (previewCard of row.modules; track previewCard.trackingId; let colIdx = $index) {
+                          <div class="patch-editor-rack-visual__module-wrapper"
+                               [@moduleEnter]="{ value: '', params: { delay: colIdx * 50 }}"
+                               [class.patch-editor-rack-visual__module-wrapper--selected]="expandedRackModuleId === previewCard.module.id"
+                               [class.patch-editor-rack-visual__module-wrapper--dimmed]="isRackModuleDimmed(previewCard.module.id, bag.selectedForConnection)"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.module.id, bag.selectedForConnection)"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.module.id, bag.selectedForConnection) === 'in'"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.module.id, bag.selectedForConnection) === 'out'"
+                               (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.module)">
+                            <app-module-realistic
+                              class="patch-editor-rack-visual__module"
+                              [data]="previewCard.module"
+                              [showPanelImages]="previewCard.module.panels?.length > 0"
+                              [selectedPanelId]="previewCard.selectedPanelId"
+                              [disablePanelImageEnterAnimation]="true"
+                            ></app-module-realistic>
+                            <!-- Inline CV panel beside selected module -->
+                            @if (expandedRackModuleId === previewCard.module.id) {
+                              <div class="patch-editor-rack-visual__cv-inline"
+                                   (click)="$event.stopPropagation()">
+                                <div class="patch-editor-rack-visual__cv-inline-header">
+                                  <span class="patch-editor-rack-visual__cv-panel-name">{{ previewCard.module.name }}</span>
+                                  <span class="patch-editor-rack-visual__cv-panel-manufacturer">{{ previewCard.module.manufacturer?.name }}</span>
+                                </div>
+                                <app-module-cvs
+                                  [data]="previewCard.module"
+                                  [instanceId]="(linkedRackInstanceMap$ | async)?.get(previewCard.module.id)"
+                                ></app-module-cvs>
+                              </div>
+                            }
+                          </div>
+                        }
+                        @if (row.modules.length === 0) {
+                          <div class="patch-editor-rack-visual__row-empty">Empty row</div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+                @if (!expandedRackModule) {
+                  <div class="patch-editor-rack-visual__hint">
+                    <mat-icon>touch_app</mat-icon>
+                    <span>Tap a module to see its ins &amp; outs</span>
                   </div>
                 }
               </div>
@@ -183,8 +138,86 @@
                 {{ bag.linkedRackPreview.description }}
               </p>
             }
-          </lib-hero-content-card>
-        }
+          } @else {
+            <!-- Collection mode: existing card list -->
+            @if (bag.sourceCards.length > 0) {
+              <div class="patch-editor-inline-controls">
+              <lib-mat-form-entity class="patch-editor-control"
+                                   [control]="moduleSortControl"
+                                   [type]="formTypes.SELECT"
+                                   [options$]="sortModeOptions$"
+                                   [disableVoidSelection]="true"
+                                   [formFieldAppearanceType]="'outline'"
+                                   iconL1="sort"
+                                   label="Sort"
+              ></lib-mat-form-entity>
+              <lib-mat-form-entity class="patch-editor-control"
+                                   [control]="moduleGroupControl"
+                                   [type]="formTypes.SELECT"
+                                   [options$]="groupModeOptions$"
+                                   [disableVoidSelection]="true"
+                                   [formFieldAppearanceType]="'outline'"
+                                   iconL1="view_stream"
+                                   label="Group"
+              ></lib-mat-form-entity>
+            </div>
+          }
+            @if (!bag.loaded) {
+              <mat-card-subtitle fxLayoutAlign="center center">
+                Loading modules…
+              </mat-card-subtitle>
+            } @else if (bag.sourceCards.length === 0) {
+              <mat-card-subtitle fxLayoutAlign="center center">
+                Add modules to your collection to start patching
+              </mat-card-subtitle>
+            } @else if (bag.cards.length === 0) {
+              <mat-card-subtitle fxLayoutAlign="center center">
+                No modules match "{{ bag.searchQuery }}". Try another search.
+              </mat-card-subtitle>
+            } @else {
+              <flexbox-row-fast>
+                @for (card of bag.cards; track card.trackingId) {
+                  <lib-clean-card>
+                    <div class="module-card-body">
+                      <div class="module-card-actions">
+                        @if (card.connectionCount > 0) {
+                          <span
+                            [matTooltip]="card.connectionCount + ' connection' + (card.connectionCount > 1 ? 's' : '') + ':\n' + card.connectionNames.join('\n')"
+                            style="font-size: 0.75rem; opacity: 0.6; display: flex; align-items: center; gap: 2px">
+                            <mat-icon style="font-size: 14px; width: 14px; height: 14px">cable</mat-icon>
+                            {{ card.connectionCount }}
+                          </span>
+                        }
+                        @if (card.instanceCount > 1) {
+                          <button mat-icon-button
+                                  class="delete-instance-btn"
+                                  matTooltip="Remove this copy"
+                                  (click)="dataService.removeModuleInstance$.next(card.instance)"
+                          >
+                            <mat-icon>delete_outline</mat-icon>
+                          </button>
+                        }
+                        <button mat-icon-button
+                                [matTooltip]="card.instanceCount >= maxInstances ? 'Maximum of ' + maxInstances + ' copies reached' : 'Add another copy of this module'"
+                                [disabled]="card.instanceCount >= maxInstances || addingCopy.has(card.module.id)"
+                                (click)="onAddCopy(card)"
+                        >
+                          <mat-icon>content_copy</mat-icon>
+                        </button>
+                      </div>
+                      <app-module-composite [data]="card.module"
+                                            [viewConfig]="modulesViewConfig"
+                                            [instanceId]="card.instance?.id"
+                                            [nameSuffix]="card.label"
+                                            [preferredPanelColor]="appState.preferredPanelColor$ | async"
+                      ></app-module-composite>
+                    </div>
+                  </lib-clean-card>
+                }
+              </flexbox-row-fast>
+            }
+          }
+        </lib-hero-content-card>
      </div>
     
     @if (bag.sourceCards.length > 0) {
