@@ -166,6 +166,22 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
   });
 
+  it('derives linked-rack select options from owned racks and syncs the selected rack', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any,
+      {id: 77, name: ''} as any
+    ]));
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 77}));
+
+    expect(service.linkedRackOptions$.value).toEqual([
+      {id: '42', name: 'Studio Rack'},
+      {id: '77', name: 'Rack #77'}
+    ]);
+    expect(`${ service.formData.linkedRack.control.value?.id ?? '' }`).toBe('77');
+  });
+
   it('loads the linked rack through public reads for non-owner patch detail views', () => {
     const {service, backend} = build();
     backend.auth.getUserSession$.and.returnValue(of({id: 'viewer-1'}));
@@ -179,6 +195,37 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(42);
     expect(service.linkedRackState$.value.kind).toBe('linked');
     expect(service.linkedRackState$.value.rackName).toBe('Public Rack');
+  });
+
+  it('marks linked-rack state unavailable with owner recovery copy when the owner cannot load the rack', () => {
+    const {service} = build();
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 404}));
+
+    expect(service.linkedRackState$.value).toEqual(jasmine.objectContaining({
+      kind: 'unavailable',
+      statusTone: 'warning',
+      statusLabel: 'Rack unavailable',
+      rackId: 404
+    }));
+    expect(service.linkedRackState$.value.description).toContain('Choose another rack or clear the link');
+  });
+
+  it('marks linked-rack state unavailable with viewer copy when a public patch references an unavailable rack', () => {
+    const {service, backend} = build();
+    backend.auth.getUserSession$.and.returnValue(of({id: 'viewer-1'}));
+    backend.GET.publicRackWithId.and.returnValue(of({data: null}));
+    service.setPublicDetailMode(true);
+
+    service.singlePatchData$.next(patch({
+      id: 44,
+      author: {id: 'owner-1', username: 'owner'},
+      linked_rack_id: 404
+    }));
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(404);
+    expect(service.linkedRackState$.value.kind).toBe('unavailable');
+    expect(service.linkedRackState$.value.description).toContain('not publicly available');
   });
 
   it('persists linked-rack changes without touching editor connections', () => {
@@ -195,6 +242,66 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     }));
     expect(service.singlePatchData$.value?.linked_rack_id).toBe(42);
     expect(service.editorConnections$.value?.length).toBe(1);
+  });
+
+  it('does not persist linked-rack changes while switching is blocked by an in-progress selection', () => {
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.patchEditingPanelOpenState$.next(true);
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).not.toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(10);
+
+    service.resetSelectedForConnection$.next();
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+  });
+
+  it('does not clear linked rack while switching is blocked by an in-progress selection', () => {
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.patchEditingPanelOpenState$.next(true);
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    service.clearLinkedRack();
+
+    expect(backend.update.patchSilent).not.toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: null
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(10);
+  });
+
+  it('does not retry linked-rack persistence while rollout blocking is active', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.update.patchSilent.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+    service.singlePatchData$.next(patch({id: 44}));
+
+    service.requestLinkedRackChange$.next(42);
+    service.requestLinkedRackChange$.next(77);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledTimes(1);
+    expect(service.singlePatchData$.value?.linked_rack_id ?? null).toBeNull();
   });
 
   it('updates linked-rack state after a linked-rack change so dependent previews can reload', () => {

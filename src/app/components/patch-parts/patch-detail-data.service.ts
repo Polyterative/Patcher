@@ -393,6 +393,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         withLatestFrom(this.singlePatchData$),
         filter(([_, patch]) => !!patch),
+        filter(() => !this.linkedRackSelectionBlocked$.value && !this.linkedRackPersistenceBlocked$.value),
         filter(([linkedRackId, patch]) => (patch?.linked_rack_id ?? null) !== linkedRackId),
         switchMap(([linkedRackId, patch]) => {
           const nextPatch: Patch = {
