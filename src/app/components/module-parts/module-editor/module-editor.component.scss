@@ -445,8 +445,8 @@
   }
 
   .save-fab {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
-    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.3rem));
+    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.65rem)));
+    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
   }
 
   .cv-row-legend {
@@ -474,6 +474,13 @@
       width: var(--app-touch-target-prominent-min, 3.5rem);
       height: var(--app-touch-target-prominent-min, 3.5rem);
     }
+  }
+}
+
+@media (max-width: 25rem) {
+  .save-fab {
+    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
+    bottom: calc(var(--app-floating-inset-block, 0.75rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + var(--app-floating-secondary-lane-offset, 4.15rem));
   }
 }
 

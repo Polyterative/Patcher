@@ -113,13 +113,13 @@ const JSONLD_SCRIPT_ID = 'module-jsonld';
         style({
           opacity: 0,
           height: 0,
-          transform: 'translateY(0.9rem) scale(0.985)',
+          transform: 'translateY(0.9rem)',
           overflow: 'hidden'
         }),
         animate('280ms cubic-bezier(0.22, 1, 0.36, 1)', style({
           opacity: 1,
           height: '*',
-          transform: 'translateY(0) scale(1)'
+          transform: 'translateY(0)'
         }))
       ]),
       transition(':leave', [
@@ -129,7 +129,7 @@ const JSONLD_SCRIPT_ID = 'module-jsonld';
         animate('210ms cubic-bezier(0.4, 0, 1, 1)', style({
           opacity: 0,
           height: 0,
-          transform: 'translateY(-0.55rem) scale(0.985)'
+          transform: 'translateY(-0.55rem)'
         }))
       ])
     ]),
