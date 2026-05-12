@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
+import { fadeInOnEnterAnimation } from 'angular-animations';
 import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
@@ -35,6 +36,7 @@ import {
   PatchConnection,
   PatchModuleInstance
 } from 'src/app/models/connection';
+import { CVConnectionEntity } from 'src/app/models/cv';
 import {
   DbModule,
   RackedModule
@@ -158,7 +160,7 @@ export const PATCH_EDITOR_OPERATION_MODE_OPTIONS: ReadonlyArray<PatchEditorOpera
 
 const defaultLinkedRackPreviewState: LinkedRackPreviewState = {
   kind: 'unlinked',
-  description: 'Link a rack to show read-only rack context below the editor.',
+  description: 'Link a rack to enable rack-visual patching mode.',
   rows: [],
   moduleCount: 0
 };
@@ -498,6 +500,13 @@ export function buildLinkedRackPreviewState(
   selector: 'app-patch-editor',
   templateUrl: './patch-editor.component.html',
   styleUrls: ['./patch-editor.component.scss'],
+  animations: [
+    fadeInOnEnterAnimation({
+      duration: 225,
+      anchor: 'moduleEnter',
+      animateChildren: 'after'
+    })
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
@@ -560,6 +569,10 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   
   /** Module IDs currently in-flight for copy — prevents spam-clicking */
   addingCopy = new Set<number>();
+
+  /** Currently expanded module in the rack visual (for showing CVs) */
+  expandedRackModuleId: number | null = null;
+  expandedRackModule: DbModule | null = null;
   
   /** Whether collection modules have been loaded at least once */
   collectionLoaded$ = new BehaviorSubject<boolean>(false);
@@ -669,8 +682,10 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.hasLinkedRack$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(hasLinkedRack => {
-        if (!hasLinkedRack) {
-          this.operationMode$.next(defaultOperationMode);
+        if (hasLinkedRack) {
+          this.operationMode$.next(PATCH_EDITOR_OPERATION_MODES.linkedRack);
+        } else {
+          this.operationMode$.next(PATCH_EDITOR_OPERATION_MODES.collection);
         }
       });
 
@@ -710,6 +725,44 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
 
   setOperationMode(mode: PatchEditorOperationMode): void {
     this.operationMode$.next(mode);
+    // Reset expanded module when switching modes
+    this.expandedRackModuleId = null;
+    this.expandedRackModule = null;
+  }
+
+  selectRackModule(module: DbModule): void {
+    if (this.expandedRackModuleId === module.id) {
+      this.expandedRackModuleId = null;
+      this.expandedRackModule = null;
+    } else {
+      this.expandedRackModuleId = module.id;
+      this.expandedRackModule = module;
+    }
+  }
+
+  /** True when this module should be visually dimmed in the rack visual. */
+  isRackModuleDimmed(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): boolean {
+    if (!this.expandedRackModuleId || this.expandedRackModuleId === moduleId) return false;
+    // Never dim modules involved in a pending or pre-confirm connection
+    if (sel?.a?.cv.module?.id === moduleId) return false;
+    if (sel?.b?.cv.module?.id === moduleId) return false;
+    return true;
+  }
+
+  /** True when this module is part of a pending/pre-confirm connection (but not the currently selected one). */
+  isRackModulePendingSource(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): boolean {
+    if (!sel?.a) return false;
+    const isA = sel.a.cv.module?.id === moduleId;
+    const isB = sel.b?.cv.module?.id === moduleId;
+    // Highlight if this module is involved in the connection but not the one currently expanded
+    return (isA || isB) && this.expandedRackModuleId !== moduleId;
+  }
+
+  /** Returns the connection role ('in' | 'out') for a module in a pending connection, or null. */
+  getRackModuleConnectionRole(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): 'in' | 'out' | null {
+    if (sel?.a?.cv.module?.id === moduleId) return sel.a.kind;
+    if (sel?.b?.cv.module?.id === moduleId) return sel.b.kind;
+    return null;
   }
   
   /**
