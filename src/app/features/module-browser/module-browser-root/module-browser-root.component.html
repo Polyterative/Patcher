@@ -193,9 +193,11 @@
                        (page)="handlePageEvent($event)"
                        showFirstLastButtons
         ></mat-paginator>
-        <lib-auto-update-loading-indicator [data$]="visibleModules$"
-                                           [updateData$]="dataService.updateModulesList$"
-        ></lib-auto-update-loading-indicator>
+        @if ((dataService.modulesList$ | async) !== null) {
+          <lib-auto-update-loading-indicator [data$]="dataService.modulesList$"
+                                             [updateData$]="dataService.updateModulesList$"
+          ></lib-auto-update-loading-indicator>
+        }
       </div>
     
     </div>

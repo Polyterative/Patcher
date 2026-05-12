@@ -116,6 +116,28 @@ describe('ModuleBrowserDataService', () => {
     tick();
     expect(canReset).toBeTrue();
   }));
+
+  it('passes the debounced name search term to GET.modules', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.name.control.setValue('rings');
+
+    tick(750);
+
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('rings');
+    service.ngOnDestroy();
+  }));
+
+  it('passes the debounced description search term to GET.modules', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.description.control.setValue('analog filter');
+
+    tick(750);
+
+    const args = backend.GET.modules.calls.mostRecent().args as any[];
+    expect(args[9]).toBe('analog filter');
+    service.ngOnDestroy();
+  }));
   
   it('canReset$ emits true when hp field has value', fakeAsync(() => {
     const {service} = build();

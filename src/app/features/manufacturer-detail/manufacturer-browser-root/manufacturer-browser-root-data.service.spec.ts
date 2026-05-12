@@ -61,6 +61,17 @@ describe('ManufacturerBrowserRootDataService', () => {
     tick(400);
     expect(service.serversideTableRequestData.filter$.value).toBe('mutable');
   }));
+
+  it('passes the debounced search term to manufacturersPaginated', fakeAsync(() => {
+    const {service, backend} = buildService();
+    service.fields.search.control.setValue('make noise');
+
+    tick(400);
+
+    const args = backend.GET.manufacturersPaginated.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('make noise');
+    service.ngOnDestroy();
+  }));
   
   it('updates skip/take and triggers reload on pageEvent$', fakeAsync(() => {
     const {service, backend} = buildService();
