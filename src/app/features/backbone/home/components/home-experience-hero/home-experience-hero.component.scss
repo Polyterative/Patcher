@@ -1,4 +1,4 @@
-@use "src/app/style/brand-resources.scss";
+@use "src/app/style/brand-resources.scss" as *;
 
 :host {
   display: block;
@@ -38,7 +38,7 @@
 }
 
 .hero-metro-brand {
-  --hero-metro-brand-color: rgba(58, 34, 132, 0.92);
+  --hero-metro-brand-color: #{$brand-primary};
   display: inline-flex;
   align-items: center;
   font-size: 1.02rem;
@@ -58,14 +58,14 @@
 }
 
 .hero-metro-brand:focus-visible {
-  outline: 0.125rem solid rgba(58, 34, 132, 0.22);
+  outline: 0.125rem solid rgba($brand-primary, 0.22);
   outline-offset: 0.18rem;
   border-radius: 0.25rem;
 }
 
 .hero-metro-brand--active {
   text-decoration: underline;
-  text-decoration-color: rgba(58, 34, 132, 0.36);
+  text-decoration-color: rgba($brand-primary, 0.36);
   text-decoration-thickness: 0.12rem;
   text-underline-offset: 0.22rem;
 }
@@ -139,7 +139,7 @@
 
 
 .eyebrow {
-  @include brand-resources.heading-font;
+  @include heading-font;
   letter-spacing: 0.11rem;
   font-size: 0.77rem;
   text-transform: uppercase;
@@ -148,7 +148,7 @@
 }
 
 h1 {
-  @include brand-resources.title-font;
+  @include title-font;
   margin: 0;
   color: var(--home-ink-strong);
   font-size: clamp(2.1rem, 5vw, 3.45rem);
@@ -158,7 +158,7 @@ h1 {
 }
 
 .subtitle {
-  @include brand-resources.content-font;
+  @include content-font;
   margin: 0;
   padding-left: 1.2rem;
   max-width: 54ch;
