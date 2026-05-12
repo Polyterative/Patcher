@@ -19,6 +19,7 @@ export class StatisticsComponent {
   @Input() icon: string | undefined;
   @Input() emptyMessage: string | null = null;
   @Input() compact = false;
+  @Input() useCleanCard = false;
 
   @Input() statistics: {
     name: string;

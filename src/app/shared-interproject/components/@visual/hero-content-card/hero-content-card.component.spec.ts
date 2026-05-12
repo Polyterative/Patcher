@@ -64,12 +64,31 @@ describe('HeroContentCardComponent', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.querySelector('.title-metro-nav')).not.toBeNull();
+    expect(host.querySelector('.title-metro-nav-origin .title-metro-nav')).not.toBeNull();
     expect(host.querySelector('.title-inline-description')?.textContent).toContain('Browse the latest additions to the catalog.');
     expect(host.textContent).toContain('patcher.xyz');
     expect(host.textContent).toContain('Modules');
     expect(host.textContent).toContain('Racks');
     expect(host.textContent).toContain('Log in');
+  });
+
+  it('reveals a compact sticky nav after the integrated nav reaches the toolbar edge', () => {
+    wideShell$.next(true);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const navOrigin = host.querySelector('.title-metro-nav-origin') as HTMLElement;
+    spyOn(navOrigin, 'getBoundingClientRect').and.returnValue(createDomRect({top: -12, bottom: 68, height: 80}));
+
+    (fixture.componentInstance as any).syncCompactWideShellNav();
+    fixture.detectChanges();
+
+    const floatingNav = host.querySelector('.title-metro-nav--floating');
+    expect(host.querySelector('.title-metro-sticky-shell--visible')).not.toBeNull();
+    expect(floatingNav).not.toBeNull();
+    expect(floatingNav?.textContent).not.toContain('patcher.xyz');
+    expect(floatingNav?.textContent).toContain('Home');
+    expect(floatingNav?.textContent).toContain('Log in');
   });
 
   it('stacks the inline description under the title block when titleSub is present', () => {
@@ -80,4 +99,18 @@ describe('HeroContentCardComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.title-heading-copy--stacked-description')).not.toBeNull();
   });
+
+  function createDomRect(rect: Partial<DOMRect>): DOMRect {
+    return {
+      x: rect.left ?? 0,
+      y: rect.top ?? 0,
+      width: rect.width ?? 0,
+      height: rect.height ?? 0,
+      top: rect.top ?? 0,
+      right: rect.right ?? 0,
+      bottom: rect.bottom ?? 0,
+      left: rect.left ?? 0,
+      toJSON: () => ''
+    } as DOMRect;
+  }
 });
