@@ -33,13 +33,21 @@ instance identity, labels, and connection persistence.
 
 #### Layer 1 — MVP
 - [ ] Add a nullable linked-rack association in patch create/edit flows without changing the existing no-rack default (`patches.linked_rack_id`, nullable, `ON DELETE SET NULL`)
-- [ ] Surface the selected linked rack in patch detail/editor with choose/change/clear actions
+- [x] Surface the selected linked rack in patch detail/editor with choose/change/clear actions
 - [ ] Keep module sourcing and connection editing unchanged: collection modules + patch instances remain the working surface
 - [ ] Add a privacy-safe viewer state for linked-rack context when the rack cannot be shown
 - [ ] Preserve current behavior for existing patches with no linked rack
 
-**Implementation status:** The nullable schema migration and backend/model round-trip for `linked_rack_id` are in place. The
-remaining Layer 1 work is now owner-facing create/edit/detail UI plus the privacy-safe viewer state.
+**Implementation status:** The nullable schema migration/backend round-trip is in place, and existing-patch owner flows now
+show linked-rack status plus choose/change/clear controls. The remaining Layer 1 work is patch creation support, preserving
+no-rack behavior across all entry points, and the privacy-safe viewer state.
+
+**Owner-flow implementation notes:**
+- Existing patch detail now shows an owner-only linked-rack summary card with text-first status.
+- Existing patch edit mode now exposes a linked-rack select field plus a clear action in the patch metadata sidebar.
+- The control sources options from the current user's racks via `backend.get.currentUserRacks()`.
+- Successful linked-rack changes update local patch metadata/state without forcing a detail reload that would reset editor
+  connection state.
 
 #### Layer 2 — Structural
 - [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
