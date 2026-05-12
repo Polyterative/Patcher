@@ -15,6 +15,7 @@ import {
 } from 'rxjs';
 import {
   debounceTime,
+  catchError,
   distinctUntilChanged,
   map,
   startWith,
@@ -34,7 +35,11 @@ import {
   PatchConnection,
   PatchModuleInstance
 } from 'src/app/models/connection';
-import { DbModule } from 'src/app/models/module';
+import {
+  DbModule,
+  RackedModule
+} from 'src/app/models/module';
+import { Rack } from 'src/app/models/rack';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
@@ -106,10 +111,64 @@ export interface PatchEditorSortStrategy {
   groupingKeyGenerator?: GroupingKeyGenerator;
 }
 
+export const PATCH_EDITOR_OPERATION_MODES = {
+  collection: 'collection',
+  linkedRack: 'linkedRack'
+} as const;
+
+export type PatchEditorOperationMode =
+  typeof PATCH_EDITOR_OPERATION_MODES[keyof typeof PATCH_EDITOR_OPERATION_MODES];
+
+export interface PatchEditorOperationModeOption {
+  mode: PatchEditorOperationMode;
+  label: string;
+}
+
+export interface LinkedRackPreviewCard {
+  trackingId: number;
+  module: DbModule;
+  row: number;
+  column: number;
+  selectedPanelId: number | null;
+}
+
+export interface LinkedRackPreviewRow {
+  row: number;
+  modules: LinkedRackPreviewCard[];
+}
+
+export interface LinkedRackPreviewState {
+  kind: 'unlinked' | 'loading' | 'ready' | 'unavailable';
+  description: string;
+  rack?: Rack;
+  rows: LinkedRackPreviewRow[];
+  moduleCount: number;
+}
+
 const unknownManufacturerGroupKey = '\uffff';
 
 const defaultSortModeId: PatchEditorSortModeId = 'nameAsc';
 const defaultGroupModeId: PatchEditorGroupModeId = 'none';
+const defaultOperationMode: PatchEditorOperationMode = PATCH_EDITOR_OPERATION_MODES.collection;
+
+export const PATCH_EDITOR_OPERATION_MODE_OPTIONS: ReadonlyArray<PatchEditorOperationModeOption> = [
+  {mode: PATCH_EDITOR_OPERATION_MODES.collection, label: 'Collection'},
+  {mode: PATCH_EDITOR_OPERATION_MODES.linkedRack, label: 'Linked rack'}
+];
+
+const defaultLinkedRackPreviewState: LinkedRackPreviewState = {
+  kind: 'unlinked',
+  description: 'Link a rack to show read-only rack context below the editor.',
+  rows: [],
+  moduleCount: 0
+};
+
+const loadingLinkedRackPreviewState: LinkedRackPreviewState = {
+  kind: 'loading',
+  description: 'Loading linked rack context…',
+  rows: [],
+  moduleCount: 0
+};
 
 export const PATCH_EDITOR_SORT_MODE_OPTIONS: ISelectable[] = [
   {
@@ -388,6 +447,53 @@ function getGroupKeyForMode(
   return '0_default';
 }
 
+export function buildLinkedRackPreviewRows(rackedModules: RackedModule[]): LinkedRackPreviewRow[] {
+  const rows = new Map<number, LinkedRackPreviewCard[]>();
+
+  for (const rackedModule of rackedModules) {
+    const row = rackedModule.rackingData.row ?? 0;
+    const rowCards = rows.get(row) ?? [];
+    rowCards.push({
+      trackingId: rackedModule.rackingData.id ?? ((row + 1) * 100000) + (rackedModule.rackingData.column ?? 0) + rackedModule.module.id,
+      module: rackedModule.module,
+      row,
+      column: rackedModule.rackingData.column ?? 0,
+      selectedPanelId: rackedModule.rackingData.selectedPanelId ?? null
+    });
+    rows.set(row, rowCards);
+  }
+
+  return [...rows.entries()]
+    .sort(([rowA], [rowB]) => rowA - rowB)
+    .map(([row, modules]) => ({
+      row,
+      modules: [...modules].sort((a, b) => a.column - b.column)
+    }));
+}
+
+export function buildLinkedRackPreviewState(
+  rack: Rack | undefined,
+  rackedModules: RackedModule[] = []
+): LinkedRackPreviewState {
+  if (!rack) {
+    return {
+      kind: 'unavailable',
+      description: 'The linked rack could not be loaded. Collection-first editing still works.',
+      rows: [],
+      moduleCount: 0
+    };
+  }
+
+  const rows = buildLinkedRackPreviewRows(rackedModules);
+  return {
+    kind: 'ready',
+    description: 'Read-only rack context only. Module sourcing and editing above still come from your collection.',
+    rack,
+    rows,
+    moduleCount: rackedModules.length
+  };
+}
+
 @Component({
   selector: 'app-patch-editor',
   templateUrl: './patch-editor.component.html',
@@ -400,6 +506,11 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   //
   readonly formTypes = FormTypes;
   readonly maxInstances = MAX_INSTANCES_PER_MODULE;
+  readonly operationModes = PATCH_EDITOR_OPERATION_MODES;
+  readonly operationModeOptions = PATCH_EDITOR_OPERATION_MODE_OPTIONS;
+  readonly operationMode$ = new BehaviorSubject<PatchEditorOperationMode>(defaultOperationMode);
+  readonly hasLinkedRack$: Observable<boolean>;
+  readonly linkedRackPreviewState$ = new BehaviorSubject<LinkedRackPreviewState>(defaultLinkedRackPreviewState);
   readonly sortModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_SORT_MODE_OPTIONS);
   readonly groupModeOptions$: Observable<ISelectable[]> = of(PATCH_EDITOR_GROUP_MODE_OPTIONS);
   readonly moduleSortControl = new UntypedFormControl(PATCH_EDITOR_SORT_MODE_OPTIONS[0]);
@@ -460,6 +571,10 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     public dataService: PatchDetailDataService,
     public appState: AppStateService
   ) {
+    this.hasLinkedRack$ = this.dataService.singlePatchData$.pipe(
+      map(patch => patch?.linked_rack_id != null),
+      distinctUntilChanged()
+    );
   }
   
   ngOnDestroy(): void {
@@ -514,12 +629,53 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(cards => this.editorCards$.next(cards));
+
+    this.dataService.singlePatchData$
+      .pipe(
+        map(patch => patch?.linked_rack_id ?? null),
+        distinctUntilChanged(),
+        switchMap(linkedRackId => {
+          if (linkedRackId == null) {
+            return of(defaultLinkedRackPreviewState);
+          }
+
+          this.linkedRackPreviewState$.next(loadingLinkedRackPreviewState);
+          return this.backend.GET.rackWithId(linkedRackId).pipe(
+            switchMap((response: any) => {
+              const rack = response?.data as Rack | undefined;
+              if (!rack) {
+                return of(buildLinkedRackPreviewState(undefined));
+              }
+
+              return this.backend.get.rackedModules(linkedRackId).pipe(
+                map((rackedModules: RackedModule[]) => buildLinkedRackPreviewState(rack, rackedModules)),
+                catchError(() => of(buildLinkedRackPreviewState(undefined)))
+              );
+            }),
+            catchError(() => of(buildLinkedRackPreviewState(undefined)))
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(state => this.linkedRackPreviewState$.next(state));
+
+    this.hasLinkedRack$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(hasLinkedRack => {
+        if (!hasLinkedRack) {
+          this.operationMode$.next(defaultOperationMode);
+        }
+      });
   }
   
   /** Trigger adding another copy of the same module */
   onAddCopy(card: EditorModuleCard): void {
     this.addingCopy.add(card.module.id);
     this.dataService.addModuleInstance$.next(card.module);
+  }
+
+  setOperationMode(mode: PatchEditorOperationMode): void {
+    this.operationMode$.next(mode);
   }
   
   /**
