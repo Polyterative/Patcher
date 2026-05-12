@@ -538,6 +538,152 @@ export function buildLinkedRackPreviewState(
   };
 }
 
+/** Info about a module whose instances don't match the linked rack's positions */
+export interface DivergenceModuleInfo {
+  moduleId: number;
+  moduleName: string;
+  rackPositions: number;
+  patchInstances: number;
+}
+
+/** Result of comparing linked rack modules against patch instances */
+export interface LinkedRackDivergence {
+  /** Modules present in patch instances but completely absent from the linked rack */
+  orphanedModules: DivergenceModuleInfo[];
+  /** Modules where patch has more instances than rack has positions */
+  excessInstances: DivergenceModuleInfo[];
+  /** Total orphaned instance count (sum of all excess + fully orphaned) */
+  totalOrphanedInstances: number;
+  /** True when no divergence detected */
+  clean: boolean;
+}
+
+/**
+ * Compares the current linked rack modules against patch instances to detect
+ * divergence — e.g. modules removed from rack, copies reduced, etc.
+ * Pure function, no side effects.
+ */
+export function detectLinkedRackDivergence(
+  previewState: LinkedRackPreviewState,
+  instances: PatchModuleInstance[],
+  connections: PatchConnection[]
+): LinkedRackDivergence {
+  const orphanedModules: DivergenceModuleInfo[] = [];
+  const excessInstances: DivergenceModuleInfo[] = [];
+  let totalOrphanedInstances = 0;
+
+  if (previewState.kind !== 'ready' || instances.length === 0) {
+    return { orphanedModules, excessInstances, totalOrphanedInstances, clean: true };
+  }
+
+  // Count rack positions per module
+  const rackPositionsPerModule = new Map<number, number>();
+  for (const row of previewState.rows) {
+    for (const card of row.modules) {
+      rackPositionsPerModule.set(card.module.id, (rackPositionsPerModule.get(card.module.id) ?? 0) + 1);
+    }
+  }
+
+  // Count patch instances per module, collect module names
+  const instancesPerModule = new Map<number, { count: number; name: string }>();
+  for (const inst of instances) {
+    const existing = instancesPerModule.get(inst.module_id);
+    instancesPerModule.set(inst.module_id, {
+      count: (existing?.count ?? 0) + 1,
+      name: existing?.name ?? `Module ${inst.module_id}`
+    });
+  }
+
+  // Enrich names from rack preview cards when available
+  for (const row of previewState.rows) {
+    for (const card of row.modules) {
+      const entry = instancesPerModule.get(card.module.id);
+      if (entry) {
+        entry.name = card.module.name;
+      }
+    }
+  }
+
+  // Find divergence
+  for (const [moduleId, info] of instancesPerModule) {
+    const rackCount = rackPositionsPerModule.get(moduleId) ?? 0;
+    const patchCount = info.count;
+
+    if (rackCount === 0) {
+      orphanedModules.push({
+        moduleId,
+        moduleName: info.name,
+        rackPositions: 0,
+        patchInstances: patchCount
+      });
+      totalOrphanedInstances += patchCount;
+    } else if (patchCount > rackCount) {
+      excessInstances.push({
+        moduleId,
+        moduleName: info.name,
+        rackPositions: rackCount,
+        patchInstances: patchCount
+      });
+      totalOrphanedInstances += (patchCount - rackCount);
+    }
+  }
+
+  return {
+    orphanedModules,
+    excessInstances,
+    totalOrphanedInstances,
+    clean: orphanedModules.length === 0 && excessInstances.length === 0
+  };
+}
+
+/**
+ * Counts how many connections reference instances that are orphaned (not mapped to any rack position).
+ */
+export function countOrphanedConnections(
+  instanceMap: Map<number, number>,
+  instances: PatchModuleInstance[],
+  connections: PatchConnection[]
+): number {
+  if (connections.length === 0) return 0;
+
+  const mappedInstanceIds = new Set(instanceMap.values());
+  const allInstanceIds = new Set(instances.map(i => i.id));
+  const orphanedInstanceIds = new Set(
+    [...allInstanceIds].filter(id => !mappedInstanceIds.has(id))
+  );
+
+  if (orphanedInstanceIds.size === 0) return 0;
+
+  let count = 0;
+  for (const conn of connections) {
+    if ((conn.instance_id_a != null && orphanedInstanceIds.has(conn.instance_id_a)) ||
+        (conn.instance_id_b != null && orphanedInstanceIds.has(conn.instance_id_b))) {
+      count++;
+    }
+  }
+  return count;
+}
+
+/** Pure helper: builds a multi-line tooltip describing rack↔patch divergence */
+export function buildDivergenceTooltip(
+  divergence: LinkedRackDivergence,
+  orphanedConnectionCount: number
+): string {
+  const lines: string[] = [];
+  for (const m of divergence.orphanedModules) {
+    lines.push(`${m.moduleName}: ${m.patchInstances} instance${m.patchInstances === 1 ? '' : 's'} in patch, not in rack`);
+  }
+  for (const m of divergence.excessInstances) {
+    const excess = m.patchInstances - m.rackPositions;
+    lines.push(`${m.moduleName}: ${excess} extra instance${excess === 1 ? '' : 's'} beyond rack (${m.rackPositions} position${m.rackPositions === 1 ? '' : 's'})`);
+  }
+  if (orphanedConnectionCount > 0) {
+    lines.push(`${orphanedConnectionCount} connection${orphanedConnectionCount === 1 ? '' : 's'} reference${orphanedConnectionCount === 1 ? 's' : ''} unmatched instances`);
+  }
+  lines.push('These instances still work in collection mode.');
+  return lines.join('\n');
+}
+
 @Component({
   selector: 'app-patch-editor',
   templateUrl: './patch-editor.component.html',
@@ -626,6 +772,14 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
    * for CV highlighting and connection count badges after auto-creation.
    */
   linkedRackInstanceMap$ = new BehaviorSubject<Map<number, number>>(new Map());
+
+  /** Divergence between linked rack and patch instances (orphaned modules, excess copies, etc.) */
+  linkedRackDivergence$ = new BehaviorSubject<LinkedRackDivergence>({
+    orphanedModules: [], excessInstances: [], totalOrphanedInstances: 0, clean: true
+  });
+
+  /** Count of connections referencing instances not mapped to any rack position */
+  orphanedConnectionCount$ = new BehaviorSubject<number>(0);
   
   protected destroyEvent$ = new Subject<void>();
   
@@ -748,6 +902,34 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         takeUntil(this.destroyEvent$)
       )
       .subscribe(map => this.linkedRackInstanceMap$.next(map));
+
+    // Detect divergence between linked rack and patch instances
+    combineLatest([
+      this.dataService.patchModuleInstances$,
+      this.linkedRackPreviewState$,
+      this.dataService.patchConnections$
+    ])
+      .pipe(
+        map(([instances, previewState, connections]) =>
+          detectLinkedRackDivergence(previewState, instances, connections ?? [])
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(divergence => this.linkedRackDivergence$.next(divergence));
+
+    // Count orphaned connections (connections referencing instances not in the rack map)
+    combineLatest([
+      this.linkedRackInstanceMap$,
+      this.dataService.patchModuleInstances$,
+      this.dataService.patchConnections$
+    ])
+      .pipe(
+        map(([instanceMap, instances, connections]) =>
+          countOrphanedConnections(instanceMap, instances, connections ?? [])
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(count => this.orphanedConnectionCount$.next(count));
   }
   
   /** Trigger adding another copy of the same module */
@@ -791,6 +973,11 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     const sorted = [...positions].sort((a, b) => a.row - b.row || a.column - b.column);
     const idx = sorted.findIndex(p => p.trackingId === trackingId);
     return idx >= 0 ? `(${ idx + 1 })` : null;
+  }
+
+  /** Builds a detailed tooltip describing rack↔patch divergence */
+  getDivergenceTooltip(divergence: LinkedRackDivergence, orphanedConnectionCount: number): string {
+    return buildDivergenceTooltip(divergence, orphanedConnectionCount);
   }
 
   /** True when this module should be visually dimmed in the rack visual. */

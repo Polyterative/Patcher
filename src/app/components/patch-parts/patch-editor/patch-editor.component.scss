@@ -268,6 +268,22 @@ $rack-grid-weight: 0.1rem;
   opacity: 0.62;
 }
 
+.patch-editor-rack-visual__divergence-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: rgba(255, 170, 50, 0.85);
+  cursor: help;
+  margin-left: 0.5rem;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
 .patch-editor-rack-visual__scroll-area {
   overflow-x: auto;
   overflow-y: visible;
