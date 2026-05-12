@@ -11,6 +11,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  combineLatest,
   EMPTY,
   forkJoin,
   merge,
@@ -34,6 +35,12 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
+import {
+  findAndApplyOptionForId,
+  getCleanedValueId,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { Rack } from '../../models/rack';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,
@@ -67,6 +74,21 @@ export interface MultiInstanceModuleSummary {
   labels: string[];
 }
 
+export interface LinkedRackUiState {
+  kind: 'unlinked' | 'linked' | 'unavailable';
+  statusLabel: string;
+  description: string;
+  rackName?: string;
+  rackId?: number | null;
+}
+
+const defaultLinkedRackUiState: LinkedRackUiState = {
+  kind: 'unlinked',
+  statusLabel: 'In collection only',
+  description: 'No rack is linked to this patch yet. You can choose one for orientation without changing collection-first editing.',
+  rackId: null
+};
+
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
@@ -92,6 +114,9 @@ export class PatchDetailDataService implements OnDestroy {
         Validators.min(0),
         Validators.maxLength(144)
       ]))
+    },
+    linkedRack: {
+      control: new UntypedFormControl('')
     }
   };
   //
@@ -139,6 +164,10 @@ export class PatchDetailDataService implements OnDestroy {
   protected destroyEvent$ = new Subject<void>();
   shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   readonly patchTags$ = new BehaviorSubject<string[]>([]);
+  readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
+  readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
+  readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(defaultLinkedRackUiState);
+  readonly requestLinkedRackChange$ = new Subject<number | null>();
   private readonly _tagsUpdate$ = new Subject<string[]>();
   
   constructor(
@@ -271,6 +300,76 @@ export class PatchDetailDataService implements OnDestroy {
         this.formData.description.control.reset(data.description ?? '', {emitEvent: false});
         this.patchTags$.next(data.tags ?? []);
       });
+
+    combineLatest([
+      this.singlePatchData$,
+      this.backend.auth.getUserSession$()
+    ])
+      .pipe(
+        switchMap(([patch, user]) => patch && user && patch.author?.id === user.id
+          ? this.backend.get.currentUserRacks()
+          : of([])
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(racks => this.currentUserRacks$.next(racks));
+
+    this.currentUserRacks$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(racks => {
+        this.linkedRackOptions$.next(
+          racks.map(rack => ({
+            id: `${ rack.id }`,
+            name: rack.name || `Rack #${ rack.id }`
+          }))
+        );
+        this.syncLinkedRackControl(this.singlePatchData$.value, racks);
+      });
+
+    this.singlePatchData$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(patch => {
+        this.linkedRackState$.next(this.buildLinkedRackUiState(patch, this.currentUserRacks$.value));
+        this.syncLinkedRackControl(patch, this.currentUserRacks$.value);
+      });
+
+    this.formData.linkedRack.control.valueChanges
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => this.requestLinkedRackChange$.next(this.getSelectedLinkedRackId()));
+
+    this.requestLinkedRackChange$
+      .pipe(
+        withLatestFrom(this.singlePatchData$),
+        filter(([_, patch]) => !!patch),
+        filter(([linkedRackId, patch]) => (patch?.linked_rack_id ?? null) !== linkedRackId),
+        switchMap(([linkedRackId, patch]) => {
+          const nextPatch: Patch = {
+            ...patch!,
+            linked_rack_id: linkedRackId
+          };
+          return this.backend.update.patchSilent(nextPatch).pipe(
+            tap(() => {
+              if (this.singlePatchData$.value) {
+                this.singlePatchData$.value.linked_rack_id = linkedRackId;
+                this.linkedRackState$.next(this.buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value));
+                this.syncLinkedRackControl(this.singlePatchData$.value, this.currentUserRacks$.value);
+              }
+              const message = linkedRackId == null
+                ? 'Linked rack cleared.'
+                : 'Linked rack updated.';
+              SharedConstants.successCustom(this.snackBar, message);
+            }),
+            catchError(err => {
+              this.syncLinkedRackControl(patch!, this.currentUserRacks$.value);
+              SharedConstants.errorCustom(this.snackBar, 'Failed to save linked rack — check your connection and try again.');
+              console.error('Failed to save linked rack:', err);
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe();
     
     this.singlePatchData$
       .pipe(
@@ -808,6 +907,10 @@ export class PatchDetailDataService implements OnDestroy {
     }
     this._tagsUpdate$.next(next);
   }
+
+  clearLinkedRack(): void {
+    this.requestLinkedRackChange$.next(null);
+  }
   
   private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
     const map = new Map<number, PatchModuleInstance[]>();
@@ -953,5 +1056,49 @@ export class PatchDetailDataService implements OnDestroy {
       }),
       map(() => null)
     );
+  }
+
+  private getSelectedLinkedRackId(): number | null {
+    const selectedId = Number.parseInt(getCleanedValueId(this.formData.linkedRack.control), 10);
+    return Number.isFinite(selectedId) ? selectedId : null;
+  }
+
+  private syncLinkedRackControl(patch: Patch | undefined, racks: Rack[]): void {
+    this.formData.linkedRack.control.reset('', {emitEvent: false});
+    if (patch?.linked_rack_id == null) {
+      return;
+    }
+
+    const matchingRack = racks.find(rack => rack.id === patch.linked_rack_id);
+    if (!matchingRack) {
+      return;
+    }
+
+    const options = this.linkedRackOptions$.value;
+    findAndApplyOptionForId(`${ matchingRack.id }`, this.formData.linkedRack.control, options);
+  }
+
+  private buildLinkedRackUiState(patch: Patch | undefined, racks: Rack[]): LinkedRackUiState {
+    if (!patch || patch.linked_rack_id == null) {
+      return defaultLinkedRackUiState;
+    }
+
+    const linkedRack = racks.find(rack => rack.id === patch.linked_rack_id);
+    if (!linkedRack) {
+      return {
+        kind: 'unavailable',
+        statusLabel: 'Linked rack unavailable',
+        description: 'This patch still remembers a linked rack, but it is no longer available. You can choose a different rack or clear the link without affecting the patch.',
+        rackId: patch.linked_rack_id
+      };
+    }
+
+    return {
+      kind: 'linked',
+      statusLabel: 'In linked rack',
+      description: 'This rack is optional context only. The patch still edits against your collection and patch-local copies.',
+      rackName: linkedRack.name,
+      rackId: linkedRack.id
+    };
   }
 }

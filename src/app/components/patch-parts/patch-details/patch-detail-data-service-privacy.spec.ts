@@ -32,7 +32,8 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
       cacheResetter$: new Subject<string[]>(),
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null})),
-        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([]))
+        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([])),
+        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([])),

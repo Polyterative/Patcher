@@ -79,7 +79,8 @@ describe('PatchDetailDataService - Instance Management', () => {
     mockSupabaseService = {
       cacheResetter$: new Subject<any>(),
       get: {
-        patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null}))
+        patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null})),
+        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([])),

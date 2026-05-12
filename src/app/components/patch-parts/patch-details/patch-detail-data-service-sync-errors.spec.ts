@@ -44,7 +44,8 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
         getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
       },
       get: {
-        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})}))
+        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})})),
+        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
@@ -148,6 +149,49 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.singlePatchData$.value?.description).toBe('New Desc');
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   }));
+
+  it('loads owned racks for owner-visible patches and derives linked-rack state', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 42}));
+
+    expect(backend.get.currentUserRacks).toHaveBeenCalled();
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
+  });
+
+  it('persists linked-rack changes without touching editor connections', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(42);
+    expect(service.editorConnections$.value?.length).toBe(1);
+  });
+
+  it('clears the linked rack through the dedicated helper', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+
+    service.clearLinkedRack();
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: null
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
+  });
   
   it('adds a new editor connection, blocks duplicate, and records bridge event', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {

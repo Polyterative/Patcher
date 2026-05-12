@@ -1,25 +1,22 @@
 # Current Task
 
-**Active task:** Surface linked-rack choose/change/clear flows in patch create/edit/detail surfaces.
+**Active task:** Add linked-rack selection to patch creation.
 
-**Why it matters:** The linked-rack field now exists in the schema/backend layer. The next bounded user-facing slice is to let owners see and change that association without altering the collection-first editor.
+**Why it matters:** Existing-patch owner flows now support linked-rack status and editing. The next bounded step is to let new patches start with the same optional rack context instead of forcing users to edit immediately after creation.
 
 **Likely affected files:**
 - `src/app/components/patch-parts/patch-creator/*`
-- `src/app/components/patch-parts/patch-details/*`
-- `src/app/components/patch-parts/patch-editor/*`
-- `src/app/components/patch-parts/patch-detail-data.service.ts`
-- focused patch UI/data specs and screenshot/e2e coverage if the UI changes are visible
+- any helper or data-service code needed to source the current user's rack options
+- focused patch-creator specs
 
 **Acceptance criteria:**
-- Owners can choose, change, and clear a linked rack from the patch create/edit/detail flow.
-- Clearing the linked rack only updates `linked_rack_id` and does not affect patch instances or connections.
-- The UI uses the documented text-first linked-rack states and leaves collection-first module editing unchanged.
-- Focused UI/data tests cover the visible linked-rack actions and state transitions.
+- New-patch creation supports an optional linked-rack selection while preserving the current no-rack default.
+- Saving a new patch forwards `linked_rack_id` only when the user selected a rack.
+- The create flow explains that linked rack is optional context, not the source of truth for patch modules.
+- Focused patch-creator tests cover save behavior for linked and unlinked creation.
 
 **Validation steps:**
-- Run targeted patch UI/data specs for the new linked-rack flows.
-- Run a screenshot or visible-behavior validation path if the UI changes are visually meaningful.
-- Run a build-safe validation command after the UI slice lands.
+- Run targeted patch-creator specs.
+- Run a build-safe validation command after the create-flow slice lands.
 
 **Completion status / next action:** Queued for the next iteration step.
