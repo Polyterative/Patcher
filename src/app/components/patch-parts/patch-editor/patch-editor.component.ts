@@ -920,8 +920,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       .subscribe(state => {
         this.linkedRackPreviewState$.next(state);
         // Reset expanded module when rack changes (trackingIds are no longer valid)
-        this.expandedRackTrackingId = null;
-        this.expandedRackModule = null;
+        this.clearExpandedRackSelection();
         // Trigger auto-scale after rack data loads
         if (state.kind === 'ready' && state.rack) {
           queueMicrotask(() => this.updateRackAutoScale(state.rack!.hp));
@@ -943,23 +942,19 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.dataService.confirmSelectedConnection$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(() => {
-        this.expandedRackTrackingId = null;
-        this.expandedRackModule = null;
+        this.clearExpandedRackSelection();
       });
 
-    // Clicking outside the rack visual deselects the expanded module
-    fromEvent<MouseEvent>(document, 'click')
+    // Capture page-level pointer events so deselection still works even when
+    // intermediate components stop bubbling normal click events.
+    fromEvent<PointerEvent>(document, 'pointerdown', {capture: true})
       .pipe(
         filter(() => this.expandedRackTrackingId != null),
-        filter(event => {
-          const rackVisual = this.elementRef.nativeElement.querySelector('.patch-editor-rack-visual');
-          return rackVisual != null && !rackVisual.contains(event.target as Node);
-        }),
+        filter(event => !this.isInsideRackVisual(event.target)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(() => {
-        this.expandedRackTrackingId = null;
-        this.expandedRackModule = null;
+        this.clearExpandedRackSelection();
       });
 
     // Build a trackingId (rackingData.id) → instance_id map so each rack copy
@@ -1015,8 +1010,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
 
   setOperationMode(mode: PatchEditorOperationMode): void {
     this.operationMode$.next(mode);
-    this.expandedRackTrackingId = null;
-    this.expandedRackModule = null;
+    this.clearExpandedRackSelection();
   }
 
   isOperationModeDisabled(mode: PatchEditorOperationMode, hasLinkedRack: boolean): boolean {
@@ -1041,10 +1035,31 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     return `${ card.connectionCount } connection${ suffix }:\n${ card.connectionNames.join('\n') }`;
   }
 
+  clearExpandedRackSelection(): void {
+    this.expandedRackTrackingId = null;
+    this.expandedRackModule = null;
+    this.cdr.markForCheck();
+  }
+
+  onRackVisualBackgroundClick(event: MouseEvent): void {
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest('.patch-editor-rack-visual__module-wrapper, .patch-editor-rack-visual__cv-inline')) {
+      return;
+    }
+
+    this.clearExpandedRackSelection();
+  }
+
+  private isInsideRackVisual(target: EventTarget | null): boolean {
+    const rackVisual = this.elementRef.nativeElement.querySelector('.patch-editor-rack-visual');
+    return rackVisual instanceof HTMLElement
+      && target instanceof Node
+      && rackVisual.contains(target);
+  }
+
   selectRackModule(trackingId: number, module: DbModule): void {
     if (this.expandedRackTrackingId === trackingId) {
-      this.expandedRackTrackingId = null;
-      this.expandedRackModule = null;
+      this.clearExpandedRackSelection();
     } else {
       this.expandedRackTrackingId = trackingId;
       this.expandedRackModule = module;

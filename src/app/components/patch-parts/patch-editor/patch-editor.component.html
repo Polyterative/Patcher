@@ -187,13 +187,14 @@
         </div>
       </lib-hero-content-card>
 
-       @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
-            && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
-         <div class="patch-editor-rack-visual">
+        @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
+             && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
+         <div class="patch-editor-rack-visual"
+              (click)="onRackVisualBackgroundClick($event)">
            <div class="patch-editor-rack-visual__viewport" #rackViewport>
              <div class="patch-editor-rack-visual__frame"
                   [style.width.px]="rackScaledWidthPx"
-                 [style.height.px]="rackScaledHeightPx">
+                  [style.height.px]="rackScaledHeightPx">
               <div class="patch-editor-rack-visual__screen"
                    #rackScreen
                    [class.patch-editor-rack-visual__screen--has-selection]="expandedRackTrackingId"
