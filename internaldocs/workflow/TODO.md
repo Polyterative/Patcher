@@ -53,6 +53,23 @@ shared primitives that amplify friction across many screens.
 
 ---
 
+#### HIGH: Patch Editing — "No connections" warning not updating after connection added
+
+**Why:** On the patch editing page, the yellow warning banner "This patch has no connections yet" stays visible even
+after a connection has been added (PATCH CONNECTIONS shows count 1). Investigation shows this is **not** a generic
+change-detection failure. The root cause is split state: `patch-details.component.html` drives the warning from
+`dataService.patchConnections$`, but live editing updates `dataService.editorConnections$`. `patchConnections$` only
+refreshes from the backend on patch load / editor close, so the warning stays stale while the editor is open even though
+the editor's own "Patch connections (N)" card is already showing the new connection. The graph card currently has the same
+stale-source coupling (`patch-graph.component.html` also reads `patchConnections$`).
+
+- [ ] Switch patch-detail warning/empty-state logic to the live editing source when edit mode is open (`editorConnections$`
+  or a derived merged stream), so the banner clears immediately after a connection is added
+- [ ] Audit nearby patch-detail surfaces that still read persisted `patchConnections$` during live editing (at minimum the
+  graph empty state) and align them with the same source-of-truth rule
+
+---
+
 #### HIGH: Comments — Bug-fix Pass (entity detail pages)
 
 **Why:** Three bugs in `getComments()` make entity-level comments broken in subtle ways. No sort order means comments
