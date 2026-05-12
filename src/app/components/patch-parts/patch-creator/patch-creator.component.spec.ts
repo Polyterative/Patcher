@@ -1,5 +1,6 @@
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { PatchCreatorComponent } from './patch-creator.component';
+import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('PatchCreatorComponent', () => {
@@ -118,5 +119,24 @@ describe('PatchCreatorComponent', () => {
     const {component} = build();
     expect(component.fields.name.control.value).toEqual(jasmine.any(String));
     expect(component.fields.name.control.value.length).toBeGreaterThan(0);
+  });
+
+  it('blocks linked-rack selection when the environment cannot save linked racks yet', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {component, backend, dialogRef} = build();
+    component.fields.name.control.setValue('Linked Patch');
+    component.fields.linkedRack.control.setValue({id: '42', name: 'Studio Rack'});
+    backend.add.patch.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+
+    component.save$.next();
+
+    expect(component.linkedRackPersistenceBlocked$.value).toBeTrue();
+    expect(component.fields.linkedRack.control.disabled).toBeTrue();
+    expect(component.fields.linkedRack.control.value).toBe('');
+    expect(dialogRef.close).not.toHaveBeenCalled();
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
   });
 });

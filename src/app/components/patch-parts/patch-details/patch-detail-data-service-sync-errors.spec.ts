@@ -192,6 +192,29 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     }));
     expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
   });
+
+  it('blocks linked-rack persistence when the schema is not live yet', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+    backend.update.patchSilent.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+    service.singlePatchData$.next(patch({id: 44}));
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(service.linkedRackPersistenceBlocked$.value).toBeTrue();
+    expect(service.linkedRackPersistenceHint$.value).toContain('not available yet');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Linked rack saving is not available yet in this environment.'
+    );
+  });
   
   it('adds a new editor connection, blocks duplicate, and records bridge event', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {

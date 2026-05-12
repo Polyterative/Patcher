@@ -3,7 +3,9 @@
   user:(userManagerService.loggedUser$|async),
   singlePatchData: (dataService.singlePatchData$|async),
   linkedRackState: (dataService.linkedRackState$|async),
-  linkedRackOptions: (dataService.linkedRackOptions$|async)
+  linkedRackOptions: (dataService.linkedRackOptions$|async),
+  linkedRackPersistenceBlocked: (dataService.linkedRackPersistenceBlocked$|async),
+  linkedRackPersistenceHint: (dataService.linkedRackPersistenceHint$|async)
 }; as bag) {
     <div class="col parent"
     >
@@ -56,6 +58,11 @@
               <p class="patch-linked-rack__copy">
                 {{ bag.linkedRackState.description }}
               </p>
+              @if (bag.linkedRackPersistenceHint) {
+                <p class="patch-linked-rack__hint">
+                  {{ bag.linkedRackPersistenceHint }}
+                </p>
+              }
               @if (bag.linkedRackOptions.length === 0) {
                 <p class="patch-linked-rack__hint">
                   You do not have any racks yet. You can keep patching without one and link a rack later.
@@ -63,7 +70,7 @@
               }
               @if (bag.linkedRackState.kind !== 'unlinked') {
                 <div class="patch-linked-rack__actions">
-                  <button mat-stroked-button type="button" class="patch-linked-rack__clear" (click)="clearLinkedRack()">
+                  <button mat-stroked-button type="button" class="patch-linked-rack__clear" [disabled]="bag.linkedRackPersistenceBlocked" (click)="clearLinkedRack()">
                     Clear linked rack
                   </button>
                 </div>
@@ -90,6 +97,11 @@
         <p class="patch-linked-rack__copy">
           {{ bag.linkedRackState.description }}
         </p>
+        @if (bag.linkedRackPersistenceHint) {
+          <p class="patch-linked-rack__hint">
+            {{ bag.linkedRackPersistenceHint }}
+          </p>
+        }
       </div>
     }
     <ng-content></ng-content>
