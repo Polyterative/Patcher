@@ -76,6 +76,34 @@ Free-form tags are sufficient for v1; a curated taxonomy can layer on top later.
 active → tags become the filtering layer for Collection-Aware Discovery, the feature that makes the whole collection
 model pay off.
 
+#### Rack-Context Patch Building
+
+> Product constraints for this feature are defined in
+> [Patch Builder Is Collection-First; Rack Context Is Optional](./PRINCIPLES.md#patch-builder-is-collection-first-rack-context-is-optional).
+
+Let a user optionally link a rack to a patch for visual reference, so the patch has a visible rack context without
+replacing the existing collection-first editor. The linked rack is a data association and UX orientation layer; the
+module list under the hood remains the same collection-first patch surface.
+
+This preserves the broader utility of patches: a user can still document, teach, study, or plan a patch that does not
+map exactly to a current rack. It also meets the expectation that "I should be able to see which rack I'm patching" for
+users who think in rack-first terms.
+
+**Core constraints:**
+
+- rack selection is optional, not required
+- existing no-rack patches remain fully valid
+- linked rack can be changed or cleared later
+- linked rack provides context and compatibility signals, not a hard module whitelist
+- linked rack is not a rack snapshot and not the source of patch modules
+- the current collection-first editor remains the underlying wiring surface
+- viewer-facing rack context must respect privacy and unavailable-rack states
+- patches must survive rack edits, deletion, and partial divergence
+
+**Non-goals for v1:** replacing direct patch creation, mirroring rack layout inside the patch editor, auto-removing patch
+modules when the linked rack changes, auto-filtering the patch editor down to rack modules only, or treating the linked
+rack as proof of ownership or patch validity.
+
 #### Media Attachment on Patches *(embed-only v1)*
 
 A YouTube or SoundCloud embed link on a patch: a solo user's memory aid ("this is the patch from that recording"). No
