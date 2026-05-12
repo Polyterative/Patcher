@@ -31,6 +31,16 @@ Patcher helps you manage the full modular workflow:
 
 You do **not** need an account to browse modules, public patches, public racks, or manufacturer pages.
 
+### How collection, patches, and racks work together
+
+- **Collection**: your module library. It records which modules you own.
+- **Patch**: a wiring diagram built from modules in your collection.
+- **Rack**: a visual layout of modules in physical space, with HP and power analysis.
+
+These are related, but they are not the same thing. Patches are documented from your collection and remain valid even if
+you later rearrange or delete a rack. Racks help you plan or reference physical layouts; patches capture how modules are
+connected.
+
 ---
 
 ## Getting Started
@@ -124,7 +134,10 @@ Patcher's module data is community-shaped:
 2. Go to your **Patches** section.
 3. Click **Create patch**.
 4. Add a name, description, and tags.
-5. Add modules and document the connections between them.
+5. Add modules from your collection and document the connections between them.
+
+**How patching works:** patches are built from your collection in the patch editor. Racks are planned separately, so a
+patch stays editable even if a rack changes later.
 
 ### What patch pages show
 
@@ -135,12 +148,22 @@ Patch detail pages can include:
 - A connection graph
 - Patch statistics, including:
   - cables
-  - unique modules
-  - multiples
-  - average cables per module
+  - unique module types
+  - multiples (one output feeding multiple inputs)
+  - average cables per unique module type
   - annotated connections
 - A **Modules needed** summary when the patch uses repeated modules
 - Comments and discussion
+
+### Working with multiple copies of the same module
+
+If a patch uses the same module more than once, the patch editor shows numbered labels such as **(1)** and **(2)**.
+These labels help you tell one copy from another while wiring.
+
+- **One copy:** one card, no number
+- **Two or more copies:** numbered cards so you can wire each copy separately
+- **Add Copy:** creates another copy inside the patch only
+- **Important:** adding a copy does not change your collection; it only affects this patch
 
 ### Editing and sharing
 
@@ -152,7 +175,7 @@ Patch owners can:
 - Switch the patch between **public** and **private**
 - Delete the patch
 
-**Privacy note:** private patches are hidden from search, but anyone with the direct URL can still open them.
+**Privacy note:** private patches are hidden from public browse and search surfaces.
 
 ---
 
@@ -262,7 +285,7 @@ That page includes:
 - Profiles can be public or private.
 - Patches can be public or private.
 - Racks can be public or private.
-- Private patches and racks are hidden from search, but direct links still work.
+- Private patches and racks are hidden from public browse and search surfaces.
 
 ### Ownership and export
 
@@ -288,7 +311,10 @@ That page includes:
 
 ### For patch documentation
 
-- Name repeated module instances clearly when a patch uses multiple copies.
+- When a patch uses multiple copies of the same module, look at the numbered labels like **(1)** and **(2)** before adding or removing a copy.
+- **Add Copy** creates another copy inside the patch only. It does not change your collection.
+- A module needs recorded inputs and outputs in Patcher before there is anything to wire in the patch editor. If
+  something seems incomplete, open the module page and report the issue.
 - Add tags early so patches stay easy to find later.
 - Use the connection graph and statistics together to spot complexity quickly.
 
@@ -325,7 +351,7 @@ Useful links:
 ## Quick Reference
 
 **Q: Is Patcher free to use?**  
-A: Yes. The public module database and core product features are free.
+A: Yes. The public module database and core product features are free to use today.
 
 **Q: Can I use Patcher without an account?**  
 A: Yes. You can browse modules, manufacturers, public patches, and public racks without signing in.
@@ -340,7 +366,7 @@ A: Yes, through a manual support request on Discord.
 A: 3U Eurorack, Intellijel 1U, and Pulp Logic 1U.
 
 **Q: Is there a mobile app?**  
-A: Patcher is currently a web app that works in mobile browsers.
+A: Patcher is currently a web app that works in mobile browsers, with the most comfortable editing flows on larger screens.
 
 ---
 

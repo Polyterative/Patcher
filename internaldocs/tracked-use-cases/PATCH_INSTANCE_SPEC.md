@@ -2,15 +2,22 @@
 
 > Stable expected behavior for multi-instance patch editing. Use this as the canonical reference for implementation and
 > tests.
+>
+> Product-level constraints for linked-rack behavior live in
+> `internaldocs/product/PRINCIPLES.md#patch-builder-is-collection-first-rack-context-is-optional`.
 
 ---
 
 ## Context
 
 - **Collection modules** = the user's module library, always visible in the patch editor.
+- **Linked rack context** = optional orientation only; if present, it does not replace collection modules as the editor's
+  source list.
 - **Instances** = DB rows in `patch_module_instances`, tracking copies of a module within a patch.
 - **`instance_id`** on a connection = optional. `undefined` for single-copy modules, set for multi-copy.
 - `buildEditorCards` merges collection + instances: 0–1 instances → 1 card, N≥2 → N cards with labels.
+- **User-facing language** should prefer **copies** and numbered labels `(1)`, `(2)`, etc. Reserve **instance** for
+  internal specs and implementation details.
 
 ---
 
@@ -58,7 +65,7 @@
 
 ### Simple patch with no explicit copies
 
-- Wiring two single-copy modules should silently create internal instances as needed.
+- Wiring two single-copy modules should automatically create internal instances as needed.
 - The user still sees the same one-card-per-module UI.
 - Saved connections may carry instance IDs even when the UI shows no labels.
 
@@ -88,6 +95,7 @@
 ### Connection count indicator
 
 - Each visible instance card should expose its connection count.
+- Connection count must be available through accessible text, not visual badges alone.
 - Counts should help users identify which copies are safe to remove.
 
 ---
@@ -118,3 +126,13 @@
 - UI relabeling must never invalidate stored connections.
 - Deleting an instance must not leave stale in-memory IDs that fail later on save.
 - Legacy connections with `null` instance IDs must remain loadable and saveable.
+
+---
+
+## Linked Rack Constraints
+
+- Linked rack context must never create, remove, reorder, or relabel patch instances by itself.
+- Changing or clearing a linked rack must not modify `patch_module_instances` rows or patch connections.
+- Rack layout order is not instance identity. Instances remain patch-local wiring identity, not rack-position identity.
+- If a linked rack becomes unavailable, the patch should continue to render the same instance set with the same labels and
+  connections.
