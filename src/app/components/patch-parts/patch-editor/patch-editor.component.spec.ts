@@ -13,6 +13,16 @@ import {
 import { of } from 'rxjs';
 import { PatchModuleInstance } from 'src/app/models/connection';
 
+function createPatchEditorComponent(): PatchEditorComponent {
+  return new PatchEditorComponent(
+    {} as any,
+    {singlePatchData$: of(undefined)} as any,
+    {} as any,
+    {nativeElement: document.createElement('div')} as any,
+    {markForCheck: () => {}} as any
+  );
+}
+
 
 const createCard = (
   moduleName: string,
@@ -41,13 +51,13 @@ const createCard = (
 
 describe('PatchEditorComponent', () => {
   it('should hide module tags in patch editor cards to keep the editor compact', () => {
-    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+    const component = createPatchEditorComponent();
     
     expect(component.modulesViewConfig.hideTags).toBeTrue();
   });
 
   it('defaults the patch editor operation mode to collection', () => {
-    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+    const component = createPatchEditorComponent();
 
     expect(component.operationMode$.value).toBe('collection');
   });
@@ -238,7 +248,7 @@ describe('PatchEditorComponent', () => {
   });
 
   it('linkedRackInstanceMap$ starts empty', () => {
-    const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+    const component = createPatchEditorComponent();
 
     expect(component.linkedRackInstanceMap$.value.size).toBe(0);
   });
@@ -462,7 +472,7 @@ describe('PatchEditorComponent', () => {
     let component: PatchEditorComponent;
 
     beforeEach(() => {
-      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+      component = createPatchEditorComponent();
     });
 
     it('returns null when no selection exists', () => {
@@ -529,7 +539,7 @@ describe('PatchEditorComponent', () => {
     let component: PatchEditorComponent;
 
     beforeEach(() => {
-      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+      component = createPatchEditorComponent();
     });
 
     it('returns false when nothing is expanded', () => {
@@ -576,7 +586,7 @@ describe('PatchEditorComponent', () => {
     let component: PatchEditorComponent;
 
     beforeEach(() => {
-      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+      component = createPatchEditorComponent();
     });
 
     it('returns null for single-copy modules', () => {
@@ -635,7 +645,7 @@ describe('PatchEditorComponent', () => {
     let component: PatchEditorComponent;
 
     beforeEach(() => {
-      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+      component = createPatchEditorComponent();
     });
 
     it('returns false when no selection exists', () => {
@@ -671,7 +681,7 @@ describe('PatchEditorComponent', () => {
     let component: PatchEditorComponent;
 
     beforeEach(() => {
-      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any, {nativeElement: document.createElement("div")} as any);
+      component = createPatchEditorComponent();
     });
 
     it('expands a module by trackingId', () => {

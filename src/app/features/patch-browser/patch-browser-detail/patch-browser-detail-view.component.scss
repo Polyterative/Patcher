@@ -1,7 +1,8 @@
-.toggle {
-  align-self: center;
-  padding-top: 2rem;
-  padding-right: 2rem;
-  padding-left: .5rem;
-  padding-bottom: 2rem;
+:host {
+  display: block;
+  width: 100%;
+}
+
+.patch-browser-detail-shell {
+  min-width: 0;
 }

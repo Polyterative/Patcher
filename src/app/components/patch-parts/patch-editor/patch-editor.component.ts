@@ -1009,10 +1009,39 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     this.dataService.addModuleInstance$.next(card.module);
   }
 
+  clearSearch(): void {
+    this.moduleSearchControl.reset('', { emitEvent: true });
+  }
+
   setOperationMode(mode: PatchEditorOperationMode): void {
     this.operationMode$.next(mode);
     this.expandedRackTrackingId = null;
     this.expandedRackModule = null;
+  }
+
+  getCollectionResultsSummary(totalCards: number, visibleCards: number, searchQuery: string): string {
+    if (!totalCards) {
+      return 'Your collection is empty here for now.';
+    }
+    if (!searchQuery.trim()) {
+      return `${ totalCards } module card${ totalCards === 1 ? '' : 's' } ready for patching.`;
+    }
+    return `${ visibleCards } of ${ totalCards } module card${ totalCards === 1 ? '' : 's' } match "${ searchQuery }".`;
+  }
+
+  getLinkedRackSummary(preview: LinkedRackPreviewState): string {
+    if (preview.kind !== 'ready' || !preview.rack) {
+      return preview.description;
+    }
+    return `${ preview.rack.name } · ${ preview.rack.rows } row${ preview.rack.rows === 1 ? '' : 's' } · ${ preview.rack.hp } HP`;
+  }
+
+  getModuleCardConnectionTooltip(card: EditorModuleCard): string {
+    if (!card.connectionCount) {
+      return '';
+    }
+    const suffix = card.connectionCount === 1 ? '' : 's';
+    return `${ card.connectionCount } connection${ suffix }:\n${ card.connectionNames.join('\n') }`;
   }
 
   selectRackModule(trackingId: number, module: DbModule): void {
