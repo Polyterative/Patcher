@@ -82,22 +82,22 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
       this.dataService.manualsData$
     ]).pipe(
       map(([modules, racks, patches, comments, manuals]) => [
-        {name: 'Modules', value: modules?.length ?? 0, icon: 'memory'},
-        {name: 'Racks', value: racks?.length ?? 0, icon: 'dashboard'},
-        {name: 'Patches', value: patches?.length ?? 0, icon: 'cable'},
-        {name: 'Comments', value: comments?.length ?? 0, icon: 'chat'},
-        {name: 'Manual links', value: manuals?.length ?? 0, icon: 'menu_book'}
+        {name: 'Modules', value: modules?.length ?? 0, icon: 'view_module'},
+        {name: 'Racks', value: racks?.length ?? 0, icon: 'view_stream'},
+        {name: 'Patches', value: patches?.length ?? 0, icon: 'settings_input_composite'},
+        {name: 'Comments', value: comments?.length ?? 0, icon: 'comment'},
+        {name: 'Manual links', value: manuals?.length ?? 0, icon: 'book'}
       ])
     );
 
     this.contributorStats$ = this.dataService.contributorStats$.pipe(
       map((stats: CurrentUserContributorStats | undefined) => stats
         ? [
-          {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload_file'},
+          {name: 'Modules submitted', value: stats.modulesSubmitted, icon: 'upload'},
           {name: 'Approved modules', value: stats.approvedModules, icon: 'check_circle'},
           {name: 'Pending review', value: stats.pendingModules, icon: 'schedule'},
-          {name: 'Comments posted', value: stats.commentsPosted, icon: 'chat'},
-          {name: 'Issue reports', value: stats.moduleFlagsSubmitted, icon: 'report'}
+          {name: 'Comments posted', value: stats.commentsPosted, icon: 'comment'},
+          {name: 'Issue reports', value: stats.moduleFlagsSubmitted, icon: 'bug_report'}
         ]
         : null
       )

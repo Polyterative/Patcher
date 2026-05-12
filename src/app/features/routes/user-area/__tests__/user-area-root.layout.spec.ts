@@ -49,23 +49,23 @@ describe('UserAreaRootComponent - Layout Shell', () => {
     fixture.detectChanges();
   }
 
-  it('renders the owned-content workspace beside the bounded utility rail', () => {
+  it('renders the owned-content workspace beside the sticky stats sidebar', () => {
     build();
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.profile-layout')).not.toBeNull();
     expect(host.querySelector('.main-content')).not.toBeNull();
     expect(host.querySelector('.sidebar')).not.toBeNull();
-    expect(host.querySelectorAll('.block').length).toBe(3);
+    expect(host.querySelectorAll('.block').length).toBe(5);
   });
 
-  it('renders search inside the utility rail instead of as a floating shell', () => {
+  it('renders search inside the sidebar instead of as a floating shell', () => {
     build();
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('.user-area-utility-search')).not.toBeNull();
     expect(host.querySelector('.user-area-utility-search__header')).not.toBeNull();
     expect(host.querySelector('.user-area-floating-search')).toBeNull();
-    expect(host.querySelectorAll('.utility-rail-group').length).toBe(2);
+    expect(host.querySelectorAll('.utility-rail-group').length).toBe(1);
   });
 });
