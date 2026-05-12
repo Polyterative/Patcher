@@ -9,6 +9,8 @@
 - [x] Add optional linked-rack selection to patch creation while keeping unlinked patch creation and existing unlinked patches working unchanged.
 - [x] Guard linked-rack create/edit writes so the missing live `linked_rack_id` column degrades to explicit unavailable messaging instead of a raw `PGRST204`.
 - [x] Add a patch-editor operation mode selector with read-only linked-rack context below the editor.
+- [x] Fix duplicate linked rack card rendering in patch detail view.
+- [x] Apply the linked_rack_id migration to the live Supabase environment.
 
 ## Ready next
 
@@ -17,6 +19,5 @@
 
 ## Deferred / external
 
-- [ ] Apply the existing `patches.linked_rack_id` migration to the live Supabase environment before selected linked-rack persistence can be used in production.
 - [ ] Propose modules from the linked rack below the patch editor as a later enhancement without changing collection-first editing.
 - [ ] E2E dedicated-account rotation remains an external credentials task and is not part of the current linked-rack slice.
