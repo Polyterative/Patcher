@@ -1091,6 +1091,46 @@ describe('PatchEditorComponent', () => {
     });
   });
 
+  describe('onRackVisualBackgroundClick', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = createPatchEditorComponent();
+    });
+
+    it('clears the expanded module when clicking empty linked-rack space', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1, name: 'VCA'} as any;
+      const backgroundClick = new MouseEvent('click');
+      Object.defineProperty(backgroundClick, 'target', {
+        value: document.createElement('div')
+      });
+
+      component.onRackVisualBackgroundClick(backgroundClick);
+
+      expect(component.expandedRackTrackingId).toBeNull();
+      expect(component.expandedRackModule).toBeNull();
+    });
+
+    it('ignores clicks originating from the selected module wrapper subtree', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1, name: 'VCA'} as any;
+      const moduleWrapper = document.createElement('div');
+      moduleWrapper.className = 'patch-editor-rack-visual__module-wrapper';
+      const moduleChild = document.createElement('div');
+      moduleWrapper.appendChild(moduleChild);
+      const moduleClick = new MouseEvent('click');
+      Object.defineProperty(moduleClick, 'target', {
+        value: moduleChild
+      });
+
+      component.onRackVisualBackgroundClick(moduleClick);
+
+      expect(component.expandedRackTrackingId).toBe(10);
+      expect(component.expandedRackModule).toEqual(jasmine.objectContaining({id: 1}));
+    });
+  });
+
   describe('detectLinkedRackDivergence', () => {
     const { detectLinkedRackDivergence } = require('./patch-editor.component');
 
