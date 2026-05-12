@@ -197,6 +197,21 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.editorConnections$.value?.length).toBe(1);
   });
 
+  it('updates linked-rack state after a linked-rack change so dependent previews can reload', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(42);
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackId).toBe(42);
+  });
+
   it('clears the linked rack through the dedicated helper', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
     const {service, backend} = build();
@@ -232,6 +247,48 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       jasmine.anything(),
       'Linked rack saving is not available yet in this environment.'
     );
+  });
+
+  it('disables linked-rack switching while a connection is pending selection', () => {
+    const {service} = build();
+    service.patchEditingPanelOpenState$.next(true);
+
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeTrue();
+    expect(service.linkedRackSelectionHint$.value).toBe('Finish or cancel the pending connection before switching the linked rack.');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+
+    service.resetSelectedForConnection$.next();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeFalse();
+    expect(service.linkedRackSelectionHint$.value).toBeNull();
+    expect(service.formData.linkedRack.control.disabled).toBeFalse();
+  });
+
+  it('keeps linked-rack switching disabled while connection changes are still saving', () => {
+    const {service, backend} = build();
+    const saveSubject = new Subject<void>();
+    backend.update.patchConnectionsSilent.and.returnValue(saveSubject.asObservable());
+    service.patchEditingPanelOpenState$.next(true);
+    service.singlePatchData$.next(patch({id: 44}));
+    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+
+    service.requestConnectionDbSync$.next();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeTrue();
+    expect(service.linkedRackSelectionHint$.value).toBe('Wait for pending connection changes to finish saving before switching the linked rack.');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+
+    saveSubject.next();
+    saveSubject.complete();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeFalse();
+    expect(service.linkedRackSelectionHint$.value).toBeNull();
+    expect(service.formData.linkedRack.control.disabled).toBeFalse();
   });
   
   it('adds a new editor connection, blocks duplicate, and records bridge event', () => {

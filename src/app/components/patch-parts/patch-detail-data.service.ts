@@ -26,6 +26,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   filter,
+  finalize,
   map,
   pairwise,
   scan,
@@ -175,8 +176,11 @@ export class PatchDetailDataService implements OnDestroy {
   readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(defaultLinkedRackUiState);
   readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
+  readonly linkedRackSelectionBlocked$ = new BehaviorSubject<boolean>(false);
+  readonly linkedRackSelectionHint$ = new BehaviorSubject<string | null>(null);
   readonly requestLinkedRackChange$ = new Subject<number | null>();
   private readonly _tagsUpdate$ = new Subject<string[]>();
+  private readonly connectionSyncPendingCount$ = new BehaviorSubject<number>(0);
   
   constructor(
     private router: Router,
@@ -401,9 +405,9 @@ export class PatchDetailDataService implements OnDestroy {
               this.setLinkedRackPersistenceBlocked(false, null);
               if (this.singlePatchData$.value) {
                 this.singlePatchData$.value.linked_rack_id = linkedRackId;
-                this.linkedRackState$.next(this.buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value));
-                this.syncLinkedRackControl(this.singlePatchData$.value, this.currentUserRacks$.value);
               }
+              this.linkedRackState$.next(this.buildLinkedRackUiState(nextPatch, this.currentUserRacks$.value));
+              this.syncLinkedRackControl(nextPatch, this.currentUserRacks$.value);
               const message = linkedRackId == null
                 ? 'Linked rack cleared.'
                 : 'Linked rack updated.';
@@ -522,6 +526,43 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe((state) => {
         this.selectedForConnection$.next(state);
       });
+
+    combineLatest([
+      this.patchEditingPanelOpenState$,
+      this.selectedForConnection$,
+      this.connectionSyncPendingCount$.pipe(
+        map(count => count > 0),
+        distinctUntilChanged()
+      )
+    ])
+      .pipe(
+        map(([isEditing, selection, hasPendingConnectionSync]) => {
+          if (!isEditing) {
+            return {blocked: false, hint: null as string | null};
+          }
+
+          if (hasPendingConnectionSync) {
+            return {
+              blocked: true,
+              hint: 'Wait for pending connection changes to finish saving before switching the linked rack.'
+            };
+          }
+
+          if (selection.a || selection.b) {
+            return {
+              blocked: true,
+              hint: 'Finish or cancel the pending connection before switching the linked rack.'
+            };
+          }
+
+          return {blocked: false, hint: null as string | null};
+        }),
+        distinctUntilChanged((previous, current) =>
+          previous.blocked === current.blocked && previous.hint === current.hint
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({blocked, hint}) => this.setLinkedRackSelectionBlocked(blocked, hint));
     
     this.confirmSelectedConnection$
       .pipe(
@@ -593,12 +634,24 @@ export class PatchDetailDataService implements OnDestroy {
     // Auto-save connections: serialize writes with concatMap to prevent race conditions
     this.requestConnectionDbSync$
       .pipe(
+        tap(() => this.connectionSyncPendingCount$.next(this.connectionSyncPendingCount$.value + 1)),
         withLatestFrom(this.editorConnections$, this.singlePatchData$),
         concatMap(([_, connections, patch]) => {
-          if (!patch) { return of(null); }
-          if (connections === null) { return of(null); }
-          if (connections.length === 0) {
-            return this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
+          let request$: Observable<unknown>;
+          if (!patch) {
+            request$ = of(null);
+          } else if (connections === null) {
+            request$ = of(null);
+          } else if (connections.length === 0) {
+            request$ = this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
+              catchError(err => {
+                console.error('Failed to save connections:', err);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+                return EMPTY;
+              })
+            );
+          } else {
+            request$ = this.backend.update.patchConnectionsSilent(connections).pipe(
               catchError(err => {
                 console.error('Failed to save connections:', err);
                 SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
@@ -606,12 +659,9 @@ export class PatchDetailDataService implements OnDestroy {
               })
             );
           }
-          return this.backend.update.patchConnectionsSilent(connections).pipe(
-            catchError(err => {
-              console.error('Failed to save connections:', err);
-              SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
-              return EMPTY;
-            })
+
+          return request$.pipe(
+            finalize(() => this.connectionSyncPendingCount$.next(Math.max(0, this.connectionSyncPendingCount$.value - 1)))
           );
         }),
         takeUntil(this.destroyEvent$)
@@ -1163,8 +1213,18 @@ export class PatchDetailDataService implements OnDestroy {
   private setLinkedRackPersistenceBlocked(blocked: boolean, hint: string | null): void {
     this.linkedRackPersistenceBlocked$.next(blocked);
     this.linkedRackPersistenceHint$.next(hint);
+    this.refreshLinkedRackControlAvailability();
+  }
 
-    if (blocked) {
+  private setLinkedRackSelectionBlocked(blocked: boolean, hint: string | null): void {
+    this.linkedRackSelectionBlocked$.next(blocked);
+    this.linkedRackSelectionHint$.next(hint);
+    this.refreshLinkedRackControlAvailability();
+  }
+
+  private refreshLinkedRackControlAvailability(): void {
+    const shouldDisable = this.linkedRackPersistenceBlocked$.value || this.linkedRackSelectionBlocked$.value;
+    if (shouldDisable) {
       this.formData.linkedRack.control.disable({emitEvent: false});
       return;
     }

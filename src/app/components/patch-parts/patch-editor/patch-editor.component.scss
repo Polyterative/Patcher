@@ -59,7 +59,7 @@ $palette: (
 
 .patch-editor-toolbar__meta {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.2rem;
   min-width: 0;
   max-width: min(100%, 52rem);
 }
@@ -74,10 +74,6 @@ $palette: (
   margin: 0;
   font-size: 0.8rem;
   color: rgba(27, 49, 74, 0.72);
-}
-
-.patch-editor-toolbar__warning {
-  display: block;
 }
 
 .patch-editor-controls {

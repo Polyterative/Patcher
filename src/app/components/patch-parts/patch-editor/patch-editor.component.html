@@ -37,6 +37,8 @@
 
       <lib-hero-content-card
         class="modulesBG"
+        [descriptionAlign]="'alignTextStart'"
+        [description]="getWorkspaceDescription(bag.operationMode, bag.linkedRackPreview, bag.divergence, bag.orphanedConnectionCount)"
       >
         <div class="patch-editor-workspace">
           <div class="patch-editor-rack-topbar">
@@ -58,25 +60,9 @@
                    && bag.linkedRackPreview.rack) {
                 <div class="patch-editor-toolbar__meta">
                   <mat-card-subtitle class="patch-editor-toolbar__summary">
-                    {{ bag.linkedRackPreview.rack.name }}
-                    · {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
-                    · {{ bag.linkedRackPreview.rack.hp }} HP
-                    · {{ bag.linkedRackPreview.moduleCount }} placed module{{ bag.linkedRackPreview.moduleCount === 1 ? '' : 's' }}
+                    {{ getRackToolbarSummary(bag.linkedRackPreview, bag.divergence, bag.orphanedConnectionCount) }}
                   </mat-card-subtitle>
 
-                  @if (bag.divergence && !bag.divergence.clean) {
-                    <app-advice-tooltip class="patch-editor-toolbar__warning"
-                                        title="Linked rack warning"
-                                        tone="warning"
-                                        [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
-                                        matTooltipClass="patch-divergence-tooltip">
-                      Rack and patch copies have diverged.
-                      {{ bag.divergence.totalOrphanedInstances }} instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} sit outside the current rack
-                      @if (bag.orphanedConnectionCount > 0) {
-                        · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
-                      }
-                    </app-advice-tooltip>
-                  }
                 </div>
               }
             </div>

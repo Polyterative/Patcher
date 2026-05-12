@@ -829,8 +829,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     private elementRef: ElementRef,
     private cdr: ChangeDetectorRef
   ) {
-    this.hasLinkedRack$ = this.dataService.singlePatchData$.pipe(
-      map(patch => patch?.linked_rack_id != null),
+    this.hasLinkedRack$ = this.dataService.linkedRackState$.pipe(
+      map(state => state.kind !== 'unlinked'),
       distinctUntilChanged()
     );
   }
@@ -890,9 +890,9 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
       )
       .subscribe(cards => this.editorCards$.next(cards));
 
-    this.dataService.singlePatchData$
+    this.dataService.linkedRackState$
       .pipe(
-        map(patch => patch?.linked_rack_id ?? null),
+        map(state => state.rackId ?? null),
         distinctUntilChanged(),
         switchMap(linkedRackId => {
           if (linkedRackId == null) {
@@ -1061,6 +1061,42 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   /** Builds a detailed tooltip describing rack↔patch divergence */
   getDivergenceTooltip(divergence: LinkedRackDivergence, orphanedConnectionCount: number): string {
     return buildDivergenceTooltip(divergence, orphanedConnectionCount);
+  }
+
+  getWorkspaceDescription(
+    mode: PatchEditorOperationMode,
+    preview: LinkedRackPreviewState,
+    divergence: LinkedRackDivergence | null,
+    orphanedConnectionCount: number
+  ): string {
+    if (mode === PATCH_EDITOR_OPERATION_MODES.collection) {
+      return 'Browse your collection, search or sort what is available, then add copies to the patch and use their ins and outs to build connections.';
+    }
+
+    return this.getRackWorkspaceMessage(preview);
+  }
+
+  getRackWorkspaceMessage(preview: LinkedRackPreviewState): string {
+    return preview.description;
+  }
+
+  getRackToolbarSummary(
+    preview: LinkedRackPreviewState,
+    divergence: LinkedRackDivergence | null,
+    orphanedConnectionCount: number
+  ): string {
+    if (preview.kind !== 'ready' || !preview.rack) {
+      return '';
+    }
+
+    if (divergence && !divergence.clean) {
+      const connectionSuffix = orphanedConnectionCount > 0
+        ? ` · ${ orphanedConnectionCount } connection${ orphanedConnectionCount === 1 ? '' : 's' } affected`
+        : '';
+      return `Linked rack warning — Rack and patch copies have diverged. ${ divergence.totalOrphanedInstances } instance${ divergence.totalOrphanedInstances === 1 ? '' : 's' } sit outside the current rack${ connectionSuffix }.`;
+    }
+
+    return `${ preview.rack.name } · ${ preview.rack.rows } row${ preview.rack.rows === 1 ? '' : 's' } · ${ preview.rack.hp } HP · ${ preview.moduleCount } placed module${ preview.moduleCount === 1 ? '' : 's' }`;
   }
 
   /** True when this module should be visually dimmed in the rack visual. */
