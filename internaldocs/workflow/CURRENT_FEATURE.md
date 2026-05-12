@@ -76,6 +76,8 @@ persistence still depends on applying the existing migration in the target Supab
   - `Linked but unavailable`
 - [x] Explicitly protect instance behavior so linked-rack context does not change editor-card creation, labels, or connection identity
 - [x] Define migration/back-compat expectations for existing patches, patch queries, and nullable linked-rack data
+- [x] Rack visual UI: realistic module rendering, inline CV panel, connection role overlays (in/out), staggered animations
+- [x] Per-copy instance synchronization: positional matching algorithm, lazy instance creation, per-copy dimming/selection
 
 #### Layer 3 — Polish
 - [ ] Add helper copy and onboarding cues so users understand the difference between optional rack context and direct-list patch editing

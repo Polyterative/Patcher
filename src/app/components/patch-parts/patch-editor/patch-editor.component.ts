@@ -127,6 +127,7 @@ export interface PatchEditorOperationModeOption {
 }
 
 export interface LinkedRackPreviewCard {
+  /** Stable identifier from `rackingData.id` — unique per rack position, used as instance map key */
   trackingId: number;
   module: DbModule;
   row: number;
@@ -456,7 +457,7 @@ export function buildLinkedRackPreviewRows(rackedModules: RackedModule[]): Linke
     const row = rackedModule.rackingData.row ?? 0;
     const rowCards = rows.get(row) ?? [];
     rowCards.push({
-      trackingId: rackedModule.rackingData.id ?? ((row + 1) * 100000) + (rackedModule.rackingData.column ?? 0) + rackedModule.module.id,
+      trackingId: rackedModule.rackingData.id ?? ((row + 1) * 100000) + ((rackedModule.rackingData.column ?? 0) * 100) + rackedModule.module.id,
       module: rackedModule.module,
       row,
       column: rackedModule.rackingData.column ?? 0,
@@ -471,6 +472,47 @@ export function buildLinkedRackPreviewRows(rackedModules: RackedModule[]): Linke
       row,
       modules: [...modules].sort((a, b) => a.column - b.column)
     }));
+}
+
+/**
+ * Builds a trackingId → instance_id map by pairing rack positions with
+ * existing patch instances. For each module, rack positions are sorted by
+ * (row, column) and instances by creation order (id), then paired 1:1.
+ * Unmapped positions will trigger lazy instance creation on first CV click.
+ */
+export function buildLinkedRackInstanceMap(
+  previewState: LinkedRackPreviewState,
+  instances: PatchModuleInstance[]
+): Map<number, number> {
+  const instanceMap = new Map<number, number>();
+  if (previewState.kind !== 'ready') { return instanceMap; }
+
+  // Group rack positions by module_id
+  const rackPositionsByModule = new Map<number, LinkedRackPreviewCard[]>();
+  for (const row of previewState.rows) {
+    for (const card of row.modules) {
+      const group = rackPositionsByModule.get(card.module.id) ?? [];
+      group.push(card);
+      rackPositionsByModule.set(card.module.id, group);
+    }
+  }
+
+  // For each module, sort rack positions by (row, column) and pair with
+  // existing instances sorted by id (creation order) — 1:1 matching.
+  for (const [moduleId, positions] of rackPositionsByModule) {
+    const sortedPositions = [...positions].sort((a, b) => a.row - b.row || a.column - b.column);
+    const sortedInstances = instances
+      .filter(i => i.module_id === moduleId)
+      .sort((a, b) => a.id - b.id);
+
+    for (let i = 0; i < sortedPositions.length; i++) {
+      if (i < sortedInstances.length) {
+        instanceMap.set(sortedPositions[i].trackingId, sortedInstances[i].id);
+      }
+    }
+  }
+
+  return instanceMap;
 }
 
 export function buildLinkedRackPreviewState(
@@ -570,15 +612,16 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   /** Module IDs currently in-flight for copy — prevents spam-clicking */
   addingCopy = new Set<number>();
 
-  /** Currently expanded module in the rack visual (for showing CVs) */
-  expandedRackModuleId: number | null = null;
+  /** Currently expanded rack position in the rack visual (for showing CVs) */
+  expandedRackTrackingId: number | null = null;
   expandedRackModule: DbModule | null = null;
   
   /** Whether collection modules have been loaded at least once */
   collectionLoaded$ = new BehaviorSubject<boolean>(false);
 
   /**
-   * Maps module_id → first instance_id for linked rack modules.
+   * Maps rackingData.id (trackingId) → instance_id for linked rack modules.
+   * Each rack position gets its own instance for per-copy CV wiring.
    * Derived from patchModuleInstances$ so linked rack cards get correct instanceId
    * for CV highlighting and connection count badges after auto-creation.
    */
@@ -677,7 +720,12 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(state => this.linkedRackPreviewState$.next(state));
+      .subscribe(state => {
+        this.linkedRackPreviewState$.next(state);
+        // Reset expanded module when rack changes (trackingIds are no longer valid)
+        this.expandedRackTrackingId = null;
+        this.expandedRackModule = null;
+      });
 
     this.hasLinkedRack$
       .pipe(takeUntil(this.destroyEvent$))
@@ -689,29 +737,14 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Build a module_id → instance_id map so linked rack cards get reactive instanceId binding.
-    // This enables CV highlighting and connection count badges on linked rack modules.
+    // Build a trackingId (rackingData.id) → instance_id map so each rack copy
+    // gets its own instance for per-copy CV wiring and connection badges.
     combineLatest([
       this.dataService.patchModuleInstances$,
       this.linkedRackPreviewState$
     ])
       .pipe(
-        map(([instances, previewState]) => {
-          const instanceMap = new Map<number, number>();
-          if (previewState.kind !== 'ready') { return instanceMap; }
-          const rackModuleIds = new Set<number>();
-          for (const row of previewState.rows) {
-            for (const card of row.modules) {
-              rackModuleIds.add(card.module.id);
-            }
-          }
-          for (const inst of instances) {
-            if (rackModuleIds.has(inst.module_id) && !instanceMap.has(inst.module_id)) {
-              instanceMap.set(inst.module_id, inst.id);
-            }
-          }
-          return instanceMap;
-        }),
+        map(([instances, previewState]) => buildLinkedRackInstanceMap(previewState, instances)),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(map => this.linkedRackInstanceMap$.next(map));
@@ -725,43 +758,99 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
 
   setOperationMode(mode: PatchEditorOperationMode): void {
     this.operationMode$.next(mode);
-    // Reset expanded module when switching modes
-    this.expandedRackModuleId = null;
+    this.expandedRackTrackingId = null;
     this.expandedRackModule = null;
   }
 
-  selectRackModule(module: DbModule): void {
-    if (this.expandedRackModuleId === module.id) {
-      this.expandedRackModuleId = null;
+  selectRackModule(trackingId: number, module: DbModule): void {
+    if (this.expandedRackTrackingId === trackingId) {
+      this.expandedRackTrackingId = null;
       this.expandedRackModule = null;
     } else {
-      this.expandedRackModuleId = module.id;
+      this.expandedRackTrackingId = trackingId;
       this.expandedRackModule = module;
     }
   }
 
+  /**
+   * Returns a positional copy label for a rack module, e.g. "(1)", "(2)".
+   * Returns null when the module appears only once in the rack (no disambiguation needed).
+   */
+  getRackModuleCopyLabel(trackingId: number, moduleId: number): string | null {
+    const preview = this.linkedRackPreviewState$.value;
+    if (preview.kind !== 'ready') return null;
+
+    const positions: LinkedRackPreviewCard[] = [];
+    for (const row of preview.rows) {
+      for (const card of row.modules) {
+        if (card.module.id === moduleId) positions.push(card);
+      }
+    }
+    if (positions.length <= 1) return null;
+
+    const sorted = [...positions].sort((a, b) => a.row - b.row || a.column - b.column);
+    const idx = sorted.findIndex(p => p.trackingId === trackingId);
+    return idx >= 0 ? `(${ idx + 1 })` : null;
+  }
+
   /** True when this module should be visually dimmed in the rack visual. */
-  isRackModuleDimmed(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): boolean {
-    if (!this.expandedRackModuleId || this.expandedRackModuleId === moduleId) return false;
+  isRackModuleDimmed(
+    trackingId: number,
+    moduleId: number,
+    instanceMap: Map<number, number> | null,
+    sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null
+  ): boolean {
+    if (!this.expandedRackTrackingId) return false;
+    // Only the exact clicked position stays un-dimmed
+    if (this.expandedRackTrackingId === trackingId) return false;
     // Never dim modules involved in a pending or pre-confirm connection
-    if (sel?.a?.cv.module?.id === moduleId) return false;
-    if (sel?.b?.cv.module?.id === moduleId) return false;
+    if (this.getRackModuleConnectionRole(trackingId, moduleId, instanceMap, sel) != null) return false;
     return true;
   }
 
   /** True when this module is part of a pending/pre-confirm connection (but not the currently selected one). */
-  isRackModulePendingSource(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): boolean {
+  isRackModulePendingSource(
+    trackingId: number,
+    moduleId: number,
+    instanceMap: Map<number, number> | null,
+    sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null
+  ): boolean {
     if (!sel?.a) return false;
-    const isA = sel.a.cv.module?.id === moduleId;
-    const isB = sel.b?.cv.module?.id === moduleId;
-    // Highlight if this module is involved in the connection but not the one currently expanded
-    return (isA || isB) && this.expandedRackModuleId !== moduleId;
+    const role = this.getRackModuleConnectionRole(trackingId, moduleId, instanceMap, sel);
+    if (!role) return false;
+    return this.expandedRackTrackingId !== trackingId;
   }
 
-  /** Returns the connection role ('in' | 'out') for a module in a pending connection, or null. */
-  getRackModuleConnectionRole(moduleId: number, sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null): 'in' | 'out' | null {
-    if (sel?.a?.cv.module?.id === moduleId) return sel.a.kind;
-    if (sel?.b?.cv.module?.id === moduleId) return sel.b.kind;
+  /** Returns the connection role ('in' | 'out') for a specific rack position in a pending connection, or null. */
+  getRackModuleConnectionRole(
+    trackingId: number,
+    moduleId: number,
+    instanceMap: Map<number, number> | null,
+    sel: { a: CVConnectionEntity | null; b: CVConnectionEntity | null } | null
+  ): 'in' | 'out' | null {
+    if (!sel?.a) return null;
+    const myInstanceId = instanceMap?.get(trackingId);
+
+    // Check side A
+    if (sel.a.cv.module?.id === moduleId) {
+      // If the selected CV has a specific instance_id, only match this exact copy
+      if (sel.a.cv.instance_id != null) {
+        if (sel.a.cv.instance_id === myInstanceId) return sel.a.kind;
+      } else {
+        // No instance_id on the CV — module-level match (single-copy or pre-instance)
+        return sel.a.kind;
+      }
+    }
+
+    // Check side B
+    if (sel.b?.cv.module?.id === moduleId) {
+      if (sel.b.cv.instance_id != null) {
+        if (sel.b.cv.instance_id === myInstanceId) return sel.b.kind;
+      } else {
+        return sel.b.kind;
+      }
+    }
+
     return null;
   }
   

@@ -50,10 +50,12 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
   @Input() data: DbModule;
   /** When set, CV clicks will include this instance_id in the emitted CVwithModule */
   @Input() instanceId: number | undefined;
+  /** When true, a missing instanceId triggers creation of a new instance (for rack copies) */
+  @Input() forceNewInstance = false;
   
   ins: CV[] = [];
   outs: CV[] = [];
-  
+  private creatingInstance = false;
   @Output() inClick$ = new EventEmitter<[CV, DbModule]>();
   @Output() outClick$ = new EventEmitter<[CV, DbModule]>();
   
@@ -152,11 +154,18 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
     if (this.instanceId != null) {
       return of(this.instanceId);
     }
-    // Auto-create: delegate to the data service
-    return this.patchService.ensureModuleInstance$(module).pipe(
+    if (this.creatingInstance) {
+      return EMPTY;
+    }
+    this.creatingInstance = true;
+    return this.patchService.ensureModuleInstance$(module, this.forceNewInstance).pipe(
       tap(newId => {
-        // Cache for subsequent clicks on the same component
         this.instanceId = newId;
+        this.creatingInstance = false;
+      }),
+      catchError(() => {
+        this.creatingInstance = false;
+        return EMPTY;
       })
     );
   }
@@ -175,7 +184,7 @@ export class ModuleCVsComponent implements OnInit, OnDestroy {
   }
 
   private shouldBlockAmbiguousClick(moduleId: number): boolean {
-    if (this.instanceId != null) {
+    if (this.instanceId != null || this.forceNewInstance) {
       return false;
     }
 
