@@ -329,6 +329,7 @@ export class PatchDetailDataService implements OnDestroy {
             name: rack.name || `Rack #${ rack.id }`
           }))
         );
+        this.linkedRackState$.next(this.buildLinkedRackUiState(this.singlePatchData$.value, racks));
         this.syncLinkedRackControl(this.singlePatchData$.value, racks);
       });
 

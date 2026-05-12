@@ -44,11 +44,14 @@
             : 'Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module.'"
           [showHelpButton]="true"
         >
-          @if (bag.hasLinkedRack) {
-            <div class="patch-editor-operation-mode">
+          <div class="patch-editor-operation-mode">
               <div class="patch-editor-operation-mode__title">Operation mode</div>
               <div class="patch-editor-operation-mode__hint">
-                Switch between your collection and the linked rack visual for patching.
+                @if (bag.hasLinkedRack) {
+                  Switch between your collection and the linked rack visual for patching.
+                } @else {
+                  Link a rack to enable rack-visual patching mode.
+                }
               </div>
               <div class="patch-editor-operation-mode__buttons"
                    role="group"
@@ -58,7 +61,9 @@
                   <button type="button"
                           class="patch-editor-operation-mode__button"
                           [class.patch-editor-operation-mode__button--active]="bag.operationMode === option.mode"
+                          [class.patch-editor-operation-mode__button--disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
                           [attr.aria-pressed]="bag.operationMode === option.mode"
+                          [disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
                           (click)="setOperationMode(option.mode)"
                   >
                     {{ option.label }}
@@ -66,7 +71,6 @@
                 }
               </div>
             </div>
-          }
 
           @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
             <!-- Linked rack mode: realistic rack visual -->
@@ -85,7 +89,8 @@
                   </span>
                   @if (bag.divergence && !bag.divergence.clean) {
                     <span class="patch-editor-rack-visual__divergence-note"
-                          [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)">
+                          [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
+                          matTooltipClass="patch-divergence-tooltip">
                       <mat-icon>info_outline</mat-icon>
                       {{ bag.divergence.totalOrphanedInstances }}
                       instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} outside rack
