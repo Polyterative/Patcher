@@ -41,10 +41,24 @@
 
 .patch-linked-rack__header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.patch-linked-rack__content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.patch-linked-rack__preview {
+  width: 7.8rem;
+  height: 6rem;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(58, 93, 129, 0.12);
 }
 
 .patch-linked-rack__help {
@@ -178,14 +192,6 @@
   width: 100%;
 }
 
-.patch-linked-rack__actions {
-  display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-}
-
-.patch-linked-rack__actions app-brand-primary-button,
 .patch-linked-rack__header app-brand-primary-button {
   flex: 0 0 auto;
 }
