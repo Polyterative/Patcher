@@ -220,11 +220,11 @@ describe('UserAreaRootComponent - miscStats$', () => {
     
     component.miscStats$.subscribe((stats: any[]) => {
       const icons = stats.map(s => s.icon);
-      expect(icons).toContain('memory');
-      expect(icons).toContain('dashboard');
-      expect(icons).toContain('cable');
-      expect(icons).toContain('chat');
-      expect(icons).toContain('menu_book');
+      expect(icons).toContain('view_module');
+      expect(icons).toContain('view_stream');
+      expect(icons).toContain('settings_input_composite');
+      expect(icons).toContain('comment');
+      expect(icons).toContain('book');
       done();
     });
   });
@@ -278,10 +278,13 @@ describe('UserAreaRootComponent - contributorStats$', () => {
 
     component.contributorStats$.subscribe((stats) => {
       expect(stats?.find(s => s.name === 'Modules submitted')?.value).toBe(8);
+      expect(stats?.find(s => s.name === 'Modules submitted')?.icon).toBe('upload');
       expect(stats?.find(s => s.name === 'Approved modules')?.value).toBe(5);
       expect(stats?.find(s => s.name === 'Pending review')?.value).toBe(3);
       expect(stats?.find(s => s.name === 'Comments posted')?.value).toBe(11);
+      expect(stats?.find(s => s.name === 'Comments posted')?.icon).toBe('comment');
       expect(stats?.find(s => s.name === 'Issue reports')?.value).toBe(2);
+      expect(stats?.find(s => s.name === 'Issue reports')?.icon).toBe('bug_report');
       done();
     });
   });

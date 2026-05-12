@@ -64,4 +64,19 @@ describe('PublicProfileComponent', () => {
       done();
     });
   });
+
+  it('uses profile section icons for public stats', (done) => {
+    const { component, dataService } = build();
+
+    dataService.racksCount$.next(2);
+    dataService.patchesCount$.next(3);
+
+    component.publicStats$.subscribe((stats) => {
+      expect(stats).toEqual([
+        {name: 'Racks', value: 2, icon: 'view_stream'},
+        {name: 'Patches', value: 3, icon: 'settings_input_composite'},
+      ]);
+      done();
+    });
+  });
 });

@@ -57,8 +57,8 @@ export class PublicProfileComponent extends SubManager {
       this.dataService.patchesCount$,
     ]).pipe(
       map(([racks, patches]) => [
-        {name: 'Racks', value: racks, icon: 'dashboard'},
-        {name: 'Patches', value: patches, icon: 'cable'},
+        {name: 'Racks', value: racks, icon: 'view_stream'},
+        {name: 'Patches', value: patches, icon: 'settings_input_composite'},
       ]),
     );
 
