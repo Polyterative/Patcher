@@ -1,8 +1,16 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  Input
+  ElementRef,
+  Input,
+  OnDestroy,
+  PLATFORM_ID,
+  ViewChild,
+  inject
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { fadeInOnEnterAnimation } from 'angular-animations';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import {
@@ -11,19 +19,24 @@ import {
 } from 'src/app/features/backbone/toolbar/toolbar-link-data';
 import {
   NavigationEnd,
-  Router,
-  RouterLink
+  Router
 } from '@angular/router';
 import {
   combineLatest,
-  Observable
+  fromEvent,
+  merge,
+  Observable,
+  of,
+  Subject
 } from 'rxjs';
 import {
+  auditTime,
   distinctUntilChanged,
   filter,
   map,
   shareReplay,
-  startWith
+  startWith,
+  takeUntil
 } from 'rxjs/operators';
 import {
   getRouteClickableLinkKey,
@@ -55,7 +68,7 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
   ],
   standalone: false
 })
-export class HeroContentCardComponent {
+export class HeroContentCardComponent implements AfterViewInit, OnDestroy {
   @Input() titleBig: string;
   @Input() titleNormal: string;
   @Input() titleSub: string;
@@ -68,6 +81,11 @@ export class HeroContentCardComponent {
   @Input() showHelpButton = false;
   @Input() icon: string;
   @Input() showWideShellNav = false;
+  @ViewChild('wideShellNavOrigin')
+  set wideShellNavOriginRef(value: ElementRef<HTMLElement> | undefined) {
+    this.wideShellNavOrigin = value;
+    this.syncCompactWideShellNav();
+  }
 
   public readonly wideShell$: Observable<boolean>;
   public readonly wideShellTargets: RouteClickableLink[];
@@ -79,6 +97,13 @@ export class HeroContentCardComponent {
     accountLinks: RouteClickableLink[];
   }>;
   public readonly siteTitle = 'patcher.xyz';
+  public showCompactWideShellNav = false;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly destroy$ = new Subject<void>();
+  private wideShellNavOrigin?: ElementRef<HTMLElement>;
+  private isWideShellActive = false;
 
   constructor(
     private readonly appShellLayoutService: AppShellLayoutService,
@@ -120,6 +145,35 @@ export class HeroContentCardComponent {
     );
   }
 
+  ngAfterViewInit(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    this.wideShell$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((wideShell) => {
+      this.isWideShellActive = wideShell;
+      this.syncCompactWideShellNav();
+    });
+
+    merge(
+      of(null),
+      fromEvent(window, 'scroll', {passive: true}),
+      fromEvent(window, 'resize')
+    ).pipe(
+      auditTime(16),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.syncCompactWideShellNav();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   isWideShellTargetActive(item: RouteClickableLink, currentUrl: string): boolean {
     const normalizedUrl = currentUrl.toLowerCase();
     const normalizedRoute = item.route?.toLowerCase();
@@ -152,5 +206,31 @@ export class HeroContentCardComponent {
 
   trackByNavLink(index: number, item: RouteClickableLink): string {
     return getRouteClickableLinkKey(item);
+  }
+
+  private syncCompactWideShellNav(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const nextCompactVisibility = this.shouldShowCompactWideShellNav();
+    const hasVisibilityChanged = this.showCompactWideShellNav !== nextCompactVisibility;
+
+    if (!hasVisibilityChanged) {
+      return;
+    }
+
+    this.showCompactWideShellNav = nextCompactVisibility;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private shouldShowCompactWideShellNav(): boolean {
+    if (!this.showWideShellNav || !this.isWideShellActive || !this.wideShellNavOrigin?.nativeElement) {
+      return false;
+    }
+
+    const navRect = this.wideShellNavOrigin.nativeElement.getBoundingClientRect();
+    const revealThresholdPx = Math.min(Math.max(navRect.height * 0.1, 8), 20);
+    return navRect.top <= -revealThresholdPx;
   }
 }
