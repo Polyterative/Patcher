@@ -316,7 +316,6 @@ $rack-grid-weight: 0.1rem;
 
   &--dimmed {
     opacity: 0.45;
-    cursor: default;
   }
 
   &--selected {
@@ -355,6 +354,11 @@ $rack-grid-weight: 0.1rem;
     outline-color: rgba(34, 75, 117, 0.35);
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
   }
+}
+
+// Subtle hover on dimmed modules (still clickable to switch selection)
+.patch-editor-rack-visual__module-wrapper--dimmed:hover {
+  opacity: 0.6;
 }
 
 .patch-editor-rack-visual__module-wrapper--selected .patch-editor-rack-visual__module {
@@ -421,6 +425,19 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   }
 }
 
+// When pending-source has a role, use the role's color for the dashed outline
+.patch-editor-rack-visual__module-wrapper--pending-source.patch-editor-rack-visual__module-wrapper--pending-in {
+  .patch-editor-rack-visual__module {
+    outline-color: $connection-in-outline;
+  }
+}
+
+.patch-editor-rack-visual__module-wrapper--pending-source.patch-editor-rack-visual__module-wrapper--pending-out {
+  .patch-editor-rack-visual__module {
+    outline-color: $connection-out-outline;
+  }
+}
+
 // When the selected module also has a connection role, combine outline + overlay cleanly
 .patch-editor-rack-visual__module-wrapper--selected.patch-editor-rack-visual__module-wrapper--pending-in .patch-editor-rack-visual__module,
 .patch-editor-rack-visual__module-wrapper--selected.patch-editor-rack-visual__module-wrapper--pending-out .patch-editor-rack-visual__module {
@@ -472,6 +489,7 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
 
 .patch-editor-rack-visual__scroll-area:has(.patch-editor-rack-visual__screen--has-selection) {
   overflow: visible;
+  padding-right: 18rem;
 }
 
 .patch-editor-rack-visual__cv-panel-name {
@@ -479,6 +497,13 @@ $connection-out-outline: rgba(226, 82, 60, 0.55);
   font-size: 1rem;
   line-height: 1.2;
   color: rgba(0, 0, 0, 0.85);
+}
+
+.patch-editor-rack-visual__cv-copy-label {
+  font-weight: 500;
+  font-size: 0.82rem;
+  opacity: 0.55;
+  margin-left: 0.15rem;
 }
 
 .patch-editor-rack-visual__cv-panel-manufacturer {

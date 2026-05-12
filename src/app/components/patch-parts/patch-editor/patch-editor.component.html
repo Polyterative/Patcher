@@ -7,7 +7,8 @@
   loaded: (collectionLoaded$|async),
   operationMode: (operationMode$|async),
   linkedRackPreview: (linkedRackPreviewState$|async),
-  hasLinkedRack: (hasLinkedRack$|async)
+  hasLinkedRack: (hasLinkedRack$|async),
+  instanceMap: (linkedRackInstanceMap$|async)
 }; as bag) {
   @if (bag.editorConnections == null) {
     <lib-auto-content-loading-indicator
@@ -83,19 +84,19 @@
                 </div>
                 <div class="patch-editor-rack-visual__scroll-area">
                   <div class="patch-editor-rack-visual__screen"
-                       [class.patch-editor-rack-visual__screen--has-selection]="expandedRackModuleId"
+                       [class.patch-editor-rack-visual__screen--has-selection]="expandedRackTrackingId"
                        [style.width.rem]="bag.linkedRackPreview.rack.hp">
                     @for (row of bag.linkedRackPreview.rows; track row.row; let rowIdx = $index) {
                       <div class="patch-editor-rack-visual__row">
                         @for (previewCard of row.modules; track previewCard.trackingId; let colIdx = $index) {
                           <div class="patch-editor-rack-visual__module-wrapper"
                                [@moduleEnter]="{ value: '', params: { delay: colIdx * 50 }}"
-                               [class.patch-editor-rack-visual__module-wrapper--selected]="expandedRackModuleId === previewCard.module.id"
-                               [class.patch-editor-rack-visual__module-wrapper--dimmed]="isRackModuleDimmed(previewCard.module.id, bag.selectedForConnection)"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.module.id, bag.selectedForConnection)"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.module.id, bag.selectedForConnection) === 'in'"
-                               [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.module.id, bag.selectedForConnection) === 'out'"
-                               (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.module)">
+                               [class.patch-editor-rack-visual__module-wrapper--selected]="expandedRackTrackingId === previewCard.trackingId"
+                               [class.patch-editor-rack-visual__module-wrapper--dimmed]="isRackModuleDimmed(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-source]="isRackModulePendingSource(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection)"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-in]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'in'"
+                               [class.patch-editor-rack-visual__module-wrapper--pending-out]="getRackModuleConnectionRole(previewCard.trackingId, previewCard.module.id, bag.instanceMap, bag.selectedForConnection) === 'out'"
+                               (click)="$event.preventDefault(); $event.stopPropagation(); selectRackModule(previewCard.trackingId, previewCard.module)">
                             <app-module-realistic
                               class="patch-editor-rack-visual__module"
                               [data]="previewCard.module"
@@ -104,16 +105,21 @@
                               [disablePanelImageEnterAnimation]="true"
                             ></app-module-realistic>
                             <!-- Inline CV panel beside selected module -->
-                            @if (expandedRackModuleId === previewCard.module.id) {
+                            @if (expandedRackTrackingId === previewCard.trackingId) {
                               <div class="patch-editor-rack-visual__cv-inline"
                                    (click)="$event.stopPropagation()">
                                 <div class="patch-editor-rack-visual__cv-inline-header">
-                                  <span class="patch-editor-rack-visual__cv-panel-name">{{ previewCard.module.name }}</span>
+                                  <span class="patch-editor-rack-visual__cv-panel-name">{{ previewCard.module.name }}
+                                    @if (getRackModuleCopyLabel(previewCard.trackingId, previewCard.module.id); as copyLabel) {
+                                      <span class="patch-editor-rack-visual__cv-copy-label">{{ copyLabel }}</span>
+                                    }
+                                  </span>
                                   <span class="patch-editor-rack-visual__cv-panel-manufacturer">{{ previewCard.module.manufacturer?.name }}</span>
                                 </div>
                                 <app-module-cvs
                                   [data]="previewCard.module"
-                                  [instanceId]="(linkedRackInstanceMap$ | async)?.get(previewCard.module.id)"
+                                  [instanceId]="bag.instanceMap?.get(previewCard.trackingId)"
+                                  [forceNewInstance]="!bag.instanceMap?.has(previewCard.trackingId)"
                                 ></app-module-cvs>
                               </div>
                             }
