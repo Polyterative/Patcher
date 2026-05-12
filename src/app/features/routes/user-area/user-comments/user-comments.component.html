@@ -1,5 +1,5 @@
-<lib-screen-wrapper maxSize="48rem" class="userComments__wrapper">
-  <div class="col gap1">
+<div class="userComments__wrapper">
+  <div class="col gap1 userComments__stack">
     <lib-hero-content-card titleNormal="Comments"
                            description="Conversations, feedback and more"
                            class="commentsBG"
@@ -9,7 +9,7 @@
       <ng-container *ngTemplateOutlet="content;"></ng-container>
     </lib-hero-content-card>
   </div>
-</lib-screen-wrapper>
+</div>
 
 <ng-template #content>
   <div class="col gap1 userComments__rail">

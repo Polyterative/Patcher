@@ -58,8 +58,7 @@
     <div class="col gap1 user-area-page"
     >
       <div class="profile-layout">
-        <div class="gap1 main-content"
-        >
+        <div class="main-content">
           <app-user-modules appDiscoveryTipAnchor="user-area-modules-section"
                             class="block"
                             [modulesViewConfig]="viewConfig"
@@ -74,32 +73,38 @@
                             class="block"
                             [globalSearchQuery]="bag.globalSearchQuery ?? ''"
           ></app-user-patches>
+          <app-user-manuals appDiscoveryTipAnchor="user-area-manuals"
+                            class="block"
+          ></app-user-manuals>
+          <app-user-comments appDiscoveryTipAnchor="user-area-comments"
+                             class="block"
+          ></app-user-comments>
         </div>
         <div class="sidebar col gap1">
-           <div class="col gap1 utility-rail-group utility-rail-group--primary">
-             <div appDiscoveryTipAnchor="user-area-search"
-                  class="user-area-utility-search"
-                  role="search"
-             >
-               <div class="user-area-utility-search__header">
-                 <span class="user-area-utility-search__eyebrow">Workspace search</span>
-                  <p class="user-area-utility-search__copy">Search your modules, racks, and patches from one place.</p>
-               </div>
-               <div class="user-area-utility-search__field">
-                 <lib-mat-form-entity [control]="globalSearchControl"
-                                      [type]="formTypes.TEXT"
-                                      label="Search modules, racks, patches"
-                                      iconL1="search"
-                                      [formFieldAppearanceType]="'outline'"
-                 ></lib-mat-form-entity>
-               </div>
-             </div>
-             <app-statistics appDiscoveryTipAnchor="user-area-stats"
-               title="Profile stats"
-              icon="analytics"
-              cardClass="userBG"
-              [compact]="true"
-              [statistics]="miscStats$ | async"
+          <div class="col gap1 utility-rail-group utility-rail-group--primary">
+            <div appDiscoveryTipAnchor="user-area-search"
+                 class="user-area-utility-search"
+                 role="search"
+            >
+              <div class="user-area-utility-search__header">
+                <span class="user-area-utility-search__eyebrow">Workspace search</span>
+                <p class="user-area-utility-search__copy">Search your modules, racks, and patches from one place.</p>
+              </div>
+              <div class="user-area-utility-search__field">
+                <lib-mat-form-entity [control]="globalSearchControl"
+                                     [type]="formTypes.TEXT"
+                                     label="Search modules, racks, patches"
+                                     iconL1="search"
+                                     [formFieldAppearanceType]="'outline'"
+                ></lib-mat-form-entity>
+              </div>
+            </div>
+            <app-statistics appDiscoveryTipAnchor="user-area-stats"
+                            title="Profile stats"
+                            icon="analytics"
+                            cardClass="userBG"
+                            [compact]="true"
+                            [statistics]="miscStats$ | async"
             ></app-statistics>
             <app-statistics
               title="Contributor stats"
@@ -109,14 +114,6 @@
               [statistics]="contributorStats$ | async"
               [emptyMessage]="contributorStatsEmptyMessage"
             ></app-statistics>
-          </div>
-          <div class="col gap1 utility-rail-group utility-rail-group--secondary">
-            <div appDiscoveryTipAnchor="user-area-manuals">
-              <app-user-manuals></app-user-manuals>
-            </div>
-            <div appDiscoveryTipAnchor="user-area-comments">
-              <app-user-comments></app-user-comments>
-            </div>
           </div>
         </div>
       </div>

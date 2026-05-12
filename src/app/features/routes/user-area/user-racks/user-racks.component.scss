@@ -1,5 +1,6 @@
 :host {
   display: block;
+  min-width: 0;
 }
 
 .section-shell,
@@ -7,8 +8,15 @@
   min-width: 0;
 }
 
+.section-shell {
+  gap: 0.75rem;
+}
+
 .section-actions {
   justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0.65rem;
 }
 
 .section-empty {
@@ -25,6 +33,7 @@
   max-block-size: clamp(24rem, calc(100vh - 23rem), 50rem);
   overflow: auto;
   scrollbar-gutter: stable;
+  padding-right: 0.15rem;
 }
 
 @media (max-width: 36rem) {
@@ -37,5 +46,6 @@
   .section-scroll {
     max-block-size: none;
     overflow: visible;
+    padding-right: 0;
   }
 }
