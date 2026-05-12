@@ -1,4 +1,14 @@
 @if (shellVm$ | async; as shellVm) {
+  @if (showWideShellNav && shellVm.wideShell) {
+    <div class="title-metro-sticky-shell"
+         [class.title-metro-sticky-shell--visible]="showCompactWideShellNav"
+         [attr.aria-hidden]="!showCompactWideShellNav">
+      <div class="title-metro-sticky-wrapper">
+        <ng-container *ngTemplateOutlet="wideShellNav; context: {$implicit: shellVm, floating: true}"></ng-container>
+      </div>
+    </div>
+  }
+
   <div class="container col">
     <div class="row gap1"
          [class.sides-pad]="sidesPadding"
@@ -22,48 +32,17 @@
         </div>
       } @else {
         @if (titleBig) {
-          <h1
-            class="row title bgImage vertPadding gap1"
-            [class.title--with-sub]="titleSub">
-            <div class="title-shell"
-                 [@title]>
-              @if (showWideShellNav && shellVm.wideShell) {
-                <div class="title-metro-nav">
-                  <div class="title-metro-topbar">
-                    <a class="title-metro-brand"
-                       routerLink="/home"
-                       routerLinkActive="title-metro-brand--active"
-                       aria-label="Go to home">{{ siteTitle }}</a>
+            <h1
+              class="row title bgImage vertPadding gap1"
+              [class.title--with-sub]="titleSub">
+              <div class="title-shell"
+                   [@title]>
+                @if (showWideShellNav && shellVm.wideShell) {
+                  <div #wideShellNavOrigin class="title-metro-nav-origin">
+                    <ng-container *ngTemplateOutlet="wideShellNav; context: {$implicit: shellVm, floating: false}"></ng-container>
                   </div>
-                  <nav class="title-metro-targets" aria-label="Section targets">
-                    <div class="title-metro-target-group">
-                      @for (item of wideShellTargets; track trackByNavLink($index, item)) {
-                        <a
-                           class="title-metro-target"
-                           [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
-                           [routerLink]="item.route"
-                           [attr.aria-label]="item.label"
-                         >
-                           {{ item.label }}
-                         </a>
-                       }
-                    </div>
-                    <div class="title-metro-target-group title-metro-target-group--account">
-                      @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
-                        <a
-                          class="title-metro-target title-metro-target--private"
-                          [routerLink]="item.route"
-                          routerLinkActive="title-metro-target--active"
-                          [attr.aria-label]="item.label"
-                        >
-                          <span>{{ item.label }}</span>
-                        </a>
-                      }
-                    </div>
-                  </nav>
-                </div>
-              }
-              <div class="row gap1 title-heading-row">
+                }
+                <div class="row gap1 title-heading-row">
                 <div class="title-heading-copy"
                      [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && shellVm.wideShell"
                      [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && shellVm.wideShell">
@@ -145,4 +124,44 @@
       </mat-icon>
     </div>
   }
+</ng-template>
+
+<ng-template #wideShellNav let-shellVm let-floating="floating">
+  <div class="title-metro-nav"
+       [class.title-metro-nav--floating]="floating">
+    @if (!floating) {
+      <div class="title-metro-topbar">
+        <a class="title-metro-brand"
+           routerLink="/home"
+           routerLinkActive="title-metro-brand--active"
+           aria-label="Go to home">{{ siteTitle }}</a>
+      </div>
+    }
+    <nav class="title-metro-targets" aria-label="Section targets">
+      <div class="title-metro-target-group">
+        @for (item of wideShellTargets; track trackByNavLink($index, item)) {
+          <a
+             class="title-metro-target"
+             [class.title-metro-target--active]="isWideShellTargetActive(item, shellVm.currentUrl)"
+             [routerLink]="item.route"
+             [attr.aria-label]="item.label"
+           >
+            {{ item.label }}
+          </a>
+        }
+      </div>
+      <div class="title-metro-target-group title-metro-target-group--account">
+        @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
+          <a
+            class="title-metro-target title-metro-target--private"
+            [routerLink]="item.route"
+            routerLinkActive="title-metro-target--active"
+            [attr.aria-label]="item.label"
+          >
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </div>
+    </nav>
+  </div>
 </ng-template>
