@@ -994,20 +994,14 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicRackWithId(id: number, columns = '*') {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
-
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`${ columns }, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
         .filter('id', 'eq', id)
         .filter('public', 'eq', true)
-        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .single()
     )
-      .pipe(
-        remapErrors(),
-        map(response => this.stripPublicAuthorGate<Rack>(response))
-      );
+      .pipe(remapErrors());
   }
 
   @Cacheable({
