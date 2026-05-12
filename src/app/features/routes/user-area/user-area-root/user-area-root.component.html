@@ -7,16 +7,12 @@
                            class="userBG user-area-header"
                            titleBig="User area"
                            [titleSub]="bag.userProfile?.username"
+                           [description]="bag.userProfile ? profileVisibilityDescription(bag.userProfile.public) : ''"
+                           [descriptionAlign]="'alignTextStart'"
                            [showWideShellNav]="true"
                            icon="dashboard">
       @if (bag.userProfile) {
         <div class="user-profile-card__content">
-          <div class="user-profile-card__status"
-               [class.user-profile-card__status--public]="bag.userProfile.public"
-               [class.user-profile-card__status--private]="!bag.userProfile.public">
-            <mat-icon>{{ bag.userProfile.public ? 'public' : 'visibility_off' }}</mat-icon>
-            <span>{{ bag.userProfile.public ? 'Public profile is visible to everyone.' : 'Public profile is hidden from visitors.' }}</span>
-          </div>
           <div class="user-profile-card__actions">
             <app-brand-primary-button
               [theme]="bag.userProfile.public ? 'warning' : 'primary'"
