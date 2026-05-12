@@ -35,17 +35,18 @@ instance identity, labels, and connection persistence.
 - [x] Add a nullable linked-rack association in patch create/edit flows without changing the existing no-rack default (`patches.linked_rack_id`, nullable, `ON DELETE SET NULL`)
 - [x] Surface the selected linked rack in patch detail/editor with choose/change/clear actions
 - [x] Keep module sourcing and connection editing unchanged: collection modules + patch instances remain the working surface
-- [ ] Add a privacy-safe viewer state for linked-rack context when the rack cannot be shown
+- [x] Add a privacy-safe viewer state for linked-rack context when the rack cannot be shown
 - [x] Preserve current behavior for existing patches with no linked rack
 
-**Implementation status:** The nullable schema migration/backend round-trip is in place, and existing-patch owner flows now
-show linked-rack status plus choose/change/clear controls. Public patch browsing stays rollout-safe by keeping the shared
-listing query on its pre-linked-rack column set until list surfaces explicitly need the new field. Patch creation now
-surfaces an optional linked-rack selector and preserves unlinked creation by omitting `linked_rack_id` unless the user
-explicitly selected a rack. While the live Supabase environment is still missing `patches.linked_rack_id`, linked-rack-
-selected create/edit attempts now degrade to explicit unavailable messaging and disabled linked-rack controls instead of
-surfacing raw `PGRST204` responses. The remaining Layer 1 work is the privacy-safe viewer state. Live selected linked-rack
-persistence still depends on applying the existing migration in the target Supabase environment.
+**Implementation status:** Layer 1 is now covered end-to-end. The nullable schema migration/backend round-trip is in place,
+and existing-patch owner flows now show linked-rack status plus choose/change/clear controls. Public patch browsing stays
+rollout-safe by keeping the shared listing query on its pre-linked-rack column set until list surfaces explicitly need the
+new field. Patch creation now surfaces an optional linked-rack selector and preserves unlinked creation by omitting
+`linked_rack_id` unless the user explicitly selected a rack. When the linked rack cannot be resolved for a viewer, the patch
+now falls back to privacy-safe unavailable messaging that withholds rack identity and structure. While the live Supabase
+environment is still missing `patches.linked_rack_id`, linked-rack-selected create/edit attempts now degrade to explicit
+unavailable messaging and disabled linked-rack controls instead of surfacing raw `PGRST204` responses. Live selected
+linked-rack persistence still depends on applying the existing migration in the target Supabase environment.
 
 **Owner-flow implementation notes:**
 - Existing patch detail now shows an owner-only linked-rack summary card with text-first status.
@@ -61,6 +62,8 @@ persistence still depends on applying the existing migration in the target Supab
   unavailable guidance and fall back to unlinked work instead of surfacing the raw backend error.
 - The patch editor now exposes a collection-vs-linked-rack operation mode selector; linked-rack mode renders a read-only rack
   context section below the editor without changing collection module sourcing or patch-instance behavior.
+- Public and unauthorized viewers now see a generic linked-rack unavailable state with no rack name, layout, or module-list
+  leakage when the linked rack cannot be resolved.
 
 #### Layer 2 — Structural
 - [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
