@@ -12,19 +12,31 @@ export class UrlCreatorService {
     public snackBar: MatSnackBar,
     private platformLocation: PlatformLocation
   ) { }
-  
-  copyLinkToClipboard(path: string): void {
-    // this.router.
-    const url: string = window.location.origin + path;
-    
-    navigator.clipboard.writeText(url)
+
+  copyTextToClipboard(
+    text: string,
+    successMessage = 'Copied to clipboard.',
+    errorMessage = 'Clipboard write failed — copy manually.'
+  ): void {
+    navigator.clipboard.writeText(text)
              .then(() => {
-               this.snackBar.open('Link copied to clipboard.', undefined, {duration: 2000, panelClass: 'snack-success'});
-             }, err => {
-               this.snackBar.open('Clipboard write failed — copy the URL from the address bar manually.', undefined, {
+               this.snackBar.open(successMessage, undefined, {duration: 2000, panelClass: 'snack-success'});
+             }, () => {
+               this.snackBar.open(errorMessage, undefined, {
                  duration: 2000,
                  panelClass: 'snack-error'
                });
              });
+  }
+  
+  copyLinkToClipboard(path: string): void {
+    // this.router.
+    const url: string = window.location.origin + path;
+
+    this.copyTextToClipboard(
+      url,
+      'Link copied to clipboard.',
+      'Clipboard write failed — copy the URL from the address bar manually.'
+    );
   }
 }

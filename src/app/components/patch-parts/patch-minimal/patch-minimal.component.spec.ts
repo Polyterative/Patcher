@@ -44,7 +44,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
         statusLabel: 'Linked rack active',
         description: 'This rack is optional context only.',
         rackName: 'Studio Rack',
-        rackId: 7
+        rackId: 7,
+        rackImage: 'studio-rack.jpeg'
       })),
       linkedRackSelectionBlocked$: new BehaviorSubject<boolean>(false),
       linkedRackSelectionHint$: new BehaviorSubject<string | null>(null),
@@ -53,6 +54,9 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       linkedRackOptions$: new BehaviorSubject<any[]>([
         {id: '7', name: 'Studio Rack'}
       ]),
+      patchConnections$: new BehaviorSubject<any[]>([]),
+      patchModuleInstances$: new BehaviorSubject<any[]>([]),
+      instanceLabelMap$: new BehaviorSubject<Map<number, string>>(new Map()),
       patchTags$: new BehaviorSubject<string[]>([]),
       isCurrentPatchPrivate$: new BehaviorSubject<boolean>(false),
       formData: {
@@ -73,7 +77,10 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       providers: [
         {provide: PatchDetailDataService, useValue: dataService},
         {provide: UserManagementService, useValue: {loggedUser$: of({id: 'user-1', username: 'owner'})}},
-        {provide: UrlCreatorService, useValue: {copyLinkToClipboard: jasmine.createSpy('copyLinkToClipboard')}}
+        {provide: UrlCreatorService, useValue: {
+          copyLinkToClipboard: jasmine.createSpy('copyLinkToClipboard'),
+          copyTextToClipboard: jasmine.createSpy('copyTextToClipboard')
+        }}
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -101,9 +108,18 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Linked rack');
     expect(host.textContent).toContain('Studio Rack');
-    expect(host.textContent).toContain('Open rack');
     expect(host.textContent).not.toContain('This rack is optional context only.');
     expect(host.querySelector('.patch-linked-rack__info')).not.toBeNull();
+  });
+
+  it('renders a small linked rack preview when an image is available', () => {
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const preview = host.querySelector('.patch-linked-rack__preview') as HTMLImageElement | null;
+
+    expect(preview).not.toBeNull();
+    expect(preview?.src).toContain('/storage/v1/object/public/racks/studio-rack.jpeg');
   });
 
   it('renders the linked rack summary for non-owners in read-only mode', () => {
@@ -122,7 +138,6 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Linked rack');
     expect(host.textContent).toContain('Studio Rack');
-    expect(host.textContent).toContain('Open rack');
   });
 
   it('keeps unavailable linked-rack state privacy-safe for non-owners', () => {
@@ -150,7 +165,6 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.textContent).toContain('Linked rack');
     expect(host.textContent).toContain('This patch references a linked rack, but that rack is not publicly available right now.');
     expect(host.textContent).not.toContain('Studio Rack');
-    expect(host.textContent).not.toContain('Open rack');
     expect(host.querySelector('.patch-linked-rack__name')).toBeNull();
     expect(host.querySelector('.patch-linked-rack__info')).toBeNull();
   });
@@ -160,8 +174,58 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('Open rack');
     expect(host.textContent).not.toContain('Clear linked rack');
+  });
+
+  it('builds descriptive patch text for clipboard export', () => {
+    dataService.singlePatchData$.next({
+      id: 10,
+      name: 'Patch A',
+      description: 'Warm evolving texture',
+      public: true,
+      author: {id: 'user-1', username: 'owner'}
+    });
+    dataService.patchTags$.next(['ambient', 'stereo']);
+    dataService.instanceLabelMap$.next(new Map([[101, '(1)']]));
+    dataService.patchModuleInstances$.next([
+      {
+        id: 101,
+        module_id: 1,
+        instance_label: '(1)',
+        module: {name: 'Maths', manufacturer: {name: 'Make Noise'}}
+      }
+    ]);
+    dataService.patchConnections$.next([
+      {
+        a: {name: 'Ch. 1 Out', module: {name: 'Maths', manufacturer: {name: 'Make Noise'}}},
+        b: {name: 'Left In', module: {name: 'Mimeophon', manufacturer: {name: 'Make Noise'}}},
+        instance_id_a: 101,
+        notes: 'Slow modulation'
+      }
+    ]);
+
+    const text = component.buildPatchText();
+
+    expect(text).toContain('Patch: Patch A');
+    expect(text).toContain('Description: Warm evolving texture');
+    expect(text).toContain('Tags: ambient, stereo');
+    expect(text).toContain('Linked rack: Studio Rack');
+    expect(text).toContain('- Maths (1) by Make Noise');
+    expect(text).toContain('1. Maths (1) · Ch. 1 Out -> Mimeophon · Left In — Note: Slow modulation');
+    expect(text).toContain('/patches/details/10');
+  });
+
+  it('copies the generated patch text through UrlCreatorService', () => {
+    const urlCreatorService = TestBed.inject(UrlCreatorService) as jasmine.SpyObj<UrlCreatorService>;
+
+    component.copyPatchText();
+
+    expect(urlCreatorService.copyTextToClipboard).toHaveBeenCalled();
+    expect(urlCreatorService.copyTextToClipboard).toHaveBeenCalledWith(
+      jasmine.stringContaining('Patch: Patch A'),
+      'Patch text copied to clipboard.',
+      'Clipboard write failed — copy the patch text manually.'
+    );
   });
 
   it('shows the linked-rack help icon in edit mode', () => {

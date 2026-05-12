@@ -106,17 +106,6 @@
                   You do not have any racks yet. You can keep patching without one and link a rack later.
                 </p>
               }
-              @if (bag.linkedRackState.kind !== 'unlinked') {
-                <div class="patch-linked-rack__actions">
-                  @if (bag.linkedRackState.rackId != null && bag.linkedRackState.kind === 'linked') {
-                    <app-brand-primary-button
-                      icon="open_in_new"
-                      [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
-                    >Open rack
-                    </app-brand-primary-button>
-                  }
-                </div>
-              }
             </div>
           }
       </div>
@@ -130,7 +119,7 @@
       @if (!bag.patchEditingPanelOpenState && bag.linkedRackState.kind !== 'unlinked') {
         <div class="patch-linked-rack patch-linked-rack--summary">
           <div class="patch-linked-rack__header">
-            <div class="col gap025">
+            <div class="col gap025 patch-linked-rack__content">
               <div class="patch-linked-rack__title-row">
                 <div class="patch-linked-rack__title">Linked rack</div>
                 @if (!bag.linkedRackPersistenceHint && bag.linkedRackState.kind === 'linked') {
@@ -149,12 +138,13 @@
                 <div class="patch-linked-rack__name">{{ bag.linkedRackState.rackName }}</div>
               }
             </div>
-            @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackId != null) {
-              <app-brand-primary-button
-                icon="open_in_new"
-                [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
-              >Open rack
-              </app-brand-primary-button>
+            @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackImage) {
+              <img
+                class="patch-linked-rack__preview"
+                [src]="getRackPreviewUrl(bag.linkedRackState.rackImage)"
+                [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
+                loading="lazy"
+              >
             }
           </div>
           @if (bag.linkedRackPersistenceHint && bag.user && bag.singlePatchData && bag.singlePatchData.author.id === bag.user.id) {
@@ -173,21 +163,8 @@
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="row buttons opacizeOnHover"
+      <div class="row opacizeOnHover"
       >
-        <button mat-icon-button
-                matTooltip="Share patch"
-                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
-        >
-          <mat-icon>share</mat-icon>
-        </button>
-        <button mat-icon-button
-                matTooltip="Copy patch text coming soon"
-                [disabled]="true"
-        >
-          <mat-icon>speaker_notes</mat-icon>
-        </button>
-        <div fxFlex="grow"></div>
         @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
           <button mat-icon-button
                   [matTooltip]="(dataService.isCurrentPatchPrivate$|async) ? 'Make patch public' : 'Make patch private'"
@@ -204,6 +181,27 @@
             <mat-icon>delete_forever</mat-icon>
           </button>
         }
+        <div fxFlex="grow"></div>
+        @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackId != null) {
+          <button mat-icon-button
+                  matTooltip="Open linked rack"
+                  [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
+          >
+            <mat-icon>view_stream</mat-icon>
+          </button>
+        }
+        <button mat-icon-button
+                matTooltip="Share patch"
+                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+        >
+          <mat-icon>share</mat-icon>
+        </button>
+        <button mat-icon-button
+                matTooltip="Copy patch text"
+                (click)="copyPatchText()"
+        >
+          <mat-icon>speaker_notes</mat-icon>
+        </button>
         <!--        <button mat-icon-button-->
         <!--                matTooltip="Show details"-->
         <!--                [routerLink]="['/patches/details',data.id]"-->
