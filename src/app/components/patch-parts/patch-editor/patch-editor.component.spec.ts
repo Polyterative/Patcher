@@ -767,6 +767,17 @@ describe('PatchEditorComponent', () => {
       expect(result.totalOrphanedInstances).toBe(1);
     });
 
+    it('uses joined patch instance module names for orphaned modules', () => {
+      const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
+      const instances: PatchModuleInstance[] = [
+        {id: 200, module_id: 99, module: {name: 'Maths'}} as any
+      ];
+
+      const result = detectLinkedRackDivergence(state, instances, []);
+
+      expect(result.orphanedModules[0].moduleName).toBe('Maths');
+    });
+
     it('detects excess instances (more instances than rack positions)', () => {
       const state = mkPreviewState([{id: 1, name: 'VCA', row: 0, col: 0}]);
       const instances: PatchModuleInstance[] = [

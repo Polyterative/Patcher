@@ -57,6 +57,13 @@ $palette: (
   flex: 0 0 auto;
 }
 
+.patch-editor-toolbar__meta {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  max-width: min(100%, 52rem);
+}
+
 :host ::ng-deep .patch-editor-operation-mode .mat-button-toggle-label-content {
   line-height: 2.25rem;
   font-size: 0.84rem;
@@ -69,7 +76,7 @@ $palette: (
   color: rgba(27, 49, 74, 0.72);
 }
 
-.patch-editor-rack-topbar__warning {
+.patch-editor-toolbar__warning {
   display: block;
 }
 

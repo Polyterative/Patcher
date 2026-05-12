@@ -128,6 +128,36 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     expect(host.textContent).toContain('Open rack');
   });
 
+  it('keeps unavailable linked-rack state privacy-safe for non-owners', () => {
+    dataService.singlePatchData$.next({
+      id: 10,
+      name: 'Patch A',
+      author: {id: 'user-2', username: 'other-user'}
+    });
+    component.data = {
+      id: 10,
+      name: 'Patch A',
+      author: {id: 'user-2', username: 'other-user'}
+    } as any;
+    dataService.linkedRackState$.next(linkedState({
+      kind: 'unavailable',
+      statusTone: 'warning',
+      statusLabel: 'Rack unavailable',
+      description: 'This patch references a linked rack, but that rack is not publicly available right now.',
+      rackName: undefined,
+      rackId: 42
+    }));
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Linked rack');
+    expect(host.textContent).toContain('This patch references a linked rack, but that rack is not publicly available right now.');
+    expect(host.textContent).not.toContain('Studio Rack');
+    expect(host.textContent).not.toContain('Open rack');
+    expect(host.querySelector('.patch-linked-rack__name')).toBeNull();
+    expect(host.querySelector('.patch-linked-rack__info')).toBeNull();
+  });
+
   it('shows clear action in edit mode and forwards the click', () => {
     dataService.patchEditingPanelOpenState$.next(true);
     fixture.detectChanges();

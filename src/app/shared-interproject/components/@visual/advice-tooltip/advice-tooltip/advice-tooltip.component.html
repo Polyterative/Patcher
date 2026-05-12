@@ -1,7 +1,6 @@
-<div
-    [ngStyle]="{'background-color': '#FDD470'}"
-    class="item"
->
-  💡
-  <ng-content></ng-content>
+<div class="item">
+  <span class="item__icon" aria-hidden="true">💡</span>
+  <div class="item__content">
+    <ng-content></ng-content>
+  </div>
 </div>
