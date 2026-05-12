@@ -38,26 +38,67 @@ instance identity, labels, and connection persistence.
 - [ ] Add a privacy-safe viewer state for linked-rack context when the rack cannot be shown
 - [ ] Preserve current behavior for existing patches with no linked rack
 
+**Implementation status:** The nullable schema migration and backend/model round-trip for `linked_rack_id` are in place. The
+remaining Layer 1 work is now owner-facing create/edit/detail UI plus the privacy-safe viewer state.
+
 #### Layer 2 — Structural
-- [ ] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
+- [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
 - [ ] Add rack-context entry points from rack detail/editor that preselect the association when starting a patch
-- [ ] Define compatibility/status language for:
+- [x] Define compatibility/status language for:
   - `In linked rack`
   - `In collection only`
   - `Linked rack unavailable`
-- [ ] Define the linked-rack state model for patch detail/editor:
+- [x] Define the linked-rack state model for patch detail/editor:
   - `Unlinked`
   - `Linked and available`
   - `Linked but diverged`
   - `Linked but unavailable`
-- [ ] Explicitly protect instance behavior so linked-rack context does not change editor-card creation, labels, or connection identity
-- [ ] Define migration/back-compat expectations for existing patches, patch queries, and nullable linked-rack data
+- [x] Explicitly protect instance behavior so linked-rack context does not change editor-card creation, labels, or connection identity
+- [x] Define migration/back-compat expectations for existing patches, patch queries, and nullable linked-rack data
 
 #### Layer 3 — Polish
 - [ ] Add helper copy and onboarding cues so users understand the difference between optional rack context and direct-list patch editing
 - [ ] Add visual treatment for stale or diverged rack context that stays informative without feeling like an error
 - [ ] Review educational/planning flows to ensure rack-linked mode does not weaken non-1:1 use cases
-- [ ] Add focused acceptance criteria for create-from-rack, create-without-rack, change/clear rack, stale rack, and viewer-no-access states
+- [x] Add focused acceptance criteria for create-from-rack, create-without-rack, change/clear rack, stale rack, and viewer-no-access states
+
+#### Defined state contract
+
+- **Unlinked** — default for new patches and all existing patches where `linked_rack_id = null`. The patch remains a
+  collection-first patch with no rack badge, no hidden placeholder, and a visible choose action in owner/editor flows.
+- **Linked and available** — a patch has `linked_rack_id` and the current viewer can resolve that rack. Owner/editor
+  flows show the linked rack name plus `Change` and `Clear` actions. Compatibility language can use `In linked rack`
+  when the linked rack still contains the modules needed for the current patch.
+- **Linked but diverged** — the linked rack is still readable, but its current module set no longer fully covers the
+  patch's needs. The patch remains fully editable, the collection-first editor stays unchanged, and the UI falls back to
+  `In collection only` with advisory copy rather than blocking or mutating patch data.
+- **Linked but unavailable** — the patch still stores `linked_rack_id`, but the rack was deleted, made private, or is
+  otherwise unreadable. Owner/editor flows show a generic unavailable state with `Change` / `Clear` actions. Public or
+  unauthorized viewers must not see the rack name, layout, or module-list details.
+
+#### Compatibility and persistence rules
+
+- `In linked rack` means the linked rack is readable and still covers the patch's currently used modules.
+- `In collection only` means the patch remains valid through the collection-first editor, either because no rack is
+  linked or because the readable linked rack has diverged.
+- `Linked rack unavailable` is a dedicated degraded state, not an error that blocks viewing or editing.
+- Changing or clearing the linked rack only updates `linked_rack_id`; it must not add/remove/relabel patch instances or
+  rewrite patch connections.
+- The schema contract is a nullable `patches.linked_rack_id` foreign key with `ON DELETE SET NULL`.
+- Existing patches remain first-class with `linked_rack_id = null`; no migration-only UX is required.
+- Patch detail/editor reads should round-trip the nullable field even before every list surface uses it.
+
+#### Focused acceptance criteria
+
+- **Create from rack:** a rack-origin entry point may preselect `linked_rack_id`, but the editor still starts from the
+  user's collection module list and patch instances.
+- **Create without rack:** a new patch with no linked rack behaves exactly like the current patch flow.
+- **Change / clear rack:** changing or clearing the linked rack preserves patch metadata, module instances, and
+  connections.
+- **Stale rack:** if the linked rack changes or diverges, the patch remains editable and uses informational copy instead
+  of blocking warnings.
+- **Viewer no access:** if a viewer cannot access the linked rack, the patch can still render but must not reveal rack
+  identity or structure.
 
 #### Acceptance notes
 - The patch editor module list remains sourced from collection modules + patch instances, never from linked-rack modules alone.
