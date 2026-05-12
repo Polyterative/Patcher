@@ -7,14 +7,10 @@ import {
   HostBinding,
   HostListener,
   Input,
-  OnChanges,
-  Optional
+  OnChanges
 } from '@angular/core';
 import { fadeInOnEnterAnimation } from 'angular-animations';
-import {
-  MatTooltip,
-  TooltipPosition
-} from '@angular/material/tooltip';
+import { TooltipPosition } from '@angular/material/tooltip';
 import { MinimalModule } from 'src/app/models/module';
 import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
 
@@ -52,8 +48,12 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   @Input() data: MinimalModule;
   @Input() selectedPanelId: number | null = null;
   @Input() preferredPanelColor: number | null = null;
+  @Input() tooltip = '';
+  @Input() tooltipDisabled = false;
+  @Input() tooltipClass = '';
   
   filename: string | undefined;
+  tooltipPosition: TooltipPosition = 'after';
   
   @Input() containImage: boolean = true;
   @Input() big: boolean = false;
@@ -83,8 +83,7 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   constructor(
     public changeDetection: ChangeDetectorRef,
     private readonly hostElementRef?: ElementRef<HTMLElement>,
-    private readonly appViewportService?: AppViewportService,
-    @Optional() private readonly matTooltip: MatTooltip | null = null
+    private readonly appViewportService?: AppViewportService
   ) { }
 
   ngAfterViewInit(): void {
@@ -110,8 +109,8 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
   @HostListener('mouseenter')
   @HostListener('focusin')
   @HostListener('window:resize')
-  updateTooltipPosition(): void {
-    if (!this.matTooltip || !this.hostElementRef || !this.appViewportService) {
+  updateTooltipPosition(anchor?: {getBoundingClientRect(): Pick<DOMRect, 'left' | 'right'>}): void {
+    if (!this.hostElementRef || !this.appViewportService) {
       return;
     }
 
@@ -120,8 +119,8 @@ export class ModulePartImageComponent implements AfterViewInit, OnChanges {
       return;
     }
 
-    this.matTooltip.position = resolveSurfaceTooltipPosition(
-      this.hostElementRef.nativeElement.getBoundingClientRect(),
+    this.tooltipPosition = resolveSurfaceTooltipPosition(
+      (anchor ?? this.hostElementRef.nativeElement).getBoundingClientRect(),
       viewport.width,
       viewport.offsetLeft
     );

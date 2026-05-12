@@ -9,6 +9,7 @@ import {
   filterEditorCardsByQuery,
   PATCH_EDITOR_OPERATION_MODE_OPTIONS,
   PatchEditorComponent,
+  resolveRackInlinePanelSide,
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
@@ -1057,10 +1058,13 @@ describe('PatchEditorComponent', () => {
 
     it('expands a module by trackingId', () => {
       const module = {id: 1, name: 'VCA'} as any;
-      component.selectRackModule(10, module);
+      component.selectRackModule(10, module, {
+        getBoundingClientRect: () => ({left: 120, right: 180})
+      } as any);
 
       expect(component.expandedRackTrackingId).toBe(10);
       expect(component.expandedRackModule).toBe(module);
+      expect(component.expandedRackInlineSide).toBe('right');
     });
 
     it('collapses when clicking the same trackingId again', () => {
@@ -1088,6 +1092,22 @@ describe('PatchEditorComponent', () => {
 
       expect(component.expandedRackTrackingId).toBeNull();
       expect(component.expandedRackModule).toBeNull();
+    });
+  });
+
+  describe('resolveRackInlinePanelSide', () => {
+    it('opens left when the right edge does not have enough room for the panel', () => {
+      expect(resolveRackInlinePanelSide({
+        left: 980,
+        right: 1120
+      } as DOMRect, 1280)).toBe('left');
+    });
+
+    it('opens right when there is enough space on the right', () => {
+      expect(resolveRackInlinePanelSide({
+        left: 220,
+        right: 320
+      } as DOMRect, 1280)).toBe('right');
     });
   });
 

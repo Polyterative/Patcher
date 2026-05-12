@@ -56,7 +56,7 @@
             }
             @if (!bag.isCurrentRackEditable) {
               <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
-                                  maxSize="45rem"
+                                  maxSize="var(--app-readable-section-max-width)"
                                   [hidden]="bag.isCurrentRackEditable">
                 <app-comments-root></app-comments-root>
               </lib-screen-wrapper>
