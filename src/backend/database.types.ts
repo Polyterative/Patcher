@@ -614,6 +614,7 @@ export type Database = {
           created: string
           description: string | null
           id: number
+          linked_rack_id: number | null
           name: string | null
           public: boolean
           tags: string[]
@@ -624,6 +625,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          linked_rack_id?: number | null
           name?: string | null
           public?: boolean
           tags?: string[]
@@ -634,6 +636,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          linked_rack_id?: number | null
           name?: string | null
           public?: boolean
           tags?: string[]
@@ -645,6 +648,13 @@ export type Database = {
             columns: ["authorid"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patches_linked_rack_id_fkey"
+            columns: ["linked_rack_id"]
+            isOneToOne: false
+            referencedRelation: "racks"
             referencedColumns: ["id"]
           },
         ]

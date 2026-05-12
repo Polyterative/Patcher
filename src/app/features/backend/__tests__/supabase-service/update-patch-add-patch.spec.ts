@@ -53,6 +53,32 @@ describe('SupabaseService - update.patch', () => {
       }
     });
   }, TEST_TIMEOUT);
+
+  it('should preserve linked_rack_id when updating a patch', (done) => {
+    const mockUser = {id: 'patch-user'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+    const mock = chainable({data: {id: 10, linked_rack_id: 42}, error: null});
+    const updateSpy = spyOn(mock, 'update').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.update.patch({
+      id: 10,
+      name: 'Linked Patch',
+      linked_rack_id: 42,
+      author: {id: 'a', username: 'usr'}
+    } as any).subscribe({
+      next: () => {
+        const payload = updateSpy.calls.first().args[0] as any;
+        expect(payload.linked_rack_id).toBe(42);
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
   
   it('should bust patches and patchConnections caches', (done) => {
     const mockUser = {id: 'patch-user'};
@@ -158,6 +184,27 @@ describe('SupabaseService - add.patch', () => {
         expect(payload.authorid).toBe('patch-author');
         expect(payload.name).toBe('Generative Patch');
         expect(payload.public).toBeFalse();
+        done();
+      },
+      error: (err) => {
+        fail(err);
+        done();
+      }
+    });
+  }, TEST_TIMEOUT);
+
+  it('should include linked_rack_id when provided', (done) => {
+    const mockUser = {id: 'patch-author'};
+    spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
+
+    const mock = chainable({data: [{id: 77}], error: null});
+    const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
+
+    service.add.patch({name: 'Linked Patch', linked_rack_id: 19} as any).subscribe({
+      next: () => {
+        const payload = insertSpy.calls.first().args[0] as any;
+        expect(payload.linked_rack_id).toBe(19);
         done();
       },
       error: (err) => {
