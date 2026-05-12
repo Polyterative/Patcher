@@ -131,6 +131,12 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
     return `/u/${ username }`;
   }
 
+  profileVisibilityDescription(isPublic: boolean): string {
+    return isPublic
+      ? 'Public profile is visible to everyone.'
+      : 'Public profile is hidden from visitors.';
+  }
+
   toggleProfileVisibility(isPublic: boolean): void {
     this.userService.updateProfileVisibility$(isPublic).subscribe();
   }
