@@ -59,6 +59,8 @@ persistence still depends on applying the existing migration in the target Supab
   omitting `linked_rack_id` unless a rack was explicitly selected.
 - When the live environment still lacks `patches.linked_rack_id`, linked-rack-selected create/edit flows now show explicit
   unavailable guidance and fall back to unlinked work instead of surfacing the raw backend error.
+- The patch editor now exposes a collection-vs-linked-rack operation mode selector; linked-rack mode renders a read-only rack
+  context section below the editor without changing collection module sourcing or patch-instance behavior.
 
 #### Layer 2 — Structural
 - [x] Define persistence and degraded states for renamed/edited/deleted/unavailable linked racks without stranding the patch
