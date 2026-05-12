@@ -19,7 +19,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
   const linkedState = (partial: Partial<LinkedRackUiState>): LinkedRackUiState => ({
     kind: 'unlinked',
-    statusLabel: 'In collection only',
+    statusTone: 'neutral',
+    statusLabel: 'Collection-first',
     description: 'No rack is linked yet.',
     rackId: null,
     ...partial
@@ -35,7 +36,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
       }),
       linkedRackState$: new BehaviorSubject<LinkedRackUiState>(linkedState({
         kind: 'linked',
-        statusLabel: 'In linked rack',
+        statusTone: 'positive',
+        statusLabel: 'Linked rack active',
         description: 'This rack is optional context only.',
         rackName: 'Studio Rack',
         rackId: 7
@@ -93,9 +95,10 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Linked rack');
-    expect(host.textContent).toContain('In linked rack');
+    expect(host.textContent).toContain('Linked rack active');
     expect(host.textContent).toContain('Studio Rack');
     expect(host.textContent).toContain('This rack is optional context only.');
+    expect(host.textContent).toContain('1 rack available');
   });
 
   it('shows clear action in edit mode and forwards the click', () => {
@@ -105,6 +108,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     const host = fixture.nativeElement as HTMLElement;
     const clearButton = host.querySelector('.patch-linked-rack__clear') as HTMLButtonElement | null;
     expect(clearButton).not.toBeNull();
+    expect(host.textContent).toContain('Open rack');
 
     clearButton?.click();
 
@@ -115,7 +119,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     dataService.patchEditingPanelOpenState$.next(true);
     dataService.linkedRackState$.next(linkedState({
       kind: 'unlinked',
-      statusLabel: 'In collection only',
+      statusTone: 'neutral',
+      statusLabel: 'Collection-first',
       description: 'No rack is linked yet.',
       rackId: null
     }));
@@ -124,6 +129,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('You do not have any racks yet.');
+    expect(host.textContent).toContain('No saved racks yet');
   });
 
   it('renders the rollout hint and disables clear when linked-rack persistence is blocked', () => {

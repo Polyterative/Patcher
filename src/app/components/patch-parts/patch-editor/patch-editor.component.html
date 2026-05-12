@@ -19,12 +19,12 @@
     >
     </lib-auto-content-loading-indicator>
   } @else {
-    <div class="col">
+    <div class="patch-editor-shell">
       @if (bag.editorConnections.length > 0) {
         <lib-hero-content-card
-          [titleNormal]="'Patch connections ('+bag.editorConnections.length+')'"
+          [titleNormal]="'Patch connections (' + bag.editorConnections.length + ')'"
           class="connections"
-          description="The connections of the patch you are editing, shown in reverse order"
+          description="Live connection history for the patch you are editing, shown in reverse order."
           [showHelpButton]="true"
         >
           <app-patch-connections-list [editorConnections]="bag.editorConnections"
@@ -34,60 +34,123 @@
           ></app-patch-connections-list>
         </lib-hero-content-card>
       }
+
       <lib-hero-content-card
-        [titleNormal]="bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
-          ? 'Linked rack (' + (bag.linkedRackPreview.moduleCount || 0) + ')'
-          : 'Modules (' + (bag.sourceCards?.length || 0) + ')'"
-          class="modulesBG"
-          [description]="bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
-            ? 'Click a module to reveal its ins and outs, then wire connections.'
-            : 'Click on ins and outs to wire connections. Use the copy button for multiple copies of the same module.'"
-          [showHelpButton]="true"
-        >
+        [titleNormal]="bag.operationMode === operationModes.linkedRack ? 'Rack-linked patching workspace' : 'Collection patching workspace'"
+        class="modulesBG"
+        [description]="bag.operationMode === operationModes.linkedRack
+          ? 'Use the linked rack as spatial context while the patch still saves against patch-local instances.'
+          : 'Build from your collection, duplicate modules when needed, and switch into rack view whenever a linked rack is available.'"
+        [showHelpButton]="true"
+      >
+        <div class="patch-editor-workspace">
+          <div class="patch-editor-workspace__summary">
+            <div class="patch-editor-workspace__copy">
+              <div class="patch-editor-workspace__kicker">Editing workspace</div>
+              <div class="patch-editor-workspace__title">
+                @if (bag.operationMode === operationModes.linkedRack) {
+                  Patch through the rack layout.
+                } @else {
+                  Patch straight from your collection.
+                }
+              </div>
+              <p class="patch-editor-workspace__description">
+                @if (bag.operationMode === operationModes.linkedRack) {
+                  {{ bag.linkedRackPreview.description }}
+                } @else {
+                  Search, sort, group, and duplicate modules without leaving the patch editor.
+                }
+              </p>
+            </div>
+            <div class="patch-editor-workspace__meta">
+              <span class="patch-editor-meta-chip">
+                <mat-icon>cable</mat-icon>
+                {{ bag.editorConnections.length }} connection{{ bag.editorConnections.length === 1 ? '' : 's' }}
+              </span>
+              <span class="patch-editor-meta-chip">
+                <mat-icon>view_module</mat-icon>
+                {{ bag.sourceCards?.length || 0 }} module card{{ (bag.sourceCards?.length || 0) === 1 ? '' : 's' }}
+              </span>
+              @if (bag.hasLinkedRack) {
+                <span class="patch-editor-meta-chip patch-editor-meta-chip--accent">
+                  <mat-icon>view_stream</mat-icon>
+                  Linked rack available
+                </span>
+              }
+            </div>
+          </div>
+
           <div class="patch-editor-operation-mode">
+            <div class="patch-editor-operation-mode__header">
               <div class="patch-editor-operation-mode__title">Operation mode</div>
               <div class="patch-editor-operation-mode__hint">
                 @if (bag.hasLinkedRack) {
-                  Switch between your collection and the linked rack visual for patching.
+                  Switch between collection and linked-rack context without changing how the patch is stored.
                 } @else {
-                  Link a rack to enable rack-visual patching mode.
-                }
-              </div>
-              <div class="patch-editor-operation-mode__buttons"
-                   role="group"
-                   aria-label="Patch editor operation mode"
-              >
-                @for (option of operationModeOptions; track option.mode) {
-                  <button type="button"
-                          class="patch-editor-operation-mode__button"
-                          [class.patch-editor-operation-mode__button--active]="bag.operationMode === option.mode"
-                          [class.patch-editor-operation-mode__button--disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
-                          [attr.aria-pressed]="bag.operationMode === option.mode"
-                          [disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
-                          (click)="setOperationMode(option.mode)"
-                  >
-                    {{ option.label }}
-                  </button>
+                  Link a rack from patch details to unlock rack-visual patching mode.
                 }
               </div>
             </div>
+            <div class="patch-editor-operation-mode__buttons"
+                 role="group"
+                 aria-label="Patch editor operation mode"
+            >
+              @for (option of operationModeOptions; track option.mode) {
+                <button type="button"
+                        class="patch-editor-operation-mode__button"
+                        [class.patch-editor-operation-mode__button--active]="bag.operationMode === option.mode"
+                        [class.patch-editor-operation-mode__button--disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
+                        [attr.aria-pressed]="bag.operationMode === option.mode"
+                        [disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack"
+                        (click)="setOperationMode(option.mode)"
+                >
+                  {{ option.label }}
+                </button>
+              }
+            </div>
+          </div>
 
-          @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack) {
-            <!-- Linked rack mode: loading / error states stay inside the card -->
-            @if (bag.linkedRackPreview.kind === 'loading') {
-              <mat-card-subtitle fxLayoutAlign="center center">
-                Loading linked rack…
-              </mat-card-subtitle>
-            } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
-              <p class="patch-editor-linked-rack__copy">
-                {{ bag.linkedRackPreview.description }}
-              </p>
-            }
-            <!-- rack visual rendered outside the card below -->
+          @if (bag.operationMode === operationModes.linkedRack) {
+            <div class="patch-editor-mode-panel patch-editor-mode-panel--rack">
+              <div class="patch-editor-mode-panel__header">
+                <div class="patch-editor-mode-panel__title">Rack context</div>
+                <div class="patch-editor-mode-panel__meta">{{ getLinkedRackSummary(bag.linkedRackPreview) }}</div>
+              </div>
+              @if (bag.linkedRackPreview.kind === 'loading') {
+                <div class="patch-editor-empty-state">
+                  <mat-icon>sync</mat-icon>
+                  <div class="patch-editor-empty-state__title">Loading linked rack…</div>
+                  <p class="patch-editor-empty-state__copy">Your collection mode remains available while the rack preview loads.</p>
+                </div>
+              } @else if (bag.linkedRackPreview.kind !== 'ready' || !bag.linkedRackPreview.rack) {
+                <div class="patch-editor-empty-state">
+                  <mat-icon>view_stream</mat-icon>
+                  <div class="patch-editor-empty-state__title">Rack view unavailable</div>
+                  <p class="patch-editor-empty-state__copy">{{ bag.linkedRackPreview.description }}</p>
+                </div>
+              } @else {
+                <p class="patch-editor-mode-panel__copy">
+                  Select a module in the rack to reveal its ins and outs, then wire the connection the same way you would in collection mode.
+                </p>
+              }
+            </div>
           } @else {
-            <!-- Collection mode: existing card list -->
-            @if (bag.sourceCards.length > 0) {
-              <div class="patch-editor-inline-controls">
+            <div class="patch-editor-controls">
+              <div class="patch-editor-controls__search">
+                <lib-mat-form-entity [control]="moduleSearchControl"
+                                     [type]="formTypes.TEXT"
+                                     [inputmode]="'search'"
+                                     [enterkeyhint]="'search'"
+                                     iconL1="search"
+                                     label="Find module in collection"
+                                     [formFieldAppearanceType]="'outline'"
+                ></lib-mat-form-entity>
+                @if (bag.searchQuery) {
+                  <button mat-stroked-button type="button" class="patch-editor-controls__clear" (click)="clearSearch()">
+                    Clear search
+                  </button>
+                }
+              </div>
               <lib-mat-form-entity class="patch-editor-control"
                                    [control]="moduleSortControl"
                                    [type]="formTypes.SELECT"
@@ -107,30 +170,39 @@
                                    label="Group"
               ></lib-mat-form-entity>
             </div>
-          }
+
+            <div class="patch-editor-results-copy">
+              {{ getCollectionResultsSummary(bag.sourceCards?.length || 0, bag.cards?.length || 0, bag.searchQuery) }}
+            </div>
+
             @if (!bag.loaded) {
-              <mat-card-subtitle fxLayoutAlign="center center">
-                Loading modules…
-              </mat-card-subtitle>
-            } @else if (bag.sourceCards.length === 0) {
-              <mat-card-subtitle fxLayoutAlign="center center">
-                Add modules to your collection to start patching
-              </mat-card-subtitle>
-            } @else if (bag.cards.length === 0) {
-              <mat-card-subtitle fxLayoutAlign="center center">
-                No modules match "{{ bag.searchQuery }}". Try another search.
-              </mat-card-subtitle>
-            } @else {
+              <div class="patch-editor-empty-state">
+                <mat-icon>inventory_2</mat-icon>
+                <div class="patch-editor-empty-state__title">Loading modules…</div>
+                <p class="patch-editor-empty-state__copy">Preparing your collection for patch editing.</p>
+              </div>
+            } @else if ((bag.sourceCards?.length || 0) === 0) {
+              <div class="patch-editor-empty-state">
+                <mat-icon>library_add</mat-icon>
+                <div class="patch-editor-empty-state__title">No modules in your collection yet</div>
+                <p class="patch-editor-empty-state__copy">Add modules to your collection first, then come back here to wire the patch.</p>
+              </div>
+            } @else if ((bag.cards?.length || 0) === 0) {
+              <div class="patch-editor-empty-state">
+                <mat-icon>search_off</mat-icon>
+                <div class="patch-editor-empty-state__title">No modules match "{{ bag.searchQuery }}"</div>
+                <p class="patch-editor-empty-state__copy">Try another search or clear the filter to see the full collection again.</p>
+              </div>
+            } @else if (bag.cards; as visibleCards) {
               <flexbox-row-fast>
-                @for (card of bag.cards; track card.trackingId) {
+                @for (card of visibleCards; track card.trackingId) {
                   <lib-clean-card>
                     <div class="module-card-body">
                       <div class="module-card-actions">
                         @if (card.connectionCount > 0) {
-                          <span
-                            [matTooltip]="card.connectionCount + ' connection' + (card.connectionCount > 1 ? 's' : '') + ':\n' + card.connectionNames.join('\n')"
-                            style="font-size: 0.75rem; opacity: 0.6; display: flex; align-items: center; gap: 2px">
-                            <mat-icon style="font-size: 14px; width: 14px; height: 14px">cable</mat-icon>
+                          <span class="module-card-actions__metric"
+                                [matTooltip]="getModuleCardConnectionTooltip(card)">
+                            <mat-icon>cable</mat-icon>
                             {{ card.connectionCount }}
                           </span>
                         }
@@ -163,30 +235,36 @@
               </flexbox-row-fast>
             }
           }
-        </lib-hero-content-card>
+        </div>
+      </lib-hero-content-card>
 
-      <!-- Linked rack visual: rendered outside the card for full-width centering -->
       @if (bag.hasLinkedRack && bag.operationMode === operationModes.linkedRack
            && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
+        @if (bag.divergence && !bag.divergence.clean) {
+          <div class="patch-editor-rack-warning"
+               [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
+               matTooltipClass="patch-divergence-tooltip">
+            <mat-icon>info_outline</mat-icon>
+            <div class="patch-editor-rack-warning__copy">
+              <div class="patch-editor-rack-warning__title">Rack and patch copies have diverged</div>
+              <div class="patch-editor-rack-warning__description">
+                {{ bag.divergence.totalOrphanedInstances }} instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} sit outside the current rack
+                @if (bag.orphanedConnectionCount > 0) {
+                  · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
+                }
+              </div>
+            </div>
+          </div>
+        }
+
         <div class="patch-editor-rack-visual">
           <div class="patch-editor-rack-visual__header">
             <span class="patch-editor-rack-visual__rack-name">{{ bag.linkedRackPreview.rack.name }}</span>
             <span class="patch-editor-rack-visual__rack-meta">
               {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
               · {{ bag.linkedRackPreview.rack.hp }} HP
+              · {{ bag.linkedRackPreview.moduleCount }} placed module{{ bag.linkedRackPreview.moduleCount === 1 ? '' : 's' }}
             </span>
-            @if (bag.divergence && !bag.divergence.clean) {
-              <span class="patch-editor-rack-visual__divergence-note"
-                    [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)"
-                    matTooltipClass="patch-divergence-tooltip">
-                <mat-icon>info_outline</mat-icon>
-                {{ bag.divergence.totalOrphanedInstances }}
-                instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} outside rack
-                @if (bag.orphanedConnectionCount > 0) {
-                  · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
-                }
-              </span>
-            }
           </div>
           <div class="patch-editor-rack-visual__viewport" #rackViewport>
             <div class="patch-editor-rack-visual__frame"
@@ -248,24 +326,11 @@
           @if (!expandedRackModule) {
             <div class="patch-editor-rack-visual__hint">
               <mat-icon>touch_app</mat-icon>
-              <span>Tap a module to see its ins &amp; outs</span>
+              <span>Tap a module to inspect its ins &amp; outs, then make the connection.</span>
             </div>
           }
         </div>
       }
-     </div>
-    
-    @if (bag.sourceCards.length > 0) {
-      <div class="patch-editor-floating-search">
-        <lib-mat-form-entity [control]="moduleSearchControl"
-                             [type]="formTypes.TEXT"
-                             [inputmode]="'search'"
-                             [enterkeyhint]="'search'"
-                             iconL1="search"
-                             label="Find module in collection"
-                             [formFieldAppearanceType]="'outline'"
-        ></lib-mat-form-entity>
-      </div>
-    }
+    </div>
   }
 }
