@@ -136,3 +136,12 @@
 - Rack layout order is not instance identity. Instances remain patch-local wiring identity, not rack-position identity.
 - If a linked rack becomes unavailable, the patch should continue to render the same instance set with the same labels and
   connections.
+
+### Linked-rack state handling
+
+- `Unlinked` remains the default state and must behave exactly like today's collection-first patch flow.
+- `Linked and available` may add orientation or compatibility messaging, but must not alter editor-card creation or
+  connection identity.
+- `Linked but diverged` must stay informational only; no instance relabeling, auto-removal, or auto-import is allowed.
+- `Linked but unavailable` must keep the patch editable and preserve the same instance/connection data while hiding rack
+  identity from unauthorized viewers.
