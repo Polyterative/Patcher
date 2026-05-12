@@ -22,3 +22,19 @@
 - Reused `get.currentUserRacks()` instead of widening the backend API surface.
 - Added focused service/component coverage and updated the authenticated patch-detail screenshot spec to capture the linked-rack edit shell.
 - Next bounded task is patch creation support for optional linked-rack selection.
+
+## 2026-05-12T11:57:44+02:00
+
+- Fixed the patches browser regression by removing `linked_rack_id` from the default public `getPatches()` select, so public listing surfaces do not depend on the linked-rack schema rollout.
+- Added a focused backend regression assertion that the public patch listing query stays free of `linked_rack_id`.
+- Tightened the patch-browser smoke test to target actual patch-list items and the paginator range label instead of generic page-wide selectors.
+- Validated the fix with the focused backend spec, a production build, and the patch-browser Playwright smoke suite.
+- Remaining linked-rack work stays scoped to patch creation, viewer-facing unavailable/privacy handling, and the later linked-rack module-proposal enhancement.
+
+## 2026-05-12T12:17:17+02:00
+
+- Added optional linked-rack UI to patch creation, loading the current user's racks into a select and keeping the create flow text explicit that rack context is optional.
+- Kept patch creation rollout-safe by omitting `linked_rack_id` from patch inserts unless the user explicitly selected a rack, so unlinked patch creation and all existing unlinked patches keep working.
+- Added focused creator/backend coverage for linked and unlinked creation payloads, and extended the authenticated patch-creation E2E to assert the linked-rack field and complete the create flow via the returned patch id.
+- Recorded the live Supabase migration apply as an external rollout dependency before selected linked-rack persistence can be used in production.
+- Next bounded task is privacy-safe viewer handling for unavailable or inaccessible linked racks.

@@ -1,22 +1,23 @@
 # Current Task
 
-**Active task:** Add linked-rack selection to patch creation.
+**Active task:** Add privacy-safe linked-rack viewer handling.
 
-**Why it matters:** Existing-patch owner flows now support linked-rack status and editing. The next bounded step is to let new patches start with the same optional rack context instead of forcing users to edit immediately after creation.
+**Why it matters:** Patch creation now keeps linked rack optional and preserves existing unlinked behavior. The next bounded step is to show linked-rack context safely to viewers without leaking private or unavailable rack details.
 
 **Likely affected files:**
-- `src/app/components/patch-parts/patch-creator/*`
-- any helper or data-service code needed to source the current user's rack options
-- focused patch-creator specs
+- `src/app/components/patch-parts/patch-detail-data.service.ts`
+- `src/app/components/patch-parts/patch-minimal/*`
+- focused patch-detail / patch-minimal specs
+- any public patch detail query/helper needed to resolve linked-rack viewer state safely
 
 **Acceptance criteria:**
-- New-patch creation supports an optional linked-rack selection while preserving the current no-rack default.
-- Saving a new patch forwards `linked_rack_id` only when the user selected a rack.
-- The create flow explains that linked rack is optional context, not the source of truth for patch modules.
-- Focused patch-creator tests cover save behavior for linked and unlinked creation.
+- Public or unauthorized viewers never see the identity or structure of a private/unavailable linked rack.
+- Linked-rack context degrades to safe text-first messaging when the rack cannot be shown.
+- Existing owner flows remain intact.
+- Focused specs cover the new viewer state behavior.
 
 **Validation steps:**
-- Run targeted patch-creator specs.
-- Run a build-safe validation command after the create-flow slice lands.
+- Run targeted patch detail / patch minimal specs.
+- Run a build-safe validation command after the viewer-state slice lands.
 
-**Completion status / next action:** Queued for the next iteration step.
+**Completion status / next action:** Ready to start. Note: live selected linked-rack persistence still depends on applying the existing `patches.linked_rack_id` migration outside the repo.
