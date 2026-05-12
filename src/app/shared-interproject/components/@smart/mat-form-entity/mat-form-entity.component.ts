@@ -191,6 +191,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    */
   @Input() autocompleteCanBeVoid = false;
   @Input() disableVoidSelection = false;
+  @Input() voidSelectionLabel = '/';
   @Input() disableClearButton = false;
   @Input() optionsTooltipMinLength = 80;
   /**
