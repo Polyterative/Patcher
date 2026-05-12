@@ -19,6 +19,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  tap,
   takeUntil
 } from 'rxjs/operators';
 import { MinimalModule } from '../../models/module';
@@ -129,6 +130,11 @@ const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
   readonly updateModulesList$ = new Subject<void>();
+  readonly moduleFilterInteraction$ = new Subject<void>();
+  readonly modulesLoadingTrigger$ = merge(
+    this.moduleFilterInteraction$,
+    this.updateModulesList$
+  );
   readonly resetForm$ = new Subject<void>();
   readonly pageEvent$ = new Subject<PageEvent>();
   readonly paginatorToFistPage$ = new Subject<void>();
@@ -297,6 +303,7 @@ export class ModuleBrowserDataService extends SubManager {
       this.fields.order.control.valueChanges,
       this.fields.tags.control.valueChanges
     ).pipe(
+      tap(() => this.moduleFilterInteraction$.next()),
       debounceTime(750),
       takeUntil(this.destroy$)
     ).subscribe(() => {
