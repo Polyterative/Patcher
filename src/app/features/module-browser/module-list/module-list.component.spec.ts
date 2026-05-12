@@ -30,8 +30,20 @@ describe('ModuleListComponent', () => {
     const filterService = new LocalDataFilterService();
     const data$ = new BehaviorSubject<MinimalModule[] | null>([
       buildModule({id: 1, name: 'Maths', description: 'Function generator'}),
-      buildModule({id: 2, name: 'Mimeophon', description: 'Stereo color delay'}),
-      buildModule({id: 3, name: 'Belgrad', description: 'Dual peak filter'}),
+      buildModule({
+        id: 2,
+        name: 'Mimeophon',
+        description: 'Stereo color delay',
+        manufacturer: {id: 2, name: 'Make Noise'} as any,
+        tags: [{id: 8, tag: {id: 8, name: 'Delay'} as any, voteCount: []}]
+      }),
+      buildModule({
+        id: 3,
+        name: 'Belgrad',
+        description: 'Dual peak filter',
+        manufacturer: {id: 3, name: 'Xaoc Devices'} as any,
+        tags: [{id: 9, tag: {id: 9, name: 'Filtèr'} as any, voteCount: []}]
+      }),
     ]);
 
     const component = new ModuleListComponent(
@@ -55,6 +67,47 @@ describe('ModuleListComponent', () => {
     tick(350);
 
     expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Mimeophon']);
+    component.ngOnDestroy();
+  }));
+
+  it('applies external module search against manufacturer names', fakeAsync(() => {
+    const {component} = build();
+
+    component.externalSearchQuery = 'xaoc';
+    tick();
+
+    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Belgrad']);
+    component.ngOnDestroy();
+  }));
+
+  it('combines local and external search across descriptions and tags accent-insensitively', fakeAsync(() => {
+    const {component, filterService} = build();
+
+    filterService.search.control.setValue('filter');
+    component.externalSearchQuery = 'filter';
+    tick(350);
+
+    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Belgrad']);
+    component.ngOnDestroy();
+  }));
+
+  it('keeps loading/null data out of filtered results until modules arrive', fakeAsync(() => {
+    const filterService = new LocalDataFilterService();
+    const data$ = new BehaviorSubject<MinimalModule[] | null>(null);
+    const component = new ModuleListComponent(
+      {} as any,
+      filterService,
+      {preferredPanelColor$: of(null)} as any
+    );
+    component.data$ = data$;
+    component.ngOnInit();
+
+    expect(component.filteredData$.value).toEqual([]);
+
+    data$.next([buildModule({id: 5, name: 'Arrived'})]);
+    tick();
+
+    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Arrived']);
     component.ngOnDestroy();
   }));
 });

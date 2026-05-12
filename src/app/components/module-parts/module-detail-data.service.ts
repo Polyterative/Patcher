@@ -143,7 +143,7 @@ export class ModuleDetailDataService implements OnDestroy {
         switchMap(x => this.backend.get.racksWithModule(x)),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(x => this.racksWithThisModule$.next(x.data.map(y => y.rack)));
+      .subscribe(x => this.racksWithThisModule$.next((x.data ?? []).map(y => y.rack)));
     
     // get patches with this module
     this.updateSingleModuleData$
