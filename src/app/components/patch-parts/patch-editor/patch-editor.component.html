@@ -41,7 +41,7 @@
             <div class="patch-editor-operation-mode">
               <div class="patch-editor-operation-mode__title">Operation mode</div>
               <div class="patch-editor-operation-mode__hint">
-                Collection stays editable. Linked rack mode only adds read-only context below the editor.
+                Collection stays editable. Linked rack mode shows rack modules below with interactive ins and outs.
               </div>
               <div class="patch-editor-operation-mode__buttons"
                    role="group"
@@ -142,7 +142,7 @@
             [titleNormal]="'Linked rack context'"
             class="patch-editor-linked-rack"
             [showHelpButton]="true"
-            description="Read-only rack context for orientation. Collection modules above remain the editable source list."
+            description="Click ins and outs below to wire connections from linked rack modules. Collection modules above remain the editable source list."
           >
             @if (bag.linkedRackPreview.kind === 'loading') {
               <mat-card-subtitle fxLayoutAlign="center center">
@@ -169,6 +169,7 @@
                         <div class="patch-editor-linked-rack__module-card">
                           <app-module-composite [data]="previewCard.module"
                                                 [viewConfig]="modulesViewConfig"
+                                                [instanceId]="(linkedRackInstanceMap$ | async)?.get(previewCard.module.id)"
                                                 [preferredPanelColor]="appState.preferredPanelColor$ | async"
                           ></app-module-composite>
                         </div>
