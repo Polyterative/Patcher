@@ -6,6 +6,17 @@ import {
 import { SupabaseService } from '../../supabase.service';
 import { of } from 'rxjs';
 
+function chainable(resolveValue: any = {data: null, error: null}) {
+  const m: any = {};
+  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
+    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
+    m[method] = () => m;
+  });
+  m.then = (res: Function, rej?: Function) =>
+    Promise.resolve(resolveValue).then(res as any, rej as any);
+  return m;
+}
+
 
 /**
  * Database Integration Tests - User Patches with Privacy
@@ -44,15 +55,13 @@ describe('SupabaseService - Patch Privacy Integration', () => {
     let insertedData: any;
     
     // Spy on the insert call to capture what's being sent
-    spyOn(supabaseClient, 'from').and.returnValue({
-      insert: (data: any) => {
-        insertedData = data;
-        return Promise.resolve({
-          data: [{id: 1, ...data}],
-          error: null
-        });
-      }
+    const mock = chainable({data: [{id: 1, name: 'Test Patch'}], error: null});
+    spyOn(mock, 'insert').and.callFake((data: any) => {
+      insertedData = data;
+      return mock;
     });
+    spyOn(mock, 'select').and.returnValue(mock);
+    spyOn(supabaseClient, 'from').and.returnValue(mock);
     
     service.add.patch({name: 'Test Patch'}).subscribe({
       next: () => {
