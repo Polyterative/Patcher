@@ -1,23 +1,23 @@
 # Current Task
 
-**Active task:** Add privacy-safe linked-rack viewer handling.
+**Active task:** Add a patch-editor operation mode selector with linked-rack context preview.
 
-**Why it matters:** Patch creation now keeps linked rack optional and preserves existing unlinked behavior. The next bounded step is to show linked-rack context safely to viewers without leaking private or unavailable rack details.
+**Why it matters:** Linked-rack write failures now degrade safely while the live schema rollout is pending, so the next bounded step is the missing editor UX the user asked for: a clear mode selector and linked-rack context below the patch editor without changing collection-first editing.
 
 **Likely affected files:**
+- `src/app/components/patch-parts/patch-editor/*`
 - `src/app/components/patch-parts/patch-detail-data.service.ts`
-- `src/app/components/patch-parts/patch-minimal/*`
-- focused patch-detail / patch-minimal specs
-- any public patch detail query/helper needed to resolve linked-rack viewer state safely
+- focused patch-editor specs and any linked-rack context tests
+- relevant internal linked-rack feature docs
 
 **Acceptance criteria:**
-- Public or unauthorized viewers never see the identity or structure of a private/unavailable linked rack.
-- Linked-rack context degrades to safe text-first messaging when the rack cannot be shown.
-- Existing owner flows remain intact.
-- Focused specs cover the new viewer state behavior.
+- The patch editor exposes a clear collection-vs-linked-rack mode selector patterned after the rack editor control style.
+- Linked-rack mode shows read-only linked-rack context below the editor without replacing collection-first editing.
+- Existing collection module sourcing, patch instances, and connection editing remain unchanged.
+- Focused specs cover the new mode/state behavior.
 
 **Validation steps:**
-- Run targeted patch detail / patch minimal specs.
-- Run a build-safe validation command after the viewer-state slice lands.
+- Run targeted patch-editor specs plus any linked-rack context specs touched by the slice.
+- Run a build-safe validation command after the editor-mode slice lands.
 
-**Completion status / next action:** Ready to start. Note: live selected linked-rack persistence still depends on applying the existing `patches.linked_rack_id` migration outside the repo.
+**Completion status / next action:** Ready to start. Note: live selected linked-rack persistence still depends on applying the existing `patches.linked_rack_id` migration outside the repo, but create/edit flows now degrade safely while that blocker remains.

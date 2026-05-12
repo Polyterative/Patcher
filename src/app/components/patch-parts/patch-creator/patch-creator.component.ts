@@ -11,9 +11,11 @@ import {
 } from '@angular/forms';
 import {
   BehaviorSubject,
+  EMPTY,
   Subject
 } from 'rxjs';
 import {
+  catchError,
   switchMap,
   takeUntil
 } from 'rxjs/operators';
@@ -31,12 +33,17 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from "@angular/material/dialog";
+import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import {
   adjectives,
   animals,
   colors,
   uniqueNamesGenerator
 } from 'unique-names-generator';
+import {
+  isLinkedRackSchemaMissingError,
+  LINKED_RACK_PENDING_CREATE_MESSAGE
+} from '../linked-rack-rollout';
 
 
 export interface PatchCreatorOutModel {
@@ -58,6 +65,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   data$ = new BehaviorSubject<[]>([]);
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
+  readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
   
   fields: {
     name: IMatFormEntityConfig;
@@ -148,17 +156,31 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     
     this.save$
         .pipe(
-          switchMap(x => this.backend.add.patch(
-            {
-              name: this.fields.name.control.value,
-              public: this.fields.public.control.value,
-              ...(this.getSelectedLinkedRackId() == null
-                ? {}
-                : {linked_rack_id: this.getSelectedLinkedRackId()})
-              // hp:       this.fields.hp.control.value,
-              // rows:     this.fields.rows.control.value
-            }
-          )),
+          switchMap(_ => {
+            const selectedLinkedRackId = this.getSelectedLinkedRackId();
+            return this.backend.add.patch(
+              {
+                name: this.fields.name.control.value,
+                public: this.fields.public.control.value,
+                ...(selectedLinkedRackId == null
+                  ? {}
+                  : {linked_rack_id: selectedLinkedRackId})
+                // hp:       this.fields.hp.control.value,
+                // rows:     this.fields.rows.control.value
+              }
+            ).pipe(
+              catchError(err => {
+                if (selectedLinkedRackId != null && isLinkedRackSchemaMissingError(err)) {
+                  this.setLinkedRackPersistenceBlocked(true);
+                  SharedConstants.errorCustom(this.snackBar, LINKED_RACK_PENDING_CREATE_MESSAGE);
+                } else {
+                  console.error('Failed to create patch:', err);
+                  SharedConstants.errorCustom(this.snackBar, 'Failed to create patch — check your connection and try again.');
+                }
+                return EMPTY;
+              })
+            );
+          }),
           takeUntil(this.destroyEvent$)
         )
         .subscribe(value => {
@@ -195,6 +217,18 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   private getSelectedLinkedRackId(): number | null {
     const selectedId = Number.parseInt(getCleanedValueId(this.fields.linkedRack.control), 10);
     return Number.isFinite(selectedId) ? selectedId : null;
+  }
+
+  private setLinkedRackPersistenceBlocked(blocked: boolean): void {
+    this.linkedRackPersistenceBlocked$.next(blocked);
+
+    if (blocked) {
+      this.fields.linkedRack.control.reset('', {emitEvent: false});
+      this.fields.linkedRack.control.disable({emitEvent: false});
+      return;
+    }
+
+    this.fields.linkedRack.control.enable({emitEvent: false});
   }
   
 }
