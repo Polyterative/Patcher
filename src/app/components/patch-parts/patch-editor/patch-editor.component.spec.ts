@@ -1,14 +1,17 @@
 import {
+  buildLinkedRackInstanceMap,
   buildLinkedRackPreviewRows,
   buildLinkedRackPreviewState,
   EditorModuleCard,
   filterEditorCardsByQuery,
+  LinkedRackPreviewState,
   PATCH_EDITOR_OPERATION_MODE_OPTIONS,
   PatchEditorComponent,
   resolvePatchEditorSortStrategy,
   sortAndGroupEditorCards
 } from './patch-editor.component';
 import { of } from 'rxjs';
+import { PatchModuleInstance } from 'src/app/models/connection';
 
 
 const createCard = (
@@ -213,6 +216,20 @@ describe('PatchEditorComponent', () => {
     expect(rows[1].modules.map(card => card.module.id)).toEqual([3, 2]);
   });
 
+  it('returns empty rows for empty rack modules list', () => {
+    const rows = buildLinkedRackPreviewRows([]);
+    expect(rows).toEqual([]);
+  });
+
+  it('uses rackingData.id as trackingId', () => {
+    const rows = buildLinkedRackPreviewRows([{
+      module: {id: 5, name: 'Test'} as any,
+      rackingData: {id: 42, row: 0, column: 0, selectedPanelId: null}
+    }] as any);
+
+    expect(rows[0].modules[0].trackingId).toBe(42);
+  });
+
   it('builds an unavailable linked-rack preview state when the rack cannot be loaded', () => {
     const state = buildLinkedRackPreviewState(undefined);
 
@@ -224,5 +241,472 @@ describe('PatchEditorComponent', () => {
     const component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
 
     expect(component.linkedRackInstanceMap$.value.size).toBe(0);
+  });
+
+  // --- buildLinkedRackInstanceMap tests ---
+
+  describe('buildLinkedRackInstanceMap', () => {
+    const makePreviewState = (modules: { id: number; moduleId: number; row: number; col: number }[]): LinkedRackPreviewState => {
+      const rows = new Map<number, any[]>();
+      for (const m of modules) {
+        const row = rows.get(m.row) ?? [];
+        row.push({trackingId: m.id, module: {id: m.moduleId} as any, row: m.row, column: m.col, selectedPanelId: null});
+        rows.set(m.row, row);
+      }
+      return {
+        kind: 'ready',
+        description: '',
+        rows: [...rows.entries()].sort(([a], [b]) => a - b).map(([row, mods]) => ({row, modules: mods})),
+        moduleCount: modules.length
+      };
+    };
+
+    const makeInstance = (id: number, moduleId: number, label: string | null = null): PatchModuleInstance =>
+      ({id, patch_id: 1, module_id: moduleId, instance_label: label}) as PatchModuleInstance;
+
+    it('maps unique modules 1:1 with instances', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 2, row: 0, col: 6}
+      ]);
+      const instances = [makeInstance(100, 1), makeInstance(200, 2)];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.get(10)).toBe(100);
+      expect(map.get(20)).toBe(200);
+      expect(map.size).toBe(2);
+    });
+
+    it('pairs duplicate module rack positions with instances by position order', () => {
+      // Same module (id=1) at two rack positions
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 1, row: 0, col: 8}
+      ]);
+      const instances = [makeInstance(100, 1, '(1)'), makeInstance(200, 1, '(2)')];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      // Position (0,0) → first instance, position (0,8) → second instance
+      expect(map.get(10)).toBe(100);
+      expect(map.get(20)).toBe(200);
+      expect(map.size).toBe(2);
+    });
+
+    it('leaves unmapped positions when instances are fewer than rack copies', () => {
+      // 3 rack copies but only 1 instance
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 1, row: 0, col: 8},
+        {id: 30, moduleId: 1, row: 1, col: 0}
+      ]);
+      const instances = [makeInstance(100, 1)];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.get(10)).toBe(100);
+      expect(map.has(20)).toBe(false);
+      expect(map.has(30)).toBe(false);
+      expect(map.size).toBe(1);
+    });
+
+    it('returns empty map for non-ready preview state', () => {
+      const state: LinkedRackPreviewState = {kind: 'loading', description: '', rows: [], moduleCount: 0};
+      const instances = [makeInstance(100, 1)];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.size).toBe(0);
+    });
+
+    it('pairs by position order: row first, then column', () => {
+      // Module appears in row 1 col 2 and row 0 col 5
+      const state = makePreviewState([
+        {id: 30, moduleId: 1, row: 1, col: 2},
+        {id: 10, moduleId: 1, row: 0, col: 5}
+      ]);
+      const instances = [makeInstance(100, 1, '(1)'), makeInstance(200, 1, '(2)')];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      // Row 0 comes first → gets instance 100, row 1 → gets instance 200
+      expect(map.get(10)).toBe(100);
+      expect(map.get(30)).toBe(200);
+    });
+
+    it('handles mixed: one module with duplicates, another unique', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 2, row: 0, col: 6},
+        {id: 30, moduleId: 1, row: 0, col: 12}
+      ]);
+      const instances = [
+        makeInstance(100, 1, '(1)'),
+        makeInstance(200, 2),
+        makeInstance(300, 1, '(2)')
+      ];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.get(10)).toBe(100);   // module 1, position 1
+      expect(map.get(30)).toBe(300);   // module 1, position 2
+      expect(map.get(20)).toBe(200);   // module 2, unique
+      expect(map.size).toBe(3);
+    });
+
+    it('ignores extra instances when rack has fewer copies', () => {
+      // 1 rack position but 3 instances (orphans from previous rack)
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0}
+      ]);
+      const instances = [
+        makeInstance(100, 1, '(1)'),
+        makeInstance(200, 1, '(2)'),
+        makeInstance(300, 1, '(3)')
+      ];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.get(10)).toBe(100);
+      expect(map.size).toBe(1);
+    });
+
+    it('handles empty rack (no modules)', () => {
+      const state = makePreviewState([]);
+      const instances = [makeInstance(100, 1)];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.size).toBe(0);
+    });
+
+    it('handles empty instances (no instances yet)', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0}
+      ]);
+
+      const map = buildLinkedRackInstanceMap(state, []);
+
+      expect(map.size).toBe(0);
+    });
+
+    it('sorts instances by id regardless of array order', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 1, row: 0, col: 8}
+      ]);
+      // Instances in reverse creation order
+      const instances = [makeInstance(500, 1, '(2)'), makeInstance(100, 1, '(1)')];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      // Should sort by id: 100 first, 500 second
+      expect(map.get(10)).toBe(100);
+      expect(map.get(20)).toBe(500);
+    });
+
+    it('handles 8 copies of the same module (max)', () => {
+      const positions = Array.from({length: 8}, (_, i) => ({id: i + 1, moduleId: 1, row: Math.floor(i / 4), col: (i % 4) * 8}));
+      const state = makePreviewState(positions);
+      const instances = Array.from({length: 8}, (_, i) => makeInstance(100 + i, 1, `(${i + 1})`));
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.size).toBe(8);
+      // Each position paired in order
+      for (let i = 0; i < 8; i++) {
+        expect(map.get(positions[i].id)).toBe(100 + i);
+      }
+    });
+
+    it('handles modules with no matching instances (all lazy)', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 2, row: 0, col: 8},
+        {id: 30, moduleId: 1, row: 1, col: 0}
+      ]);
+      // Only module 2 has an instance
+      const instances = [makeInstance(100, 2)];
+
+      const map = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map.size).toBe(1);
+      expect(map.get(20)).toBe(100);
+      expect(map.has(10)).toBe(false);
+      expect(map.has(30)).toBe(false);
+    });
+
+    it('preserves deterministic pairing across recomputation', () => {
+      const state = makePreviewState([
+        {id: 10, moduleId: 1, row: 0, col: 0},
+        {id: 20, moduleId: 1, row: 0, col: 8},
+        {id: 30, moduleId: 1, row: 1, col: 0}
+      ]);
+      const instances = [
+        makeInstance(100, 1, '(1)'),
+        makeInstance(200, 1, '(2)')
+      ];
+
+      // Two separate calls should yield same result
+      const map1 = buildLinkedRackInstanceMap(state, instances);
+      const map2 = buildLinkedRackInstanceMap(state, instances);
+
+      expect(map1.get(10)).toBe(map2.get(10));
+      expect(map1.get(20)).toBe(map2.get(20));
+      expect(map1.size).toBe(map2.size);
+    });
+  });
+
+  describe('getRackModuleConnectionRole', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    });
+
+    it('returns null when no selection exists', () => {
+      expect(component.getRackModuleConnectionRole(10, 1, new Map(), null)).toBeNull();
+    });
+
+    it('returns role by instance_id match', () => {
+      const instanceMap = new Map([[10, 100], [20, 200]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: null
+      };
+
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
+      // Other copy of same module should NOT match
+      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as any)).toBeNull();
+    });
+
+    it('falls back to module_id when CV has no instance_id', () => {
+      const instanceMap = new Map<number, number>();
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: null}, kind: 'in' as const},
+        b: null
+      };
+
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('in');
+    });
+
+    it('does not highlight unrelated modules', () => {
+      const instanceMap = new Map([[10, 100]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: null
+      };
+
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBeNull();
+    });
+
+    it('returns roles for both sides in pre-confirm state', () => {
+      const instanceMap = new Map([[10, 100], [30, 300]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const}
+      };
+
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
+      expect(component.getRackModuleConnectionRole(30, 2, instanceMap, sel as any)).toBe('in');
+    });
+
+    it('only matches the specific copy in pre-confirm when both are same module', () => {
+      // Two copies of the same module, one selected as out, the other as in
+      const instanceMap = new Map([[10, 100], [20, 200]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: {cv: {module: {id: 1}, instance_id: 200}, kind: 'in' as const}
+      };
+
+      expect(component.getRackModuleConnectionRole(10, 1, instanceMap, sel as any)).toBe('out');
+      expect(component.getRackModuleConnectionRole(20, 1, instanceMap, sel as any)).toBe('in');
+    });
+  });
+
+  describe('isRackModuleDimmed', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    });
+
+    it('returns false when nothing is expanded', () => {
+      expect(component.isRackModuleDimmed(10, 1, null, null)).toBe(false);
+    });
+
+    it('dims other copies of the same module (only clicked copy stays)', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+
+      // Different trackingId, same module.id → should be dimmed
+      expect(component.isRackModuleDimmed(20, 1, null, null)).toBe(true);
+    });
+
+    it('does not dim the exact clicked position', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+
+      expect(component.isRackModuleDimmed(10, 1, null, null)).toBe(false);
+    });
+
+    it('returns true for unrelated modules when something is expanded', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+
+      expect(component.isRackModuleDimmed(30, 2, null, null)).toBe(true);
+    });
+
+    it('does not dim modules involved in a pending connection', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+
+      const instanceMap = new Map([[30, 300]]);
+      const sel = {
+        a: {cv: {module: {id: 2}, instance_id: 300}, kind: 'in' as const},
+        b: null
+      };
+
+      expect(component.isRackModuleDimmed(30, 2, instanceMap, sel as any)).toBe(false);
+    });
+  });
+
+  describe('getRackModuleCopyLabel', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    });
+
+    it('returns null for single-copy modules', () => {
+      component.linkedRackPreviewState$.next({
+        kind: 'ready',
+        description: '',
+        rows: [{row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null}]}],
+        moduleCount: 1
+      } as any);
+
+      expect(component.getRackModuleCopyLabel(10, 1)).toBeNull();
+    });
+
+    it('returns positional label for duplicate modules', () => {
+      component.linkedRackPreviewState$.next({
+        kind: 'ready',
+        description: '',
+        rows: [{
+          row: 0,
+          modules: [
+            {trackingId: 10, module: {id: 1} as any, row: 0, column: 0, selectedPanelId: null},
+            {trackingId: 20, module: {id: 1} as any, row: 0, column: 8, selectedPanelId: null}
+          ]
+        }],
+        moduleCount: 2
+      } as any);
+
+      expect(component.getRackModuleCopyLabel(10, 1)).toBe('(1)');
+      expect(component.getRackModuleCopyLabel(20, 1)).toBe('(2)');
+    });
+
+    it('returns null for non-ready preview state', () => {
+      component.linkedRackPreviewState$.next({kind: 'loading', description: '', rows: [], moduleCount: 0});
+
+      expect(component.getRackModuleCopyLabel(10, 1)).toBeNull();
+    });
+
+    it('sorts by row then column for label assignment', () => {
+      component.linkedRackPreviewState$.next({
+        kind: 'ready',
+        description: '',
+        rows: [
+          {row: 1, modules: [{trackingId: 30, module: {id: 1} as any, row: 1, column: 0, selectedPanelId: null}]},
+          {row: 0, modules: [{trackingId: 10, module: {id: 1} as any, row: 0, column: 5, selectedPanelId: null}]}
+        ],
+        moduleCount: 2
+      } as any);
+
+      // Row 0 comes first → (1), row 1 → (2)
+      expect(component.getRackModuleCopyLabel(10, 1)).toBe('(1)');
+      expect(component.getRackModuleCopyLabel(30, 1)).toBe('(2)');
+    });
+  });
+
+  describe('isRackModulePendingSource', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    });
+
+    it('returns false when no selection exists', () => {
+      expect(component.isRackModulePendingSource(10, 1, null, null)).toBe(false);
+    });
+
+    it('returns true for connection-involved module that is not currently expanded', () => {
+      component.expandedRackTrackingId = 20;
+      component.expandedRackModule = {id: 2} as any;
+      const instanceMap = new Map([[10, 100]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: null
+      };
+
+      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as any)).toBe(true);
+    });
+
+    it('returns false for the currently expanded module', () => {
+      component.expandedRackTrackingId = 10;
+      component.expandedRackModule = {id: 1} as any;
+      const instanceMap = new Map([[10, 100]]);
+      const sel = {
+        a: {cv: {module: {id: 1}, instance_id: 100}, kind: 'out' as const},
+        b: null
+      };
+
+      expect(component.isRackModulePendingSource(10, 1, instanceMap, sel as any)).toBe(false);
+    });
+  });
+
+  describe('selectRackModule', () => {
+    let component: PatchEditorComponent;
+
+    beforeEach(() => {
+      component = new PatchEditorComponent({} as any, {singlePatchData$: of(undefined)} as any, {} as any);
+    });
+
+    it('expands a module by trackingId', () => {
+      const module = {id: 1, name: 'VCA'} as any;
+      component.selectRackModule(10, module);
+
+      expect(component.expandedRackTrackingId).toBe(10);
+      expect(component.expandedRackModule).toBe(module);
+    });
+
+    it('collapses when clicking the same trackingId again', () => {
+      const module = {id: 1, name: 'VCA'} as any;
+      component.selectRackModule(10, module);
+      component.selectRackModule(10, module);
+
+      expect(component.expandedRackTrackingId).toBeNull();
+      expect(component.expandedRackModule).toBeNull();
+    });
+
+    it('switches to a different copy of the same module', () => {
+      const moduleA = {id: 1, name: 'VCA'} as any;
+      const moduleB = {id: 1, name: 'VCA'} as any;
+      component.selectRackModule(10, moduleA);
+      component.selectRackModule(20, moduleB);
+
+      expect(component.expandedRackTrackingId).toBe(20);
+      expect(component.expandedRackModule).toBe(moduleB);
+    });
+
+    it('resets when operation mode changes', () => {
+      component.selectRackModule(10, {id: 1} as any);
+      component.setOperationMode('collection' as any);
+
+      expect(component.expandedRackTrackingId).toBeNull();
+      expect(component.expandedRackModule).toBeNull();
+    });
   });
 });
