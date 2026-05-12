@@ -1,5 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
-import { ModuleMinimalComponent } from './module-minimal.component';
+import {
+  defaultModuleMinimalViewConfig,
+  ModuleMinimalComponent
+} from './module-minimal.component';
 
 
 describe('ModuleMinimalComponent', () => {
@@ -55,5 +58,27 @@ describe('ModuleMinimalComponent', () => {
     const {component} = build();
 
     expect(component.shouldRenderActionFooter(undefined, {id: 7, name: 'Perf Rack'} as any, true)).toBeTrue();
+  });
+
+  it('hides the panel variants badge when the view config disables panel options', () => {
+    const {component} = build();
+    component.data = {id: 42, panels: [{id: 1}, {id: 2}]} as any;
+    component.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      hidePanelsOptions: true
+    };
+
+    expect(component.shouldShowPanelVariantsBadge()).toBeFalse();
+  });
+
+  it('shows the panel variants badge when multiple panels exist and panel options are visible', () => {
+    const {component} = build();
+    component.data = {id: 42, panels: [{id: 1}, {id: 2}]} as any;
+    component.viewConfig = {
+      ...defaultModuleMinimalViewConfig,
+      hidePanelsOptions: false
+    };
+
+    expect(component.shouldShowPanelVariantsBadge()).toBeTrue();
   });
 });

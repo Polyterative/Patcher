@@ -96,6 +96,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.45rem;
   width: 100%;
   min-width: 0;
   border: 0.0625rem solid rgba(62, 99, 138, 0.25);
@@ -110,6 +111,14 @@
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, color 140ms ease;
+}
+
+.module-browser-mode__button-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .module-browser-mode__button:hover {

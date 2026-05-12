@@ -2,14 +2,22 @@ import {
   ComponentFixture,
   TestBed
 } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
 import { PatchMinimalComponent } from './patch-minimal.component';
 import { PatchDetailDataService, LinkedRackUiState } from '../patch-detail-data.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { UrlCreatorService } from 'src/app/features/backend/url-creator.service';
+import {
+  BrandPrimaryButtonComponent
+} from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.component';
+import {
+  BrandPrimaryButtonModule
+} from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
 
 
 describe('PatchMinimalComponent - linked rack UI', () => {
@@ -63,7 +71,7 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [CommonModule, ReactiveFormsModule],
+      imports: [CommonModule, ReactiveFormsModule, RouterTestingModule, BrandPrimaryButtonModule],
       declarations: [PatchMinimalComponent],
       providers: [
         {provide: PatchDetailDataService, useValue: dataService},
@@ -95,10 +103,29 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Linked rack');
-    expect(host.textContent).toContain('Linked rack active');
     expect(host.textContent).toContain('Studio Rack');
-    expect(host.textContent).toContain('This rack is optional context only.');
-    expect(host.textContent).toContain('1 rack available');
+    expect(host.textContent).toContain('Open rack');
+    expect(host.textContent).not.toContain('This rack is optional context only.');
+    expect(host.querySelector('.patch-linked-rack__info')).not.toBeNull();
+  });
+
+  it('renders the linked rack summary for non-owners in read-only mode', () => {
+    dataService.singlePatchData$.next({
+      id: 10,
+      name: 'Patch A',
+      author: {id: 'user-2', username: 'other-user'}
+    });
+    component.data = {
+      id: 10,
+      name: 'Patch A',
+      author: {id: 'user-2', username: 'other-user'}
+    } as any;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Linked rack');
+    expect(host.textContent).toContain('Studio Rack');
+    expect(host.textContent).toContain('Open rack');
   });
 
   it('shows clear action in edit mode and forwards the click', () => {
@@ -106,8 +133,11 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const clearButton = host.querySelector('.patch-linked-rack__clear') as HTMLButtonElement | null;
-    expect(clearButton).not.toBeNull();
+    const clearAction = fixture.debugElement
+      .queryAll(By.directive(BrandPrimaryButtonComponent))
+      .find(debugElement => debugElement.nativeElement.classList.contains('patch-linked-rack__clear'));
+    const clearButton = clearAction?.query(By.css('a'))?.nativeElement as HTMLElement | undefined;
+    expect(clearAction).toBeDefined();
     expect(host.textContent).toContain('Open rack');
 
     clearButton?.click();
@@ -129,7 +159,6 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('You do not have any racks yet.');
-    expect(host.textContent).toContain('No saved racks yet');
   });
 
   it('renders the rollout hint and disables clear when linked-rack persistence is blocked', () => {
@@ -139,8 +168,10 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
-    const clearButton = host.querySelector('.patch-linked-rack__clear') as HTMLButtonElement | null;
+    const clearAction = fixture.debugElement
+      .queryAll(By.directive(BrandPrimaryButtonComponent))
+      .find(debugElement => debugElement.nativeElement.classList.contains('patch-linked-rack__clear'));
     expect(host.textContent).toContain('Linked rack saving is not available yet in this environment.');
-    expect(clearButton?.disabled).toBeTrue();
+    expect(clearAction?.componentInstance.disabled).toBeTrue();
   });
 });

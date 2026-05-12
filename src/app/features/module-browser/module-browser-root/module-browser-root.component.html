@@ -30,6 +30,9 @@
                         [attr.aria-pressed]="collectionBrowseMode === 'available'"
                         (click)="setCollectionBrowseMode('available')"
                 >
+                  @if (collectionBrowseMode === 'available') {
+                    <mat-icon class="module-browser-mode__button-icon" aria-hidden="true">radio_button_checked</mat-icon>
+                  }
                   Available
                 </button>
               }
@@ -39,6 +42,9 @@
                       [attr.aria-pressed]="collectionBrowseMode === 'owned'"
                       (click)="setCollectionBrowseMode('owned')"
               >
+                @if (collectionBrowseMode === 'owned') {
+                  <mat-icon class="module-browser-mode__button-icon" aria-hidden="true">radio_button_checked</mat-icon>
+                }
                 Collection
               </button>
               <button type="button"
@@ -47,6 +53,9 @@
                       [attr.aria-pressed]="collectionBrowseMode === 'all'"
                       (click)="setCollectionBrowseMode('all')"
               >
+                @if (collectionBrowseMode === 'all') {
+                  <mat-icon class="module-browser-mode__button-icon" aria-hidden="true">radio_button_checked</mat-icon>
+                }
                 All modules
               </button>
             </div>
