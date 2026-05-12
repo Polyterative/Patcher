@@ -160,6 +160,7 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
 
     expect(backend.get.currentUserRacks).toHaveBeenCalled();
     expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.statusTone).toBe('positive');
     expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
   });
 

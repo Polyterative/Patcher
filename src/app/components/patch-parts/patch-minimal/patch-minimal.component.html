@@ -10,42 +10,76 @@
     <div class="col parent"
     >
       @if (bag.patchEditingPanelOpenState) {
+        <div class="patch-edit-meta-intro">
+          <div class="patch-edit-meta-intro__kicker">Patch setup</div>
+          <div class="patch-edit-meta-intro__title">Tune the patch details before or while you wire it.</div>
+          <p class="patch-edit-meta-intro__copy">
+            Naming, describing, tagging, and linking a rack all stay non-destructive to the collection-first editing flow.
+          </p>
+        </div>
         <div class="patch-edit-meta-grid padB1">
-          <lib-mat-form-entity class="patch-edit-meta-grid__name"
-                               [control]="dataService.formData.name.control"
-                             label="Patch name"
-                             iconL1="label"
-          ></lib-mat-form-entity>
-          <lib-mat-form-entity class="patch-edit-meta-grid__description"
-                               [control]="dataService.formData.description.control"
-                              type="area"
-                              label="Patch description"
-                              iconL1="description"
-          ></lib-mat-form-entity>
-          <mat-form-field appearance="outline" class="patch-tags-field patch-edit-meta-grid__tags">
-            <mat-label>Tags</mat-label>
-            <mat-icon matPrefix>label</mat-icon>
-            <mat-chip-grid #tagChipGrid>
-            @for (tag of (dataService.patchTags$ | async); track tag) {
-              <mat-chip-row (removed)="removeTag(tag)" [removable]="true">
-                {{ tag }}
-                <mat-icon matChipRemove>cancel</mat-icon>
-              </mat-chip-row>
-            }
-            <input placeholder="Add tags…"
-                   [matChipInputFor]="tagChipGrid"
-                   [matChipInputSeparatorKeyCodes]="tagSeparatorKeysCodes"
-                   [matChipInputAddOnBlur]="true"
-                   (matChipInputTokenEnd)="addTag($event)"
-            >
-          </mat-chip-grid>
-        </mat-form-field>
+          <div class="patch-edit-panel patch-edit-panel--primary patch-edit-meta-grid__name">
+            <div class="patch-edit-panel__eyebrow">Identity</div>
+            <lib-mat-form-entity [control]="dataService.formData.name.control"
+                                 label="Patch name"
+                                 iconL1="label"
+            ></lib-mat-form-entity>
+          </div>
+          <div class="patch-edit-panel patch-edit-panel--primary patch-edit-meta-grid__description">
+            <div class="patch-edit-panel__eyebrow">Description</div>
+            <lib-mat-form-entity [control]="dataService.formData.description.control"
+                                 type="area"
+                                 label="Patch description"
+                                 iconL1="description"
+            ></lib-mat-form-entity>
+          </div>
+          <div class="patch-edit-panel patch-edit-panel--secondary patch-edit-meta-grid__tags">
+            <div class="patch-edit-panel__header">
+              <div class="patch-edit-panel__title">Tags</div>
+              <div class="patch-edit-panel__meta">{{ (dataService.patchTags$ | async)?.length || 0 }} applied</div>
+            </div>
+            <p class="patch-edit-panel__copy">
+              Keep tags short and practical so the patch is easier to find later.
+            </p>
+            <mat-form-field appearance="outline" class="patch-tags-field">
+              <mat-label>Patch tags</mat-label>
+              <mat-icon matPrefix>label</mat-icon>
+              <mat-chip-grid #tagChipGrid>
+              @for (tag of (dataService.patchTags$ | async); track tag) {
+                <mat-chip-row (removed)="removeTag(tag)" [removable]="true">
+                  {{ tag }}
+                  <mat-icon matChipRemove>cancel</mat-icon>
+                </mat-chip-row>
+              }
+              <input placeholder="Add tags…"
+                     [matChipInputFor]="tagChipGrid"
+                     [matChipInputSeparatorKeyCodes]="tagSeparatorKeysCodes"
+                     [matChipInputAddOnBlur]="true"
+                     (matChipInputTokenEnd)="addTag($event)"
+              >
+            </mat-chip-grid>
+          </mat-form-field>
+          </div>
           @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
             <div class="patch-linked-rack patch-edit-meta-grid__linked-rack">
               <div class="patch-linked-rack__header">
-                <div class="patch-linked-rack__title">Linked rack</div>
-                <div class="patch-linked-rack__status">{{ bag.linkedRackState.statusLabel }}</div>
+                <div class="patch-linked-rack__header-main">
+                  <div class="patch-linked-rack__eyebrow">Rack context</div>
+                  <div class="patch-linked-rack__title-row">
+                    <div class="patch-linked-rack__title">Linked rack</div>
+                    <div class="patch-linked-rack__availability">{{ getLinkedRackAvailabilityLabel(bag.linkedRackOptions?.length) }}</div>
+                  </div>
+                </div>
+                <div class="patch-linked-rack__status" [ngClass]="getLinkedRackStatusClass(bag.linkedRackState)">
+                  {{ bag.linkedRackState.statusLabel }}
+                </div>
               </div>
+              @if (bag.linkedRackState.rackName) {
+                <div class="patch-linked-rack__rack-name">{{ bag.linkedRackState.rackName }}</div>
+              }
+              <p class="patch-linked-rack__copy">
+                {{ bag.linkedRackState.description }}
+              </p>
               <lib-mat-form-entity
                 class="patch-linked-rack__field"
                 [control]="dataService.formData.linkedRack.control"
@@ -55,21 +89,23 @@
                 iconL1="view_stream"
                 label="Choose linked rack"
               ></lib-mat-form-entity>
-              <p class="patch-linked-rack__copy">
-                {{ bag.linkedRackState.description }}
-              </p>
               @if (bag.linkedRackPersistenceHint) {
                 <p class="patch-linked-rack__hint">
                   {{ bag.linkedRackPersistenceHint }}
                 </p>
               }
-              @if (bag.linkedRackOptions.length === 0) {
+              @if ((bag.linkedRackOptions?.length || 0) === 0) {
                 <p class="patch-linked-rack__hint">
                   You do not have any racks yet. You can keep patching without one and link a rack later.
                 </p>
               }
               @if (bag.linkedRackState.kind !== 'unlinked') {
                 <div class="patch-linked-rack__actions">
+                  @if (bag.linkedRackState.rackId != null && bag.linkedRackState.kind === 'linked') {
+                    <button mat-stroked-button type="button" [routerLink]="['/racks/details', bag.linkedRackState.rackId]">
+                      Open rack
+                    </button>
+                  }
                   <button mat-stroked-button type="button" class="patch-linked-rack__clear" [disabled]="bag.linkedRackPersistenceBlocked" (click)="clearLinkedRack()">
                     Clear linked rack
                   </button>
@@ -85,14 +121,22 @@
         [viewConfig]="viewConfig"
       ></app-patch-micro>
     }
-    @if (!bag.patchEditingPanelOpenState && (bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
-      <div class="patch-linked-rack patch-linked-rack--summary">
-        <div class="patch-linked-rack__header">
-          <div class="patch-linked-rack__title">Linked rack</div>
-          <div class="patch-linked-rack__status">{{ bag.linkedRackState.statusLabel }}</div>
-        </div>
-        @if (bag.linkedRackState.rackName) {
-          <div class="patch-linked-rack__rack-name">{{ bag.linkedRackState.rackName }}</div>
+      @if (!bag.patchEditingPanelOpenState && (bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
+        <div class="patch-linked-rack patch-linked-rack--summary">
+          <div class="patch-linked-rack__header">
+            <div class="patch-linked-rack__header-main">
+              <div class="patch-linked-rack__eyebrow">Rack context</div>
+              <div class="patch-linked-rack__title-row">
+                <div class="patch-linked-rack__title">Linked rack</div>
+                <div class="patch-linked-rack__availability">{{ getLinkedRackAvailabilityLabel(bag.linkedRackOptions?.length) }}</div>
+              </div>
+            </div>
+            <div class="patch-linked-rack__status" [ngClass]="getLinkedRackStatusClass(bag.linkedRackState)">
+              {{ bag.linkedRackState.statusLabel }}
+            </div>
+          </div>
+          @if (bag.linkedRackState.rackName) {
+            <div class="patch-linked-rack__rack-name">{{ bag.linkedRackState.rackName }}</div>
         }
         <p class="patch-linked-rack__copy">
           {{ bag.linkedRackState.description }}

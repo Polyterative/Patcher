@@ -80,6 +80,7 @@ export interface MultiInstanceModuleSummary {
 
 export interface LinkedRackUiState {
   kind: 'unlinked' | 'linked' | 'unavailable';
+  statusTone: 'neutral' | 'positive' | 'warning';
   statusLabel: string;
   description: string;
   rackName?: string;
@@ -88,8 +89,9 @@ export interface LinkedRackUiState {
 
 const defaultLinkedRackUiState: LinkedRackUiState = {
   kind: 'unlinked',
-  statusLabel: 'In collection only',
-  description: 'No rack is linked to this patch yet. You can choose one for orientation without changing collection-first editing.',
+  statusTone: 'neutral',
+  statusLabel: 'Collection-first',
+  description: 'No rack is linked yet. You can keep editing from your collection, or add a rack as optional spatial context whenever it helps.',
   rackId: null
 };
 
@@ -1155,16 +1157,18 @@ export class PatchDetailDataService implements OnDestroy {
     if (!linkedRack) {
       return {
         kind: 'unavailable',
-        statusLabel: 'Linked rack unavailable',
-        description: 'This patch still remembers a linked rack, but it is no longer available. You can choose a different rack or clear the link without affecting the patch.',
+        statusTone: 'warning',
+        statusLabel: 'Rack unavailable',
+        description: 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.',
         rackId: patch.linked_rack_id
       };
     }
 
     return {
       kind: 'linked',
-      statusLabel: 'In linked rack',
-      description: 'This rack is optional context only. The patch still edits against your collection and patch-local copies.',
+      statusTone: 'positive',
+      statusLabel: 'Linked rack active',
+      description: 'The linked rack gives you spatial context while the patch still saves against your collection and patch-local copies.',
       rackName: linkedRack.name,
       rackId: linkedRack.id
     };
