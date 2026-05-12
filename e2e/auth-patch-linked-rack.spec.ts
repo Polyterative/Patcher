@@ -60,9 +60,11 @@ test.describe('Linked rack visual in patch editor', () => {
     }
 
     // Switch to linked rack mode
-    const linkedRackButton = page.locator('.patch-editor-operation-mode__button', {hasText: /Linked rack/i}).first();
+    const linkedRackButton = page.getByRole('radio', {name: /^Rack$/i}).first();
     await expect(linkedRackButton).toBeVisible({timeout: 15_000});
-    await linkedRackButton.click();
+    if (!(await linkedRackButton.isChecked())) {
+      await linkedRackButton.click();
+    }
 
     // Wait for the rack visual to render
     const rackScreen = page.locator('.patch-editor-rack-visual__screen');
@@ -116,9 +118,11 @@ test.describe('Linked rack visual in patch editor', () => {
     }
 
     // Switch to linked rack mode
-    const linkedRackButton = page.locator('.patch-editor-operation-mode__button', {hasText: /Linked rack/i}).first();
+    const linkedRackButton = page.getByRole('radio', {name: /^Rack$/i}).first();
     await expect(linkedRackButton).toBeVisible({timeout: 15_000});
-    await linkedRackButton.click();
+    if (!(await linkedRackButton.isChecked())) {
+      await linkedRackButton.click();
+    }
 
     // Wait for modules
     const moduleWrappers = page.locator('.patch-editor-rack-visual__module-wrapper');
