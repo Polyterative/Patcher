@@ -117,8 +117,11 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     const preview = host.querySelector('.patch-linked-rack__preview') as HTMLImageElement | null;
+    const previewLink = host.querySelector('.patch-linked-rack__preview-link') as HTMLAnchorElement | null;
 
     expect(preview).not.toBeNull();
+    expect(previewLink).not.toBeNull();
+    expect(previewLink?.getAttribute('aria-label')).toBe('Open linked rack');
     expect(preview?.src).toContain('/storage/v1/object/public/racks/studio-rack.jpeg');
   });
 

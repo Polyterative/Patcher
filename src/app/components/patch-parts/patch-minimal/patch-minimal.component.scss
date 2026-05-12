@@ -51,7 +51,13 @@
   flex: 1 1 auto;
 }
 
+.patch-linked-rack__preview-link {
+  display: block;
+  cursor: pointer;
+}
+
 .patch-linked-rack__preview {
+  display: block;
   width: 7.8rem;
   height: 6rem;
   object-fit: contain;
@@ -59,6 +65,7 @@
   border-radius: 0.45rem;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(58, 93, 129, 0.12);
+  cursor: pointer;
 }
 
 .patch-linked-rack__help {
