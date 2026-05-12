@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
   OnDestroy,
   OnInit
@@ -10,6 +11,7 @@ import { UntypedFormControl } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
+  fromEvent,
   Observable,
   of,
   Subject
@@ -18,6 +20,7 @@ import {
   debounceTime,
   catchError,
   distinctUntilChanged,
+  filter,
   map,
   startWith,
   switchMap,
@@ -155,8 +158,8 @@ const defaultGroupModeId: PatchEditorGroupModeId = 'none';
 const defaultOperationMode: PatchEditorOperationMode = PATCH_EDITOR_OPERATION_MODES.collection;
 
 export const PATCH_EDITOR_OPERATION_MODE_OPTIONS: ReadonlyArray<PatchEditorOperationModeOption> = [
-  {mode: PATCH_EDITOR_OPERATION_MODES.collection, label: 'Collection'},
-  {mode: PATCH_EDITOR_OPERATION_MODES.linkedRack, label: 'Linked rack'}
+  {mode: PATCH_EDITOR_OPERATION_MODES.linkedRack, label: 'Linked rack'},
+  {mode: PATCH_EDITOR_OPERATION_MODES.collection, label: 'Collection'}
 ];
 
 const defaultLinkedRackPreviewState: LinkedRackPreviewState = {
@@ -786,7 +789,8 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   constructor(
     public backend: SupabaseService,
     public dataService: PatchDetailDataService,
-    public appState: AppStateService
+    public appState: AppStateService,
+    private elementRef: ElementRef
   ) {
     this.hasLinkedRack$ = this.dataService.singlePatchData$.pipe(
       map(patch => patch?.linked_rack_id != null),
@@ -889,6 +893,30 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         } else {
           this.operationMode$.next(PATCH_EDITOR_OPERATION_MODES.collection);
         }
+      });
+
+    // Close expanded CV panel after a connection is confirmed so the rack
+    // visual shows role colors without a specific module's CVs open.
+    this.dataService.confirmSelectedConnection$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => {
+        this.expandedRackTrackingId = null;
+        this.expandedRackModule = null;
+      });
+
+    // Clicking outside the rack visual deselects the expanded module
+    fromEvent<MouseEvent>(document, 'click')
+      .pipe(
+        filter(() => this.expandedRackTrackingId != null),
+        filter(event => {
+          const rackVisual = this.elementRef.nativeElement.querySelector('.patch-editor-rack-visual');
+          return rackVisual != null && !rackVisual.contains(event.target as Node);
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(() => {
+        this.expandedRackTrackingId = null;
+        this.expandedRackModule = null;
       });
 
     // Build a trackingId (rackingData.id) → instance_id map so each rack copy
