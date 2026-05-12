@@ -8,7 +8,9 @@
   operationMode: (operationMode$|async),
   linkedRackPreview: (linkedRackPreviewState$|async),
   hasLinkedRack: (hasLinkedRack$|async),
-  instanceMap: (linkedRackInstanceMap$|async)
+  instanceMap: (linkedRackInstanceMap$|async),
+  divergence: (linkedRackDivergence$|async),
+  orphanedConnectionCount: (orphanedConnectionCount$|async)
 }; as bag) {
   @if (bag.editorConnections == null) {
     <lib-auto-content-loading-indicator
@@ -81,6 +83,17 @@
                     {{ bag.linkedRackPreview.rack.rows }} row{{ bag.linkedRackPreview.rack.rows === 1 ? '' : 's' }}
                     · {{ bag.linkedRackPreview.rack.hp }} HP
                   </span>
+                  @if (bag.divergence && !bag.divergence.clean) {
+                    <span class="patch-editor-rack-visual__divergence-note"
+                          [matTooltip]="getDivergenceTooltip(bag.divergence, bag.orphanedConnectionCount)">
+                      <mat-icon>info_outline</mat-icon>
+                      {{ bag.divergence.totalOrphanedInstances }}
+                      instance{{ bag.divergence.totalOrphanedInstances === 1 ? '' : 's' }} outside rack
+                      @if (bag.orphanedConnectionCount > 0) {
+                        · {{ bag.orphanedConnectionCount }} connection{{ bag.orphanedConnectionCount === 1 ? '' : 's' }} affected
+                      }
+                    </span>
+                  }
                 </div>
                 <div class="patch-editor-rack-visual__scroll-area">
                   <div class="patch-editor-rack-visual__screen"
