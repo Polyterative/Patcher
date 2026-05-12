@@ -47,6 +47,12 @@
   gap: 0.5rem 0.75rem;
 }
 
+.patch-linked-rack__help {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+}
+
 .patch-linked-rack__title {
   font-size: 0.98rem;
   font-weight: 700;
@@ -70,6 +76,83 @@
   width: 1rem;
   height: 1rem;
   font-size: 1rem;
+}
+
+.patch-linked-rack__help-popover {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 8;
+  width: min(24rem, calc(100vw - 3rem));
+  padding: 0.8rem;
+  border: 1px solid rgba(58, 93, 129, 0.16);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(239, 246, 252, 0.98));
+  box-shadow: 0 1rem 2.4rem rgba(26, 47, 71, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.35rem) scale(0.98);
+  transform-origin: top left;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0ms linear 220ms;
+  will-change: opacity, transform;
+}
+
+.patch-linked-rack__help-popover--open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0ms linear 0ms;
+}
+
+.patch-linked-rack__help-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.92);
+}
+
+.patch-linked-rack__help-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.patch-linked-rack__help-card {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.78);
+
+  p {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.42;
+    color: rgba(27, 49, 74, 0.8);
+  }
+}
+
+.patch-linked-rack__help-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.92);
+
+  mat-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 0.95rem;
+    color: rgba(58, 93, 129, 0.86);
+  }
 }
 
 .patch-linked-rack__name {
@@ -148,5 +231,9 @@
 @container (max-width: 28rem) {
   .patch-linked-rack {
     padding: 0.85rem 0.9rem;
+  }
+
+  .patch-linked-rack__help-popover {
+    width: min(21rem, calc(100vw - 2.5rem));
   }
 }
