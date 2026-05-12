@@ -46,6 +46,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
         rackName: 'Studio Rack',
         rackId: 7
       })),
+      linkedRackSelectionBlocked$: new BehaviorSubject<boolean>(false),
+      linkedRackSelectionHint$: new BehaviorSubject<string | null>(null),
       linkedRackPersistenceBlocked$: new BehaviorSubject<boolean>(false),
       linkedRackPersistenceHint$: new BehaviorSubject<string | null>(null),
       linkedRackOptions$: new BehaviorSubject<any[]>([
@@ -187,5 +189,15 @@ describe('PatchMinimalComponent - linked rack UI', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('Linked rack saving is not available yet in this environment.');
     expect(host.textContent).not.toContain('Clear linked rack');
+  });
+
+  it('renders the pending-connection hint when linked-rack switching is temporarily blocked', () => {
+    dataService.patchEditingPanelOpenState$.next(true);
+    dataService.linkedRackSelectionBlocked$.next(true);
+    dataService.linkedRackSelectionHint$.next('Finish or cancel the pending connection before switching the linked rack.');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.textContent).toContain('Finish or cancel the pending connection before switching the linked rack.');
   });
 });

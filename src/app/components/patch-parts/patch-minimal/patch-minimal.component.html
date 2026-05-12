@@ -4,6 +4,8 @@
   singlePatchData: (dataService.singlePatchData$|async),
   linkedRackState: (dataService.linkedRackState$|async),
   linkedRackOptions: (dataService.linkedRackOptions$|async),
+  linkedRackSelectionBlocked: (dataService.linkedRackSelectionBlocked$|async),
+  linkedRackSelectionHint: (dataService.linkedRackSelectionHint$|async),
   linkedRackPersistenceBlocked: (dataService.linkedRackPersistenceBlocked$|async),
   linkedRackPersistenceHint: (dataService.linkedRackPersistenceHint$|async)
 }; as bag) {
@@ -58,6 +60,11 @@
               @if (bag.linkedRackPersistenceHint) {
                 <p class="patch-linked-rack__hint">
                   {{ bag.linkedRackPersistenceHint }}
+                </p>
+              }
+              @if (bag.linkedRackSelectionBlocked && bag.linkedRackSelectionHint) {
+                <p class="patch-linked-rack__hint">
+                  {{ bag.linkedRackSelectionHint }}
                 </p>
               }
               @if ((bag.linkedRackOptions?.length || 0) === 0) {
