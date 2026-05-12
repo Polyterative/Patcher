@@ -81,7 +81,7 @@ persistence still depends on applying the existing migration in the target Supab
 
 #### Layer 3 — Polish
 - [ ] Add helper copy and onboarding cues so users understand the difference between optional rack context and direct-list patch editing
-- [ ] Add visual treatment for stale or diverged rack context that stays informative without feeling like an error
+- [x] Add visual treatment for stale or diverged rack context that stays informative without feeling like an error
 - [ ] Review educational/planning flows to ensure rack-linked mode does not weaken non-1:1 use cases
 - [x] Add focused acceptance criteria for create-from-rack, create-without-rack, change/clear rack, stale rack, and viewer-no-access states
 

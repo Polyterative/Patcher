@@ -192,7 +192,7 @@ export class PatchDetailDataService implements OnDestroy {
         tap(() => this.patchModuleInstances$.next([])),
         tap(() => this.singlePatchData$.next(undefined)),
         tap(() => this.patchDetailUnavailableMessage$.next(null)),
-        tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
+        tap(() => this.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId'])),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicPatchWithId(x)
           : this.backend.get.patchWithId(x)
@@ -355,6 +355,7 @@ export class PatchDetailDataService implements OnDestroy {
           };
           return this.backend.update.patchSilent(nextPatch).pipe(
             tap(() => {
+              this.backend.cacheResetter$.next(['rackWithId']);
               this.setLinkedRackPersistenceBlocked(false, null);
               if (this.singlePatchData$.value) {
                 this.singlePatchData$.value.linked_rack_id = linkedRackId;
