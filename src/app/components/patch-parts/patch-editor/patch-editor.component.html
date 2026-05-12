@@ -48,10 +48,16 @@
                                        aria-label="Patch editor mode"
                                        (change)="setOperationMode($event.value)">
                 @for (option of operationModeOptions; track option.mode) {
-                  <mat-button-toggle [value]="option.mode"
-                                     [disabled]="option.mode === operationModes.linkedRack && !bag.hasLinkedRack">
-                    {{ option.label }}
-                  </mat-button-toggle>
+                  <span
+                    class="patch-editor-operation-mode__option"
+                    [matTooltip]="getOperationModeTooltip(option.mode, bag.hasLinkedRack)"
+                    matTooltipPosition="above"
+                  >
+                    <mat-button-toggle [value]="option.mode"
+                                       [disabled]="isOperationModeDisabled(option.mode, bag.hasLinkedRack)">
+                      {{ option.label }}
+                    </mat-button-toggle>
+                  </span>
                 }
               </mat-button-toggle-group>
 
