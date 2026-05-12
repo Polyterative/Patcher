@@ -331,15 +331,54 @@ export class PatchDetailDataService implements OnDestroy {
             name: rack.name || `Rack #${ rack.id }`
           }))
         );
-        this.linkedRackState$.next(this.buildLinkedRackUiState(this.singlePatchData$.value, racks));
         this.syncLinkedRackControl(this.singlePatchData$.value, racks);
       });
 
     this.singlePatchData$
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(patch => {
-        this.linkedRackState$.next(this.buildLinkedRackUiState(patch, this.currentUserRacks$.value));
         this.syncLinkedRackControl(patch, this.currentUserRacks$.value);
+      });
+
+    combineLatest([
+      this.singlePatchData$,
+      this.currentUserRacks$,
+      this.backend.auth.getUserSession$()
+    ])
+      .pipe(
+        switchMap(([patch, racks, user]) => {
+          if (!patch || patch.linked_rack_id == null) {
+            return of({linkedRack: null as Rack | null, isOwner: false});
+          }
+
+          const isOwner = !!user && patch.author?.id === user.id;
+          const ownedRack = racks.find(rack => rack.id === patch.linked_rack_id);
+          if (ownedRack) {
+            return of({linkedRack: ownedRack, isOwner});
+          }
+
+          if (isOwner) {
+            return of({linkedRack: null as Rack | null, isOwner});
+          }
+
+          const rackRead$ = this.usePublicDetailReads || !user
+            ? this.backend.GET.publicRackWithId(patch.linked_rack_id)
+            : this.backend.GET.rackWithId(patch.linked_rack_id);
+
+          return rackRead$.pipe(
+            map((response: any) => ({
+              linkedRack: (response?.data as Rack | null) ?? null,
+              isOwner
+            })),
+            catchError(() => of({linkedRack: null as Rack | null, isOwner}))
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({linkedRack, isOwner}) => {
+        this.linkedRackState$.next(
+          this.buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner)
+        );
       });
 
     this.formData.linkedRack.control.valueChanges
@@ -1148,18 +1187,25 @@ export class PatchDetailDataService implements OnDestroy {
     findAndApplyOptionForId(`${ matchingRack.id }`, this.formData.linkedRack.control, options);
   }
 
-  private buildLinkedRackUiState(patch: Patch | undefined, racks: Rack[]): LinkedRackUiState {
+  private buildLinkedRackUiState(
+    patch: Patch | undefined,
+    racks: Rack[],
+    resolvedLinkedRack: Rack | null = null,
+    isOwner = false
+  ): LinkedRackUiState {
     if (!patch || patch.linked_rack_id == null) {
       return defaultLinkedRackUiState;
     }
 
-    const linkedRack = racks.find(rack => rack.id === patch.linked_rack_id);
+    const linkedRack = resolvedLinkedRack ?? racks.find(rack => rack.id === patch.linked_rack_id);
     if (!linkedRack) {
       return {
         kind: 'unavailable',
         statusTone: 'warning',
         statusLabel: 'Rack unavailable',
-        description: 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.',
+        description: isOwner
+          ? 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.'
+          : 'This patch references a linked rack, but that rack is not publicly available right now.',
         rackId: patch.linked_rack_id
       };
     }

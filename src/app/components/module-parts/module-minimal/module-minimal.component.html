@@ -18,7 +18,7 @@
                                  [fixedHeight]="!viewConfig.bigPanelImage"
                                  [preferredPanelColor]="preferredPanelColor"
           ></app-module-part-image>
-          @if (data.panels.length > 1) {
+          @if (shouldShowPanelVariantsBadge()) {
             <mat-icon class="panel-variants-badge"
                       [matTooltip]="data.panels.length + ' panel variants available'"
             >contrast</mat-icon>

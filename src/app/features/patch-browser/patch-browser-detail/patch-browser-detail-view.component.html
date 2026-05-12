@@ -23,10 +23,10 @@
   @if (bag.patchEditingPanelOpenState) {
     <div class="col gap1 patch-browser-detail-shell patch-browser-detail-shell--editing"
     >
-      <lib-hero-content-card titleBig="Patch editor"
+      <lib-hero-content-card titleBig="Patch editing"
                              [showWideShellNav]="showWideShellNav"
-                             [titleSub]="bag.data?.name ? bag.data?.name + ' · collection + rack workflow' : undefined"
-                              class="patchesBG"
+                             [titleSub]="bag.data?.name"
+                               class="patchesBG"
       >
         <div class="col gap1"
         >

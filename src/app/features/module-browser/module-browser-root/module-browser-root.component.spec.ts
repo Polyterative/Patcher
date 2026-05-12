@@ -128,6 +128,20 @@ describe('ModuleBrowserRootComponent', () => {
     expect(host.textContent).toContain('All modules');
   });
 
+  it('renders the radio-style selected icon only for the active browse mode', () => {
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const activeButton = host.querySelector('.module-browser-mode__button--active');
+    const activeIcon = activeButton?.querySelector('mat-icon');
+    const inactiveIcons = host.querySelectorAll('.module-browser-mode__button:not(.module-browser-mode__button--active) mat-icon');
+
+    expect(activeIcon?.textContent).toContain('radio_button_checked');
+    expect(inactiveIcons.length).toBe(0);
+  });
+
   it('falls back to collection mode when available mode is no longer possible', () => {
     component.enableCollectionBrowseModes = true;
     component.ownedModulesInput = buildOwnedModules(20);

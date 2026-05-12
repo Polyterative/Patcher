@@ -36,161 +36,49 @@ $palette: (
 
 .patch-editor-workspace {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
-.patch-editor-workspace__summary {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.9rem 1rem;
-}
-
-.patch-editor-workspace__copy {
+.patch-editor-rack-topbar {
   display: grid;
-  gap: 0.3rem;
-  min-width: 0;
-  flex: 1 1 21rem;
+  grid-template-columns: minmax(0, auto);
+  gap: 0.75rem;
+  align-items: start;
 }
 
-.patch-editor-workspace__kicker {
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(26, 61, 96, 0.64);
-}
-
-.patch-editor-workspace__title {
-  font-size: 1.02rem;
-  font-weight: 700;
-  line-height: 1.22;
-}
-
-.patch-editor-workspace__description {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.42;
-}
-
-.patch-editor-workspace__meta {
+.patch-editor-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.55rem;
-}
-
-.patch-editor-meta-chip {
-  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-height: 2rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: rgba(27, 49, 74, 0.78);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.patch-editor-meta-chip--accent {
-  background: rgba(94, 208, 180, 0.14);
-  color: rgba(19, 94, 76, 0.9);
+  gap: 0.6rem 0.8rem;
 }
 
 .patch-editor-operation-mode {
-  display: grid;
-  gap: 0.7rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  background: rgba(245, 249, 252, 0.72);
+  flex: 0 0 auto;
 }
 
-.patch-editor-operation-mode__header {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.patch-editor-operation-mode__title {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.patch-editor-operation-mode__hint {
+:host ::ng-deep .patch-editor-operation-mode .mat-button-toggle-label-content {
+  line-height: 2.25rem;
   font-size: 0.84rem;
-  line-height: 1.4;
-}
-
-.patch-editor-operation-mode__buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-}
-
-.patch-editor-operation-mode__button {
-  min-height: 2.45rem;
-  padding: 0.45rem 0.95rem;
-  border: 1px solid rgba(47, 88, 129, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: inherit;
-  font: inherit;
-  font-size: 0.875rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 }
 
-.patch-editor-operation-mode__button--active {
-  border-color: rgba(47, 88, 129, 0.48);
-  background: rgba(94, 208, 180, 0.16);
-  box-shadow: 0 0 0 1px rgba(94, 208, 180, 0.18);
-}
-
-.patch-editor-operation-mode__button--disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.patch-editor-mode-panel {
-  display: grid;
-  gap: 0.45rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  background: rgba(246, 249, 252, 0.74);
-}
-
-.patch-editor-mode-panel__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.35rem 0.75rem;
-}
-
-.patch-editor-mode-panel__title {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: rgba(18, 40, 66, 0.94);
-}
-
-.patch-editor-mode-panel__meta {
-  font-size: 0.82rem;
-}
-
-.patch-editor-mode-panel__copy {
+.patch-editor-toolbar__summary {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 0.8rem;
+  color: rgba(27, 49, 74, 0.72);
+}
+
+.patch-editor-rack-topbar__warning {
+  display: block;
 }
 
 .patch-editor-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(11rem, 0.8fr));
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(10rem, 1fr));
   gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.9rem;
   background: rgba(252, 253, 255, 0.88);
 }
 
@@ -220,8 +108,8 @@ $palette: (
   display: grid;
   justify-items: start;
   gap: 0.45rem;
-  padding: 1rem 1.05rem;
-  border-radius: 1rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.9rem;
   background: rgba(243, 248, 252, 0.78);
 }
 
@@ -275,38 +163,25 @@ $palette: (
   }
 }
 
-.patch-editor-rack-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
-  background: rgba(255, 244, 221, 0.72);
-  color: rgba(104, 67, 15, 0.9);
-  cursor: help;
+@media (max-width: 60rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(9rem, 1fr));
+  }
 }
 
-.patch-editor-rack-warning__copy {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.patch-editor-rack-warning__title {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.patch-editor-rack-warning__description {
-  font-size: 0.86rem;
-}
-
-@media (max-width: 68rem) {
+@media (max-width: 52rem) {
   .patch-editor-controls {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .patch-editor-controls__search {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 68rem) {
+  .patch-editor-rack-topbar {
+    grid-template-columns: max-content minmax(18rem, 1fr);
   }
 }
 
@@ -354,41 +229,6 @@ $rack-grid-weight: 0.1rem;
   display: grid;
   gap: 0.6rem;
   padding: 0.35rem 0;
-}
-
-.patch-editor-rack-visual__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-
-.patch-editor-rack-visual__rack-name {
-  font-weight: 700;
-  font-size: 0.875rem;
-}
-
-.patch-editor-rack-visual__rack-meta {
-  font-size: 0.72rem;
-  color: #6c7f92;
-}
-
-.patch-editor-rack-visual__divergence-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #b5751a;
-  cursor: help;
-  margin-left: 0.5rem;
-
-  mat-icon {
-    font-size: 0.875rem;
-    width: 0.875rem;
-    height: 0.875rem;
-  }
 }
 
 .patch-editor-rack-visual__viewport {
@@ -504,21 +344,11 @@ $rack-grid-weight: 0.1rem;
 }
 
 .patch-editor-rack-visual__hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
+  margin: 0;
+  text-align: center;
   font-size: 0.72rem;
   color: #6c7f92;
   padding-top: 0.15rem;
-
-  mat-icon {
-    font-size: 0.875rem;
-    width: 0.875rem;
-    height: 0.875rem;
-    line-height: 1;
-    vertical-align: middle;
-  }
 }
 
 // --- Pending source module highlight ---
