@@ -8,12 +8,12 @@
 }
 
 .faq-card__content {
-  width: min(100%, 58rem);
+  width: min(100%, var(--app-readable-section-max-width));
   margin-inline: auto;
 }
 
 :host ::ng-deep .faq-card h3.title {
-  width: min(100%, 58rem);
+  width: min(100%, var(--app-readable-section-max-width));
   margin-inline: auto;
 }
 

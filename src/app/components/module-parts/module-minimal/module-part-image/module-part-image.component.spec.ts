@@ -1,13 +1,37 @@
-import { ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  ElementRef
+} from '@angular/core';
+import { AppViewportService } from 'src/app/shared-interproject/app-viewport.service';
 import {
   ModulePartImageComponent,
   resolveSurfaceTooltipPosition
 } from './module-part-image.component';
 
 
-function buildComponent(): ModulePartImageComponent {
+function buildComponent(options: {
+  hostRect?: {left: number; right: number};
+  viewportWidth?: number;
+  viewportOffsetLeft?: number;
+} = {}): ModulePartImageComponent {
   const cdr = {detectChanges: () => {}} as unknown as ChangeDetectorRef;
-  return new ModulePartImageComponent(cdr);
+  const hostRect = options.hostRect ?? {left: 120, right: 180};
+  const elementRef = {
+    nativeElement: {
+      getBoundingClientRect: () => hostRect
+    }
+  } as unknown as ElementRef<HTMLElement>;
+  const viewportService = {
+    currentViewport: () => ({
+      width: options.viewportWidth ?? 1280,
+      height: 720,
+      stableHeight: 720,
+      offsetTop: 0,
+      offsetLeft: options.viewportOffsetLeft ?? 0,
+      keyboardInsetBottom: 0
+    })
+  } as AppViewportService;
+  return new ModulePartImageComponent(cdr, elementRef, viewportService);
 }
 
 const PANEL_DARK = {id: 1, filename: 'dark.png', color: 0, description: 'Dark', moduleid: 10};
@@ -136,6 +160,16 @@ describe('ModulePartImageComponent — panel resolution', () => {
 
     expect(c.imageLoadingMode).toBe('lazy');
     expect(c.imageDecodingMode).toBe('async');
+  });
+
+  it('updates tooltipPosition from the current viewport before showing the tooltip', () => {
+    const c = buildComponent({
+      hostRect: {left: 1040, right: 1100}
+    });
+
+    c.updateTooltipPosition();
+
+    expect(c.tooltipPosition).toBe('before');
   });
  
 });
