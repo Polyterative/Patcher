@@ -45,7 +45,41 @@
           @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
             <div class="patch-linked-rack patch-edit-meta-grid__linked-rack">
               <div class="patch-linked-rack__header">
-                <div class="patch-linked-rack__title">Linked rack</div>
+                <div class="patch-linked-rack__help"
+                     (mouseenter)="openLinkedRackHelp()"
+                     (mouseleave)="closeLinkedRackHelp()"
+                     (focusin)="openLinkedRackHelp()"
+                     (focusout)="onLinkedRackHelpFocusOut($event)">
+                  <div class="patch-linked-rack__title-row">
+                    <div class="patch-linked-rack__title">Linked rack</div>
+                    <button
+                      type="button"
+                      class="patch-linked-rack__info"
+                      mat-icon-button
+                      aria-label="About linked rack"
+                      [attr.aria-expanded]="linkedRackHelpOpen"
+                    >
+                      <mat-icon>info</mat-icon>
+                    </button>
+                  </div>
+
+                  <div class="patch-linked-rack__help-popover"
+                       [class.patch-linked-rack__help-popover--open]="linkedRackHelpOpen"
+                       [attr.aria-hidden]="!linkedRackHelpOpen">
+                    <div class="patch-linked-rack__help-title">What linked rack is for</div>
+                    <div class="patch-linked-rack__help-grid">
+                      @for (section of linkedRackHelpSections; track section.title) {
+                        <div class="patch-linked-rack__help-card">
+                          <div class="patch-linked-rack__help-card-title">
+                            <mat-icon>{{ section.icon }}</mat-icon>
+                            <span>{{ section.title }}</span>
+                          </div>
+                          <p>{{ section.body }}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
               <lib-mat-form-entity
                 class="patch-linked-rack__field"
