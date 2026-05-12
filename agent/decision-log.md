@@ -38,3 +38,11 @@
 - Added focused creator/backend coverage for linked and unlinked creation payloads, and extended the authenticated patch-creation E2E to assert the linked-rack field and complete the create flow via the returned patch id.
 - Recorded the live Supabase migration apply as an external rollout dependency before selected linked-rack persistence can be used in production.
 - Next bounded task is privacy-safe viewer handling for unavailable or inaccessible linked racks.
+
+## 2026-05-12T12:36:00+02:00
+
+- Normalized patch add/update Supabase `{ error }` responses into real observable errors so linked-rack UI flows can handle the pending schema rollout explicitly instead of treating `PGRST204` as success.
+- Added rollout-safe linked-rack fallback copy and disabled-state handling in both patch detail editing and linked-rack-selected patch creation, so users can keep working unlinked while the live migration is still pending.
+- Kept the external migration blocker in place: the repo now degrades gracefully, but actual linked-rack persistence still requires the live `patches.linked_rack_id` column.
+- Validated the guarded write path with focused backend, patch-detail, patch-creator, and patch-minimal specs plus a production build.
+- Next bounded task is the requested patch-editor operation mode selector with linked-rack context preview.

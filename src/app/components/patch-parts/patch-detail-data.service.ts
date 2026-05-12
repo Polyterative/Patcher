@@ -60,6 +60,10 @@ import {
 } from '../../models/module';
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
+import {
+  isLinkedRackSchemaMissingError,
+  LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE
+} from './linked-rack-rollout';
 
 
 /** Maximum number of instances (copies) allowed per module in a single patch. */
@@ -167,6 +171,8 @@ export class PatchDetailDataService implements OnDestroy {
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
   readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(defaultLinkedRackUiState);
+  readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
+  readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
   readonly requestLinkedRackChange$ = new Subject<number | null>();
   private readonly _tagsUpdate$ = new Subject<string[]>();
   
@@ -349,6 +355,7 @@ export class PatchDetailDataService implements OnDestroy {
           };
           return this.backend.update.patchSilent(nextPatch).pipe(
             tap(() => {
+              this.setLinkedRackPersistenceBlocked(false, null);
               if (this.singlePatchData$.value) {
                 this.singlePatchData$.value.linked_rack_id = linkedRackId;
                 this.linkedRackState$.next(this.buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value));
@@ -361,7 +368,12 @@ export class PatchDetailDataService implements OnDestroy {
             }),
             catchError(err => {
               this.syncLinkedRackControl(patch!, this.currentUserRacks$.value);
-              SharedConstants.errorCustom(this.snackBar, 'Failed to save linked rack — check your connection and try again.');
+              if (isLinkedRackSchemaMissingError(err)) {
+                this.setLinkedRackPersistenceBlocked(true, LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE);
+                SharedConstants.errorCustom(this.snackBar, 'Linked rack saving is not available yet in this environment.');
+              } else {
+                SharedConstants.errorCustom(this.snackBar, 'Failed to save linked rack — check your connection and try again.');
+              }
               console.error('Failed to save linked rack:', err);
               return EMPTY;
             })
@@ -1061,6 +1073,18 @@ export class PatchDetailDataService implements OnDestroy {
   private getSelectedLinkedRackId(): number | null {
     const selectedId = Number.parseInt(getCleanedValueId(this.formData.linkedRack.control), 10);
     return Number.isFinite(selectedId) ? selectedId : null;
+  }
+
+  private setLinkedRackPersistenceBlocked(blocked: boolean, hint: string | null): void {
+    this.linkedRackPersistenceBlocked$.next(blocked);
+    this.linkedRackPersistenceHint$.next(hint);
+
+    if (blocked) {
+      this.formData.linkedRack.control.disable({emitEvent: false});
+      return;
+    }
+
+    this.formData.linkedRack.control.enable({emitEvent: false});
   }
 
   private syncLinkedRackControl(patch: Patch | undefined, racks: Rack[]): void {

@@ -40,6 +40,8 @@ describe('PatchMinimalComponent - linked rack UI', () => {
         rackName: 'Studio Rack',
         rackId: 7
       })),
+      linkedRackPersistenceBlocked$: new BehaviorSubject<boolean>(false),
+      linkedRackPersistenceHint$: new BehaviorSubject<string | null>(null),
       linkedRackOptions$: new BehaviorSubject<any[]>([
         {id: '7', name: 'Studio Rack'}
       ]),
@@ -122,5 +124,17 @@ describe('PatchMinimalComponent - linked rack UI', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.textContent).toContain('You do not have any racks yet.');
+  });
+
+  it('renders the rollout hint and disables clear when linked-rack persistence is blocked', () => {
+    dataService.patchEditingPanelOpenState$.next(true);
+    dataService.linkedRackPersistenceBlocked$.next(true);
+    dataService.linkedRackPersistenceHint$.next('Linked rack saving is not available yet in this environment.');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const clearButton = host.querySelector('.patch-linked-rack__clear') as HTMLButtonElement | null;
+    expect(host.textContent).toContain('Linked rack saving is not available yet in this environment.');
+    expect(clearButton?.disabled).toBeTrue();
   });
 });
