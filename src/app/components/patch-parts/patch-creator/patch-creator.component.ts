@@ -16,6 +16,7 @@ import {
 } from 'rxjs';
 import {
   catchError,
+  filter,
   switchMap,
   takeUntil
 } from 'rxjs/operators';
@@ -156,6 +157,15 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     
     this.save$
         .pipe(
+          filter(() => {
+            if (this.fields.name.control.valid) {
+              return true;
+            }
+
+            this.fields.name.control.markAsTouched();
+            SharedConstants.infoCustom(this.snackBar, 'Please fix validation errors before creating the patch.');
+            return false;
+          }),
           switchMap(_ => {
             const selectedLinkedRackId = this.getSelectedLinkedRackId();
             return this.backend.add.patch(

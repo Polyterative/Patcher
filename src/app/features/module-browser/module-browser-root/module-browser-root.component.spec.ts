@@ -205,4 +205,45 @@ describe('ModuleBrowserRootComponent', () => {
     expect(component.collectionBrowseMode).toBe('owned');
     expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Updating results');
   });
+
+  it('uses all-modules search empty copy when catalog filters return nothing', () => {
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(1);
+    component.setCollectionBrowseMode('all');
+    component.dataService.fields.name.control.setValue('missing module');
+    component.dataService.modulesList$.next([]);
+    fixture.detectChanges();
+
+    expect(component.rackContextEmptyStateCopy).toBe(
+      'No modules match the current filters. Reset the filters or switch browsing mode.'
+    );
+  });
+
+  it('uses available-mode search empty copy when rack collection filters return nothing', () => {
+    const ownedModules = buildOwnedModules(2);
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = ownedModules;
+    component.currentRackModulesInput = [[{module: ownedModules[0]} as any]];
+    component.setCollectionBrowseMode('available');
+    component.dataService.fields.name.control.setValue('missing module');
+    fixture.detectChanges();
+
+    expect(component.visibleModules$.value).toEqual([]);
+    expect(component.rackContextEmptyStateCopy).toBe(
+      'No available collection modules match the current filters. Reset the filters or switch browsing mode.'
+    );
+  });
+
+  it('uses collection-mode search empty copy when owned module filters return nothing', () => {
+    component.enableCollectionBrowseModes = true;
+    component.ownedModulesInput = buildOwnedModules(20);
+    component.setCollectionBrowseMode('owned');
+    component.dataService.fields.name.control.setValue('missing module');
+    fixture.detectChanges();
+
+    expect(component.visibleModules$.value).toEqual([]);
+    expect(component.rackContextEmptyStateCopy).toBe(
+      'No collection modules match the current filters. Reset the filters or switch browsing mode.'
+    );
+  });
 });
