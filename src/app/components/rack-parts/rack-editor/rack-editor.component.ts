@@ -38,31 +38,16 @@ import {
 } from "angular-animations";
 import { derivePanelLabel } from '../../module-parts/panel.constants';
 import { ModulePanelZoomDialogComponent } from '../../module-parts/module-details/module-panel-zoom-dialog.component';
-import {
-  RACK_ANALYSIS_MODES,
-  RACK_ANALYSIS_MODE_OPTIONS
-} from '../rack-analysis-mode';
+import { RACK_ANALYSIS_MODES, RACK_ANALYSIS_MODE_OPTIONS } from '../rack-analysis-mode';
 import { SignalFocusArea } from '../rack-signal-analysis.utils';
 import { prefersTouchInteraction } from 'src/app/shared-interproject/touch-interaction.utils';
+import {
+  ModuleRightClick,
+  PANEL_IMAGE_BASE,
+  RackEditorModuleAction
+} from './rack-editor.types';
 
-
-export interface ModuleRightClick {
-  $event: MouseEvent;
-  rackedModule: RackedModule;
-}
-
-interface RackEditorModuleAction {
-  id: string;
-  label: string;
-  icon: string;
-  danger?: boolean;
-  includeInTouchTray: boolean;
-  includeInContextMenu: boolean;
-  clearsTouchSelection?: boolean;
-  run: (rackedModule: RackedModule) => void;
-}
-
-const PANEL_IMAGE_BASE = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
+export type { ModuleRightClick } from './rack-editor.types';
 
 
 @Component({
