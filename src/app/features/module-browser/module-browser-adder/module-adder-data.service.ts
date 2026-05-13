@@ -66,7 +66,7 @@ export class ModuleAdderDataService extends SubManager {
   ]));
   createManufacturer$ = new Subject<void>();
 
-  private _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
+  private readonly _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
   
   formData: {
     standard: {
