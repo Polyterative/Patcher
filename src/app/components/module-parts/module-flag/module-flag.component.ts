@@ -43,7 +43,7 @@ export class ModuleFlagComponent implements OnChanges {
   submitFlag(): void {
     if (!this.selectedCategory) return;
     this.flagService.submitFlag$.next({
-      category: this.selectedCategory as any,
+      category: this.selectedCategory,
       note:     this.flagNote
     });
     this.resetForm();

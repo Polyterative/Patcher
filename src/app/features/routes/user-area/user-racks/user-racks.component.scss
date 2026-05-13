@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.section-shell,
+.section-list {
+  min-width: 0;
+}
+
+.section-shell {
+  gap: 0.75rem;
+}
+
+.section-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0.65rem;
+}
+
+.section-empty {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.section-empty mat-card-subtitle {
+  text-align: center;
+}
+
+.section-scroll {
+  max-block-size: clamp(24rem, calc(100vh - 23rem), 50rem);
+  overflow: auto;
+  scrollbar-gutter: stable;
+  padding-right: 0.15rem;
+}
+
+@media (max-width: 36rem) {
+  .section-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 60rem) {
+  .section-scroll {
+    max-block-size: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}

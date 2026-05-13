@@ -210,8 +210,39 @@ physical copy of a module a cable connects to. This distinction matters for UI:
 - **User-facing statistics should derive from connections**, not from internal instance bookkeeping. Show cables,
   modules used, multiples (one output driving multiple inputs). Don't show how many instances the system allocated.
 
+**User-facing language rule:** say **copies** or describe the numbered labels `(1)`, `(2)`, etc. Reserve **instance**
+for internal specs and implementation discussions.
+
 This membership model is what makes [Collection-Aware Patch Discovery](./ROADMAP.md#collection-aware-patch-discovery)
 possible: the subset query ("patches I can play right now") only works because collection is a clean boolean per module.
+
+## Patch Builder Is Collection-First; Rack Context Is Optional
+
+> **Canonical decision section:** use this section as the product source of truth for rack-linked patches. Roadmap
+> framing lives in `ROADMAP.md`; active execution lives in `workflow/CURRENT_FEATURE.md`; instance-level behavior lives
+> in `tracked-use-cases/PATCH_INSTANCE_SPEC.md`.
+
+Patches should continue to be built from the user's collection module list by default. That collection-first workflow is
+the core model and supports educational, planning, and partially owned scenarios where the patch is useful even when it
+does not map 1:1 to a current rack.
+
+An optional linked rack reference is in scope, but as a context layer rather than a source-of-truth replacement. A rack
+is a mutable entity that may change over time; the patch should not become invalid or uneditable just because the
+linked rack changed, was rearranged, or no longer matches perfectly.
+
+This yields seven rules:
+
+1. **Linking a rack should orient the user, not trap the patch inside that rack.**
+2. **The editor's underlying module source remains the user's collection plus patch instances.**
+3. **The linked rack is an association, not a snapshot and not the canonical source of patch modules.**
+4. **Rack compatibility is informational only, not a hard editing gate or module whitelist.**
+5. **Existing patches with no linked rack remain first-class and require no migration-only UX.**
+6. **If the linked rack disappears or diverges, the patch remains fully editable and should fall back to a clear, non-blocking unavailable/diverged state with an obvious change/clear action.**
+7. **Public/viewer-facing rack context must stay privacy-safe: if a viewer cannot access the linked rack, the patch may still render normally, but must not reveal the rack name, layout, module list, or other private rack details.**
+
+**Explicit non-goals for this feature:** replacing the collection-first editor, making rack membership a hard requirement
+for patch modules, or silently importing rack layout as the patch's source of truth. Any future "rack snapshot" feature
+should be treated as a separate decision, not folded into linked-rack context by accident.
 
 **New pressure point:** panel variants and physical finishes create a real user need for user-specific choices. The
 current direction should remain: **rack state is authoritative for rack presentation**. A rack may represent a current,

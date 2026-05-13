@@ -21,14 +21,13 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { PublicUserContributorStats } from 'src/app/features/backend/supabase-queries';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
+import { PublicProfileRouteState } from './public-profile-data.models';
+import {
+  mapProfile,
+  toLimitedProfile
+} from './public-profile-data.utils';
 
-export type PublicProfileRouteState =
-  | 'loading'
-  | 'ready'
-  | 'not-found'
-  | 'private'
-  | 'incomplete'
-  | 'error';
+export type { PublicProfileRouteState } from './public-profile-data.models';
 
 @Injectable()
 export class PublicProfileDataService extends SubManager {
@@ -102,28 +101,25 @@ export class PublicProfileDataService extends SubManager {
       )
       .subscribe({
         next: (response) => {
-          const profile = this.mapProfile(response?.data);
+          const profile = mapProfile(response?.data);
 
           if (!profile) {
             this.routeState$.next('not-found');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
           if (profile.username.startsWith('user_')) {
-            this.profile$.next(this.toLimitedProfile(profile));
+            this.profile$.next(toLimitedProfile(profile));
             this.routeState$.next('incomplete');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
           if (!profile.public) {
-            this.profile$.next(this.toLimitedProfile(profile));
+            this.profile$.next(toLimitedProfile(profile));
             this.routeState$.next('private');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
@@ -137,8 +133,7 @@ export class PublicProfileDataService extends SubManager {
           console.error('PublicProfileDataService profile load failed:', error);
           SharedConstants.errorCustom(this.snackBar, 'Public profile data could not be loaded.');
           this.routeState$.next('error');
-          this.patchesData$.next([]);
-          this.rackData$.next([]);
+          this.resetPublicCollections();
         },
       });
   }
@@ -242,27 +237,9 @@ export class PublicProfileDataService extends SubManager {
       });
   }
 
-  private mapProfile(rawProfile: any): PublicProfile | null {
-    if (!rawProfile?.id || !rawProfile?.username) {
-      return null;
-    }
-
-    return {
-      id: rawProfile.id,
-      username: rawProfile.username,
-      public: !!rawProfile.public,
-      website: rawProfile.website ?? null,
-      avatarUrl: rawProfile.avatar_url ?? null,
-    };
+  private resetPublicCollections(): void {
+    this.patchesData$.next([]);
+    this.rackData$.next([]);
   }
 
-  private toLimitedProfile(profile: PublicProfile): PublicProfile {
-    return {
-      id: profile.id,
-      username: profile.username,
-      public: profile.public,
-      website: null,
-      avatarUrl: null,
-    };
-  }
 }

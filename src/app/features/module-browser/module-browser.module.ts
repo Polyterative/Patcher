@@ -13,6 +13,7 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
 import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrowserResetFiltersButtonComponent } from 'src/app/shared-interproject/components/@visual/browser-reset-filters-button/browser-reset-filters-button.component';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
@@ -30,6 +31,8 @@ import { FileDragHostModule } from '../../shared-interproject/components/@smart/
 import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserAdderComponent } from './module-browser-adder/module-browser-adder.component';
+import { ModuleDetailDataCardComponent } from './module-browser-detail/module-detail-data-card/module-detail-data-card.component';
+import { ModuleUsageCardComponent } from './module-browser-detail/module-usage-card/module-usage-card.component';
 import { ModuleBrowserRootComponent } from './module-browser-root/module-browser-root.component';
 import { ModuleBrowserDetailComponent } from "src/app/features/module-browser/module-browser-detail/module-browser-detail.component";
 import { ModuleBrowserDataService } from "src/app/features/module-browser/module-browser-data.service";
@@ -46,6 +49,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ModulePartsModule } from "src/app/components/module-parts/module-parts.module";
 import {
   MatMenu,
@@ -68,7 +72,9 @@ const parentPrefix = 'modules';
     ModuleBrowserDetailComponent,
     ModuleCompositeComponent,
     ModuleListComponent,
-    ModuleBrowserAdderComponent
+    ModuleBrowserAdderComponent,
+    ModuleDetailDataCardComponent,
+    ModuleUsageCardComponent
   ],
   providers:    [ModuleBrowserDataService],
   imports: [
@@ -121,7 +127,9 @@ const parentPrefix = 'modules';
     MatTooltipModule,
     MatDividerModule,
     MatPaginatorModule,
+    MatButtonToggleModule,
     BrandPrimaryButtonModule,
+    BrowserResetFiltersButtonComponent,
     AutoContentLoadingIndicatorModule,
     MatFormEntityComponent,
     MatToolbarModule,

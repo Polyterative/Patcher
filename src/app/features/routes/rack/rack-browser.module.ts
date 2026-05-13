@@ -17,6 +17,7 @@ import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@
 import { RestrictedEntityModule } from 'src/app/shared-interproject/components/@smart/restricted-entity/restricted-entity.module';
 import { UserDataHandlerComponent } from 'src/app/shared-interproject/components/@smart/user-data-handler/user-data-handler.component';
 import { BrandPrimaryButtonModule } from 'src/app/shared-interproject/components/@visual/brand-primary-button/brand-primary-button.module';
+import { BrowserResetFiltersButtonComponent } from 'src/app/shared-interproject/components/@visual/browser-reset-filters-button/browser-reset-filters-button.component';
 import { FlexboxRowFastModule } from 'src/app/shared-interproject/components/@visual/fle-box-row-fast/flexbox-row-fast.module';
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { HeroInfoBoxModule } from 'src/app/shared-interproject/components/@visual/hero-info-box/hero-info-box.module';
@@ -103,6 +104,7 @@ const parentPrefix: string = 'racks';
     MatDividerModule,
     MatPaginatorModule,
     BrandPrimaryButtonModule,
+    BrowserResetFiltersButtonComponent,
     AutoContentLoadingIndicatorModule,
     MatFormEntityComponent,
     MatToolbarModule,

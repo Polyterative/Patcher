@@ -7,11 +7,7 @@
         {{ description }}
       </div>
     }
-    <lib-mat-form-entity [label]="data.label"
-                         [type]="data.type"
-                         [control]="data.control"
-                         [autofocus]="true"
-                         [enterkeyhint]="'done'"
+    <lib-mat-form-entity [dataPack]="fieldConfig"
                          [errorProvider]="appState.globalUtils.errorProvider"
                          (enterPressed)="confirm()"
                          formFieldAppearanceType="outline"

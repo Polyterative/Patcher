@@ -81,6 +81,7 @@ Key paths:
 - Prefer inline UI state toggles (`BehaviorSubject<boolean>`) over dialog-heavy flows.
 - Use layout helpers from `tools.scss` and shared notification helpers.
 - Observables/Subjects use a `$` suffix; private `BehaviorSubject`s use an `_` prefix.
+- For visual UI fixes or responsive-layout tweaks, capture and inspect real screenshots with Playwright before concluding the work.
 
 ## 6) Git and delivery
 

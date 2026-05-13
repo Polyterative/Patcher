@@ -1,16 +1,19 @@
 @if ({
   dataLoading: (dataLoading$|async)
 }; as bag) {
-  <div
-    class="col gap0"
-    [style.display]="bag.dataLoading ? null : 'none'"
-  >
-    <app-lottie-container
-      style="opacity: 0.25; align-self: center"
-      [styles]="{maxWidth: '10rem'}"
-      [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
-    ></app-lottie-container>
-  </div>
+  @if (bag.dataLoading) {
+    <div class="update-loading-shell" [attr.aria-label]="loadingLabel" aria-live="polite" role="status">
+      <app-lottie-container
+        class="update-loading-shell__icon"
+        [styles]="{maxWidth: '4.5rem'}"
+        [options]="{path: '/assets/json/lottie/Diagonal Icon.json', loop: true, autoplay: true}"
+      ></app-lottie-container>
+      <div class="update-loading-shell__copy">
+        <strong>{{ loadingLabel }}</strong>
+        <span>Refreshing the visible list.</span>
+      </div>
+    </div>
+  }
   @if (!bag.dataLoading) {
     <ng-content></ng-content>
   }

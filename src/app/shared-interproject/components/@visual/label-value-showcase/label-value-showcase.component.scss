@@ -1,9 +1,56 @@
 //@import "../../app.component";
 
+:host {
+  display: block;
+  width: 100%;
+}
+
+.showcase-root {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.showcase-content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.showcase-content--column {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.showcase-content--row {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.showcase-content--push-end {
+  justify-content: space-between;
+}
+
 .label {
   font-size: small;
-  color:     rgba(0, 0, 0, 0.66);
-  //padding:   1rem
+  color: rgba(0, 0, 0, 0.66);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.value-content {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.value-content--push-end {
+  margin-left: auto;
 }
 
 .value {
@@ -37,8 +84,6 @@
 }
 
 .icon {
-  //  center
-  margin: auto;
-
+  flex: 0 0 auto;
   align-items: center;
 }

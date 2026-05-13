@@ -24,7 +24,7 @@ test.describe('Rack Browser', () => {
   
   test('paginator shows total item count greater than zero', async ({page}) => {
     await page.goto('/racks/browser');
-    const status = page.getByRole('status');
+    const status = page.locator('mat-paginator .mat-mdc-paginator-range-label');
     await expect(status).toBeVisible({timeout: 15_000});
     await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
   });
@@ -79,6 +79,28 @@ test.describe('Rack Browser', () => {
     
     const pageLoader = page.locator('lib-auto-update-loading-indicator app-lottie-container');
     await expect(pageLoader).toBeHidden({timeout: 3_000});
+  });
+
+  test('shows an update loader while a rack search request is pending', async ({page}) => {
+    await page.goto('/racks/browser');
+    await expect(page.locator('app-rack-micro').first()).toBeVisible({timeout: 15_000});
+
+    await page.route('**/rest/v1/racks*', async route => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+
+    const searchRequest = page.waitForRequest((request) =>
+      request.url().includes('/rest/v1/racks')
+      && request.method() === 'GET'
+    );
+
+    await page.getByLabel('Search rack...').fill('performance');
+    await searchRequest;
+
+    await expect(page.locator('.browser-content-area .update-loading-shell')).toBeVisible();
+    await expect(page.locator('app-rack-micro').first()).toBeVisible();
+    await expect(page.locator('.browser-content-area .update-loading-shell')).toBeHidden({timeout: 15_000});
   });
   
   test('page heading is visible', async ({page}) => {

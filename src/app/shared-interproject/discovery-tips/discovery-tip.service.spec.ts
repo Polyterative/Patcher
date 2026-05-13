@@ -10,6 +10,7 @@ describe('DiscoveryTipService', () => {
   let routerEvents$: Subject<any>;
   let loggedUser$: ReplaySubject<any>;
   let loggedUserFullProfile$: ReplaySubject<any>;
+  let createdServices: DiscoveryTipService[];
 
   function build(viewerId = 'user-123') {
     routerEvents$ = new Subject<any>();
@@ -25,7 +26,7 @@ describe('DiscoveryTipService', () => {
       username: viewerId
     });
 
-    return new DiscoveryTipService(
+    const service = new DiscoveryTipService(
       {
         url: '/user/area',
         events: routerEvents$.asObservable()
@@ -36,14 +37,18 @@ describe('DiscoveryTipService', () => {
       } as any,
       'browser' as any
     );
+    createdServices.push(service);
+    return service;
   }
 
   beforeEach(() => {
+    createdServices = [];
     jasmine.clock().install();
     localStorage.clear();
   });
 
   afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
     jasmine.clock().uninstall();
     localStorage.clear();
   });

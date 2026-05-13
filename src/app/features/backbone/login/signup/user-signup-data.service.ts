@@ -20,6 +20,7 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { UserManagementService } from '../user-management.service';
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
@@ -29,9 +30,12 @@ import { SubManager } from "src/app/shared-interproject/directives/subscription-
 export class UserSignupDataService extends SubManager {
   updateData$ = new Subject<void>();
   
-  // user$ = new BehaviorSubject<StaffGet | undefined>(undefined);
-  
-  fields = {
+  readonly fields: {
+    username: IMatFormEntityConfig;
+    email: IMatFormEntityConfig;
+    password: IMatFormEntityConfig;
+    passwordAgain: IMatFormEntityConfig;
+  } = {
     username: {
       label: 'Username',
       code: 'username',
@@ -42,7 +46,13 @@ export class UserSignupDataService extends SubManager {
         Validators.maxLength(128),
         Validators.minLength(3)
       ])),
-      type: FormTypes.TEXT
+      type: FormTypes.TEXT,
+      hint: 'Visible by other users',
+      iconL1: 'person',
+      ergonomics: {
+        autofocus: true,
+        enterkeyhint: 'next'
+      }
     },
     email: {
       label: 'Email',
@@ -52,7 +62,12 @@ export class UserSignupDataService extends SubManager {
         Validators.required,
         Validators.email
       ])),
-      type: FormTypes.EMAIL
+      type: FormTypes.EMAIL,
+      hint: 'NOT visible by other users',
+      iconL1: 'email',
+      ergonomics: {
+        enterkeyhint: 'next'
+      }
     },
     password: {
       label: 'Password',
@@ -63,7 +78,11 @@ export class UserSignupDataService extends SubManager {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type: FormTypes.PASSWORD_NEW
+      type: FormTypes.PASSWORD_NEW,
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'next'
+      }
     },
     passwordAgain: {
       label: 'Repeat Password',
@@ -74,7 +93,11 @@ export class UserSignupDataService extends SubManager {
         Validators.minLength(8),
         Validators.maxLength(30)
       ])),
-      type: FormTypes.PASSWORD_NEW
+      type: FormTypes.PASSWORD_NEW,
+      iconL1: 'lock',
+      ergonomics: {
+        enterkeyhint: 'done'
+      }
     }
   };
   mailSignClick$ = new Subject<void>();
@@ -87,17 +110,6 @@ export class UserSignupDataService extends SubManager {
     snackBar: MatSnackBar
   ) {
     super();
-    
-    // this.mailLoginClick$
-    //     .pipe(switchMap(x => this.loginInteraction.login(this.fields.user.control.value, this.fields.password.control.value)))
-    //     .subscribe(x => {
-    //       if (!!x.error) {
-    //         SharedConstants.errorLogin(snackBar, x.error.message);
-    //       } else {
-    //         SharedConstants.successLogin(snackBar);
-    //         this.router.navigate(['/modules/browser']);
-    //       }
-    //     });
     
     this.mailSignClick$
       .pipe(
@@ -127,20 +139,6 @@ export class UserSignupDataService extends SubManager {
         const returnUrl = this.activated.snapshot.queryParamMap.get('returnUrl');
         this.router.navigate([returnUrl || x.returnUrl || '/user/area']);
       });
-    
-    // this.googleSignClick$
-    //     .pipe(
-    //       switchMap(x => this.loginInteraction.signupGoogle()),
-    //       takeUntil(this.destroy$)
-    //     )
-    //     .subscribe(x => {
-    //       if (!!x.error) {
-    //         SharedConstants.errorSignup(snackBar, x.error.message);
-    //       } else {
-    //         SharedConstants.confirmMail(snackBar);
-    //       }
-    //
-    //     });
     
   }
 }

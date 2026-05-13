@@ -37,6 +37,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
 
 @NgModule({
@@ -80,7 +81,8 @@ import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/
     UserCommentsComponent,
     AppFaqComponent,
     MatFormEntityComponent,
-    DiscoveryTipsModule
+    DiscoveryTipsModule,
+    EmptyStateTipsComponent
   ],
   exports:      [
     UserAreaRootComponent

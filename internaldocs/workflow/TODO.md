@@ -24,7 +24,8 @@
 
 ## Active
 
-_(none)_
+- [~] Patch Builder — Optional Rack Context: add an optional rack association for patches while keeping the existing
+  collection-first editor model; layered execution notes live in `CURRENT_FEATURE.md`.
 
 ---
 
@@ -47,12 +48,25 @@ desktop-only assumptions for confident iPad demos. The biggest risks are not "mo
 touch-hostile interaction patterns in editing flows, floating UI collisions, keyboard/viewport assumptions, and a few
 shared primitives that amplify friction across many screens.
 
-- [ ] Replace desktop-only rack-edit actions with a clear touch-accessible primary path; keep context menu as secondary
-- [ ] Unify floating-surface behavior on tablet so search/FAB/selection/analysis surfaces stop competing for bottom-corner space
-- [ ] Introduce a shared keyboard-aware viewport strategy (single viewport meta source, `dvh`/`svh` fallbacks where needed, evaluate `visualViewport` for overlays)
-- [ ] Upgrade shared form ergonomics for tablet (`inputmode`, `enterkeyhint`, first-focus defaults, and sane enter-key flow)
-- [ ] Enlarge or simplify the highest-frequency touch targets (CV ports, dense icon rows, tiny toggles, crop nudge controls, selection dismiss)
-- [ ] Reduce performance-heavy fixed overlays and other demo-visible motion/scroll pressure on iPad work surfaces
+- [x] Enlarge or simplify the highest-frequency touch targets (CV ports, dense icon rows, tiny toggles, crop nudge controls, selection dismiss)
+ - [x] Reduce performance-heavy fixed overlays and other demo-visible motion/scroll pressure on iPad work surfaces
+
+---
+
+#### HIGH: Patch Editing — "No connections" warning not updating after connection added
+
+**Why:** On the patch editing page, the yellow warning banner "This patch has no connections yet" stays visible even
+after a connection has been added (PATCH CONNECTIONS shows count 1). Investigation shows this is **not** a generic
+change-detection failure. The root cause is split state: `patch-details.component.html` drives the warning from
+`dataService.patchConnections$`, but live editing updates `dataService.editorConnections$`. `patchConnections$` only
+refreshes from the backend on patch load / editor close, so the warning stays stale while the editor is open even though
+the editor's own "Patch connections (N)" card is already showing the new connection. The graph card currently has the same
+stale-source coupling (`patch-graph.component.html` also reads `patchConnections$`).
+
+- [ ] Switch patch-detail warning/empty-state logic to the live editing source when edit mode is open (`editorConnections$`
+  or a derived merged stream), so the banner clears immediately after a connection is added
+- [ ] Audit nearby patch-detail surfaces that still read persisted `patchConnections$` during live editing (at minimum the
+  graph empty state) and align them with the same source-of-truth rule
 
 ---
 
@@ -86,7 +100,7 @@ delete confirmation, and the character counter is hidden until users have alread
 - [x] Show character counter from the first keystroke (or ≥ 10% threshold) instead of after 333 chars; optionally
   colour-code at 80% / 95% (Mo-1)
 - [x] Add an in-flight spinner to the submit button and prevent double-submission while the server round-trip is in
-  progress (partial fix for M-2)
+   progress (partial fix for M-2)
 
 ---
 
@@ -116,30 +130,137 @@ delete confirmation, and the character counter is hidden until users have alread
 or otherwise non-publicly-listable contexts, but the page falls back to "No racks/patches using this module yet." Add a
 privacy-safe aggregate so users can see that hidden usage exists without exposing who owns what.
 
-- [ ] Add a dedicated backend aggregate/RPC for module usage counts that returns public vs hidden rack/patch totals without
+- [x] Add a dedicated backend aggregate/RPC for module usage counts that returns public vs hidden rack/patch totals without
   returning private entity rows, ids, or authors
-- [ ] Define "hidden" to match "not shown in the current public lists" (private entity and/or non-public author profile),
+- [x] Define "hidden" to match "not shown in the current public lists" (private entity and/or non-public author profile),
   keeping backend semantics aligned with existing module-detail queries
-- [ ] Add threshold or bucket rules for low counts so tiny hidden cohorts do not leak sensitive ownership information
-- [ ] Update module detail UI copy so public lists can be supplemented by hidden/private usage counters when available
-- [ ] Add focused tests for the aggregate contract and the module-detail display states
+- [x] Add threshold or bucket rules for low counts so tiny hidden cohorts do not leak sensitive ownership information
+- [x] Update module detail UI copy so public lists can be supplemented by hidden/private usage counters when available
+- [x] Add focused tests for the aggregate contract and the module-detail display states
+
+---
+
+#### MEDIUM: Module Browser — Tag Filter Loading Feedback
+
+**Why:** Filtering the module browser by tag can take long enough to feel unresponsive. Users need immediate feedback that the
+app is processing the filter change instead of looking stuck.
+
+- [x] Add a visible loading state when tag selection triggers module-browser filtering
+- [x] Keep the current results stable until the next filtered result set is ready, instead of flashing an ambiguous empty state
+- [x] Make the loading feedback match the app's shared loading language rather than introducing a one-off spinner style
+- [x] Ensure repeated tag changes do not leave the loader stuck or lagging behind the latest active filter
+- [x] Add focused tests for the tag-filter loading state and completion transition
+
+---
+
+#### HIGH: User Area — Compact and Bound the Utility Rail
+
+**Why:** The right side currently grows awkwardly and competes with the owned-content columns. Stats, contributor context,
+comments-related signals, and manuals need to become a smaller bounded utility rail instead of an expanding parallel page.
+
+- [x] Redefine the right side as a compact secondary rail with explicit height and overflow behavior on large screens
+- [x] Split profile utility from contributor context so the rail reads as distinct supporting blocks instead of one long stack
+- [x] Demote comments-related signals from a dominant right-rail presence so they do not visually outweigh modules, racks, and patches
+- [x] Reduce manuals to a shorter quick-access surface with a smaller footprint while preserving fast entry to owned manuals
+- [x] Document how the utility rail should collapse, stack, or move on narrower desktop and tablet widths
+
+---
+
+#### MEDIUM: User Area — Search and Surface Hierarchy Cleanup
+
+**Why:** The floating search currently feels bolted onto the page and adds competition between overlays and the main user-area containers.
+
+- [x] Decide whether search belongs in the page header/shell or as a clearly bounded utility surface, rather than an isolated floating element
+- [x] Ensure search never obscures the owned-content columns or fights their internal scroll regions
+- [x] Align the user-area search treatment with the shared floating-surface language from the UI consistency audit
+- [x] Document z-order, safe-area, and responsive behavior so search supports the workspace instead of competing with it
+
+---
+
+#### LOW: Rack Details — Hide HP Override Counters During Image Upload / Update
+
+**Why:** There is still a bug path where HP override counters can remain visible while uploading or updating the rack image.
+We already have other mitigations around disabled HP-override UI, but this upload/update state appears to be missing a guard and
+should hide those controls too whenever they would otherwise leak through.
+
+- [x] Audit the rack image upload/update states and identify where HP override counters can still remain visible
+- [x] Extend the existing HP-override visibility guards so upload/update mode hides the counters as well
+- [x] Keep the fix narrow so it does not reintroduce HP-override UI in normal rack-detail viewing
+- [x] Add focused coverage for image upload/update states where HP controls were previously suppressed by other mitigations
+
+---
+
+#### LOW: Patch Details — Modules Needed List Cleanup
+
+**Why:** The "Modules needed" list currently uses icons that add little value, and multi-line names/manufacturer lines do not
+align cleanly when an item wraps. This makes the list feel fussier and less polished than it needs to.
+
+- [x] Re-evaluate whether the leading icon should be removed from the modules-needed rows entirely
+- [x] Improve wrapped-row alignment so second lines sit cleanly with the text block instead of feeling offset by the icon column
+- [x] Keep manufacturer text visually secondary without weakening scanability of the module name
+- [x] Review the final row rhythm against nearby rack/patch stats surfaces so the simplified list feels calmer and more consistent
+
+---
+
+#### HIGH: Patch Details — Private Share-Link Behavior Is Broken / Misleading
+
+**Why:** Patch details currently tell owners that a private patch "will be accessible to anyone who has the URL", but the
+logged-out detail route only loads patches where `public = true`. In practice, shared links for private patches fail for
+external viewers and can get stuck in a partial-loading state instead of showing a clear private / unavailable message.
+
+- [x] Decide the intended product behavior: private patches are truly URL-shareable, or the UI copy must stop claiming that
+- [x] Align patch-detail data loading with the chosen behavior so logged-out viewers do not hit the current public-only mismatch
+- [x] Add an explicit non-loading state for private / unavailable patch links instead of leaving the page partially loaded
+- [x] Audit rack/patch privacy copy so all shareability messaging matches real access behavior
+- [x] Add focused coverage for owner view, anonymous view, and shared-link behavior for private vs public patches
+
+---
+
+#### LOW: Manufacturer Detail — Hide Empty Tile Divider When Actions Are Fully Disabled
+
+**Why:** Some manufacturer-detail module tiles still show the lower divider even when the entire action area is effectively absent
+because all related buttons are disabled. In that state the divider reads like a broken placeholder and should not be visible.
+
+- [x] Audit the manufacturer-detail module tile states where the footer/action area is fully disabled or empty
+- [x] Remove the divider in states where no visible buttons or footer actions remain
+- [x] Keep the divider only when it is actually separating visible content blocks
+- [x] Review the card rhythm so empty-action tiles do not look visually broken compared with tiles that still expose actions/tags
+
+---
+
+#### MEDIUM: Module / Patch Editing — Restore Compact CV Chip Sizing Outside Touch-First Layouts
+
+**Why:** Input/output CV chips became too large because the recent iPad/tablet touch-target pass widened shared touch tokens at
+`max-width: 72.5rem`, and `module-cvitem.component.scss` now applies prominent `min-width`, `min-height`, padding, and margin
+to every `app-module-cvitem` inside that range. Since that component is reused in module detail and patch editing flows, the
+tablet-sized treatment now leaks into normal desktop and patch-editing layouts where the previous denser rhythm was correct.
+
+- [x] Narrow the enlarged CV-chip treatment so it only applies where touch-first affordances are actually intended (coarse pointers, true tablet layouts, or a smaller explicit breakpoint)
+- [x] Restore the previous compact padding and footprint for desktop CV chips in both module detail and patch editing contexts
+- [x] Audit every `app-module-cvitem` consumer so the fix lands consistently across module detail, patch editor, and related CV/connection surfaces
+- [x] Explicitly protect the current floating/overlay editing controls so this rollback does not change the button sizing that already feels correct
+- [x] Add focused coverage for CV-chip sizing across desktop vs tablet contexts to prevent another cross-surface regression
+
+---
+
+#### LOW: App Shell — Keep the Patcher Toolbar Entry in Brand Color When Active
+
+**Why:** The Patcher entry in the toolbar should always preserve the brand color instead of falling into the purple visited/active
+HTML-link look when clicked. This is a brand-consistency issue, not a state meant to inherit default browser link styling.
+
+- [x] Define the toolbar rule that the Patcher brand entry keeps brand color in default, active, focused, and visited states
+- [x] Remove any reliance on raw HTML link color behavior for the active/clicked state of that brand entry
+- [x] Keep interaction feedback through non-color cues if needed, without sacrificing the brand color treatment
+- [x] Review neighboring toolbar items so the branded entry remains distinct while the rest of the navigation keeps its normal state behavior
 
 ---
 
 #### MEDIUM: Rack Editor — Collection-Only Module Filter
 
-**Why:** User feedback surfaced a practical rack-building friction point: when populating a rack, the available module list
-can be hard to work through if someone mainly wants to place modules they already own. Add a collection-aware default that
-adapts to collection size, plus a clear double-toggle between owned-only and full-catalog browsing, while keeping rack
-composition user-controlled rather than ownership-restricted.
-
-- [ ] Add a clear double-toggle in the rack module picker / rack editing flow so users can switch between owned-only and full-catalog browsing
-- [ ] Add adaptive default logic: if the user's collection is below a defined threshold, open the full browser directly; otherwise open the same browser pre-filtered to owned modules
-- [ ] Decide and document the threshold that separates "small collection, show all" from "large enough collection, default to owned-only"
-- [ ] Support sorting the filtered set by HP/width so owned modules can be browsed in a rack-planning-friendly order
-- [ ] Keep collection filtering as a convenience view only; do not make ownership the source of truth for what a rack may contain
-- [ ] Define the empty state when the user has no collection matches so the picker does not feel broken
-- [ ] Add focused tests for adaptive default, toggle behavior, and filter + sort behavior in the rack editing module list
+**Status:** Implemented on 05-11. Rack editing now supports owned-only vs full-catalog browsing in the embedded module
+browser. The adaptive threshold is **20 collection modules**: below that, the picker defaults to full catalog; at or above
+that, it defaults to owned-only. Owned mode defaults to HP-first ordering, includes contextual empty-state guidance, and
+remains a convenience filter only rather than a rack restriction.
 
 ---
 
@@ -160,11 +281,11 @@ modules in coverage when one slot is a blank spacer. The likely root cause is th
 counts blanks in `totalModules` / confidence math even though blanks never contribute balance tags. Older rack stats
 already exclude `BLANK_MODULE_IDS`, so this newer analysis surface should follow the same rule.
 
-- [ ] Filter blank spacer modules out before computing `modules.length`, `confidence`, and low-data thresholds in
+- [x] Filter blank spacer modules out before computing `modules.length`, `confidence`, and low-data thresholds in
   `rack-balance-analysis.service.ts`
-- [ ] Make blank-only racks behave like an empty rack for the balance panel instead of a low-confidence tagged rack
-- [ ] Keep coverage copy aligned with the filtered denominator so the UI and tooltip both report non-blank module counts
-- [ ] Add focused tests for mixed real+blank racks and blank-only racks
+- [x] Make blank-only racks behave like an empty rack for the balance panel instead of a low-confidence tagged rack
+- [x] Keep coverage copy aligned with the filtered denominator so the UI and tooltip both report non-blank module counts
+- [x] Add focused tests for mixed real+blank racks and blank-only racks
 
 ---
 
@@ -274,10 +395,10 @@ important notices without turning Patcher into a blog platform.
 **Why:** `/insights` currently builds the page from many count queries plus paged scans of public rows. That is acceptable
 for a dev-only rollout, but a public launch should move the heavy work server-side and return a compact cached payload.
 
-- [ ] Decide the first production shape: summary tables / materialized views vs a server function returning one payload
-- [ ] Pre-aggregate the public insights inputs so the page stops scanning full public module / rack / patch datasets on cold load
-- [ ] Add an explicit cache / refresh strategy for the public insights snapshot
-- [ ] Switch the page to the compact backend response and keep methodology copy aligned with the new aggregation model
+- [x] Decide the first production shape: summary tables / materialized views vs a server function returning one payload
+- [x] Pre-aggregate the public insights inputs so the page stops scanning full public module / rack / patch datasets on cold load
+- [x] Add an explicit cache / refresh strategy for the public insights snapshot
+- [x] Switch the page to the compact backend response and keep methodology copy aligned with the new aggregation model
 
 ---
 

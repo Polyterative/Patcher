@@ -49,8 +49,8 @@ export class PatchConnectionUniqueModulesPipe implements PipeTransform {
     };
     
     for (const c of connections) {
-      track(c.a.module.id, c.a.module.name, (c.a.module as any).manufacturer?.name ?? '', c.instance_id_a);
-      track(c.b.module.id, c.b.module.name, (c.b.module as any).manufacturer?.name ?? '', c.instance_id_b);
+      track(c.a.module.id, c.a.module.name, c.a.module.manufacturer?.name ?? '', c.instance_id_a);
+      track(c.b.module.id, c.b.module.name, c.b.module.manufacturer?.name ?? '', c.instance_id_b);
     }
     
     return Array.from(byModule.entries())

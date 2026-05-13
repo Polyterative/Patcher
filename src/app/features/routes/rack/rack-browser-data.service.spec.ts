@@ -30,6 +30,17 @@ describe('RackBrowserDataService', () => {
     );
   });
 
+  it('passes the debounced search term to GET.racksMinimal', fakeAsync(() => {
+    const {service, backend} = build();
+    service.fields.search.control.setValue('performance');
+
+    tick(750);
+
+    const args = backend.GET.racksMinimal.calls.mostRecent().args as any[];
+    expect(args[2]).toBe('performance');
+    service.ngOnDestroy();
+  }));
+
   it('updates sort$ and re-fetches after order control changes (debounced)', fakeAsync(() => {
     const {service, backend} = build();
     service.fields.order.control.setValue({id: 'name', name: 'Name ↓'});

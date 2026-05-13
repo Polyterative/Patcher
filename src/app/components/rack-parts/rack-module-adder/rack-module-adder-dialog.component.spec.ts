@@ -11,6 +11,8 @@ import { RackModuleAdderDialogComponent } from './rack-module-adder-dialog.compo
 
 
 describe('RackModuleAdderDialogComponent', () => {
+  let createdComponents: RackModuleAdderDialogComponent[];
+
   function build() {
     const action$ = new Subject<void>();
     const snackBar = {
@@ -47,6 +49,7 @@ describe('RackModuleAdderDialogComponent', () => {
       router,
       {module: {id: 77, name: 'Oscillator'}} as any
     );
+    createdComponents.push(component);
     
     return {
       component,
@@ -59,6 +62,14 @@ describe('RackModuleAdderDialogComponent', () => {
       router
     };
   }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
   
   it('requests rack refresh on initialization', () => {
     const {userAreaDataService} = build();

@@ -9,6 +9,7 @@ import {
   takeUntil
 } from 'rxjs/operators';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 
 
@@ -18,14 +19,15 @@ export class LocalDataFilterService extends SubManager {
   filterEvent$ = new Subject<string>();
   orderEvent$ = new Subject<string>();
   
-  search = {
+  readonly search: IMatFormEntityConfig = {
     label: 'Search ...',
     code: 'search',
     flex: '6rem',
     control: new UntypedFormControl(''),
-    type: FormTypes.TEXT
+    type: FormTypes.TEXT,
+    iconL1: 'search'
   };
-  order  = {
+  readonly order: IMatFormEntityConfig = {
     label: 'Order by',
     code: 'order',
     flex: '10rem',

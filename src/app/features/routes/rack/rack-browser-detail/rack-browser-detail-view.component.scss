@@ -2,6 +2,17 @@
   --rack-editor-mobile-fab-clearance: 0rem;
 }
 
+:host ::ng-deep .rackBrowserDetailView__header h1.title {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-heading-copy,
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text {
+  min-width: 0;
+}
+
 .rackBrowserDetailView__summaryLayout {
   display: flex;
   flex-wrap: wrap;
@@ -118,4 +129,33 @@
   :host ::ng-deep app-rack-composite app-edit-fab {
     display: none;
   }
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text--with-sub {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.18rem;
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-separator {
+  display: none;
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text--with-sub .title-main,
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text--with-sub .title-sub {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text--with-sub .title-main {
+  font-size: 0.45em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+:host ::ng-deep .rackBrowserDetailView__header h1.title .title-text--with-sub .title-sub {
+  display: block;
+  color: rgba(0, 0, 0, 0.72);
 }

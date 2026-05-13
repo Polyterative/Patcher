@@ -136,7 +136,7 @@
                                       (mouseleave)="clearHoveredModule(rackedModule)"
                                       (contextmenu)="moduleRightClick$.next({$event:$event, rackedModule:rackedModule})"
                 >
-                @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && analysisMode === analysisModes.off) {
+                @if (isCurrentRackEditable && isCurrentRackPropertyOfCurrentUser && !suppressHpIndicators && analysisMode === analysisModes.off) {
                   <div class="hpIndicator"
                        (mousedown)="$event.stopPropagation()"
                   >

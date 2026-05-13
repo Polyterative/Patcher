@@ -200,7 +200,7 @@
           </div>
 
           @if (panelTypeAlreadyExists$ | async) {
-            <app-advice-tooltip>
+            <app-advice-tooltip title="Duplicate panel type" tone="warning">
               A "{{ duplicatePanelTypeName$ | async }}" panel already exists for this module. Choose another type.
             </app-advice-tooltip>
           }

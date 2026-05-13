@@ -11,7 +11,7 @@ export interface EntityStatItem {
   hidden?: boolean;
   size?: string;
   badge?: string;
-  routerLink?: any[];
+  routerLink?: (string | number)[];
 }
 
 @Component({

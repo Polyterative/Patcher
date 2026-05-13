@@ -149,8 +149,8 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   dataPack?: IMatFormEntityConfig;
   
   // @ts-ignore
-  invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
-  errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
+  readonly invalid$: BehaviorSubject<boolean> = new BehaviorSubject(false);  // keep this a bsubject otherwise you will have template errors
+  readonly errors$: BehaviorSubject<string> = new BehaviorSubject('');       // keep this a bsubject otherwise you will have template errors
   /**
    * Types reference, do not use from outside
    */
@@ -191,6 +191,7 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
    */
   @Input() autocompleteCanBeVoid = false;
   @Input() disableVoidSelection = false;
+  @Input() voidSelectionLabel = '/';
   @Input() disableClearButton = false;
   @Input() optionsTooltipMinLength = 80;
   /**
@@ -232,6 +233,10 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       return this.inputmode;
     }
 
+    if (this.isSearchField) {
+      return 'search';
+    }
+
     switch (this.type) {
       case FormTypes.EMAIL:
         return 'email';
@@ -245,6 +250,18 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
       default:
         return 'text';
     }
+  }
+
+  get resolvedEnterKeyHint(): AppEnterKeyHint | null {
+    if (this.enterkeyhint) {
+      return this.enterkeyhint;
+    }
+
+    if (this.isSearchField || this.type === FormTypes.AUTOCOMPLETE || this.type === FormTypes.AUTOCOMPLETE_GROUPED) {
+      return 'search';
+    }
+
+    return null;
   }
   
   ngOnDestroy(): void {
@@ -620,11 +637,6 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
   }
 
   private checkOptions(): void {
-    // console.warn([
-    //   this.label,
-    //   this.options
-    // ]);
-    
     if (this.options$ === undefined) {
       console.error('Options is not observable! I\'m a selector, give me the options!');
       console.error(this.options$);
@@ -649,5 +661,9 @@ export class MatFormEntityComponent extends SubManager implements OnInit, OnDest
 
     nextField.focus();
     return true;
+  }
+
+  private get isSearchField(): boolean {
+    return this.iconL1 === 'search';
   }
 }

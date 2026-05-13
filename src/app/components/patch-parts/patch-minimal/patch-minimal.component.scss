@@ -15,13 +15,192 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   column-gap: 1rem;
-  row-gap: 0.4rem;
+  row-gap: 0.7rem;
   width: 100%;
   min-width: 0;
 }
 
 .patch-tags-field {
   width: 100%;
+}
+
+.patch-linked-rack {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(58, 93, 129, 0.14);
+  border-radius: 0.9rem;
+  background: rgba(244, 248, 252, 0.72);
+}
+
+.patch-linked-rack--summary {
+  margin: 0.25rem 0 0.4rem;
+}
+
+.patch-linked-rack__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.patch-linked-rack__content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.patch-linked-rack__preview-link {
+  display: block;
+  cursor: pointer;
+}
+
+.patch-linked-rack__preview {
+  display: block;
+  width: 7.8rem;
+  height: 6rem;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(58, 93, 129, 0.12);
+  cursor: pointer;
+}
+
+.patch-linked-rack__help {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.patch-linked-rack__title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.96);
+}
+
+.patch-linked-rack__title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.patch-linked-rack__info {
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0;
+  color: rgba(27, 49, 74, 0.58);
+}
+
+:host ::ng-deep .patch-linked-rack__info .mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.patch-linked-rack__help-popover {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 8;
+  width: min(24rem, calc(100vw - 3rem));
+  padding: 0.8rem;
+  border: 1px solid rgba(58, 93, 129, 0.16);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(239, 246, 252, 0.98));
+  box-shadow: 0 1rem 2.4rem rgba(26, 47, 71, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-0.35rem) scale(0.98);
+  transform-origin: top left;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0ms linear 220ms;
+  will-change: opacity, transform;
+}
+
+.patch-linked-rack__help-popover--open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0ms linear 0ms;
+}
+
+.patch-linked-rack__help-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.92);
+}
+
+.patch-linked-rack__help-grid {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.patch-linked-rack__help-card {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.78);
+
+  p {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.42;
+    color: rgba(27, 49, 74, 0.8);
+  }
+}
+
+.patch-linked-rack__help-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: rgba(18, 40, 66, 0.92);
+
+  mat-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 0.95rem;
+    color: rgba(58, 93, 129, 0.86);
+  }
+}
+
+.patch-linked-rack__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(27, 49, 74, 0.84);
+}
+
+.patch-linked-rack__hint {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: rgba(27, 49, 74, 0.72);
+}
+
+.patch-linked-rack__hint {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.patch-linked-rack__field {
+  width: 100%;
+}
+
+.patch-linked-rack__header app-brand-primary-button {
+  flex: 0 0 auto;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -55,5 +234,19 @@
 
   .patch-edit-meta-grid__tags {
     grid-column: 2;
+  }
+
+  .patch-edit-meta-grid__linked-rack {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (max-width: 28rem) {
+  .patch-linked-rack {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .patch-linked-rack__help-popover {
+    width: min(21rem, calc(100vw - 2.5rem));
   }
 }

@@ -614,6 +614,7 @@ export type Database = {
           created: string
           description: string | null
           id: number
+          linked_rack_id: number | null
           name: string | null
           public: boolean
           tags: string[]
@@ -624,6 +625,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          linked_rack_id?: number | null
           name?: string | null
           public?: boolean
           tags?: string[]
@@ -634,6 +636,7 @@ export type Database = {
           created?: string
           description?: string | null
           id?: number
+          linked_rack_id?: number | null
           name?: string | null
           public?: boolean
           tags?: string[]
@@ -645,6 +648,13 @@ export type Database = {
             columns: ["authorid"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patches_linked_rack_id_fkey"
+            columns: ["linked_rack_id"]
+            isOneToOne: false
+            referencedRelation: "racks"
             referencedColumns: ["id"]
           },
         ]
@@ -971,9 +981,35 @@ export type Database = {
     }
     Functions: {
       delete_current_user_account: { Args: never; Returns: undefined }
+      get_application_insights_snapshot: {
+        Args: { p_days?: number }
+        Returns: {
+          activity_series: Json
+          module_insights: Json
+          statistics: Json
+        }[]
+      }
       get_module_open_flag_count: {
         Args: { p_module_id: number }
         Returns: number
+      }
+      get_module_usage_summary: {
+        Args: { p_module_id: number }
+        Returns: {
+          hidden_patch_count: number
+          hidden_rack_count: number
+          public_patch_count: number
+          public_rack_count: number
+        }[]
+      }
+      get_module_usage_summary_bucketed: {
+        Args: { p_module_id: number }
+        Returns: {
+          hidden_patch_bucket: string
+          hidden_rack_bucket: string
+          public_patch_count: number
+          public_rack_count: number
+        }[]
       }
       get_public_patches_for_module: {
         Args: {

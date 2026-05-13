@@ -6,34 +6,44 @@
                          icon="view_stream"
                          id="racks"
   >
-    <div class="col gap1"
+    <div class="col gap1 section-shell"
     >
-      <div class="row gap1 auto-left"
-      >
+      <div class="row gap1 auto-left section-actions">
         <app-brand-primary-button appDiscoveryTipAnchor="user-area-racks-create"
                                   (click$)="dataService.addRack$.next()"
                                   icon="add"
-                                  fxLayoutAlign="end"
         >Create rack
         </app-brand-primary-button>
       </div>
       <mat-divider inset="true"></mat-divider>
       @if ((dataService.pagedRacksData$|async); as data) {
         @if (data.length > 0) {
-          <app-rack-list fxFlex="grow"
-                         [data$]="dataService.pagedRacksData$"
-                         [showSearch]="false"
-                         [viewConfig]="rackMinimalViewConfig"
-          ></app-rack-list>
+          <div class="section-scroll">
+            <app-rack-list class="section-list"
+                           [data$]="dataService.pagedRacksData$"
+                           [showSearch]="false"
+                           [viewConfig]="rackMinimalViewConfig"
+            ></app-rack-list>
+          </div>
         } @else {
-          <div fxFlex="100">
-            <mat-card-subtitle fxLayoutAlign="center center">
-              @if (globalSearchQuery.trim()) {
-                No racks match "{{ globalSearchQuery.trim() }}".
-              } @else {
-                It looks like you haven't created any racks yet. Try adding your first!
-              }
-            </mat-card-subtitle>
+          <div class="section-empty">
+            @if (globalSearchQuery.trim()) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="search_off"
+                title="No matches"
+                [copy]="'No racks match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
+              ></app-empty-state-tips>
+            } @else {
+              <app-empty-state-tips
+                icon="view_stream"
+                title="Plan your first rack"
+                copy="Racks let you lay out modules, check if they fit, and share the build with friends."
+                [tips]="[
+                  { icon: 'add', html: 'Click <strong>Create rack</strong>, then drag modules in from your collection or the library.' }
+                ]"
+              ></app-empty-state-tips>
+            }
           </div>
         }
       }

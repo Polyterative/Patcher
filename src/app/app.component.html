@@ -1,26 +1,46 @@
-<app-toolbar></app-toolbar>
-<app-event-banner></app-event-banner>
-@if (routeLoading$ | async) {
-  <div class="app-route-loading">
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    <div class="app-route-loading__label">
-      <mat-icon>hourglass_top</mat-icon>
-      <span>Loading page</span>
+@if ({embeddedShell: (embeddedShell$ | async) ?? false}; as shell) {
+  <div class="app-shell" [class.app-shell--wide]="shell.embeddedShell">
+    @if (!shell.embeddedShell) {
+      <div class="app-shell__toolbar">
+        <app-toolbar></app-toolbar>
+      </div>
+    }
+
+    <div class="app-shell__content">
+      <div class="app-shell__surface app-shell__surface--banner">
+        <lib-screen-wrapper sizePreset="wide-shell" class="app-shell__surface-shell">
+          <app-event-banner></app-event-banner>
+        </lib-screen-wrapper>
+      </div>
+      @if (routeLoading$ | async) {
+        <div class="app-shell__surface app-shell__surface--loading">
+          <lib-screen-wrapper sizePreset="wide-shell" class="app-shell__surface-shell">
+            <div class="app-route-loading">
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              <div class="app-route-loading__label">
+                <mat-icon>hourglass_top</mat-icon>
+                <span>Loading page</span>
+              </div>
+            </div>
+          </lib-screen-wrapper>
+        </div>
+      }
+      <div class="main">
+        <div class="col"
+        >
+          <router-outlet></router-outlet>
+          <div class="app-shell__supporting app-shell__supporting--help">
+            <lib-screen-wrapper sizePreset="full-bleed" class="app-shell__surface-shell">
+              <app-faq></app-faq>
+            </lib-screen-wrapper>
+          </div>
+          <app-footer></app-footer>
+        </div>
+      </div>
     </div>
+    <!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
+    <!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->
+    <app-selection-panel-outlet></app-selection-panel-outlet>
+    <app-discovery-tip-surface></app-discovery-tip-surface>
   </div>
 }
-<div class="main">
-  <div class="col"
-  >
-    <router-outlet></router-outlet>
-    <!--    <lib-screen-wrapper>-->
-    <app-faq></app-faq>
-    <app-footer></app-footer>
-    <!--    </lib-screen-wrapper>-->
-  </div>
-</div>
-
-<!-- Selection panel outlet: renders at root stacking context, position:fixed anchored bottom-left -->
-<!-- SCAFFOLD 2026-02-21: always visible for layout evaluation; guarded by @if in Layer 2 -->
-<app-selection-panel-outlet></app-selection-panel-outlet>
-<app-discovery-tip-surface></app-discovery-tip-surface>

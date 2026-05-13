@@ -25,7 +25,7 @@ export class ModuleEditorAdderLineComponent {
   @Output() add$ = new EventEmitter<CV>();
 
   readonly presets: CvPreset[] = [
-    {label: 'Blank'},
+    {label: 'Range unspecified'},
     {label: '0 to +5V', min: 0, max: 5},
     {label: '0 to +8V', min: 0, max: 8},
     {label: '-5 to +5V', min: -5, max: 5},

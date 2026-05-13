@@ -37,13 +37,13 @@ import {
   standalone: false
 })
 export class AutoContentLoadingIndicatorComponent implements OnInit, OnDestroy {
-  @Input() data$: Observable<any>;
-  @Input() updateData$: Observable<any>;
-  dataLoading$ = new BehaviorSubject<boolean>(true);
+  @Input() data$: Observable<unknown>;
+  @Input() updateData$: Observable<unknown>;
+  readonly dataLoading$ = new BehaviorSubject<boolean>(true);
   
   @Input() loadingLines = 1;
   @Input() skipFirstData = false;
-  @Input() loadingLabel = 'Loading';
+  @Input() loadingLabel = 'Loading content';
   protected destroyEvent$ = new Subject<void>();
   
   ngOnInit(): void {

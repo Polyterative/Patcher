@@ -20,7 +20,8 @@ import { DbPaths } from './DatabaseStrings';
 import {
   cacheBust,
   catchErrors,
-  remapErrors
+  remapErrors,
+  throwIfSupabaseError
 } from './supabase.cache';
 import { SimpleUserModel } from './supabase.types';
 
@@ -148,6 +149,7 @@ export function createAddNamespace(
     patch: (data: {
       name: string;
       public?: boolean;
+      linked_rack_id?: number | null;
     }) => {
       return getUserSession$().pipe(
         switchMap(user => {
@@ -156,12 +158,15 @@ export function createAddNamespace(
             supabase
               .from(DbPaths.patches)
               .insert({
-                ...data,
+                name: data.name,
                 authorid: user.id,
-                public: data.public ?? true
+                public: data.public ?? true,
+                ...(data.linked_rack_id === undefined ? {} : {linked_rack_id: data.linked_rack_id})
               })
+              .select('id')
           );
         }),
+        throwIfSupabaseError(),
         cacheBust(['patches']),
         remapErrors());
     },

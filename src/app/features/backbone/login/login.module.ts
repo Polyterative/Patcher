@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatFormEntityComponent } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { LoginPageComponent } from './login-page/login-page.component';
 import { LoginPageModule } from './login-page/login-page.module';
 import { SignupPageComponent } from './signup/signup-page.component';
@@ -34,6 +35,7 @@ import { SSOButtonsComponent } from './sso-buttons/sso-buttons.component';
     MatInputModule,
     MatProgressSpinnerModule,
     MatIconModule,
+    MatFormEntityComponent,
     LoginPageModule,
     SignupPageModule,
     SSOButtonsComponent,

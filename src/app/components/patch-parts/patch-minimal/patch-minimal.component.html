@@ -1,7 +1,13 @@
 @if ({
   patchEditingPanelOpenState:(dataService.patchEditingPanelOpenState$|async),
   user:(userManagerService.loggedUser$|async),
-  singlePatchData: (dataService.singlePatchData$|async)
+  singlePatchData: (dataService.singlePatchData$|async),
+  linkedRackState: (dataService.linkedRackState$|async),
+  linkedRackOptions: (dataService.linkedRackOptions$|async),
+  linkedRackSelectionBlocked: (dataService.linkedRackSelectionBlocked$|async),
+  linkedRackSelectionHint: (dataService.linkedRackSelectionHint$|async),
+  linkedRackPersistenceBlocked: (dataService.linkedRackPersistenceBlocked$|async),
+  linkedRackPersistenceHint: (dataService.linkedRackPersistenceHint$|async)
 }; as bag) {
     <div class="col parent"
     >
@@ -9,14 +15,14 @@
         <div class="patch-edit-meta-grid padB1">
           <lib-mat-form-entity class="patch-edit-meta-grid__name"
                                [control]="dataService.formData.name.control"
-                             label="Patch name"
-                             iconL1="label"
+                               label="Patch name"
+                               iconL1="label"
           ></lib-mat-form-entity>
           <lib-mat-form-entity class="patch-edit-meta-grid__description"
                                [control]="dataService.formData.description.control"
-                              type="area"
-                              label="Patch description"
-                              iconL1="description"
+                               type="area"
+                               label="Patch description"
+                               iconL1="description"
           ></lib-mat-form-entity>
           <mat-form-field appearance="outline" class="patch-tags-field patch-edit-meta-grid__tags">
             <mat-label>Tags</mat-label>
@@ -36,6 +42,72 @@
             >
           </mat-chip-grid>
         </mat-form-field>
+          @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
+            <div class="patch-linked-rack patch-edit-meta-grid__linked-rack">
+              <div class="patch-linked-rack__header">
+                <div class="patch-linked-rack__help"
+                     (mouseenter)="openLinkedRackHelp()"
+                     (mouseleave)="closeLinkedRackHelp()"
+                     (focusin)="openLinkedRackHelp()"
+                     (focusout)="onLinkedRackHelpFocusOut($event)">
+                  <div class="patch-linked-rack__title-row">
+                    <div class="patch-linked-rack__title">Linked rack</div>
+                    <button
+                      type="button"
+                      class="patch-linked-rack__info"
+                      mat-icon-button
+                      aria-label="About linked rack"
+                      [attr.aria-expanded]="linkedRackHelpOpen"
+                    >
+                      <mat-icon>info</mat-icon>
+                    </button>
+                  </div>
+
+                  <div class="patch-linked-rack__help-popover"
+                       [class.patch-linked-rack__help-popover--open]="linkedRackHelpOpen"
+                       [attr.aria-hidden]="!linkedRackHelpOpen">
+                    <div class="patch-linked-rack__help-title">What linked rack is for</div>
+                    <div class="patch-linked-rack__help-grid">
+                      @for (section of linkedRackHelpSections; track section.title) {
+                        <div class="patch-linked-rack__help-card">
+                          <div class="patch-linked-rack__help-card-title">
+                            <mat-icon>{{ section.icon }}</mat-icon>
+                            <span>{{ section.title }}</span>
+                          </div>
+                          <p>{{ section.body }}</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <lib-mat-form-entity
+                class="patch-linked-rack__field"
+                [control]="dataService.formData.linkedRack.control"
+                [type]="formTypes.SELECT"
+                [options$]="dataService.linkedRackOptions$"
+                [formFieldAppearanceType]="'outline'"
+                voidSelectionLabel="Clear / Nothing"
+                iconL1="view_stream"
+                label="Choose linked rack"
+              ></lib-mat-form-entity>
+              @if (bag.linkedRackPersistenceHint) {
+                <p class="patch-linked-rack__hint">
+                  {{ bag.linkedRackPersistenceHint }}
+                </p>
+              }
+              @if (bag.linkedRackSelectionBlocked && bag.linkedRackSelectionHint) {
+                <p class="patch-linked-rack__hint">
+                  {{ bag.linkedRackSelectionHint }}
+                </p>
+              }
+              @if ((bag.linkedRackOptions?.length || 0) === 0) {
+                <p class="patch-linked-rack__hint">
+                  You do not have any racks yet. You can keep patching without one and link a rack later.
+                </p>
+              }
+            </div>
+          }
       </div>
     }
     @if (!bag.patchEditingPanelOpenState) {
@@ -44,26 +116,61 @@
         [viewConfig]="viewConfig"
       ></app-patch-micro>
     }
+      @if (!bag.patchEditingPanelOpenState && bag.linkedRackState.kind !== 'unlinked') {
+        <div class="patch-linked-rack patch-linked-rack--summary">
+          <div class="patch-linked-rack__header">
+            <div class="col gap025 patch-linked-rack__content">
+              <div class="patch-linked-rack__title-row">
+                <div class="patch-linked-rack__title">Linked rack</div>
+                @if (!bag.linkedRackPersistenceHint && bag.linkedRackState.kind === 'linked') {
+                  <button
+                    type="button"
+                    class="patch-linked-rack__info"
+                    mat-icon-button
+                    [matTooltip]="bag.linkedRackState.description"
+                    aria-label="About linked rack context"
+                  >
+                    <mat-icon>info_outline</mat-icon>
+                  </button>
+                }
+              </div>
+              @if (bag.linkedRackState.rackName) {
+                <div class="patch-linked-rack__name">{{ bag.linkedRackState.rackName }}</div>
+              }
+            </div>
+            @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackImage && bag.linkedRackState.rackId != null) {
+              <a
+                class="patch-linked-rack__preview-link"
+                [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
+                aria-label="Open linked rack"
+              >
+                <img
+                  class="patch-linked-rack__preview"
+                  [src]="getRackPreviewUrl(bag.linkedRackState.rackImage)"
+                  [alt]="'Rack preview for ' + (bag.linkedRackState.rackName || 'linked rack')"
+                  loading="lazy"
+                >
+              </a>
+            }
+          </div>
+          @if (bag.linkedRackPersistenceHint && bag.user && bag.singlePatchData && bag.singlePatchData.author.id === bag.user.id) {
+            <p class="patch-linked-rack__hint">
+              {{ bag.linkedRackPersistenceHint }}
+            </p>
+          } @else if (bag.linkedRackState.kind !== 'linked') {
+            <p class="patch-linked-rack__hint">
+              {{ bag.linkedRackState.description }}
+            </p>
+          }
+        </div>
+      }
     <ng-content></ng-content>
     @if (!viewConfig.hideButtons) {
       <mat-divider [inset]="true"
                    style="margin-top:.5rem"
       ></mat-divider>
-      <div class="row buttons opacizeOnHover"
+      <div class="row opacizeOnHover"
       >
-        <button mat-icon-button
-                matTooltip="Share patch"
-                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
-        >
-          <mat-icon>share</mat-icon>
-        </button>
-        <button mat-icon-button
-                matTooltip="Copy patch text coming soon"
-                [disabled]="true"
-        >
-          <mat-icon>speaker_notes</mat-icon>
-        </button>
-        <div fxFlex="grow"></div>
         @if ((bag.singlePatchData) && bag.user && bag.singlePatchData.author.id === bag.user.id) {
           <button mat-icon-button
                   [matTooltip]="(dataService.isCurrentPatchPrivate$|async) ? 'Make patch public' : 'Make patch private'"
@@ -80,6 +187,27 @@
             <mat-icon>delete_forever</mat-icon>
           </button>
         }
+        <div fxFlex="grow"></div>
+        @if (bag.linkedRackState.kind === 'linked' && bag.linkedRackState.rackId != null) {
+          <button mat-icon-button
+                  matTooltip="Open linked rack"
+                  [routerLink]="['/racks/details', bag.linkedRackState.rackId]"
+          >
+            <mat-icon>view_stream</mat-icon>
+          </button>
+        }
+        <button mat-icon-button
+                matTooltip="Share patch"
+                (click)="urlCreatorService.copyLinkToClipboard('/patches/details/'+data.id)"
+        >
+          <mat-icon>share</mat-icon>
+        </button>
+        <button mat-icon-button
+                matTooltip="Copy patch text"
+                (click)="copyPatchText()"
+        >
+          <mat-icon>speaker_notes</mat-icon>
+        </button>
         <!--        <button mat-icon-button-->
         <!--                matTooltip="Show details"-->
         <!--                [routerLink]="['/patches/details',data.id]"-->

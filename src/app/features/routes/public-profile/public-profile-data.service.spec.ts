@@ -2,6 +2,8 @@ import { of } from 'rxjs';
 import { PublicProfileDataService } from './public-profile-data.service';
 
 describe('PublicProfileDataService', () => {
+  let createdServices: PublicProfileDataService[];
+
   function build(profileData: any) {
     const backend = {
       get: {
@@ -15,12 +17,21 @@ describe('PublicProfileDataService', () => {
     };
     const snackBar = jasmine.createSpyObj('MatSnackBar', ['open', 'openFromComponent', 'dismiss']);
     const service = new PublicProfileDataService(backend as any, snackBar);
+    createdServices.push(service);
 
     return {
       service,
       backend,
     };
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
 
   it('strips website and avatar data for private profiles before exposing profile state', () => {
     const { service, backend } = build({

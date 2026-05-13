@@ -1,16 +1,18 @@
-<div class="col gap1">
-  <lib-hero-content-card titleNormal="Comments"
-                         description="Conversations, feedback and more"
-                         class="commentsBG"
-                         icon="comment"
-                         id="comments"
-  >
-    <ng-container *ngTemplateOutlet="content;"></ng-container>
-  </lib-hero-content-card>
+<div class="userComments__wrapper">
+  <div class="col gap1 userComments__stack">
+    <lib-hero-content-card titleNormal="Comments"
+                           description="Conversations, feedback and more"
+                           class="commentsBG"
+                           icon="comment"
+                           id="comments"
+    >
+      <ng-container *ngTemplateOutlet="content;"></ng-container>
+    </lib-hero-content-card>
+  </div>
 </div>
 
 <ng-template #content>
-  <div class="col gap1">
+  <div class="col gap1 userComments__rail">
     <mat-chip-listbox class="filter-chips"
                       [value]="activeFilter$ | async"
                       (change)="setFilter($event.value ?? null)"
@@ -27,22 +29,41 @@
       activeFilter: (activeFilter$ | async),
     }; as bag) {
       @if (bag.data && bag.data.length > 0) {
-        <app-comments-item-block [data]="bag.data"
-                                 [viewConfig]="commentViewConfig"
-        ></app-comments-item-block>
+        <div class="userComments__list">
+          <app-comments-item-block [data]="bag.data"
+                                   [viewConfig]="commentViewConfig"
+          ></app-comments-item-block>
+        </div>
       } @else {
-        <div fxFlex="100">
-          <mat-card-subtitle fxLayoutAlign="center center">
-            @if (bag.hasSearchQuery && bag.activeFilter !== null) {
-              No comments match the current search and type filter.
-            } @else if (bag.hasSearchQuery) {
-              No comments match the current search.
-            } @else if (bag.activeFilter !== null) {
-              No comments match the selected type.
-            } @else {
-              No comments yet.
-            }
-          </mat-card-subtitle>
+        <div class="userComments__empty">
+          @if (bag.hasSearchQuery && bag.activeFilter !== null) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="filter_alt_off"
+              title="No matches"
+              copy="No comments match the current search and type filter."
+            ></app-empty-state-tips>
+          } @else if (bag.hasSearchQuery) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="search_off"
+              title="No matches"
+              copy="No comments match the current search."
+            ></app-empty-state-tips>
+          } @else if (bag.activeFilter !== null) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="filter_alt_off"
+              title="No matches"
+              copy="No comments match the selected type."
+            ></app-empty-state-tips>
+          } @else {
+            <app-empty-state-tips
+              icon="chat_bubble_outline"
+              title="No comments yet"
+              copy="Your comments on modules, racks, and patches will show up here once you start a conversation."
+            ></app-empty-state-tips>
+          }
         </div>
       }
     }

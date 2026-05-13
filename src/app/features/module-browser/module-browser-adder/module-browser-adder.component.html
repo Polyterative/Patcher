@@ -1,133 +1,253 @@
-<lib-screen-wrapper maxSize="86rem">
-  <div class="col gap1">
-    <lib-hero-content-card titleBig="Submit a module" class="modulesBG">
-      <div class="submit-layout">
+<lib-screen-wrapper maxSize="100%">
+  <div class="col gap1 adder-root" [attr.data-step]="(step$ | async)">
+    <lib-hero-content-card titleBig="Submit a module" class="modulesBG" [showWideShellNav]="true">
 
-        <!-- main column: guidelines + form -->
-        <div class="col gap2 submit-main">
+      <!-- ──────────────────────────────────────────────
+           Stepper / progress
+           ────────────────────────────────────────────── -->
+      <div class="stepper" [class.at-fill]="(step$ | async) === 'fill'">
+        @if ((step$ | async) === 'fill') {
+          <button
+            type="button"
+            class="step step-button done"
+            (click)="backToIntro()"
+            matTooltip="Review the guidelines"
+            matTooltipPosition="below"
+            aria-label="Back to guidelines"
+          >
+            <span class="step-badge"><mat-icon>check</mat-icon></span>
+            <span class="step-label">Read the guidelines</span>
+            <mat-icon class="step-back-hint">arrow_back</mat-icon>
+          </button>
+        } @else {
+          <div class="step active">
+            <span class="step-badge"><span>1</span></span>
+            <span class="step-label">Read the guidelines</span>
+          </div>
+        }
+        <div class="step-track"><div class="step-track-fill"></div></div>
+        <div class="step" [class.active]="(step$ | async) === 'fill'">
+          <span class="step-badge"><span>2</span></span>
+          <span class="step-label">Submit your module</span>
+        </div>
+      </div>
 
-          <lib-hero-content-card titleNormal="Guidelines">
-            <lib-clean-card>
-              <app-lib-showcase-grid [data]="guidelinesData">
-              </app-lib-showcase-grid>
-            </lib-clean-card>
-          </lib-hero-content-card>
+      <!-- ──────────────────────────────────────────────
+           STAGE 1 — INTRO (read & confirm)
+           single column, no sidebar, focused presentation
+           ────────────────────────────────────────────── -->
+      @if ((step$ | async) === 'intro') {
+        <div class="intro-stage stage-anim">
 
-          <lib-hero-content-card titleNormal="Data">
-            <div class="col gap2">
+          <div class="intro-lead col center gap1">
+            <mat-icon class="intro-lead-icon">menu_book</mat-icon>
+            <h2 class="intro-title">Before you start</h2>
+            <p class="intro-sub">
+              A quick read of these guidelines keeps the Patcher database clean and useful for everyone.
+            </p>
+          </div>
 
-              <lib-clean-card>
-                <div class="col gap1">
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.manufacturer"
-                    [disableVoidSelection]="true"
-                  ></lib-mat-form-entity>
+          <ol class="intro-guidelines">
+            @for (g of guidelinesData; track g.label; let i = $index) {
+              <li class="intro-card" [style.animation-delay.ms]="80 + i * 70">
+                <mat-icon class="intro-card-icon">{{ g.icon }}</mat-icon>
+                <div class="intro-card-body">
+                  <div class="intro-card-label">{{ g.label }}</div>
+                  <div class="intro-card-value">{{ g.value }}</div>
+                </div>
+              </li>
+            }
+          </ol>
 
-                  <!-- Inline manufacturer creation -->
-                  @if ((dataService.showNewManufacturerForm$ | async) !== true) {
-                    <div class="row" style="margin-top: -0.5rem; margin-bottom: 0.25rem;">
-                      <button mat-button color="primary" type="button"
-                              (click)="dataService.showNewManufacturerForm$.next(true)"
-                              matTooltip="Manufacturer not in list? Create it here">
-                        <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle;">add
-                        </mat-icon>
-                        Create new manufacturer
-                      </button>
-                    </div>
-                  }
-                  @if ((dataService.showNewManufacturerForm$ | async) === true) {
-                    <div class="col gap1"
-                         style="padding: 0.75rem; border: 1px solid rgba(63,81,181, 0.3); border-radius: 4px; margin-bottom: 0.5rem;">
-                      <mat-card-subtitle style="margin: 0; font-weight: 500;">
-                        <mat-icon
-                          style="font-size: 1rem; width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.25rem;">
-                          factory
-                        </mat-icon>
-                        Create new manufacturer
-                      </mat-card-subtitle>
-                      <mat-form-field appearance="outline" style="width: 100%;">
-                        <mat-label>Manufacturer name</mat-label>
-                        <input matInput
-                               [formControl]="dataService.newManufacturerNameControl"
-                               placeholder="e.g. My Modular Co."
-                               (keydown.enter)="dataService.createManufacturer$.next()">
-                        <mat-hint>Enter the exact manufacturer name</mat-hint>
-                      </mat-form-field>
-                      @if (dataService.duplicateManufacturer$ | async; as dup) {
-                        <div class="row gap1"
-                             style="padding: 0.75rem; border-radius: 4px; background-color: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.5); align-items: center;">
-                          <mat-icon style="color: #FF9800; flex-shrink: 0; font-size: 1.2rem; width: 1.2rem; height: 1.2rem;">warning</mat-icon>
-                          <div class="col gap0" style="flex: 1; min-width: 0;">
-                            <span style="font-size: 0.82rem; font-weight: 600; color: #FF9800;">Already exists</span>
-                            <span style="font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">"{{ dup.name }}" is already in the database.</span>
-                          </div>
-                          <button mat-stroked-button type="button"
-                                  style="flex-shrink: 0;"
-                                  (click)="dataService.selectExistingManufacturer(dup)">
-                            Use existing
-                          </button>
-                        </div>
-                      }
-                      <div class="row gap1">
-                        <button mat-flat-button color="primary" type="button"
-                                [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async) || !!(dataService.duplicateManufacturer$ | async)"
-                                (click)="dataService.createManufacturer$.next()">
-                          <mat-icon>save</mat-icon>
-                          Create
-                        </button>
-                        <button mat-button type="button"
-                                (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
-                          Cancel
+          <div class="intro-cta col center gap1">
+            <app-brand-primary-button
+              icon="arrow_forward"
+              (click$)="goToFill()"
+            >
+              Got it — let's add the module
+            </app-brand-primary-button>
+            <mat-card-subtitle class="intro-cta-hint">
+              You'll see a live duplicate check as you type the name.
+            </mat-card-subtitle>
+          </div>
+        </div>
+      }
+
+      <!-- ──────────────────────────────────────────────
+           STAGE 2 — FILL (data entry + similar verification)
+           two-column productive layout, sidebar reactive
+           ────────────────────────────────────────────── -->
+      @if ((step$ | async) === 'fill') {
+        <div class="fill-stage stage-anim">
+
+          <div class="fill-layout">
+
+            <!-- main column: form -->
+            <div class="fill-main col gap2">
+
+              <!-- Identity section -->
+              <section class="form-section">
+                <header class="section-head">
+                  <span class="section-icon"><mat-icon>fingerprint</mat-icon></span>
+                  <span class="section-title">Identity</span>
+                  <span class="section-sub">Required to find duplicates</span>
+                  <span class="section-line"></span>
+                </header>
+
+                <div class="form-card">
+                  <div class="col gap1">
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.manufacturer"
+                      [disableVoidSelection]="true"
+                    ></lib-mat-form-entity>
+
+                    @if ((dataService.showNewManufacturerForm$ | async) !== true) {
+                      <div class="row inline-action">
+                        <button mat-button color="primary" type="button"
+                                (click)="dataService.showNewManufacturerForm$.next(true)"
+                                matTooltip="Manufacturer not in list? Create it here">
+                          <mat-icon class="inline-action-icon">add</mat-icon>
+                          Create new manufacturer
                         </button>
                       </div>
-                    </div>
-                  }
+                    }
+                    @if ((dataService.showNewManufacturerForm$ | async) === true) {
+                      <div class="col gap1 mfr-inline-card">
+                        <mat-card-subtitle class="mfr-inline-title">
+                          <mat-icon class="mfr-inline-title-icon">factory</mat-icon>
+                          Create new manufacturer
+                        </mat-card-subtitle>
+                        <mat-form-field appearance="outline" style="width: 100%;">
+                          <mat-label>Manufacturer name</mat-label>
+                          <input matInput
+                                 [formControl]="dataService.newManufacturerNameControl"
+                                 placeholder="e.g. My Modular Co."
+                                 (keydown.enter)="dataService.createManufacturer$.next()">
+                          <mat-hint>Enter the exact manufacturer name</mat-hint>
+                        </mat-form-field>
+                        @if (dataService.duplicateManufacturer$ | async; as dup) {
+                          <div class="row gap1 mfr-dup">
+                            <mat-icon class="mfr-dup-icon">warning</mat-icon>
+                            <div class="col gap0" style="flex: 1; min-width: 0;">
+                              <span class="mfr-dup-title">Already exists</span>
+                              <span class="mfr-dup-name">"{{ dup.name }}" is already in the database.</span>
+                            </div>
+                            <button mat-stroked-button type="button" style="flex-shrink: 0;"
+                                    (click)="dataService.selectExistingManufacturer(dup)">
+                              Use existing
+                            </button>
+                          </div>
+                        }
+                        <div class="row gap1">
+                          <button mat-flat-button color="primary" type="button"
+                                  [disabled]="!dataService.newManufacturerNameControl.valid || !!(dataService.isCreatingManufacturer$ | async) || !!(dataService.duplicateManufacturer$ | async)"
+                                  (click)="dataService.createManufacturer$.next()">
+                            <mat-icon>save</mat-icon>
+                            Create
+                          </button>
+                          <button mat-button type="button"
+                                  (click)="dataService.showNewManufacturerForm$.next(false); dataService.newManufacturerNameControl.setValue('')">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    }
 
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.name"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.description"
-                  ></lib-mat-form-entity>
-                  <lib-mat-form-entity
-                    [dataPack]="dataService.formData.manual"
-                  ></lib-mat-form-entity>
-                  <div class="rowwrap gap1">
                     <lib-mat-form-entity
-                      [dataPack]="dataService.formData.hp"
-                    ></lib-mat-form-entity>
-                    <lib-mat-form-entity
-                      [dataPack]="dataService.formData.standard"
-                      [disableVoidSelection]="true"
-                    ></lib-mat-form-entity>
-                    <lib-mat-form-entity
-                      [dataPack]="dataService.formData.diy"
-                      [disableVoidSelection]="true"
+                      [dataPack]="dataService.formData.name"
                     ></lib-mat-form-entity>
                   </div>
                 </div>
-              </lib-clean-card>
+              </section>
 
-              <div class="col center">
+              <!-- Specs section -->
+              <section class="form-section" [class.is-ready]="(identityReady$ | async)">
+                <header class="section-head">
+                  <span class="section-icon"><mat-icon>tune</mat-icon></span>
+                  <span class="section-title">Specs</span>
+                  <span class="section-sub">Format, size and details</span>
+                  <span class="section-line"></span>
+                </header>
+
+                <div class="form-card">
+                  <div class="col gap1">
+                    <div class="rowwrap gap1 form-specs">
+                      <lib-mat-form-entity
+                        [dataPack]="dataService.formData.hp"
+                      ></lib-mat-form-entity>
+                      <lib-mat-form-entity
+                        [dataPack]="dataService.formData.standard"
+                        [disableVoidSelection]="true"
+                      ></lib-mat-form-entity>
+                      <lib-mat-form-entity
+                        [dataPack]="dataService.formData.diy"
+                        [disableVoidSelection]="true"
+                      ></lib-mat-form-entity>
+                    </div>
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.description"
+                    ></lib-mat-form-entity>
+                    <lib-mat-form-entity
+                      [dataPack]="dataService.formData.manual"
+                    ></lib-mat-form-entity>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Submit -->
+              <div class="col center submit-bar">
                 @if ((!!((userService.loggedUser$ | async)?.id))) {
-                  <app-brand-primary-button
-                    [disabled]="!dataService.formGroup.valid"
-                    (click$)="dataService.submitModuleForm$.next()"
-                    icon="upload"
-                    class="align-end"
-                    style="margin-top: 1rem; margin-bottom: 1rem"
-                  >
-                    Submit a new module
-                  </app-brand-primary-button>
-                } @else {
                   <div
-                    class="col gap0"
-                    style="transition: all 0.5s ease-in-out; padding: 1rem; color: #F44336 !important;"
+                    class="arm-submit"
+                    [class.armed]="(armed$ | async)"
+                    [class.disabled]="!dataService.formGroup.valid"
                   >
-                    <mat-card-subtitle class="start" style="padding: 1rem; color: #F44336 !important;">
+                    <button
+                      type="button"
+                      class="arm-submit-btn"
+                      [disabled]="!dataService.formGroup.valid"
+                      (click)="handleSubmitClick()"
+                      [attr.aria-pressed]="(armed$ | async)"
+                      [attr.aria-label]="(armed$ | async) ? 'Confirm submission' : 'Arm to submit'"
+                    >
+                      <!-- safety cover -->
+                      <span class="arm-cover" aria-hidden="true">
+                        <span class="arm-cover-label">
+                          <mat-icon>upload</mat-icon>
+                          <span>Submit module</span>
+                        </span>
+                      </span>
+
+                      <!-- armed core (revealed when armed) -->
+                      <span class="arm-core" aria-hidden="true">
+                        <span class="arm-core-label">
+                          <mat-icon>check</mat-icon>
+                          <span>Confirm to publish</span>
+                        </span>
+                      </span>
+                    </button>
+
+                    @if (armed$ | async) {
+                      <p class="arm-helper armed">
+                        <span class="arm-helper-dot"></span>
+                        Click again to confirm.
+                      </p>
+                    } @else if (dataService.formGroup.valid) {
+                      <p class="arm-helper">Two-step submit · click once to arm, then once to confirm.</p>
+                    }
+                  </div>
+
+                  @if (!dataService.formGroup.valid) {
+                    <mat-card-subtitle class="submit-hint">
+                      Fill in manufacturer, name, HP and standard to enable submit.
+                    </mat-card-subtitle>
+                  }
+                } @else {
+                  <div class="col gap0 login-required">
+                    <mat-card-subtitle class="login-required-text">
                       You need to be logged in to submit a module
                     </mat-card-subtitle>
-                    <app-brand-primary-button routerLink="/auth/login" icon="login" class="align-end">
+                    <app-brand-primary-button routerLink="/auth/login" icon="login">
                       Login
                     </app-brand-primary-button>
                   </div>
@@ -135,41 +255,137 @@
               </div>
 
             </div>
-          </lib-hero-content-card>
 
-        </div>
+            <!-- sidebar: progress + live similar-modules check -->
+            <aside class="fill-sidebar">
 
-        <!-- sidebar: similar modules -->
-        <div class="submit-sidebar">
-          <lib-hero-content-card
-            titleNormal="Similar modules"
-            description="Updates as you type. If you see a match, don't submit it."
-          >
-            <lib-auto-update-loading-indicator
-              [data$]="dataService.similarModulesData$"
-              [updateData$]="dataService.updateModulesList$"
-            >
-              @if ((dataService.similarModulesData$ | async); as data) {
-                @if (data.length > 0 &&
-                dataService.formData.name.control.value.length > 0) {
-                  <app-module-list
-                    [data$]="dataService.similarModulesData$"
-                    [showSearch]="false"
-                    [viewConfig]="viewConfig"
-                  ></app-module-list>
-                } @else {
-                  <div class="pad">
-                    <mat-card-subtitle class="center" style="padding: 2rem; color: #0D7023 !important;">
-                      Nothing similar found in the database! You can submit it maybe?
-                    </mat-card-subtitle>
-                  </div>
+              <!-- progress -->
+              <div class="sidebar-progress-card">
+                <div class="sidebar-progress-header row">
+                  <span class="sidebar-eyebrow">Progress</span>
+                  <span class="sidebar-progress-count">
+                    {{ (progressDone$ | async) }} / {{ (progressTotal$ | async) }}
+                  </span>
+                </div>
+                <div class="sidebar-progress-bar">
+                  <div class="sidebar-progress-bar-fill"
+                       [style.width.%]="((progressDone$ | async) || 0) / ((progressTotal$ | async) || 1) * 100"></div>
+                </div>
+                <ul class="sidebar-progress-list">
+                  @for (s of (progressSteps$ | async); track s.id) {
+                    <li class="sidebar-progress-item" [class.done]="s.done">
+                      <mat-icon class="sidebar-progress-icon">
+                        {{ s.done ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                      <span class="sidebar-progress-label">{{ s.label }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+
+              <!-- live duplicate check -->
+              <div class="sidebar-card" [attr.data-state]="(sidebarState$ | async)">
+
+                <div class="sidebar-header col gap0">
+                  <span class="sidebar-eyebrow">Live duplicate check</span>
+                  <span class="sidebar-title">Similar modules</span>
+                </div>
+
+                @switch ((sidebarState$ | async)) {
+                  @case ('idle') {
+                    <div class="sidebar-body col center gap1">
+                      <mat-icon class="sidebar-icon idle">keyboard</mat-icon>
+                      <div class="sidebar-msg">Type a module name</div>
+                      <div class="sidebar-sub">We'll look for duplicates while you type.</div>
+                    </div>
+                  }
+                  @case ('searching') {
+                    <div class="sidebar-body col center gap1">
+                      <mat-icon class="sidebar-icon searching">search</mat-icon>
+                      <div class="sidebar-msg">Searching…</div>
+                    </div>
+                  }
+                  @case ('results') {
+                    <div class="sidebar-body col gap1 results">
+                      <div class="sidebar-warn row gap1">
+                        <mat-icon class="sidebar-icon warn">warning</mat-icon>
+                        <div class="col gap0">
+                          <span class="sidebar-msg">Possible matches found</span>
+                          <span class="sidebar-sub">Please verify yours isn't already listed.</span>
+                        </div>
+                      </div>
+                      <app-module-list
+                        [data$]="dataService.similarModulesData$"
+                        [showSearch]="false"
+                        [viewConfig]="viewConfig"
+                      ></app-module-list>
+                    </div>
+                  }
+                  @case ('clear') {
+                    <div class="sidebar-body col center gap1">
+                      <mat-icon class="sidebar-icon ok">check_circle</mat-icon>
+                      <div class="sidebar-msg">Nothing similar found</div>
+                      <div class="sidebar-sub">Looks safe to submit.</div>
+                    </div>
+                  }
                 }
-              }
-            </lib-auto-update-loading-indicator>
-          </lib-hero-content-card>
-        </div>
+              </div>
+            </aside>
 
-      </div>
+          </div>
+        </div>
+      }
+
     </lib-hero-content-card>
+
+    @if (celebration$ | async; as celebration) {
+      <div class="celebration-overlay" role="status" aria-live="polite">
+        <div class="celebration-stage">
+          <div class="celebration-ring">
+            <svg class="celebration-ring-svg" viewBox="0 0 80 80" aria-hidden="true">
+              <circle class="celebration-ring-track" cx="40" cy="40" r="34"></circle>
+              <circle class="celebration-ring-progress" cx="40" cy="40" r="34"></circle>
+              <path class="celebration-check" d="M25 41 L36 52 L56 30" fill="none"></path>
+            </svg>
+            @for (i of [0,1,2,3,4,5,6,7,8,9,10,11]; track i) {
+              <span class="celebration-spark" [style.--i]="i"></span>
+            }
+          </div>
+          <div class="celebration-text">
+            <p class="celebration-eyebrow">Submitted</p>
+            <h2 class="celebration-title">"{{ celebration.name }}" is live</h2>
+
+            <div class="celebration-recap">
+              @if (celebration.manufacturer) {
+                <span class="celebration-chip">
+                  <mat-icon>factory</mat-icon>
+                  {{ celebration.manufacturer }}
+                </span>
+              }
+              @if (celebration.hp) {
+                <span class="celebration-chip">
+                  <mat-icon>straighten</mat-icon>
+                  {{ celebration.hp }} HP
+                </span>
+              }
+              @if (celebration.standard) {
+                <span class="celebration-chip">
+                  <mat-icon>view_module</mat-icon>
+                  {{ celebration.standard }}
+                </span>
+              }
+              @if (celebration.isDIY) {
+                <span class="celebration-chip">
+                  <mat-icon>build</mat-icon>
+                  DIY
+                </span>
+              }
+            </div>
+
+            <p class="celebration-sub">Taking you to the module browser…</p>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 </lib-screen-wrapper>

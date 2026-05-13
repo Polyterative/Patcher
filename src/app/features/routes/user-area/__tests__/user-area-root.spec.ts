@@ -6,7 +6,6 @@ import {
 } from '@angular/core/testing';
 import { UserAreaRootComponent } from '../user-area-root/user-area-root.component';
 import {
-  createMockAppStateService,
   createMockSeoAndUtilsService,
   createMockSupabaseService,
   createMockUserAreaDataService,
@@ -41,7 +40,6 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
       createMockUrlCreatorService() as any
     );
     component.ignoreSeo = ignoreSeo;
@@ -122,7 +120,6 @@ describe('UserAreaRootComponent - Initialization', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
       createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
@@ -157,7 +154,6 @@ describe('UserAreaRootComponent - miscStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
       createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
@@ -187,8 +183,8 @@ describe('UserAreaRootComponent - miscStats$', () => {
     mockDataService.modulesData$.next(MOCK_MODULES as any);
     mockDataService.rackData$.next(MOCK_RACKS as any);
     mockDataService.patchesData$.next(MOCK_PATCHES as any);
-    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}]);
-    mockDataService.manualsData$.next([{id: 5}]);
+    mockDataService.commentsData$.next([{id: 1}, {id: 2}, {id: 3}] as any);
+    mockDataService.manualsData$.next([{id: 5}] as any);
     
     component.miscStats$.subscribe((stats: any[]) => {
       expect(stats.find(s => s.name === 'Modules')?.value).toBe(2);
@@ -224,11 +220,11 @@ describe('UserAreaRootComponent - miscStats$', () => {
     
     component.miscStats$.subscribe((stats: any[]) => {
       const icons = stats.map(s => s.icon);
-      expect(icons).toContain('memory');
-      expect(icons).toContain('dashboard');
-      expect(icons).toContain('cable');
-      expect(icons).toContain('chat');
-      expect(icons).toContain('menu_book');
+      expect(icons).toContain('view_module');
+      expect(icons).toContain('view_stream');
+      expect(icons).toContain('settings_input_composite');
+      expect(icons).toContain('comment');
+      expect(icons).toContain('book');
       done();
     });
   });
@@ -264,7 +260,6 @@ describe('UserAreaRootComponent - contributorStats$', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
       createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
@@ -283,10 +278,13 @@ describe('UserAreaRootComponent - contributorStats$', () => {
 
     component.contributorStats$.subscribe((stats) => {
       expect(stats?.find(s => s.name === 'Modules submitted')?.value).toBe(8);
+      expect(stats?.find(s => s.name === 'Modules submitted')?.icon).toBe('upload');
       expect(stats?.find(s => s.name === 'Approved modules')?.value).toBe(5);
       expect(stats?.find(s => s.name === 'Pending review')?.value).toBe(3);
       expect(stats?.find(s => s.name === 'Comments posted')?.value).toBe(11);
+      expect(stats?.find(s => s.name === 'Comments posted')?.icon).toBe('comment');
       expect(stats?.find(s => s.name === 'Issue reports')?.value).toBe(2);
+      expect(stats?.find(s => s.name === 'Issue reports')?.icon).toBe('bug_report');
       done();
     });
   });
@@ -317,7 +315,6 @@ describe('UserAreaRootComponent - Global Search', () => {
       mockBackend as any,
       mockDataService as any,
       mockSeoService as any,
-      createMockAppStateService() as any,
       createMockUrlCreatorService() as any
     );
     component.ignoreSeo = true;
