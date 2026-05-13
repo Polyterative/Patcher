@@ -30,15 +30,12 @@ import { MatDialog } from "@angular/material/dialog";
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import {
+  HiddenUsageBucket,
+  ModuleUsageSummary
+} from './module-detail-data.models';
 
-export interface ModuleUsageSummary {
-  public_rack_count: number;
-  hidden_rack_bucket: HiddenUsageBucket;
-  public_patch_count: number;
-  hidden_patch_bucket: HiddenUsageBucket;
-}
-
-export type HiddenUsageBucket = 'none' | 'some' | '5_plus' | '10_plus' | '25_plus';
+export type { HiddenUsageBucket, ModuleUsageSummary } from './module-detail-data.models';
 
 
 @Injectable()
