@@ -4,6 +4,7 @@ import {
   Subject,
   throwError
 } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { ModuleAdderDataService } from './module-adder-data.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
@@ -153,8 +154,8 @@ describe('ModuleAdderDataService', () => {
     expect(service.similarModulesData$.value).toEqual([{id: 2075, name: 'Lùbadh'}] as any);
   });
   
-  it('submits module after confirmation and resets form fields', () => {
-    const {service, backend, snackBar, router, dialog} = build();
+  it('submits module immediately and resets form fields', fakeAsync(() => {
+    const {service, backend, snackBar, router} = build();
     service.formData.name.control.setValue('Sample');
     service.formData.description.control.setValue('Desc');
     service.formData.manufacturer.control.setValue({id: '1', name: 'Make Noise'});
@@ -165,18 +166,20 @@ describe('ModuleAdderDataService', () => {
     
     service.submitModuleForm$.next();
     
-    expect(dialog.open).toHaveBeenCalled();
     expect(backend.add.modules).toHaveBeenCalled();
     expect(service.formData.name.control.value).toBe('');
     expect(service.formData.description.control.value).toBe('');
     expect(service.formData.manual.control.value).toBe('');
     expect(service.formData.hp.control.value).toBe('');
     expect(snackBar.open).toHaveBeenCalled();
+    
+    // navigation is delayed by the celebration animation
+    tick(2200);
     expect(router.navigate).toHaveBeenCalledWith(
       ['/modules', 'browser'],
       jasmine.objectContaining({queryParams: {refresh: true}})
     );
-  });
+  }));
   
   it('creates manufacturer inline and selects the new option', () => {
     const {service, backend} = build();
