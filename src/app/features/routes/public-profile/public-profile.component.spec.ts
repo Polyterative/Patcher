@@ -2,6 +2,8 @@ import { BehaviorSubject, of, ReplaySubject } from 'rxjs';
 import { PublicProfileComponent } from './public-profile.component';
 
 describe('PublicProfileComponent', () => {
+  let createdComponents: PublicProfileComponent[];
+
   function build() {
     const dataService = {
       loadProfile$: new ReplaySubject<string>(1),
@@ -32,6 +34,7 @@ describe('PublicProfileComponent', () => {
       seoAndUtilsService as any,
       urlCreatorService as any,
     );
+    createdComponents.push(component);
 
     return {
       component,
@@ -41,6 +44,14 @@ describe('PublicProfileComponent', () => {
       urlCreatorService,
     };
   }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
 
   it('reloads the profile after making it public', () => {
     const { component, dataService, userService } = build();

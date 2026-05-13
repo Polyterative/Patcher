@@ -8,6 +8,8 @@ import {
 
 
 describe('RackDetailDataService helpers', () => {
+  let createdServices: RackDetailDataService[];
+
   function build() {
     const backend = {
       update: {
@@ -49,9 +51,18 @@ describe('RackDetailDataService helpers', () => {
       dialog as any,
       jasmine.createSpyObj('Router', ['navigate'])
     );
+    createdServices.push(service);
     
     return {service, backend, dialog};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   function mod(id: number, row: number | null, column: number | null, hp = 8, standardId = 0) {
     return {

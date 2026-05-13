@@ -13,6 +13,8 @@ import { RACK_ANALYSIS_MODES } from './rack-analysis-mode';
 
 
 describe('RackDetailDataService media, rename, and duplication', () => {
+  let createdServices: RackDetailDataService[];
+
   function rack(partial: any = {}) {
     return {
       id: 1,
@@ -76,8 +78,17 @@ describe('RackDetailDataService media, rename, and duplication', () => {
       dialog as any,
       router
     );
+    createdServices.push(service);
     return {service, backend, dialog, snackBar};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('downloads rack image and sanitizes generated filename', fakeAsync(() => {
     const {service, snackBar} = build();
