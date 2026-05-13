@@ -67,17 +67,17 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   /** Enables progressive node/edge reveal while keeping non-progressive data trigger behavior. */
   @Input() animateGraphBuild = false;
 
-  private _nodes$ = new BehaviorSubject<GraphNode[]>([]);
-  private _edges$ = new BehaviorSubject<GraphEdge[]>([]);
+  private readonly _nodes$ = new BehaviorSubject<GraphNode[]>([]);
+  private readonly _edges$ = new BehaviorSubject<GraphEdge[]>([]);
   readonly nodes$ = this._nodes$.asObservable();
   readonly edges$ = this._edges$.asObservable();
 
   @ViewChild('graphContainer') private graphContainer: ElementRef<HTMLDivElement>;
 
-  private _isStale$ = new BehaviorSubject<boolean>(false);
+  private readonly _isStale$ = new BehaviorSubject<boolean>(false);
   readonly isStale$ = this._isStale$.asObservable();
 
-  private _manualRefresh$ = new Subject<void>();
+  private readonly _manualRefresh$ = new Subject<void>();
   private _graphBuiltOnce = false;
   private flowInterval?: ReturnType<typeof setInterval>;
   private flowState?: FlowAnimationState;
