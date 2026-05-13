@@ -101,13 +101,13 @@ const defaultLinkedRackUiState: LinkedRackUiState = {
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
   private usePublicDetailReads = false;
-  updateSinglePatchData$ = new ReplaySubject<number>();
-  singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
+  readonly updateSinglePatchData$ = new ReplaySubject<number>();
+  readonly singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
-  patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
-  editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
-  removePatchFromCollection$ = new Subject<number>();
+  readonly patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  readonly patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  readonly editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  readonly removePatchFromCollection$ = new Subject<number>();
   //
   formData = {
     name: {
@@ -128,17 +128,17 @@ export class PatchDetailDataService implements OnDestroy {
     }
   };
   //
-  clickOnModuleCV$ = new Subject<CVConnectionEntity>();
-  resetSelectedForConnection$ = new Subject<void>();
-  selectedForConnection$ = new BehaviorSubject<{
+  readonly clickOnModuleCV$ = new Subject<CVConnectionEntity>();
+  readonly resetSelectedForConnection$ = new Subject<void>();
+  readonly selectedForConnection$ = new BehaviorSubject<{
     a: CVConnectionEntity | null,
     b: CVConnectionEntity | null
   }>({
     a: null,
     b: null
   });
-  confirmSelectedConnection$ = new Subject<void>();
-  removeConnectionFromEditor$ = new Subject<PatchConnection>();
+  readonly confirmSelectedConnection$ = new Subject<void>();
+  readonly removeConnectionFromEditor$ = new Subject<PatchConnection>();
   readonly deletePatch$ = new Subject<number>();
   /** Serializes connection writes to the backend (mirrors rack's requestRackedModulesDbSync$). */
   readonly requestConnectionDbSync$ = new Subject<void>();
@@ -146,31 +146,31 @@ export class PatchDetailDataService implements OnDestroy {
   readonly requestNoteSync$ = new Subject<PatchConnection>();
   //
   // Module instances
-  patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
-  addModuleInstance$ = new Subject<MinimalModule>();
-  removeModuleInstance$ = new Subject<PatchModuleInstance>();
+  readonly patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
+  readonly addModuleInstance$ = new Subject<MinimalModule>();
+  readonly removeModuleInstance$ = new Subject<PatchModuleInstance>();
   /** User's collection modules — set by PatchEditorComponent on init */
-  collectionModules$ = new BehaviorSubject<DbModule[]>([]);
+  readonly collectionModules$ = new BehaviorSubject<DbModule[]>([]);
   //
-  isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
-  patchDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
-  requestPatchPrivacyStatusChange$ = new Subject<void>();
+  readonly isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
+  readonly patchDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
+  readonly requestPatchPrivacyStatusChange$ = new Subject<void>();
   /** Toggle the patch editing panel open/closed through the service layer. */
-  requestPatchEditingToggle$ = new Subject<void>();
+  readonly requestPatchEditingToggle$ = new Subject<void>();
   /**
    * Map from instance ID → display label (e.g. "(1)", "(2)").
    * Only contains entries for modules that have 2+ instances.
    * Used by read-only connection list to show which copy a connection belongs to.
    */
-  instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
+  readonly instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
   /**
    * Summary of modules with 2+ instances. Emits [] when no multi-instance modules exist.
    * Derived from patchModuleInstances$ + patchConnections$ (for module names).
    */
-  multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
+  readonly multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
   //
-  protected destroyEvent$ = new Subject<void>();
-  shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  protected readonly destroyEvent$ = new Subject<void>();
+  readonly shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   readonly patchTags$ = new BehaviorSubject<string[]>([]);
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
