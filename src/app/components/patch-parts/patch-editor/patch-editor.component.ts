@@ -410,8 +410,16 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
         this.linkedRackPreviewState$.next(state);
         // Reset expanded module when rack changes (trackingIds are no longer valid)
         this.clearExpandedRackSelection();
-        // Trigger auto-scale after rack data loads
+        // Seed a preliminary frame height from row count so the frame never
+        // collapses to 0 before the ResizeObserver fires.
         if (state.kind === 'ready' && state.rack) {
+          const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+          const estimatedHeightPx = state.rows.length * 4 * remPx + 10;
+          if (this.rackBaseHeightPx === 0) {
+            this.rackBaseHeightPx = estimatedHeightPx;
+            this.rackScaledHeightPx = estimatedHeightPx;
+            this.cdr.markForCheck();
+          }
           queueMicrotask(() => this.updateRackAutoScale(state.rack!.hp));
         }
       });
