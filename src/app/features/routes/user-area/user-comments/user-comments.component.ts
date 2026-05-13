@@ -23,6 +23,7 @@ import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments
 import { DbComment } from "src/app/models/comment";
 import { MatCardSubtitle } from "@angular/material/card";
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
+import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component";
 
 
 interface FilterOption {
@@ -47,6 +48,7 @@ interface FilterOption {
     MatChipsModule,
     MatCardSubtitle,
     ScreenWrapperModule,
+    EmptyStateTipsComponent,
   ]
 })
 export class UserCommentsComponent implements OnInit {
