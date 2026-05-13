@@ -26,6 +26,30 @@ export interface ConnectionKey {
   instanceB?: number | undefined;
 }
 
+export interface CVSelectionState {
+  a: CVConnectionEntity | null;
+  b: CVConnectionEntity | null;
+}
+
+function normalizeInstanceId(v: number | null | undefined): number | undefined {
+  return v === null ? undefined : v;
+}
+
+function connectionKeysEqual(k1: ConnectionKey | null, k2: ConnectionKey): boolean {
+  if (!k1) { return false; }
+  return k1.aId === k2.aId && k1.bId === k2.bId
+    && k1.instanceA === k2.instanceA && k1.instanceB === k2.instanceB;
+}
+
+function selectionToConnectionKey(a: CVConnectionEntity, b: CVConnectionEntity): ConnectionKey {
+  return {
+    aId: a.cv.id,
+    bId: b.cv.id,
+    instanceA: normalizeInstanceId(a.cv.instance_id),
+    instanceB: normalizeInstanceId(b.cv.instance_id)
+  };
+}
+
 
 /**
  * Root-level message bus between PatchDetailDataService (module-scoped)
@@ -39,10 +63,7 @@ export interface ConnectionKey {
 export class SelectionPanelBridgeService extends SubManager {
   
   /** Current CV connection selection state — mirrored from PatchDetailDataService. */
-  readonly selectionState$ = new BehaviorSubject<{
-    a: CVConnectionEntity | null;
-    b: CVConnectionEntity | null;
-  }>({a: null, b: null});
+  readonly selectionState$ = new BehaviorSubject<CVSelectionState>({a: null, b: null});
   
   /** Active patch — mirrored from PatchDetailDataService. */
   readonly patchData$ = new BehaviorSubject<Patch | undefined>(undefined);
@@ -82,25 +103,12 @@ export class SelectionPanelBridgeService extends SubManager {
   ]).pipe(
     map(([sel, recorded, conns]) => {
       if (!sel?.a || !sel?.b) { return false; }
-      const norm = (v: number | null | undefined) => (v === null ? undefined : v);
-      const curKey: ConnectionKey = {
-        aId: sel.a.cv.id,
-        bId: sel.b.cv.id,
-        instanceA: norm(sel.a.cv.instance_id),
-        instanceB: norm(sel.b.cv.instance_id)
-      };
-      
-      const keyEquals = (k1: ConnectionKey | null, k2: ConnectionKey) => {
-        if (!k1) { return false; }
-        return k1.aId === k2.aId && k1.bId === k2.bId && (k1.instanceA === k2.instanceA) && (k1.instanceB === k2.instanceB);
-      };
-      
-      if (keyEquals(recorded, curKey)) { return true; }
-      if (conns && conns.find(c => {
-        const k: ConnectionKey = {aId: c.a.id, bId: c.b.id, instanceA: norm(c.instance_id_a), instanceB: norm(c.instance_id_b)};
-        return keyEquals(k, curKey);
-      })) { return true; }
-      
+      const curKey = selectionToConnectionKey(sel.a, sel.b);
+      if (connectionKeysEqual(recorded, curKey)) { return true; }
+      if (conns?.find(c => connectionKeysEqual(
+        {aId: c.a.id, bId: c.b.id, instanceA: normalizeInstanceId(c.instance_id_a), instanceB: normalizeInstanceId(c.instance_id_b)},
+        curKey
+      ))) { return true; }
       return false;
     }),
     startWith(false),
@@ -113,30 +121,20 @@ export class SelectionPanelBridgeService extends SubManager {
   constructor() {
     super();
     this.record$.pipe(withLatestFrom(this.selectionState$), takeUntil(this.destroy$)).subscribe(([_, sel]) => {
-      if (!sel?.a || !sel?.b) {
-        // nothing to record
-        return;
-      }
-      const norm = (v: number | null | undefined) => (v === null ? undefined : v);
-      this.recordedKey$.next({
-        aId: sel.a.cv.id,
-        bId: sel.b.cv.id,
-        instanceA: norm(sel.a.cv.instance_id),
-        instanceB: norm(sel.b.cv.instance_id)
-      });
+      if (!sel?.a || !sel?.b) { return; }
+      this.recordedKey$.next(selectionToConnectionKey(sel.a, sel.b));
     });
     // If the recorded key exists but the editorConnections list no longer contains it (deleted), clear it.
     // This treats deletion as a "new event" that invalidates the previously recorded key.
     combineLatest([this.recordedKey$, this.editorConnections$])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([rk, conns]) => {
-      if (!rk) return;
-      if (!conns) return;
-      const norm = (v: number | null | undefined) => (v === null ? undefined : v);
-      const exists = conns.find(c =>
-        c.a.id === rk.aId && c.b.id === rk.bId && norm(c.instance_id_a) === rk.instanceA && norm(c.instance_id_b) === rk.instanceB
-      );
-      if (!exists) this.recordedKey$.next(null);
-    });
+        if (!rk || !conns) { return; }
+        const exists = conns.find(c => connectionKeysEqual(
+          {aId: c.a.id, bId: c.b.id, instanceA: normalizeInstanceId(c.instance_id_a), instanceB: normalizeInstanceId(c.instance_id_b)},
+          rk
+        ));
+        if (!exists) { this.recordedKey$.next(null); }
+      });
   }
 }
