@@ -97,6 +97,12 @@ const defaultLinkedRackUiState: LinkedRackUiState = {
   rackId: null
 };
 
+
+type CVConnectionEvent =
+  | { type: 'cv'; cv: CVConnectionEntity }
+  | { type: 'reset' }
+  | { type: 'resetA' }
+  | { type: 'resetB' };
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
@@ -486,16 +492,16 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(() => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
     merge(
-      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as any))),
-      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any))),
-      this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as any))),
-      this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as any)))
+      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as CVConnectionEvent))),
+      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as CVConnectionEvent))),
+      this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as CVConnectionEvent))),
+      this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as CVConnectionEvent)))
     )
       .pipe(
         scan((state: {
           a: CVConnectionEntity | null;
           b: CVConnectionEntity | null
-        }, ev: any) => {
+        }, ev: CVConnectionEvent) => {
           let next = {...state};
           switch (ev.type) {
             case 'reset':
