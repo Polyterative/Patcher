@@ -34,28 +34,28 @@ export class QueryJoins {
   // Manufacturer
   static manufacturer: string = 'manufacturer:manufacturerId(name,id,logo)';
 
-// Standard
+  // Standard
   static standard: string = 'standard:standards!modules_standard_fkey(name,id)';
 
-// Patch
+  // Patch
   static patch: string = 'patch:patches!patch_connections_patchid_fkey(*)';
 
-//   Patch Connections
+  // Patch Connections
   static patch_connections: string = 'patch_connections:patch_connections!patch_connections_patchid_fkey(*)';
 
-// Author
+  // Author
   static author: string = 'author:authorid(username,id)';
   static publicAuthorGate(alias = 'author_profile_gate'): string {
     return `${ alias }:authorid!inner(public)`;
   }
 
-// Rack
+  // Rack
   static rack: string = 'rack:rackid(*,author:authorid(username,id))';
 
-// Rack Modules
+  // Rack Modules
   static rackModules: string = 'rackModules:rackid(*)';
 
-// Module Foreign Key in Rack Modules
+  // Module Foreign Key in Rack Modules
   static module_fk_rackmodules: string = `module:modules!rack_modules_moduleid_fkey(
     id,
     name,
@@ -73,62 +73,19 @@ export class QueryJoins {
     outs:${ DbPaths.moduleOUTs }(*)
   )`;
 
-// Module Tags
+  // Module Tags
   static module_tags: string = `tags:${ DbPaths.module_tags }(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`;
 
-// Module Panels
+  // Module Panels
   static module_panels: string = `panels:${ DbPaths.module_panels }!module_panels_moduleid_fkey(*)`;
 
-// Module Inputs
+  // Module Inputs
   static ins: string = `ins:${ DbPaths.moduleINs }(*)`;
 
-// Module Outputs
+  // Module Outputs
   static outs: string = `outs:${ DbPaths.moduleOUTs }(*)`;
 
-// Module Inputs and Outputs
+  // Module Inputs and Outputs
   static insOuts: string = `ins:${ DbPaths.moduleINs }(*), outs:${ DbPaths.moduleOUTs }(*)`;
   
 }
-
-//
-// private readonly queryJoins = {
-//   // [simple syntax]: responseObjectName:tableName(*columns*)
-//   // [advanced syntax]: responseObjectName:tableName(*columns*,responseObjectName:tableName(*columns*))
-//   // [specific syntax]: responseObjectName:tableName!foreignKeyName(*columns*,responseObjectName:tableName!foreignKeyName(*columns*))
-//   //
-//   // a(*,module:modules!moduleOUTs_moduleId_fkey(*, ${ this.queryJoins.manufacturer })),
-//  
-//   manufacturer: 'manufacturer:manufacturerId(name,id,logo)',
-//   standard: 'standard:standards!modules_standard_fkey(name,id)',
-//   patch: 'patch:patches!patch_connections_patchid_fkey(*)',
-//   author: 'author:authorid(username,id)',
-//   rack: 'rack:rackid(*,author:authorid(username,id))',
-//   rack_modules: 'rackModules:rackid(*)',
-//   module_fk_rackmodules: 'module:modules!rack_modules_moduleid_fkey(id,name,hp,manufacturer:manufacturerId(name,id),standard:standards!modules_standard_fkey(name,id),panels:module_panels!module_panels_moduleid_fkey(*)))',
-//   // module:       'module:moduleid(*,manufacturer:manufacturerId(name,id,logo))',
-//   module_tags: `tags:${ this.paths.module_tags }(tag:${ this.paths.tags }(*))`,
-//   module_panels: `panels:${ this.paths.module_panels }!module_panels_moduleid_fkey(*)`,
-//   ins: `ins:${ this.paths.moduleINs }(*)`,
-//   outs: `outs:${ this.paths.moduleOUTs }(*)`,
-//   insOuts: `ins:${ this.paths.moduleINs }(*), outs:${ this.paths.moduleOUTs }(*)`
-// };
-
-
-// private paths = {
-//   modules: 'modules',
-//   moduleINs: 'module_ins',
-//   moduleOUTs: 'module_outs',
-//   manufacturers: 'manufacturers',
-//   user_modules: 'user_modules',
-//   racks: 'racks',
-//   rack_modules: 'rack_modules',
-//   rack_modules_grouped_by_moduleid: 'rack_modules_grouped_by_moduleid', // this is a view on DB
-//   patches_for_modules: 'patches_for_modules', // this is a view on DB
-//   patches: 'patches',
-//   patch_connections: 'patch_connections',
-//   module_tags: 'module_tags',
-//   module_panels: 'module_panels',
-//   tags: 'tags',
-//   standards: 'standards',
-//   profiles: 'profiles'
-// };
