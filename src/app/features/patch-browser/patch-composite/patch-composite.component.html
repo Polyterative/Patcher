@@ -47,6 +47,8 @@
 
   @if (isEditing) {
     <app-patch-editor [data]="data"></app-patch-editor>
+  } @else if ((dataService.linkedRackState$ | async)?.kind === 'linked') {
+    <app-patch-editor [data]="data" [readonly]="true"></app-patch-editor>
   }
 
   <div class="patch-composite-comments">
