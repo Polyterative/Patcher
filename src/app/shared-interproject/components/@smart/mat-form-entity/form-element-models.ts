@@ -117,8 +117,10 @@ export interface MatFormErgonomicsConfig {
   autofocus?: boolean;
 }
 
-export function isOption(value: any): value is ISelectable {
-  return value && value.id && typeof (value.id) === 'string' && value.name && typeof (value.name) === 'string';
+export function isOption(value: unknown): value is ISelectable {
+  if (!value || typeof value !== 'object') { return false; }
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate['id'] === 'string' && typeof candidate['name'] === 'string';
 }
 
 export function findAndApplyOptionForIdInGroup(id: string, control: UntypedFormControl, options: ISelectable[]): void {
