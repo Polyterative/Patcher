@@ -10,8 +10,8 @@ import {
   MatChipOption
 } from "@angular/material/chips";
 import { HeroContentCardModule } from "src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module";
-import { MatCardSubtitle } from "@angular/material/card";
 import { RackListModule } from "src/app/components/rack-list/rack-list.module";
+import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component";
 
 
 @Component({
@@ -22,8 +22,8 @@ import { RackListModule } from "src/app/components/rack-list/rack-list.module";
     MatChipListbox,
     MatChipOption,
     HeroContentCardModule,
-    MatCardSubtitle,
     RackListModule,
+    EmptyStateTipsComponent,
   ],
   templateUrl: './user-manuals.component.html',
   styleUrl: './user-manuals.component.scss',
