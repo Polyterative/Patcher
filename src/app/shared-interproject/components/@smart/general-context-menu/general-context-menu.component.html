@@ -5,7 +5,9 @@
        [matMenuTriggerFor]="contextMenu"
   >
   </div>
-  <mat-menu #contextMenu="matMenu">
+  <mat-menu #contextMenu="matMenu"
+            (closed)="dataService.menuClose$.next()"
+  >
     <ng-template matMenuContent>
       @for (menuItem of dataService.menuItems$|async; track menuItem.id) {
         @if (menuItem.submenu && menuItem.submenu.length > 0) {
