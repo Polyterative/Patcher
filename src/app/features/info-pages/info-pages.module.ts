@@ -9,13 +9,15 @@ import { CleanCardModule } from 'src/app/shared-interproject/components/@visual/
 import { HeroContentCardModule } from 'src/app/shared-interproject/components/@visual/hero-content-card/hero-content-card.module';
 import { ScreenWrapperModule } from 'src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module';
 import { ApplicationInsightsPageComponent } from './application-insights/application-insights-page.component';
+import { InsightChipComponent } from './application-insights/insight-chip/insight-chip.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 
 
 @NgModule({
   declarations: [
     ChangelogComponent,
-    ApplicationInsightsPageComponent
+    ApplicationInsightsPageComponent,
+    InsightChipComponent
   ],
   imports:      [
     CommonModule,

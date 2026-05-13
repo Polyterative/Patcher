@@ -48,13 +48,7 @@
           <p class="hero-summary">{{ page.heroSummary }}</p>
           <div class="hero-highlights">
             @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
-              <div class="insight-chip" [class.insight-chip--featured]="i === 0">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [featured]="i === 0"></app-insight-chip>
             }
           </div>
 
@@ -87,13 +81,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.footprintHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -187,13 +175,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.standardMixHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -287,13 +269,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.hpBandHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -347,13 +323,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.moduleFreshnessHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -422,13 +392,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.activityChart.highlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -522,13 +486,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.makerHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -581,13 +539,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.sharingHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -618,13 +570,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.patchHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -633,3 +579,5 @@
     }
   </lib-screen-wrapper>
 }
+
+
