@@ -2,7 +2,7 @@ import {
   fakeAsync,
   tick
 } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { MinimalModule } from 'src/app/models/module';
 import { LocalDataFilterService } from 'src/app/components/shared-atoms/local-data-filter/local-data-filter.service';
 import { ModuleListComponent } from './module-list.component';
@@ -23,6 +23,12 @@ function buildModule(overrides: Partial<MinimalModule> = {}): MinimalModule {
     tags: overrides.tags ?? [],
     panels: overrides.panels ?? [],
   };
+}
+
+function currentVal<T>(obs: Observable<T>): T | undefined {
+  let val: T | undefined;
+  obs.subscribe(v => val = v).unsubscribe();
+  return val;
 }
 
 describe('ModuleListComponent', () => {
@@ -61,12 +67,12 @@ describe('ModuleListComponent', () => {
   it('filters the visible modules when the local search field changes', fakeAsync(() => {
     const {component, filterService} = build();
 
-    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Maths', 'Mimeophon', 'Belgrad']);
+    expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Maths', 'Mimeophon', 'Belgrad']);
 
     filterService.search.control.setValue('delay');
     tick(350);
 
-    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Mimeophon']);
+    expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Mimeophon']);
     component.ngOnDestroy();
   }));
 
@@ -76,7 +82,7 @@ describe('ModuleListComponent', () => {
     component.externalSearchQuery = 'xaoc';
     tick();
 
-    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Belgrad']);
+    expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Belgrad']);
     component.ngOnDestroy();
   }));
 
@@ -87,7 +93,7 @@ describe('ModuleListComponent', () => {
     component.externalSearchQuery = 'filter';
     tick(350);
 
-    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Belgrad']);
+    expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Belgrad']);
     component.ngOnDestroy();
   }));
 
@@ -102,12 +108,12 @@ describe('ModuleListComponent', () => {
     component.data$ = data$;
     component.ngOnInit();
 
-    expect(component.filteredData$.value).toEqual([]);
+    expect(currentVal(component.filteredData$)).toEqual([]);
 
     data$.next([buildModule({id: 5, name: 'Arrived'})]);
     tick();
 
-    expect(component.filteredData$.value?.map((module) => module.name)).toEqual(['Arrived']);
+    expect(currentVal(component.filteredData$)?.map((module) => module.name)).toEqual(['Arrived']);
     component.ngOnDestroy();
   }));
 });
