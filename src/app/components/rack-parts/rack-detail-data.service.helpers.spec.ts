@@ -1,5 +1,10 @@
 import { of } from 'rxjs';
 import { RackDetailDataService } from './rack-detail-data.service';
+import {
+  buildRowedModulesArray,
+  calculateBlankIdForSizeAndStandard,
+  isAnyModuleWithoutRackingId,
+} from './rack-detail-data.utils';
 
 
 describe('RackDetailDataService helpers', () => {
@@ -66,9 +71,6 @@ describe('RackDetailDataService helpers', () => {
   }
   
   it('maps blank panel IDs for 3U and Intellijel standards', () => {
-    const {service} = build();
-    const calc = (service as any).calculateBlankIdForSizeAndStandard.bind(service);
-    
     const standard0Map: Record<number, number> = {
       1: 4666, 2: 4647, 3: 4665, 4: 4648, 5: 4664,
       6: 4649, 7: 4650, 8: 4651, 9: 4652, 10: 4653,
@@ -76,7 +78,7 @@ describe('RackDetailDataService helpers', () => {
       16: 4659, 17: 4660, 18: 4661, 19: 4662, 20: 4663
     };
     Object.entries(standard0Map).forEach(([hp, id]) => {
-      expect(calc(Number(hp), 0)).toBe(id);
+      expect(calculateBlankIdForSizeAndStandard(Number(hp), 0)).toBe(id);
     });
     
     const standard1Map: Record<number, number> = {
@@ -87,12 +89,12 @@ describe('RackDetailDataService helpers', () => {
       21: 4731, 22: 4732, 23: 4733, 24: 4734, 25: 4735
     };
     Object.entries(standard1Map).forEach(([hp, id]) => {
-      expect(calc(Number(hp), 1)).toBe(id);
+      expect(calculateBlankIdForSizeAndStandard(Number(hp), 1)).toBe(id);
     });
     
-    expect(calc(99, 0)).toBe(-1);
-    expect(calc(99, 1)).toBe(-1);
-    expect(calc(8, 999)).toBe(-1);
+    expect(calculateBlankIdForSizeAndStandard(99, 0)).toBe(-1);
+    expect(calculateBlankIdForSizeAndStandard(99, 1)).toBe(-1);
+    expect(calculateBlankIdForSizeAndStandard(8, 999)).toBe(-1);
   });
   
   it('bumps rack version suffix or appends V2', () => {
@@ -107,12 +109,9 @@ describe('RackDetailDataService helpers', () => {
   });
   
   it('builds rowed module arrays and appends unracked row', () => {
-    const {service} = build();
-    const buildRowed = (service as any).buildRowedModulesArray.bind(service);
-    
-    const rowed = buildRowed(
+    const rowed = buildRowedModulesArray(
       [mod(1, 0, 0), mod(2, 1, 0), mod(3, null, null)],
-      {rows: 2}
+      {rows: 2} as any
     );
     
     expect(rowed.length).toBe(3);
@@ -189,14 +188,13 @@ describe('RackDetailDataService helpers', () => {
   it('strips module identifiers when copying to new rack and detects unsynced modules', () => {
     const {service} = build();
     const strip = (service as any).removeInformationFromModulesOfCurrentRack.bind(service);
-    const hasUnsynced = (service as any).isAnyModuleWithoutRackingId.bind(service);
     
     service.rowedRackedModules$.next([[mod(1, 0, 0), mod(2, 0, 1)]]);
     const copied = strip(77);
     
     expect(copied[0][0].rackingData.rackid).toBe(77);
     expect(copied[0][0].rackingData.id).toBeUndefined();
-    expect(hasUnsynced(copied)).toBeTrue();
+    expect(isAnyModuleWithoutRackingId(copied)).toBeTrue();
   });
   
   it('syncs rack modules through backend and refreshes rack when missing ids exist', () => {
