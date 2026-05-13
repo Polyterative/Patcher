@@ -338,11 +338,7 @@ export class RackDetailDataService extends SubManager {
           // Convert the image data to a Blob
           map(imageData => {
             const byteCharacters = atob(imageData.split(',')[1]);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
+            const byteArray = new Uint8Array(Array.from(byteCharacters, c => c.charCodeAt(0)));
             return new Blob([byteArray], {type: 'image/jpeg'});
           })
         );
@@ -796,13 +792,12 @@ export class RackDetailDataService extends SubManager {
     name: string;
     value: string
   }[] {
-    const byHP = new Map<number, number>();
-    rows.flatMap(row => row)
+    const byHP = rows.flatMap(row => row)
       .filter(m => m.module.standard.id === 0)
-      .forEach(m => {
+      .reduce((map, m) => {
         const hp = m.module.hp;
-        byHP.set(hp, (byHP.get(hp) ?? 0) + 1);
-      });
+        return map.set(hp, (map.get(hp) ?? 0) + 1);
+      }, new Map<number, number>());
     
     return Array.from(byHP.entries())
       .sort(([a], [b]) => a - b)
@@ -928,14 +923,14 @@ export class RackDetailDataService extends SubManager {
   
   private isAnyModuleWithoutRackingId(rackModules: RackedModule[][]): boolean {
     return rackModules.flatMap(row => row)
-      .filter(module => module.rackingData.id === undefined).length > 0;
+      .some(module => module.rackingData.id === undefined);
   }
   
   private buildRowedModulesArray(rackedModules: RackedModule[], rackData: RackMinimal): RackedModule[][] {
-    const rowedRackedModules: RackedModule[][] = [];
-    for (let i = 0; i < rackData.rows; i++) {
-      rowedRackedModules[i] = rackedModules.filter(module => module.rackingData.row === i);
-    }
+    const rowedRackedModules: RackedModule[][] = Array.from(
+      {length: rackData.rows},
+      (_, i) => rackedModules.filter(module => module.rackingData.row === i)
+    );
     
     // check if there are modules without row and column, add them to a new row
     const modulesWithoutRowAndColumn = rackedModules.filter(
@@ -1000,7 +995,7 @@ export class RackDetailDataService extends SubManager {
     
   }
   
-  private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event, newRow): void {
+  private transferBetweenRows(rackedModules: RackedModule[][], rackedModule: RackedModule, event: CdkDragDrop<ElementRef>, newRow: number): void {
     // remove item from old array
     this.removeRackedModuleFromRack(rackedModules, rackedModule);
     
