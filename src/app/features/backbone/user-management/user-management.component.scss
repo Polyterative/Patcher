@@ -38,10 +38,33 @@
   min-width: 0;
 }
 
-:host ::ng-deep .account-card h1.title .title-sub {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+:host ::ng-deep .account-card h1.title .title-text--with-sub {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.18rem;
+}
+
+:host ::ng-deep .account-card h1.title .title-separator {
+  display: none;
+}
+
+:host ::ng-deep .account-card h1.title .title-text--with-sub .title-main,
+:host ::ng-deep .account-card h1.title .title-text--with-sub .title-sub {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .account-card h1.title .title-text--with-sub .title-main {
+  font-size: 0.45em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.42);
+}
+
+:host ::ng-deep .account-card h1.title .title-text--with-sub .title-sub {
+  display: block;
+  color: rgba(0, 0, 0, 0.72);
 }
 
 .account-sections {
@@ -89,10 +112,6 @@
 @media (max-width: 37.4375rem) {
   .account-shell {
     padding-bottom: 5.5rem;
-  }
-
-  :host ::ng-deep .account-card h1.title .title-sub {
-    white-space: normal;
   }
 
   .danger-zone__logout {
