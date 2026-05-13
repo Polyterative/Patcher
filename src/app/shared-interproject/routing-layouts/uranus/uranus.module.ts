@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {
+  CanActivateFn,
   Route,
   RouterModule,
   Routes
@@ -38,7 +39,7 @@ export class UranusModule {}
  * @param title Overhead title
  * @param canActivate
  */
-export function generateUranusRoutes(parentPrefix: string, routes: Routes, title?: string, canActivate: any[] = []): Route {
+export function generateUranusRoutes(parentPrefix: string, routes: Routes, title?: string, canActivate: CanActivateFn[] = []): Route {
   
   return {
     path:        parentPrefix,
