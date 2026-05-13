@@ -131,20 +131,14 @@ export class ModuleCollectionAnalysisService {
    * @returns Map of standard IDs to their modules
    */
   private groupModulesByStandard(modules: MinimalModule[]): Map<number, MinimalModule[]> {
-    const modulesByStandard = new Map<number, MinimalModule[]>();
-    
-    modules.forEach(module => {
-      // Guard against malformed module data
-      if (!module) return;
-      
-      const standardId = module.standard?.id ?? STANDARDS.EURORACK_3U.id;
-      if (!modulesByStandard.has(standardId)) {
-        modulesByStandard.set(standardId, []);
-      }
-      modulesByStandard.get(standardId)!.push(module);
-    });
-    
-    return modulesByStandard;
+    return modules
+      .filter((m): m is MinimalModule => !!m)
+      .reduce((map, module) => {
+        const standardId = module.standard?.id ?? STANDARDS.EURORACK_3U.id;
+        const list = map.get(standardId) ?? [];
+        list.push(module);
+        return map.set(standardId, list);
+      }, new Map<number, MinimalModule[]>());
   }
   
   /**
@@ -192,18 +186,10 @@ export class ModuleCollectionAnalysisService {
    * @returns Sorted array of standard analyses (by module count, descending)
    */
   private performStandardAnalysis(modules: MinimalModule[], rowHp?: number): StandardAnalysis[] {
-    const modulesByStandard = this.groupModulesByStandard(modules);
-    
-    const standardAnalyses: StandardAnalysis[] = [];
-    modulesByStandard.forEach((standardModules, standardId) => {
-      const analysis = this.buildStandardAnalysis(standardModules, standardId, rowHp);
-      if (analysis) {
-        standardAnalyses.push(analysis);
-      }
-    });
-    
-    // Sort by module count (descending)
-    return standardAnalyses.sort((a, b) => b.moduleCount - a.moduleCount);
+    return Array.from(this.groupModulesByStandard(modules).entries())
+      .map(([standardId, standardModules]) => this.buildStandardAnalysis(standardModules, standardId, rowHp))
+      .filter((analysis): analysis is StandardAnalysis => analysis !== null)
+      .sort((a, b) => b.moduleCount - a.moduleCount);
   }
   
   /**
@@ -299,17 +285,12 @@ export class ModuleCollectionAnalysisService {
    * @param standardId - The standard ID (0 = 3U, 1 = Intellijel 1U, 2 = PulpLogic 1U)
    * @returns Human-readable standard name
    */
+  private static readonly STANDARD_NAMES: Readonly<Record<number, string>> = Object.fromEntries(
+    Object.values(STANDARDS).map(s => [s.id, s.name])
+  );
+
   getStandardName(standardId: number): string {
-    switch (standardId) {
-      case STANDARDS.EURORACK_3U.id:
-        return STANDARDS.EURORACK_3U.name;
-      case STANDARDS.INTELLIJEL_1U.id:
-        return STANDARDS.INTELLIJEL_1U.name;
-      case STANDARDS.PULPLOGIC_1U.id:
-        return STANDARDS.PULPLOGIC_1U.name;
-      default:
-        return 'Unknown';
-    }
+    return ModuleCollectionAnalysisService.STANDARD_NAMES[standardId] ?? 'Unknown';
   }
   
   /**
