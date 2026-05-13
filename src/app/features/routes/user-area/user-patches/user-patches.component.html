@@ -51,17 +51,37 @@
           </div>
         } @else {
           <div class="section-empty">
-            <mat-card-subtitle>
-              @if ((dataService.activeTagFilter$ | async) && globalSearchQuery.trim()) {
-                No patches match the current search and tag filter.
-              } @else if (dataService.activeTagFilter$ | async) {
-                No patches match the selected tag.
-              } @else if (globalSearchQuery.trim()) {
-                No patches match "{{ globalSearchQuery.trim() }}".
-              } @else {
-                It looks like you haven't created any patches yet. Try adding some!
-              }
-            </mat-card-subtitle>
+            @if ((dataService.activeTagFilter$ | async) && globalSearchQuery.trim()) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="filter_alt_off"
+                title="No matches"
+                copy="No patches match the current search and tag filter."
+              ></app-empty-state-tips>
+            } @else if (dataService.activeTagFilter$ | async) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="filter_alt_off"
+                title="No matches"
+                copy="No patches match the selected tag."
+              ></app-empty-state-tips>
+            } @else if (globalSearchQuery.trim()) {
+              <app-empty-state-tips
+                [compact]="true"
+                icon="search_off"
+                title="No matches"
+                [copy]="'No patches match &quot;<strong>' + globalSearchQuery.trim() + '</strong>&quot;.'"
+              ></app-empty-state-tips>
+            } @else {
+              <app-empty-state-tips
+                icon="settings_input_composite"
+                title="Capture your first patch"
+                copy="Patches save the cables and settings of a sound so you can revisit and share it later."
+                [tips]="[
+                  { icon: 'add', html: 'Click <strong>Create patch</strong> and link it to a rack to start documenting connections.' }
+                ]"
+              ></app-empty-state-tips>
+            }
           </div>
         }
       }

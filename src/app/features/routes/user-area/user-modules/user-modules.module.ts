@@ -11,6 +11,7 @@ import { RouterLink } from "@angular/router";
 import { MatCardModule } from "@angular/material/card";
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/discovery-tips.module';
+import { EmptyStateTipsComponent } from 'src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import { DiscoveryTipsModule } from 'src/app/shared-interproject/discovery-tips/
     MatDividerModule,
     AutoUpdateLoadingIndicatorModule,
     RouterLink,
-    DiscoveryTipsModule
+    DiscoveryTipsModule,
+    EmptyStateTipsComponent
   ],
   exports:      [UserModulesComponent]
 })
