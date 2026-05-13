@@ -9,25 +9,12 @@ import {
   RACK_BALANCE_AXES
 } from './rack-balance-analysis.constants';
 import { isBlankModule } from './rack-blank-module.constants';
+import {
+  RackBalanceAnalysisResult,
+  RackBalanceAxisResult
+} from './rack-balance-analysis.types';
 
-export interface RackBalanceAxisResult {
-  id: RackBalanceAxisId;
-  label: string;
-  icon: string;
-  share: number;
-  matchedModules: number;
-  guidance: string;
-}
-
-export interface RackBalanceAnalysisResult {
-  axes: RackBalanceAxisResult[];
-  confidence: number;
-  recognizedModuleCount: number;
-  totalModules: number;
-  warningMessage: string | null;
-  summary: string;
-  isEmpty: boolean;
-}
+export type { RackBalanceAnalysisResult, RackBalanceAxisResult };
 
 @Injectable({
   providedIn: 'root'
