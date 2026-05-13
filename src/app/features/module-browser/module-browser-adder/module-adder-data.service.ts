@@ -55,6 +55,13 @@ export class ModuleAdderDataService extends SubManager {
   updateModulesList$ = new Subject<void>();
   //
   submitModuleForm$  = new Subject<void>();
+  submitSuccess$     = new Subject<{
+    name: string;
+    manufacturer?: string;
+    hp?: number;
+    standard?: string;
+    isDIY?: boolean;
+  }>();
 
   // Inline manufacturer creation
   showNewManufacturerForm$ = new BehaviorSubject<boolean>(false);
@@ -271,34 +278,9 @@ export class ModuleAdderDataService extends SubManager {
       });
     
     // when user submits the form, we need to add the module on the server
+    // confirmation is handled inline (armed-state button), so no dialog here
     this.submitModuleForm$
       .pipe(
-        switchMap(x => {
-          
-          const data: ConfirmDialogDataInModel = {
-            title: 'Submit this module?',
-            description: 'Once submitted, your module will be queued for review. Make sure all information is correct before continuing.',
-            positive:    {
-              label: 'Submit',
-              theme: 'primary'
-            }
-          };
-          
-          return this.dialog.open(
-            ConfirmDialogComponent,
-            {
-              data,
-              disableClose: false
-            }
-          )
-            .afterClosed()
-            .pipe(
-              tap((x: ConfirmDialogDataOutModel) => {
-                if (!x?.answer) SharedConstants.infoCustom(this.snackBar, 'No changes made.');
-              }),
-              filter((x: ConfirmDialogDataOutModel) => x && x.answer)
-            );
-        }),
         tap(() => this.similarModulesData$.next(undefined)),
         map(() => {
           const manualValue    = this.formData.manual.control.value;
@@ -312,6 +294,7 @@ export class ModuleAdderDataService extends SubManager {
             standard: parseInt(this.formData.standard.control.value.id),
             manualURL: plainSanitize(manualURL),
             isApproved: false,
+            isComplete: false,
             isDIY: this.formData.diy.control.value.id === '1',
             public: true
           };
@@ -328,28 +311,36 @@ export class ModuleAdderDataService extends SubManager {
       )
       .subscribe((module) => {
         
+        // capture display values from the form BEFORE resetting it
+        const mfrCtl = this.formData.manufacturer.control.value;
+        const stdCtl = this.formData.standard.control.value;
+        const diyCtl = this.formData.diy.control.value;
+        const recap = {
+          name: module.name,
+          manufacturer: (mfrCtl && mfrCtl.name) || undefined,
+          hp: parseInt(this.formData.hp.control.value) || undefined,
+          standard: (stdCtl && stdCtl.name) || undefined,
+          isDIY: !!(diyCtl && diyCtl.id === '1')
+        };
+        
         this.formData.name.control.setValue('');
         this.formData.description.control.setValue('');
         this.formData.manual.control.setValue('');
         this.formData.hp.control.setValue('');
         
-        // inform user that the module was added
-        this.snackBar.open(
-          `"${ module.name }" submitted and published to the community.`,
-          '',
-          {
-            duration: 7000,
-            panelClass: 'snack-success'
-          });
+        // trigger celebration overlay in the component
+        this.submitSuccess$.next(recap);
         
-        // navigate to the module browser page
-        this.router.navigate(
-          ['/modules', 'browser'],
-          {
-            queryParams: {refresh: true},
-            queryParamsHandling: 'merge' // This keeps existing query parameters and merges the new one.
-          }
-        );
+        // let the celebration play before navigating away
+        setTimeout(() => {
+          this.router.navigate(
+            ['/modules', 'browser'],
+            {
+              queryParams: {refresh: true},
+              queryParamsHandling: 'merge'
+            }
+          );
+        }, 4000);
       });
 
     // when user requests to create a new manufacturer inline

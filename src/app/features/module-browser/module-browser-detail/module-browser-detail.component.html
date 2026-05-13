@@ -193,21 +193,21 @@
                                     [@moduleDetailSupportEnter]="{ value: '', params: { delay: 428, duration: 190 } }"
                                     [sidesPadding]="false">
               <div class="rowwrap gap2">
-                @if (bag.data.isComplete === false) {
+                @if (bag.data) {
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Permanently delete this module from the database"
                                             matTooltipPosition="above"
                                             (click$)="dataService.deleteModule$.next(bag.data.id)">Delete module
                   </app-brand-primary-button>
                 }
-                @if (bag.data.isComplete === false && bag.data.manufacturerId) {
+                @if (bag.data && bag.data.manufacturerId) {
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Delete this module and remove its manufacturer only if it becomes orphaned"
                                             matTooltipPosition="above"
                                             (click$)="confirmDeleteModuleAndOrphanManufacturer(bag.data)">Delete module + orphan manufacturer
                   </app-brand-primary-button>
                 }
-                @if (bag.data.isComplete === false) {
+                @if (bag.data) {
                   <app-brand-primary-button theme="negative"
                                             matTooltip="Remove the newest panel image from this module"
                                             matTooltipPosition="above"
