@@ -68,6 +68,12 @@ import {
   isOneUStandard,
   HP_BAND_ORDER
 } from './supabase-queries.helpers';
+import {
+  rankBuckets,
+  rankOrderedBuckets,
+  rankNumberBuckets,
+  rankManufacturerScores
+} from './supabase-queries.insights';
 
 
 export class SupabaseQueriesService {
@@ -275,89 +281,6 @@ export class SupabaseQueriesService {
     return {data: rows, error: null};
   }
 
-  private rankBuckets(
-    counts: Map<string, number>,
-    limit: number,
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...counts.entries()]
-      .sort((a, b) => {
-        if (b[1] !== a[1]) {
-          return b[1] - a[1];
-        }
-        return a[0].localeCompare(b[0]);
-      })
-      .slice(0, limit)
-      .map(([label, count]) => ({
-        label,
-        count,
-        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
-      }));
-  }
-
-  private rankOrderedBuckets(
-    counts: Map<string, number>,
-    orderedLabels: string[],
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return orderedLabels
-      .filter((label) => (counts.get(label) ?? 0) > 0)
-      .map((label) => ({
-        label,
-        count: counts.get(label) ?? 0,
-        ...(detailBuilder ? {detail: detailBuilder(counts.get(label) ?? 0)} : {})
-      }));
-  }
-
-  private rankNumberBuckets(
-    counts: Map<number, number>,
-    limit: number,
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...counts.entries()]
-      .sort((a, b) => {
-        if (b[1] !== a[1]) {
-          return b[1] - a[1];
-        }
-        return a[0] - b[0];
-      })
-      .slice(0, limit)
-      .map(([value, count]) => ({
-        label: `${ value } HP`,
-        count,
-        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
-      }));
-  }
-
-
-  private rankManufacturerScores(
-    statsByManufacturer: Map<string, ManufacturerInsightStats>,
-    scorer: (stats: ManufacturerInsightStats) => number | null,
-    detailBuilder: (stats: ManufacturerInsightStats, score: number) => string,
-    limit = 5
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...statsByManufacturer.entries()]
-      .map(([label, stats]) => ({
-        label,
-        score: scorer(stats),
-        stats
-      }))
-      .filter((entry): entry is {label: string; score: number; stats: ManufacturerInsightStats} =>
-        entry.score !== null
-      )
-      .sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-        return a.label.localeCompare(b.label);
-      })
-      .slice(0, limit)
-      .map(({label, score, stats}) => ({
-        label,
-        count: score,
-        detail: detailBuilder(stats, score)
-      }));
-  }
 
   private buildModuleInsights(rows: PublicModuleInsightRow[]): PublicApplicationModuleInsights {
     const manufacturerCounts = new Map<string, number>();
@@ -485,39 +408,39 @@ export class SupabaseQueriesService {
       : 0;
 
     return {
-      topManufacturers: this.rankBuckets(
+      topManufacturers: rankBuckets(
         manufacturerCounts,
         5,
         (count) => `${ count } public modules`
       ),
-      activeManufacturers: this.rankBuckets(
+      activeManufacturers: rankBuckets(
         activeManufacturerCounts,
         5,
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      widestManufacturers: this.rankManufacturerScores(
+      widestManufacturers: rankManufacturerScores(
         manufacturerStats,
         (stats) => stats.totalModules >= 5 ? Math.round(stats.totalHp / stats.totalModules) : null,
         (stats, score) => `${ score } HP average across ${ stats.totalModules } public modules`
       ),
-      oneUManufacturers: this.rankManufacturerScores(
+      oneUManufacturers: rankManufacturerScores(
         manufacturerStats,
         (stats) => stats.totalModules >= 5 && stats.oneUModules >= 2
           ? Math.round((stats.oneUModules / stats.totalModules) * 100)
           : null,
         (stats, score) => `${ score }% 1U share across ${ stats.totalModules } public modules`
       ),
-      standardMix: this.rankBuckets(
+      standardMix: rankBuckets(
         standardCounts,
         standardCounts.size,
         (count) => `${ count } public modules in this format`
       ),
-      standardActivity: this.rankBuckets(
+      standardActivity: rankBuckets(
         standardActivityCounts,
         Math.min(5, standardActivityCounts.size),
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      standardWidthAverages: this.rankBuckets(
+      standardWidthAverages: rankBuckets(
         new Map(
           [...standardWidthStats.entries()].map(([label, stats]) => [
             label,
@@ -527,7 +450,7 @@ export class SupabaseQueriesService {
         Math.min(5, standardWidthStats.size),
         (count) => `${ count } HP average width`
       ),
-      standardManufacturerCounts: this.rankBuckets(
+      standardManufacturerCounts: rankBuckets(
         new Map(
           [...standardManufacturers.entries()].map(([label, makers]) => [
             label,
@@ -537,17 +460,17 @@ export class SupabaseQueriesService {
         Math.min(5, standardManufacturers.size),
         (count) => `${ count } makers represented in this format`
       ),
-      hpBands: this.rankOrderedBuckets(
+      hpBands: rankOrderedBuckets(
         hpBandCounts,
         HP_BAND_ORDER,
         (count) => `${ count } modules in this size band`
       ),
-      hpBandActivity: this.rankOrderedBuckets(
+      hpBandActivity: rankOrderedBuckets(
         hpBandActivityCounts,
         HP_BAND_ORDER,
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      hpExact: this.rankNumberBuckets(
+      hpExact: rankNumberBuckets(
         hpExactCounts,
         8,
         (count) => `${ count } modules at this exact width`
