@@ -55,31 +55,12 @@ import {
   SignalTypeFamily
 } from '../../rack-signal-analysis.utils';
 import { takeUntil } from 'rxjs/operators';
-
-interface SignalOverlayLine {
-  key: string;
-  path: string;
-  family: SignalTypeFamily;
-  confidence: SignalDestinationConfidence;
-}
-
-type SignalHoverCardPlacement = 'left' | 'right';
-
-interface SignalOverlayFrame {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-interface ModuleRenderRect {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-  centerX: number;
-  centerY: number;
-}
+import {
+  ModuleRenderRect,
+  SignalHoverCardPlacement,
+  SignalOverlayFrame,
+  SignalOverlayLine,
+} from './rack-visual-model.types';
 
 
 @Component({
