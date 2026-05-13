@@ -42,32 +42,32 @@ export type HiddenUsageBucket = 'none' | 'some' | '5_plus' | '10_plus' | '25_plu
 
 @Injectable()
 export class ModuleDetailDataService implements OnDestroy {
-  updateSingleModuleData$ = new ReplaySubject<number>();
-  singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
+  readonly updateSingleModuleData$ = new ReplaySubject<number>();
+  readonly singleModuleData$ = new BehaviorSubject<DbModule | null>(null);
   //
-  moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
-  userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
+  readonly moduleEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  readonly moduleEditorHasPendingChanges$ = new BehaviorSubject<boolean>(false);
+  readonly userModulesList$: BehaviorSubject<DbModule[]> = new BehaviorSubject<DbModule[]>([]);
   // modulePatchesList$: BehaviorSubject<Patch[]> = new BehaviorSubject<Patch[]>([]);
-  addModuleToCollection$ = new Subject<number>();
-  requestAddModuleToRack$ = new Subject<DbModule>();
-  removeModuleFromCollection$ = new Subject<number>();
-  copyModuleNameAndManufacturer$ = new Subject<void>();
+  readonly addModuleToCollection$ = new Subject<number>();
+  readonly requestAddModuleToRack$ = new Subject<DbModule>();
+  readonly removeModuleFromCollection$ = new Subject<number>();
+  readonly copyModuleNameAndManufacturer$ = new Subject<void>();
   //
-  racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
-  patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
-  moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
-  modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
+  readonly racksWithThisModule$ = new BehaviorSubject<RackMinimal[] | undefined>(undefined);
+  readonly patchesWithThisModule$ = new BehaviorSubject<PatchMinimal[] | undefined>(undefined);
+  readonly moduleUsageSummary$ = new BehaviorSubject<ModuleUsageSummary | undefined>(undefined);
+  readonly modulesBySameManufacturer$ = new BehaviorSubject<DbModule[] | undefined>(undefined);
   //
-  deleteModule$ = new Subject<number>();
-  deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
-  deleteLastPanel$ = new Subject<DbModule>();
-  changeModule$ = new Subject<Partial<DbModule>>();
-  setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
+  readonly deleteModule$ = new Subject<number>();
+  readonly deleteModuleAndOrphanManufacturer$ = new Subject<DbModule>();
+  readonly deleteLastPanel$ = new Subject<DbModule>();
+  readonly changeModule$ = new Subject<Partial<DbModule>>();
+  readonly setStoreUrl$ = new Subject<{ id: number; url: string | null }>();
   /** Toggle the module editing panel open/closed through the service layer. */
-  requestModuleEditingToggle$ = new Subject<void>();
-  isAdmin$ = new BehaviorSubject<boolean>(false);
-  protected destroyEvent$ = new Subject<void>();
+  readonly requestModuleEditingToggle$ = new Subject<void>();
+  readonly isAdmin$ = new BehaviorSubject<boolean>(false);
+  protected readonly destroyEvent$ = new Subject<void>();
   
   constructor(
     public dialog: MatDialog,

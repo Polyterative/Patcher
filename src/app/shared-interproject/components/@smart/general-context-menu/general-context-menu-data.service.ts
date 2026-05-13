@@ -21,9 +21,9 @@ export interface ContextMenuItem {
 @Injectable()
 export class GeneralContextMenuDataService extends SubManager {
   
-  menuItems$: BehaviorSubject<ContextMenuItem[]> = new BehaviorSubject<ContextMenuItem[]>([]);
+  readonly menuItems$: BehaviorSubject<ContextMenuItem[]> = new BehaviorSubject<ContextMenuItem[]>([]);
   
-  positionData$ = new BehaviorSubject<{
+  readonly positionData$ = new BehaviorSubject<{
     x: string,
     y: string
   }>({
@@ -31,7 +31,7 @@ export class GeneralContextMenuDataService extends SubManager {
     y: '0px'
   });
   
-  open$ = new Subject<MouseEvent>();
+  readonly open$ = new Subject<MouseEvent>();
 
   clampPosition(event: MouseEvent, itemCount = this.menuItems$.value.length): {x: string; y: string} {
     const visualViewport = typeof window !== 'undefined' ? window.visualViewport : null;
