@@ -199,28 +199,28 @@ export function buildSignalDestinationGroups(
   return groupSignalDestinationMatches(allMatches.slice(0, options.maxMatches ?? DEFAULT_SIGNAL_MAX_MATCHES));
 }
 
+function createSignalFamilyGroupMap(): Map<SignalTypeFamily, SignalDestinationMatch[]> {
+  const map = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
+  for (const family of SIGNAL_FAMILY_ORDER) {
+    map.set(family, []);
+  }
+  return map;
+}
+
 function buildSignalDestinationMatches(
   hoveredModule: RackedModule,
   rowedRackedModules: RackedModule[][] | null | undefined,
   focusArea?: SignalFocusArea
 ): SignalDestinationMatch[] {
-  const groupedMatches = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    groupedMatches.set(family, []);
-  }
+  const groupedMatches = createSignalFamilyGroupMap();
 
   for (const candidate of flattenRackedModules(rowedRackedModules)) {
-    if (candidate === hoveredModule || isBlankModule(candidate.module.id)) {
+    if (candidate === hoveredModule) {
       continue;
     }
 
     const match = buildSignalDestinationMatch(hoveredModule, candidate);
-    if (!match) {
-      continue;
-    }
-
-    if (!matchesSignalFocusArea(match, focusArea)) {
+    if (!match || !matchesSignalFocusArea(match, focusArea)) {
       continue;
     }
 
@@ -239,11 +239,7 @@ function buildSignalDestinationMatches(
 }
 
 function groupSignalDestinationMatches(matches: SignalDestinationMatch[]): SignalDestinationGroup[] {
-  const groupedMatches = new Map<SignalTypeFamily, SignalDestinationMatch[]>();
-
-  for (const family of SIGNAL_FAMILY_ORDER) {
-    groupedMatches.set(family, []);
-  }
+  const groupedMatches = createSignalFamilyGroupMap();
 
   for (const match of matches) {
     groupedMatches.get(match.family)?.push(match);
@@ -704,15 +700,7 @@ function isBlockedSignalRelationship(
 function normalizedTokenOverlap(a: string, b: string, options?: {ignoreTokens?: Set<string>}): number {
   const aTokens = new Set(normalizeSignalTokens(a, options));
   const bTokens = new Set(normalizeSignalTokens(b, options));
-  let overlap = 0;
-
-  aTokens.forEach(token => {
-    if (bTokens.has(token)) {
-      overlap += 1;
-    }
-  });
-
-  return overlap;
+  return Array.from(aTokens).filter(token => bTokens.has(token)).length;
 }
 
 function normalizeSignalTokens(value: string, options?: {ignoreTokens?: Set<string>}): string[] {
