@@ -203,16 +203,17 @@
         @if (bag.hasLinkedRack && (readonly || bag.operationMode === operationModes.linkedRack)
              && bag.linkedRackPreview.kind === 'ready' && bag.linkedRackPreview.rack) {
          <div class="patch-editor-rack-visual"
+              [class.patch-editor-rack-visual--readonly]="readonly"
               (click)="onRackVisualBackgroundClick($event)">
            <div class="patch-editor-rack-visual__viewport" #rackViewport>
              <div class="patch-editor-rack-visual__frame"
-                  [style.width.px]="rackScaledWidthPx"
-                  [style.height.px]="rackScaledHeightPx">
+                  [style.width.px]="readonly ? null : rackScaledWidthPx"
+                  [style.height.px]="readonly ? null : rackScaledHeightPx">
               <div class="patch-editor-rack-visual__screen"
                    #rackScreen
                    [class.patch-editor-rack-visual__screen--has-selection]="expandedRackTrackingId"
                    [style.width.rem]="bag.linkedRackPreview.rack.hp"
-                   [style.transform]="'scale(' + rackAutoScale + ')'"
+                   [style.transform]="readonly ? null : 'scale(' + rackAutoScale + ')'"
                    [style.transform-origin]="'top left'">
                 @for (row of bag.linkedRackPreview.rows; track row.row; let rowIdx = $index) {
                   <div class="patch-editor-rack-visual__row">
