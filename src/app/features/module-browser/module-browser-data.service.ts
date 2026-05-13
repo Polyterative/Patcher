@@ -42,105 +42,33 @@ import {
   compareModulesByUpdatedDesc
 } from '../../shared-interproject/utils/module-sort-utils';
 import { SupabaseService } from '../backend/supabase.service';
+import {
+  HpConditionOption,
+  HpConditionOperator,
+  IdNameOption,
+  IdNumberOption,
+  ModuleBrowserFields,
+  ModuleList,
+  ModuleMultiselectField,
+  ModuleOrderOption,
+  ModuleSelectField,
+  ModuleTextField
+} from './module-browser-data.models';
+import {
+  DEFAULT_HP_CONDITION,
+  DEFAULT_STANDARD,
+  MODULE_ORDER_OPTIONS,
+  OWNED_MODE_DEFAULT_ORDER
+} from './module-browser-data.constants';
+import {
+  compareModulesByCreated,
+  getModuleStandardId,
+  matchesSelectedTags,
+  toSortDirection
+} from './module-browser-data.utils';
 
+export type { ModuleList, ModuleOrderOption } from './module-browser-data.models';
 
-export type ModuleList = MinimalModule[] | null;
-
-export interface ModuleOrderOption {
-  id: string;
-  name: string;
-}
-
-interface IdNameOption {
-  id: string;
-  name: string;
-}
-
-type HpConditionOperator =
-  '='
-  | '!='
-  | '>'
-  | '<'
-  | '>='
-  | '<=';
-
-interface HpConditionOption {
-  id: HpConditionOperator;
-  name: string;
-}
-
-interface IdNumberOption {
-  id: number | undefined;
-  name: string;
-}
-
-interface ModuleTextField {
-  code: string;
-  flex: string;
-  control: FormControl<string>;
-  label: string;
-  type: FormTypes;
-}
-
-interface ModuleSelectField<T> {
-  code: string;
-  flex: string;
-  control: FormControl<T>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<T[]>;
-}
-
-interface ModuleMultiselectField<T> {
-  code: string;
-  flex: string;
-  control: FormControl<T[]>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<T[]>;
-}
-
-interface ModuleAutocompleteField {
-  code: string;
-  flex: string;
-  control: FormControl<string>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<IdNameOption[]>;
-}
-
-interface ModuleBrowserFields {
-  name: ModuleTextField;
-  description: ModuleTextField;
-  hp: ModuleTextField;
-  manufacturers: ModuleAutocompleteField;
-  hpCondition: ModuleSelectField<HpConditionOption>;
-  order: ModuleSelectField<ModuleOrderOption>;
-  standard: ModuleSelectField<IdNumberOption>;
-  tags: ModuleMultiselectField<ISelectable>;
-}
-
-const DEFAULT_HP_CONDITION: HpConditionOption = {id: '=', name: 'exactly'};
-const DEFAULT_STANDARD: IdNumberOption = {id: undefined, name: 'All'};
-const OWNED_MODE_DEFAULT_ORDER: ModuleOrderOption = {id: 'hp', name: 'HP ↑'};
-
-const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
-  {id: 'name', name: 'Name ↑'},
-  {id: 'name', name: 'Name ↓'},
-  {id: 'hp', name: 'HP ↑'},
-  {id: 'hp', name: 'HP ↓'},
-  {id: 'manufacturerId', name: 'Manufacturer ↑'},
-  {id: 'manufacturerId', name: 'Manufacturer ↓'},
-  {id: 'created', name: 'Created ↑'},
-  {id: 'created', name: 'Created ↓'},
-  {id: 'updated', name: 'Updated ↑'},
-  {id: 'updated', name: 'Updated ↓'},
-  {id: 'isComplete', name: 'Data Complete ↓'},
-];
-
-function toSortDirection(optionName: string | undefined): 'asc' | 'desc' {
-  return optionName?.includes('↑') ? 'asc' : 'desc';
-}
 
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
@@ -461,7 +389,7 @@ export class ModuleBrowserDataService extends SubManager {
 
     if (
       selectedStandardId !== undefined
-      && this.getModuleStandardId(module) !== selectedStandardId
+      && getModuleStandardId(module) !== selectedStandardId
     ) {
       return false;
     }
@@ -470,22 +398,11 @@ export class ModuleBrowserDataService extends SubManager {
       return false;
     }
 
-    if (selectedTagIds.length > 0 && !this.matchesSelectedTags(module, selectedTagIds)) {
+    if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds)) {
       return false;
     }
 
     return true;
-  }
-
-  private matchesSelectedTags(module: MinimalModule, selectedTagIds: number[]): boolean {
-    return (module.tags ?? []).some((tagVote) => selectedTagIds.includes(tagVote.tag?.id));
-  }
-
-  private getModuleStandardId(module: MinimalModule): number | undefined {
-    const standard = module.standard as MinimalModule['standard'] | number | undefined;
-    return typeof standard === 'number'
-      ? standard
-      : standard?.id;
   }
 
   private matchesHpCondition(moduleHp: number, hpValue: number): boolean {
@@ -519,25 +436,11 @@ export class ModuleBrowserDataService extends SubManager {
       case 'manufacturerId':
         return sortedModules.sort(direction === 'asc' ? compareModulesByManufacturerAsc : compareModulesByManufacturerDesc);
       case 'created':
-        return sortedModules.sort((a, b) => this.compareModulesByCreated(a, b, direction));
+        return sortedModules.sort((a, b) => compareModulesByCreated(a, b, direction));
       case 'updated':
         return sortedModules.sort(direction === 'asc' ? compareModulesByUpdatedAsc : compareModulesByUpdatedDesc);
       default:
         return sortedModules;
     }
-  }
-
-  private compareModulesByCreated(a: MinimalModule, b: MinimalModule, direction: 'asc' | 'desc'): number {
-    const aCreated = Date.parse(a.created || '');
-    const bCreated = Date.parse(b.created || '');
-    const comparison = (Number.isNaN(aCreated) ? 0 : aCreated) - (Number.isNaN(bCreated) ? 0 : bCreated);
-
-    if (comparison !== 0) {
-      return direction === 'asc'
-        ? comparison
-        : -comparison;
-    }
-
-    return compareModulesByNameAsc(a, b);
   }
 }
