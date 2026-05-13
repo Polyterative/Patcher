@@ -2,41 +2,27 @@ import {
   Directive,
   ElementRef,
   HostListener,
-  Input,
-  OnDestroy, OnInit
+  Input
 } from '@angular/core';
-import { HeroInfoBoxService } from './hero-info-box.service';
 
 
 @Directive({
   selector: '[infoBox]',
   standalone: false
 })
-export class HeroInfoBoxTextDirective implements OnDestroy, OnInit {
+export class HeroInfoBoxTextDirective {
   @Input() infoText: string;
   
-  constructor(public dataService: HeroInfoBoxService, public el: ElementRef) {
+  constructor(public el: ElementRef) {
     this.el.nativeElement.style.cursor = 'help';
   }
   
-  ngOnInit() {
-  
-  }
-  
   @HostListener('mouseenter') onMouseEnter() {
-    // this.dataService.hoverStart$.next(this.infoText);
-    
     this.el.nativeElement.setAttribute('title', this.infoText);
   }
   
   @HostListener('mouseleave') onMouseLeave() {
-    // this.dataService.hoverEnd$.next(this.infoText);
-    
     this.el.nativeElement.setAttribute('title', undefined);
-  }
-  
-  ngOnDestroy(): void {
-    // this.dataService.hoverEnd$.next(this.infoText);
   }
   
 }
