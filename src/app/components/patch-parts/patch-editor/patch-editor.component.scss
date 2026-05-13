@@ -357,6 +357,25 @@ $rack-grid-weight: 0.1rem;
   pointer-events: none;
 }
 
+// In readonly mode: let the rack take natural flow height (no JS-driven frame height needed)
+.patch-editor-rack-visual--readonly {
+  .patch-editor-rack-visual__viewport {
+    overflow-x: auto;
+    overflow-y: visible;
+    justify-content: flex-start;
+  }
+
+  .patch-editor-rack-visual__frame {
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .patch-editor-rack-visual__screen {
+    position: relative;
+    width: auto !important;
+  }
+}
+
 // Subtle hover on dimmed modules (still clickable to switch selection)
 .patch-editor-rack-visual__module-wrapper--dimmed:hover {
   opacity: 0.6;
