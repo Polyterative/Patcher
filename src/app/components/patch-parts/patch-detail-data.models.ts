@@ -1,3 +1,5 @@
+import { CVConnectionEntity } from '../../models/cv';
+
 /** Maximum number of instances (copies) allowed per module in a single patch. */
 export const MAX_INSTANCES_PER_MODULE = 20;
 
@@ -19,3 +21,16 @@ export interface LinkedRackUiState {
   rackId?: number | null;
   rackImage?: string;
 }
+
+export type CVConnectionEvent =
+  | { type: 'cv'; cv: CVConnectionEntity }
+  | { type: 'reset' }
+  | { type: 'resetA' }
+  | { type: 'resetB' };
+
+export interface CVConnectionState {
+  a: CVConnectionEntity | null;
+  b: CVConnectionEntity | null;
+}
+
+export const EMPTY_CV_CONNECTION_STATE: CVConnectionState = {a: null, b: null};

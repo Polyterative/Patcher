@@ -73,6 +73,11 @@ import {
   MultiInstanceModuleSummary,
 } from './patch-detail-data.models';
 import {
+  CVConnectionEvent,
+  CVConnectionState,
+  EMPTY_CV_CONNECTION_STATE,
+} from './patch-detail-data.models';
+import {
   buildLinkedRackUiState,
   DEFAULT_LINKED_RACK_UI_STATE,
   groupInstancesByModuleId,
@@ -82,19 +87,6 @@ export type { LinkedRackUiState, MultiInstanceModuleSummary } from './patch-deta
 export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
 
 
-
-type CVConnectionEvent =
-  | { type: 'cv'; cv: CVConnectionEntity }
-  | { type: 'reset' }
-  | { type: 'resetA' }
-  | { type: 'resetB' };
-
-interface CVConnectionState {
-  a: CVConnectionEntity | null;
-  b: CVConnectionEntity | null;
-}
-
-const EMPTY_CV_CONNECTION_STATE: CVConnectionState = {a: null, b: null};
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
