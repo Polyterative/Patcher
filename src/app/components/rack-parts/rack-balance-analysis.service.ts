@@ -60,10 +60,8 @@ export class RackBalanceAnalysisService {
       };
     }
 
-    const matchedCounts = new Map<RackBalanceAxisId, number>();
-    const matchedArea = new Map<RackBalanceAxisId, number>();
-    RACK_BALANCE_AXES.forEach(axis => matchedCounts.set(axis.id, 0));
-    RACK_BALANCE_AXES.forEach(axis => matchedArea.set(axis.id, 0));
+    const matchedCounts = new Map<RackBalanceAxisId, number>(RACK_BALANCE_AXES.map(axis => [axis.id, 0]));
+    const matchedArea = new Map<RackBalanceAxisId, number>(RACK_BALANCE_AXES.map(axis => [axis.id, 0]));
 
     let recognizedModuleCount = 0;
 
@@ -156,21 +154,19 @@ export class RackBalanceAnalysisService {
     return matchedAxes;
   }
 
+  private static readonly NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
+    0: 'purpose',
+    1: 'nature',
+    2: 'character',
+  };
+
   private normalizeTagType(tagType: unknown): string | null {
     if (typeof tagType === 'string') {
       return tagType.trim().toLowerCase();
     }
 
     if (typeof tagType === 'number') {
-      if (tagType === 0) {
-        return 'purpose';
-      }
-      if (tagType === 1) {
-        return 'nature';
-      }
-      if (tagType === 2) {
-        return 'character';
-      }
+      return RackBalanceAnalysisService.NUMERIC_TAG_TYPE_NAMES[tagType] ?? null;
     }
 
     return null;
