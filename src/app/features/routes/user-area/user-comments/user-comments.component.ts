@@ -21,7 +21,6 @@ import { map } from "rxjs/operators";
 import { MatChipsModule } from "@angular/material/chips";
 import { CommentableEntityTypes } from "src/app/components/shared-atoms/comments/comments-data.service";
 import { DbComment } from "src/app/models/comment";
-import { MatCardSubtitle } from "@angular/material/card";
 import { ScreenWrapperModule } from "src/app/shared-interproject/components/@visual/screen-wrapper/screen-wrapper.module";
 import { EmptyStateTipsComponent } from "src/app/components/shared-atoms/empty-state-tips/empty-state-tips.component";
 
@@ -46,7 +45,6 @@ interface FilterOption {
     CommentsItemBlockComponent,
     MatPaginatorModule,
     MatChipsModule,
-    MatCardSubtitle,
     ScreenWrapperModule,
     EmptyStateTipsComponent,
   ]
