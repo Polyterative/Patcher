@@ -146,7 +146,7 @@ async function readRackViewportMetrics(page: Page): Promise<RackViewportMetrics>
 }
 
 async function readRackEdgeMetrics(page: Page, selector: string): Promise<RackEdgeMetrics> {
-  const metrics = await page.evaluate<RackEdgeMetrics | null>((itemSelector) => {
+  const metrics = await page.evaluate<RackEdgeMetrics | null, string>((itemSelector) => {
     const items = Array.from(document.querySelectorAll<HTMLElement>(itemSelector));
     const item = items.at(-1) ?? null;
     const container = document.querySelector<HTMLElement>('app-rack-editor .scroll');
