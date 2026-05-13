@@ -59,7 +59,8 @@ export class PatchListComponent extends SubManager implements OnInit {
     this.externalSearchQuery$.next(value ?? '');
   }
   
-  readonly filteredData$ = new BehaviorSubject<PatchList>([]);
+  private readonly _filteredData$ = new BehaviorSubject<PatchList>([]);
+  readonly filteredData$ = this._filteredData$.asObservable();
   
   constructor(public filterService: LocalDataFilterService) {
     super();
@@ -77,7 +78,7 @@ export class PatchListComponent extends SubManager implements OnInit {
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([data, localQuery, externalQuery]) => {
-        this.filteredData$.next(
+        this._filteredData$.next(
           data.filter(item => {
             if (!item) {
               return false;
