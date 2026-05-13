@@ -32,13 +32,12 @@ import {
   DISCOVERY_TIP_GLOBAL_PAUSE_ID,
   DISCOVERY_TIP_STORAGE_KEY
 } from './discovery-tip.constants';
+import {
+  isSnoozed,
+  normalizeTipState
+} from './discovery-tip.utils';
 
 export { DISCOVERY_TIP_STORAGE_KEY } from './discovery-tip.constants';
-
-
-function isSnoozed(snoozedUntil: string | undefined): boolean {
-  return !!snoozedUntil && new Date(snoozedUntil).getTime() > Date.now();
-}
 
 @Injectable({
   providedIn: 'root'
@@ -343,7 +342,7 @@ export class DiscoveryTipService extends SubManager {
   }
 
   private getTipState(definition: DiscoveryTipDefinition): DiscoveryTipStateRecord {
-    return this.normalizeTipState(definition, this._tipStates$.value[definition.id]);
+    return normalizeTipState(definition, this._tipStates$.value[definition.id]);
   }
 
   private updateTipState(
@@ -357,19 +356,6 @@ export class DiscoveryTipService extends SubManager {
 
     this._tipStates$.next(nextStates);
     this.persistViewerTipStates(this._viewerKey$.value, nextStates);
-  }
-
-  private normalizeTipState(
-    definition: DiscoveryTipDefinition,
-    state?: DiscoveryTipStateRecord
-  ): DiscoveryTipStateRecord {
-    if (!state || state.version !== definition.version) {
-      return {
-        version: definition.version,
-        shownCount: 0
-      };
-    }
-    return state;
   }
 
   private readViewerTipStates(viewerKey: string): Record<string, DiscoveryTipStateRecord> {
