@@ -1,8 +1,11 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Input,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
@@ -51,13 +54,15 @@ const JSONLD_SCRIPT_ID = 'rack-jsonld';
   providers: [CommentsDataService, UserAreaDataService],
   standalone: false
 })
-export class RackBrowserDetailViewComponent extends SubManager implements OnInit {
+export class RackBrowserDetailViewComponent extends SubManager implements OnInit, AfterViewInit {
   @Input() readonly viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
     tagsShowCounts: false
   };
   @Input() ignoreSeo = false;
   @Input() showWideShellNav = true;
+
+  @ViewChild('rackEditorAnchor', { static: false }) rackEditorAnchor?: ElementRef<HTMLElement>;
 
   constructor(
     public dataService: RackDetailDataService,
@@ -139,6 +144,21 @@ export class RackBrowserDetailViewComponent extends SubManager implements OnInit
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleRackData$.next(undefined);
     super.ngOnDestroy();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataService.moduleAddedFromPicker$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Give the rack a tick to re-render with the newly added (unracked) module
+        // then bring the rack editor into view so the user sees what happened.
+        setTimeout(() => {
+          const el = this.rackEditorAnchor?.nativeElement;
+          if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 120);
+      });
   }
 
   calculateRackUtilization(totalHp: number, rows: number, usedHp: number): string {

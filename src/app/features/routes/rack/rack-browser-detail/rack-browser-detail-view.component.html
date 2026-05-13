@@ -41,11 +41,13 @@
                  </div>
                </div>
              </div>
-              <lib-clean-card>
-                <app-rack-editor
-                  [data]="(bag.data)"
-                ></app-rack-editor>
-              </lib-clean-card>
+              <div #rackEditorAnchor>
+                <lib-clean-card>
+                  <app-rack-editor
+                    [data]="(bag.data)"
+                  ></app-rack-editor>
+                </lib-clean-card>
+              </div>
             @if (bag.rowedRackedModules) {
               <div class="rackBrowserDetailView__mobileAnalysis">
                 <app-rack-balance-panel
