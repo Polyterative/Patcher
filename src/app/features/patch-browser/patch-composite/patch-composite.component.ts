@@ -40,11 +40,11 @@ export class PatchCompositeComponent {
     return [[{
       title: 'Patch statistics',
       items: [
-        { label: 'Cables', value: '' + stats.totalCables, icon: 'cable' },
-        { label: 'Modules', value: '' + stats.uniqueModules, icon: 'view_module' },
-        { label: 'Multiples', value: '' + stats.multiplesCount, icon: 'call_split', hidden: stats.multiplesCount === 0 },
-        { label: 'Cables / module', value: '' + stats.avgCablesPerModule, icon: 'insights' },
-        { label: 'Annotated', value: '' + stats.annotatedConnections, icon: 'edit_note', hidden: stats.annotatedConnections === 0 }
+        { label: 'Cables', value: `${stats.totalCables}`, icon: 'cable' },
+        { label: 'Modules', value: `${stats.uniqueModules}`, icon: 'view_module' },
+        { label: 'Multiples', value: `${stats.multiplesCount}`, icon: 'call_split', hidden: stats.multiplesCount === 0 },
+        { label: 'Cables / module', value: `${stats.avgCablesPerModule}`, icon: 'insights' },
+        { label: 'Annotated', value: `${stats.annotatedConnections}`, icon: 'edit_note', hidden: stats.annotatedConnections === 0 }
       ]
     }]];
   }
