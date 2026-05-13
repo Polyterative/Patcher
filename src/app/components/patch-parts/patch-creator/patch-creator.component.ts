@@ -58,10 +58,11 @@ export interface PatchCreatorInModel {
 })
 export class PatchCreatorComponent implements OnInit, OnDestroy {
   public readonly save$ = new Subject<void>();
-  data$ = new BehaviorSubject<[]>([]);
-  readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
-  readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
-  readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
+  private readonly _currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
+  private readonly _linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
+  private readonly _linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
+  readonly linkedRackOptions$ = this._linkedRackOptions$.asObservable();
+  readonly linkedRackPersistenceBlocked$ = this._linkedRackPersistenceBlocked$.asObservable();
   
   fields: {
     name: IMatFormEntityConfig;
@@ -118,7 +119,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
       flex: '6rem',
       control: new UntypedFormControl(''),
       type: FormTypes.SELECT,
-      options$: this.linkedRackOptions$,
+      options$: this._linkedRackOptions$,
       iconL1: 'view_stream'
     },
     public: {
@@ -201,12 +202,12 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
     this.backend.get.currentUserRacks()
       .pipe(takeUntil(this.destroyEvent$))
       .subscribe(racks => {
-        this.currentUserRacks$.next(racks);
+        this._currentUserRacks$.next(racks);
         const options = racks.map(rack => ({
           id: `${ rack.id }`,
           name: rack.name || `Rack #${ rack.id }`
         }));
-        this.linkedRackOptions$.next(options);
+          this._linkedRackOptions$.next(options);
 
         if (this.data.linkedRackId != null) {
           findAndApplyOptionForId(`${ this.data.linkedRackId }`, this.fields.linkedRack.control, options);
@@ -220,7 +221,7 @@ export class PatchCreatorComponent implements OnInit, OnDestroy {
   }
 
   private setLinkedRackPersistenceBlocked(blocked: boolean): void {
-    this.linkedRackPersistenceBlocked$.next(blocked);
+    this._linkedRackPersistenceBlocked$.next(blocked);
 
     if (blocked) {
       this.fields.linkedRack.control.reset('', {emitEvent: false});
