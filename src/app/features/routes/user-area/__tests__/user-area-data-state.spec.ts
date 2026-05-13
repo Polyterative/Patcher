@@ -185,8 +185,8 @@ describe('UserAreaDataService - Observable State Propagation', () => {
       dataService.modulesData$.next(MOCK_MODULES as any);
       dataService.patchesData$.next(MOCK_PATCHES as any);
       dataService.rackData$.next(MOCK_RACKS as any);
-      dataService.commentsData$.next([{id: 1}]);
-      dataService.manualsData$.next([{id: 2}]);
+      dataService.commentsData$.next([{id: 1}] as any);
+      dataService.manualsData$.next([{id: 2}] as any);
       
       expect(dataService.modulesData$.value?.length).toBe(2);
       expect(dataService.patchesData$.value?.length).toBe(2);
