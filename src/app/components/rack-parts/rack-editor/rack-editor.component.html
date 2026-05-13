@@ -39,15 +39,26 @@
             This rack is private. It won't appear in search, but anyone with the URL can still open it.
           </app-advice-tooltip>
         }
-        @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
-          <app-advice-tooltip
-            title="Tip"
-            tone="info"
-            [@enter]="{ value: '', params: { delay: 500}}"
-          >
-            Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
-            Blanks are available in all sizes!
-          </app-advice-tooltip>
+        @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalPlacedModulesOfRack) === 0) {
+          @if ((bag.rowedRackedModules | hasUnrackedModulesList)) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="drag_indicator"
+              title="Finish placing your module"
+              copy="The module below isn't in a row yet — <strong>drag it</strong> onto a row to add it to the rack."
+            ></app-empty-state-tips>
+          } @else {
+            <app-empty-state-tips
+              icon="dashboard_customize"
+              title="This rack is empty"
+              copy="Use the module picker below to drop your first modules into the rack. You can drag them where you want, then arrange and stack rows as you go."
+              [tips]="[
+                { icon: 'library_books', html: 'Pick from your <strong>Collection</strong> below for modules you already own, or switch to the full library to add anything.' },
+                { icon: 'drag_indicator', html: '<strong>Drag</strong> a module card onto a row, then <strong>drag again</strong> inside the rack to reposition it.' },
+                { icon: 'view_agenda', html: 'Need more space? Use <strong>Add new row</strong> below the rack to stack additional rows.' }
+              ]"
+            ></app-empty-state-tips>
+          }
         }
          <div #rackViewport
               class="col scroll custom-scrollbar transition-all"
