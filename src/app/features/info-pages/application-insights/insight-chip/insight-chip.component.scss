@@ -1,0 +1,66 @@
+:host {
+  display: contents;
+}
+
+.insight-chip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(86, 108, 132, 0.14);
+  border-radius: 1rem;
+  background: rgba(248, 251, 255, 0.82);
+}
+
+.insight-chip--compact {
+  padding: 0.7rem 0.85rem;
+}
+
+.insight-chip--featured {
+  padding: 1rem 1.2rem;
+}
+
+.insight-chip mat-icon {
+  color: #4063d8;
+}
+
+.insight-chip__label {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.82rem;
+  color: rgba(24, 37, 53, 0.7);
+}
+
+.insight-chip--featured strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+}
+
+.insight-chip--featured .insight-chip__label {
+  font-size: 0.85rem;
+  color: rgba(24, 37, 53, 0.8);
+}
+
+@media (max-width: 36rem) {
+  .insight-chip {
+    padding: 0.75rem 0.9rem;
+  }
+
+  .insight-chip--compact {
+    padding: 0.6rem 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .insight-chip__label {
+    font-size: 0.75rem;
+    margin-bottom: 0.08rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  .insight-chip--featured {
+    grid-column: 1 / 3;
+  }
+}
