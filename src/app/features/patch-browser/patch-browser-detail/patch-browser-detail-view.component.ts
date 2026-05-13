@@ -8,11 +8,13 @@ import { ActivatedRoute } from '@angular/router';
 import { SeoSocialShareData } from 'src/app/models/seo.model';
 import { combineLatest } from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
   take,
   takeUntil
 } from 'rxjs/operators';
+import { Patch } from 'src/app/models/patch';
 import { PatchDetailDataService } from 'src/app/components/patch-parts/patch-detail-data.service';
 import {
   defaultPatchMinimalViewConfig,
@@ -46,6 +48,7 @@ const JSONLD_SCRIPT_ID = 'patch-jsonld';
 export class PatchBrowserDetailViewComponent extends SubManager implements OnInit, OnDestroy {
 
   @Input() ignoreSeo = false;
+  @Input() showWideShellNav = true;
   @Input() readonly viewConfig: PatchMinimalViewConfig = {
     ...defaultPatchMinimalViewConfig,
     hideButtons: false
@@ -68,13 +71,18 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
       this.route.params.pipe(
         map(x => x && x.id && parseInt(x.id) ? parseInt(x.id) : 0),
         filter(x => x > 0),
-        take(1)
+        distinctUntilChanged()
       ),
-      this.userManagementService.loggedUser$.pipe(take(1))
-    ]).subscribe(([patchId, user]) => {
-      this.dataService.setPublicDetailMode(!user);
-      this.dataService.updateSinglePatchData$.next(patchId);
-    });
+      this.userManagementService.loggedUser$.pipe(
+        map(user => !user),
+        distinctUntilChanged()
+      )
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([patchId, usePublicDetailMode]) => {
+        this.dataService.setPublicDetailMode(usePublicDetailMode);
+        this.dataService.updateSinglePatchData$.next(patchId);
+      });
     
     if (!this.ignoreSeo) {
       combineLatest([
@@ -112,7 +120,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
           };
           this.seoAndUtilsService.updateSeo(seoData,
             `${ patchData.name } - Patch Details`);
-          this.injectPatchJsonLd(patchData, uniqueModulesInPatch);
+          this.injectPatchJsonLd(patchData!, uniqueModulesInPatch);
         });
     }
     
@@ -138,7 +146,7 @@ export class PatchBrowserDetailViewComponent extends SubManager implements OnIni
     super.ngOnDestroy();
   }
 
-  private injectPatchJsonLd(patchData: any, modules: string[]): void {
+  private injectPatchJsonLd(patchData: Patch, modules: string[]): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     const jsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',

@@ -5,19 +5,27 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  Observable,
+  of,
   startWith
 } from 'rxjs';
-import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
-import { RouteClickableLink } from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
+import {
+  getRouteClickableLinkKey,
+  RouteClickableLink
+} from 'src/app/shared-interproject/components/@smart/route-clickable-link/route-clickable-link.component';
 import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
+import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { ToolbarService } from './toolbar.service';
-
-
-interface ToolbarMobileSection {
-  label: string;
-  links: RouteClickableLink[];
-}
+import {
+  buildToolbarGuestLinks,
+  buildToolbarSections,
+  buildToolbarUserLinks,
+  getToolbarAdminLinks,
+  getToolbarHomeLinks,
+  getToolbarMainLinks,
+  ToolbarMobileSection
+} from './toolbar-link-data';
 
 @Component({
   selector:        'app-toolbar',
@@ -27,64 +35,20 @@ interface ToolbarMobileSection {
   standalone:      false
 })
 export class ToolbarComponent extends SubManager {
-  private readonly homeLinks: RouteClickableLink[] = [
-    {
-      label:    'Home',
-      route:    '/home',
-      icon:     'home',
-      disabled: false
-    }
-  ];
-  private readonly mainLinks: RouteClickableLink[] = [
-    {
-      label:    'Modules',
-      route:    '/modules/browser',
-      icon:     'view_module',
-      disabled: false
-    },
-    {
-      label:    'Racks',
-      route:    '/racks/browser',
-      icon:     'view_stream',
-      disabled: false
-    },
-    {
-      label:    'Patches',
-      route:    '/patches/browser',
-      icon:     'settings_input_composite',
-      disabled: false
-    },
-    {
-      label:    'Manufacturers',
-      route:    '/manufacturers/browser',
-      icon:     'handyman',
-      disabled: false
-    }
-  ];
-  private readonly insightsLink: RouteClickableLink = {
-    label:    'Insights',
-    route:    '/insights',
-    icon:     'insights',
-    disabled: false
-  };
-  private readonly adminLinks: RouteClickableLink[] = [
-    {
-      label:    'Admin',
-      route:    '/admin',
-      icon:     'admin_panel_settings',
-      disabled: false
-    }
-  ];
+  private readonly homeLinks = getToolbarHomeLinks();
+  private readonly mainLinks: RouteClickableLink[];
+  private readonly adminLinks = getToolbarAdminLinks();
+  private currentUserLinks = buildToolbarUserLinks('Account');
+  private currentAdminLinks: RouteClickableLink[] = [];
+  private currentMobileSections: ToolbarMobileSection[];
 
-  public readonly homeLinks$ = new BehaviorSubject<RouteClickableLink[]>([...this.homeLinks]);
-  public readonly mainLinks$ = new BehaviorSubject<RouteClickableLink[]>([]);
-  public readonly adminLinks$ = new BehaviorSubject<RouteClickableLink[]>([]);
-  public readonly linksUser$ = new BehaviorSubject<RouteClickableLink[]>(this.buildUserLinks('Account'));
-  public readonly linksA$ = new BehaviorSubject<RouteClickableLink[]>(this.buildGuestLinks());
-  public readonly isLoggedIn$ = new BehaviorSubject(false);
-  public readonly mobileSections$ = new BehaviorSubject<ToolbarMobileSection[]>(
-    []
-  );
+  public readonly homeLinks$: Observable<RouteClickableLink[]>;
+  public readonly mainLinks$: Observable<RouteClickableLink[]>;
+  public readonly adminLinks$: BehaviorSubject<RouteClickableLink[]>;
+  public readonly linksUser$: BehaviorSubject<RouteClickableLink[]>;
+  public readonly linksA$: Observable<RouteClickableLink[]>;
+  public readonly isLoggedIn$: BehaviorSubject<boolean>;
+  public readonly mobileSections$: BehaviorSubject<ToolbarMobileSection[]>;
 
   constructor(
     public readonly appState: AppStateService,
@@ -92,9 +56,15 @@ export class ToolbarComponent extends SubManager {
     public readonly service: ToolbarService
   ) {
     super();
-    this.mainLinks$.next(this.buildMainLinks());
-    this.mobileSections$.next(this.buildMobileSections(false, 'Account', false));
-
+    this.mainLinks = getToolbarMainLinks(this.appState.isDev);
+    this.currentMobileSections = buildToolbarSections(false, 'Account', false, this.appState.isDev);
+    this.homeLinks$ = of(this.homeLinks);
+    this.mainLinks$ = of(this.mainLinks);
+    this.adminLinks$ = new BehaviorSubject<RouteClickableLink[]>(this.currentAdminLinks);
+    this.linksUser$ = new BehaviorSubject<RouteClickableLink[]>(this.currentUserLinks);
+    this.linksA$ = of(buildToolbarGuestLinks());
+    this.isLoggedIn$ = new BehaviorSubject(false);
+    this.mobileSections$ = new BehaviorSubject<ToolbarMobileSection[]>(this.currentMobileSections);
     this.manageSub(
       combineLatest([
         this.userService.loggedUser$.pipe(startWith(undefined)),
@@ -103,77 +73,33 @@ export class ToolbarComponent extends SubManager {
       ]).subscribe(([loggedUser, profile, isAdmin]) => {
         const isLoggedIn = !!loggedUser;
         const username = profile?.username?.trim() || 'Account';
+        const nextUserLinks = buildToolbarUserLinks(username);
+        const nextAdminLinks = isAdmin ? this.adminLinks : [];
+        const nextMobileSections = buildToolbarSections(isLoggedIn, username, isAdmin, this.appState.isDev);
 
-        this.isLoggedIn$.next(isLoggedIn);
-        this.linksUser$.next(this.buildUserLinks(username));
-        this.adminLinks$.next(isAdmin ? this.adminLinks : []);
-        this.mobileSections$.next(this.buildMobileSections(isLoggedIn, username, isAdmin));
+        if (this.isLoggedIn$.value !== isLoggedIn) {
+          this.isLoggedIn$.next(isLoggedIn);
+        }
+
+        if (this.currentUserLinks !== nextUserLinks) {
+          this.currentUserLinks = nextUserLinks;
+          this.linksUser$.next(nextUserLinks);
+        }
+
+        if (this.currentAdminLinks !== nextAdminLinks) {
+          this.currentAdminLinks = nextAdminLinks;
+          this.adminLinks$.next(nextAdminLinks);
+        }
+
+        if (this.currentMobileSections !== nextMobileSections) {
+          this.currentMobileSections = nextMobileSections;
+          this.mobileSections$.next(nextMobileSections);
+        }
       })
     );
   }
 
   public trackByLink(index: number, item: RouteClickableLink): string {
-    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
-  }
-
-  private buildUserLinks(username: string): RouteClickableLink[] {
-    return [
-      {
-        label:    'My profile',
-        route:    '/user/area',
-        icon:     'dashboard',
-        disabled: false
-      },
-      {
-        label:    username,
-        route:    '/user/account',
-        icon:     'manage_accounts',
-        disabled: false
-      }
-    ];
-  }
-
-  private buildGuestLinks(): RouteClickableLink[] {
-    return [
-      {
-        label:    'Log in',
-        route:    '/auth/login',
-        icon:     'login',
-        disabled: false
-      },
-      {
-        label:    'Sign up',
-        route:    '/auth/signup',
-        icon:     'account_circle',
-        style:    {border: '1px solid rgba(210, 210, 210, 0.7)'},
-        disabled: false
-      }
-    ];
-  }
-
-  private buildMainLinks(): RouteClickableLink[] {
-    if (!this.appState.isDev) {
-      return [...this.mainLinks];
-    }
-
-    return [
-      ...this.mainLinks.slice(0, 3),
-      this.insightsLink,
-      ...this.mainLinks.slice(3)
-    ];
-  }
-
-  private buildMobileSections(isLoggedIn: boolean, username: string, isAdmin: boolean): ToolbarMobileSection[] {
-    const accountLinks = isLoggedIn ? this.buildUserLinks(username) : this.buildGuestLinks();
-    const browseLinks = this.buildMainLinks();
-    const sections: ToolbarMobileSection[] = [
-      {label: 'Quick links', links: this.homeLinks},
-      {label: 'Browse', links: browseLinks},
-      {label: isLoggedIn ? 'Your account' : 'Account', links: accountLinks}
-    ];
-    if (isAdmin) {
-      sections.push({label: 'Admin', links: this.adminLinks});
-    }
-    return sections;
+    return getRouteClickableLinkKey(item);
   }
 }

@@ -1,13 +1,15 @@
 @if ({
-  connections: (dataService.patchConnections$|async)
+  connections: (dataService.patchConnections$|async),
+  linkedRackState: (dataService.linkedRackState$|async)
 }; as bag) {
-  <div class="col gap1"
-  >
+  <div class="patch-details-shell">
     @if (dataService.isCurrentPatchPrivate$|async) {
       <app-advice-tooltip
+        title="Private patch"
+        tone="warning"
         [@enter]="{ value: '', params: { delay: 250}}"
       >
-        This patch is private. It won't be listed in search but will be accessible to anyone who has the URL
+        This patch is private. It won't appear in public listings, and signed-out visitors can't open it from a shared URL.
       </app-advice-tooltip>
     }
     @if (bag.connections == null) {
@@ -20,30 +22,61 @@
       @if ({
         length: (bag.connections.length)
       }; as bagA) {
-        @if (!isEditing && bagA.length > 0) {
-          @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
-            <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'">
-              <app-patch-connections-list [editorConnections]="bag.connections"
-                                          [isEditing]="false"
-                                          [instanceLabelMap]="instanceLabelMap"
-              ></app-patch-connections-list>
-            </lib-hero-content-card>
+        <div class="patch-details-content"
+             [class.patch-details-content--has-connections]="!isEditing && bagA.length > 0">
+          @if (bagA.length > 0) {
+            <div class="patch-details-graph">
+              <lib-clean-card>
+                <app-patch-graph [progressiveRender]="!isEditing"
+                                   [animateGraphBuild]="isEditing"
+                ></app-patch-graph>
+              </lib-clean-card>
+            </div>
+          } @else {
+            @if (isEditing) {
+              @if ((dataService.editorOperationMode$ | async) === 'linkedRack') {
+                <app-empty-state-tips
+                  icon="cable"
+                  title="No connections yet"
+                  copy="Click a jack on a module in the linked rack to pick a <strong>source</strong>, then another module's jack to pick a <strong>destination</strong>, and confirm to wire them."
+                  [tips]="[
+                    { icon: 'touch_app', html: 'Tap an <strong>output</strong>, then an <strong>input</strong>, then <strong>confirm</strong> to add the connection.' },
+                    { icon: 'library_books', html: 'Need a module that\'s not in this rack? Switch the editor to <strong>Collection</strong> mode to patch any module you own.' }
+                  ]"
+                ></app-empty-state-tips>
+              } @else {
+                <app-empty-state-tips
+                  icon="cable"
+                  title="No connections yet"
+                  copy="Add modules from your collection below, then click their jacks to pick a <strong>source</strong> and a <strong>destination</strong>, and confirm to wire them."
+                  [tips]="[
+                    { icon: 'library_books', html: 'Pick modules from your <strong>Collection</strong> below, then tap an <strong>output</strong>, an <strong>input</strong>, and <strong>confirm</strong>.' },
+                    { icon: 'dns', html: 'Already have the gear in a rack? <strong>Link a rack</strong> and switch to <strong>Rack</strong> mode to constrain the patch to it.' }
+                  ]"
+                ></app-empty-state-tips>
+              }
+            } @else {
+              <app-empty-state-tips
+                icon="cable"
+                title="No connections yet"
+                copy="Open the editor to start patching, then return here for the clean overview."
+              ></app-empty-state-tips>
+            }
           }
-        }
-        @if (bagA.length > 0) {
-          <lib-hero-content-card [titleNormal]="'Connections graph'"
-          >
-            <lib-clean-card>
-              <app-patch-graph [progressiveRender]="!isEditing"
-                               [animateGraphBuild]="isEditing"
-              ></app-patch-graph>
-            </lib-clean-card>
-          </lib-hero-content-card>
-        } @else {
-          <app-advice-tooltip [@enter]="{ value: '', params: { delay: 150 } }">
-            This patch has no connections yet. Open the editor to start patching.
-          </app-advice-tooltip>
-        }
+
+          @if (!isEditing && bagA.length > 0 && showConnectionsList) {
+            @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
+              <lib-hero-content-card [titleNormal]="bagA.length + ' Connections'"
+                                     class="patch-details-connections"
+              >
+                <app-patch-connections-list [editorConnections]="bag.connections"
+                                            [isEditing]="false"
+                                            [instanceLabelMap]="instanceLabelMap"
+                ></app-patch-connections-list>
+              </lib-hero-content-card>
+            }
+          }
+        </div>
       }
     }
   </div>

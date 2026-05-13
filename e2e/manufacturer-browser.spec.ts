@@ -51,7 +51,7 @@ test.describe('Manufacturer Browser', () => {
   
   test('paginator shows total item count greater than zero', async ({page}) => {
     await page.goto(BROWSER_URL);
-    const status = page.getByRole('status');
+    const status = page.locator('mat-paginator .mat-mdc-paginator-range-label');
     await expect(status).toBeVisible({timeout: 20_000});
     await expect(status).toHaveText(/\d+ \u2013 \d+ of [1-9]\d*/);
   });

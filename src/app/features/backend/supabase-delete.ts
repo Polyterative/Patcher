@@ -28,7 +28,7 @@ export function createDeleteNamespace(
   supabase: SupabaseClient<Database>,
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>,
-  deletePanelFileFn: (filename: string) => Observable<any>,
+  deletePanelFileFn: (filename: string) => Observable<unknown>,
   defaultPag: number,
   hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {

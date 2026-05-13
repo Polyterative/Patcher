@@ -24,26 +24,20 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { UserManagementService } from 'src/app/features/backbone/login/user-management.service';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import { Tag } from 'src/app/models/tag';
+import {
+  ProposedTag,
+  TagVoteCount
+} from './tag-vote-data.types';
 
-
-export interface TagVoteCount {
-  moduleTagId: number;
-  count: number;
-}
-
-/** A locally-created module_tag entry that does not yet exist in server data */
-export interface ProposedTag {
-  moduleTagId: number;
-  tag: Tag;
-}
+export type { TagVoteCount, ProposedTag } from './tag-vote-data.types';
 
 @Injectable()
 export class TagVoteDataService extends SubManager {
   // STATE
-  private _tagVotes$ = new BehaviorSubject<Map<number, number>>(new Map());
-  private _myVotes$ = new BehaviorSubject<Set<number>>(new Set());
-  private _allTags$ = new BehaviorSubject<Tag[]>([]);
-  private _proposedTags$ = new BehaviorSubject<ProposedTag[]>([]);
+  private readonly _tagVotes$ = new BehaviorSubject<Map<number, number>>(new Map());
+  private readonly _myVotes$ = new BehaviorSubject<Set<number>>(new Set());
+  private readonly _allTags$ = new BehaviorSubject<Tag[]>([]);
+  private readonly _proposedTags$ = new BehaviorSubject<ProposedTag[]>([]);
 
   // PUBLIC
   public readonly tagVotes$ = this._tagVotes$.asObservable();

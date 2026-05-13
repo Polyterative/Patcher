@@ -1,0 +1,8 @@
+<button mat-stroked-button
+        (click)="reset$.emit()"
+        [disabled]="!(canReset$ | async)"
+        [matTooltip]="'Reset all filters'"
+>
+  <mat-icon>refresh</mat-icon>
+  Reset filters
+</button>

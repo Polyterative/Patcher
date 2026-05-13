@@ -1,4 +1,4 @@
-@use "src/app/style/brand-resources.scss";
+@use "src/app/style/brand-resources.scss" as *;
 
 :host {
   display: block;
@@ -15,10 +15,131 @@
   gap: 0.95rem;
   align-content: center;
   padding: 0.45rem;
+  contain: layout style;
 }
 
+.hero-metro-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  grid-column: 1 / -1;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  padding-bottom: 0.7rem;
+  contain: layout style;
+}
+
+.hero-metro-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  inline-size: 100%;
+  gap: 1rem;
+}
+
+.hero-metro-brand {
+  --hero-metro-brand-color: #{$brand-primary};
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.02rem;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--hero-metro-brand-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.hero-metro-brand:link,
+.hero-metro-brand:visited,
+.hero-metro-brand:active {
+  color: var(--hero-metro-brand-color);
+}
+
+.hero-metro-brand:focus-visible {
+  outline: 0.125rem solid rgba($brand-primary, 0.22);
+  outline-offset: 0.18rem;
+  border-radius: 0.25rem;
+}
+
+.hero-metro-brand--active {
+  text-decoration: underline;
+  text-decoration-color: rgba($brand-primary, 0.36);
+  text-decoration-thickness: 0.12rem;
+  text-underline-offset: 0.22rem;
+}
+
+.hero-metro-targets {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.15rem;
+  min-width: 0;
+  padding-bottom: 0.2rem;
+  contain: layout style;
+}
+
+.hero-metro-target-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 1.15rem;
+  min-width: 0;
+}
+
+.hero-metro-target-group--account {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.hero-metro-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  min-height: 2.2rem;
+  font-size: 1.12rem;
+  line-height: 1.1;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: rgba(35, 60, 90, 0.78);
+  text-decoration: none;
+  border-bottom: 0.12rem solid transparent;
+  white-space: nowrap;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.hero-metro-target--active {
+  color: rgba(17, 31, 48, 0.96);
+  border-bottom-color: rgba(34, 72, 118, 0.9);
+}
+
+.hero-metro-target span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.hero-metro-target mat-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.95rem;
+  color: inherit;
+  opacity: 0.72;
+}
+
+.hero-metro-target--private {
+  color: rgba(28, 51, 78, 0.86);
+}
+
+.hero-metro-target--active mat-icon,
+.hero-metro-target:hover mat-icon {
+  opacity: 1;
+}
+
+
 .eyebrow {
-  @include brand-resources.heading-font;
+  @include heading-font;
   letter-spacing: 0.11rem;
   font-size: 0.77rem;
   text-transform: uppercase;
@@ -27,7 +148,7 @@
 }
 
 h1 {
-  @include brand-resources.title-font;
+  @include title-font;
   margin: 0;
   color: var(--home-ink-strong);
   font-size: clamp(2.1rem, 5vw, 3.45rem);
@@ -37,7 +158,7 @@ h1 {
 }
 
 .subtitle {
-  @include brand-resources.content-font;
+  @include content-font;
   margin: 0;
   padding-left: 1.2rem;
   max-width: 54ch;
@@ -76,9 +197,16 @@ h1 {
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
-  border: 1px solid rgba(13, 30, 52, 0.2);
-  background: linear-gradient(110deg, #1766b2, #214f87);
+  color: #224b75;
+  border: 1px solid rgba(62, 99, 138, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.1875rem 0.625rem rgba(34, 75, 117, 0.08);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+
+  &:hover {
+    background: #f2f7fc;
+    border-color: rgba(62, 99, 138, 0.42);
+  }
 }
 
 .hero-visuals {
@@ -96,6 +224,7 @@ h1 {
   border-radius: 0.42rem;
   overflow: hidden;
   background: transparent;
+  contain: layout inline-size;
 }
 
 .patch-graph-shell app-patch-graph {
@@ -183,7 +312,11 @@ h1 {
   }
 }
 
-@media (max-width: 70rem) {
+@media (max-width: 68rem) {
+  .hero-metro-nav {
+    display: none;
+  }
+
   .hero-shell {
     grid-template-columns: 1fr;
   }
@@ -192,6 +325,18 @@ h1 {
     max-width: 46rem;
     width: 100%;
     margin: 0 auto;
+  }
+}
+
+@media (max-width: 80rem) {
+  .hero-metro-targets {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-metro-target-group--account {
+    margin-left: 0;
+    justify-content: flex-start;
   }
 }
 

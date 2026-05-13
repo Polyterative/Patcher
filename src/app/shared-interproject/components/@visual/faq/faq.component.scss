@@ -1,7 +1,8 @@
 mat-accordion {
   display: block;
-  max-width: 52rem;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
 
   .mat-expansion-panel {
     box-shadow: none !important;
@@ -37,4 +38,8 @@ mat-expansion-panel-title {
 
 .mat-expansion-panel-body p {
   margin-top: 0;
+}
+
+.faq-link {
+  text-decoration: none;
 }

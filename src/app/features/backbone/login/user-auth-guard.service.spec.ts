@@ -11,7 +11,6 @@ function buildGuard(loggedUser: any = null) {
   const snackBar = jasmine.createSpyObj('MatSnackBar', {open: snackRef});
   const router = jasmine.createSpyObj('Router', ['navigate']);
   const guard = new UserAuthGuard(
-    jasmine.createSpyObj('MatDialog', ['open']),
     snackBar, router,
     {loggedUser$} as any
   );

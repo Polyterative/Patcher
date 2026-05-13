@@ -7,6 +7,11 @@ import {
   PatchModuleInstance
 } from 'src/app/models/connection';
 import { DbModule } from 'src/app/models/module';
+import {
+  BehaviorSubject,
+  of
+} from 'rxjs';
+import { LinkedRackUiState } from '../patch-detail-data.service';
 
 
 function fakeModule(id: number, name = `Mod${ id }`): DbModule {
@@ -27,10 +32,30 @@ function fakeConnection(instanceIdA: number, instanceIdB: number): PatchConnecti
   };
 }
 
+function fakeDataService() {
+  const linkedRackState$ = new BehaviorSubject<LinkedRackUiState>({
+    kind: 'unlinked',
+    statusTone: 'neutral',
+    statusLabel: 'Collection-first',
+    description: 'No rack is linked yet.',
+    rackId: null
+  });
+  return {
+    singlePatchData$: of(undefined),
+    linkedRackState$
+  };
+}
+
 
 describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
-    return new PatchEditorComponent({} as any, {} as any, {} as any);
+    return new PatchEditorComponent(
+      {} as any,
+      fakeDataService() as any,
+      {} as any,
+      {nativeElement: document.createElement('div')} as any,
+      {markForCheck: () => {}} as any
+    );
   }
   
   it('module with 0 instances produces one card with no instanceId and negative trackingId', () => {
@@ -112,7 +137,13 @@ describe('PatchEditorComponent.buildEditorCards (via private access)', () => {
 
 describe('PatchEditorComponent.buildConnectionNames (via private access)', () => {
   function buildComponent(): PatchEditorComponent {
-    return new PatchEditorComponent({} as any, {} as any, {} as any);
+    return new PatchEditorComponent(
+      {} as any,
+      fakeDataService() as any,
+      {} as any,
+      {nativeElement: document.createElement('div')} as any,
+      {markForCheck: () => {}} as any
+    );
   }
   
   it('returns empty array when instanceId is undefined', () => {

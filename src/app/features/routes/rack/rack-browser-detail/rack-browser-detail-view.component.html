@@ -6,8 +6,9 @@
 }; as bag) {
   <div class="col gap1"
   >
-    <lib-hero-content-card class="racksBG"
+    <lib-hero-content-card class="racksBG rackBrowserDetailView__header"
                            [titleBig]="bag.isCurrentRackEditable && bag.isCurrentRackPropertyOfCurrentUser ? 'Rack editing' : 'Rack details'"
+                           [showWideShellNav]="showWideShellNav"
                            [titleSub]="bag.data?.name"
     >
       @if (bag.data) {
@@ -40,11 +41,13 @@
                  </div>
                </div>
              </div>
-              <lib-clean-card>
-                <app-rack-editor
-                  [data]="(bag.data)"
-                ></app-rack-editor>
-              </lib-clean-card>
+              <div #rackEditorAnchor>
+                <lib-clean-card>
+                  <app-rack-editor
+                    [data]="(bag.data)"
+                  ></app-rack-editor>
+                </lib-clean-card>
+              </div>
             @if (bag.rowedRackedModules) {
               <div class="rackBrowserDetailView__mobileAnalysis">
                 <app-rack-balance-panel
@@ -53,10 +56,13 @@
                 ></app-rack-balance-panel>
               </div>
             }
-            <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
-                                maxSize="45rem">
-              <app-comments-root></app-comments-root>
-            </lib-screen-wrapper>
+            @if (!bag.isCurrentRackEditable) {
+              <lib-screen-wrapper class="rackBrowserDetailView__bottomComments"
+                                  maxSize="var(--app-readable-section-max-width)"
+                                  [hidden]="bag.isCurrentRackEditable">
+                <app-comments-root></app-comments-root>
+              </lib-screen-wrapper>
+            }
           </div>
         </lib-auto-update-loading-indicator>
       }
@@ -65,7 +71,17 @@
       @if ((dataService.isCurrentRackEditable$|async)) {
         <app-module-browser-root
           [showSubmitFab]="false"
+          [showWideShellNav]="false"
           [compactSidebarAtTablet]="true"
+          [compactTitleSub]="true"
+          [enableCollectionBrowseModes]="true"
+          [titleBig]="'Add modules to'"
+          [titleSub]="bag.data?.name ?? ''"
+          [description]="'Use your collection or the full library to place modules into this rack.'"
+          [showRecentActivity]="false"
+          [manageSeo]="false"
+          [ownedModulesInput]="userAreaDataService.modulesData$ | async"
+          [currentRackModulesInput]="bag.rowedRackedModules"
           [viewConfig]="viewConfig"
         ></app-module-browser-root>
         }

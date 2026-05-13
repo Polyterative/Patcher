@@ -1,9 +1,46 @@
 <section class="hero-shell" aria-labelledby="home-hero-title">
+  @if (shellVm$ | async; as shellVm) {
+    @if (shellVm.wideShell) {
+      <div class="hero-metro-nav">
+        <div class="hero-metro-topbar">
+          <a class="hero-metro-brand"
+             routerLink="/home"
+             routerLinkActive="hero-metro-brand--active"
+             aria-label="Go to home">{{ siteTitle }}</a>
+        </div>
+        <nav class="hero-metro-targets" aria-label="Section targets">
+          <div class="hero-metro-target-group">
+            @for (item of wideShellTargets; track trackByNavLink($index, item)) {
+              <a
+                class="hero-metro-target"
+                [routerLink]="item.route"
+                routerLinkActive="hero-metro-target--active"
+                [attr.aria-label]="item.label"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </div>
+          <div class="hero-metro-target-group hero-metro-target-group--account">
+            @for (item of shellVm.accountLinks; track trackByNavLink($index, item)) {
+              <a class="hero-metro-target hero-metro-target--private"
+                 [routerLink]="item.route"
+                 routerLinkActive="hero-metro-target--active"
+                 [attr.aria-label]="item.label">
+                <span>{{ item.label }}</span>
+              </a>
+            }
+          </div>
+        </nav>
+      </div>
+    }
+  }
+
   <div class="hero-copy">
     <p class="eyebrow">{{ content.eyebrow }}</p>
     <h1 id="home-hero-title">{{ content.title }}</h1>
     <ul class="subtitle">
-      @for (line of getSubtitleLines(); track line) {
+      @for (line of subtitleLines; track line) {
         <li>
           @for (segment of getSubtitleSegments(line); track $index) {
             @if (segment.highlighted) {

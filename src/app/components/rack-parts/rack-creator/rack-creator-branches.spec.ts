@@ -4,6 +4,8 @@ import { STANDARDS } from '../module-collection-analysis.service';
 
 
 describe('RackCreatorComponent - uncovered branches', () => {
+  let createdComponents: RackCreatorComponent[];
+
   function build(userModules?: any[]) {
     const backend = {
       auth: {getUserSession$: jasmine.createSpy().and.returnValue(of({id: 'u1'}))},
@@ -22,8 +24,17 @@ describe('RackCreatorComponent - uncovered branches', () => {
       {userModules} as any,
       mca as any
     );
+    createdComponents.push(component);
     return {component, backend, snackBar, dialogRef, mca};
   }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
   
   it('rackAnalysis$ still works when data.userModules is not provided (undefined)', (done) => {
     const {component, mca} = build(undefined);

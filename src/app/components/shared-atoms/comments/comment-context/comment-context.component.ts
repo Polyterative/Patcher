@@ -48,7 +48,8 @@ export class CommentContextComponent extends SubManager implements OnInit {
 
   entityTypes = CommentableEntityTypes;
 
-  contextInformation$ = new BehaviorSubject<CommentContext | undefined>(undefined);
+  private readonly _contextInformation$ = new BehaviorSubject<CommentContext | undefined>(undefined);
+  readonly contextInformation$ = this._contextInformation$.asObservable();
 
   constructor(
     private backend: SupabaseService,
@@ -67,7 +68,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
           `name,id,${ QueryJoins.manufacturer }`)
           .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(module => {
-            this.contextInformation$.next({
+            this._contextInformation$.next({
               description: `${ module.name } by ${ module.manufacturer.name }`,
               URL: ['modules', 'details', module.id],
               entityLabel,
@@ -78,7 +79,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
         this.backend.get.patchWithId(this.data.entityId, 'name,id')
           .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(patch => {
-            this.contextInformation$.next({
+            this._contextInformation$.next({
               description: patch.name,
               URL: ['patches', 'details', patch.id],
               entityLabel,
@@ -89,7 +90,7 @@ export class CommentContextComponent extends SubManager implements OnInit {
         this.backend.GET.rackWithId(this.data.entityId, `name,id`)
           .pipe(map(x => x.data), takeUntil(this.destroy$))
           .subscribe(rack => {
-            this.contextInformation$.next({
+            this._contextInformation$.next({
               description: rack.name,
               URL: ['racks', 'details', rack.id],
               entityLabel,
@@ -102,6 +103,6 @@ export class CommentContextComponent extends SubManager implements OnInit {
   }
 
   openURL() {
-    this.router.navigate(this.contextInformation$.value.URL);
+    this.router.navigate(this._contextInformation$.value.URL);
   }
 }

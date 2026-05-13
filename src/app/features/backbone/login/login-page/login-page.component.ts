@@ -17,6 +17,7 @@ import {
 } from "rxjs/operators";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { MatSnackBar } from "@angular/material/snack-bar";
+import { SSOProvider } from '../sso-buttons/sso-buttons.component';
 
 
 @Component({
@@ -80,8 +81,8 @@ export class LoginPageComponent extends SubManager implements OnInit {
   /**
    * Handle SSO login when user selects a provider
    */
-  handleSSOLogin(provider: string): void {
-    this.loginInteraction.loginWithSSO(provider as any);
+  handleSSOLogin(provider: SSOProvider): void {
+    this.loginInteraction.loginWithSSO(provider);
   }
   
   protected readonly SharedConstants = SharedConstants;

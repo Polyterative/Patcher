@@ -6,6 +6,17 @@ import {
 } from './test-setup';
 import { SupabaseService } from '../../supabase.service';
 
+function chainable(resolveValue: any = {data: null, error: null}) {
+  const m: any = {};
+  ['select', 'filter', 'eq', 'neq', 'is', 'in', 'range', 'order', 'limit', 'single',
+    'insert', 'update', 'delete', 'upsert', 'ilike'].forEach(method => {
+    m[method] = () => m;
+  });
+  m.then = (res: Function, rej?: Function) =>
+    Promise.resolve(resolveValue).then(res as any, rej as any);
+  return m;
+}
+
 
 /**
  * CRUD Operations Integration Tests
@@ -162,13 +173,10 @@ describe('SupabaseService - CRUD Operations', () => {
       
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
-      const insertSpy = jasmine.createSpy('insert').and.returnValue(
-        Promise.resolve({data: {id: 99}, error: null})
-      );
-      
-      spyOn(supabaseClient, 'from').and.returnValue({
-        insert: insertSpy
-      });
+      const mock = chainable({data: [{id: 99}], error: null});
+      const insertSpy = spyOn(mock, 'insert').and.returnValue(mock);
+      const selectSpy = spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       service.add.patch({name: 'My Awesome Patch'}).subscribe({
         next: () => {
@@ -177,6 +185,7 @@ describe('SupabaseService - CRUD Operations', () => {
             authorid: 'patch-creator',
             public: true
           });
+          expect(selectSpy).toHaveBeenCalledWith('id');
           done();
         },
         error: (err) => {
@@ -196,11 +205,10 @@ describe('SupabaseService - CRUD Operations', () => {
       
       spyOn(service.auth as any, 'getUserSession$').and.returnValue(of(mockUser));
       
-      spyOn(supabaseClient, 'from').and.returnValue({
-        insert: jasmine.createSpy('insert').and.returnValue(
-          Promise.resolve({data: {id: 777}, error: null})
-        )
-      });
+      const mock = chainable({data: [{id: 777}], error: null});
+      spyOn(mock, 'insert').and.returnValue(mock);
+      spyOn(mock, 'select').and.returnValue(mock);
+      spyOn(supabaseClient, 'from').and.returnValue(mock);
       
       let emittedKeys: any[] | undefined;
       const sub = service.cacheResetter$.subscribe((keys) => {

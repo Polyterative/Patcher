@@ -3,6 +3,10 @@
 <p align="center">Document patches, plan racks, track modules, and keep your real system in sync with a fast, clean workflow.<br>
 <a href="https://patcher.xyz">patcher.xyz</a> &nbsp;·&nbsp; <a href="https://discord.gg/JNy2HTb5ru">Discord</a> &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a></p>
 
+<p align="center">
+  <img src="documentation/readme-assets/homepage-hero-graph.jpg" alt="Patcher homepage showing the logged-out hero, patch graph preview, and patch detail showcase" width="100%">
+</p>
+
 <br>
 
 ---
@@ -53,9 +57,10 @@ Technical bug reports can also be opened as [GitHub issues](https://github.com/P
 ## **Introduction**
 
 **Patcher** is a free, open-source workspace for Eurorack musicians. It combines patch editing, rack planning, module
-tracking, and a curated public hardware database so you can maintain a reliable digital twin of your real setup.
+tracking, and a public hardware database so you can keep a documented record of your setup, ideas, and modules.
 
-The database is publicly accessible and will always remain free. No paywalls, no account required to browse.
+The database is currently publicly accessible and free to browse. No paywalls, no account required to explore public
+content.
 
 Contributions are welcome — whether that's code, module data, or feedback.
 
@@ -65,7 +70,7 @@ Patcher is built for the full modular workflow, not just patch notes.
 
 ### At a glance
 
-- Keep a digital twin of your real rig: patches, racks, modules, notes, and connection state.
+- Document your patches, racks, modules, notes, and connection state in one place.
 - Plan racks quickly with drag-and-drop placement.
 - Move fast with streamlined connection flow and app-wide auto-save.
 - Read patch complexity quickly with live stats for cables, modules, and multiples.
@@ -73,9 +78,9 @@ Patcher is built for the full modular workflow, not just patch notes.
 
 ### Why it stays useful
 
-- Works on desktop and mobile with the same workflow.
+- Works across desktop, tablet, and mobile browsers, with the richest editing flows on larger screens.
 - Public/private controls for patches and racks.
-- Free, publicly accessible Eurorack module database with community-curated specs.
+- Free, publicly accessible Eurorack module database with community-contributed specs.
 - Modern UX built for everyday use, not just collection storage.
 
 ## **User Guide**

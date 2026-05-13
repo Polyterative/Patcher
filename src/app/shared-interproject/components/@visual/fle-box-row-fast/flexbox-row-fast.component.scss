@@ -2,9 +2,15 @@
   display:   flex;
   flex-wrap: wrap;
   gap:       .5rem;
+  // Cap on how wide each child can grow. Prevents the "last orphan
+  // item stretches across the full row" edge case while still letting
+  // rows fill responsively. Override per-consumer via the CSS var.
+  --flexbox-row-fast-item-min-width: 16rem;
+  --flexbox-row-fast-item-max-width: 32rem;
 }
 
 .box > * {
-  flex:      1 1 16rem;
-  min-width: 16rem
+  flex:      1 1 var(--flexbox-row-fast-item-min-width);
+  min-width: var(--flexbox-row-fast-item-min-width);
+  max-width: var(--flexbox-row-fast-item-max-width);
 }

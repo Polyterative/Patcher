@@ -3,41 +3,51 @@
   filteredManuals: (dataService.filteredManualsData$|async),
   hasSearchQuery: (dataService.hasSearchQuery$|async)
 }; as bag) {
-  @if (bag.manuals && bag.manuals.length > 0) {
-    <div class="col gap1"
+  <div class="col gap1 manuals-shell">
+    <lib-hero-content-card description="Available manuals for your modules. Click to open"
+                           titleNormal="Manuals"
+                           class="manualsBG"
+                           [sidesPadding]="true"
+                           [vertPadding]="true"
+                           icon="book"
+                           id="manuals"
     >
-      <lib-hero-content-card description="Available manuals for your modules. Click to open"
-                             titleNormal="Manuals"
-                             class="manualsBG"
-                             [sidesPadding]="true"
-                             [vertPadding]="true"
-                             icon="book"
-                             id="manuals"
-      >
-        <div class="col gap1"
-        >
+      <div class="col gap1 manuals-stack">
+        @if (bag.manuals && bag.manuals.length > 0) {
           @if (bag.filteredManuals && bag.filteredManuals.length > 0) {
-            <mat-chip-listbox>
-              @for (item of bag.filteredManuals; track item) {
-                <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
-              }
-            </mat-chip-listbox>
+            <div class="manuals-list">
+              <mat-chip-listbox class="manuals-chip-list">
+                @for (item of bag.filteredManuals; track item) {
+                  <mat-chip-option (click)="openManual(item.manualURL)">{{ item.name }}</mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
           } @else {
-            <mat-card-subtitle
-              style="padding: 1rem; align-self: center; text-align: center; width: 100%"
-            >
-              @if (bag.hasSearchQuery) {
-                No manuals match the current search
-              } @else {
-                It looks like you haven't got any modules with manuals yet
-              }
-            </mat-card-subtitle>
+            <div class="section-empty">
+              <app-empty-state-tips
+                [compact]="true"
+                icon="search_off"
+                title="No matches"
+                copy="No manuals match the current search."
+              ></app-empty-state-tips>
+            </div>
           }
-          <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
-                                             [updateData$]="dataService.updateManualsData$"
-          ></lib-auto-update-loading-indicator>
-        </div>
-      </lib-hero-content-card>
-    </div>
-  }
+        } @else {
+          <div class="section-empty">
+            <app-empty-state-tips
+              icon="book"
+              title="No manuals yet"
+              copy="Manuals show up here automatically for the modules in your collection that have one."
+              [tips]="[
+                { icon: 'library_add', html: 'Head to the main <strong>Modules</strong> page and add modules with a manual to your collection — they will appear here.' }
+              ]"
+            ></app-empty-state-tips>
+          </div>
+        }
+        <lib-auto-update-loading-indicator [data$]="dataService.manualsData$"
+                                           [updateData$]="dataService.updateManualsData$"
+        ></lib-auto-update-loading-indicator>
+      </div>
+    </lib-hero-content-card>
+  </div>
 }

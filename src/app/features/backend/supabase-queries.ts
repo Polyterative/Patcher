@@ -36,118 +36,56 @@ import {
 import {
   matchesSearchQuery
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
+import {
+  CurrentUserContributorStats,
+  PublicApplicationActivityPoint,
+  PublicApplicationInsightsSnapshot,
+  PublicApplicationModuleInsightBucket,
+  PublicApplicationModuleInsights,
+  PublicApplicationStatistics,
+  PublicUserContributorStats
+} from './supabase-queries.models';
 
-
-interface ManufacturerModuleStats {
-  moduleCount: number;
-  latestModuleUpdatedAt: string | null;
-  latestModuleUpdatedAtMs: number | null;
-  changedModulesLast30Days: number;
-}
-
-export interface CurrentUserContributorStats {
-  modulesSubmitted: number;
-  approvedModules: number;
-  pendingModules: number;
-  commentsPosted: number;
-  moduleFlagsSubmitted: number;
-}
-
-export interface PublicUserContributorStats {
-  approvedPublicModules: number;
-}
-
-export interface PublicApplicationStatistics {
-  publicModules: number;
-  publicManufacturers: number;
-  publicProfiles: number;
-  publicModulesUpdatedLast30Days: number;
-  publicRacks: number;
-  publicRackAuthors: number;
-  publicRacksUpdatedLast30Days: number;
-  publicPatches: number;
-  publicPatchConnections: number;
-  publicPatchAuthors: number;
-  publicPatchesUpdatedLast30Days: number;
-}
-
-export interface PublicApplicationActivityPoint {
-  date: string;
-  modules: number;
-  racks: number;
-  patches: number;
-}
-
-export interface PublicApplicationModuleInsightBucket {
-  label: string;
-  count: number;
-  detail?: string;
-}
-
-export interface PublicApplicationModuleInsights {
-  topManufacturers: PublicApplicationModuleInsightBucket[];
-  activeManufacturers: PublicApplicationModuleInsightBucket[];
-  widestManufacturers: PublicApplicationModuleInsightBucket[];
-  oneUManufacturers: PublicApplicationModuleInsightBucket[];
-  standardMix: PublicApplicationModuleInsightBucket[];
-  standardActivity: PublicApplicationModuleInsightBucket[];
-  standardWidthAverages: PublicApplicationModuleInsightBucket[];
-  standardManufacturerCounts: PublicApplicationModuleInsightBucket[];
-  hpBands: PublicApplicationModuleInsightBucket[];
-  hpBandActivity: PublicApplicationModuleInsightBucket[];
-  hpExact: PublicApplicationModuleInsightBucket[];
-  freshnessWindows: PublicApplicationModuleInsightBucket[];
-  createdWindows: PublicApplicationModuleInsightBucket[];
-  topFiveManufacturerShare: number;
-  soloManufacturerCount: number;
-  medianModulesPerManufacturer: number;
-  medianCatalogueAgeYears: number;
-  staleModules: number;
-  averageHp: number;
-  medianHp: number;
-}
-
-type ModuleActivityRow = {
-  manufacturerId: number;
-  updated: string
-};
-
-type PublicModuleInsightRow = {
-  manufacturerId: number;
-  manufacturerName: string;
-  hp: number;
-  standardName: string;
-  created: string;
-  updated: string;
-};
-
-type ManufacturerInsightStats = {
-  totalModules: number;
-  totalHp: number;
-  oneUModules: number;
-};
-
-function applyClientSideSearchFilter<T>(
-  response: { data?: T[]; count?: number | null } & Record<string, any>,
-  from: number,
-  to: number,
-  predicate: (row: T) => boolean
-) {
-  const rows = Array.isArray(response?.data) ? response.data : [];
-  const filteredRows = rows.filter(predicate);
-  
-  return {
-    ...response,
-    data: filteredRows.slice(from, to + 1),
-    count: filteredRows.length
-  };
-}
+export type {
+  CurrentUserContributorStats,
+  PublicApplicationActivityPoint,
+  PublicApplicationInsightsSnapshot,
+  PublicApplicationModuleInsightBucket,
+  PublicApplicationModuleInsights,
+  PublicApplicationStatistics,
+  PublicUserContributorStats
+} from './supabase-queries.models';
+import {
+  ManufacturerModuleStats,
+  ModuleActivityRow,
+  PublicModuleInsightRow,
+  ManufacturerInsightStats
+} from './supabase-queries.types';
+import {
+  applyClientSideSearchFilter,
+  escapeIlikePattern,
+  getHpBandLabel,
+  isOneUStandard,
+  HP_BAND_ORDER
+} from './supabase-queries.helpers';
+import {
+  rankBuckets,
+  rankOrderedBuckets,
+  rankNumberBuckets,
+  rankManufacturerScores
+} from './supabase-queries.insights';
+import {
+  buildManufacturerActivityRank,
+  parseModuleUpdatedTimestampMs,
+  buildManufacturerModuleStats,
+  withManufacturerModuleStats,
+  compareManufacturersByLatestModuleActivity
+} from './supabase-queries.manufacturer-stats';
 
 
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
   private static readonly MAX_QUERY_ROWS = 500;
-  private static readonly HP_BAND_ORDER = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -350,97 +288,6 @@ export class SupabaseQueriesService {
     return {data: rows, error: null};
   }
 
-  private rankBuckets(
-    counts: Map<string, number>,
-    limit: number,
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...counts.entries()]
-      .sort((a, b) => {
-        if (b[1] !== a[1]) {
-          return b[1] - a[1];
-        }
-        return a[0].localeCompare(b[0]);
-      })
-      .slice(0, limit)
-      .map(([label, count]) => ({
-        label,
-        count,
-        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
-      }));
-  }
-
-  private rankOrderedBuckets(
-    counts: Map<string, number>,
-    orderedLabels: string[],
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return orderedLabels
-      .filter((label) => (counts.get(label) ?? 0) > 0)
-      .map((label) => ({
-        label,
-        count: counts.get(label) ?? 0,
-        ...(detailBuilder ? {detail: detailBuilder(counts.get(label) ?? 0)} : {})
-      }));
-  }
-
-  private rankNumberBuckets(
-    counts: Map<number, number>,
-    limit: number,
-    detailBuilder?: (count: number) => string
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...counts.entries()]
-      .sort((a, b) => {
-        if (b[1] !== a[1]) {
-          return b[1] - a[1];
-        }
-        return a[0] - b[0];
-      })
-      .slice(0, limit)
-      .map(([value, count]) => ({
-        label: `${ value } HP`,
-        count,
-        ...(detailBuilder ? {detail: detailBuilder(count)} : {})
-      }));
-  }
-
-  private getHpBandLabel(hp: number): string {
-    if (hp <= 2) { return '0-2 HP'; }
-    if (hp <= 5) { return '3-5 HP'; }
-    if (hp <= 8) { return '6-8 HP'; }
-    if (hp <= 16) { return '9-16 HP'; }
-    if (hp <= 28) { return '17-28 HP'; }
-    return '29+ HP';
-  }
-
-  private rankManufacturerScores(
-    statsByManufacturer: Map<string, ManufacturerInsightStats>,
-    scorer: (stats: ManufacturerInsightStats) => number | null,
-    detailBuilder: (stats: ManufacturerInsightStats, score: number) => string,
-    limit = 5
-  ): PublicApplicationModuleInsightBucket[] {
-    return [...statsByManufacturer.entries()]
-      .map(([label, stats]) => ({
-        label,
-        score: scorer(stats),
-        stats
-      }))
-      .filter((entry): entry is {label: string; score: number; stats: ManufacturerInsightStats} =>
-        entry.score !== null
-      )
-      .sort((a, b) => {
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-        return a.label.localeCompare(b.label);
-      })
-      .slice(0, limit)
-      .map(({label, score, stats}) => ({
-        label,
-        count: score,
-        detail: detailBuilder(stats, score)
-      }));
-  }
 
   private buildModuleInsights(rows: PublicModuleInsightRow[]): PublicApplicationModuleInsights {
     const manufacturerCounts = new Map<string, number>();
@@ -478,7 +325,7 @@ export class SupabaseQueriesService {
         totalModules: (manufacturerStats.get(row.manufacturerName)?.totalModules ?? 0) + 1,
         totalHp: (manufacturerStats.get(row.manufacturerName)?.totalHp ?? 0) + row.hp,
         oneUModules: (manufacturerStats.get(row.manufacturerName)?.oneUModules ?? 0)
-          + (this.isOneUStandard(row.standardName) ? 1 : 0)
+          + (isOneUStandard(row.standardName) ? 1 : 0)
       });
       standardCounts.set(
         row.standardName,
@@ -492,8 +339,8 @@ export class SupabaseQueriesService {
       makersForStandard.add(row.manufacturerName);
       standardManufacturers.set(row.standardName, makersForStandard);
       hpBandCounts.set(
-        this.getHpBandLabel(row.hp),
-        (hpBandCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
+        getHpBandLabel(row.hp),
+        (hpBandCounts.get(getHpBandLabel(row.hp)) ?? 0) + 1
       );
 
       if (row.updated >= lastThirtyDaysIso) {
@@ -506,8 +353,8 @@ export class SupabaseQueriesService {
           (standardActivityCounts.get(row.standardName) ?? 0) + 1
         );
         hpBandActivityCounts.set(
-          this.getHpBandLabel(row.hp),
-          (hpBandActivityCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
+          getHpBandLabel(row.hp),
+          (hpBandActivityCounts.get(getHpBandLabel(row.hp)) ?? 0) + 1
         );
         updatedLast30Days += 1;
       }
@@ -568,39 +415,39 @@ export class SupabaseQueriesService {
       : 0;
 
     return {
-      topManufacturers: this.rankBuckets(
+      topManufacturers: rankBuckets(
         manufacturerCounts,
         5,
         (count) => `${ count } public modules`
       ),
-      activeManufacturers: this.rankBuckets(
+      activeManufacturers: rankBuckets(
         activeManufacturerCounts,
         5,
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      widestManufacturers: this.rankManufacturerScores(
+      widestManufacturers: rankManufacturerScores(
         manufacturerStats,
         (stats) => stats.totalModules >= 5 ? Math.round(stats.totalHp / stats.totalModules) : null,
         (stats, score) => `${ score } HP average across ${ stats.totalModules } public modules`
       ),
-      oneUManufacturers: this.rankManufacturerScores(
+      oneUManufacturers: rankManufacturerScores(
         manufacturerStats,
         (stats) => stats.totalModules >= 5 && stats.oneUModules >= 2
           ? Math.round((stats.oneUModules / stats.totalModules) * 100)
           : null,
         (stats, score) => `${ score }% 1U share across ${ stats.totalModules } public modules`
       ),
-      standardMix: this.rankBuckets(
+      standardMix: rankBuckets(
         standardCounts,
         standardCounts.size,
         (count) => `${ count } public modules in this format`
       ),
-      standardActivity: this.rankBuckets(
+      standardActivity: rankBuckets(
         standardActivityCounts,
         Math.min(5, standardActivityCounts.size),
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      standardWidthAverages: this.rankBuckets(
+      standardWidthAverages: rankBuckets(
         new Map(
           [...standardWidthStats.entries()].map(([label, stats]) => [
             label,
@@ -610,7 +457,7 @@ export class SupabaseQueriesService {
         Math.min(5, standardWidthStats.size),
         (count) => `${ count } HP average width`
       ),
-      standardManufacturerCounts: this.rankBuckets(
+      standardManufacturerCounts: rankBuckets(
         new Map(
           [...standardManufacturers.entries()].map(([label, makers]) => [
             label,
@@ -620,17 +467,17 @@ export class SupabaseQueriesService {
         Math.min(5, standardManufacturers.size),
         (count) => `${ count } makers represented in this format`
       ),
-      hpBands: this.rankOrderedBuckets(
+      hpBands: rankOrderedBuckets(
         hpBandCounts,
-        SupabaseQueriesService.HP_BAND_ORDER,
+        HP_BAND_ORDER,
         (count) => `${ count } modules in this size band`
       ),
-      hpBandActivity: this.rankOrderedBuckets(
+      hpBandActivity: rankOrderedBuckets(
         hpBandActivityCounts,
-        SupabaseQueriesService.HP_BAND_ORDER,
+        HP_BAND_ORDER,
         (count) => `${ count } modules updated in the last 30 days`
       ),
-      hpExact: this.rankNumberBuckets(
+      hpExact: rankNumberBuckets(
         hpExactCounts,
         8,
         (count) => `${ count } modules at this exact width`
@@ -657,9 +504,6 @@ export class SupabaseQueriesService {
     };
   }
 
-  private isOneUStandard(standardName: string): boolean {
-    return standardName.toLowerCase().includes('1u');
-  }
 
   private stripPublicAuthorGate<T>(response: any) {
     const gateAlias = SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS;
@@ -709,77 +553,160 @@ export class SupabaseQueriesService {
       ? `tags:${ DbPaths.module_tags }!inner(id,tag:${ DbPaths.tags }(*),voteCount:${ DbPaths.user_module_tags }(moduletagid))`
       : QueryJoins.module_tags;
 
-    const buildQuery = (query: any) => {
-      let builtQuery = query.select(`
-                              id,name,hp,description,public,created,updated,
-                              ${ QueryJoins.manufacturer },
-                              ${ QueryJoins.standard },
-                              ${ QueryJoins.module_panels },
-                              ${ moduleTagsJoin }
-                            `, {count: 'exact'});
-      
+    const applyBaseFilters = (builtQuery: any, applyTextFilters = false) => {
+      let nextQuery = builtQuery;
+
       if (onlyPublic === true) {
-        builtQuery = builtQuery.filter('public', 'eq', true);
+        nextQuery = nextQuery.filter('public', 'eq', true);
       }
-      
+
       if (withHP) {
         if (withHpCondition === '=' || withHpCondition === undefined) {
-          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+          nextQuery = nextQuery.filter('hp', 'eq', withHP);
         } else if (withHpCondition === '>') {
-          builtQuery = builtQuery.filter('hp', 'gt', withHP);
+          nextQuery = nextQuery.filter('hp', 'gt', withHP);
         } else if (withHpCondition === '<') {
-          builtQuery = builtQuery.filter('hp', 'lt', withHP);
+          nextQuery = nextQuery.filter('hp', 'lt', withHP);
         } else if (withHpCondition === '>=') {
-          builtQuery = builtQuery.filter('hp', 'gte', withHP);
+          nextQuery = nextQuery.filter('hp', 'gte', withHP);
         } else if (withHpCondition === '<=') {
-          builtQuery = builtQuery.filter('hp', 'lte', withHP);
+          nextQuery = nextQuery.filter('hp', 'lte', withHP);
         } else if (withHpCondition === '!=') {
-          builtQuery = builtQuery.filter('hp', 'neq', withHP);
+          nextQuery = nextQuery.filter('hp', 'neq', withHP);
         } else {
-          builtQuery = builtQuery.filter('hp', 'eq', withHP);
+          nextQuery = nextQuery.filter('hp', 'eq', withHP);
         }
       }
-      
+
       if (manufacturerId) {
-        builtQuery = builtQuery.filter('manufacturerId', 'eq', manufacturerId);
+        nextQuery = nextQuery.filter('manufacturerId', 'eq', manufacturerId);
       }
-      
+
       if (standard !== undefined) {
-        builtQuery = builtQuery.filter('standard', 'eq', standard);
+        nextQuery = nextQuery.filter('standard', 'eq', standard);
       }
-      
+
+      if (applyTextFilters) {
+        if (nameQuery.length > 0) {
+          nextQuery = nextQuery.ilike('name', `%${ escapeIlikePattern(nameQuery) }%`);
+        }
+
+        if (descriptionQuery.length > 0) {
+          nextQuery = nextQuery.ilike('description', `%${ escapeIlikePattern(descriptionQuery) }%`);
+        }
+      }
+
       if (hasTagFilter) {
-        builtQuery = (builtQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
+        nextQuery = (nextQuery as any).filter(`${ DbPaths.module_tags }.tagid`, 'in', `(${ tagIds.join(',') })`);
       }
-      
-      return builtQuery
-        .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
-        .limit(1, {foreignTable: DbPaths.module_panels})
-        .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+
+      return nextQuery;
+    };
+
+    const buildDetailedQuery = (query: any) => applyBaseFilters(
+      query.select(`
+                    id,name,hp,description,public,created,updated,
+                    ${ QueryJoins.manufacturer },
+                    ${ QueryJoins.standard },
+                    ${ QueryJoins.module_panels },
+                    ${ moduleTagsJoin }
+                  `, {count: 'exact'})
+    )
+      .order(`color`, {foreignTable: DbPaths.module_panels, ascending: true})
+      .limit(1, {foreignTable: DbPaths.module_panels})
+      .order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
+
+    const buildSearchRowsQuery = (query: any, applyTextFilters = false) => {
+      const lightweightSelect = hasTagFilter
+        ? `id,name,description,${ DbPaths.module_tags }!inner(id)`
+        : 'id,name,description';
+
+      return applyBaseFilters(
+        query.select(lightweightSelect, {count: 'exact'}),
+        applyTextFilters
+      ).order(orderBy ? orderBy : 'name', {ascending: orderDirection === 'asc'});
     };
 
     if (!requiresClientTextFiltering) {
-      return rxFrom(buildQuery(this.supabase.from(DbPaths.modules)).range(from, to))
+      return rxFrom(buildDetailedQuery(this.supabase.from(DbPaths.modules)).range(from, to))
         .pipe(remapErrors());
     }
 
     return rxFrom((async () => {
-      const response = await this.fetchAllRows<any>(DbPaths.modules, buildQuery);
-      if (response.error) {
-        return response;
+      const filterPredicate = (module: any) =>
+        matchesSearchQuery(nameQuery, module?.name)
+        && matchesSearchQuery(descriptionQuery, module?.description);
+
+      const narrowedSearchResponse = await this.fetchAllRows<any>(
+        DbPaths.modules,
+        (query: any) => buildSearchRowsQuery(query, true)
+      );
+      if (narrowedSearchResponse.error) {
+        return narrowedSearchResponse;
       }
-      
-      return applyClientSideSearchFilter(
+
+      let filteredSearchRows = applyClientSideSearchFilter(
         {
-          ...response,
-          count: response.data.length
+          ...narrowedSearchResponse,
+          count: narrowedSearchResponse.data.length
         },
         from,
         to,
-        (module: any) =>
-          matchesSearchQuery(nameQuery, module?.name)
-          && matchesSearchQuery(descriptionQuery, module?.description)
+        filterPredicate
       );
+
+      if (filteredSearchRows.count === 0) {
+        const fallbackSearchResponse = await this.fetchAllRows<any>(
+          DbPaths.modules,
+          (query: any) => buildSearchRowsQuery(query, false)
+        );
+        if (fallbackSearchResponse.error) {
+          return fallbackSearchResponse;
+        }
+
+        filteredSearchRows = applyClientSideSearchFilter(
+          {
+            ...fallbackSearchResponse,
+            count: fallbackSearchResponse.data.length
+          },
+          from,
+          to,
+          filterPredicate
+        );
+      }
+
+      if (filteredSearchRows.count === 0) {
+        return filteredSearchRows;
+      }
+
+      const pageIds = (filteredSearchRows.data ?? [])
+        .map((module: any) => module?.id)
+        .filter((id: number | undefined): id is number => Number.isFinite(id));
+
+      if (pageIds.length === 0) {
+        return {
+          ...filteredSearchRows,
+          data: []
+        };
+      }
+
+      const detailResponse = await buildDetailedQuery(this.supabase.from(DbPaths.modules))
+        .filter('id', 'in', `(${ pageIds.join(',') })`)
+        .range(0, pageIds.length - 1);
+      if (detailResponse.error) {
+        return detailResponse;
+      }
+
+      const detailRows = Array.isArray(detailResponse.data) ? detailResponse.data : [];
+      const orderedPageRows = pageIds
+        .map((id) => detailRows.find((row: any) => row?.id === id))
+        .filter(Boolean);
+
+      return {
+        ...detailResponse,
+        data: orderedPageRows,
+        count: filteredSearchRows.count
+      };
     })()).pipe(remapErrors());
   }
   
@@ -899,20 +826,14 @@ export class SupabaseQueriesService {
     maxCacheCount: 50,
   })
   getPublicRackWithId(id: number, columns = '*') {
-    const publicAuthorGateJoin = QueryJoins.publicAuthorGate(SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS);
-
     return rxFrom(
       this.supabase.from(DbPaths.racks)
-        .select(`${ columns }, ${ QueryJoins.author }, ${ publicAuthorGateJoin }`)
+        .select(`${ columns }, ${ QueryJoins.author }`)
         .filter('id', 'eq', id)
         .filter('public', 'eq', true)
-        .filter(`${ SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS }.public`, 'eq', true)
         .single()
     )
-      .pipe(
-        remapErrors(),
-        map(response => this.stripPublicAuthorGate<Rack>(response))
-      );
+      .pipe(remapErrors());
   }
 
   @Cacheable({
@@ -1265,6 +1186,68 @@ export class SupabaseQueriesService {
       return this.buildModuleInsights(response.data);
     })());
   }
+
+  @Cacheable({
+    maxAge: defaultCacheTime,
+    cacheBusterObserver: cacheBuster$.pipe(filter(x => x.includes('modules')
+      || x.includes('patches')
+      || x.includes('profiles')
+      || x.includes('rackWithId')
+      || x.includes('racksMinimal')
+    )),
+    maxCacheCount: 20,
+  })
+  getApplicationInsightsSnapshot(days = 30): Observable<PublicApplicationInsightsSnapshot> {
+    return rxFrom(
+      this.supabase.rpc('get_application_insights_snapshot', {
+        p_days: days
+      })
+    ).pipe(
+      remapErrors(),
+      map((response: any) => {
+        const snapshot = response?.data?.[0] ?? {};
+
+        return {
+          statistics: (snapshot.statistics ?? {
+            publicModules: 0,
+            publicManufacturers: 0,
+            publicProfiles: 0,
+            publicModulesUpdatedLast30Days: 0,
+            publicRacks: 0,
+            publicRackAuthors: 0,
+            publicRacksUpdatedLast30Days: 0,
+            publicPatches: 0,
+            publicPatchConnections: 0,
+            publicPatchAuthors: 0,
+            publicPatchesUpdatedLast30Days: 0
+          }) as PublicApplicationStatistics,
+          activitySeries: (snapshot.activity_series ?? []) as PublicApplicationActivityPoint[],
+          moduleInsights: (snapshot.module_insights ?? {
+            topManufacturers: [],
+            activeManufacturers: [],
+            widestManufacturers: [],
+            oneUManufacturers: [],
+            standardMix: [],
+            standardActivity: [],
+            standardWidthAverages: [],
+            standardManufacturerCounts: [],
+            hpBands: [],
+            hpBandActivity: [],
+            hpExact: [],
+            freshnessWindows: [],
+            createdWindows: [],
+            topFiveManufacturerShare: 0,
+            soloManufacturerCount: 0,
+            medianModulesPerManufacturer: 0,
+            medianCatalogueAgeYears: 0,
+            staleModules: 0,
+            averageHp: 0,
+            medianHp: 0
+          }) as PublicApplicationModuleInsights
+        };
+      })
+    );
+  }
   
   @Cacheable({
     maxAge: defaultCacheTime,
@@ -1534,11 +1517,11 @@ export class SupabaseQueriesService {
               error: modulesActivityResponse.error
             };
           }
-          const statsByManufacturerId = this.buildManufacturerModuleStats(modulesActivityResponse.data);
+          const statsByManufacturerId = buildManufacturerModuleStats(modulesActivityResponse.data);
           return {
             ...filteredResponse,
             data: manufacturers.map((manufacturer: any) =>
-              this.withManufacturerModuleStats(
+              withManufacturerModuleStats(
                 manufacturer,
                 statsByManufacturerId.get(manufacturer.id)
               )
@@ -1603,10 +1586,10 @@ export class SupabaseQueriesService {
       const filteredActivityRows = modulesActivityResponse.data
         .filter((row) => allowedManufacturerIds.has(row.manufacturerId));
       
-      const statsByManufacturerId = this.buildManufacturerModuleStats(filteredActivityRows);
-      const activityRankByManufacturerId = this.buildManufacturerActivityRank(filteredActivityRows);
+      const statsByManufacturerId = buildManufacturerModuleStats(filteredActivityRows);
+      const activityRankByManufacturerId = buildManufacturerActivityRank(filteredActivityRows);
       const sortedManufacturers = [...manufacturers].sort((a, b) =>
-        this.compareManufacturersByLatestModuleActivity(
+        compareManufacturersByLatestModuleActivity(
           a,
           b,
           activityRankByManufacturerId
@@ -1615,7 +1598,7 @@ export class SupabaseQueriesService {
       const pagedManufacturers = sortedManufacturers
         .slice(from, to + 1)
         .map((manufacturer: any) =>
-          this.withManufacturerModuleStats(
+          withManufacturerModuleStats(
             manufacturer,
             statsByManufacturerId.get(manufacturer.id)
           )
@@ -1689,103 +1672,6 @@ export class SupabaseQueriesService {
     return this.fetchAllModuleActivityRows(orderDirection);
   }
   
-  private buildManufacturerActivityRank(rows: ModuleActivityRow[]): Map<number, number> {
-    const rankByManufacturerId = new Map<number, number>();
-    let rank = 0;
-    
-    for (const row of rows) {
-      if (typeof row?.manufacturerId !== 'number') {
-        continue;
-      }
-      if (!rankByManufacturerId.has(row.manufacturerId)) {
-        rankByManufacturerId.set(row.manufacturerId, rank);
-        rank += 1;
-      }
-    }
-    
-    return rankByManufacturerId;
-  }
-  
-  private parseModuleUpdatedTimestampMs(rawUpdated: unknown): number | null {
-    if (typeof rawUpdated !== 'string' || rawUpdated.trim().length === 0) { return null; }
-    let s = rawUpdated.trim();
-    // Normalise Postgres variants so Date.parse can handle them:
-    // 1. Space separator → T  (e.g. "2026-03-01 10:00:00" → "2026-03-01T10:00:00")
-    s = s.replace(' ', 'T');
-    // 2. Truncate microseconds to milliseconds  (.123456 → .123)
-    s = s.replace(/(\.\d{3})\d+/, '$1');
-    // 3. Short UTC offset without minutes: +00 / -05 → +00:00 / -05:00
-    s = s.replace(/([+-]\d{2})$/, '$1:00');
-    // 4. Four-digit offset without colon: +0000 → +00:00
-    s = s.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
-    const ms = Date.parse(s);
-    return isNaN(ms) ? null : ms;
-  }
-  
-  private buildManufacturerModuleStats(rows: ModuleActivityRow[]): Map<number, ManufacturerModuleStats> {
-    const stats = new Map<number, ManufacturerModuleStats>();
-    const thresholdMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
-    for (const row of rows) {
-      if (typeof row?.manufacturerId !== 'number') {
-        continue;
-      }
-      const current = stats.get(row.manufacturerId) ?? {...SupabaseQueriesService.EMPTY_STATS};
-      current.moduleCount += 1;
-      
-      const updatedMs = this.parseModuleUpdatedTimestampMs(row.updated);
-      if (updatedMs !== null) {
-        if (current.latestModuleUpdatedAtMs === null || updatedMs > current.latestModuleUpdatedAtMs) {
-          current.latestModuleUpdatedAtMs = updatedMs;
-          current.latestModuleUpdatedAt = row.updated;
-        }
-        if (updatedMs >= thresholdMs) {
-          current.changedModulesLast30Days += 1;
-        }
-      }
-      
-      stats.set(row.manufacturerId, current);
-    }
-    
-    return stats;
-  }
-  
-  private withManufacturerModuleStats(manufacturer: any, stats: ManufacturerModuleStats | undefined) {
-    return {
-      ...manufacturer,
-      moduleCount: stats?.moduleCount ?? 0,
-      latestModuleUpdatedAt: stats?.latestModuleUpdatedAt ?? null,
-      changedModulesLast30Days: stats?.changedModulesLast30Days ?? 0
-    };
-  }
-  
-  private compareManufacturersByLatestModuleActivity(
-    aManufacturer: any,
-    bManufacturer: any,
-    activityRankByManufacturerId: Map<number, number>
-  ): number {
-    const aRank = activityRankByManufacturerId.get(aManufacturer.id);
-    const bRank = activityRankByManufacturerId.get(bManufacturer.id);
-    const aHasModules = typeof aRank === 'number';
-    const bHasModules = typeof bRank === 'number';
-    const aName = (aManufacturer?.name ?? '').toString();
-    const bName = (bManufacturer?.name ?? '').toString();
-    
-    // Keep manufacturers with modules before empty ones in both directions.
-    if (aHasModules !== bHasModules) {
-      return aHasModules ? -1 : 1;
-    }
-    
-    if (!aHasModules || !bHasModules) {
-      return aName.localeCompare(bName);
-    }
-    
-    if (aRank !== bRank) {
-      return (aRank as number) - (bRank as number);
-    }
-    
-    return aName.localeCompare(bName);
-  }
   
   @Cacheable({
     maxAge: defaultCacheTime,
@@ -1803,11 +1689,12 @@ export class SupabaseQueriesService {
     
     const moduleColumns = `id,name,hp,description,public,created,updated,manufacturerId,standard,isApproved`;
     
-    const columns = [
-      moduleColumns,
-      QueryJoins.manufacturer,
-      QueryJoins.module_panels,
-    ];
+     const columns = [
+       moduleColumns,
+       QueryJoins.manufacturer,
+       QueryJoins.module_tags,
+       QueryJoins.module_panels,
+     ];
     // can be optimized to avoid calling it all the time but for now it is ok
     if (includeInsOuts) {
       columns.push(QueryJoins.insOuts);

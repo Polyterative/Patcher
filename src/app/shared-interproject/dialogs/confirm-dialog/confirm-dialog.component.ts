@@ -4,24 +4,17 @@ import {
   Inject
 } from '@angular/core';
 import { DialogBase } from '../DialogBase';
-import {
-  DialogDataInModelBase,
-  DialogLabelDefinition
-} from '../DialogDataStructures';
+import { DialogLabelDefinition } from '../DialogDataStructures';
 import {
   MAT_DIALOG_DATA,
   MatDialogRef
 } from "@angular/material/dialog";
+import {
+  ConfirmDialogDataInModel,
+  ConfirmDialogDataOutModel
+} from './confirm-dialog.types';
 
-
-export interface ConfirmDialogDataInModel extends DialogDataInModelBase {
-  positive?: DialogLabelDefinition,
-  negative?: DialogLabelDefinition;
-}
-
-export interface ConfirmDialogDataOutModel {
-  answer: boolean;
-}
+export type { ConfirmDialogDataInModel, ConfirmDialogDataOutModel };
 
 @Component({
   selector: 'lib-confirm-dialog',
@@ -34,11 +27,6 @@ export class ConfirmDialogComponent extends DialogBase implements ConfirmDialogD
 
   positive?: DialogLabelDefinition;
 
-  // closeDialog(answer: boolean) {
-  //   this.dialogRef.close({
-  //     answer
-  //   });
-  // }
   negative?: DialogLabelDefinition;
 
   constructor(

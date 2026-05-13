@@ -8,25 +8,13 @@ import {
   RackBalanceAxisId,
   RACK_BALANCE_AXES
 } from './rack-balance-analysis.constants';
+import { isBlankModule } from './rack-blank-module.constants';
+import {
+  RackBalanceAnalysisResult,
+  RackBalanceAxisResult
+} from './rack-balance-analysis.types';
 
-export interface RackBalanceAxisResult {
-  id: RackBalanceAxisId;
-  label: string;
-  icon: string;
-  share: number;
-  matchedModules: number;
-  guidance: string;
-}
-
-export interface RackBalanceAnalysisResult {
-  axes: RackBalanceAxisResult[];
-  confidence: number;
-  recognizedModuleCount: number;
-  totalModules: number;
-  warningMessage: string | null;
-  summary: string;
-  isEmpty: boolean;
-}
+export type { RackBalanceAnalysisResult, RackBalanceAxisResult };
 
 @Injectable({
   providedIn: 'root'
@@ -38,7 +26,7 @@ export class RackBalanceAnalysisService {
   analyze(rowedRackedModules: RackedModule[][] | null | undefined): RackBalanceAnalysisResult {
     const modules = (rowedRackedModules ?? [])
       .flat()
-      .filter((entry): entry is RackedModule => !!entry?.module);
+      .filter((entry): entry is RackedModule => !!entry?.module && !isBlankModule(entry.module.id));
 
     if (modules.length === 0) {
       return {
@@ -59,10 +47,8 @@ export class RackBalanceAnalysisService {
       };
     }
 
-    const matchedCounts = new Map<RackBalanceAxisId, number>();
-    const matchedArea = new Map<RackBalanceAxisId, number>();
-    RACK_BALANCE_AXES.forEach(axis => matchedCounts.set(axis.id, 0));
-    RACK_BALANCE_AXES.forEach(axis => matchedArea.set(axis.id, 0));
+    const matchedCounts = new Map<RackBalanceAxisId, number>(RACK_BALANCE_AXES.map(axis => [axis.id, 0]));
+    const matchedArea = new Map<RackBalanceAxisId, number>(RACK_BALANCE_AXES.map(axis => [axis.id, 0]));
 
     let recognizedModuleCount = 0;
 
@@ -155,21 +141,19 @@ export class RackBalanceAnalysisService {
     return matchedAxes;
   }
 
+  private static readonly NUMERIC_TAG_TYPE_NAMES: Readonly<Record<number, string>> = {
+    0: 'purpose',
+    1: 'nature',
+    2: 'character',
+  };
+
   private normalizeTagType(tagType: unknown): string | null {
     if (typeof tagType === 'string') {
       return tagType.trim().toLowerCase();
     }
 
     if (typeof tagType === 'number') {
-      if (tagType === 0) {
-        return 'purpose';
-      }
-      if (tagType === 1) {
-        return 'nature';
-      }
-      if (tagType === 2) {
-        return 'character';
-      }
+      return RackBalanceAnalysisService.NUMERIC_TAG_TYPE_NAMES[tagType] ?? null;
     }
 
     return null;

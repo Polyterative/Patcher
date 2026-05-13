@@ -11,6 +11,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
+  combineLatest,
   EMPTY,
   forkJoin,
   merge,
@@ -20,11 +21,16 @@ import {
   Subject
 } from 'rxjs';
 import {
+  PATCH_EDITOR_OPERATION_MODES,
+  PatchEditorOperationMode
+} from './patch-editor/patch-editor.types';
+import {
   catchError,
   concatMap,
   debounceTime,
   distinctUntilChanged,
   filter,
+  finalize,
   map,
   pairwise,
   scan,
@@ -34,6 +40,12 @@ import {
   tap,
   withLatestFrom
 } from 'rxjs/operators';
+import {
+  findAndApplyOptionForId,
+  getCleanedValueId,
+  ISelectable
+} from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { Rack } from '../../models/rack';
 import {
   ConfirmDialogComponent,
   ConfirmDialogDataInModel,
@@ -53,31 +65,43 @@ import {
 } from '../../models/module';
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
 import { SelectionPanelBridgeService } from './selection-panel-bridge.service';
+import {
+  isLinkedRackSchemaMissingError,
+  LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE
+} from './linked-rack-rollout';
 
 
-/** Maximum number of instances (copies) allowed per module in a single patch. */
-export const MAX_INSTANCES_PER_MODULE = 20;
+import {
+  LinkedRackUiState,
+  MAX_INSTANCES_PER_MODULE,
+  MultiInstanceModuleSummary,
+} from './patch-detail-data.models';
+import {
+  CVConnectionEvent,
+  CVConnectionState,
+  EMPTY_CV_CONNECTION_STATE,
+} from './patch-detail-data.models';
+import {
+  buildLinkedRackUiState,
+  DEFAULT_LINKED_RACK_UI_STATE,
+  groupInstancesByModuleId,
+} from './patch-detail-data.utils';
 
-/** Summary entry for modules that have 2+ instances in a patch. */
-export interface MultiInstanceModuleSummary {
-  moduleId: number;
-  moduleName: string;
-  manufacturerName: string;
-  instanceCount: number;
-  labels: string[];
-}
+export type { LinkedRackUiState, MultiInstanceModuleSummary } from './patch-detail-data.models';
+export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
+
 
 
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
   private usePublicDetailReads = false;
-  updateSinglePatchData$ = new ReplaySubject<number>();
-  singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
+  readonly updateSinglePatchData$ = new ReplaySubject<number>();
+  readonly singlePatchData$ = new BehaviorSubject<Patch | undefined>(undefined);
   //
-  patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
-  patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
-  editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
-  removePatchFromCollection$ = new Subject<number>();
+  readonly patchEditingPanelOpenState$ = new BehaviorSubject<boolean>(false);
+  readonly patchConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  readonly editorConnections$: BehaviorSubject<PatchConnection[] | null> = new BehaviorSubject<PatchConnection[]>(null);
+  readonly removePatchFromCollection$ = new Subject<number>();
   //
   formData = {
     name: {
@@ -92,20 +116,17 @@ export class PatchDetailDataService implements OnDestroy {
         Validators.min(0),
         Validators.maxLength(144)
       ]))
+    },
+    linkedRack: {
+      control: new UntypedFormControl('')
     }
   };
   //
-  clickOnModuleCV$ = new Subject<CVConnectionEntity>();
-  resetSelectedForConnection$ = new Subject<void>();
-  selectedForConnection$ = new BehaviorSubject<{
-    a: CVConnectionEntity | null,
-    b: CVConnectionEntity | null
-  }>({
-    a: null,
-    b: null
-  });
-  confirmSelectedConnection$ = new Subject<void>();
-  removeConnectionFromEditor$ = new Subject<PatchConnection>();
+  readonly clickOnModuleCV$ = new Subject<CVConnectionEntity>();
+  readonly resetSelectedForConnection$ = new Subject<void>();
+  readonly selectedForConnection$ = new BehaviorSubject<CVConnectionState>(EMPTY_CV_CONNECTION_STATE);
+  readonly confirmSelectedConnection$ = new Subject<void>();
+  readonly removeConnectionFromEditor$ = new Subject<PatchConnection>();
   readonly deletePatch$ = new Subject<number>();
   /** Serializes connection writes to the backend (mirrors rack's requestRackedModulesDbSync$). */
   readonly requestConnectionDbSync$ = new Subject<void>();
@@ -113,32 +134,43 @@ export class PatchDetailDataService implements OnDestroy {
   readonly requestNoteSync$ = new Subject<PatchConnection>();
   //
   // Module instances
-  patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
-  addModuleInstance$ = new Subject<MinimalModule>();
-  removeModuleInstance$ = new Subject<PatchModuleInstance>();
+  readonly patchModuleInstances$ = new BehaviorSubject<PatchModuleInstance[]>([]);
+  readonly addModuleInstance$ = new Subject<MinimalModule>();
+  readonly removeModuleInstance$ = new Subject<PatchModuleInstance>();
   /** User's collection modules — set by PatchEditorComponent on init */
-  collectionModules$ = new BehaviorSubject<DbModule[]>([]);
+  readonly collectionModules$ = new BehaviorSubject<DbModule[]>([]);
   //
-  isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
-  requestPatchPrivacyStatusChange$ = new Subject<void>();
+  readonly isCurrentPatchPrivate$ = new BehaviorSubject<boolean>(false);
+  readonly patchDetailUnavailableMessage$ = new BehaviorSubject<string | null>(null);
+  readonly requestPatchPrivacyStatusChange$ = new Subject<void>();
   /** Toggle the patch editing panel open/closed through the service layer. */
-  requestPatchEditingToggle$ = new Subject<void>();
+  readonly requestPatchEditingToggle$ = new Subject<void>();
   /**
    * Map from instance ID → display label (e.g. "(1)", "(2)").
    * Only contains entries for modules that have 2+ instances.
    * Used by read-only connection list to show which copy a connection belongs to.
    */
-  instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
+  readonly instanceLabelMap$ = new BehaviorSubject<Map<number, string>>(new Map());
   /**
    * Summary of modules with 2+ instances. Emits [] when no multi-instance modules exist.
    * Derived from patchModuleInstances$ + patchConnections$ (for module names).
    */
-  multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
+  readonly multiInstanceSummary$ = new BehaviorSubject<MultiInstanceModuleSummary[]>([]);
   //
-  protected destroyEvent$ = new Subject<void>();
-  shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  protected readonly destroyEvent$ = new Subject<void>();
+  readonly shouldShowPanelImages$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   readonly patchTags$ = new BehaviorSubject<string[]>([]);
+  readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
+  readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
+  readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(DEFAULT_LINKED_RACK_UI_STATE);
+  readonly editorOperationMode$ = new BehaviorSubject<PatchEditorOperationMode>(PATCH_EDITOR_OPERATION_MODES.collection);
+  readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
+  readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
+  readonly linkedRackSelectionBlocked$ = new BehaviorSubject<boolean>(false);
+  readonly linkedRackSelectionHint$ = new BehaviorSubject<string | null>(null);
+  readonly requestLinkedRackChange$ = new Subject<number | null>();
   private readonly _tagsUpdate$ = new Subject<string[]>();
+  private readonly connectionSyncPendingCount$ = new BehaviorSubject<number>(0);
   
   constructor(
     private router: Router,
@@ -151,17 +183,27 @@ export class PatchDetailDataService implements OnDestroy {
     
     this.updateSinglePatchData$
       .pipe(
-        tap(_ => this.patchConnections$.next(null)),
-        tap(_ => this.editorConnections$.next(null)),
-        tap(() => this.patchModuleInstances$.next([])),
-        tap(() => this.backend.cacheResetter$.next(['patchModuleInstances'])),
+        tap(() => {
+          this.patchConnections$.next(null);
+          this.editorConnections$.next(null);
+          this.patchModuleInstances$.next([]);
+          this.singlePatchData$.next(undefined);
+          this.patchDetailUnavailableMessage$.next(null);
+          this.backend.cacheResetter$.next(['patchModuleInstances', 'rackWithId']);
+        }),
         switchMap(x => this.usePublicDetailReads
           ? this.backend.GET.publicPatchWithId(x)
-          : this.backend.get.patchWithId(x)),
+          : this.backend.get.patchWithId(x)
+        ),
+        catchError(() => of({data: undefined, error: null})),
         takeUntil(this.destroyEvent$)
       )
       .subscribe(x => {
-        this.singlePatchData$.next(x.data);
+        const patch = x?.data ?? undefined;
+        this.singlePatchData$.next(patch);
+        if (!patch) {
+          this.patchDetailUnavailableMessage$.next(this.buildUnavailableMessage());
+        }
       });
     
     // when updated patch data is received, update privacy status observable
@@ -262,6 +304,126 @@ export class PatchDetailDataService implements OnDestroy {
         this.formData.description.control.reset(data.description ?? '', {emitEvent: false});
         this.patchTags$.next(data.tags ?? []);
       });
+
+    combineLatest([
+      this.singlePatchData$,
+      this.backend.auth.getUserSession$()
+    ])
+      .pipe(
+        switchMap(([patch, user]) => patch && user && patch.author?.id === user.id
+          ? this.backend.get.currentUserRacks()
+          : of([])
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(racks => this.currentUserRacks$.next(racks));
+
+    this.currentUserRacks$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(racks => {
+        this.linkedRackOptions$.next(
+          racks.map(rack => ({
+            id: `${ rack.id }`,
+            name: rack.name || `Rack #${ rack.id }`
+          }))
+        );
+        this.syncLinkedRackControl(this.singlePatchData$.value, racks);
+      });
+
+    this.singlePatchData$
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(patch => {
+        this.syncLinkedRackControl(patch, this.currentUserRacks$.value);
+      });
+
+    combineLatest([
+      this.singlePatchData$,
+      this.currentUserRacks$,
+      this.backend.auth.getUserSession$()
+    ])
+      .pipe(
+        switchMap(([patch, racks, user]) => {
+          if (!patch || patch.linked_rack_id == null) {
+            return of({linkedRack: null as Rack | null, isOwner: false, isLoggedIn: !!user});
+          }
+
+          const isOwner = !!user && patch.author?.id === user.id;
+          const isLoggedIn = !!user;
+          const ownedRack = racks.find(rack => rack.id === patch.linked_rack_id);
+          if (ownedRack) {
+            return of({linkedRack: ownedRack, isOwner, isLoggedIn});
+          }
+
+          if (isOwner) {
+            return of({linkedRack: null as Rack | null, isOwner, isLoggedIn});
+          }
+
+          const rackRead$ = this.usePublicDetailReads || !user
+            ? this.backend.GET.publicRackWithId(patch.linked_rack_id)
+            : this.backend.GET.rackWithId(patch.linked_rack_id);
+
+          return rackRead$.pipe(
+            map((response: any) => ({
+              linkedRack: (response?.data as Rack | null) ?? null,
+              isOwner,
+              isLoggedIn
+            })),
+            catchError(() => of({linkedRack: null as Rack | null, isOwner, isLoggedIn}))
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({linkedRack, isOwner, isLoggedIn}) => {
+        this.linkedRackState$.next(
+          buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner, isLoggedIn)
+        );
+      });
+
+    this.formData.linkedRack.control.valueChanges
+      .pipe(takeUntil(this.destroyEvent$))
+      .subscribe(() => this.requestLinkedRackChange$.next(this.getSelectedLinkedRackId()));
+
+    this.requestLinkedRackChange$
+      .pipe(
+        withLatestFrom(this.singlePatchData$),
+        filter(([_, patch]) => !!patch),
+        filter(() => !this.linkedRackSelectionBlocked$.value && !this.linkedRackPersistenceBlocked$.value),
+        filter(([linkedRackId, patch]) => (patch?.linked_rack_id ?? null) !== linkedRackId),
+        switchMap(([linkedRackId, patch]) => {
+          const nextPatch: Patch = {
+            ...patch!,
+            linked_rack_id: linkedRackId
+          };
+          return this.backend.update.patchSilent(nextPatch).pipe(
+            tap(() => {
+              this.backend.cacheResetter$.next(['rackWithId']);
+              this.setLinkedRackPersistenceBlocked(false, null);
+              if (this.singlePatchData$.value) {
+                this.singlePatchData$.value.linked_rack_id = linkedRackId;
+              }
+              this.linkedRackState$.next(buildLinkedRackUiState(nextPatch, this.currentUserRacks$.value));
+              this.syncLinkedRackControl(nextPatch, this.currentUserRacks$.value);
+              const message = linkedRackId == null
+                ? 'Linked rack cleared.'
+                : 'Linked rack updated.';
+              SharedConstants.successCustom(this.snackBar, message);
+            }),
+            catchError(err => {
+              this.syncLinkedRackControl(patch!, this.currentUserRacks$.value);
+              if (isLinkedRackSchemaMissingError(err)) {
+                this.setLinkedRackPersistenceBlocked(true, LINKED_RACK_PENDING_ENVIRONMENT_MESSAGE);
+                SharedConstants.errorCustom(this.snackBar, 'Linked rack saving is not available yet in this environment.');
+              } else {
+                SharedConstants.errorCustom(this.snackBar, 'Failed to save linked rack — check your connection and try again.');
+              }
+              console.error('Failed to save linked rack:', err);
+              return EMPTY;
+            })
+          );
+        }),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe();
     
     this.singlePatchData$
       .pipe(
@@ -317,48 +479,65 @@ export class PatchDetailDataService implements OnDestroy {
       .subscribe(() => this.updateSinglePatchData$.next(this.singlePatchData$.value.id));
     
     merge(
-      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as any))),
-      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as any))),
-      this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as any))),
-      this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as any)))
+      this.clickOnModuleCV$.pipe(map(cv => ({type: 'cv', cv} as CVConnectionEvent))),
+      this.resetSelectedForConnection$.pipe(map(() => ({type: 'reset'} as CVConnectionEvent))),
+      this.bridge.resetA$.pipe(map(() => ({type: 'resetA'} as CVConnectionEvent))),
+      this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as CVConnectionEvent)))
     )
       .pipe(
-        scan((state: {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        }, ev: any) => {
-          let next = {...state};
+        scan((state: CVConnectionState, ev: CVConnectionEvent): CVConnectionState => {
           switch (ev.type) {
-            case 'reset':
-              next = {a: null, b: null};
-              break;
-            case 'resetA':
-              next = {a: null, b: state.b};
-              break;
-            case 'resetB':
-              next = {a: state.a, b: null};
-              break;
+            case 'reset':  return EMPTY_CV_CONNECTION_STATE;
+            case 'resetA': return {a: null, b: state.b};
+            case 'resetB': return {a: state.a, b: null};
             case 'cv':
-              const x: CVConnectionEntity = ev.cv;
-              if (x.kind === 'in') {
-                next = {a: state.a, b: x};
-              } else {
-                next = {a: x, b: state.b};
-              }
-              break;
-            default:
-            // noop
+              return ev.cv.kind === 'in'
+                ? {a: state.a, b: ev.cv}
+                : {a: ev.cv, b: state.b};
           }
-          return next;
-        }, {a: null, b: null} as {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        }),
+        }, EMPTY_CV_CONNECTION_STATE),
         takeUntil(this.destroyEvent$)
       )
       .subscribe((state) => {
         this.selectedForConnection$.next(state);
       });
+
+    combineLatest([
+      this.patchEditingPanelOpenState$,
+      this.selectedForConnection$,
+      this.connectionSyncPendingCount$.pipe(
+        map(count => count > 0),
+        distinctUntilChanged()
+      )
+    ])
+      .pipe(
+        map(([isEditing, selection, hasPendingConnectionSync]) => {
+          if (!isEditing) {
+            return {blocked: false, hint: null as string | null};
+          }
+
+          if (hasPendingConnectionSync) {
+            return {
+              blocked: true,
+              hint: 'Wait for pending connection changes to finish saving before switching the linked rack.'
+            };
+          }
+
+          if (selection.a || selection.b) {
+            return {
+              blocked: true,
+              hint: 'Finish or cancel the pending connection before switching the linked rack.'
+            };
+          }
+
+          return {blocked: false, hint: null as string | null};
+        }),
+        distinctUntilChanged((previous, current) =>
+          previous.blocked === current.blocked && previous.hint === current.hint
+        ),
+        takeUntil(this.destroyEvent$)
+      )
+      .subscribe(({blocked, hint}) => this.setLinkedRackSelectionBlocked(blocked, hint));
     
     this.confirmSelectedConnection$
       .pipe(
@@ -367,18 +546,15 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(([_, patchConnections]) => {
         patchConnections = patchConnections || [];
-        const selectedForConnection: {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        } = this.selectedForConnection$.value;
+        const selection: CVConnectionState = this.selectedForConnection$.value;
         const patch: Patch = this.singlePatchData$.value;
-        if (!selectedForConnection.a || !selectedForConnection.b || !patch) { return; }
+        if (!selection.a || !selection.b || !patch) { return; }
         const newConnection: PatchConnection = {
-          a: selectedForConnection.a.cv,
-          b: selectedForConnection.b.cv,
+          a: selection.a.cv,
+          b: selection.b.cv,
           patch,
-          instance_id_a: selectedForConnection.a.cv.instance_id,
-          instance_id_b: selectedForConnection.b.cv.instance_id
+          instance_id_a: selection.a.cv.instance_id,
+          instance_id_b: selection.b.cv.instance_id
         };
         const isAlreadyInList: boolean = !!patchConnections.find(connection =>
           connection.a.id === newConnection.a.id
@@ -430,12 +606,22 @@ export class PatchDetailDataService implements OnDestroy {
     // Auto-save connections: serialize writes with concatMap to prevent race conditions
     this.requestConnectionDbSync$
       .pipe(
+        tap(() => this.connectionSyncPendingCount$.next(this.connectionSyncPendingCount$.value + 1)),
         withLatestFrom(this.editorConnections$, this.singlePatchData$),
         concatMap(([_, connections, patch]) => {
-          if (!patch) { return of(null); }
-          if (connections === null) { return of(null); }
-          if (connections.length === 0) {
-            return this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
+          let request$: Observable<unknown>;
+          if (!patch || connections === null) {
+            request$ = of(null);
+          } else if (connections.length === 0) {
+            request$ = this.backend.delete.patchConnectionsForPatch(patch.id).pipe(
+              catchError(err => {
+                console.error('Failed to save connections:', err);
+                SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
+                return EMPTY;
+              })
+            );
+          } else {
+            request$ = this.backend.update.patchConnectionsSilent(connections).pipe(
               catchError(err => {
                 console.error('Failed to save connections:', err);
                 SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
@@ -443,12 +629,9 @@ export class PatchDetailDataService implements OnDestroy {
               })
             );
           }
-          return this.backend.update.patchConnectionsSilent(connections).pipe(
-            catchError(err => {
-              console.error('Failed to save connections:', err);
-              SharedConstants.errorCustom(this.snackBar, 'Failed to save — check your connection and try again.');
-              return EMPTY;
-            })
+
+          return request$.pipe(
+            finalize(() => this.connectionSyncPendingCount$.next(Math.max(0, this.connectionSyncPendingCount$.value - 1)))
           );
         }),
         takeUntil(this.destroyEvent$)
@@ -525,7 +708,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         map(instances => {
           const labelMap = new Map<number, string>();
-          const byModule = this.groupInstancesByModuleId(instances);
+          const byModule = groupInstancesByModuleId(instances);
           for (const [, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
               moduleInstances.forEach((inst, idx) => {
@@ -544,7 +727,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         map(instances => {
           if (!instances.length) { return []; }
-          const byModule = this.groupInstancesByModuleId(instances);
+          const byModule = groupInstancesByModuleId(instances);
           const summary: MultiInstanceModuleSummary[] = [];
           for (const [moduleId, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
@@ -772,6 +955,12 @@ export class PatchDetailDataService implements OnDestroy {
     this.usePublicDetailReads = enabled;
   }
 
+  private buildUnavailableMessage(): string {
+    return this.usePublicDetailReads
+      ? `This patch isn't publicly available. If it's private, only the owner can open it while signed in.`
+      : 'This patch could not be loaded.';
+  }
+
   addPatchTag(tag: string): void {
     const trimmed = tag.trim();
     if (!trimmed) { return; }
@@ -793,17 +982,11 @@ export class PatchDetailDataService implements OnDestroy {
     }
     this._tagsUpdate$.next(next);
   }
-  
-  private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
-    const map = new Map<number, PatchModuleInstance[]>();
-    for (const inst of instances) {
-      const list = map.get(inst.module_id) ?? [];
-      list.push(inst);
-      map.set(inst.module_id, list);
-    }
-    return map;
-  }
 
+  clearLinkedRack(): void {
+    this.requestLinkedRackChange$.next(null);
+  }
+  
   ngOnDestroy(): void {
     // Clear the bridge so the floating panel disappears when navigating away
     this.bridge.selectionState$.next({a: null, b: null});
@@ -814,28 +997,70 @@ export class PatchDetailDataService implements OnDestroy {
   
   /**
    * Ensures an instance exists for the given module in the current patch.
-   * If one already exists, returns its id. If not, creates one and returns the new id.
+   * If one already exists and forceNew is false, returns its id.
+   * If forceNew is true, always creates a new instance (used by rack copies
+   * that need their own distinct instance).
    * Used by module-cvs for lazy auto-create on first CV click.
    */
-  ensureModuleInstance$(module: DbModule | MinimalModule): Observable<number> {
+  ensureModuleInstance$(module: DbModule | MinimalModule, forceNew = false): Observable<number> {
     const patch = this.singlePatchData$.value;
     if (!patch) { return EMPTY as Observable<number>; }
     
-    // Check if an instance already exists
-    const existing = this.patchModuleInstances$.value.find(i => i.module_id === module.id);
-    if (existing) {
-      return of(existing.id);
+    const existingInstances = this.patchModuleInstances$.value.filter(i => i.module_id === module.id);
+
+    // Reuse existing if not forcing a new one
+    if (!forceNew && existingInstances.length > 0) {
+      return of(existingInstances[0].id);
     }
-    
-    // Auto-create one
-    return this.backend.add.patchModuleInstance(patch.id, module.id, null).pipe(
-      map(instance => {
-        // Update local state so the editor cards react
+
+    // Guard against exceeding copy limit (total after this operation)
+    const wouldBeCount = existingInstances.length === 0 ? 1 : existingInstances.length + 1;
+    if (wouldBeCount > MAX_INSTANCES_PER_MODULE) {
+      return existingInstances.length > 0 ? of(existingInstances[0].id) : EMPTY as Observable<number>;
+    }
+
+    // No instances at all → single auto-create (no label needed for first)
+    if (existingInstances.length === 0) {
+      return this.backend.add.patchModuleInstance(patch.id, module.id, null).pipe(
+        map(instance => {
+          this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
+          return instance.id as number;
+        }),
+        catchError(err => {
+          console.error('Failed to auto-create instance:', err);
+          return EMPTY as Observable<number>;
+        })
+      );
+    }
+
+    // 1 existing + need another → jumpstart: relabel existing to "(1)", create "(2)"
+    if (existingInstances.length === 1) {
+      return forkJoin([
+        this.relabelExistingInstance$(existingInstances, module.id, '(1)'),
+        this.backend.add.patchModuleInstance(patch.id, module.id, '(2)')
+      ]).pipe(
+        tap(([_, newInstance]) => {
+          this.patchModuleInstances$.next([...this.patchModuleInstances$.value, newInstance]);
+          this.renumberModuleInstances$(module.id).subscribe();
+        }),
+        map(([_, newInstance]) => newInstance.id as number),
+        catchError(err => {
+          console.error('Failed to jumpstart instances:', err);
+          return EMPTY as Observable<number>;
+        })
+      );
+    }
+
+    // 2+ existing → add next sequential copy
+    const nextLabel = `(${ existingInstances.length + 1 })`;
+    return this.backend.add.patchModuleInstance(patch.id, module.id, nextLabel).pipe(
+      tap(instance => {
         this.patchModuleInstances$.next([...this.patchModuleInstances$.value, instance]);
-        return instance.id as number;
+        this.renumberModuleInstances$(module.id).subscribe();
       }),
+      map(instance => instance.id as number),
       catchError(err => {
-        console.error('Failed to auto-create instance:', err);
+        console.error('Failed to add instance copy:', err);
         return EMPTY as Observable<number>;
       })
     );
@@ -927,16 +1152,57 @@ export class PatchDetailDataService implements OnDestroy {
     ).pipe(
       tap(() => {
         // Update local state in one batch
-        const current = [...this.patchModuleInstances$.value];
-        for (const u of updates) {
-          const idx = current.findIndex(i => i.id === u.instance.id);
-          if (idx >= 0) {
-            current[idx] = {...current[idx], instance_label: u.newLabel};
-          }
-        }
+        const current = this.patchModuleInstances$.value.map(inst => {
+          const update = updates.find(u => u.instance.id === inst.id);
+          return update ? {...inst, instance_label: update.newLabel} : inst;
+        });
         this.patchModuleInstances$.next(current);
       }),
       map(() => null)
     );
   }
+
+  private getSelectedLinkedRackId(): number | null {
+    const selectedId = Number.parseInt(getCleanedValueId(this.formData.linkedRack.control), 10);
+    return Number.isFinite(selectedId) ? selectedId : null;
+  }
+
+  private setLinkedRackPersistenceBlocked(blocked: boolean, hint: string | null): void {
+    this.linkedRackPersistenceBlocked$.next(blocked);
+    this.linkedRackPersistenceHint$.next(hint);
+    this.refreshLinkedRackControlAvailability();
+  }
+
+  private setLinkedRackSelectionBlocked(blocked: boolean, hint: string | null): void {
+    this.linkedRackSelectionBlocked$.next(blocked);
+    this.linkedRackSelectionHint$.next(hint);
+    this.refreshLinkedRackControlAvailability();
+  }
+
+  private refreshLinkedRackControlAvailability(): void {
+    const shouldDisable = this.linkedRackPersistenceBlocked$.value || this.linkedRackSelectionBlocked$.value;
+    if (shouldDisable) {
+      this.formData.linkedRack.control.disable({emitEvent: false});
+      return;
+    }
+
+    this.formData.linkedRack.control.enable({emitEvent: false});
+  }
+
+  private syncLinkedRackControl(patch: Patch | undefined, racks: Rack[]): void {
+    this.formData.linkedRack.control.reset('', {emitEvent: false});
+    if (patch?.linked_rack_id == null) {
+      return;
+    }
+
+    const matchingRack = racks.find(rack => rack.id === patch.linked_rack_id);
+    if (!matchingRack) {
+      return;
+    }
+
+    const options = this.linkedRackOptions$.value;
+    findAndApplyOptionForId(`${ matchingRack.id }`, this.formData.linkedRack.control, options);
+  }
+
 }
+

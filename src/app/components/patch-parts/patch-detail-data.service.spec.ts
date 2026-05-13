@@ -39,6 +39,11 @@ describe('PatchDetailDataService selection behavior', () => {
 
     service = new PatchDetailDataService(router, snack, dialog, userService, backendStub, bridge);
   });
+
+  afterEach(() => {
+    service.ngOnDestroy();
+    bridge.ngOnDestroy();
+  });
   
   it('should not resurrect a cleared output when selecting an input after cancel', (done) => {
     // Simulate clicking an output

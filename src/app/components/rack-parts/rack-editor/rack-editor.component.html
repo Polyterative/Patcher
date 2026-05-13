@@ -7,6 +7,7 @@
   analysisMode:(dataService.analysisMode$|async),
   signalFocusArea:(dataService.signalFocusArea$|async),
   shouldShowPanelImages:(dataService.shouldShowPanelImages$|async),
+  isRackImageCaptureInProgress:(dataService.isRackImageCaptureInProgress$|async),
   functionAnalysisLegendItems:(dataService.functionAnalysisLegendItems$|async),
   functionAnalysisResidualLabel:(dataService.functionAnalysisResidualLabel$|async),
   functionAnalysisCoverageSummary:(dataService.functionAnalysisCoverageSummary$|async)
@@ -31,19 +32,33 @@
       <div class="col gap1 transition-all">
         @if (dataService.isCurrentRackPrivate$|async) {
           <app-advice-tooltip
+            title="Private rack"
+            tone="warning"
             [@enter]="{ value: '', params: { delay: 250}}"
           >
-            This rack private. It won't be listed in search but will be accessible to anyone who has
-            the URL
+            This rack is private. It won't appear in search, but anyone with the URL can still open it.
           </app-advice-tooltip>
         }
-        @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalModulesOfRack) === 0) {
-          <app-advice-tooltip
-            [@enter]="{ value: '', params: { delay: 500}}"
-          >
-            Tip: Need gaps in your rack? Right-click any module and select "Replace with blank" to add spacing.
-            Blanks are available in all sizes!
-          </app-advice-tooltip>
+        @if (bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && (bag.rowedRackedModules | totalPlacedModulesOfRack) === 0) {
+          @if ((bag.rowedRackedModules | hasUnrackedModulesList)) {
+            <app-empty-state-tips
+              [compact]="true"
+              icon="drag_indicator"
+              title="Finish placing your module"
+              copy="The module below isn't in a row yet — <strong>drag it</strong> onto a row to add it to the rack."
+            ></app-empty-state-tips>
+          } @else {
+            <app-empty-state-tips
+              icon="dashboard_customize"
+              title="This rack is empty"
+              copy="Use the module picker below to drop your first modules into the rack. You can drag them where you want, then arrange and stack rows as you go."
+              [tips]="[
+                { icon: 'library_books', html: 'Pick from your <strong>Collection</strong> below for modules you already own, or switch to the full library to add anything.' },
+                { icon: 'drag_indicator', html: '<strong>Drag</strong> a module card onto a row, then <strong>drag again</strong> inside the rack to reposition it.' },
+                { icon: 'view_agenda', html: 'Need more space? Use <strong>Add new row</strong> below the rack to stack additional rows.' }
+              ]"
+            ></app-empty-state-tips>
+          }
         }
          <div #rackViewport
               class="col scroll custom-scrollbar transition-all"
@@ -62,11 +77,12 @@
                                        [rackViewportElement]="rackViewport"
                                        [isCurrentRackPropertyOfCurrentUser]="bag.isCurrentRackPropertyOfCurrentUser"
                                        [isCurrentRackEditable]="bag.isCurrentRackEditable"
-                                       [selectedTouchModule]="selectedTouchModule"
-                                       [touchPrimaryActionsEnabled]="touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off"
-                                       [rackDetailDataService]="dataService"
-                                       [moduleRightClick$]="moduleRightClick$"
-                                       (touchModuleSelected)="onTouchModuleSelected($event)"
+                                        [selectedTouchModule]="selectedTouchModule"
+                                        [touchPrimaryActionsEnabled]="touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off"
+                                        [suppressHpIndicators]="bag.isRackImageCaptureInProgress"
+                                        [rackDetailDataService]="dataService"
+                                        [moduleRightClick$]="moduleRightClick$"
+                                        (touchModuleSelected)="onTouchModuleSelected($event)"
                                         [dragScale]="effectiveScale(bag.userRequestedSmallerScale)"
                                         [style.width.rem]="rackWidthRem()"
                                         [style.transform]="rackSurfaceTransform(bag.userRequestedSmallerScale)"
@@ -102,60 +118,80 @@
                  buttonClass: 'rackEditorResponsiveActions__button'
                }"></ng-container>
              }
-             @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off && selectedTouchModule; as selectedModule) {
-               <div class="rackEditorResponsiveActions__selection">
-                 <div class="rackEditorResponsiveActions__selectionHeader">
-                   <div class="rackEditorResponsiveActions__selectionCopy">
-                     <div class="rackEditorResponsiveActions__selectionEyebrow">Module actions</div>
-                     <div class="rackEditorResponsiveActions__selectionTitle">{{ selectedModule.module.name }}</div>
-                     <div class="rackEditorResponsiveActions__selectionMeta">
-                       {{ selectedModule.module.manufacturer.name }} · {{ selectedModule.module.hp }}HP
-                     </div>
-                   </div>
-                   <button mat-icon-button
-                           type="button"
-                           class="rackEditorResponsiveActions__selectionDismiss"
-                           aria-label="Close module actions"
-                           (click)="clearSelectedTouchModule()"
-                   >
-                     <mat-icon>close</mat-icon>
-                   </button>
-                 </div>
-                 <div class="rackEditorResponsiveActions__selectionActions">
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="openInspectPanel(selectedModule)"
-                   >
-                     <mat-icon>zoom_in</mat-icon>
-                     Inspect panel
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="duplicateSelectedTouchModule()"
-                   >
-                     <mat-icon>content_copy</mat-icon>
-                     Duplicate
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button"
-                           (click)="replaceSelectedTouchModuleWithBlank()"
-                   >
-                     <mat-icon>space_bar</mat-icon>
-                     Replace with blank
-                   </button>
-                   <button mat-stroked-button
-                           type="button"
-                           class="rackEditorResponsiveActions__button rackEditorResponsiveActions__button--danger"
-                           (click)="removeSelectedTouchModule()"
-                   >
-                     <mat-icon>delete</mat-icon>
-                     Delete from rack
-                   </button>
-                 </div>
-               </div>
+             @if (touchInteractionMode && bag.isCurrentRackPropertyOfCurrentUser && bag.isCurrentRackEditable && currentAnalysisMode === analysisModes.off) {
+               @if (selectedTouchModule; as selectedModule) {
+                  <div class="rackEditorResponsiveActions__selection">
+                    <div class="rackEditorResponsiveActions__selectionHeader">
+                      <div class="rackEditorResponsiveActions__selectionCopy">
+                        <div class="rackEditorResponsiveActions__selectionEyebrow">Selected module</div>
+                        <div class="rackEditorResponsiveActions__selectionTitle">{{ selectedModule.module.name }}</div>
+                        <div class="rackEditorResponsiveActions__selectionMeta">
+                          {{ selectedModule.module.manufacturer.name }} · {{ selectedModule.module.hp }}HP
+                        </div>
+                      </div>
+                      <button mat-icon-button
+                              type="button"
+                              class="rackEditorResponsiveActions__selectionDismiss"
+                              aria-label="Close module actions"
+                              (click)="clearSelectedTouchModule()"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+                      <div class="rackEditorResponsiveActions__selectionActions">
+                        @for (action of touchTrayModuleActions; track action.id) {
+                          @if (action.id !== 'delete') {
+                            <button mat-stroked-button
+                                    type="button"
+                                    class="rackEditorResponsiveActions__button"
+                                    [class.rackEditorResponsiveActions__button--danger]="action.danger"
+                                    (click)="runSelectedTouchAction(action)"
+                            >
+                              <mat-icon>{{ action.icon }}</mat-icon>
+                              {{ action.label }}
+                            </button>
+                          }
+                        }
+                        <button mat-stroked-button
+                                type="button"
+                                class="rackEditorResponsiveActions__button"
+                                #touchActionMenuButton
+                                (click)="openSelectedTouchModuleMenu(touchActionMenuButton)"
+                        >
+                          <mat-icon>tune</mat-icon>
+                          Row / panel
+                        </button>
+                        @if (touchTrayModuleActions[touchTrayModuleActions.length - 1]; as destructiveAction) {
+                          <button mat-stroked-button
+                                  type="button"
+                                  class="rackEditorResponsiveActions__button"
+                                  [class.rackEditorResponsiveActions__button--danger]="destructiveAction.danger"
+                                  (click)="runSelectedTouchAction(destructiveAction)"
+                          >
+                            <mat-icon>{{ destructiveAction.icon }}</mat-icon>
+                            {{ destructiveAction.label }}
+                          </button>
+                        }
+                      </div>
+                      <div class="rackEditorResponsiveActions__selectionHint">
+                        Row and panel tools stay under <strong>Row / panel</strong> so the main edit actions remain consistent.
+                      </div>
+                  </div>
+               } @else if ((bag.rowedRackedModules | totalModulesOfRack) > 0) {
+                  <div class="rackEditorResponsiveActions__touchGuide"
+                       role="note"
+                  >
+                    <div class="rackEditorResponsiveActions__touchGuideIcon" aria-hidden="true">
+                      <mat-icon>touch_app</mat-icon>
+                    </div>
+                    <div class="rackEditorResponsiveActions__touchGuideCopy">
+                      <div class="rackEditorResponsiveActions__touchGuideTitle">Tap a module to show edit actions</div>
+                      <div class="rackEditorResponsiveActions__touchGuideText">
+                        Main actions appear here after selection. Row and panel tools stay in a dedicated secondary button.
+                      </div>
+                    </div>
+                  </div>
+               }
              }
            </div>
           <div class="rackEditorFloatingOptions">
@@ -217,16 +253,19 @@
                      <div class="rackEditorFloatingOptions__analysisFocus"
                           role="group"
                           aria-label="Signal focus area">
-                       @for (option of signalFocusOptions; track option.value) {
-                         <button type="button"
-                                 class="rackEditorFloatingOptions__analysisFocusButton"
-                                 [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
-                                 [attr.aria-pressed]="bag.signalFocusArea === option.value"
-                                 (click)="dataService.signalFocusArea$.next(option.value)"
-                         >
-                           {{ option.label }}
-                         </button>
-                       }
+                        @for (option of signalFocusOptions; track option.value) {
+                          <button type="button"
+                                  class="rackEditorFloatingOptions__analysisFocusButton"
+                                  [class.rackEditorFloatingOptions__analysisFocusButton--active]="bag.signalFocusArea === option.value"
+                                  [attr.aria-pressed]="bag.signalFocusArea === option.value"
+                                  (click)="dataService.signalFocusArea$.next(option.value)"
+                          >
+                            @if (bag.signalFocusArea === option.value) {
+                              <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                            }
+                            {{ option.label }}
+                          </button>
+                        }
                      </div>
                      <div class="rackEditorFloatingOptions__analysisLegend">
                        @for (item of signalAnalysisLegendItems; track item.label) {
@@ -247,16 +286,19 @@
                       role="group"
                       aria-label="Rack analysis mode"
                 >
-                  @for (option of analysisModeOptions; track option.mode) {
-                    <button type="button"
-                            class="rackEditorFloatingOptions__analysisModeButton"
-                            [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
-                            [attr.aria-pressed]="currentAnalysisMode === option.mode"
-                            (click)="dataService.analysisMode$.next(option.mode)"
-                    >
-                      {{ option.label }}
-                    </button>
-                  }
+                   @for (option of analysisModeOptions; track option.mode) {
+                     <button type="button"
+                             class="rackEditorFloatingOptions__analysisModeButton"
+                             [class.rackEditorFloatingOptions__analysisModeButton--active]="currentAnalysisMode === option.mode"
+                             [attr.aria-pressed]="currentAnalysisMode === option.mode"
+                             (click)="dataService.analysisMode$.next(option.mode)"
+                     >
+                       @if (currentAnalysisMode === option.mode) {
+                         <mat-icon class="rackEditorFloatingOptions__segmentedIcon" aria-hidden="true">radio_button_checked</mat-icon>
+                       }
+                       {{ option.label }}
+                     </button>
+                   }
                 </div>
               </div>
             @if (viewOptionsExpanded) {

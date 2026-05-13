@@ -1,0 +1,24 @@
+<div class="empty-state-tips"
+     [class.empty-state-tips--compact]="compact"
+     [@enter]="{ value: '', params: { delay: 150 } }">
+  <mat-icon class="empty-state-tips__icon">{{ icon }}</mat-icon>
+  <div class="empty-state-tips__body">
+    @if (title) {
+      <div class="empty-state-tips__title">{{ title }}</div>
+    }
+    @if (copy) {
+      <p class="empty-state-tips__copy" [innerHTML]="copy"></p>
+    }
+    @if (tips?.length) {
+      <ul class="empty-state-tips__list">
+        @for (tip of tips; track tip.html) {
+          <li class="empty-state-tips__item">
+            <mat-icon>{{ tip.icon }}</mat-icon>
+            <span [innerHTML]="tip.html"></span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+

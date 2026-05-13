@@ -2,25 +2,17 @@
   dataLoading: (dataLoading$|async)
 }; as bag) {
   @if (bag.dataLoading) {
-    <div
-      fxLayout="column"
-      fxLayoutGap=".5rem"
-      [fxHide]="!bag.dataLoading"
-    >
+    <div class="loading-shell" [attr.aria-label]="loadingLabel" aria-live="polite" role="status">
+      <div class="loading-shell__label">{{ loadingLabel }}</div>
       @for (i of [].constructor(loadingLines); track i) {
-        <div class="skeleton m1"
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit
-        </div>
-        <div class="skeleton m2"
-        >ullamco laboris nisi ut aliquip ex
-        </div>
-        <div class="skeleton m3"
-        >Excepteur sint occaecat cupidatat non proident
+        <div class="loading-shell__group">
+          <div class="loading-shell__line loading-shell__line--primary"></div>
+          <div class="loading-shell__line loading-shell__line--secondary"></div>
+          <div class="loading-shell__line loading-shell__line--tertiary"></div>
         </div>
       }
     </div>
   }
-  <!--  </ng-container>-->
   @if (!bag.dataLoading) {
     <div [@enter]>
       <ng-content></ng-content>
