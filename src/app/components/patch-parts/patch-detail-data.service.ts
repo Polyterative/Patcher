@@ -104,6 +104,13 @@ type CVConnectionEvent =
   | { type: 'resetA' }
   | { type: 'resetB' };
 
+interface CVConnectionState {
+  a: CVConnectionEntity | null;
+  b: CVConnectionEntity | null;
+}
+
+const EMPTY_CV_CONNECTION_STATE: CVConnectionState = {a: null, b: null};
+
 @Injectable()
 export class PatchDetailDataService implements OnDestroy {
   private usePublicDetailReads = false;
@@ -136,13 +143,7 @@ export class PatchDetailDataService implements OnDestroy {
   //
   readonly clickOnModuleCV$ = new Subject<CVConnectionEntity>();
   readonly resetSelectedForConnection$ = new Subject<void>();
-  readonly selectedForConnection$ = new BehaviorSubject<{
-    a: CVConnectionEntity | null,
-    b: CVConnectionEntity | null
-  }>({
-    a: null,
-    b: null
-  });
+  readonly selectedForConnection$ = new BehaviorSubject<CVConnectionState>(EMPTY_CV_CONNECTION_STATE);
   readonly confirmSelectedConnection$ = new Subject<void>();
   readonly removeConnectionFromEditor$ = new Subject<PatchConnection>();
   readonly deletePatch$ = new Subject<number>();
@@ -498,37 +499,17 @@ export class PatchDetailDataService implements OnDestroy {
       this.bridge.resetB$.pipe(map(() => ({type: 'resetB'} as CVConnectionEvent)))
     )
       .pipe(
-        scan((state: {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        }, ev: CVConnectionEvent) => {
-          let next = {...state};
+        scan((state: CVConnectionState, ev: CVConnectionEvent): CVConnectionState => {
           switch (ev.type) {
-            case 'reset':
-              next = {a: null, b: null};
-              break;
-            case 'resetA':
-              next = {a: null, b: state.b};
-              break;
-            case 'resetB':
-              next = {a: state.a, b: null};
-              break;
+            case 'reset':  return EMPTY_CV_CONNECTION_STATE;
+            case 'resetA': return {a: null, b: state.b};
+            case 'resetB': return {a: state.a, b: null};
             case 'cv':
-              const x: CVConnectionEntity = ev.cv;
-              if (x.kind === 'in') {
-                next = {a: state.a, b: x};
-              } else {
-                next = {a: x, b: state.b};
-              }
-              break;
-            default:
-            // noop
+              return ev.cv.kind === 'in'
+                ? {a: state.a, b: ev.cv}
+                : {a: ev.cv, b: state.b};
           }
-          return next;
-        }, {a: null, b: null} as {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        }),
+        }, EMPTY_CV_CONNECTION_STATE),
         takeUntil(this.destroyEvent$)
       )
       .subscribe((state) => {
@@ -579,18 +560,15 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(([_, patchConnections]) => {
         patchConnections = patchConnections || [];
-        const selectedForConnection: {
-          a: CVConnectionEntity | null;
-          b: CVConnectionEntity | null
-        } = this.selectedForConnection$.value;
+        const selection: CVConnectionState = this.selectedForConnection$.value;
         const patch: Patch = this.singlePatchData$.value;
-        if (!selectedForConnection.a || !selectedForConnection.b || !patch) { return; }
+        if (!selection.a || !selection.b || !patch) { return; }
         const newConnection: PatchConnection = {
-          a: selectedForConnection.a.cv,
-          b: selectedForConnection.b.cv,
+          a: selection.a.cv,
+          b: selection.b.cv,
           patch,
-          instance_id_a: selectedForConnection.a.cv.instance_id,
-          instance_id_b: selectedForConnection.b.cv.instance_id
+          instance_id_a: selection.a.cv.instance_id,
+          instance_id_b: selection.b.cv.instance_id
         };
         const isAlreadyInList: boolean = !!patchConnections.find(connection =>
           connection.a.id === newConnection.a.id
