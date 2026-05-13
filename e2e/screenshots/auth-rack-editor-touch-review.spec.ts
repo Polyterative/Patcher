@@ -144,5 +144,5 @@ async function tapModuleWithTouch(page: Page): Promise<void> {
 
 async function readComputedStyle(locator: ReturnType<Page['locator']>, property: keyof CSSStyleDeclaration): Promise<string> {
   await expect(locator).toBeVisible({timeout: 20_000});
-  return locator.evaluate((element, cssProperty) => getComputedStyle(element)[cssProperty], property);
+  return locator.evaluate((element, cssProperty) => getComputedStyle(element)[cssProperty] as string, property);
 }
