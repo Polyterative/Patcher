@@ -38,6 +38,15 @@ import { DbComment } from "src/app/models/comment";
 import { matchesSearchQuery } from 'src/app/shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { CurrentUserContributorStats } from 'src/app/features/backend/supabase-queries';
 
+function pagedSlice$<T>(
+  data$: Observable<T[] | undefined>,
+  skip$: Observable<number>,
+  take$: Observable<number>
+): Observable<T[] | undefined> {
+  return combineLatest([data$, skip$, take$]).pipe(
+    map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined)
+  );
+}
 
 @Injectable()
 export class UserAreaDataService extends SubManager {
@@ -123,12 +132,10 @@ export class UserAreaDataService extends SubManager {
       map((modules) => modules?.length ?? 0)
     );
 
-    this.pagedModulesData$ = combineLatest([
+    this.pagedModulesData$ = pagedSlice$(
       this.filteredModulesData$,
       this.modulesPagination.skip$,
-      this.modulesPagination.take$,
-    ]).pipe(
-      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+      this.modulesPagination.take$
     );
 
     this.filteredRacksData$ = combineLatest([
@@ -142,12 +149,10 @@ export class UserAreaDataService extends SubManager {
       map((racks) => racks?.length ?? 0)
     );
 
-    this.pagedRacksData$ = combineLatest([
+    this.pagedRacksData$ = pagedSlice$(
       this.filteredRacksData$,
       this.racksPagination.skip$,
-      this.racksPagination.take$,
-    ]).pipe(
-      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+      this.racksPagination.take$
     );
 
     this.filteredPatchesData$ = combineLatest([
@@ -174,12 +179,10 @@ export class UserAreaDataService extends SubManager {
       map((patches) => patches?.length ?? 0)
     );
 
-    this.pagedPatchesData$ = combineLatest([
+    this.pagedPatchesData$ = pagedSlice$(
       this.filteredPatchesData$,
       this.patchesPagination.skip$,
-      this.patchesPagination.take$,
-    ]).pipe(
-      map(([data, skip, take]) => data ? data.slice(skip, skip + take) : undefined),
+      this.patchesPagination.take$
     );
 
     this.filteredManualsData$ = combineLatest([
@@ -271,7 +274,7 @@ export class UserAreaDataService extends SubManager {
           true
         )),
         map(x => x
-          .filter(y => y.manualURL !== null && y.manualURL !== '' && y.manualURL !== undefined)
+          .filter(y => !!y.manualURL)
           .sort((a, b) => a.name.localeCompare(b.name))
         ),
         takeUntil(this.destroy$)
