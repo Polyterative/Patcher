@@ -106,24 +106,21 @@ export class PublicProfileDataService extends SubManager {
 
           if (!profile) {
             this.routeState$.next('not-found');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
           if (profile.username.startsWith('user_')) {
             this.profile$.next(this.toLimitedProfile(profile));
             this.routeState$.next('incomplete');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
           if (!profile.public) {
             this.profile$.next(this.toLimitedProfile(profile));
             this.routeState$.next('private');
-            this.patchesData$.next([]);
-            this.rackData$.next([]);
+            this.resetPublicCollections();
             return;
           }
 
@@ -137,8 +134,7 @@ export class PublicProfileDataService extends SubManager {
           console.error('PublicProfileDataService profile load failed:', error);
           SharedConstants.errorCustom(this.snackBar, 'Public profile data could not be loaded.');
           this.routeState$.next('error');
-          this.patchesData$.next([]);
-          this.rackData$.next([]);
+          this.resetPublicCollections();
         },
       });
   }
@@ -240,6 +236,11 @@ export class PublicProfileDataService extends SubManager {
         pagination.skip$.next(event.pageIndex * event.pageSize);
         onPageChange();
       });
+  }
+
+  private resetPublicCollections(): void {
+    this.patchesData$.next([]);
+    this.rackData$.next([]);
   }
 
   private mapProfile(rawProfile: any): PublicProfile | null {
