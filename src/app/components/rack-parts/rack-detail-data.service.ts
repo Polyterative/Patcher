@@ -96,6 +96,8 @@ export class RackDetailDataService extends SubManager {
   }>(undefined);
   
   readonly addModuleToRack$ = new Subject<MinimalModule>();
+  /** Emits when a module has been added via the bottom picker so views can scroll the rack into focus */
+  readonly moduleAddedFromPicker$ = new Subject<MinimalModule>();
   readonly shouldShowPanelImages$ = new BehaviorSubject<boolean>(true);
   readonly analysisMode$ = new BehaviorSubject<RackAnalysisMode>(RACK_ANALYSIS_MODES.off);
   readonly signalFocusArea$ = new BehaviorSubject<SignalFocusArea | null>(null);
@@ -578,7 +580,7 @@ export class RackDetailDataService extends SubManager {
             this.transferBetweenRows(rackModules, module, event, newRow);
           }
           
-          this.rowedRackedModules$.next(rackModules);
+          this.rowedRackedModules$.next([...rackModules]);
           
           this.requestRackedModulesDbSync$.next();
         }
@@ -768,8 +770,8 @@ export class RackDetailDataService extends SubManager {
         takeUntil(this.destroyEvent$)
       )
       .subscribe((module) => {
-        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }".`);
-        
+        SharedConstants.successCustom(this.snackBar, `"${ module.name }" added to "${ this.singleRackData$.value.name }". Drag it into a row to place it.`);
+        this.moduleAddedFromPicker$.next(module);
         this.updateSingleRackData$.next(this.singleRackData$.value.id);
       });
     
