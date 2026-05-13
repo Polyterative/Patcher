@@ -21,6 +21,13 @@ import { UrlCreatorService } from 'src/app/features/backend/url-creator.service'
 import { PatchConnection, PatchModuleInstance } from 'src/app/models/connection';
 import { PatchMinimal } from 'src/app/models/patch';
 import { FormTypes } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import {
+  PatchMinimalViewConfig,
+  defaultPatchMinimalViewConfig
+} from './patch-minimal.types';
+
+export type { PatchMinimalViewConfig };
+export { defaultPatchMinimalViewConfig };
 
 
 @Component({
@@ -223,21 +230,3 @@ export class PatchMinimalComponent implements OnInit, OnDestroy {
   }
 
 }
-
-export interface PatchMinimalViewConfig {
-  hideLabels: boolean;
-  hideManufacturer: boolean;
-  hideDescription: boolean;
-  hideButtons: boolean;
-  hideHP: boolean;
-  hideDates: boolean;
-}
-
-export const defaultPatchMinimalViewConfig: PatchMinimalViewConfig = {
-  hideLabels:       false,
-  hideManufacturer: false,
-  hideDescription:  false,
-  hideButtons:      true,
-  hideHP:           false,
-  hideDates:        false
-};
