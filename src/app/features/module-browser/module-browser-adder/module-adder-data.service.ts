@@ -45,6 +45,7 @@ import { plainSanitize } from "src/app/shared-interproject/components/@smart/mat
 import { normalizeForSearch } from "src/app/shared-interproject/components/@smart/mat-form-entity/string-utils";
 import { Router } from "@angular/router";
 import { SharedConstants } from "src/app/shared-interproject/SharedConstants";
+import { ModuleAdderFormData } from './module-adder-data.models';
 
 
 @Injectable()
@@ -68,65 +69,7 @@ export class ModuleAdderDataService extends SubManager {
 
   private readonly _manufacturerOptions$ = new BehaviorSubject<{ id: string; name: string }[]>([]);
   
-  formData: {
-    standard: {
-      code: string;
-      flex: string;
-      control: UntypedFormControl;
-      label: string;
-      options$: Observable<{ id: string; name: string }[]>;
-      type: FormTypes
-    };
-    diy: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: UntypedFormControl;
-      label: string;
-      options$: Observable<({ name: string; id: string })[]>;
-      type: FormTypes
-    };
-    name: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: UntypedFormControl;
-      label: string;
-      type: FormTypes
-    };
-    hp: {
-      code: string;
-      flex: string;
-      control: UntypedFormControl;
-      label: string;
-      type: FormTypes
-    };
-    description: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: UntypedFormControl;
-      label: string;
-      type: FormTypes
-    };
-    manual: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: UntypedFormControl;
-      label: string;
-      type: FormTypes
-    };
-    manufacturer: {
-      code: string;
-      flex: string;
-      hint: string;
-      control: UntypedFormControl;
-      label: string;
-      type: FormTypes;
-      options$: Observable<{ id: string; name: string }[]>
-    }
-  };
+  formData: ModuleAdderFormData;
   
   formGroup: FormGroup;
   
