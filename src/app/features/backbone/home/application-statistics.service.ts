@@ -185,9 +185,8 @@ export class ApplicationStatisticsService extends SubManager {
   ): ApplicationInsightsPage {
     const sharedWorks = statistics.publicRacks + statistics.publicPatches;
     const activeDays = activitySeries.filter((point) => point.modules + point.racks + point.patches > 0).length;
-    const moduleActivityTotal = activitySeries.reduce((sum, point) => sum + point.modules, 0);
-    const rackActivityTotal = activitySeries.reduce((sum, point) => sum + point.racks, 0);
-    const patchActivityTotal = activitySeries.reduce((sum, point) => sum + point.patches, 0);
+    const fullWindow = this.sumActivityWindow(activitySeries, 0);
+    const {modules: moduleActivityTotal, racks: rackActivityTotal, patches: patchActivityTotal} = fullWindow;
     const dominantStandard = this.getTopBucket(moduleInsights.standardMix);
     const mostActiveStandard = this.getTopBucket(moduleInsights.standardActivity);
     const mostCompetitiveStandard = this.getTopBucket(moduleInsights.standardManufacturerCounts ?? []);
@@ -195,22 +194,16 @@ export class ApplicationStatisticsService extends SubManager {
     const updatedLast30Days = moduleInsights.freshnessWindows[1]?.count ?? 0;
     const updatedLast90Days = moduleInsights.freshnessWindows[2]?.count ?? 0;
     const updatedLast365Days = moduleInsights.freshnessWindows[3]?.count ?? 0;
-    const lastSevenDaysTotal = activitySeries.slice(-7)
-      .reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
-    const previousSevenDaysTotal = activitySeries.slice(-14, -7)
-      .reduce((sum, point) => sum + point.modules + point.racks + point.patches, 0);
-    const lastSevenDaysModules = activitySeries.slice(-7)
-      .reduce((sum, point) => sum + point.modules, 0);
-    const previousSevenDaysModules = activitySeries.slice(-14, -7)
-      .reduce((sum, point) => sum + point.modules, 0);
-    const lastSevenDaysRacks = activitySeries.slice(-7)
-      .reduce((sum, point) => sum + point.racks, 0);
-    const previousSevenDaysRacks = activitySeries.slice(-14, -7)
-      .reduce((sum, point) => sum + point.racks, 0);
-    const lastSevenDaysPatches = activitySeries.slice(-7)
-      .reduce((sum, point) => sum + point.patches, 0);
-    const previousSevenDaysPatches = activitySeries.slice(-14, -7)
-      .reduce((sum, point) => sum + point.patches, 0);
+    const last7Days = this.sumActivityWindow(activitySeries, -7);
+    const prev7Days = this.sumActivityWindow(activitySeries, -14, -7);
+    const lastSevenDaysTotal = last7Days.modules + last7Days.racks + last7Days.patches;
+    const previousSevenDaysTotal = prev7Days.modules + prev7Days.racks + prev7Days.patches;
+    const lastSevenDaysModules = last7Days.modules;
+    const previousSevenDaysModules = prev7Days.modules;
+    const lastSevenDaysRacks = last7Days.racks;
+    const previousSevenDaysRacks = prev7Days.racks;
+    const lastSevenDaysPatches = last7Days.patches;
+    const previousSevenDaysPatches = prev7Days.patches;
     const fastestActivityTrack = [
       {label: 'Modules', count: moduleActivityTotal},
       {label: 'Racks', count: rackActivityTotal},
@@ -426,7 +419,7 @@ export class ApplicationStatisticsService extends SubManager {
         },
         {
           label: 'Library momentum',
-          value: this.formatPercent(statistics.publicModulesUpdatedLast30Days, statistics.publicModules),
+          value: this.formatPercentValue(statistics.publicModulesUpdatedLast30Days, statistics.publicModules),
           icon: 'timeline'
         },
         {
@@ -498,7 +491,7 @@ export class ApplicationStatisticsService extends SubManager {
         {
           label: 'Dominant standard share',
           value: dominantStandard
-            ? this.formatPercent(dominantStandard.count, statistics.publicModules)
+            ? this.formatPercentValue(dominantStandard.count, statistics.publicModules)
             : 'N/A',
           icon: 'emoji_events'
         },
@@ -567,12 +560,12 @@ export class ApplicationStatisticsService extends SubManager {
         },
         {
           label: '0-5 HP share',
-          value: this.formatPercent(foundationHpShare, statistics.publicModules),
+          value: this.formatPercentValue(foundationHpShare, statistics.publicModules),
           icon: 'view_column'
         },
         {
           label: '17+ HP share',
-          value: this.formatPercent(largerFormatShare, statistics.publicModules),
+          value: this.formatPercentValue(largerFormatShare, statistics.publicModules),
           icon: 'splitscreen'
         },
         {
@@ -604,12 +597,12 @@ export class ApplicationStatisticsService extends SubManager {
       moduleFreshnessHighlights: [
         {
           label: 'Active in 30 days',
-          value: this.formatPercent(updatedLast30Days, statistics.publicModules),
+          value: this.formatPercentValue(updatedLast30Days, statistics.publicModules),
           icon: 'bolt'
         },
         {
           label: 'This week / 30d activity',
-          value: this.formatPercent(updatedLast7Days, Math.max(updatedLast30Days, 1)),
+          value: this.formatPercentValue(updatedLast7Days, Math.max(updatedLast30Days, 1)),
           icon: 'moving'
         },
         {
@@ -940,10 +933,6 @@ export class ApplicationStatisticsService extends SubManager {
     return value < 0 ? `-${ this.formatCount(Math.abs(value)) }` : '0';
   }
 
-  private formatPercent(part: number, total: number): string {
-    return this.formatPercentValue(part, total);
-  }
-
   private formatPercentValue(part: number, total: number): string {
     return `${ Math.round((part / Math.max(total, 1)) * 100) }%`;
   }
@@ -969,6 +958,19 @@ export class ApplicationStatisticsService extends SubManager {
     const orderedLabels = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
     const index = orderedLabels.indexOf(label);
     return index === -1 ? orderedLabels.length : index;
+  }
+
+  private sumActivityWindow(
+    series: PublicApplicationActivityPoint[],
+    start: number,
+    end?: number
+  ): {modules: number; racks: number; patches: number} {
+    const window = series.slice(start, end);
+    return {
+      modules: window.reduce((sum, p) => sum + p.modules, 0),
+      racks: window.reduce((sum, p) => sum + p.racks, 0),
+      patches: window.reduce((sum, p) => sum + p.patches, 0),
+    };
   }
 
   private getMaxRollingWindowTotal(activitySeries: PublicApplicationActivityPoint[], windowSize: number): number {
