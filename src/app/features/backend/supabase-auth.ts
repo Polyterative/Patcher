@@ -83,16 +83,19 @@ export function createAuthNamespace(
               .select('username, public, website, avatar_url')
               .filter('id', 'eq', authResponse.data.user.id)
           ).pipe(
-            map(usernameGetterResponse => ({
-              returnUrl: params['returnUrl'],
-              user: {
-                ...authResponse.data.user,
-                username: usernameGetterResponse.data[0].username,
-                public: usernameGetterResponse.data[0].public,
-                website: usernameGetterResponse.data[0].website,
-                avatar_url: usernameGetterResponse.data[0].avatar_url,
-              }
-            }))
+            map(usernameGetterResponse => {
+              const profile = usernameGetterResponse.data[0];
+              return {
+                returnUrl: params['returnUrl'],
+                user: {
+                  ...authResponse.data.user,
+                  username: profile.username,
+                  public: profile.public,
+                  website: profile.website,
+                  avatar_url: profile.avatar_url,
+                }
+              };
+            })
           );
         })
       );
@@ -211,14 +214,13 @@ export function createAuthNamespace(
       return rxFrom(supabase.auth.getSession()).pipe(
         switchMap(sessionOutput => {
           if (sessionOutput.data.session == null) return of(null);
-          
-          const userFullData: SimpleUserModel = {
-            id: sessionOutput.data.session.user.id,
-            email: sessionOutput.data.session.user.email,
-            created_at: sessionOutput.data.session.user.created_at,
-            updated_at: sessionOutput.data.session.user.updated_at
-          };
-          return of(userFullData);
+          const { user } = sessionOutput.data.session;
+          return of({
+            id: user.id,
+            email: user.email,
+            created_at: user.created_at,
+            updated_at: user.updated_at
+          });
         }),
         shareReplay(1)
       );
@@ -232,18 +234,21 @@ export function createAuthNamespace(
           const authProvider = (sessionUser.app_metadata?.['provider'] as string) || 'email';
           const authProviders = (sessionUser.app_metadata?.['providers'] as string[]) || [authProvider];
           return ns._getUserNameFromDatabase(sessionUser.id).pipe(
-            map(usernameGetterResponse => ({
-              id: sessionUser.id,
-              email: sessionUser.email,
-              created_at: sessionUser.created_at,
-              updated_at: sessionUser.updated_at,
-              username: usernameGetterResponse.data[0].username,
-              public: usernameGetterResponse.data[0].public,
-              website: usernameGetterResponse.data[0].website,
-              avatar_url: usernameGetterResponse.data[0].avatar_url,
-              auth_provider: authProvider,
-              auth_providers: authProviders
-            }))
+            map(usernameGetterResponse => {
+              const profile = usernameGetterResponse.data[0];
+              return {
+                id: sessionUser.id,
+                email: sessionUser.email,
+                created_at: sessionUser.created_at,
+                updated_at: sessionUser.updated_at,
+                username: profile.username,
+                public: profile.public,
+                website: profile.website,
+                avatar_url: profile.avatar_url,
+                auth_provider: authProvider,
+                auth_providers: authProviders
+              };
+            })
           );
         }),
         shareReplay(1)

@@ -8,6 +8,8 @@ import { RackDetailDataService } from './rack-detail-data.service';
 
 
 describe('RackDetailDataService reactive flows', () => {
+  let createdServices: RackDetailDataService[];
+
   function moduleInRack(id: number, row: number | null, column: number | null, hp = 8, standardId = 0) {
     return {
       module: {
@@ -55,7 +57,8 @@ describe('RackDetailDataService reactive flows', () => {
       },
       add: {
         rackModule: jasmine.createSpy('add.rackModule').and.returnValue(of({})),
-        rack: jasmine.createSpy('add.rack').and.returnValue(of({data: [{id: 99}]}))
+        rack: jasmine.createSpy('add.rack').and.returnValue(of({data: [{id: 99}]})),
+        patch: jasmine.createSpy('add.patch').and.returnValue(of({data: [{id: 321}]}))
       },
       get: {
         rackedModules: jasmine.createSpy('get.rackedModules').and.returnValue(of([]))
@@ -84,9 +87,18 @@ describe('RackDetailDataService reactive flows', () => {
       dialog as any,
       router
     );
+    createdServices.push(service);
     
     return {service, backend, dialog, snackBar, router, loggedUser$};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+  });
   
   it('updates row count on add/remove row requests', () => {
     const {service, backend} = build();
@@ -277,6 +289,59 @@ describe('RackDetailDataService reactive flows', () => {
     
     expect(backend.add.rackModule).toHaveBeenCalledWith(777, 50);
     expect(refreshSpy).toHaveBeenCalledWith(50);
+  });
+
+  it('creates a linked patch from the current rack and routes straight to it', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend, router, dialog, snackBar} = build();
+    service.singleRackData$.next(rack({id: 50, name: 'Performance Rack'}));
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(dialog.open).toHaveBeenCalled();
+    expect(backend.add.patch).toHaveBeenCalledWith({
+      name: jasmine.any(String),
+      public: true,
+      linked_rack_id: 50
+    });
+    expect(snackBar.open).toHaveBeenCalledWith(jasmine.stringMatching(/^Creating "/), undefined);
+    expect(router.navigate).toHaveBeenCalledWith(['/patches/details', 321]);
+    expect(SharedConstants.successCustom).toHaveBeenCalledWith(
+      snackBar,
+      jasmine.stringMatching(/Performance Rack/)
+    );
+  });
+
+  it('does not create a patch from rack when confirmation is cancelled', () => {
+    spyOn(SharedConstants, 'infoCustom').and.callFake(() => {});
+    const {service, backend, dialog} = build();
+    service.singleRackData$.next(rack({id: 50, name: 'Performance Rack'}));
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    dialog.open.and.returnValue({
+      afterClosed: () => of({answer: false})
+    });
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(backend.add.patch).not.toHaveBeenCalled();
+    expect(SharedConstants.infoCustom).toHaveBeenCalledWith(jasmine.anything(), 'No patch created.');
+  });
+
+  it('shows the linked-rack rollout message when rack-linked patch creation is unavailable', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend, router} = build();
+    service.singleRackData$.next(rack({id: 50, name: 'Performance Rack'}));
+    service.isCurrentRackPropertyOfCurrentUser$.next(true);
+    backend.add.patch.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+
+    service.requestCreatePatchFromRack$.next();
+
+    expect(SharedConstants.errorCustom).toHaveBeenCalled();
+    expect(router.navigate).not.toHaveBeenCalledWith(['/patches/details', jasmine.anything()]);
   });
   
   describe('requestRackedModulePanelSwitch$', () => {

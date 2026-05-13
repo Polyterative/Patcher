@@ -165,13 +165,13 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  font-size: 14px;
+  font-size: 0.875rem;
   width: 20px;
   height: 20px;
   line-height: 20px;
   background: var(--mat-sys-secondary-container, #e8def8);
   color: var(--mat-sys-on-secondary-container, #1d192b);
   border-radius: 50%;
-  padding: 2px;
+  padding: 0.125rem;
   cursor: default;
 }

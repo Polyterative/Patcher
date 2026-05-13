@@ -3,172 +3,516 @@
 
 @use "src/app/style/brand-resources" as *;
 
+$palette: (
+             a : #EE8BB5,
+             b : #5ED0B4,
+             c : #E89D70,
+             d : #AAA8EA,
+             e : #B1C06F
+           );
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.connections {
+  & h3 {
+    padding-left: 1em !important;
+  }
+
+  background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
+}
+
 .delete-instance-btn {
   color: $brand-warning;
 }
 
+.patch-editor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.patch-editor-workspace {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.patch-editor-rack-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, auto);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.patch-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.8rem;
+}
+
+.patch-editor-operation-mode {
+  flex: 0 0 auto;
+}
+
+.patch-editor-operation-mode__option {
+  display: inline-flex;
+}
+
+.patch-editor-toolbar__meta {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  max-width: min(100%, 52rem);
+}
+
+:host ::ng-deep .patch-editor-operation-mode .mat-button-toggle-label-content {
+  line-height: 2.25rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.patch-editor-toolbar__summary {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(27, 49, 74, 0.72);
+}
+
+.patch-editor-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 0.9rem;
+  background: rgba(252, 253, 255, 0.88);
+}
+
+.patch-editor-controls__search {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.patch-editor-controls__clear {
+  margin-top: 0.25rem;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .patch-editor-controls .patch-editor-control,
+:host ::ng-deep .patch-editor-controls__search > lib-mat-form-entity {
+  display: block;
+  min-width: 0;
+}
+
+:host ::ng-deep .patch-editor-controls .patch-editor-control {
+  width: 100%;
+}
+
+:host ::ng-deep .patch-editor-controls .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.patch-editor-empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 0.45rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.9rem;
+  background: rgba(243, 248, 252, 0.78);
+}
+
+.patch-editor-empty-state__title {
+  font-weight: 700;
+}
+
+.patch-editor-empty-state__copy {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .module-card-body {
   position: relative;
-
-  .module-card-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 624.9375rem;
-    backdrop-filter: blur(0.25rem) brightness(1.7);
-    opacity: 0.6;
-    transition: opacity 175ms ease-in-out;
-  }
+  padding-top: 0.15rem;
 
   &:hover .module-card-actions {
     opacity: 1;
   }
 }
 
-.leftBorderS {
-  border-left-width: .5rem;
-  border-left-style: solid;
-  border-left-color: #778698;
-  padding-left:      .5rem;
-}
-
-.connCommitter {
-  //background-color: grey;
-  padding: .5rem;
-  border:  0.2rem dotted #325574;
-}
-
-//$palette: (
-//            a : #c8b78c,
-//            b : #87bbe3,
-//            c : #dda6b3,
-//            d : #87c6b7,
-//            e : #b5b7d7
-//          );
-
-
-$palette: (
-            a : #EE8BB5,
-            b : #5ED0B4,
-            c : #E89D70,
-            d : #AAA8EA,
-            e : #B1C06F
-          );
-
-
-.connections {
-  & h3 {
-    padding-left: 1em !important
-  }
-
-  background-color: color.adjust(map.get($palette, d), $alpha: -0.7);
-}
-
-
-.instances {
-  background-color: color.adjust(map.get($palette, c), $alpha: -0.7);
-}
-
-:host {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  --patch-editor-search-width: 21rem;
-  --patch-editor-inline-control-width: 14.5rem;
-}
-
-.patch-editor-inline-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.55rem;
-}
-
-:host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
-  flex: 0 0 var(--patch-editor-inline-control-width);
-  max-width: var(--patch-editor-inline-control-width);
-}
-
-:host ::ng-deep .patch-editor-inline-controls .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-.patch-editor-floating-search {
-  position: fixed;
-  right: calc(var(--app-floating-inset-inline, 1rem) + env(safe-area-inset-right) + var(--module-editor-close-fab-width, 12.6rem) + var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem)));
-  bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px));
-  z-index: 99;
+.module-card-actions {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.15rem;
+  z-index: 1;
   display: flex;
   align-items: center;
-  width: min(var(--patch-editor-search-width), calc(var(--app-viewport-width, 100vw) - (var(--app-floating-inset-inline, 1rem) * 2) - env(safe-area-inset-left) - env(safe-area-inset-right) - var(--module-editor-close-fab-width, 12.6rem) - var(--module-editor-fab-gap, var(--app-floating-surface-gap, 0.8rem))));
-  min-height: var(--module-editor-close-fab-height, 3.5rem);
-  padding: 0.2rem 0.55rem;
-  border-radius: 0.8rem;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(0.375rem);
-  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.18);
-  box-sizing: border-box;
+  gap: 0.35rem;
+  padding: 0.15rem 0.25rem 0.15rem 0.5rem;
+  background: rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  opacity: 0.72;
+  transition: opacity 175ms ease-in-out;
 }
 
-:host ::ng-deep .patch-editor-floating-search > lib-mat-form-entity {
-  display: block;
-  flex: 1 1 auto;
-  min-width: 0;
-}
+.module-card-actions__metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding-right: 0.05rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: rgba(27, 49, 74, 0.68);
 
-:host ::ng-deep .patch-editor-floating-search .mat-mdc-form-field {
-  width: 100%;
-  margin: 0;
-}
-
-:host ::ng-deep .patch-editor-floating-search .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-@media (max-width: 61.25rem) {
-  :host {
-    --patch-editor-inline-control-width: calc(50% - 0.3rem);
-  }
-
-  :host ::ng-deep .patch-editor-inline-controls .patch-editor-control {
-    flex-basis: var(--patch-editor-inline-control-width);
-    max-width: var(--patch-editor-inline-control-width);
+  mat-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    font-size: 0.9rem;
   }
 }
 
-@media (max-width: 35rem) {
-  :host {
-    --patch-editor-inline-control-width: 100%;
+@media (max-width: 60rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(9rem, 1fr));
+  }
+}
+
+@media (min-width: 52.01rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(10rem, 20rem));
+    justify-content: start;
+  }
+}
+
+@media (max-width: 52rem) {
+  .patch-editor-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .patch-editor-floating-search {
-    right: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-right));
-    left: calc(var(--app-floating-inset-inline, 0.75rem) + env(safe-area-inset-left));
-    width: auto;
-    bottom: calc(var(--app-floating-inset-block, 1rem) + env(safe-area-inset-bottom) + var(--app-floating-bottom-offset, 0px) + 3.8rem);
+  .patch-editor-controls__search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 68rem) {
+  .patch-editor-rack-topbar {
+    grid-template-columns: max-content minmax(18rem, 1fr);
+  }
+}
+
+@media (max-width: 44rem) {
+  .patch-editor-controls {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.85rem 0.9rem;
+  }
+
+  .patch-editor-controls__search {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 72.5rem) {
-  .module-card-body .module-card-actions {
-    gap: 0.65rem;
+  .module-card-actions {
+    gap: 0.6rem;
     opacity: 1;
     backdrop-filter: none;
   }
 
-  .patch-editor-floating-search {
-    backdrop-filter: none;
+  .module-card-actions button[mat-icon-button] {
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
   }
 }
 
 @media (hover: none), (pointer: coarse) {
-  .module-card-body .module-card-actions {
+  .module-card-actions {
     opacity: 1;
   }
+
+  .module-card-actions button[mat-icon-button] {
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
+  }
+}
+
+// --- Rack visual in linked rack mode ---
+
+$rack-grid-color: rgba(0, 0, 0, 0.15);
+$rack-grid-weight: 0.1rem;
+
+.patch-editor-rack-visual {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+}
+
+.patch-editor-rack-visual__viewport {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.patch-editor-rack-visual__frame {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.patch-editor-rack-visual__screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 0.45rem;
+  padding: 0.3rem;
+  min-width: fit-content;
+  transform-origin: top left;
+  will-change: transform;
+  transition: transform 120ms ease-out;
+}
+
+.patch-editor-rack-visual__row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  background-color: rgba(255, 255, 255, 0.25);
+  background-image: linear-gradient(to right, $rack-grid-color $rack-grid-weight, transparent $rack-grid-weight);
+  background-size: 1rem;
+  border-radius: 0.15rem;
+  min-height: 4rem;
+  position: relative;
+}
+
+.patch-editor-rack-visual__row-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 0.78rem;
+  opacity: 0.35;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.patch-editor-rack-visual__module-wrapper {
+  cursor: pointer;
+  position: relative;
+  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+  will-change: opacity, transform;
+
+  &--dimmed {
+    opacity: 0.45;
+  }
+
+  &--selected {
+    z-index: 10;
+    transform: translateY(-0.35rem);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+  }
+}
+
+.patch-editor-rack-visual__module {
+  pointer-events: none;
+  position: relative;
+  transition: outline 160ms ease-in-out, box-shadow 160ms ease-in-out;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 3px;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 transparent;
+    transition: background-color 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+    opacity: 0;
+  }
+}
+
+// Hover only on non-dimmed modules
+.patch-editor-rack-visual__module-wrapper:not(.patch-editor-rack-visual__module-wrapper--dimmed):hover {
+  .patch-editor-rack-visual__module {
+    outline-color: rgba(34, 75, 117, 0.35);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// No hover interaction in readonly view
+.patch-editor-rack-visual__module-wrapper--readonly {
+  cursor: default;
+  pointer-events: none;
+}
+
+// Subtle hover on dimmed modules (still clickable to switch selection)
+.patch-editor-rack-visual__module-wrapper--dimmed:hover {
+  opacity: 0.6;
+}
+
+.patch-editor-rack-visual__module-wrapper--selected .patch-editor-rack-visual__module {
+  outline-color: rgba(34, 75, 117, 0.6);
+  outline-width: 2.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.patch-editor-rack-visual__hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #6c7f92;
+  padding-top: 0.15rem;
+}
+
+// --- Pending source module highlight ---
+
+.patch-editor-rack-visual__module-wrapper--pending-source {
+  opacity: 1 !important;
+  transform: scale(1.015);
+
+  .patch-editor-rack-visual__module {
+    outline: 2px dashed rgba(34, 75, 117, 0.5);
+    outline-offset: -2px;
+  }
+}
+
+// --- Connection role color indicators (uses canonical CV colors from patch graph) ---
+// CV in = cold blue (#4483F2), CV out = hot red (#E2523C)
+
+$connection-in-color: rgba(68, 131, 242, 0.22);
+$connection-in-outline: rgba(68, 131, 242, 0.55);
+$connection-out-color: rgba(226, 82, 60, 0.22);
+$connection-out-outline: rgba(226, 82, 60, 0.55);
+
+.patch-editor-rack-visual__module-wrapper--pending-in,
+.patch-editor-rack-visual__module-wrapper--pending-out {
+  .patch-editor-rack-visual__module::after {
+    opacity: 1;
+  }
+}
+
+.patch-editor-rack-visual__module-wrapper--pending-in {
+  .patch-editor-rack-visual__module::after {
+    background-color: $connection-in-color;
+    box-shadow: inset 0 0 0 2.5px $connection-in-outline;
+  }
+}
+
+.patch-editor-rack-visual__module-wrapper--pending-out {
+  .patch-editor-rack-visual__module::after {
+    background-color: $connection-out-color;
+    box-shadow: inset 0 0 0 2.5px $connection-out-outline;
+  }
+}
+
+// When pending-source has a role, use the role's color for the dashed outline
+.patch-editor-rack-visual__module-wrapper--pending-source.patch-editor-rack-visual__module-wrapper--pending-in {
+  .patch-editor-rack-visual__module {
+    outline-color: $connection-in-outline;
+  }
+}
+
+.patch-editor-rack-visual__module-wrapper--pending-source.patch-editor-rack-visual__module-wrapper--pending-out {
+  .patch-editor-rack-visual__module {
+    outline-color: $connection-out-outline;
+  }
+}
+
+// When the selected module also has a connection role, combine outline + overlay cleanly
+.patch-editor-rack-visual__module-wrapper--selected.patch-editor-rack-visual__module-wrapper--pending-in .patch-editor-rack-visual__module,
+.patch-editor-rack-visual__module-wrapper--selected.patch-editor-rack-visual__module-wrapper--pending-out .patch-editor-rack-visual__module {
+  outline-width: 2.5px;
+}
+
+.patch-editor-rack-visual__cv-inline {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  right: auto;
+  margin-left: 0.5rem;
+  margin-right: 0;
+  min-width: 16rem;
+  max-width: 22rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  z-index: 20;
+  pointer-events: auto;
+  animation: cvInlineAppear 180ms ease-out;
+  // Counter the parent's scale transform so the popup renders at native size
+  transform-origin: top left;
+}
+
+.patch-editor-rack-visual__cv-inline--open-right {
+  left: 100%;
+  right: auto;
+  margin-left: 0.5rem;
+  margin-right: 0;
+  transform-origin: top left;
+}
+
+.patch-editor-rack-visual__cv-inline--open-left {
+  left: auto;
+  right: 100%;
+  margin-left: 0;
+  margin-right: 0.5rem;
+  transform-origin: top right;
+}
+
+.patch-editor-rack-visual__cv-inline-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+@keyframes cvInlineAppear {
+  from {
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0), 0 0 0 1px rgba(0, 0, 0, 0);
+  }
+  to {
+    opacity: 1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+// Allow the screen's overflow to show the floating panel
+.patch-editor-rack-visual__screen--has-selection {
+  overflow: visible;
+}
+
+.patch-editor-rack-visual__cv-panel-name {
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.patch-editor-rack-visual__cv-copy-label {
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: #6c7f92;
+  margin-left: 0.15rem;
+}
+
+.patch-editor-rack-visual__cv-panel-manufacturer {
+  font-size: 0.72rem;
+  color: #6c7f92;
 }

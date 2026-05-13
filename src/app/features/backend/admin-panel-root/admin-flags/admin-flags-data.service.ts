@@ -21,51 +21,14 @@ import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { AdminFlagRow } from 'src/app/features/backend/supabase-get';
 import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 import {
-  FLAG_CATEGORY_GROUPS,
-  FlagCategoryOption
-} from 'src/app/components/module-parts/module-flag/module-flag-data.service';
+  AdminFlagCategoryGroup,
+  AdminFlagViewRow,
+  ADMIN_FLAG_CATEGORY_GROUPS,
+  ADMIN_FLAG_CATEGORY_MAP,
+  FlagStatusFilter
+} from './admin-flags-data.types';
 
-export type { AdminFlagRow };
-export type FlagStatusFilter = 'all' | 'open' | 'resolved';
-
-export interface AdminFlagViewRow extends AdminFlagRow {
-  reporterName: string | null;
-}
-
-interface AdminFlagCategoryOption extends FlagCategoryOption {
-  groupLabel: string;
-}
-
-interface AdminFlagCategoryGroup {
-  label: string;
-  options: AdminFlagCategoryOption[];
-}
-
-const LEGACY_FLAG_CATEGORY_GROUPS: AdminFlagCategoryGroup[] = [
-  {
-    label: 'Legacy categories',
-    options: [
-      {value: 'wrong-specs', label: 'Wrong specs', icon: 'tune', groupLabel: 'Legacy categories'},
-      {value: 'missing-image', label: 'Missing image', icon: 'image', groupLabel: 'Legacy categories'}
-    ]
-  }
-];
-
-const ADMIN_FLAG_CATEGORY_GROUPS: AdminFlagCategoryGroup[] = [
-  ...FLAG_CATEGORY_GROUPS.map(group => ({
-    label: group.label,
-    options: group.options.map(option => ({
-      ...option,
-      groupLabel: group.label
-    }))
-  })),
-  ...LEGACY_FLAG_CATEGORY_GROUPS
-];
-
-const ADMIN_FLAG_CATEGORY_OPTIONS = ADMIN_FLAG_CATEGORY_GROUPS.flatMap(group => group.options);
-const ADMIN_FLAG_CATEGORY_MAP = new Map(
-  ADMIN_FLAG_CATEGORY_OPTIONS.map(option => [option.value, option])
-);
+export type { AdminFlagRow, AdminFlagViewRow, FlagStatusFilter };
 
 
 @Injectable()

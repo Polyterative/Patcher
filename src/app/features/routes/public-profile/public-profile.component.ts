@@ -5,7 +5,9 @@ import {
   map,
   Observable,
 } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {
+  takeUntil,
+} from 'rxjs/operators';
 import { defaultPatchMinimalViewConfig } from 'src/app/components/patch-parts/patch-minimal/patch-minimal.component';
 import {
   defaultRackMinimalViewConfig,
@@ -50,14 +52,13 @@ export class PublicProfileComponent extends SubManager {
     private readonly urlCreatorService: UrlCreatorService,
   ) {
     super();
-
     this.publicStats$ = combineLatest([
       this.dataService.racksCount$,
       this.dataService.patchesCount$,
     ]).pipe(
       map(([racks, patches]) => [
-        {name: 'Racks', value: racks, icon: 'dashboard'},
-        {name: 'Patches', value: patches, icon: 'cable'},
+        {name: 'Racks', value: racks, icon: 'view_stream'},
+        {name: 'Patches', value: patches, icon: 'settings_input_composite'},
       ]),
     );
 

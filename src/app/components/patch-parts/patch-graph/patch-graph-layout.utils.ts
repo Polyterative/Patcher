@@ -1,6 +1,12 @@
 import { GraphNode } from 'src/app/shared-interproject/components/@visual/graph-view/graph.component';
 import { PATCH_GRAPH_NODE_TYPE } from './patch-graph.constants';
 
+interface ModuleNodePosition {
+  x: number;
+  y: number;
+  angle: number;
+}
+
 
 export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
   const modules = nodes.filter(node => node.data?.type === PATCH_GRAPH_NODE_TYPE.MODULE);
@@ -19,32 +25,25 @@ export function orderPatchGraphNodesForReveal(nodes: GraphNode[]): GraphNode[] {
   }
   
   const moduleIds = new Set(modules.map(node => node.id));
-  const childNodesByModule = new Map<string, GraphNode[]>();
-  const ungroupedNodes: GraphNode[] = [];
-  
-  nodes.forEach(node => {
-    if (node.data?.type === PATCH_GRAPH_NODE_TYPE.MODULE) {
-      return;
-    }
-    
-    const parentModuleNodeId = node.data?.parentModuleNodeId as string | undefined;
-    if (parentModuleNodeId && moduleIds.has(parentModuleNodeId)) {
-      const list = childNodesByModule.get(parentModuleNodeId) ?? [];
-      list.push(node);
-      childNodesByModule.set(parentModuleNodeId, list);
-      return;
-    }
-    
-    ungroupedNodes.push(node);
-  });
+  const childNodesByModule = nodes
+    .filter(node => node.data?.type !== PATCH_GRAPH_NODE_TYPE.MODULE)
+    .reduce((acc, node) => {
+      const parentModuleNodeId = node.data?.parentModuleNodeId as string | undefined;
+      if (parentModuleNodeId && moduleIds.has(parentModuleNodeId)) {
+        const list = acc.get(parentModuleNodeId) ?? [];
+        list.push(node);
+        acc.set(parentModuleNodeId, list);
+      }
+      return acc;
+    }, new Map<string, GraphNode[]>());
+  const ungroupedNodes = nodes.filter(node =>
+    node.data?.type !== PATCH_GRAPH_NODE_TYPE.MODULE
+    && !(node.data?.parentModuleNodeId && moduleIds.has(node.data.parentModuleNodeId as string))
+  );
   
   const moduleTotal = Math.max(1, modules.length);
   const moduleRingRadius = Math.max(3.6, Math.min(9, 3.1 + moduleTotal * 0.55));
-  const modulePositions = new Map<string, {
-    x: number,
-    y: number,
-    angle: number
-  }>();
+  const modulePositions = new Map<string, ModuleNodePosition>();
   const orderedNodes: GraphNode[] = [];
   
   modules.forEach((moduleNode, index) => {

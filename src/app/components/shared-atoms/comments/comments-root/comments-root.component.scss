@@ -2,6 +2,14 @@
   min-width: 0;
 }
 
+.commentsRoot__rail {
+  width: 100%;
+  max-inline-size: var(--app-readable-section-max-width);
+  margin-inline: auto;
+  display: grid;
+  gap: 1rem;
+}
+
 .commentsRoot__list {
   min-width: 0;
 }

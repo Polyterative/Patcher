@@ -12,6 +12,9 @@ import { SharedConstants } from 'src/app/shared-interproject/SharedConstants';
 
 
 describe('PatchDetailDataService - Instance Edge Branches', () => {
+  let createdServices: PatchDetailDataService[];
+  let createdBridges: SelectionPanelBridgeService[];
+
   function patch(partial: any = {}) {
     return {
       id: 100,
@@ -41,7 +44,8 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
         getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
       },
       get: {
-        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch()}))
+        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch()})),
+        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
@@ -78,8 +82,20 @@ describe('PatchDetailDataService - Instance Edge Branches', () => {
       backend as any,
       bridge
     );
+    createdBridges.push(bridge);
+    createdServices.push(service);
     return {service, backend};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+    createdBridges = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+    createdBridges.forEach((bridge) => bridge.ngOnDestroy());
+  });
   
   it('enforces instance copy limit before insert', () => {
     spyOn(SharedConstants, 'errorCustom').and.callFake(() => {

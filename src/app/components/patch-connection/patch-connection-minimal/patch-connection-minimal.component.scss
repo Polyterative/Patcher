@@ -34,8 +34,11 @@
 
 @media (max-width: 72.5rem) {
   .slot-deselect {
-    min-width: 2.75rem;
-    min-height: 2.75rem;
+    width: var(--app-touch-target-comfortable-min, 3rem);
+    height: var(--app-touch-target-comfortable-min, 3rem);
+    min-width: var(--app-touch-target-comfortable-min, 3rem);
+    min-height: var(--app-touch-target-comfortable-min, 3rem);
+    padding: 0;
     opacity: 0.8;
   }
 }

@@ -3,9 +3,9 @@
   layoutFlexWidth: (appState.layoutFlexWidth$|async)
 }; as bag) {
   @if (bag.layoutFlexWidth) {
-    <div class="row link-list">
+    <div class="row link-list" [class.link-list--column]="direction === 'column'">
       @for (item of bag.data; track trackByLink($index, item)) {
-        @if (item.icon && !bag.layoutFlexWidth.gtsm) {
+        @if (item.icon && !bag.layoutFlexWidth.gtsm && direction !== 'column') {
           <a
             mat-icon-button
             class="option icon-only"
@@ -13,12 +13,12 @@
             routerLinkActive="selected"
             (click)="onLinkInteraction($event, item)"
             [disabled]="item.disabled"
-            [ngClass]="{ disabled: item.disabled }"
+            [class.disabled]="item.disabled"
             [matTooltip]="bag.layoutFlexWidth.ltmd ? item.label : undefined"
             [attr.href]="item.disabled ? null : item.href"
             [attr.target]="item.href && item.hrefNewTab ? '_blank' : null"
             [attr.rel]="item.href && item.hrefNewTab ? 'noopener noreferrer' : null"
-            [attr.aria-label]="getAriaLabel(item)"
+            [attr.aria-label]="item.label || item.icon || 'Navigation link'"
             [ngStyle]="item.style"
           >
             @if (item.icon) {
@@ -33,12 +33,12 @@
             routerLinkActive="selected"
             (click)="onLinkInteraction($event, item)"
             [disabled]="item.disabled"
-            [ngClass]="{ disabled: item.disabled }"
+            [class.disabled]="item.disabled"
             [matTooltip]="bag.layoutFlexWidth.ltmd ? item.label : undefined"
             [attr.href]="item.disabled ? null : item.href"
             [attr.target]="item.href && item.hrefNewTab ? '_blank' : null"
             [attr.rel]="item.href && item.hrefNewTab ? 'noopener noreferrer' : null"
-            [attr.aria-label]="getAriaLabel(item)"
+            [attr.aria-label]="item.label || item.icon || 'Navigation link'"
             [ngStyle]="item.style"
           >
             @if (item.icon) {

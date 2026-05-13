@@ -4,6 +4,14 @@ import {
   OnInit
 } from '@angular/core';
 
+type ScreenWrapperSizePreset = 'default' | 'wide-shell' | 'full-bleed';
+
+const SCREEN_WRAPPER_SIZE_PRESETS: Record<ScreenWrapperSizePreset, string> = {
+  default: '86rem',
+  'wide-shell': '130rem',
+  'full-bleed': '100%'
+};
+
 
 /**
  * questo componente ti aiuta a tenere sotto controllo le dimensioni
@@ -21,6 +29,9 @@ export class ScreenWrapperComponent implements OnInit {
   
   @Input()
   maxSize = '86rem'; //kinda fhd, good default
+
+  @Input()
+  sizePreset?: ScreenWrapperSizePreset;
   
   @Input()
   force = false;
@@ -28,6 +39,10 @@ export class ScreenWrapperComponent implements OnInit {
   constructor() { }
   
   ngOnInit(): void {
+  }
+
+  get resolvedMaxSize(): string {
+    return this.sizePreset ? SCREEN_WRAPPER_SIZE_PRESETS[this.sizePreset] : this.maxSize;
   }
   
 }

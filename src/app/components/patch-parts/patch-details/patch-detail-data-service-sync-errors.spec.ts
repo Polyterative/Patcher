@@ -13,6 +13,9 @@ import { SelectionPanelBridgeService } from '../selection-panel-bridge.service';
 
 
 describe('PatchDetailDataService - Sync and Error Paths', () => {
+  let createdServices: PatchDetailDataService[];
+  let createdBridges: SelectionPanelBridgeService[];
+
   function patch(partial: any = {}) {
     return {
       id: 10,
@@ -44,11 +47,14 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
         getUserSession$: jasmine.createSpy('getUserSession$').and.returnValue(of({id: 'u1'}))
       },
       get: {
-        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})}))
+        patchWithId: jasmine.createSpy('get.patchWithId').and.returnValue(of({data: patch({id: 44, name: 'Loaded'})})),
+        currentUserRacks: jasmine.createSpy('get.currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('GET.patchConnections').and.returnValue(of([])),
-        patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([]))
+        patchModuleInstances: jasmine.createSpy('GET.patchModuleInstances').and.returnValue(of([])),
+        rackWithId: jasmine.createSpy('GET.rackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}})),
+        publicRackWithId: jasmine.createSpy('GET.publicRackWithId').and.returnValue(of({data: {id: 42, name: 'Public Rack'}}))
       },
       update: {
         patch: jasmine.createSpy('update.patch').and.returnValue(of({data: [patch()]})),
@@ -82,8 +88,20 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
       backend as any,
       bridge
     );
+    createdBridges.push(bridge);
+    createdServices.push(service);
     return {service, backend, bridge, router, snackBar};
   }
+
+  beforeEach(() => {
+    createdServices = [];
+    createdBridges = [];
+  });
+
+  afterEach(() => {
+    createdServices.forEach((service) => service.ngOnDestroy());
+    createdBridges.forEach((bridge) => bridge.ngOnDestroy());
+  });
   
   it('removes patch from collection and refreshes current patch', () => {
     const {service, backend, snackBar} = build();
@@ -148,6 +166,252 @@ describe('PatchDetailDataService - Sync and Error Paths', () => {
     expect(service.singlePatchData$.value?.description).toBe('New Desc');
     expect(SharedConstants.errorCustom).toHaveBeenCalled();
   }));
+
+  it('loads owned racks for owner-visible patches and derives linked-rack state', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 42}));
+
+    expect(backend.get.currentUserRacks).toHaveBeenCalled();
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.statusTone).toBe('positive');
+    expect(service.linkedRackState$.value.rackName).toBe('Studio Rack');
+  });
+
+  it('derives linked-rack select options from owned racks and syncs the selected rack', () => {
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any,
+      {id: 77, name: ''} as any
+    ]));
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 77}));
+
+    expect(service.linkedRackOptions$.value).toEqual([
+      {id: '42', name: 'Studio Rack'},
+      {id: '77', name: 'Rack #77'}
+    ]);
+    expect(`${ service.formData.linkedRack.control.value?.id ?? '' }`).toBe('77');
+  });
+
+  it('loads the linked rack through public reads for non-owner patch detail views', () => {
+    const {service, backend} = build();
+    backend.auth.getUserSession$.and.returnValue(of({id: 'viewer-1'}));
+    service.setPublicDetailMode(true);
+    service.singlePatchData$.next(patch({
+      id: 44,
+      author: {id: 'owner-1', username: 'owner'},
+      linked_rack_id: 42
+    }));
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(42);
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackName).toBe('Public Rack');
+  });
+
+  it('marks linked-rack state unavailable with owner recovery copy when the owner cannot load the rack', () => {
+    const {service} = build();
+
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 404}));
+
+    expect(service.linkedRackState$.value).toEqual(jasmine.objectContaining({
+      kind: 'unavailable',
+      statusTone: 'warning',
+      statusLabel: 'Rack unavailable',
+      rackId: 404
+    }));
+    expect(service.linkedRackState$.value.description).toContain('Choose another rack or clear the link');
+  });
+
+  it('marks linked-rack state unavailable with viewer copy when a public patch references an unavailable rack', () => {
+    const {service, backend} = build();
+    backend.auth.getUserSession$.and.returnValue(of({id: 'viewer-1'}));
+    backend.GET.publicRackWithId.and.returnValue(of({data: null}));
+    service.setPublicDetailMode(true);
+
+    service.singlePatchData$.next(patch({
+      id: 44,
+      author: {id: 'owner-1', username: 'owner'},
+      linked_rack_id: 404
+    }));
+
+    expect(backend.GET.publicRackWithId).toHaveBeenCalledWith(404);
+    expect(service.linkedRackState$.value.kind).toBe('unavailable');
+    expect(service.linkedRackState$.value.description).toContain('not publicly available');
+  });
+
+  it('persists linked-rack changes without touching editor connections', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(42);
+    expect(service.editorConnections$.value?.length).toBe(1);
+  });
+
+  it('does not persist linked-rack changes while switching is blocked by an in-progress selection', () => {
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.patchEditingPanelOpenState$.next(true);
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).not.toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(10);
+
+    service.resetSelectedForConnection$.next();
+    service.requestLinkedRackChange$.next(42);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: 42
+    }));
+  });
+
+  it('does not clear linked rack while switching is blocked by an in-progress selection', () => {
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+    service.patchEditingPanelOpenState$.next(true);
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    service.clearLinkedRack();
+
+    expect(backend.update.patchSilent).not.toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: null
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(10);
+  });
+
+  it('does not retry linked-rack persistence while rollout blocking is active', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.update.patchSilent.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+    service.singlePatchData$.next(patch({id: 44}));
+
+    service.requestLinkedRackChange$.next(42);
+    service.requestLinkedRackChange$.next(77);
+
+    expect(backend.update.patchSilent).toHaveBeenCalledTimes(1);
+    expect(service.singlePatchData$.value?.linked_rack_id ?? null).toBeNull();
+  });
+
+  it('updates linked-rack state after a linked-rack change so dependent previews can reload', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(service.singlePatchData$.value?.linked_rack_id).toBe(42);
+    expect(service.linkedRackState$.value.kind).toBe('linked');
+    expect(service.linkedRackState$.value.rackId).toBe(42);
+  });
+
+  it('clears the linked rack through the dedicated helper', () => {
+    spyOn(SharedConstants, 'successCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    service.singlePatchData$.next(patch({id: 44, linked_rack_id: 10}));
+
+    service.clearLinkedRack();
+
+    expect(backend.update.patchSilent).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 44,
+      linked_rack_id: null
+    }));
+    expect(service.singlePatchData$.value?.linked_rack_id).toBeNull();
+  });
+
+  it('blocks linked-rack persistence when the schema is not live yet', () => {
+    spyOn(SharedConstants, 'errorCustom').and.callFake(() => {});
+    const {service, backend} = build();
+    backend.get.currentUserRacks.and.returnValue(of([
+      {id: 42, name: 'Studio Rack'} as any
+    ]));
+    backend.update.patchSilent.and.returnValue(throwError(() => ({
+      code: 'PGRST204',
+      message: "Column 'linked_rack_id' of relation 'patches' does not exist"
+    })));
+    service.singlePatchData$.next(patch({id: 44}));
+
+    service.requestLinkedRackChange$.next(42);
+
+    expect(service.linkedRackPersistenceBlocked$.value).toBeTrue();
+    expect(service.linkedRackPersistenceHint$.value).toContain('not available yet');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+    expect(SharedConstants.errorCustom).toHaveBeenCalledWith(
+      jasmine.anything(),
+      'Linked rack saving is not available yet in this environment.'
+    );
+  });
+
+  it('disables linked-rack switching while a connection is pending selection', () => {
+    const {service} = build();
+    service.patchEditingPanelOpenState$.next(true);
+
+    service.selectedForConnection$.next({
+      a: cv(1, 'out', 11, 101),
+      b: null
+    });
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeTrue();
+    expect(service.linkedRackSelectionHint$.value).toBe('Finish or cancel the pending connection before switching the linked rack.');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+
+    service.resetSelectedForConnection$.next();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeFalse();
+    expect(service.linkedRackSelectionHint$.value).toBeNull();
+    expect(service.formData.linkedRack.control.disabled).toBeFalse();
+  });
+
+  it('keeps linked-rack switching disabled while connection changes are still saving', () => {
+    const {service, backend} = build();
+    const saveSubject = new Subject<void>();
+    backend.update.patchConnectionsSilent.and.returnValue(saveSubject.asObservable());
+    service.patchEditingPanelOpenState$.next(true);
+    service.singlePatchData$.next(patch({id: 44}));
+    service.editorConnections$.next([{a: {id: 1}, b: {id: 2}, patch: patch({id: 44})} as any]);
+
+    service.requestConnectionDbSync$.next();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeTrue();
+    expect(service.linkedRackSelectionHint$.value).toBe('Wait for pending connection changes to finish saving before switching the linked rack.');
+    expect(service.formData.linkedRack.control.disabled).toBeTrue();
+
+    saveSubject.next();
+    saveSubject.complete();
+
+    expect(service.linkedRackSelectionBlocked$.value).toBeFalse();
+    expect(service.linkedRackSelectionHint$.value).toBeNull();
+    expect(service.formData.linkedRack.control.disabled).toBeFalse();
+  });
   
   it('adds a new editor connection, blocks duplicate, and records bridge event', () => {
     spyOn(SharedConstants, 'successCustom').and.callFake(() => {

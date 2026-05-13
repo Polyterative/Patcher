@@ -25,13 +25,17 @@ import {
   map,
   takeUntil
 } from 'rxjs/operators';
-import { ModuleDetailDataService } from 'src/app/components/module-parts/module-detail-data.service';
+import {
+  HiddenUsageBucket,
+  ModuleDetailDataService
+} from 'src/app/components/module-parts/module-detail-data.service';
 import {
   defaultModuleMinimalViewConfig,
   ModuleMinimalViewConfig
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
+import { Animations } from 'src/app/shared-interproject/SharedConstants';
 import { DbModule } from "src/app/models/module";
 import {
   CommentableEntityTypes,
@@ -43,11 +47,12 @@ import {
   clearJsonLdScript,
   upsertJsonLdScript
 } from "src/app/shared-interproject/json-ld-dom";
-import { Animations } from "src/app/shared-interproject/SharedConstants";
-
-
-const MODULE_PANELS_BASE_URL = 'https://sozmatmywjpstwidzlss.supabase.co/storage/v1/object/public/module-panels/';
-const JSONLD_SCRIPT_ID = 'module-jsonld';
+import {
+  JSONLD_SCRIPT_ID,
+  MODULE_PANELS_BASE_URL,
+  MODULE_SEARCH_LINKS,
+  SearchLink,
+} from './module-browser-detail.constants';
 
 @Component({
   selector: 'app-module-browser-detail',
@@ -110,13 +115,13 @@ const JSONLD_SCRIPT_ID = 'module-jsonld';
         style({
           opacity: 0,
           height: 0,
-          transform: 'translateY(0.9rem) scale(0.985)',
+          transform: 'translateY(0.9rem)',
           overflow: 'hidden'
         }),
         animate('280ms cubic-bezier(0.22, 1, 0.36, 1)', style({
           opacity: 1,
           height: '*',
-          transform: 'translateY(0) scale(1)'
+          transform: 'translateY(0)'
         }))
       ]),
       transition(':leave', [
@@ -126,7 +131,7 @@ const JSONLD_SCRIPT_ID = 'module-jsonld';
         animate('210ms cubic-bezier(0.4, 0, 1, 1)', style({
           opacity: 0,
           height: 0,
-          transform: 'translateY(-0.55rem) scale(0.985)'
+          transform: 'translateY(-0.55rem)'
         }))
       ])
     ]),
@@ -178,6 +183,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   protected destroyEvent$                      = new Subject<void>();
   @Input() ignoreSeo                           = false;
+  @Input() showWideShellNav                    = true;
   @Input() showManualButton                    = false;
   @Input() viewConfig: ModuleMinimalViewConfig = {
     ...defaultModuleMinimalViewConfig,
@@ -198,145 +204,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     tagsReadOnly: true,
     tagsMaxCount: 5
   };
-  // hopefully these do not become too many
-  searchLinks                                                    = [
-    {
-      url: (name: string, manufacturer: string) => `https://www.google.com/search?q=${ name } by ${ manufacturer }`,
-      label: 'Google',
-      icon: 'search',
-      tooltip: 'Search on Google'
-    },
-    {
-      url: (name: string, manufacturer: string) => `https://www.youtube.com/results?search_query=${ name }+${ manufacturer }`,
-      label: 'YouTube',
-      icon: 'video_library',
-      tooltip: 'Search on YouTube'
-    },
-    {
-      url: (name: string) => `https://www.modwiggler.com/forum/search.php?keywords=${ name }`,
-      label: 'Modwiggler',
-      icon: 'forum',
-      tooltip: 'Search on Modwiggler'
-    },
-    {
-      url: (name: string) => `https://llllllll.co/search?q=${ name }`,
-      label: 'Lines',
-      icon: 'forum',
-      tooltip: 'Search on Lines'
-    },
-    {
-      url: (name: string) => `https://www.elektronauts.com/search?q=${ name }`,
-      label: 'Elektronauts',
-      icon: 'forum',
-      tooltip: 'Search on Elektronauts'
-    },
-    {
-      url: (name: string) => `https://modulargrid.net/e/modules/browser?SearchName=${ name }`,
-      label: 'Modulargrid',
-      icon: 'power',
-      tooltip: 'Search on Modulargrid'
-    },
-    {
-      url: (name: string) => `https://library.vcvrack.com/?query=${ name }`,
-      label: 'VCV Library',
-      icon: 'power',
-      tooltip: 'Search on VCV Library'
-    },
-    {
-      url: (name: string) => `https://wigglehunt.com/?query=${ name }`,
-      label: 'Wigglehunt',
-      // icon regarding prices
-      icon: 'attach_money',
-      tooltip: 'Search on Modulargrid'
-    },
-    {
-      url: (name: string) => `https://www.thomann.de/intl/search_dir.html?sw=${ name }`,
-      label: 'Thomann 🇩🇪',
-      icon: 'store',
-      tooltip: 'Search on Thomann'
-    },
-    {
-      url: (name: string) => `https://schneidersladen.de/en/search?sSearch=${ name }`,
-      label: 'Schneidersladen 🇩🇪',
-      icon: 'store',
-      tooltip: 'Search on Schneidersladen'
-    },
-    {
-      url: (name: string) => `https://www.signalsounds.com/search.php?search_query=${ name }`,
-      label: 'Signalsounds 🇬🇧',
-      icon: 'store',
-      tooltip: 'Search on Signalsounds'
-    },
-    {
-      url: (name: string) => `https://www.exploding-shed.com/search?search=${ name }`,
-      label: 'Exploding Shed 🇩🇪',
-      icon: 'store',
-      tooltip: 'Search on Exploding Shed'
-    },
-    {
-      url: (name: string) => `https://eu.elevatorsound.com/shop/?_sf_s=${ name }`,
-      label: 'Elevatorsound 🇬🇧',
-      icon: 'store',
-      tooltip: 'Search on Elevatorsound'
-    },
-    {
-      url: (name: string) => `https://www.perfectcircuit.com/catalogsearch/result/?q=${ name }`,
-      label: 'Perfect Circuit 🇺🇸',
-      icon: 'store',
-      tooltip: 'Search on Perfect Circuit'
-    },
-    {
-      url: (name: string) => `https://www.milkaudiostore.com/it/search?term=${ name }`,
-      label: 'Milk Audio Store 🇮🇹',
-      icon: 'store',
-      tooltip: 'Search on Milk Audio Store'
-    },
-    {
-      url: (name: string) => `https://www.newgroove.it/?product_cat=0&s=${ name }&post_type=product&et_search=true`,
-      // italian emoji
-      label: 'New Groove 🇮🇹',
-      icon: 'store',
-      tooltip: 'Search on New Groove'
-    },
-    {
-      url: (name: string) => `https://escapefromnoise.com/search/?q=${ name }&lang=en`,
-      label: 'Escape From Noise 🇸🇪',
-      icon: 'store',
-      tooltip: 'Search on Escape From Noise'
-    },
-    {
-      url: (name: string) => `https://machineroom.com.ua/?s=${ name }`,
-      label: 'Machineroom 🇺🇦',
-      icon: 'store',
-      tooltip: 'Search on Machineroom'
-    },
-    {
-      url: (name) => `https://www.ctrl-mod.com/search?type=product&q=${ name }`,
-      label: 'Control 🇺🇸',
-      icon: 'store',
-      tooltip: 'Search on Control'
-    },
-    {
-      url: (name) => `https://www.patchwerks.com/search?q=${ name }`,
-      label: 'Patchwerks 🇺🇸',
-      icon: 'store',
-      tooltip: 'Search on Patchwerks'
-    },
-    {
-      url: (name) => `https://foundsound.com.au/search?q=${ name }`,
-      label: 'Found Sound 🇦🇺',
-      icon: 'store',
-      tooltip: 'Search on Found Sound'
-    },
-    
-    {
-      url: (name) => `https://synthshop.no/search?q=${ name }`,
-      label: 'Synthshop 🇳🇴',
-      icon: 'store',
-      tooltip: 'Search on Synthshop'
-    },
-    
-  ];
+  readonly searchLinks: SearchLink[] = MODULE_SEARCH_LINKS;
   
   constructor(
     public dataService: ModuleDetailDataService,
@@ -444,6 +312,26 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  hasHiddenUsage(bucket: HiddenUsageBucket | null | undefined): boolean {
+    return !!bucket && bucket !== 'none';
+  }
+
+  getHiddenUsageSupplementCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
+    return `Plus ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+  }
+
+  getNoPublicUsageCopy(kind: 'rack' | 'patch', bucket: HiddenUsageBucket | null | undefined): string {
+    if (!this.hasHiddenUsage(bucket)) {
+      return `No ${ this.getHiddenUsageNoun(kind) } using this module yet. Try adding it to yours!`;
+    }
+
+    return `No public ${ this.getHiddenUsageNoun(kind) } using this module yet. It still appears in ${ this.getHiddenUsageDescriptor(bucket) } private or otherwise hidden ${ this.getHiddenUsageNoun(kind) }.`;
+  }
+
+  getUsagePendingCopy(kind: 'rack' | 'patch'): string {
+    return `Checking private and hidden ${ kind } usage...`;
+  }
+
   ngOnDestroy(): void {
     clearJsonLdScript(JSONLD_SCRIPT_ID);
     this.dataService.singleModuleData$.next(undefined);
@@ -472,6 +360,25 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   
   private patchDevModule(changes: Partial<DbModule>): void {
     this.dataService.changeModule$.next(changes);
+  }
+
+  private getHiddenUsageDescriptor(bucket: HiddenUsageBucket | null | undefined): string {
+    switch (bucket) {
+      case 'some':
+        return 'some';
+      case '5_plus':
+        return '5+';
+      case '10_plus':
+        return '10+';
+      case '25_plus':
+        return '25+';
+      default:
+        return 'no';
+    }
+  }
+
+  private getHiddenUsageNoun(kind: 'rack' | 'patch'): 'racks' | 'patches' {
+    return kind === 'rack' ? 'racks' : 'patches';
   }
   
   setDevStandard(id: number): void {
@@ -536,19 +443,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   submitSimilar(
     data: Partial<DbModule>
   ) {
-    // [href]="'/modules/add?manufacturer='+bag.data.manufacturer.id+'&HP='+bag.data.hp+'standard='+bag.data.standard.id"
-    // this.router.navigate(['/modules', 'add'], {
-    //   queryParams: {
-    //     manufacturer: data.manufacturerId,
-    //     HP:           data.hp,
-    //     standard:     data.standard.id
-    //   }
-    // });
-    
-    // full navigation with reload, plain JS href, new tab
     window.open(`/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`, '_blank');
-    // window.location.href = `/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`;
-    
   }
   
   openManual(data: DbModule) {

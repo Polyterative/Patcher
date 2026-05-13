@@ -32,7 +32,8 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
       cacheResetter$: new Subject<string[]>(),
       get: {
         patchWithId: jasmine.createSpy('patchWithId').and.returnValue(of({data: null, error: null})),
-        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([]))
+        currentUserPatches: jasmine.createSpy('currentUserPatches').and.returnValue(of([])),
+        currentUserRacks: jasmine.createSpy('currentUserRacks').and.returnValue(of([]))
       },
       GET: {
         patchConnections: jasmine.createSpy('patchConnections').and.returnValue(of([])),
@@ -100,6 +101,10 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
     expect(service.isCurrentPatchPrivate$.value).toBe(false);
   });
 
+  it('should initialize patchDetailUnavailableMessage$ as null', () => {
+    expect(service.patchDetailUnavailableMessage$.value).toBeNull();
+  });
+
   it('uses public patch reads when public detail mode is enabled', () => {
     service.setPublicDetailMode(true);
 
@@ -107,5 +112,15 @@ describe('PatchDetailDataService - Privacy API Surface', () => {
 
     expect(mockSupabaseService.GET.publicPatchWithId).toHaveBeenCalledWith(42);
     expect(mockSupabaseService.get.patchWithId).not.toHaveBeenCalledWith(42);
+  });
+
+  it('marks public detail as unavailable when the public patch read returns no data', () => {
+    mockSupabaseService.GET.publicPatchWithId.and.returnValue(of({data: null, error: null}));
+    service.setPublicDetailMode(true);
+
+    service.updateSinglePatchData$.next(42);
+
+    expect(service.singlePatchData$.value).toBeUndefined();
+    expect(service.patchDetailUnavailableMessage$.value).toContain(`isn't publicly available`);
   });
 });

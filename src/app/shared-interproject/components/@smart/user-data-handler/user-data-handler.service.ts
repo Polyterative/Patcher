@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReplaySubject, Subject } from 'rxjs';
@@ -18,54 +17,16 @@ export class UserDataHandlerService {
   };
   
   constructor(
-    public router: Router,
-    public httpClient: HttpClient
+    public router: Router
   ) {
-    
-    // let api = new UserAPI(httpClient);
-  
-    // api.get()
-    //    .pipe(
-    //      // map(value => value)
-    //      // catchError(err => undefined),
-    //      catchError(err => ''),
-    //      filter(x => !!x)
-    //    )
-    //    .subscribe(this.store.user$);
-  
-    // this.store.user$.pipe(filter(x => !!x))
-    //     .subscribe(x => console.log(`Got User: ${ x.username }`));
-  
-    // this.logoffButtonClick$
-    //     .pipe(map(x => undefined))
-    //     .subscribe(value => {
-    //       this.store.user$.next(value);
-    //     });
-  
     this.loginButtonClick$
-        .pipe()
         .subscribe(x => {
-          router.navigate(
-            [
-              '/auth',
-              'login'
-              // 'Account',
-              // 'Login'
-            ]
-          );
+          router.navigate(['/auth', 'login']);
         });
   
     this.signupButtonClick$
-        .pipe()
         .subscribe(x => {
-          router.navigate(
-            [
-              '/auth',
-              'signup'
-              // 'Account',
-              // 'Login'
-            ]
-          );
+          router.navigate(['/auth', 'signup']);
         });
   
   }

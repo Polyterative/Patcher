@@ -34,9 +34,9 @@ export class ManufacturerDetailDataService extends SubManager {
   readonly updateManufacturer$ = new ReplaySubject<number>(1);
   
   // STATE
-  private _manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
-  private _modulesData$ = new BehaviorSubject<ModuleList>(null);
-  private _isLoading$ = new BehaviorSubject<boolean>(false);
+  private readonly _manufacturerData$ = new BehaviorSubject<ManufacturerDetail | null>(null);
+  private readonly _modulesData$ = new BehaviorSubject<ModuleList>(null);
+  private readonly _isLoading$ = new BehaviorSubject<boolean>(false);
   
   // PUBLIC
   readonly manufacturerData$ = this._manufacturerData$.asObservable();

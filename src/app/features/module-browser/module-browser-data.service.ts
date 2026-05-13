@@ -12,6 +12,7 @@ import {
   Subject
 } from 'rxjs';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
@@ -29,106 +30,51 @@ import {
   ISelectable,
   isOption
 } from '../../shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { matchesSearchQuery } from '../../shared-interproject/components/@smart/mat-form-entity/string-utils';
 import { SubManager } from '../../shared-interproject/directives/subscription-manager';
+import {
+  compareModulesByHpAsc,
+  compareModulesByHpDesc,
+  compareModulesByManufacturerAsc,
+  compareModulesByManufacturerDesc,
+  compareModulesByNameAsc,
+  compareModulesByNameDesc,
+  compareModulesByUpdatedAsc,
+  compareModulesByUpdatedDesc
+} from '../../shared-interproject/utils/module-sort-utils';
 import { SupabaseService } from '../backend/supabase.service';
+import {
+  HpConditionOption,
+  HpConditionOperator,
+  IdNameOption,
+  IdNumberOption,
+  ModuleBrowserFields,
+  ModuleList,
+  ModuleMultiselectField,
+  ModuleOrderOption,
+  ModuleSelectField,
+  ModuleTextField
+} from './module-browser-data.models';
+import {
+  DEFAULT_HP_CONDITION,
+  DEFAULT_STANDARD,
+  MODULE_ORDER_OPTIONS,
+  OWNED_MODE_DEFAULT_ORDER
+} from './module-browser-data.constants';
+import {
+  compareModulesByCreated,
+  getModuleStandardId,
+  matchesSelectedTags,
+  toSortDirection
+} from './module-browser-data.utils';
 
+export type { ModuleList, ModuleOrderOption } from './module-browser-data.models';
 
-export type ModuleList = MinimalModule[] | null;
-
-export interface ModuleOrderOption {
-  id: string;
-  name: string;
-}
-
-interface IdNameOption {
-  id: string;
-  name: string;
-}
-
-type HpConditionOperator =
-  '='
-  | '!='
-  | '>'
-  | '<'
-  | '>='
-  | '<=';
-
-interface HpConditionOption {
-  id: HpConditionOperator;
-  name: string;
-}
-
-interface IdNumberOption {
-  id: number | undefined;
-  name: string;
-}
-
-interface ModuleTextField {
-  code: string;
-  flex: string;
-  control: FormControl<string>;
-  label: string;
-  type: FormTypes;
-}
-
-interface ModuleSelectField<T> {
-  code: string;
-  flex: string;
-  control: FormControl<T>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<T[]>;
-}
-
-interface ModuleMultiselectField<T> {
-  code: string;
-  flex: string;
-  control: FormControl<T[]>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<T[]>;
-}
-
-interface ModuleAutocompleteField {
-  code: string;
-  flex: string;
-  control: FormControl<string>;
-  label: string;
-  type: FormTypes;
-  options$: Observable<IdNameOption[]>;
-}
-
-interface ModuleBrowserFields {
-  name: ModuleTextField;
-  description: ModuleTextField;
-  hp: ModuleTextField;
-  manufacturers: ModuleAutocompleteField;
-  hpCondition: ModuleSelectField<HpConditionOption>;
-  order: ModuleSelectField<ModuleOrderOption>;
-  standard: ModuleSelectField<IdNumberOption>;
-  tags: ModuleMultiselectField<ISelectable>;
-}
-
-const DEFAULT_HP_CONDITION: HpConditionOption = {id: '=', name: 'exactly'};
-const DEFAULT_STANDARD: IdNumberOption = {id: undefined, name: 'All'};
-
-const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
-  {id: 'name', name: 'Name ↑'},
-  {id: 'name', name: 'Name ↓'},
-  {id: 'hp', name: 'HP ↑'},
-  {id: 'hp', name: 'HP ↓'},
-  {id: 'manufacturerId', name: 'Manufacturer ↑'},
-  {id: 'manufacturerId', name: 'Manufacturer ↓'},
-  {id: 'created', name: 'Created ↑'},
-  {id: 'created', name: 'Created ↓'},
-  {id: 'updated', name: 'Updated ↑'},
-  {id: 'updated', name: 'Updated ↓'},
-  {id: 'isComplete', name: 'Data Complete ↓'},
-];
 
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
+  readonly remoteTagFilterLoading$ = new BehaviorSubject<boolean>(false);
   readonly updateModulesList$ = new Subject<void>();
   readonly moduleFilterInteraction$ = new Subject<void>();
   readonly modulesLoadingTrigger$ = merge(
@@ -151,6 +97,7 @@ export class ModuleBrowserDataService extends SubManager {
   };
   
   readonly orderStartingValue: ModuleOrderOption = {id: 'updated', name: 'Updated ↓'};
+  readonly ownedModeOrderStartingValue: ModuleOrderOption = OWNED_MODE_DEFAULT_ORDER;
   readonly fields: ModuleBrowserFields;
   readonly canReset$: Observable<boolean>;
   
@@ -189,7 +136,7 @@ export class ModuleBrowserDataService extends SubManager {
         type: FormTypes.AUTOCOMPLETE,
         options$: this.backend.GET.manufacturers(0, 9999, 'id,name')
           .pipe(
-            map(x => x.data.map(z => ({id: z.id.toString(), name: z.name}))),
+            map(x => (x.data ?? []).map(z => ({id: z.id.toString(), name: z.name}))),
             startWith([]),
             takeUntil(this.destroy$),
             share()
@@ -243,7 +190,7 @@ export class ModuleBrowserDataService extends SubManager {
         control: new FormControl<ISelectable[]>([], {nonNullable: true}),
         type: FormTypes.MULTISELECT,
         options$: this.backend.get.allTags().pipe(
-          map(tags => (tags ?? []).map((t: any) => ({id: t.id.toString(), name: t.name}))),
+          map(tags => (tags ?? []).map((t) => ({id: t.id.toString(), name: t.name}))),
           startWith([]),
           takeUntil(this.destroy$),
           share()
@@ -312,12 +259,20 @@ export class ModuleBrowserDataService extends SubManager {
       this.serversideTableRequestData.filter$.next(nameVal);
       this.serversideTableRequestData.sort$.next([
         orderVal?.id ?? '',
-        orderVal?.name?.includes('↑') ? 'asc' : 'desc'
+        toSortDirection(orderVal?.name)
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
       this.updateModulesList$.next();
-    });
+      });
+    
+    this.fields.tags.control.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.modulesList$.value !== null) {
+          this.remoteTagFilterLoading$.next(true);
+        }
+      });
 
     this.updateModulesList$
       .pipe(
@@ -333,25 +288,30 @@ export class ModuleBrowserDataService extends SubManager {
             : undefined;
           
           return this.backend.GET.modules(
-            skip,
-            (skip + take) - 1,
-            filter,
-            sortCol || null,
-            sortDir,
-            parseInt(getCleanedValueId(this.fields.manufacturers.control)),
-            parseInt(this.fields.hp.control.value),
-            this.fields.hpCondition.control.value?.id,
-            standard,
-            this.fields.description.control.value,
-            true,
-            tagIds
-          );
+              skip,
+              (skip + take) - 1,
+              filter,
+              sortCol || null,
+              sortDir,
+              parseInt(getCleanedValueId(this.fields.manufacturers.control)),
+              parseInt(this.fields.hp.control.value),
+              this.fields.hpCondition.control.value?.id,
+              standard,
+              this.fields.description.control.value,
+              true,
+              tagIds
+            )
+            .pipe(catchError(error => {
+              console.error('Failed to load modules:', error);
+              return of({data: [], count: 0});
+            }));
         }),
         takeUntil(this.destroy$)
       )
       .subscribe(x => {
         this.serversideAdditionalData.itemsCount$.next(x.count);
         this.modulesList$.next(x.data);
+        this.remoteTagFilterLoading$.next(false);
       });
     
     this.resetForm$
@@ -373,5 +333,121 @@ export class ModuleBrowserDataService extends SubManager {
         this.paginatorToFistPage$.next();
         this.updateModulesList$.next();
       });
+  }
+
+  applyOwnedModeDefaultOrder(): void {
+    const currentOrder = this.fields.order.control.value;
+    if (currentOrder?.id === this.orderStartingValue.id) {
+      this.fields.order.control.setValue(this.ownedModeOrderStartingValue);
+    }
+  }
+
+  hasActiveModuleFilters(): boolean {
+    const hp = this.fields.hp.control.value;
+    const hpCondition = this.fields.hpCondition.control.value;
+    const standard = this.fields.standard.control.value;
+    const tags = this.fields.tags.control.value;
+
+    return (
+      this.fields.name.control.value.trim() !== ''
+      || this.fields.description.control.value.trim() !== ''
+      || isOption(this.fields.manufacturers.control.value)
+      || (hp !== '' && hp !== null)
+      || (hpCondition && hpCondition.id !== DEFAULT_HP_CONDITION.id)
+      || (standard && standard.id !== undefined)
+      || (tags && tags.length > 0)
+    );
+  }
+
+  filterOwnedModules(
+    modules: MinimalModule[] | undefined,
+    excludedModuleIds: number[] = []
+  ): MinimalModule[] | undefined {
+    if (modules === undefined) {
+      return undefined;
+    }
+
+    const excludedIds = new Set(excludedModuleIds);
+    const filteredModules = modules.filter((module) =>
+      !excludedIds.has(module.id) && this.matchesOwnedModuleFilters(module)
+    );
+    return this.sortOwnedModules(filteredModules);
+  }
+
+  private matchesOwnedModuleFilters(module: MinimalModule): boolean {
+    const selectedManufacturerId = Number.parseInt(getCleanedValueId(this.fields.manufacturers.control), 10);
+    const hpValue = Number.parseInt(this.fields.hp.control.value, 10);
+    const selectedStandardId = this.fields.standard.control.value?.id;
+    const selectedTagIds = (this.fields.tags.control.value ?? [])
+      .map((tag) => Number.parseInt(tag.id, 10))
+      .filter((id) => Number.isFinite(id));
+
+    if (!matchesSearchQuery(this.fields.name.control.value, module.name)) {
+      return false;
+    }
+
+    if (!matchesSearchQuery(this.fields.description.control.value, module.description)) {
+      return false;
+    }
+
+    if (Number.isFinite(selectedManufacturerId) && module.manufacturerId !== selectedManufacturerId) {
+      return false;
+    }
+
+    if (
+      selectedStandardId !== undefined
+      && getModuleStandardId(module) !== selectedStandardId
+    ) {
+      return false;
+    }
+
+    if (Number.isFinite(hpValue) && !this.matchesHpCondition(module.hp, hpValue)) {
+      return false;
+    }
+
+    if (selectedTagIds.length > 0 && !matchesSelectedTags(module, selectedTagIds)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private matchesHpCondition(moduleHp: number, hpValue: number): boolean {
+    switch (this.fields.hpCondition.control.value?.id) {
+      case '!=':
+        return moduleHp !== hpValue;
+      case '>':
+        return moduleHp > hpValue;
+      case '<':
+        return moduleHp < hpValue;
+      case '>=':
+        return moduleHp >= hpValue;
+      case '<=':
+        return moduleHp <= hpValue;
+      case '=':
+      default:
+        return moduleHp === hpValue;
+    }
+  }
+
+  private sortOwnedModules(modules: MinimalModule[]): MinimalModule[] {
+    const order = this.fields.order.control.value;
+    const direction = toSortDirection(order?.name);
+
+    const sortedModules = [...modules];
+    switch (order?.id) {
+      case 'name':
+        return sortedModules.sort(direction === 'asc' ? compareModulesByNameAsc : compareModulesByNameDesc);
+      case 'hp':
+        return sortedModules.sort(direction === 'asc' ? compareModulesByHpAsc : compareModulesByHpDesc);
+      case 'manufacturerId':
+        return sortedModules.sort(direction === 'asc' ? compareModulesByManufacturerAsc : compareModulesByManufacturerDesc);
+      case 'created':
+        return sortedModules.sort((a, b) => compareModulesByCreated(a, b, direction));
+      case 'updated':
+        return sortedModules.sort(direction === 'asc' ? compareModulesByUpdatedAsc : compareModulesByUpdatedDesc);
+      default:
+        return sortedModules;
+    }
   }
 }

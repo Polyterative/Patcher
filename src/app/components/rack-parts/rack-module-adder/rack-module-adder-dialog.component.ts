@@ -5,14 +5,12 @@ import {
   OnInit
 } from '@angular/core';
 import {
-  FormControl,
   UntypedFormControl,
   Validators
 } from '@angular/forms';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { TimeagoPipe } from 'ngx-timeago';
 import {
-  BehaviorSubject,
   Observable,
   Subject,
   timer
@@ -36,14 +34,12 @@ import {
   MatDialogRef
 } from "@angular/material/dialog";
 import { Router } from "@angular/router";
+import {
+  RackModuleAdderInModel,
+  RackModuleAdderOutModel
+} from './rack-module-adder-dialog.types';
 
-
-export interface RackModuleAdderOutModel {
-}
-
-export interface RackModuleAdderInModel {
-  module: DbModule;
-}
+export type { RackModuleAdderInModel, RackModuleAdderOutModel };
 
 @Component({
   selector: 'app-rack-module-adder',
@@ -58,18 +54,14 @@ export interface RackModuleAdderInModel {
 })
 export class RackModuleAdderDialogComponent extends SubManager implements OnInit {
   readonly saveRackedModule$ = new Subject<void>();
-  data$ = new BehaviorSubject<[]>([]);
   
   fields: {
     rack: {
       code: string;
       flex: string;
-      control: FormControl<any>;
+      control: UntypedFormControl;
       label: string;
-      options$: Observable<any[] | {
-        name: string;
-        id: string
-      }[]>;
+      options$: Observable<{ name: string; id: string }[]>;
       type: FormTypes
     }
   };

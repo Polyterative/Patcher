@@ -29,6 +29,7 @@ import {
   CustomValidators,
   FormTypes
 } from 'src/app/shared-interproject/components/@smart/mat-form-entity/form-element-models';
+import { IMatFormEntityConfig } from 'src/app/shared-interproject/components/@smart/mat-form-entity/mat-form-entity.component';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {
   MAT_DIALOG_DATA,
@@ -46,14 +47,12 @@ import {
   colors,
   uniqueNamesGenerator
 } from 'unique-names-generator';
+import {
+  RackCreatorInModel,
+  RackCreatorOutModel
+} from './rack-creator.types';
 
-
-export interface RackCreatorOutModel {
-}
-
-export interface RackCreatorInModel {
-  userModules?: MinimalModule[];
-}
+export type { RackCreatorInModel, RackCreatorOutModel };
 
 
 @Component({
@@ -66,33 +65,15 @@ export interface RackCreatorInModel {
 export class RackCreatorComponent extends SubManager implements OnInit {
   readonly save$ = new Subject<void>();
   
-  private _userModules$ = new BehaviorSubject<MinimalModule[]>([]);
+  private readonly _userModules$ = new BehaviorSubject<MinimalModule[]>([]);
   readonly userModules$ = this._userModules$.asObservable();
   
   readonly rackAnalysis$: ReturnType<typeof combineLatest>;
   
   fields: {
-    hp: {
-      code: string;
-      flex: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    name: {
-      code: string;
-      flex: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
-    rows: {
-      code: string;
-      flex: string;
-      control: FormControl<any>;
-      label: string;
-      type: FormTypes
-    };
+    hp: IMatFormEntityConfig;
+    name: IMatFormEntityConfig;
+    rows: IMatFormEntityConfig;
     public: {
       code: string;
       control: FormControl<boolean>;
@@ -126,7 +107,12 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           Validators.max(216),
           CustomValidators.onlyIntegers
         ])),
-        type: FormTypes.NUMBER
+        type: FormTypes.NUMBER,
+        hint: 'Range: 2-216 HP',
+        iconL1: 'straighten',
+        ergonomics: {
+          enterkeyhint: 'next'
+        }
       },
       rows: {
         label: 'Vertical rows amount',
@@ -138,7 +124,12 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           Validators.max(10),
           CustomValidators.onlyIntegers
         ])),
-        type: FormTypes.NUMBER
+        type: FormTypes.NUMBER,
+        hint: 'Range: 1-10 rows',
+        iconL1: 'view_comfy',
+        ergonomics: {
+          enterkeyhint: 'done'
+        }
       },
       name: {
         label: 'Name',
@@ -150,7 +141,12 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           Validators.maxLength(32)
           // Validators.max(12)
         ])),
-        type: FormTypes.TEXT
+        type: FormTypes.TEXT,
+        iconL1: 'label',
+        ergonomics: {
+          autofocus: true,
+          enterkeyhint: 'next'
+        }
       },
       public: {
         code: 'public',
@@ -209,9 +205,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           duration: 3000
         })
           .onAction()
-          .subscribe(() => {
-            // this.router.navigate(['rack', value.id]);
-          });
+          .subscribe(() => {});
         
         this.dialogRef.close();
       });

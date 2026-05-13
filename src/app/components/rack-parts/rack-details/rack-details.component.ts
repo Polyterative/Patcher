@@ -1,13 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  OnInit
+  Input
 } from '@angular/core';
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { SupabaseService } from 'src/app/features/backend/supabase.service';
 import { RackMinimal } from 'src/app/models/rack';
-import { SubManager } from 'src/app/shared-interproject/directives/subscription-manager';
 import { RackDetailDataService } from '../rack-detail-data.service';
 
 
@@ -18,20 +14,8 @@ import { RackDetailDataService } from '../rack-detail-data.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false
 })
-export class RackDetailsComponent extends SubManager implements OnInit {
+export class RackDetailsComponent {
   @Input() data: RackMinimal;
-  
-  constructor(
-    public snackBar: MatSnackBar,
-    public backend: SupabaseService,
-    public dataService: RackDetailDataService
-    // userManagerService: UserManagementService
-  ) { super(); }
-  
-  
-  ngOnInit(): void {
-  
-  }
-  
-  
+
+  constructor(public dataService: RackDetailDataService) {}
 }

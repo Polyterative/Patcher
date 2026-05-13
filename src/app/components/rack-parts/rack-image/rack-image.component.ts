@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -33,14 +32,12 @@ import { Rack } from "src/app/models/rack";
     })
   ]
 })
-export class RackImageComponent implements OnInit, OnChanges, AfterViewInit {
+export class RackImageComponent implements OnInit, OnChanges {
   
   @Input() data: Rack;
+  @Input() containImage: boolean = true;
   
   filename: string | undefined;
-  
-  // @Input() containImage: boolean = true;
-  // @Input() big: boolean = false;
   
   // proportion between contained and full size
   sizeDivider: number = 1.5;
@@ -50,8 +47,6 @@ export class RackImageComponent implements OnInit, OnChanges, AfterViewInit {
   ) {
   }
   
-  // force change detection when the data changes
-  @Input() containImage: boolean = true;
   ngOnChanges(): void {
     if (this.data.image) {
       this.filename = this.data.image;
@@ -68,28 +63,7 @@ export class RackImageComponent implements OnInit, OnChanges, AfterViewInit {
       this.filename = undefined;
     }
     
-    // if (this.big) {
-    //   this.sizeDivider = 1;
-    // }
-    
     this.changeDetection.detectChanges();
-  }
-  
-  ngAfterViewInit(): void {
-    // of(undefined)
-    //   .pipe(
-    //     delay(250),
-    //     take(1)
-    //   )
-    //   .subscribe(value => {
-    //     if (this.data.panels && this.data.panels.length > 0) {
-    //       this.filename = this.data.panels[this.data.panels.length - 1].filename;
-    //     } else {
-    //       this.filename = undefined;
-    //     }
-    //
-    //     this.changeDetection.detectChanges();
-    //   });
   }
   
 }

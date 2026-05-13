@@ -20,6 +20,7 @@ import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
 import { ModuleBrowserDetailComponent } from './module-browser-detail.component';
+import { ModuleUsageCardComponent } from './module-usage-card/module-usage-card.component';
 
 
 describe('ModuleBrowserDetailComponent', () => {
@@ -104,6 +105,12 @@ describe('ModuleBrowserDetailComponent', () => {
       singleModuleData$: new BehaviorSubject<any>(moduleFixture()),
       racksWithThisModule$: new BehaviorSubject<any[]>([]),
       patchesWithThisModule$: new BehaviorSubject<any[]>([]),
+      moduleUsageSummary$: new BehaviorSubject<any>({
+        public_rack_count: 0,
+        hidden_rack_bucket: 'none',
+        public_patch_count: 0,
+        hidden_patch_bucket: 'none'
+      }),
       modulesBySameManufacturer$: new BehaviorSubject<any[]>([]),
       moduleEditingPanelOpenState$: new BehaviorSubject<boolean>(false),
       moduleEditorHasPendingChanges$: new BehaviorSubject<boolean>(false),
@@ -121,7 +128,7 @@ describe('ModuleBrowserDetailComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [ModuleBrowserDetailComponent],
+      declarations: [ModuleBrowserDetailComponent, ModuleUsageCardComponent],
       imports: [CommonModule, FormsModule, NoopAnimationsModule],
       providers: [
         {provide: ModuleDetailDataService, useValue: dataService},
@@ -189,6 +196,51 @@ describe('ModuleBrowserDetailComponent', () => {
     dataService.updateSingleModuleData$.next(0 as any);
     
     expect(commentsDataService.requestReset$.next).toHaveBeenCalled();
+  });
+
+  it('shows hidden rack and patch usage when public lists are empty', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.moduleUsageSummary$.next({
+      public_rack_count: 0,
+      hidden_rack_bucket: 'some',
+      public_patch_count: 0,
+      hidden_patch_bucket: 'some'
+    });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('No public racks using this module yet. It still appears in some private or otherwise hidden racks.');
+    expect(text).toContain('No public patches using this module yet. It still appears in some private or otherwise hidden patches.');
+  });
+
+  it('keeps empty usage states pending until the hidden-usage summary arrives', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.moduleUsageSummary$.next(undefined);
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Checking private and hidden rack usage...');
+    expect(text).toContain('Checking private and hidden patch usage...');
+  });
+
+  it('shows hidden usage supplements alongside public lists', async () => {
+    const {fixture, dataService} = await render();
+
+    dataService.racksWithThisModule$.next([{id: 1, name: 'Rack 1'}]);
+    dataService.patchesWithThisModule$.next([{id: 1, name: 'Patch 1'}]);
+    dataService.moduleUsageSummary$.next({
+      public_rack_count: 1,
+      hidden_rack_bucket: '10_plus',
+      public_patch_count: 1,
+      hidden_patch_bucket: '5_plus'
+    });
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Plus 10+ private or otherwise hidden racks.');
+    expect(text).toContain('Plus 5+ private or otherwise hidden patches.');
   });
   
   it('emits expected patch payloads for dev helpers', () => {

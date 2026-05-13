@@ -12,9 +12,7 @@
 
 .home-page {
   position: relative;
-  display: grid;
-  gap: 2.8rem;
-  padding: 2.2rem 0 5.2rem;
+  display: block;
   color: var(--home-ink);
   inline-size: 100%;
   max-inline-size: 100%;
@@ -45,6 +43,16 @@
     opacity: 0.44;
     pointer-events: none;
   }
+}
+
+.home-page__inner {
+  display: grid;
+  gap: 2.8rem;
+  inline-size: 100%;
+  max-inline-size: 86rem;
+  margin-inline: auto;
+  padding: 2.2rem 0 5.2rem;
+  box-sizing: border-box;
 }
 
 section {
@@ -188,7 +196,7 @@ section {
 }
 
 @media (max-width: 40rem) {
-  .home-page {
+  .home-page__inner {
     padding: 1.2rem 0 3.4rem;
     gap: 1.7rem;
   }

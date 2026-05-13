@@ -5,41 +5,59 @@
   align-items: start;
 }
 
+.public-profile-page {
+  padding-bottom: 5rem;
+}
+
 .profile-header {
   width: 100%;
 }
 
-.profile-header__inner {
+:host ::ng-deep .profile-header h1.title {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 2rem;
-  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
 }
 
-.profile-header__identity {
+:host ::ng-deep .profile-header h1.title .title-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-header__content {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 1rem;
 }
 
 .profile-header__actions {
   flex-wrap: wrap;
-  align-self: flex-end;
 }
 
 .profile-link {
   color: #3d73bc;
-  text-decoration: none;
+  font-weight: 500;
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.0625rem;
+  text-decoration-color: rgba(61, 115, 188, 0.24);
+  text-underline-offset: 0.16rem;
   overflow-wrap: anywhere;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
 
   &:hover {
-    text-decoration: underline;
+    text-decoration-color: rgba(61, 115, 188, 0.86);
   }
 }
 
 .public-profile-state {
   padding: 3rem 0 5rem;
+}
+
+.public-profile-state__title {
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 
 .center {
@@ -49,5 +67,17 @@
 @media (max-width: 900px) {
   .public-profile-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 31.25rem) {
+  .public-profile-page {
+    padding-bottom: 6rem;
+  }
+}
+
+@media (max-width: 36rem) {
+  :host ::ng-deep .profile-header h1.title .title-sub {
+    white-space: normal;
   }
 }

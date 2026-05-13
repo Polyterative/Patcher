@@ -1,0 +1,14 @@
+<div class="metric-bar">
+  <div class="metric-bar__heading">
+    <span>{{ label }}</span>
+    <strong>{{ valueLabel }}</strong>
+  </div>
+  <div class="metric-bar__track">
+    <div
+      class="metric-bar__fill"
+      [ngClass]="'metric-bar__fill--' + tone"
+      [style.width.%]="widthPercent"
+    ></div>
+  </div>
+  <p>{{ detail }}</p>
+</div>

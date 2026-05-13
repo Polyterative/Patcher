@@ -3,6 +3,8 @@ import { RackedModule } from 'src/app/models/module';
 import { TagType } from 'src/app/models/tag';
 import { RackBalanceAnalysisService } from './rack-balance-analysis.service';
 
+const BLANK_3U_MODULE_ID = 4647;
+
 function makeRackedModule(id: number, tagData: Array<{name: string; type: unknown}> = [], hp = 8): RackedModule {
   return {
     rackingData: {
@@ -152,6 +154,49 @@ describe('RackBalanceAnalysisService', () => {
     expect(result.confidence).toBe(0.25);
     expect(result.warningMessage).toContain('Guidance is partial');
     expect(result.summary).toContain('Early signal only');
+  });
+
+  it('excludes blank spacer modules from coverage totals', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(BLANK_3U_MODULE_ID),
+      makeRackedModule(3)
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.totalModules).toBe(2);
+    expect(result.confidence).toBe(0.5);
+    expect(result.warningMessage).toBeNull();
+  });
+
+  it('excludes blank spacer modules from low-coverage warning copy', () => {
+    const rack = [[
+      makeRackedModule(1, [{name: 'VCO', type: TagType.Purpose}]),
+      makeRackedModule(BLANK_3U_MODULE_ID),
+      makeRackedModule(3),
+      makeRackedModule(4)
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.totalModules).toBe(3);
+    expect(result.confidence).toBeCloseTo(1 / 3, 5);
+    expect(result.warningMessage).toContain('1 of 3 modules');
+  });
+
+  it('treats a blank-only rack like an empty rack', () => {
+    const rack = [[
+      makeRackedModule(BLANK_3U_MODULE_ID),
+      makeRackedModule(4648)
+    ]];
+
+    const result = service.analyze(rack);
+
+    expect(result.isEmpty).toBeTrue();
+    expect(result.totalModules).toBe(0);
+    expect(result.warningMessage).toBeNull();
+    expect(result.summary).toContain('Balance analysis appears once');
   });
 
   it('weights HP more strongly than raw module count when scoring axes', () => {

@@ -4,6 +4,7 @@
       <div class="insights-loader">
         <lib-hero-content-card
           titleBig="Insights"
+          [showWideShellNav]="true"
           icon="insights"
           description="Loading the public catalogue snapshot, update velocity, and sharing analysis."
         >
@@ -40,19 +41,14 @@
       <div class="insights-page">
         <lib-hero-content-card
           titleBig="Insights"
+          [showWideShellNav]="true"
           icon="insights"
           description="Public catalogue composition, update velocity, format mix, and sharing activity across the last 30 days."
         >
           <p class="hero-summary">{{ page.heroSummary }}</p>
           <div class="hero-highlights">
             @for (highlight of page.heroHighlights; track highlight.label; let i = $index) {
-              <div class="insight-chip" [class.insight-chip--featured]="i === 0">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [featured]="i === 0"></app-insight-chip>
             }
           </div>
 
@@ -85,13 +81,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.footprintHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -105,93 +95,35 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules by format</h4>
               @for (bar of page.standardMixBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates by format</h4>
               @for (bar of page.standardActivityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Avg. width per format</h4>
               @for (bar of page.standardWidthBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Active makers per format</h4>
               @for (bar of page.standardManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.standardMixHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -205,93 +137,35 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules by width band</h4>
               @for (bar of page.hpBandBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates by width band</h4>
               @for (bar of page.hpBandActivityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Churn rate (30d)</h4>
               @for (bar of page.hpBandVelocityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Exact widths (most common)</h4>
               @for (bar of page.hpExactBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.hpBandHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -305,53 +179,21 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Updated by recency</h4>
               @for (bar of page.moduleFreshnessBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Catalogue age</h4>
               @for (bar of page.moduleCatalogueAgeBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.moduleFreshnessHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -420,13 +262,7 @@
 
           <div class="section-highlights">
             @for (highlight of page.activityChart.highlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -440,93 +276,35 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules per maker</h4>
               @for (bar of page.topManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates per maker</h4>
               @for (bar of page.activeManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Avg. width per maker</h4>
               @for (bar of page.widestManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Most 1U-focused makers</h4>
               @for (bar of page.oneUManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.makerHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -560,32 +338,13 @@
 
           <div class="metric-bars">
             @for (bar of page.sharingRateBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
-                </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
-                </div>
-                <p>{{ bar.detail }}</p>
-              </div>
+              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
             }
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.sharingHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -597,32 +356,13 @@
         >
           <div class="metric-bars">
             @for (bar of page.patchDepthBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
-                </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
-                </div>
-                <p>{{ bar.detail }}</p>
-              </div>
+              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
             }
           </div>
 
           <div class="section-highlights">
             @for (highlight of page.patchHighlights; track highlight.label) {
-              <div class="insight-chip insight-chip--compact">
-                <mat-icon>{{ highlight.icon }}</mat-icon>
-                <div>
-                  <span class="insight-chip__label">{{ highlight.label }}</span>
-                  <strong>{{ highlight.value }}</strong>
-                </div>
-              </div>
+              <app-insight-chip [icon]="highlight.icon" [label]="highlight.label" [value]="highlight.value" [compact]="true"></app-insight-chip>
             }
           </div>
         </lib-hero-content-card>
@@ -631,3 +371,5 @@
     }
   </lib-screen-wrapper>
 }
+
+

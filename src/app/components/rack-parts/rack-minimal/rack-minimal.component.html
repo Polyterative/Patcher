@@ -42,6 +42,14 @@
           </button>
         }
         <div fxFlex="grow"></div>
+        @if (bag.user && bag.isCurrentRackPropertyOfCurrentUser) {
+          <button mat-icon-button
+                  matTooltip="Create patch from this rack"
+                  (click)="dataService.requestCreatePatchFromRack$.next()"
+          >
+            <mat-icon>settings_input_composite</mat-icon>
+          </button>
+        }
         <button mat-icon-button
                 [matTooltip]="(userManagerService.loggedUser$|async) ? 'Duplicate rack' : 'Login to duplicate rack'"
                 [disabled]="!(userManagerService.loggedUser$|async)"

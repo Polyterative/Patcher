@@ -214,6 +214,74 @@ describe('SupabaseService - get complex queries', () => {
     }, TEST_TIMEOUT);
   });
 
+  describe('GET.applicationInsightsSnapshot', () => {
+    it('should map the backend snapshot RPC into the page payload shape', (done) => {
+      const rpcSpy = spyOn(supabaseClient, 'rpc').and.returnValue(Promise.resolve({
+        data: [{
+          statistics: {
+            publicModules: 150,
+            publicManufacturers: 28,
+            publicProfiles: 80,
+            publicModulesUpdatedLast30Days: 63,
+            publicRacks: 24,
+            publicRackAuthors: 12,
+            publicRacksUpdatedLast30Days: 9,
+            publicPatches: 11,
+            publicPatchConnections: 48,
+            publicPatchAuthors: 7,
+            publicPatchesUpdatedLast30Days: 5
+          },
+          activity_series: [
+            {date: '2026-05-01', modules: 4, racks: 1, patches: 0}
+          ],
+          module_insights: {
+            topManufacturers: [{label: 'Make Noise', count: 12, detail: '12 public modules'}],
+            activeManufacturers: [],
+            widestManufacturers: [],
+            oneUManufacturers: [],
+            standardMix: [],
+            standardActivity: [],
+            standardWidthAverages: [],
+            standardManufacturerCounts: [],
+            hpBands: [],
+            hpBandActivity: [],
+            hpExact: [],
+            freshnessWindows: [],
+            createdWindows: [],
+            topFiveManufacturerShare: 44,
+            soloManufacturerCount: 3,
+            medianModulesPerManufacturer: 5,
+            medianCatalogueAgeYears: 2,
+            staleModules: 20,
+            averageHp: 14,
+            medianHp: 12
+          }
+        }],
+        error: null
+      }));
+
+      service.GET.applicationInsightsSnapshot(30).subscribe({
+        next: (result: any) => {
+          expect(rpcSpy).toHaveBeenCalledWith('get_application_insights_snapshot', {p_days: 30});
+          expect(result.statistics.publicModules).toBe(150);
+          expect(result.activitySeries).toEqual([
+            {date: '2026-05-01', modules: 4, racks: 1, patches: 0}
+          ]);
+          expect(result.moduleInsights.topManufacturers[0]).toEqual({
+            label: 'Make Noise',
+            count: 12,
+            detail: '12 public modules'
+          });
+          done();
+        },
+        error: (err) => {
+          fail(err);
+          done();
+        }
+      });
+    }, TEST_TIMEOUT);
+  });
+
   describe('GET.applicationActivitySeries', () => {
     it('should return daily public-safe activity counts for modules, racks, and connected patches', (done) => {
       const today = new Date();

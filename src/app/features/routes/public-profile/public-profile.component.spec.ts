@@ -2,6 +2,8 @@ import { BehaviorSubject, of, ReplaySubject } from 'rxjs';
 import { PublicProfileComponent } from './public-profile.component';
 
 describe('PublicProfileComponent', () => {
+  let createdComponents: PublicProfileComponent[];
+
   function build() {
     const dataService = {
       loadProfile$: new ReplaySubject<string>(1),
@@ -12,6 +14,7 @@ describe('PublicProfileComponent', () => {
       routeState$: new BehaviorSubject<any>('loading'),
     };
     const userService = {
+      loggedUser$: new BehaviorSubject<any>(null),
       loggedUserFullProfile$: new BehaviorSubject<any>(null),
       updateProfileVisibility$: jasmine.createSpy().and.returnValue(of(void 0)),
     };
@@ -24,7 +27,6 @@ describe('PublicProfileComponent', () => {
     const route = {
       params: of({username: 'viewer'}),
     };
-
     const component = new PublicProfileComponent(
       dataService as any,
       userService as any,
@@ -32,6 +34,7 @@ describe('PublicProfileComponent', () => {
       seoAndUtilsService as any,
       urlCreatorService as any,
     );
+    createdComponents.push(component);
 
     return {
       component,
@@ -41,6 +44,14 @@ describe('PublicProfileComponent', () => {
       urlCreatorService,
     };
   }
+
+  beforeEach(() => {
+    createdComponents = [];
+  });
+
+  afterEach(() => {
+    createdComponents.forEach((component) => component.ngOnDestroy());
+  });
 
   it('reloads the profile after making it public', () => {
     const { component, dataService, userService } = build();
@@ -60,6 +71,21 @@ describe('PublicProfileComponent', () => {
     component.contributorStats$.subscribe((stats) => {
       expect(stats).toEqual([
         {name: 'Approved public modules', value: 4, icon: 'check_circle'},
+      ]);
+      done();
+    });
+  });
+
+  it('uses profile section icons for public stats', (done) => {
+    const { component, dataService } = build();
+
+    dataService.racksCount$.next(2);
+    dataService.patchesCount$.next(3);
+
+    component.publicStats$.subscribe((stats) => {
+      expect(stats).toEqual([
+        {name: 'Racks', value: 2, icon: 'view_stream'},
+        {name: 'Patches', value: 3, icon: 'settings_input_composite'},
       ]);
       done();
     });

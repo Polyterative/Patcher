@@ -12,18 +12,10 @@ import {
   RackBalanceAnalysisService
 } from '../rack-balance-analysis.service';
 import { EntityStatItem } from '../../shared-atoms/entity-stat-grid/entity-stat-grid.component';
-
-interface RadarPoint {
-  x: number;
-  y: number;
-}
-
-interface RadarAxisViewModel {
-  axis: RackBalanceAxisResult;
-  point: RadarPoint;
-  labelPoint: RadarPoint;
-  shortLabel: string;
-}
+import {
+  RadarAxisViewModel,
+  RadarPoint
+} from './rack-balance-panel.types';
 
 @Component({
   selector: 'app-rack-balance-panel',

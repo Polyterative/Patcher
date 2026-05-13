@@ -20,18 +20,17 @@ import { AppStateService } from 'src/app/shared-interproject/app-state.service';
 export class RouteClickableLinkComponent {
   @Input()
   public data$: Observable<RouteClickableLink[]> = of([]);
+
+  @Input()
+  public direction: 'row' | 'column' = 'row';
   
   constructor(public readonly appState: AppStateService) {
   }
   
   public trackByLink(index: number, item: RouteClickableLink): string {
-    return `${ index }:${ item.route ?? item.href ?? item.label }:${ item.icon ?? '' }`;
+    return getRouteClickableLinkKey(item);
   }
-  
-  public getAriaLabel(item: RouteClickableLink): string {
-    return item.label || item.icon || 'Navigation link';
-  }
-  
+
   public onLinkInteraction(event: Event, item: RouteClickableLink): void {
     if (item.disabled) {
       event.preventDefault();
@@ -48,4 +47,8 @@ export interface RouteClickableLink {
   href?: string;
   hrefNewTab?: boolean;
   style?: { [param: string]: any };
+}
+
+export function getRouteClickableLinkKey(item: RouteClickableLink): string {
+  return `${ item.route ?? '' }:${ item.href ?? '' }:${ item.label ?? '' }:${ item.icon ?? '' }`;
 }

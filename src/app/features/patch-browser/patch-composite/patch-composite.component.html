@@ -1,6 +1,6 @@
 <div class="patch-composite-shell">
-  <div class="patch-composite-layout">
-    <div class="col gap1 patch-composite-sidebar">
+  <div class="patch-composite-top">
+    <div class="col gap1 patch-composite-top__card">
       <div>
         <lib-clean-card>
           <app-patch-minimal [data]="data"
@@ -9,22 +9,56 @@
           </app-patch-minimal>
         </lib-clean-card>
       </div>
-      <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-      <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
     </div>
 
-    <div class="col gap1 right-col patch-composite-main">
-      <app-patch-details [data]="data"
-                         [isEditing]="isEditing"
-      ></app-patch-details>
-      @if (isEditing) {
-        <app-patch-editor [data]="data"></app-patch-editor>
+    <div class="patch-composite-top__content">
+      @if ((dataService.editorConnections$|async); as conns) {
+        @if (conns.length > 0) {
+          <div class="col gap1 patch-composite-top__modules">
+            <div class="patch-composite-top__stats-wrap">
+              <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+            </div>
+            <div class="patch-composite-top__modules-wrap">
+              <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
+            </div>
+          </div>
+        }
       }
+
+      <div class="patch-composite-top__graph">
+        <app-patch-details [data]="data"
+                           [isEditing]="isEditing"
+                           [showConnectionsList]="false"
+        ></app-patch-details>
+      </div>
     </div>
   </div>
 
+  @if (!isEditing) {
+    @if ((dataService.patchConnections$|async); as connections) {
+      @if (connections.length > 0) {
+        @if (dataService.instanceLabelMap$|async; as instanceLabelMap) {
+          <lib-hero-content-card [titleNormal]="connections.length + ' Connections'">
+            <app-patch-connections-list [editorConnections]="connections"
+                                        [isEditing]="false"
+                                        [instanceLabelMap]="instanceLabelMap"
+            ></app-patch-connections-list>
+          </lib-hero-content-card>
+        }
+      }
+    }
+  }
+
+  @if (isEditing) {
+    <app-patch-editor [data]="data"></app-patch-editor>
+  } @else if ((dataService.linkedRackState$ | async)?.kind === 'linked') {
+    <app-patch-editor [data]="data" [readonly]="true"></app-patch-editor>
+  }
+
   <div class="patch-composite-comments">
-    <app-comments-root></app-comments-root>
+    <lib-screen-wrapper maxSize="var(--app-readable-section-max-width)">
+      <app-comments-root></app-comments-root>
+    </lib-screen-wrapper>
   </div>
 
   <ng-template #statsCard>
@@ -33,15 +67,11 @@
     }; as bagS) {
       @if (data && bagS.connections && bagS.connections.length > 0) {
         @if (bagS.connections | patchConnectionStats; as stats) {
-          <app-statistics
-            title="Patch Statistics"
-            [statistics]="[
-            { name: 'Cables', value: stats.totalCables, icon: 'cable' },
-            { name: 'Modules', value: stats.uniqueModules, icon: 'view_module' },
-            { name: 'Multiples', value: stats.multiplesCount, icon: 'call_split' },
-            { name: 'Cables / module', value: stats.avgCablesPerModule, icon: 'insights' },
-            { name: 'Annotated', value: stats.annotatedConnections, icon: 'edit_note' }
-          ]"></app-statistics>
+          <app-entity-stat-card
+            [equalColumns]="true"
+            [stackedItems]="true"
+            [rows]="buildStatRows(stats)"
+          ></app-entity-stat-card>
         }
       }
     }
@@ -51,24 +81,28 @@
     @if ((dataService.editorConnections$|async); as connections) {
       @if (connections | patchConnectionUniqueModules; as modules) {
         @if (modules.length > 0) {
-          <lib-hero-content-card titleNormal="Modules needed">
-            <div class="col gap0">
+          <lib-clean-card>
+            <div class="col patch-composite-modules-needed">
+              <mat-card-title class="patch-composite-section-title">Modules needed</mat-card-title>
               @for (entry of modules; track entry.moduleId; let i = $index) {
-                <div class="row gap1" style="align-items: center"
+                <div class="patch-composite-modules-needed__row"
                      [@enter]="{ value: '', params: { delay: i * 40 } }"
                      [@exit]>
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; opacity: 0.6">developer_board</mat-icon>
-                  <span>
-                    <strong>{{ entry.moduleName }}</strong>
-                    <span style="opacity: 0.6"> {{ entry.manufacturerName }}</span>
-                    @if (entry.copies > 1) {
-                      &nbsp;×&thinsp;{{ entry.copies }}
-                    }
-                  </span>
+                 <div class="patch-composite-modules-needed__text">
+                    <div class="patch-composite-modules-needed__name-row">
+                      <div class="patch-composite-modules-needed__name">{{ entry.moduleName }}</div>
+                      @if (entry.copies > 1) {
+                        <span class="patch-composite-modules-needed__copies">× {{ entry.copies }}</span>
+                      }
+                    </div>
+                    <div class="patch-composite-modules-needed__meta">
+                      <span class="patch-composite-modules-needed__manufacturer">{{ entry.manufacturerName }}</span>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
-          </lib-hero-content-card>
+          </lib-clean-card>
         }
       }
     }
