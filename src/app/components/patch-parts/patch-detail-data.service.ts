@@ -21,6 +21,10 @@ import {
   Subject
 } from 'rxjs';
 import {
+  PATCH_EDITOR_OPERATION_MODES,
+  PatchEditorOperationMode
+} from './patch-editor/patch-editor.types';
+import {
   catchError,
   concatMap,
   debounceTime,
@@ -159,6 +163,7 @@ export class PatchDetailDataService implements OnDestroy {
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
   readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(DEFAULT_LINKED_RACK_UI_STATE);
+  readonly editorOperationMode$ = new BehaviorSubject<PatchEditorOperationMode>(PATCH_EDITOR_OPERATION_MODES.collection);
   readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
   readonly linkedRackSelectionBlocked$ = new BehaviorSubject<boolean>(false);
