@@ -67,7 +67,7 @@ export interface RackCreatorInModel {
 export class RackCreatorComponent extends SubManager implements OnInit {
   readonly save$ = new Subject<void>();
   
-  private _userModules$ = new BehaviorSubject<MinimalModule[]>([]);
+  private readonly _userModules$ = new BehaviorSubject<MinimalModule[]>([]);
   readonly userModules$ = this._userModules$.asObservable();
   
   readonly rackAnalysis$: ReturnType<typeof combineLatest>;
