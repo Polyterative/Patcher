@@ -34,14 +34,12 @@ import {
   MatDialogRef
 } from "@angular/material/dialog";
 import { Router } from "@angular/router";
+import {
+  RackModuleAdderInModel,
+  RackModuleAdderOutModel
+} from './rack-module-adder-dialog.types';
 
-
-export interface RackModuleAdderOutModel {
-}
-
-export interface RackModuleAdderInModel {
-  module: DbModule;
-}
+export type { RackModuleAdderInModel, RackModuleAdderOutModel };
 
 @Component({
   selector: 'app-rack-module-adder',
