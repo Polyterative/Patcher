@@ -35,6 +35,7 @@ import {
 } from 'src/app/components/module-parts/module-minimal/module-minimal.component';
 import { SeoAndUtilsService } from '../../backbone/seo-and-utils.service';
 import { AppStateService } from "src/app/shared-interproject/app-state.service";
+import { Animations } from 'src/app/shared-interproject/SharedConstants';
 import { DbModule } from "src/app/models/module";
 import {
   CommentableEntityTypes,

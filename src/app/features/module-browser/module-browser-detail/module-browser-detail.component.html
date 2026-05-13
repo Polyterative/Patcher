@@ -373,74 +373,34 @@
             >
               <div class="module-detail-usageGrid">
                 @if (viewConfig.hideRackedIn === false) {
-                   <lib-hero-content-card [sidesPadding]="false"
-                                          [@moduleDetailSupportEnter]="{ value: '', params: { delay: 452, duration: 185 } }"
-                                          class="module-detail-usage-card"
-                                         titleNormal="Racked in"
-                  >
-                    <lib-auto-content-loading-indicator [data$]="dataService.racksWithThisModule$"
-                                                        [updateData$]="dataService.updateSingleModuleData$"
-                    >
-                       @if ((bag.racksWithThisModule) && (bag.racksWithThisModule).length > 0) {
-                         <app-module-racks
-                           [data$]="dataService.racksWithThisModule$"
-                         ></app-module-racks>
-                          @if (hasHiddenUsage(bag.moduleUsageSummary?.hidden_rack_bucket)) {
-                            <div class="col gap1 animate-fadein-slowest">
-                              <mat-card-subtitle class="module-detail-empty-state-copy">
-                                {{ getHiddenUsageSupplementCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket) }}
-                              </mat-card-subtitle>
-                            </div>
-                          }
-                        } @else {
-                          <div class="col gap1 animate-fadein-slowest"
-                          >
-                            <mat-card-subtitle class="module-detail-empty-state-copy"
-                            >@if (bag.moduleUsageSummary == null) {
-                              {{ getUsagePendingCopy('rack') }}
-                            } @else {
-                              {{ getNoPublicUsageCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket) }}
-                            }
-                            </mat-card-subtitle>
-                          </div>
-                        }
-                    </lib-auto-content-loading-indicator>
-                  </lib-hero-content-card>
+                  <app-module-usage-card
+                    title="Racked in"
+                    [data$]="dataService.racksWithThisModule$"
+                    [updateData$]="dataService.updateSingleModuleData$"
+                    [items]="bag.racksWithThisModule"
+                    entityType="rack"
+                    [showHiddenUsageNote]="hasHiddenUsage(bag.moduleUsageSummary?.hidden_rack_bucket)"
+                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket)"
+                    [usagePendingCopy]="getUsagePendingCopy('rack')"
+                    [noPublicUsageCopy]="getNoPublicUsageCopy('rack', bag.moduleUsageSummary?.hidden_rack_bucket)"
+                    [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
+                    [animationDelay]="452"
+                  ></app-module-usage-card>
                 }
                 @if (viewConfig.hidePatchedIn === false) {
-                   <lib-hero-content-card [sidesPadding]="false"
-                                          [@moduleDetailSupportEnter]="{ value: '', params: { delay: 476, duration: 185 } }"
-                                          class="module-detail-usage-card"
-                                         titleNormal="Patched in"
-                  >
-                    <lib-auto-content-loading-indicator [data$]="dataService.patchesWithThisModule$"
-                                                        [updateData$]="dataService.updateSingleModuleData$"
-                    >
-                       @if ((bag.patchesWithThisModule) && (bag.patchesWithThisModule).length > 0) {
-                         <app-module-patches
-                           [data$]="dataService.patchesWithThisModule$"
-                         ></app-module-patches>
-                          @if (hasHiddenUsage(bag.moduleUsageSummary?.hidden_patch_bucket)) {
-                            <div class="col gap1 animate-fadein-slowest">
-                              <mat-card-subtitle class="module-detail-empty-state-copy">
-                                {{ getHiddenUsageSupplementCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket) }}
-                              </mat-card-subtitle>
-                            </div>
-                          }
-                        } @else {
-                          <div class="col gap1 animate-fadein-slowest"
-                          >
-                            <mat-card-subtitle class="module-detail-empty-state-copy"
-                            >@if (bag.moduleUsageSummary == null) {
-                              {{ getUsagePendingCopy('patch') }}
-                            } @else {
-                              {{ getNoPublicUsageCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket) }}
-                            }
-                            </mat-card-subtitle>
-                          </div>
-                        }
-                    </lib-auto-content-loading-indicator>
-                  </lib-hero-content-card>
+                  <app-module-usage-card
+                    title="Patched in"
+                    [data$]="dataService.patchesWithThisModule$"
+                    [updateData$]="dataService.updateSingleModuleData$"
+                    [items]="bag.patchesWithThisModule"
+                    entityType="patch"
+                    [showHiddenUsageNote]="hasHiddenUsage(bag.moduleUsageSummary?.hidden_patch_bucket)"
+                    [hiddenUsageSupplementCopy]="getHiddenUsageSupplementCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket)"
+                    [usagePendingCopy]="getUsagePendingCopy('patch')"
+                    [noPublicUsageCopy]="getNoPublicUsageCopy('patch', bag.moduleUsageSummary?.hidden_patch_bucket)"
+                    [isUsageSummaryLoaded]="bag.moduleUsageSummary != null"
+                    [animationDelay]="476"
+                  ></app-module-usage-card>
                 }
               </div>
             </div>
