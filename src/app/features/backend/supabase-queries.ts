@@ -61,34 +61,18 @@ import {
   PublicModuleInsightRow,
   ManufacturerInsightStats
 } from './supabase-queries.types';
-
-function applyClientSideSearchFilter<T>(
-  response: { data?: T[]; count?: number | null } & Record<string, any>,
-  from: number,
-  to: number,
-  predicate: (row: T) => boolean
-) {
-  const rows = Array.isArray(response?.data) ? response.data : [];
-  const filteredRows = rows.filter(predicate);
-  
-  return {
-    ...response,
-    data: filteredRows.slice(from, to + 1),
-    count: filteredRows.length
-  };
-}
-
-function escapeIlikePattern(value: string): string {
-  return value.replaceAll('\\', '\\\\')
-    .replaceAll('%', '\\%')
-    .replaceAll('_', '\\_');
-}
+import {
+  applyClientSideSearchFilter,
+  escapeIlikePattern,
+  getHpBandLabel,
+  isOneUStandard,
+  HP_BAND_ORDER
+} from './supabase-queries.helpers';
 
 
 export class SupabaseQueriesService {
   private static readonly PUBLIC_AUTHOR_GATE_ALIAS = 'author_profile_gate';
   private static readonly MAX_QUERY_ROWS = 500;
-  private static readonly HP_BAND_ORDER = ['0-2 HP', '3-5 HP', '6-8 HP', '9-16 HP', '17-28 HP', '29+ HP'];
   
   private static readonly EMPTY_STATS: ManufacturerModuleStats = {
     moduleCount: 0,
@@ -345,14 +329,6 @@ export class SupabaseQueriesService {
       }));
   }
 
-  private getHpBandLabel(hp: number): string {
-    if (hp <= 2) { return '0-2 HP'; }
-    if (hp <= 5) { return '3-5 HP'; }
-    if (hp <= 8) { return '6-8 HP'; }
-    if (hp <= 16) { return '9-16 HP'; }
-    if (hp <= 28) { return '17-28 HP'; }
-    return '29+ HP';
-  }
 
   private rankManufacturerScores(
     statsByManufacturer: Map<string, ManufacturerInsightStats>,
@@ -419,7 +395,7 @@ export class SupabaseQueriesService {
         totalModules: (manufacturerStats.get(row.manufacturerName)?.totalModules ?? 0) + 1,
         totalHp: (manufacturerStats.get(row.manufacturerName)?.totalHp ?? 0) + row.hp,
         oneUModules: (manufacturerStats.get(row.manufacturerName)?.oneUModules ?? 0)
-          + (this.isOneUStandard(row.standardName) ? 1 : 0)
+          + (isOneUStandard(row.standardName) ? 1 : 0)
       });
       standardCounts.set(
         row.standardName,
@@ -433,8 +409,8 @@ export class SupabaseQueriesService {
       makersForStandard.add(row.manufacturerName);
       standardManufacturers.set(row.standardName, makersForStandard);
       hpBandCounts.set(
-        this.getHpBandLabel(row.hp),
-        (hpBandCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
+        getHpBandLabel(row.hp),
+        (hpBandCounts.get(getHpBandLabel(row.hp)) ?? 0) + 1
       );
 
       if (row.updated >= lastThirtyDaysIso) {
@@ -447,8 +423,8 @@ export class SupabaseQueriesService {
           (standardActivityCounts.get(row.standardName) ?? 0) + 1
         );
         hpBandActivityCounts.set(
-          this.getHpBandLabel(row.hp),
-          (hpBandActivityCounts.get(this.getHpBandLabel(row.hp)) ?? 0) + 1
+          getHpBandLabel(row.hp),
+          (hpBandActivityCounts.get(getHpBandLabel(row.hp)) ?? 0) + 1
         );
         updatedLast30Days += 1;
       }
@@ -563,12 +539,12 @@ export class SupabaseQueriesService {
       ),
       hpBands: this.rankOrderedBuckets(
         hpBandCounts,
-        SupabaseQueriesService.HP_BAND_ORDER,
+        HP_BAND_ORDER,
         (count) => `${ count } modules in this size band`
       ),
       hpBandActivity: this.rankOrderedBuckets(
         hpBandActivityCounts,
-        SupabaseQueriesService.HP_BAND_ORDER,
+        HP_BAND_ORDER,
         (count) => `${ count } modules updated in the last 30 days`
       ),
       hpExact: this.rankNumberBuckets(
@@ -598,9 +574,6 @@ export class SupabaseQueriesService {
     };
   }
 
-  private isOneUStandard(standardName: string): boolean {
-    return standardName.toLowerCase().includes('1u');
-  }
 
   private stripPublicAuthorGate<T>(response: any) {
     const gateAlias = SupabaseQueriesService.PUBLIC_AUTHOR_GATE_ALIAS;
