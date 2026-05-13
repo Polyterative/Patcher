@@ -15,7 +15,6 @@ import {
   tap
 } from 'rxjs';
 import { UserManagementService } from './user-management.service';
-import { MatDialog } from "@angular/material/dialog";
 import {
   switchMap,
   take
@@ -25,7 +24,6 @@ import {
 @Injectable()
 export class UserAuthGuard {
   constructor(
-    public dialog: MatDialog,
     private snackBar: MatSnackBar,
     private router: Router,
     private authenticationService: UserManagementService
@@ -34,15 +32,12 @@ export class UserAuthGuard {
   canActivate(
     route: ActivatedRouteSnapshot, state: RouterStateSnapshot
   ) {
-    // get the current user observable from the service and subscribe to it, return true if the user is logged in
-    // this.authenticationService.checkUserInCookies();
     return of(undefined).pipe(
       switchMap(() => this.authenticationService.loggedUser$.pipe(
         take(1)
       )),
       tap((user) => {
         if (!user) {
-          // this.dialog.open(LoginProposalComponent);
           const snack = this.snackBar.open('Sign in to use this feature.', 'Sign in', {
             duration: 10000,
             panelClass: 'snack-info'

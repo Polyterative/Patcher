@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { fadeAnimation } from './fade.animation';
 
 @Component({
@@ -12,7 +12,7 @@ import { fadeAnimation } from './fade.animation';
 export class SaturnComponent implements OnInit {
   title?: string;
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor(private route: ActivatedRoute) {
 
   }
 
@@ -22,8 +22,6 @@ export class SaturnComponent implements OnInit {
     if (!this.title) {
       if (providedTitle) {
         this.title = providedTitle;
-      } else {
-        // console.warn('No title provided');
       }
     }
 

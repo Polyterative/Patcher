@@ -579,19 +579,7 @@ export class ModuleBrowserDetailComponent implements OnInit, OnDestroy {
   submitSimilar(
     data: Partial<DbModule>
   ) {
-    // [href]="'/modules/add?manufacturer='+bag.data.manufacturer.id+'&HP='+bag.data.hp+'standard='+bag.data.standard.id"
-    // this.router.navigate(['/modules', 'add'], {
-    //   queryParams: {
-    //     manufacturer: data.manufacturerId,
-    //     HP:           data.hp,
-    //     standard:     data.standard.id
-    //   }
-    // });
-    
-    // full navigation with reload, plain JS href, new tab
     window.open(`/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`, '_blank');
-    // window.location.href = `/modules/add?manufacturer=${ data.manufacturerId }&HP=${ data.hp }&standard=${ data.standard.id }`;
-    
   }
   
   openManual(data: DbModule) {

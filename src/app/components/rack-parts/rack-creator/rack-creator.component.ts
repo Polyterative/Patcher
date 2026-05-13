@@ -207,9 +207,7 @@ export class RackCreatorComponent extends SubManager implements OnInit {
           duration: 3000
         })
           .onAction()
-          .subscribe(() => {
-            // this.router.navigate(['rack', value.id]);
-          });
+          .subscribe(() => {});
         
         this.dialogRef.close();
       });
