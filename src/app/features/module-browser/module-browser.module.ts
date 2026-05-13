@@ -30,6 +30,7 @@ import { FileDragHostModule } from '../../shared-interproject/components/@smart/
 import { AdviceTooltipModule } from '../../shared-interproject/components/@visual/advice-tooltip/advice-tooltip.module';
 import { CleanCardModule } from '../../shared-interproject/components/@visual/clean-card/clean-card.module';
 import { ModuleBrowserAdderComponent } from './module-browser-adder/module-browser-adder.component';
+import { ModuleDetailDataCardComponent } from './module-browser-detail/module-detail-data-card/module-detail-data-card.component';
 import { ModuleBrowserRootComponent } from './module-browser-root/module-browser-root.component';
 import { ModuleBrowserDetailComponent } from "src/app/features/module-browser/module-browser-detail/module-browser-detail.component";
 import { ModuleBrowserDataService } from "src/app/features/module-browser/module-browser-data.service";
@@ -69,7 +70,8 @@ const parentPrefix = 'modules';
     ModuleBrowserDetailComponent,
     ModuleCompositeComponent,
     ModuleListComponent,
-    ModuleBrowserAdderComponent
+    ModuleBrowserAdderComponent,
+    ModuleDetailDataCardComponent
   ],
   providers:    [ModuleBrowserDataService],
   imports: [
