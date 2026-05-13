@@ -89,7 +89,7 @@ export function buildCVUpdater(
 export function buildPatchConnectionInserter(
   supabase: SupabaseClient<Database>,
   connections: PatchConnection[],
-  patchConnectionsForPatch: (id: number) => Observable<any>
+  patchConnectionsForPatch: (id: number) => Observable<unknown>
 ) {
   const toInsert = connections.map((conn, i) => ({
     patchid: conn.patch.id,
@@ -118,7 +118,7 @@ export function createUpdateNamespace(
   supabase: SupabaseClient<Database>,
   snackBar: MatSnackBar,
   getUserSession$: () => Observable<SimpleUserModel | null>,
-  patchConnectionsForPatch: (id: number) => Observable<any>,
+  patchConnectionsForPatch: (id: number) => Observable<unknown>,
   hasAdminRole$: () => Observable<boolean> = () => rxFrom(Promise.resolve(false))
 ) {
   return {
