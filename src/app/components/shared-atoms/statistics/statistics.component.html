@@ -19,7 +19,12 @@
             }
           </div>
         } @else {
-          <mat-card-subtitle class="statistics-empty-message">{{ emptyMessage }}</mat-card-subtitle>
+          <app-empty-state-tips
+            [compact]="true"
+            [icon]="emptyIcon"
+            [title]="emptyTitle ?? ''"
+            [copy]="emptyMessage ?? ''"
+          ></app-empty-state-tips>
         }
       </div>
     </lib-clean-card>
@@ -46,7 +51,12 @@
             }
           </div>
         } @else {
-          <mat-card-subtitle class="statistics-empty-message">{{ emptyMessage }}</mat-card-subtitle>
+          <app-empty-state-tips
+            [compact]="true"
+            [icon]="emptyIcon"
+            [title]="emptyTitle ?? ''"
+            [copy]="emptyMessage ?? ''"
+          ></app-empty-state-tips>
         }
       </div>
     </lib-hero-content-card>

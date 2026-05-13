@@ -64,7 +64,7 @@ export class UserAreaRootComponent extends SubManager implements OnInit, OnDestr
   miscStats$ = of([]);
   contributorStats$ = of<any[] | null>(null);
   readonly contributorStatsEmptyMessage =
-    'No contributor activity yet. Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
+    'Submit a module, leave a useful comment, or flag an issue to start building your contribution profile.';
   
   constructor(
     public userService: UserManagementService,
