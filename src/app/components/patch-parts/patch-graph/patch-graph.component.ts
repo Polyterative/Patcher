@@ -67,8 +67,10 @@ export class PatchGraphComponent extends SubManager implements OnInit {
   /** Enables progressive node/edge reveal while keeping non-progressive data trigger behavior. */
   @Input() animateGraphBuild = false;
 
-  nodes$: BehaviorSubject<GraphNode[]> = new BehaviorSubject([]);
-  edges$: BehaviorSubject<GraphEdge[]> = new BehaviorSubject([]);
+  private _nodes$ = new BehaviorSubject<GraphNode[]>([]);
+  private _edges$ = new BehaviorSubject<GraphEdge[]>([]);
+  readonly nodes$ = this._nodes$.asObservable();
+  readonly edges$ = this._edges$.asObservable();
 
   @ViewChild('graphContainer') private graphContainer: ElementRef<HTMLDivElement>;
 
@@ -116,8 +118,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     super();
     this.revealController = new PatchGraphRevealController(
       {
-        emitNodes: nodes => this.nodes$.next(nodes),
-        emitEdges: edges => this.edges$.next(edges),
+        emitNodes: nodes => this._nodes$.next(nodes),
+        emitEdges: edges => this._edges$.next(edges),
         startFlow: (visibleEdges, flowEdges) => this.startPersistentFlowAnimation(visibleEdges, flowEdges)
       },
       {stageBridgeColor: this.stageBridgeColor}
@@ -172,8 +174,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
           }
         }),
         tap(() => this.cancelProgressiveReveal()),
-        tap(() => this.nodes$.next([])),
-        tap(() => this.edges$.next([])),
+        tap(() => this._nodes$.next([])),
+        tap(() => this._edges$.next([])),
         tap(() => this._isStale$.next(false)),
         switchMap(connections => {
           const uniqueModuleIds = [...new Set(
@@ -210,8 +212,8 @@ export class PatchGraphComponent extends SubManager implements OnInit {
         if (this.progressiveRender || this.animateGraphBuild) {
           this.revealGraphProgressively(graphData.nodes, graphData.edges);
         } else {
-          this.nodes$.next(graphData.nodes);
-          this.edges$.next(graphData.edges);
+          this._nodes$.next(graphData.nodes);
+          this._edges$.next(graphData.edges);
         }
 
         this._graphBuiltOnce = true;
@@ -282,7 +284,7 @@ export class PatchGraphComponent extends SubManager implements OnInit {
     }
     
     const styledEdges = buildFlowStyledEdges(this.flowState, this.flowPalette());
-    this.edges$.next(styledEdges);
+    this._edges$.next(styledEdges);
   }
   
   private flowPalette(): PatchGraphFlowPalette {
