@@ -198,7 +198,7 @@ export class UserResetPasswordDataService implements OnDestroy {
   /**
    * Start the countdown timer for auto-redirect
    */
-  private countdownInterval: any;
+  private countdownInterval: ReturnType<typeof setInterval> | undefined;
   
   startRedirectCountdown(seconds: number): void {
     this.redirectCountdown$.next(seconds);
