@@ -85,7 +85,9 @@ describe('PatchCreatorComponent', () => {
     component.ngOnInit();
 
     expect(backend.get.currentUserRacks).toHaveBeenCalled();
-    expect(component.linkedRackOptions$.value).toEqual([
+    let options: { id: string; name: string }[] | undefined;
+    component.linkedRackOptions$.subscribe(v => options = v).unsubscribe();
+    expect(options).toEqual([
       {id: '7', name: 'Studio Rack'},
       {id: '11', name: 'Travel Case'}
     ]);
@@ -133,7 +135,9 @@ describe('PatchCreatorComponent', () => {
 
     component.save$.next();
 
-    expect(component.linkedRackPersistenceBlocked$.value).toBeTrue();
+    let blocked = false;
+    component.linkedRackPersistenceBlocked$.subscribe(v => blocked = v).unsubscribe();
+    expect(blocked).toBeTrue();
     expect(component.fields.linkedRack.control.disabled).toBeTrue();
     expect(component.fields.linkedRack.control.value).toBe('');
     expect(dialogRef.close).not.toHaveBeenCalled();
