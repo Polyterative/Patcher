@@ -10,12 +10,19 @@ import {
 import { SeoSocialShareData } from '../../models/seo.model';
 
 
+interface SeoDefaults {
+  title: string;
+  description: string;
+  image: string;
+  keywords: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class SeoAndUtilsService {
   
-  private defaults: { image: string; keywords: string; description: string; title: string } = {
+  private readonly defaults: SeoDefaults = {
     title:       'patcher.xyz',
     description: 'Manager and database for musicians using modular gear, with a focus on saving, and visualizing patch-notes.',
     image: 'https://patcher.xyz/assets/png/patcher_seo_hero.png',
@@ -81,7 +88,7 @@ export class SeoAndUtilsService {
   
   private setTitle(title: string = '') {
     this.titleService.setTitle(title);
-    if (title && title.length) {
+    if (title) {
       this.metaService.updateTag({name: 'twitter:title', content: title});
       this.metaService.updateTag({name: 'twitter:image:alt', content: title});
       this.metaService.updateTag({property: 'og:image:alt', content: title});
