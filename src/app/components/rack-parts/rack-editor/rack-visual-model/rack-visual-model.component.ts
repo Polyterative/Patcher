@@ -61,6 +61,15 @@ import {
   SignalOverlayFrame,
   SignalOverlayLine,
 } from './rack-visual-model.types';
+import {
+  buildCurvedSignalPath,
+  buildRenderedModuleElementMap,
+  buildSignalOverlayFrame,
+  resolveRenderedModuleRect,
+  resolveRowPowerPanelPlacement,
+  resolveSignalHoverCardPlacement,
+  withAlpha,
+} from './rack-visual-model.utils';
 
 
 @Component({
@@ -243,27 +252,27 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
   signalDestinationRingColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
     const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? this.withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.18) : null;
+    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.18) : null;
   }
 
   signalDestinationGlowColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
     const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? this.withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.08) : null;
+    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.08) : null;
   }
 
   signalDestinationPanelTopColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
     const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? this.withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.2) : null;
+    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.2) : null;
   }
 
   signalDestinationPanelBottomColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
     const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? this.withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.34) : null;
+    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.34) : null;
   }
 
   signalDestinationPanelBorderColor(rackedModule: RackedModule, analysisMode: RackAnalysisMode): string | null {
     const family = this.signalDestinationFamily(rackedModule, analysisMode);
-    return family ? this.withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.24) : null;
+    return family ? withAlpha(RackVisualModelComponent.signalFamilyColors[family], 0.24) : null;
   }
 
   isSignalMutedModule(rackedModule: RackedModule, analysisMode: RackAnalysisMode): boolean {
@@ -544,25 +553,11 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   private resolveRowPowerPanelPlacement(rowElement: HTMLElement | null): 'above' | 'below' {
-    const viewportRect = this.rackViewportElement?.getBoundingClientRect();
-    const rowRect = rowElement?.getBoundingClientRect();
-
-    if (!viewportRect || !rowRect) {
-      return 'above';
-    }
-
-    const availableAbove = rowRect.top - viewportRect.top;
-    const availableBelow = viewportRect.bottom - rowRect.bottom;
-
-    if (availableAbove < RackVisualModelComponent.rowAnalysisPanelHeightPx && availableBelow > availableAbove) {
-      return 'below';
-    }
-
-    if (availableBelow < RackVisualModelComponent.rowAnalysisPanelHeightPx && availableAbove > availableBelow) {
-      return 'above';
-    }
-
-    return availableAbove >= availableBelow ? 'above' : 'below';
+    return resolveRowPowerPanelPlacement(
+      this.rackViewportElement,
+      rowElement,
+      RackVisualModelComponent.rowAnalysisPanelHeightPx
+    );
   }
 
   private shouldShowRowAnalysisPanel(
@@ -610,7 +605,16 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
       return;
     }
 
-    this.signalHoverCardPlacement = this.resolveSignalHoverCardPlacement(this.hoveredModuleElement);
+    const candidateElement = this.hoveredModuleElement
+      ?? (this.hoveredRackedModule
+        ? (this.screenReference?.nativeElement?.querySelector?.(`[data-rack-module-key="${ this.moduleDomKey(this.hoveredRackedModule) }"]`) as HTMLElement | null)
+        : null);
+    this.signalHoverCardPlacement = resolveSignalHoverCardPlacement(
+      candidateElement,
+      this.rackViewportElement,
+      RackVisualModelComponent.signalHoverCardWidthPx,
+      RackVisualModelComponent.signalHoverCardGapPx
+    );
     this.signalOverlayLines = this.buildSignalOverlayLines();
   }
 
@@ -625,15 +629,10 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     const screenElement = this.screenReference.nativeElement as HTMLElement;
     const hostRect = this.hostElementRef.nativeElement.getBoundingClientRect();
     const screenRect = screenElement.getBoundingClientRect();
-    const moduleElements = this.buildRenderedModuleElementMap(screenElement);
+    const moduleElements = buildRenderedModuleElementMap(screenElement);
     const sourceElement = this.hoveredModuleElement ?? moduleElements.get(this.moduleDomKey(hoveredModule)) ?? null;
-    this.signalOverlayFrame = {
-      left: screenRect.left - hostRect.left,
-      top: screenRect.top - hostRect.top,
-      width: screenRect.width,
-      height: screenRect.height,
-    };
-    const sourceRect = this.resolveRenderedModuleRect(sourceElement, screenRect);
+    this.signalOverlayFrame = buildSignalOverlayFrame(screenRect, hostRect);
+    const sourceRect = resolveRenderedModuleRect(sourceElement, screenRect);
 
     if (!sourceRect) {
       this.signalOverlayFrame = null;
@@ -642,7 +641,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
     return Array.from(this.signalDestinationMatches.values())
       .map(match => {
-        const destinationRect = this.resolveRenderedModuleRect(
+        const destinationRect = resolveRenderedModuleRect(
           moduleElements.get(this.moduleDomKey(match.destination)) ?? null,
           screenRect
         );
@@ -652,7 +651,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
 
         return {
           key: `${ this.moduleDomKey(hoveredModule) }->${ this.moduleDomKey(match.destination) }`,
-          path: this.buildCurvedSignalPath(sourceRect, destinationRect),
+          path: buildCurvedSignalPath(sourceRect, destinationRect),
           family: match.family,
           confidence: match.confidence
         };
@@ -661,69 +660,7 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
   }
 
   private resolveRenderedModuleRect(candidateElement: HTMLElement | null, screenRect: DOMRect): ModuleRenderRect | null {
-    if (!(candidateElement instanceof HTMLElement)) {
-      return null;
-    }
-
-    const rect = candidateElement.getBoundingClientRect();
-
-    return {
-      left: rect.left - screenRect.left,
-      top: rect.top - screenRect.top,
-      right: rect.right - screenRect.left,
-      bottom: rect.bottom - screenRect.top,
-      centerX: (rect.left + rect.right) / 2 - screenRect.left,
-      centerY: (rect.top + rect.bottom) / 2 - screenRect.top,
-    };
-  }
-
-  private buildCurvedSignalPath(sourceRect: ModuleRenderRect, destinationRect: ModuleRenderRect): string {
-    const startX = destinationRect.centerX >= sourceRect.centerX ? sourceRect.right : sourceRect.left;
-    const endX = destinationRect.centerX >= sourceRect.centerX ? destinationRect.left : destinationRect.right;
-    const startY = sourceRect.centerY;
-    const endY = destinationRect.centerY;
-    const horizontalDirection = destinationRect.centerX >= sourceRect.centerX ? 1 : -1;
-    const horizontalDistance = Math.abs(endX - startX);
-    const controlOffset = Math.max(28, Math.min(96, horizontalDistance * 0.45));
-    const controlPoint1X = startX + (controlOffset * horizontalDirection);
-    const controlPoint2X = endX - (controlOffset * horizontalDirection);
-
-    return `M ${ startX } ${ startY } C ${ controlPoint1X } ${ startY }, ${ controlPoint2X } ${ endY }, ${ endX } ${ endY }`;
-  }
-
-  private resolveSignalHoverCardPlacement(moduleElement?: HTMLElement | null): SignalHoverCardPlacement {
-    const candidateElement = moduleElement
-      ?? (this.hoveredRackedModule
-        ? (this.screenReference?.nativeElement?.querySelector?.(`[data-rack-module-key="${ this.moduleDomKey(this.hoveredRackedModule) }"]`) as HTMLElement | null)
-        : null);
-    const viewportRect = this.rackViewportElement?.getBoundingClientRect();
-
-    if (!(candidateElement instanceof HTMLElement) || !viewportRect) {
-      return 'right';
-    }
-
-    const moduleRect = candidateElement.getBoundingClientRect();
-    const availableRight = viewportRect.right - moduleRect.right;
-    const availableLeft = moduleRect.left - viewportRect.left;
-    const requiredWidth = RackVisualModelComponent.signalHoverCardWidthPx + RackVisualModelComponent.signalHoverCardGapPx;
-
-    if (availableRight < requiredWidth && availableLeft > availableRight) {
-      return 'left';
-    }
-
-    if (availableLeft >= requiredWidth && availableLeft > availableRight) {
-      return 'left';
-    }
-
-    return 'right';
-  }
-
-  private buildRenderedModuleElementMap(screenElement: HTMLElement): Map<string, HTMLElement> {
-    return new Map(
-      Array.from(screenElement.querySelectorAll<HTMLElement>('[data-rack-module-key]'))
-        .map(element => [element.dataset['rackModuleKey'], element] as const)
-        .filter((entry): entry is [string, HTMLElement] => !!entry[0])
-    );
+    return resolveRenderedModuleRect(candidateElement, screenRect);
   }
 
   signalOverlayViewBox(): string | null {
@@ -732,18 +669,6 @@ export class RackVisualModelComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     return `0 0 ${ this.signalOverlayFrame.width } ${ this.signalOverlayFrame.height }`;
-  }
-
-  private withAlpha(hexColor: string, alpha: number): string {
-    const normalizedHex = hexColor.replace('#', '');
-    const expandedHex = normalizedHex.length === 3
-      ? normalizedHex.split('').map(char => `${ char }${ char }`).join('')
-      : normalizedHex;
-    const red = Number.parseInt(expandedHex.slice(0, 2), 16);
-    const green = Number.parseInt(expandedHex.slice(2, 4), 16);
-    const blue = Number.parseInt(expandedHex.slice(4, 6), 16);
-
-    return `rgba(${ red }, ${ green }, ${ blue }, ${ alpha })`;
   }
 
   private isSignalModeActive(): boolean {
