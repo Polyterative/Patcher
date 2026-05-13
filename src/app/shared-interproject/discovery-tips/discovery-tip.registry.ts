@@ -150,7 +150,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
   {
     id: 'user-area-racks-variants',
     version: 1,
-    anchorId: 'user-area-racks-section',
+    anchorId: 'user-area-racks-create',
     title: 'Separate layouts are worth saving',
     body: 'Keep alternate racks for travel, rehearsal, or future buys instead of overwriting one layout and losing the comparison.',
     routePrefixes: ['/user/area'],
@@ -185,7 +185,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
   {
     id: 'user-area-patches-after-rack',
     version: 1,
-    anchorId: 'user-area-patches-section',
+    anchorId: 'user-area-patches-create',
     title: 'Turn a stable setup into a reusable patch note',
     body: 'Once you have a rack layout, patches become your memory layer for settings, routing choices, and performance-ready recall.',
     routePrefixes: ['/user/area'],
@@ -292,7 +292,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
   {
     id: 'user-area-racks-planning-before-buying',
     version: 1,
-    anchorId: 'user-area-racks-section',
+    anchorId: 'user-area-racks-create',
     title: 'Use racks to test ideas before buying or moving gear',
     body: 'Planning here first is cheaper than reshuffling hardware and discovering the layout is wrong after the fact.',
     routePrefixes: ['/user/area'],
