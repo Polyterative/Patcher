@@ -95,80 +95,28 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules by format</h4>
               @for (bar of page.standardMixBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates by format</h4>
               @for (bar of page.standardActivityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Avg. width per format</h4>
               @for (bar of page.standardWidthBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Active makers per format</h4>
               @for (bar of page.standardManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
@@ -189,80 +137,28 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules by width band</h4>
               @for (bar of page.hpBandBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates by width band</h4>
               @for (bar of page.hpBandActivityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Churn rate (30d)</h4>
               @for (bar of page.hpBandVelocityBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Exact widths (most common)</h4>
               @for (bar of page.hpExactBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
@@ -283,40 +179,14 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Updated by recency</h4>
               @for (bar of page.moduleFreshnessBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Catalogue age</h4>
               @for (bar of page.moduleCatalogueAgeBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
@@ -406,80 +276,28 @@
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Modules per maker</h4>
               @for (bar of page.topManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">30-day updates per maker</h4>
               @for (bar of page.activeManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Avg. width per maker</h4>
               @for (bar of page.widestManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
 
             <div class="metric-bars">
               <h4 class="rankings-grid__title">Most 1U-focused makers</h4>
               @for (bar of page.oneUManufacturerBars; track bar.label) {
-                <div class="metric-bar">
-                  <div class="metric-bar__heading">
-                    <span>{{ bar.label }}</span>
-                    <strong>{{ bar.valueLabel }}</strong>
-                  </div>
-                  <div class="metric-bar__track">
-                    <div
-                      class="metric-bar__fill"
-                      [ngClass]="'metric-bar__fill--' + bar.tone"
-                      [style.width.%]="bar.widthPercent"
-                    ></div>
-                  </div>
-                  <p>{{ bar.detail }}</p>
-                </div>
+                <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
               }
             </div>
           </div>
@@ -520,20 +338,7 @@
 
           <div class="metric-bars">
             @for (bar of page.sharingRateBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
-                </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
-                </div>
-                <p>{{ bar.detail }}</p>
-              </div>
+              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
             }
           </div>
 
@@ -551,20 +356,7 @@
         >
           <div class="metric-bars">
             @for (bar of page.patchDepthBars; track bar.label) {
-              <div class="metric-bar">
-                <div class="metric-bar__heading">
-                  <span>{{ bar.label }}</span>
-                  <strong>{{ bar.valueLabel }}</strong>
-                </div>
-                <div class="metric-bar__track">
-                  <div
-                    class="metric-bar__fill"
-                    [ngClass]="'metric-bar__fill--' + bar.tone"
-                    [style.width.%]="bar.widthPercent"
-                  ></div>
-                </div>
-                <p>{{ bar.detail }}</p>
-              </div>
+              <app-insight-metric-bar [label]="bar.label" [valueLabel]="bar.valueLabel" [detail]="bar.detail" [widthPercent]="bar.widthPercent" [tone]="bar.tone"></app-insight-metric-bar>
             }
           </div>
 
