@@ -221,10 +221,10 @@ export class ModuleDetailDataService implements OnDestroy {
     
     this.singleModuleData$.pipe(
       filter(x => !!x),
-      switchMap(x => this.userService.loggedUser$.pipe(withLatestFrom(of(x)))),
+      switchMap(() => this.userService.loggedUser$),
       takeUntil(this.destroyEvent$)
     )
-      .subscribe(([user, module]) => {
+      .subscribe(user => {
         if (user) {
           this.moduleEditingPanelOpenState$.next(false);
         }
