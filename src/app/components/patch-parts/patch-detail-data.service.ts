@@ -72,17 +72,15 @@ import {
   MAX_INSTANCES_PER_MODULE,
   MultiInstanceModuleSummary,
 } from './patch-detail-data.models';
+import {
+  buildLinkedRackUiState,
+  DEFAULT_LINKED_RACK_UI_STATE,
+  groupInstancesByModuleId,
+} from './patch-detail-data.utils';
 
 export type { LinkedRackUiState, MultiInstanceModuleSummary } from './patch-detail-data.models';
 export { MAX_INSTANCES_PER_MODULE } from './patch-detail-data.models';
 
-const defaultLinkedRackUiState: LinkedRackUiState = {
-  kind: 'unlinked',
-  statusTone: 'neutral',
-  statusLabel: 'Collection-first',
-  description: 'No rack is linked yet. You can keep editing from your collection, or add a rack as optional spatial context whenever it helps.',
-  rackId: null
-};
 
 
 type CVConnectionEvent =
@@ -168,7 +166,7 @@ export class PatchDetailDataService implements OnDestroy {
   readonly patchTags$ = new BehaviorSubject<string[]>([]);
   readonly currentUserRacks$ = new BehaviorSubject<Rack[]>([]);
   readonly linkedRackOptions$ = new BehaviorSubject<ISelectable[]>([]);
-  readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(defaultLinkedRackUiState);
+  readonly linkedRackState$ = new BehaviorSubject<LinkedRackUiState>(DEFAULT_LINKED_RACK_UI_STATE);
   readonly linkedRackPersistenceBlocked$ = new BehaviorSubject<boolean>(false);
   readonly linkedRackPersistenceHint$ = new BehaviorSubject<string | null>(null);
   readonly linkedRackSelectionBlocked$ = new BehaviorSubject<boolean>(false);
@@ -378,7 +376,7 @@ export class PatchDetailDataService implements OnDestroy {
       )
       .subscribe(({linkedRack, isOwner}) => {
         this.linkedRackState$.next(
-          this.buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner)
+          buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner)
         );
       });
 
@@ -404,7 +402,7 @@ export class PatchDetailDataService implements OnDestroy {
               if (this.singlePatchData$.value) {
                 this.singlePatchData$.value.linked_rack_id = linkedRackId;
               }
-              this.linkedRackState$.next(this.buildLinkedRackUiState(nextPatch, this.currentUserRacks$.value));
+              this.linkedRackState$.next(buildLinkedRackUiState(nextPatch, this.currentUserRacks$.value));
               this.syncLinkedRackControl(nextPatch, this.currentUserRacks$.value);
               const message = linkedRackId == null
                 ? 'Linked rack cleared.'
@@ -711,7 +709,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         map(instances => {
           const labelMap = new Map<number, string>();
-          const byModule = this.groupInstancesByModuleId(instances);
+          const byModule = groupInstancesByModuleId(instances);
           for (const [, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
               moduleInstances.forEach((inst, idx) => {
@@ -730,7 +728,7 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         map(instances => {
           if (!instances.length) { return []; }
-          const byModule = this.groupInstancesByModuleId(instances);
+          const byModule = groupInstancesByModuleId(instances);
           const summary: MultiInstanceModuleSummary[] = [];
           for (const [moduleId, moduleInstances] of byModule) {
             if (moduleInstances.length >= 2) {
@@ -990,14 +988,6 @@ export class PatchDetailDataService implements OnDestroy {
     this.requestLinkedRackChange$.next(null);
   }
   
-  private groupInstancesByModuleId(instances: PatchModuleInstance[]): Map<number, PatchModuleInstance[]> {
-    return instances.reduce((map, inst) => {
-      const list = map.get(inst.module_id) ?? [];
-      list.push(inst);
-      return map.set(inst.module_id, list);
-    }, new Map<number, PatchModuleInstance[]>());
-  }
-
   ngOnDestroy(): void {
     // Clear the bridge so the floating panel disappears when navigating away
     this.bridge.selectionState$.next({a: null, b: null});
@@ -1215,37 +1205,5 @@ export class PatchDetailDataService implements OnDestroy {
     findAndApplyOptionForId(`${ matchingRack.id }`, this.formData.linkedRack.control, options);
   }
 
-  private buildLinkedRackUiState(
-    patch: Patch | undefined,
-    racks: Rack[],
-    resolvedLinkedRack: Rack | null = null,
-    isOwner = false
-  ): LinkedRackUiState {
-    if (!patch || patch.linked_rack_id == null) {
-      return defaultLinkedRackUiState;
-    }
-
-    const linkedRack = resolvedLinkedRack ?? racks.find(rack => rack.id === patch.linked_rack_id);
-    if (!linkedRack) {
-      return {
-        kind: 'unavailable',
-        statusTone: 'warning',
-        statusLabel: 'Rack unavailable',
-        description: isOwner
-          ? 'This patch still remembers a linked rack, but that rack is no longer available. Choose another rack or clear the link without affecting the patch itself.'
-          : 'This patch references a linked rack, but that rack is not publicly available right now.',
-        rackId: patch.linked_rack_id
-      };
-    }
-
-    return {
-      kind: 'linked',
-      statusTone: 'positive',
-      statusLabel: 'Linked rack active',
-      description: 'The linked rack gives you spatial context while the patch still saves against your collection and patch-local copies.',
-      rackName: linkedRack.name,
-      rackId: linkedRack.id,
-      rackImage: linkedRack.image
-    };
-  }
 }
+
