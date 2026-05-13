@@ -3,6 +3,10 @@ import {
   DiscoveryTipDefinition,
 } from './discovery-tip.models';
 
+const SNOOZE_2_DAYS  = 1000 * 60 * 60 * 24 * 2;
+const SNOOZE_4_DAYS  = 1000 * 60 * 60 * 24 * 4;
+const SNOOZE_5_DAYS  = 1000 * 60 * 60 * 24 * 5;
+const SNOOZE_7_DAYS  = 1000 * 60 * 60 * 24 * 7;
 
 function isOnUserArea(snapshot: DiscoveryTipContextSnapshot): boolean {
   return snapshot.currentRoute.startsWith('/user/area');
@@ -20,7 +24,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1000,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.modulesLoaded
@@ -39,7 +43,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1200,
     maxShowCount: 2,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 2,
+    snoozeDurationMs: SNOOZE_2_DAYS,
     completionActions: ['user-area.modules.add-clicked'],
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
@@ -57,7 +61,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 900,
     maxShowCount: 2,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 2,
+    snoozeDurationMs: SNOOZE_2_DAYS,
     completionActions: ['user-area.racks.create-clicked'],
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
@@ -77,7 +81,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 900,
     maxShowCount: 2,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 2,
+    snoozeDurationMs: SNOOZE_2_DAYS,
     completionActions: ['user-area.patches.create-clicked'],
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
@@ -97,7 +101,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1100,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 5,
+    snoozeDurationMs: SNOOZE_5_DAYS,
     completionActions: ['user-area.search-used'],
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
@@ -118,7 +122,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1200,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 5,
+    snoozeDurationMs: SNOOZE_5_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.modulesLoaded
@@ -136,7 +140,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1100,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 5,
+    snoozeDurationMs: SNOOZE_5_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.modulesLoaded
@@ -154,7 +158,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1000,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 5,
+    snoozeDurationMs: SNOOZE_5_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.racksLoaded
@@ -172,7 +176,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 950,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.racksLoaded
@@ -189,7 +193,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1000,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 4,
+    snoozeDurationMs: SNOOZE_4_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.racksLoaded
@@ -208,7 +212,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 1000,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.patchesLoaded
@@ -226,7 +230,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 950,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.totalCount >= 3,
@@ -242,7 +246,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 900,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.manualsLoaded
@@ -259,7 +263,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 900,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.commentsLoaded
@@ -276,7 +280,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 950,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.modulesLoaded
@@ -296,7 +300,7 @@ export const discoveryTipRegistry: DiscoveryTipDefinition[] = [
     audience: 'signed-in',
     displayDelayMs: 950,
     maxShowCount: 1,
-    snoozeDurationMs: 1000 * 60 * 60 * 24 * 7,
+    snoozeDurationMs: SNOOZE_7_DAYS,
     isEligible: (snapshot) =>
       isOnUserArea(snapshot)
       && snapshot.userArea.modulesLoaded
