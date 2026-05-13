@@ -74,6 +74,13 @@ import {
   rankNumberBuckets,
   rankManufacturerScores
 } from './supabase-queries.insights';
+import {
+  buildManufacturerActivityRank,
+  parseModuleUpdatedTimestampMs,
+  buildManufacturerModuleStats,
+  withManufacturerModuleStats,
+  compareManufacturersByLatestModuleActivity
+} from './supabase-queries.manufacturer-stats';
 
 
 export class SupabaseQueriesService {
@@ -1510,11 +1517,11 @@ export class SupabaseQueriesService {
               error: modulesActivityResponse.error
             };
           }
-          const statsByManufacturerId = this.buildManufacturerModuleStats(modulesActivityResponse.data);
+          const statsByManufacturerId = buildManufacturerModuleStats(modulesActivityResponse.data);
           return {
             ...filteredResponse,
             data: manufacturers.map((manufacturer: any) =>
-              this.withManufacturerModuleStats(
+              withManufacturerModuleStats(
                 manufacturer,
                 statsByManufacturerId.get(manufacturer.id)
               )
@@ -1579,10 +1586,10 @@ export class SupabaseQueriesService {
       const filteredActivityRows = modulesActivityResponse.data
         .filter((row) => allowedManufacturerIds.has(row.manufacturerId));
       
-      const statsByManufacturerId = this.buildManufacturerModuleStats(filteredActivityRows);
-      const activityRankByManufacturerId = this.buildManufacturerActivityRank(filteredActivityRows);
+      const statsByManufacturerId = buildManufacturerModuleStats(filteredActivityRows);
+      const activityRankByManufacturerId = buildManufacturerActivityRank(filteredActivityRows);
       const sortedManufacturers = [...manufacturers].sort((a, b) =>
-        this.compareManufacturersByLatestModuleActivity(
+        compareManufacturersByLatestModuleActivity(
           a,
           b,
           activityRankByManufacturerId
@@ -1591,7 +1598,7 @@ export class SupabaseQueriesService {
       const pagedManufacturers = sortedManufacturers
         .slice(from, to + 1)
         .map((manufacturer: any) =>
-          this.withManufacturerModuleStats(
+          withManufacturerModuleStats(
             manufacturer,
             statsByManufacturerId.get(manufacturer.id)
           )
@@ -1665,103 +1672,6 @@ export class SupabaseQueriesService {
     return this.fetchAllModuleActivityRows(orderDirection);
   }
   
-  private buildManufacturerActivityRank(rows: ModuleActivityRow[]): Map<number, number> {
-    const rankByManufacturerId = new Map<number, number>();
-    let rank = 0;
-    
-    for (const row of rows) {
-      if (typeof row?.manufacturerId !== 'number') {
-        continue;
-      }
-      if (!rankByManufacturerId.has(row.manufacturerId)) {
-        rankByManufacturerId.set(row.manufacturerId, rank);
-        rank += 1;
-      }
-    }
-    
-    return rankByManufacturerId;
-  }
-  
-  private parseModuleUpdatedTimestampMs(rawUpdated: unknown): number | null {
-    if (typeof rawUpdated !== 'string' || rawUpdated.trim().length === 0) { return null; }
-    let s = rawUpdated.trim();
-    // Normalise Postgres variants so Date.parse can handle them:
-    // 1. Space separator → T  (e.g. "2026-03-01 10:00:00" → "2026-03-01T10:00:00")
-    s = s.replace(' ', 'T');
-    // 2. Truncate microseconds to milliseconds  (.123456 → .123)
-    s = s.replace(/(\.\d{3})\d+/, '$1');
-    // 3. Short UTC offset without minutes: +00 / -05 → +00:00 / -05:00
-    s = s.replace(/([+-]\d{2})$/, '$1:00');
-    // 4. Four-digit offset without colon: +0000 → +00:00
-    s = s.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
-    const ms = Date.parse(s);
-    return isNaN(ms) ? null : ms;
-  }
-  
-  private buildManufacturerModuleStats(rows: ModuleActivityRow[]): Map<number, ManufacturerModuleStats> {
-    const stats = new Map<number, ManufacturerModuleStats>();
-    const thresholdMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
-    for (const row of rows) {
-      if (typeof row?.manufacturerId !== 'number') {
-        continue;
-      }
-      const current = stats.get(row.manufacturerId) ?? {...SupabaseQueriesService.EMPTY_STATS};
-      current.moduleCount += 1;
-      
-      const updatedMs = this.parseModuleUpdatedTimestampMs(row.updated);
-      if (updatedMs !== null) {
-        if (current.latestModuleUpdatedAtMs === null || updatedMs > current.latestModuleUpdatedAtMs) {
-          current.latestModuleUpdatedAtMs = updatedMs;
-          current.latestModuleUpdatedAt = row.updated;
-        }
-        if (updatedMs >= thresholdMs) {
-          current.changedModulesLast30Days += 1;
-        }
-      }
-      
-      stats.set(row.manufacturerId, current);
-    }
-    
-    return stats;
-  }
-  
-  private withManufacturerModuleStats(manufacturer: any, stats: ManufacturerModuleStats | undefined) {
-    return {
-      ...manufacturer,
-      moduleCount: stats?.moduleCount ?? 0,
-      latestModuleUpdatedAt: stats?.latestModuleUpdatedAt ?? null,
-      changedModulesLast30Days: stats?.changedModulesLast30Days ?? 0
-    };
-  }
-  
-  private compareManufacturersByLatestModuleActivity(
-    aManufacturer: any,
-    bManufacturer: any,
-    activityRankByManufacturerId: Map<number, number>
-  ): number {
-    const aRank = activityRankByManufacturerId.get(aManufacturer.id);
-    const bRank = activityRankByManufacturerId.get(bManufacturer.id);
-    const aHasModules = typeof aRank === 'number';
-    const bHasModules = typeof bRank === 'number';
-    const aName = (aManufacturer?.name ?? '').toString();
-    const bName = (bManufacturer?.name ?? '').toString();
-    
-    // Keep manufacturers with modules before empty ones in both directions.
-    if (aHasModules !== bHasModules) {
-      return aHasModules ? -1 : 1;
-    }
-    
-    if (!aHasModules || !bHasModules) {
-      return aName.localeCompare(bName);
-    }
-    
-    if (aRank !== bRank) {
-      return (aRank as number) - (bRank as number);
-    }
-    
-    return aName.localeCompare(bName);
-  }
   
   @Cacheable({
     maxAge: defaultCacheTime,
