@@ -339,17 +339,18 @@ export class PatchDetailDataService implements OnDestroy {
       .pipe(
         switchMap(([patch, racks, user]) => {
           if (!patch || patch.linked_rack_id == null) {
-            return of({linkedRack: null as Rack | null, isOwner: false});
+            return of({linkedRack: null as Rack | null, isOwner: false, isLoggedIn: !!user});
           }
 
           const isOwner = !!user && patch.author?.id === user.id;
+          const isLoggedIn = !!user;
           const ownedRack = racks.find(rack => rack.id === patch.linked_rack_id);
           if (ownedRack) {
-            return of({linkedRack: ownedRack, isOwner});
+            return of({linkedRack: ownedRack, isOwner, isLoggedIn});
           }
 
           if (isOwner) {
-            return of({linkedRack: null as Rack | null, isOwner});
+            return of({linkedRack: null as Rack | null, isOwner, isLoggedIn});
           }
 
           const rackRead$ = this.usePublicDetailReads || !user
@@ -359,16 +360,17 @@ export class PatchDetailDataService implements OnDestroy {
           return rackRead$.pipe(
             map((response: any) => ({
               linkedRack: (response?.data as Rack | null) ?? null,
-              isOwner
+              isOwner,
+              isLoggedIn
             })),
-            catchError(() => of({linkedRack: null as Rack | null, isOwner}))
+            catchError(() => of({linkedRack: null as Rack | null, isOwner, isLoggedIn}))
           );
         }),
         takeUntil(this.destroyEvent$)
       )
-      .subscribe(({linkedRack, isOwner}) => {
+      .subscribe(({linkedRack, isOwner, isLoggedIn}) => {
         this.linkedRackState$.next(
-          buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner)
+          buildLinkedRackUiState(this.singlePatchData$.value, this.currentUserRacks$.value, linkedRack, isOwner, isLoggedIn)
         );
       });
 

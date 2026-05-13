@@ -132,6 +132,7 @@ export {
 })
 export class PatchEditorComponent implements OnInit, OnDestroy {
   @Input() data: Patch;
+  @Input() readonly = false;
   //
   readonly formTypes = FormTypes;
   readonly maxInstances = MAX_INSTANCES_PER_MODULE;
@@ -269,64 +270,126 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
-    // Fetch user's collection modules with backend-first ordering for selected sort mode
-    this.moduleSortStrategy$
-      .pipe(
-        switchMap(strategy => this.backend.GET.currentUserModules(
-          true,
-          false,
-          strategy.backendOrder
-        )),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe((modules: DbModule[]) => {
-        this.dataService.collectionModules$.next(modules);
-        this.collectionLoaded$.next(true);
-      });
-    
-    // Merge collection modules + instances + connections into editor cards whenever any changes
-    combineLatest([
-      this.dataService.collectionModules$,
-      this.dataService.patchModuleInstances$,
-      this.dataService.editorConnections$
-    ])
-      .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(cards => {
-        const [modules, instances, connections] = cards;
-        const editorCards = this.buildEditorCards(modules, instances, connections || []);
-        
-        // Clear in-flight copy flags for modules whose cards have updated
-        this.addingCopy.clear();
-        this.sourceEditorCards$.next(editorCards);
-      });
-    
-    // Apply search first, then strategy sorting, then optional grouping
-    combineLatest([
-      this.sourceEditorCards$,
-      this.moduleSearchQuery$,
-      this.moduleSortStrategy$,
-      this.moduleGroupModeId$
-    ])
-      .pipe(
-        map(([cards, searchQuery, strategy, groupModeId]) => {
-          const filteredCards = filterEditorCardsByQuery(cards, searchQuery);
-          return sortAndGroupEditorCards(filteredCards, strategy, groupModeId);
-        }),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(cards => this.editorCards$.next(cards));
+    if (!this.readonly) {
+      // Fetch user's collection modules with backend-first ordering for selected sort mode
+      this.moduleSortStrategy$
+        .pipe(
+          switchMap(strategy => this.backend.GET.currentUserModules(
+            true,
+            false,
+            strategy.backendOrder
+          )),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe((modules: DbModule[]) => {
+          this.dataService.collectionModules$.next(modules);
+          this.collectionLoaded$.next(true);
+        });
 
-    this.dataService.linkedRackState$
+      // Merge collection modules + instances + connections into editor cards whenever any changes
+      combineLatest([
+        this.dataService.collectionModules$,
+        this.dataService.patchModuleInstances$,
+        this.dataService.editorConnections$
+      ])
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(cards => {
+          const [modules, instances, connections] = cards;
+          const editorCards = this.buildEditorCards(modules, instances, connections || []);
+          this.addingCopy.clear();
+          this.sourceEditorCards$.next(editorCards);
+        });
+
+      // Apply search first, then strategy sorting, then optional grouping
+      combineLatest([
+        this.sourceEditorCards$,
+        this.moduleSearchQuery$,
+        this.moduleSortStrategy$,
+        this.moduleGroupModeId$
+      ])
+        .pipe(
+          map(([cards, searchQuery, strategy, groupModeId]) => {
+            const filteredCards = filterEditorCardsByQuery(cards, searchQuery);
+            return sortAndGroupEditorCards(filteredCards, strategy, groupModeId);
+          }),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(cards => this.editorCards$.next(cards));
+
+      // Close expanded CV panel after a connection is confirmed
+      this.dataService.confirmSelectedConnection$
+        .pipe(takeUntil(this.destroyEvent$))
+        .subscribe(() => {
+          this.clearExpandedRackSelection();
+        });
+
+      // Capture page-level pointer events so deselection still works even when
+      // intermediate components stop bubbling normal click events.
+      fromEvent<PointerEvent>(document, 'pointerdown', {capture: true})
+        .pipe(
+          filter(() => this.expandedRackTrackingId != null),
+          filter(event => !this.isInsideRackVisual(event.target)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(() => {
+          this.clearExpandedRackSelection();
+        });
+
+      // Build trackingId → instance_id map for per-copy CV wiring
+      combineLatest([
+        this.dataService.patchModuleInstances$,
+        this.linkedRackPreviewState$
+      ])
+        .pipe(
+          map(([instances, previewState]) => buildLinkedRackInstanceMap(previewState, instances)),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(map => this.linkedRackInstanceMap$.next(map));
+
+      // Detect divergence between linked rack and patch instances
+      combineLatest([
+        this.dataService.patchModuleInstances$,
+        this.linkedRackPreviewState$,
+        this.dataService.patchConnections$
+      ])
+        .pipe(
+          map(([instances, previewState, connections]) =>
+            detectLinkedRackDivergence(previewState, instances, connections ?? [])
+          ),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(divergence => this.linkedRackDivergence$.next(divergence));
+
+      // Count orphaned connections
+      combineLatest([
+        this.linkedRackInstanceMap$,
+        this.dataService.patchModuleInstances$,
+        this.dataService.patchConnections$
+      ])
+        .pipe(
+          map(([instanceMap, instances, connections]) =>
+            countOrphanedConnections(instanceMap, instances, connections ?? [])
+          ),
+          takeUntil(this.destroyEvent$)
+        )
+        .subscribe(count => this.orphanedConnectionCount$.next(count));
+    }
+
+    combineLatest([
+      this.dataService.linkedRackState$.pipe(map(state => state.rackId ?? null), distinctUntilChanged()),
+      this.backend.auth.getUserSession$()
+    ])
       .pipe(
-        map(state => state.rackId ?? null),
-        distinctUntilChanged(),
-        switchMap(linkedRackId => {
+        switchMap(([linkedRackId, user]) => {
           if (linkedRackId == null) {
             return of(defaultLinkedRackPreviewState);
           }
 
           this.linkedRackPreviewState$.next(loadingLinkedRackPreviewState);
-          return this.backend.GET.rackWithId(linkedRackId).pipe(
+          const rackRead$ = user
+            ? this.backend.GET.rackWithId(linkedRackId)
+            : this.backend.GET.publicRackWithId(linkedRackId);
+          return rackRead$.pipe(
             switchMap((response: any) => {
               const rack = response?.data as Rack | undefined;
               if (!rack) {
@@ -367,67 +430,18 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     // visual shows role colors without a specific module's CVs open.
     this.dataService.confirmSelectedConnection$
       .pipe(takeUntil(this.destroyEvent$))
-      .subscribe(() => {
-        this.clearExpandedRackSelection();
-      });
-
-    // Capture page-level pointer events so deselection still works even when
-    // intermediate components stop bubbling normal click events.
-    fromEvent<PointerEvent>(document, 'pointerdown', {capture: true})
-      .pipe(
-        filter(() => this.expandedRackTrackingId != null),
-        filter(event => !this.isInsideRackVisual(event.target)),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(() => {
-        this.clearExpandedRackSelection();
-      });
-
-    // Build a trackingId (rackingData.id) → instance_id map so each rack copy
-    // gets its own instance for per-copy CV wiring and connection badges.
-    combineLatest([
-      this.dataService.patchModuleInstances$,
-      this.linkedRackPreviewState$
-    ])
-      .pipe(
-        map(([instances, previewState]) => buildLinkedRackInstanceMap(previewState, instances)),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(map => this.linkedRackInstanceMap$.next(map));
-
-    // Detect divergence between linked rack and patch instances
-    combineLatest([
-      this.dataService.patchModuleInstances$,
-      this.linkedRackPreviewState$,
-      this.dataService.patchConnections$
-    ])
-      .pipe(
-        map(([instances, previewState, connections]) =>
-          detectLinkedRackDivergence(previewState, instances, connections ?? [])
-        ),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(divergence => this.linkedRackDivergence$.next(divergence));
-
-    // Count orphaned connections (connections referencing instances not in the rack map)
-    combineLatest([
-      this.linkedRackInstanceMap$,
-      this.dataService.patchModuleInstances$,
-      this.dataService.patchConnections$
-    ])
-      .pipe(
-        map(([instanceMap, instances, connections]) =>
-          countOrphanedConnections(instanceMap, instances, connections ?? [])
-        ),
-        takeUntil(this.destroyEvent$)
-      )
-      .subscribe(count => this.orphanedConnectionCount$.next(count));
+      .subscribe(() => this.clearExpandedRackSelection());
   }
-  
+
   /** Trigger adding another copy of the same module */
   onAddCopy(card: EditorModuleCard): void {
     this.addingCopy.add(card.module.id);
     this.dataService.addModuleInstance$.next(card.module);
+  }
+
+  onRackModuleClick(trackingId: number, module: DbModule, anchor: HTMLElement): void {
+    if (this.readonly) return;
+    this.selectRackModule(trackingId, module, anchor);
   }
 
   clearSearch(): void {
