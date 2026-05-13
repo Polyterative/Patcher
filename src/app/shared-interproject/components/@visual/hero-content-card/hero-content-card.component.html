@@ -47,7 +47,8 @@
                      [class.title-heading-copy--with-inline-description]="description && !showHelpButton && showWideShellNav && shellVm.wideShell"
                      [class.title-heading-copy--stacked-description]="titleSub && description && !showHelpButton && showWideShellNav && shellVm.wideShell">
                   <div class="title-text"
-                       [class.title-text--with-sub]="titleSub">
+                       [class.title-text--with-sub]="titleSub"
+                       [class.title-text--with-sub-compact]="compactTitleSub && titleSub">
                     <span class="title-main">{{ titleBig }}</span>
                     @if (titleSub) {
                       <span class="title-separator"

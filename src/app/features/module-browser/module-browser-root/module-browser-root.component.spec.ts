@@ -92,8 +92,10 @@ describe('ModuleBrowserRootComponent', () => {
 
   it('exposes an optional subtitle for embedded browser headings', () => {
     component.titleSub = 'Rack name';
+    component.compactTitleSub = true;
 
     expect(component.titleSub).toBe('Rack name');
+    expect(component.compactTitleSub).toBeTrue();
   });
 
   it('defaults to full catalog when owned collection is below the adaptive threshold', () => {
