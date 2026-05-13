@@ -3,6 +3,15 @@ import {
   PATCH_GRAPH_EDGE_STAGE,
   PATCH_GRAPH_HIDDEN_COLOR
 } from './patch-graph.constants';
+import {
+  FlowAnimationState,
+  PatchGraphFlowPalette
+} from './patch-graph-flow.models';
+
+export type {
+  FlowAnimationState,
+  PatchGraphFlowPalette
+} from './patch-graph-flow.models';
 
 const FLOW_HEAT_DECAY = 0.87;
 const FLOW_HEAT_MIN_THRESHOLD = 0.03;
@@ -11,21 +20,6 @@ const FLOW_SIZE_BASE = 0.95;
 const FLOW_SIZE_HEAT_SCALE = 0.62;
 
 
-export interface FlowAnimationState {
-  baseEdges: GraphEdge[];
-  flowPoolEdges: GraphEdge[];
-  outgoingByNode: Map<string, GraphEdge[]>;
-  currentNodeId?: string;
-  edgeHeatById: Map<string, number>;
-  tickCount: number;
-}
-
-export interface PatchGraphFlowPalette {
-  flowStartColor: string;
-  flowEndColor: string;
-  flowBaseColor: string;
-  moduleJackEdgeColor: string;
-}
 
 export function createFlowAnimationState(
   edges: GraphEdge[],
