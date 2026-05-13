@@ -36,6 +36,10 @@ const defaultStorageShape: DiscoveryTipStorageShape = {
   viewers: {}
 };
 
+function isSnoozed(snoozedUntil: string | undefined): boolean {
+  return !!snoozedUntil && new Date(snoozedUntil).getTime() > Date.now();
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -218,10 +222,6 @@ export class DiscoveryTipService extends SubManager {
       return;
     }
 
-    if (currentTip && currentTip.definition.id !== candidate.id) {
-      this._activeTip$.next(null);
-    }
-
     if (this.queuedTipId === candidate.id) {
       return;
     }
@@ -277,7 +277,7 @@ export class DiscoveryTipService extends SubManager {
       return false;
     }
 
-    if (currentState.snoozedUntil && new Date(currentState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(currentState.snoozedUntil)) {
       return false;
     }
 
@@ -292,7 +292,7 @@ export class DiscoveryTipService extends SubManager {
 
   private isTipEligible(definition: DiscoveryTipDefinition, snapshot: DiscoveryTipContextSnapshot): boolean {
     const globalPauseState = this._tipStates$.value[DISCOVERY_TIP_GLOBAL_PAUSE_ID];
-    if (globalPauseState?.snoozedUntil && new Date(globalPauseState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(globalPauseState?.snoozedUntil)) {
       return false;
     }
 
@@ -313,7 +313,7 @@ export class DiscoveryTipService extends SubManager {
       return false;
     }
 
-    if (currentState.snoozedUntil && new Date(currentState.snoozedUntil).getTime() > Date.now()) {
+    if (isSnoozed(currentState.snoozedUntil)) {
       return false;
     }
 

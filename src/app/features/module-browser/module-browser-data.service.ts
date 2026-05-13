@@ -138,6 +138,10 @@ const MODULE_ORDER_OPTIONS: ModuleOrderOption[] = [
   {id: 'isComplete', name: 'Data Complete ↓'},
 ];
 
+function toSortDirection(optionName: string | undefined): 'asc' | 'desc' {
+  return optionName?.includes('↑') ? 'asc' : 'desc';
+}
+
 @Injectable()
 export class ModuleBrowserDataService extends SubManager {
   readonly modulesList$ = new BehaviorSubject<ModuleList>(null);
@@ -320,7 +324,7 @@ export class ModuleBrowserDataService extends SubManager {
       this.serversideTableRequestData.filter$.next(nameVal);
       this.serversideTableRequestData.sort$.next([
         orderVal?.id ?? '',
-        orderVal?.name?.includes('↑') ? 'asc' : 'desc'
+        toSortDirection(orderVal?.name)
       ]);
       this.serversideTableRequestData.skip$.next(0);
       this.paginatorToFistPage$.next();
@@ -504,9 +508,7 @@ export class ModuleBrowserDataService extends SubManager {
 
   private sortOwnedModules(modules: MinimalModule[]): MinimalModule[] {
     const order = this.fields.order.control.value;
-    const direction = order?.name?.includes('↑')
-      ? 'asc'
-      : 'desc';
+    const direction = toSortDirection(order?.name);
 
     const sortedModules = [...modules];
     switch (order?.id) {
