@@ -12,14 +12,18 @@
     </div>
 
     <div class="patch-composite-top__content">
-      <div class="col gap1 patch-composite-top__modules">
-        <div class="patch-composite-top__stats-wrap">
-          <ng-template *ngTemplateOutlet="statsCard"></ng-template>
-        </div>
-        <div class="patch-composite-top__modules-wrap">
-          <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
-        </div>
-      </div>
+      @if ((dataService.editorConnections$|async); as conns) {
+        @if (conns.length > 0) {
+          <div class="col gap1 patch-composite-top__modules">
+            <div class="patch-composite-top__stats-wrap">
+              <ng-template *ngTemplateOutlet="statsCard"></ng-template>
+            </div>
+            <div class="patch-composite-top__modules-wrap">
+              <ng-template *ngTemplateOutlet="uniqueModulesSummary"></ng-template>
+            </div>
+          </div>
+        }
+      }
 
       <div class="patch-composite-top__graph">
         <app-patch-details [data]="data"

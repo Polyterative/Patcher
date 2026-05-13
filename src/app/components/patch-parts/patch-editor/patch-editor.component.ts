@@ -70,7 +70,6 @@ import {
   buildLinkedRackPreviewState,
   countOrphanedConnections,
   defaultLinkedRackPreviewState,
-  defaultOperationMode,
   detectLinkedRackDivergence,
   filterEditorCardsByQuery,
   loadingLinkedRackPreviewState,
@@ -138,7 +137,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
   readonly maxInstances = MAX_INSTANCES_PER_MODULE;
   readonly operationModes = PATCH_EDITOR_OPERATION_MODES;
   readonly operationModeOptions = PATCH_EDITOR_OPERATION_MODE_OPTIONS;
-  readonly operationMode$ = new BehaviorSubject<PatchEditorOperationMode>(defaultOperationMode);
+  readonly operationMode$: BehaviorSubject<PatchEditorOperationMode>;
   readonly hasLinkedRack$: Observable<boolean>;
   readonly linkedRackPreviewState$ = new BehaviorSubject<LinkedRackPreviewState>(defaultLinkedRackPreviewState);
   readonly sortModeOptions$: Observable<any[]> = of(PATCH_EDITOR_SORT_MODE_OPTIONS);
@@ -256,6 +255,7 @@ export class PatchEditorComponent implements OnInit, OnDestroy {
     private elementRef: ElementRef,
     private cdr: ChangeDetectorRef
   ) {
+    this.operationMode$ = this.dataService.editorOperationMode$;
     this.hasLinkedRack$ = this.dataService.linkedRackState$.pipe(
       map(state => state.kind !== 'unlinked'),
       distinctUntilChanged()
