@@ -8,6 +8,7 @@ import { UserSignupDataService } from './user-signup-data.service';
 import { SeoAndUtilsService } from "src/app/features/backbone/seo-and-utils.service";
 import { SubManager } from "src/app/shared-interproject/directives/subscription-manager";
 import { UserManagementService } from "src/app/features/backbone/login/user-management.service";
+import { SSOProvider } from '../sso-buttons/sso-buttons.component';
 
 
 @Component({
@@ -38,8 +39,8 @@ export class SignupPageComponent extends SubManager implements OnInit {
    * Note: SSO handles both login and signup automatically - if the user
    * doesn't exist, an account is created. This follows industry best practices.
    */
-  handleSSOSignup(provider: string): void {
-    this.loginInteraction.loginWithSSO(provider as any);
+  handleSSOSignup(provider: SSOProvider): void {
+    this.loginInteraction.loginWithSSO(provider);
   }
   
 }
