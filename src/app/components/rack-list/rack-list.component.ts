@@ -58,7 +58,8 @@ export class RackListComponent extends SubManager implements OnInit {
     this.externalSearchQuery$.next(value ?? '');
   }
   
-  filteredData$ = new BehaviorSubject<RackList>([]);
+  private readonly _filteredData$ = new BehaviorSubject<RackList>([]);
+  readonly filteredData$ = this._filteredData$.asObservable();
   
   constructor(
     public filterService: LocalDataFilterService
@@ -74,7 +75,7 @@ export class RackListComponent extends SubManager implements OnInit {
     this.manageSub(
       this.data$
           .pipe(take(1))
-          .subscribe(x => this.filteredData$.next(x))
+          .subscribe(x => this._filteredData$.next(x))
     );
     
     this.manageSub(
@@ -89,7 +90,7 @@ export class RackListComponent extends SubManager implements OnInit {
             return matchesSearchQuery(localQuery, ...searchFields)
               && matchesSearchQuery(externalQuery, ...searchFields);
           });
-          this.filteredData$.next(result);
+          this._filteredData$.next(result);
         })
     );
   }

@@ -78,7 +78,8 @@ export class ModuleListComponent extends SubManager implements OnInit {
     this.externalSearchQuery$.next(value ?? '');
   }
 
-  filteredData$ = new BehaviorSubject<ModuleList>([]);
+  private readonly _filteredData$ = new BehaviorSubject<ModuleList>([]);
+  readonly filteredData$ = this._filteredData$.asObservable();
   
   // Sort & group controls (active when showOrder = true)
   readonly formTypes = FormTypes;
@@ -116,7 +117,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
     
     // Seed with first emission so the list isn't blank on initial render
     this.manageSub(
-      this.data$.pipe(take(1)).subscribe(x => this.filteredData$.next(x ?? []))
+      this.data$.pipe(take(1)).subscribe(x => this._filteredData$.next(x ?? []))
     );
 
     this.manageSub(
@@ -139,7 +140,7 @@ export class ModuleListComponent extends SubManager implements OnInit {
             && matchesSearchQuery(externalQuery, ...searchFields);
         });
         
-        this.filteredData$.next(sortAndGroupMinimalModules(filtered, sortId, groupId));
+        this._filteredData$.next(sortAndGroupMinimalModules(filtered, sortId, groupId));
       })
     );
   }
